@@ -151,13 +151,18 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 )
 {
   // First, do the things that are needed for all actions:
+
   // get the material (of the parent element)
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
   RefCountPtr<MAT::Material> mat = parentele->Material();
+
   // the type of scalar transport problem has to be provided for all actions!
   const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
+
+  // get node coordinates (we have a nsd_+1 dimensional domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // get additional state vector for ALE case: grid displacement
   isale_ = params.get<bool>("isale");
@@ -165,7 +170,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   {
     const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
     if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
+    // add nodal displacements
+    xyze_ += edispnp_;
   }
   else edispnp_.Clear();
 
@@ -176,12 +183,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // access the global vector
     const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
-
-    // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-    // in the ALE case add nodal displacements
-    if (isale_) xyze_ += edispnp_;
 
     // determine constant normal to this element
     GetConstNormal(normal_,xyze_);
@@ -380,12 +381,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     vector<double> mydiffflux(lm.size());
     vector<double> mydivu(lm.size());
 
-    // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-    // in the ALE case add nodal displacements
-    if (isale_) xyze_ += edispnp_;
-
     // determine normal to this element
     GetConstNormal(normal_,xyze_);
 
@@ -531,12 +526,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {
-  // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -628,12 +617,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const double                          timefac,
     const double                          alphaF)
 {
-  // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -822,12 +805,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 {
   //for pre-multiplication of i0 with 1/(F z_k)
   double fz = 1.0/96485.3399; // unit of F: C/mol or mC/mmol or muC / mumol
-
-  // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
 
   // index of reactive species (starting from zero)
   const int k = speciesid-1;
@@ -1121,12 +1098,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const double     dlcapacitance
 )
 {
-  // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // get variables with their current values
   double currentintegral  = params.get<double>("currentintegral");
   double boundaryint      = params.get<double>("boundaryintegral");
@@ -1342,12 +1313,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
 {
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
-
-  // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);

@@ -294,6 +294,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     Epetra_SerialDenseVector&  elevec3_epetra
     )
 {
+  // --------mandatory are performed here at first ------------
+  // get node coordinates (we do this for all actions!)
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
   // get additional state vector for ALE case: grid displacement
   isale_ = params.get<bool>("isale");
   if (isale_)
@@ -301,13 +305,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
     if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+    // add nodal displacements to point coordinates
+    xyze_ += edispnp_;
   }
   else edispnp_.Clear();
-
-  // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Set parameter SCATRATYPE in your input file!");
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if(SCATRA::IsNurbs(distype))
@@ -337,6 +338,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       }
     }
   } // Nurbs specific stuff
+
+  // the type of scalar transport problem has to be provided for all actions!
+  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Set parameter SCATRATYPE in your input file!");
 
   // check for the action parameter
   const string action = params.get<string>("action","none");
@@ -711,11 +717,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // falsely set, on the one hand, and viscosity for unnecessary calculation
     // of subgrid-scale velocity is computed, on the other hand, in
     // GetMaterialParams
-    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_genalpha_    = false;
+    is_incremental_ = true;
     sgvel_          = false;
-    is_incremental_ = params.get<bool>("incremental solver");
-
-    sgvel_ = Teuchos::getIntegralValue<int>(stablist,"SUGRVEL");
 
     // calculate matrix and rhs
     InitialTimeDerivative(
@@ -1062,26 +1066,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // get node weights for nurbs elements
-  if(SCATRA::IsNurbs(distype))
-  {
-    for (int inode=0; inode<nen_; inode++)
-    {
-      DRT::Node** nodes = ele->Nodes();
-      DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-
-      weights_(inode) = cp->W();
-    }
-  }
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -3970,12 +3954,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     const double                          frt
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // dead load in element nodes at initial point in time
   const double time = 0.0;
 
@@ -4173,9 +4151,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
     const double                          timefac
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -4389,12 +4364,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgridDiffMatrix(
     const double                  timefac
     )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
 /*----------------------------------------------------------------------*/
 // integration loop for one element
 /*----------------------------------------------------------------------*/
@@ -4803,9 +4772,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
   // in the ALE case add nodal displacements
   if (isale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
 
@@ -4992,12 +4958,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const int                       dofindex
   )
   {
-    // get node coordinates
-    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-    // in the ALE case add nodal displacements
-    if (isale_) xyze_ += edispnp_;
-
     // get material parameters (evaluation at element center)
     if (not mat_gp_) GetMaterialParams(ele);
 
@@ -5085,13 +5045,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
     const bool                      inverting
 )
 {
-  /*------------------------------------------------- set element data */
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -5154,13 +5107,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
     BodyForceReinit(ele,time);
 //end REINHARD
 
-  /*------------------------------------------------- set element data */
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -5195,12 +5141,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
     const Epetra_IntSerialDenseVector& dofids
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -5242,12 +5182,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
     Epetra_SerialDenseVector& sigma
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   GetMaterialParams(ele);
 
   // use one-point Gauss rule to do calculations at the element center
@@ -5285,12 +5219,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
     Epetra_SerialDenseVector&   erhs
 )
 {
-  // get node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // in the ALE case add nodal displacements
-  if (isale_) xyze_ += edispnp_;
-
   // access material parameters
   GetMaterialParams(ele);
 
