@@ -232,26 +232,29 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 		derivtmp(5,0)=-4.0*s;
 		derivtmp(5,1)= 4.0*(1.0-r-2.0*s);
 
-		// constant modification with 1/12 at vertex nodes and PoU
-		val[0] = valtmp[0]+(valtmp[3]+valtmp[5])/12.0;
-		val[1] = valtmp[1]+(valtmp[3]+valtmp[4])/12.0;
-		val[2] = valtmp[2]+(valtmp[4]+valtmp[5])/12.0;
-		val[3] = valtmp[3]*5.0/6.0;
-		val[4] = valtmp[4]*5.0/6.0;
-		val[5] = valtmp[5]*5.0/6.0;
+		// define constant modification factor 1/12
+		double fac = 1.0/12.0;
 
-		deriv(0,0)= derivtmp(0,0)+(derivtmp(3,0)+derivtmp(5,0))/12.0;
-		deriv(0,1)= derivtmp(0,1)+(derivtmp(3,1)+derivtmp(5,1))/12.0;
-		deriv(1,0)= derivtmp(1,0)+(derivtmp(3,0)+derivtmp(4,0))/12.0;
-		deriv(1,1)= derivtmp(1,1)+(derivtmp(3,1)+derivtmp(4,1))/12.0;
-		deriv(2,0)= derivtmp(2,0)+(derivtmp(4,0)+derivtmp(5,0))/12.0;
-		deriv(2,1)= derivtmp(2,1)+(derivtmp(4,1)+derivtmp(5,1))/12.0;
-		deriv(3,0)= derivtmp(3,0)*5.0/6.0;
-		deriv(3,1)= derivtmp(3,1)*5.0/6.0;
-		deriv(4,0)= derivtmp(4,0)*5.0/6.0;
-		deriv(4,1)= derivtmp(4,1)*5.0/6.0;
-		deriv(5,0)= derivtmp(5,0)*5.0/6.0;
-		deriv(5,1)= derivtmp(5,1)*5.0/6.0;
+		// apply constant modification at vertex nodes and PoU
+		val[0] = valtmp[0]+(valtmp[3]+valtmp[5])*fac;
+		val[1] = valtmp[1]+(valtmp[3]+valtmp[4])*fac;
+		val[2] = valtmp[2]+(valtmp[4]+valtmp[5])*fac;
+		val[3] = valtmp[3]*(1.0-2.0*fac);
+		val[4] = valtmp[4]*(1.0-2.0*fac);
+		val[5] = valtmp[5]*(1.0-2.0*fac);
+
+		deriv(0,0)= derivtmp(0,0)+(derivtmp(3,0)+derivtmp(5,0))*fac;
+		deriv(0,1)= derivtmp(0,1)+(derivtmp(3,1)+derivtmp(5,1))*fac;
+		deriv(1,0)= derivtmp(1,0)+(derivtmp(3,0)+derivtmp(4,0))*fac;
+		deriv(1,1)= derivtmp(1,1)+(derivtmp(3,1)+derivtmp(4,1))*fac;
+		deriv(2,0)= derivtmp(2,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
+		deriv(2,1)= derivtmp(2,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
+		deriv(3,0)= derivtmp(3,0)*(1.0-2.0*fac);
+		deriv(3,1)= derivtmp(3,1)*(1.0-2.0*fac);
+		deriv(4,0)= derivtmp(4,0)*(1.0-2.0*fac);
+		deriv(4,1)= derivtmp(4,1)*(1.0-2.0*fac);
+		deriv(5,0)= derivtmp(5,0)*(1.0-2.0*fac);
+		deriv(5,1)= derivtmp(5,1)*(1.0-2.0*fac);
 
 		break;
 	}
@@ -384,32 +387,35 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 		derivtmp(7,0)=-0.5*sm*sp;
 		derivtmp(7,1)=-rm*s;
 
-		// constant modification with 1/5 at vertex nodes and PoU
-		val[0]=valtmp[0]+(valtmp[4]+valtmp[7])/5.0;
-		val[1]=valtmp[1]+(valtmp[4]+valtmp[5])/5.0;
-		val[2]=valtmp[2]+(valtmp[5]+valtmp[6])/5.0;
-		val[3]=valtmp[3]+(valtmp[6]+valtmp[7])/5.0;
-		val[4]=valtmp[4]*3.0/5.0;
-		val[5]=valtmp[5]*3.0/5.0;
-		val[6]=valtmp[6]*3.0/5.0;
-		val[7]=valtmp[7]*3.0/5.0;
+		// define constant modification factor 1/5
+		double fac = 1.0/5.0;
 
-		deriv(0,0)=derivtmp(0,0)+(derivtmp(4,0)+derivtmp(7,0))/5.0;
-		deriv(0,1)=derivtmp(0,1)+(derivtmp(4,1)+derivtmp(7,1))/5.0;
-		deriv(1,0)=derivtmp(1,0)+(derivtmp(4,0)+derivtmp(5,0))/5.0;
-		deriv(1,1)=derivtmp(1,1)+(derivtmp(4,1)+derivtmp(5,1))/5.0;
-		deriv(2,0)=derivtmp(2,0)+(derivtmp(5,0)+derivtmp(6,0))/5.0;
-		deriv(2,1)=derivtmp(2,1)+(derivtmp(5,1)+derivtmp(6,1))/5.0;
-		deriv(3,0)=derivtmp(3,0)+(derivtmp(6,0)+derivtmp(7,0))/5.0;
-		deriv(3,1)=derivtmp(3,1)+(derivtmp(6,1)+derivtmp(7,1))/5.0;
-		deriv(4,0)=derivtmp(4,0)*3.0/5.0;
-		deriv(4,1)=derivtmp(4,1)*3.0/5.0;
-		deriv(5,0)=derivtmp(5,0)*3.0/5.0;
-		deriv(5,1)=derivtmp(5,1)*3.0/5.0;
-		deriv(6,0)=derivtmp(6,0)*3.0/5.0;
-		deriv(6,1)=derivtmp(6,1)*3.0/5.0;
-		deriv(7,0)=derivtmp(7,0)*3.0/5.0;
-		deriv(7,1)=derivtmp(7,1)*3.0/5.0;
+		// apply constant modification at vertex nodes and PoU
+		val[0]=valtmp[0]+(valtmp[4]+valtmp[7])*fac;
+		val[1]=valtmp[1]+(valtmp[4]+valtmp[5])*fac;
+		val[2]=valtmp[2]+(valtmp[5]+valtmp[6])*fac;
+		val[3]=valtmp[3]+(valtmp[6]+valtmp[7])*fac;
+		val[4]=valtmp[4]*(1.0-2.0*fac);
+		val[5]=valtmp[5]*(1.0-2.0*fac);
+		val[6]=valtmp[6]*(1.0-2.0*fac);
+		val[7]=valtmp[7]*(1.0-2.0*fac);
+
+		deriv(0,0)=derivtmp(0,0)+(derivtmp(4,0)+derivtmp(7,0))*fac;
+		deriv(0,1)=derivtmp(0,1)+(derivtmp(4,1)+derivtmp(7,1))*fac;
+		deriv(1,0)=derivtmp(1,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
+		deriv(1,1)=derivtmp(1,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
+		deriv(2,0)=derivtmp(2,0)+(derivtmp(5,0)+derivtmp(6,0))*fac;
+		deriv(2,1)=derivtmp(2,1)+(derivtmp(5,1)+derivtmp(6,1))*fac;
+		deriv(3,0)=derivtmp(3,0)+(derivtmp(6,0)+derivtmp(7,0))*fac;
+		deriv(3,1)=derivtmp(3,1)+(derivtmp(6,1)+derivtmp(7,1))*fac;
+		deriv(4,0)=derivtmp(4,0)*(1.0-2.0*fac);
+		deriv(4,1)=derivtmp(4,1)*(1.0-2.0*fac);
+		deriv(5,0)=derivtmp(5,0)*(1.0-2.0*fac);
+		deriv(5,1)=derivtmp(5,1)*(1.0-2.0*fac);
+		deriv(6,0)=derivtmp(6,0)*(1.0-2.0*fac);
+		deriv(6,1)=derivtmp(6,1)*(1.0-2.0*fac);
+		deriv(7,0)=derivtmp(7,0)*(1.0-2.0*fac);
+		deriv(7,1)=derivtmp(7,1)*(1.0-2.0*fac);
 
 		break;
 	}
