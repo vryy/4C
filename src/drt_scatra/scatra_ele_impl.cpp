@@ -717,9 +717,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // falsely set, on the one hand, and viscosity for unnecessary calculation
     // of subgrid-scale velocity is computed, on the other hand, in
     // GetMaterialParams
-    is_genalpha_    = false;
-    is_incremental_ = true;
-    sgvel_          = false;
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+    sgvel_ = Teuchos::getIntegralValue<int>(stablist,"SUGRVEL");
 
     // calculate matrix and rhs
     InitialTimeDerivative(
