@@ -1,32 +1,42 @@
 #!/bin/sh
 
+# ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
+
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
+BUILD_TYPE="RELEASE"
 
-MPIDIR=/cluster/openmpi-1.1.4
-export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
+INCLUDE_INSTALL_DIR="/lnm/lib/openmpi/gcc/include"
+LIB_INSTALL_DIR="/lnm/lib/openmpi/gcc/lib"
+Trilinos_DIR="/lnm/lib/openmpi/gcc/trilinos"
 
 /lnm/bin/cmake \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
-    -D CMAKE_SYSTEM_PREFIX_PATH:PATH="$MPIDIR" \
-    -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
-    -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
-    -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
+    -D CMAKE_SYSTEM_PREFIX_PATH:PATH="/opt/openmpi/1.4.2/gcc" \
+    -D CMAKE_CXX_COMPILER:FILEPATH="/opt/openmpi/1.4.2/gcc/bin/mpic++" \
+    -D CMAKE_C_COMPILER:FILEPATH="/opt/openmpi/1.4.2/gcc/bin/mpicc" \
+    -D CMAKE_Fortran_COMPILER:FILEPATH="/opt/openmpi/1.4.2/gcc/bin/mpif90" \
     -D CMAKE_CXX_FLAGS:STRING="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_C_FLAGS:STRING="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_C_FLAGS_RELEASE:STRING="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_EXE_LINKER_FLAGS:STRING="-Xlinker -defsym -Xlinker MAIN__=main" \
     -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="-O2" \
-    -D CMAKE_Fortran_COMPILER:FILEPATH="/usr/bin/g77" \
     -D CMAKE_Fortran_FLAGS:STRING="-Wall -DSIXTYFOUR -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-pipe -O5 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -D DEBUG:BOOL=OFF \
+    -D PARALLEL:BOOL=ON \
+    -D COLOROUTPUT:BOOL=OFF \
     -D QHULL:BOOL=OFF \
+    -D D_EXODUS:BOOL=ON \
+    -D D_ARTNET:BOOL=OFF \
+    -D D_RED_AIRWAYS:BOOL=OFF \
     -D D_ALE:BOOL=ON \
     -D D_BEAM2:BOOL=ON \
     -D D_BEAM2R:BOOL=ON \
     -D D_BEAM3:BOOL=ON \
+    -D D_BEAM3II:BOOL=ON \
     -D D_FLUID2:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=ON \
@@ -39,8 +49,14 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D D_TRUSS2:BOOL=ON \
     -D D_TRUSS3:BOOL=ON \
     -D D_WALL1:BOOL=ON \
-    -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/include" \
-    -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib" \
-    -D Trilinos_DIR:FILEPATH="/lnm/lib/Trilinos_dev_10022010/cluster_openmpi" \
+    -D D_ALE_BFLOW:BOOL=ON \
+    -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
+    -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
+    -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
     $EXTRA_ARGS \
     ${BACI_HOME}
+
+#    -D BLAS_LIBRARIES:STRING="/lnm/lib/fc8/openmpi/lib/libgoto.a" \
+
+#cd $BACI_HOME
+#if [ -f .cproject ]; then ./adapt_cproject.py `basename $0`; fi

@@ -6,12 +6,16 @@ BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 BUILD_TYPE="DEBUG"
 
+MPIDIR=/usr
 INCLUDE_INSTALL_DIR="/lnm/lib/fc8/openmpi/include"
 LIB_INSTALL_DIR="/lnm/lib/fc8/openmpi/lib"
 Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
 
 /lnm/programs/cmake-2.8.0/bin/cmake \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
+    -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
+    -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
+    -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
     -D CMAKE_CXX_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-O3" \
     -D CMAKE_C_FLAGS:STRING="-Wall -march=i686 -Wconversion -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \

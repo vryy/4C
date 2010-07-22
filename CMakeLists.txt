@@ -92,11 +92,6 @@ find_package(Trilinos REQUIRED)
 #SET(Boost_USE_MULTITHREAD OFF) 
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
 
-if (MPI_FOUND)
-  SET(CMAKE_C_COMPILER mpicc)
-  SET(CMAKE_CXX_COMPILER mpic++)
-endif(MPI_FOUND)
-
 # trilinos libraries
 # Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
