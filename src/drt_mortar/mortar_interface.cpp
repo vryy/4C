@@ -174,7 +174,6 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 				printf("   |     | Master %8d |              | Master %8d |              |\n",m_nodes[npid],m_elements[npid]);
 				printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
 			}
-			cout << endl;
 		}
 	}
 

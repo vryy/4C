@@ -319,7 +319,7 @@ discret_(discret)
   // print parameter list to screen
   if (Comm().MyPID()==0)
   {
-  	cout << "given parameters in list '" << GetStrategy().Params().name() << "':\n";
+  	cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
   	cout << GetStrategy().Params() << endl;
   }
 
