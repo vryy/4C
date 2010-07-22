@@ -105,6 +105,10 @@ void CONTACT::CoLagrangeStrategy::Initialize()
 void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
                                                    RCP<Epetra_Vector>& feff)
 {
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact()) return;
+
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
   
@@ -851,6 +855,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kteff,
                                                   RCP<Epetra_Vector>& feff)
 {
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact()) return;
+
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
 
@@ -2518,6 +2526,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 {
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact()) return;
+
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
