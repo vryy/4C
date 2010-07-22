@@ -526,6 +526,21 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {
+  // get node coordinates (we have a nsd_+1 dimensional computational domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+
+  // get additional state vector for ALE case: grid displacement
+  isale_ = params.get<bool>("isale");
+  if (isale_)
+  {
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
+    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+    // add nodal displacements to point coordinates
+    xyze_ += edispnp_;
+  }
+  else edispnp_.Clear();
+
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
