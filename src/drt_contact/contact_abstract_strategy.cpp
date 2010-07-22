@@ -362,6 +362,9 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 
   // store nodal entries from D and M to old ones
   StoreToOld(MORTAR::StrategyBase::dm);
+  
+  // evaluate relative movement
+  EvaluateRelMov();
 
 #else  
   
@@ -399,7 +402,10 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 
   // store nodal entries from D and M to old ones
   StoreToOld(MORTAR::StrategyBase::dm);
- 
+
+  // evaluate relative movement
+  EvaluateRelMov();
+  
 #endif
   
   return;
