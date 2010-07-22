@@ -120,6 +120,9 @@ dualquadslave3d_(false)
   gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
 
+  // initialize flag for global contact status
+  if (gactivenodes_->NumGlobalElements())
+    IsInContact()=true;
   
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
