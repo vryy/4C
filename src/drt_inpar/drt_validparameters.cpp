@@ -1204,6 +1204,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //Edge length of cube for periodic boundary conditions problem
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
+  // upper bound of the interval within which uniformly distributed random numbers are generated
+  DoubleParameter("MaxRandValue",0.0,"Upper bound of the interval within which uniformly distributed random numbers are generated (usually equal to PeriodLength)",&statmech);
   //equilibrium angle between crosslinker axis and filament at each binding site
   DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
   //equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to
