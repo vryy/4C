@@ -1093,6 +1093,10 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
     double& currresidual,
     double& electrodesurface)
 {
+  // safety check: is there already a ConditionID?
+  const vector<int>* CondIDVec  = condition->Get<vector<int> >("ConditionID");
+  if (not CondIDVec) dserror("Condition has not yet a ConditionID");
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
