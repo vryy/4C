@@ -11,7 +11,6 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D CMAKE_SYSTEM_PREFIX_PATH:PATH="$MPIDIR" \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
-    -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
     -D CMAKE_CXX_FLAGS:STRING="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_C_FLAGS:STRING="-Wall -DSIXTYFOUR -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
@@ -42,6 +41,9 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D INCLUDE_INSTALL_DIR:FILEPATH="/lnm/include" \
     -D LIB_INSTALL_DIR:FILEPATH="/lnm/lib" \
     -D Trilinos_DIR:FILEPATH="/lnm/lib/Trilinos_dev_10022010/cluster_openmpi" \
-    -D BLAS_LIBRARIES:STRING="libacml_goto.a" \
+    -D BLAS_LIBRARIES:STRING="/lnm/lib/libacml_goto.a" \
+    -D LAPACK_LIBRARIES:STRING="/lnm/lib/libacml_goto.a" \
     $EXTRA_ARGS \
     ${BACI_HOME}
+
+#    -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
