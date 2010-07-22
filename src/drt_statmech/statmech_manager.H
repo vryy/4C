@@ -121,6 +121,11 @@ public:
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
 
+  /*! \brief initializes array with crosslinker positions
+   *  \param crslnkpositions (in) pointer to an array which is to be filled with random values
+   *  \param length          (in) indicates the length of the array
+   */
+  void CrosslinkerPosInit(std::vector<std::vector<double> >* crslnkpositions);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;

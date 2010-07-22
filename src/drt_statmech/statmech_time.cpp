@@ -127,6 +127,17 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
+  /* Initialization of N_CROSSLINK crosslinker molecule representations. As long as the molecules do not act as link
+   * between two filaments, their position is calculated only hypothetically. Only, when a crosslink is to be established,
+   * an actual element is added. Here, the molecules' initial positions are determined (uniformly distributed).
+   * Furthermore, crosslinkerbond_ is initialized. All of this is supposed to happen on Proc 0 only.
+   * */
+  if(discret_.Comm().MyPID()==0)
+  {
+  	statmechmanager_->CrosslinkerPosInit(&crosslinkerpositions_);
+  	crosslinkerbond_.assign((int)statmechmanager_->statmechparams_.get("N_crosslink",0.0), std::vector<int>(3,-1) );
+  }
+
   return;
 } // StatMechTime::StatMechTime
 

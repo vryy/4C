@@ -2799,68 +2799,71 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
    *    homogenous isotropic network]
    */
 
-  LINALG::SerialDenseMatrix ncross((int)filamentnumbers.size(),(int)filamentnumbers.size(), true);
-  // loop over all possible filament pairs and their nodes (wow!)
-  // filament i
-  for(int i=0; i<(int)filamentnumbers.size()-1; i++)
-  {
-  	// filament j
-  	for(int j=i+1; j<(int)filamentnumbers.size(); j++ )
-  	{
-    	// number of crosslinkers of filament pair P(i,j)
-    	int n_ij = 0;
-  		// node k of filament i
-  		for(int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
-  		{
-  			// get node k of filament i if available on proc, else: next node in condition
-  			int gidk = filamentnumbers[i]->Nodes()->at(k);
-  			if( discret_.HaveGlobalNode(gidk))
-  			{
-  				DRT::Node* nodei = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
-    			// node l of filament j
-    			for(int l=0; l<(int)filamentnumbers[j]->Nodes()->size(); l++)
-    			{
-    				// get node l of filament j if available on proc, else: next node in condition
-    				int gidl = filamentnumbers[j]->Nodes()->at(l);
-    				if( discret_.HaveGlobalNode(gidl))
-    				{
-    					DRT::Node* nodej = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
-      				// identify any crosslinkers with nodes k and l
-      				DRT::Element** adjelementk = nodei->Elements();
-      				DRT::Element** adjelementl = nodej->Elements();
+  //if(discret_.Comm().MyPID()==0)
+  //{
+		LINALG::SerialDenseMatrix ncross((int)filamentnumbers.size(),(int)filamentnumbers.size(), true);
+		// loop over all possible filament pairs and their nodes (wow!)
+		// filament i
+		for(int i=0; i<(int)filamentnumbers.size()-1; i++)
+		{
+			// filament j
+			for(int j=i+1; j<(int)filamentnumbers.size(); j++ )
+			{
+				// number of crosslinkers of filament pair P(i,j)
+				int n_ij = 0;
+				// node k of filament i
+				for(int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
+				{
+					// get node k of filament i if available on proc, else: next node in condition
+					if( discret_.HaveGlobalNode(filamentnumbers[i]->Nodes()->at(k)))
+					{
+						//cout<<"Node_k="<<k<<",i="<<i<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
+						DRT::Node* node_ki = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
+						// node l of filament j
+						for(int l=0; l<(int)filamentnumbers[j]->Nodes()->size(); l++)
+						{
+							// get node l of filament j if available on proc, else: next node in condition
+							if( discret_.HaveGlobalNode(filamentnumbers[j]->Nodes()->at(l)))
+							{
+								//cout<<"Node_l="<<l<<",j="<<j<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
+								DRT::Node* node_lj = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
+								// identify any crosslinkers with nodes k and l
+								DRT::Element** adjelement_k = node_ki->Elements();
+								DRT::Element** adjelement_l = node_lj->Elements();
 
-      				// loop over Elements adjacent to nodes k and l and increment n_ij if the element
-      				// GIDs of element m and n match, i.e. the two filament share a crosslinker
-      				for(int m=0; m<nodei->NumElement(); m++)
-      				{
-      					if(adjelementk[m]->Id() > basisnodes_)
-    							for(int n=0; n<nodej->NumElement(); n++)
-    								if(adjelementk[m]->Id() == adjelementl[n]->Id())
-    										n_ij++;
-      				}
-    				}
-    			}
-  			}
-  		}
-  		// store the number of crosslinker of P(i,j) at the respective position in the matrix
-  		ncross(i,j) = n_ij;
-  	}
-  }
+								// loop over Elements adjacent to nodes k and l and increment n_ij if the element
+								// GIDs of element m and n match, i.e. the two filament share a crosslinker
+								for(int m=0; m<node_ki->NumElement(); m++)
+								{
+									if(adjelement_k[m]->Id() > basisnodes_)
+										for(int n=0; n<node_lj->NumElement(); n++)
+											if(adjelement_k[m]->Id() == adjelement_l[n]->Id())
+												n_ij++;
+								}
+							}
+						}
+					}
+				}
+				// store the number of crosslinker of P(i,j) at the respective position in the matrix
+				ncross(i,j) = n_ij;
+			}
+		}
 
-  // write the matrix ncross into a file via stream
-  fp = fopen(filename2.str().c_str(), "w");
-  std::stringstream crosslinkercount;
+		// write the matrix ncross into a file via stream
+		fp = fopen(filename2.str().c_str(), "w");
+		std::stringstream crosslinkercount;
 
-  for(int i=0; i<ncross.M(); i++)
-  {
-  	for(int j=0; j<ncross.N(); j++)
-  		crosslinkercount<<ncross(i,j)<<"  ";
-  	crosslinkercount<<endl;
-  }
+		for(int i=0; i<ncross.M(); i++)
+		{
+			for(int j=0; j<ncross.N(); j++)
+				crosslinkercount<<ncross(i,j)<<"  ";
+			crosslinkercount<<endl;
+		}
 
-  //write content into file and close it
-	fprintf(fp,crosslinkercount.str().c_str());
-	fclose(fp);
+		//write content into file and close it
+		fprintf(fp,crosslinkercount.str().c_str());
+		fclose(fp);
+  //}
 }// StatMechManager:StructPolymorphOutput()
 
 /*----------------------------------------------------------------------*
@@ -2978,4 +2981,27 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 	cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
 	cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
 }
+
+/*----------------------------------------------------------------------*
+ | Initialize crosslinker positions  			        (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::CrosslinkerPosInit(std::vector<std::vector<double> >* crslnkpositions)
+{
+	// generate random numbers for each crosslinker and its respective components E [0.0; PeriodLength]
+	ranlib::UniformClosed<double> UniformGen;
+
+	double upperbound = 0.0;
+	// handling both cases: with and without periodic boundary conditions
+	if(statmechparams_.get<double>("PeriodLength", 0.0)>0.0)
+		upperbound = statmechparams_.get<double>("PeriodLength", 0.0);
+	else
+		upperbound = statmechparams_.get<double>("MaxRandValue", 0.0);
+
+	// set vector length and insert random values
+	crslnkpositions->assign((int)statmechparams_.get<double>("N_crosslink", 0.0), std::vector<double>() );
+	for(int i=0; i<(int)crslnkpositions->size(); i++)
+		for(int j=0; j<3; j++)
+			crslnkpositions->at(i).push_back(upperbound*UniformGen.random() );
+}
+
 #endif  // #ifdef CCADISCRET
