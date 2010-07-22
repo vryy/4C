@@ -2,6 +2,8 @@
 
 # ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
 
+# export LD_LIBRARY_PATH=/opt/openmpi/1.4.2/gcc/lib
+
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
@@ -25,6 +27,9 @@ Trilinos_DIR="/lnm/lib/openmpi/gcc/trilinos"
     -D CMAKE_Fortran_FLAGS:STRING="-Wall -DSIXTYFOUR -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-pipe -O5 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -D BLA_VENDOR:STRING="ACML" \
+    -D BLAS_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
+    -D LAPACK_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
     -D DEBUG:BOOL=OFF \
     -D PARALLEL:BOOL=ON \
     -D COLOROUTPUT:BOOL=OFF \
