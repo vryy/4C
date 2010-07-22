@@ -81,6 +81,9 @@ private:
   /// conditions that define the lung volume constraints
   std::vector<DRT::Condition*> constrcond_;
 
+  /// conditions that define the structure ale coupling at the outlets
+  std::vector<DRT::Condition*> asicond_;
+
   /// map containing all dofs related to volume coupling (i.e. dofs of the
   /// enclosing boundary)
   Teuchos::RCP<const Epetra_Map> lungconstraintmap_;

@@ -19,11 +19,13 @@ extern struct _GENPROB     genprob;
 ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
 : StructureWrapper(stru)
 {
+  //----------------------------------------------------------------------
   // make sure
   if (structure_ == null)
     dserror("Failed to create the underlying structural adapter");
 
-  // get lung fluid-structure volume constraints
+  //----------------------------------------------------------------------
+  // get lung fluid-structure volume and asi constraints
   std::vector<DRT::Condition*> temp;
   Discretization()->GetCondition("StructFluidSurfCoupling",temp);
   for (unsigned i=0; i<temp.size(); ++i)
@@ -34,9 +36,86 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   }
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
 
+  Discretization()->GetCondition("StructAleCoupling",temp);
+  for (unsigned i=0; i<temp.size(); ++i)
+  {
+    DRT::Condition& cond = *(temp[i]);
+    if (*(cond.Get<string>("field")) == "structure")
+      asicond_.push_back(temp[i]);
+  }
+  if (asicond_.size() == 0) dserror("No structure-ale coupling constraints found for lung fsi");
+
+  //----------------------------------------------------------------------
+  // consistency check: for each condition, all dofs in the ASI coupling need
+  // to be part of the volume coupling, too
+  std::map<int,std::vector<int> > constrdofs;
+  for (unsigned int i = 0; i < constrcond_.size(); ++i)
+  {
+    DRT::Condition& actconstrcond = *(constrcond_[i]);
+    int actcondID = actconstrcond.GetInt("coupling id");
+    const std::vector<int>* actconstrnodeIDs = actconstrcond.Nodes();
+    std::vector<int> actconstrdofs;
+    for (unsigned int j = 0; j < actconstrnodeIDs->size(); ++j)
+    {
+      int gid = (*actconstrnodeIDs)[j];
+      if (Discretization()->HaveGlobalNode(gid))
+      {
+        DRT::Node* actnode = Discretization()->gNode(gid);
+        std::vector<int> actdofs = Discretization()->Dof(actnode);
+        for (unsigned k = 0; k < actdofs.size(); ++k)
+          actconstrdofs.push_back(actdofs[k]);
+      }
+    }
+    constrdofs[actcondID] = actconstrdofs;
+  }
+  std::map<int,std::vector<int> > asidofs;
+  for (unsigned int i = 0; i < asicond_.size(); ++i)
+  {
+    DRT::Condition& actasicond = *(asicond_[i]);
+    int actcondID = actasicond.GetInt("coupling id");
+    const std::vector<int>* actasinodeIDs = actasicond.Nodes();
+    std::vector<int> actasidofs;
+    for (unsigned int j = 0; j < actasinodeIDs->size(); ++j)
+    {
+      int gid = (*actasinodeIDs)[j];
+      if (Discretization()->HaveGlobalNode(gid))
+      {
+        DRT::Node* actnode = Discretization()->gNode(gid);
+        std::vector<int> actdofs = Discretization()->Dof(actnode);
+        for (unsigned k = 0; k < actdofs.size(); ++k)
+          actasidofs.push_back(actdofs[k]);
+      }
+    }
+    asidofs[actcondID] = actasidofs;
+  }
+  map<int,std::vector<int> >::iterator it;
+  for (it = constrdofs.begin(); it != constrdofs.end(); ++it)
+  {
+    int condID = it->first;
+    std::vector<int> actconstrdofs = it->second;
+    std::vector<int> actasidofs = asidofs[condID];
+    bool found = false;
+
+    for (unsigned int i = 0; i < actasidofs.size(); ++i)
+    {
+      for (unsigned int j = 0; j < actconstrdofs.size(); ++j)
+      {
+        if (actconstrdofs[j] == actasidofs[i])
+        {
+          found = true;
+          break;
+        }
+      }
+      if (found == false)
+        dserror("dof of asi coupling is not contained in enclosing boundary");
+    }
+  }
+
+  //----------------------------------------------------------------------
   // build mapextractor for fsi <-> full map
   fsiinterface_ = LINALG::MapExtractor(*Interface().FullMap(), Interface().FSICondMap());
 
+  //----------------------------------------------------------------------
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
   vector<int> dofmapvec;
   std::vector<int> nodes;
