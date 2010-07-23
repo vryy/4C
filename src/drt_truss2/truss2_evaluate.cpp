@@ -503,7 +503,7 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_engstr( vector<double>& disp,
 
     for (int i=0; i<4; ++i)
       for (int j=0; j<4; ++j)
-        (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);  
+        (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
  
   }
   
