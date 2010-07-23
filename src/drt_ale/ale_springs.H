@@ -28,7 +28,6 @@ namespace ALE {
  */
 class AleSprings : public Ale
 {
-  friend class AleResultTest;
 
 public:
 

@@ -40,7 +40,6 @@ namespace ALE {
  */
 class AleSpringsFixedRef : public Ale
 {
-  friend class AleResultTest;
 
 public:
 
