@@ -148,8 +148,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   ParameterList& mllist = solveparams.sublist("ML Parameters");
-  RCP<vector<double> > ns =
-             mllist.get<RCP<vector<double> > >("nullspace",null);
+  RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace",null);
   if (ns != null && !recompute) return;
 
   // do the usual tests
