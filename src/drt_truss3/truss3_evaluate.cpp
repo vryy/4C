@@ -125,7 +125,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not by means of a numerically approximated stiffness matrix
       //The code block will work for all higher order elements.
-      //if(Id() == 3) //limiting the following tests to certain element numbers
+      if(Id() == 3) //limiting the following tests to certain element numbers
       {
         //assuming the same number of DOF for all nodes
         int numdof = NumDofPerNode(*(Nodes()[0]));
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
         }
 
       } //end of section in which numerical approximation for stiffness matrix is computed
-      */
+       */
 
     }
     break;
@@ -326,8 +326,11 @@ template<int nnode, int ndim, int dof> //number of nodes, number of dimensions o
 int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
+
   //factor to regulate artificial ptc stiffness;
-  double ptcfactor = 0.0;
+  double ptcfactor = 0.5;
+
+  //rotational ptc damping
 
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -349,6 +352,16 @@ int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
   elemat1(3,0) -= artgam;
   elemat1(4,1) -= artgam;
   elemat1(5,2) -= artgam;
+
+
+
+  //diagonal ptc
+  /*
+  //each node gets a block diagonal damping term; the Lobatto integration weight is 0.5 for 2-noded elements
+  for(int k=0; k<6; k++)
+    elemat1(k,k) += params.get<double>("dti",0.0)*ptcfactor;
+  */
+
 
 
   return 0;
