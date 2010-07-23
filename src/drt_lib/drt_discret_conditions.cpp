@@ -529,12 +529,12 @@ void DRT::Discretization::BuildSurfacesinCondition(
 {
   // this condition is special since an associated volume condition also needs
   // to be considered
+  std::set<int> VolEleIDs;
   if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
   {
     if (*(cond->Get<string>("field")) == "structure")
     {
-      BuildSurfacesinStructFluidSurfCoupling(cond);
-      return;
+      FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
     }
   }
 
@@ -577,8 +577,13 @@ void DRT::Discretization::BuildSurfacesinCondition(
     DRT::Node*     actnode  = fool->second;
     // loop all elements attached to actnode
     DRT::Element** elements = actnode->Elements();
+    bool foundvolele = false;
     for (int i=0; i<actnode->NumElement(); ++i)
     {
+      if (VolEleIDs.size())
+        if (VolEleIDs.find(elements[i]->Id()) == VolEleIDs.end())
+          continue;
+
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
@@ -592,6 +597,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
         DRT::Node** nodespersurf = actsurf->Nodes();
         if (!nodespersurf) dserror("Surface returned no nodes");
         for (int k=0; k<nnodepersurf; ++k)
+        {
           if (nodespersurf[k]==actnode)
           {
             // surface is attached to actnode
@@ -609,23 +615,28 @@ void DRT::Discretization::BuildSurfacesinCondition(
             // if all nodes are in our cloud, add surface
             if (allin)
             {
-                vector<int> nodes( actsurf->NumNode() );
-                transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
-                           nodes.begin(), mem_fun( &DRT::Node::Id ) );
-                sort( nodes.begin(), nodes.end() );
+              vector<int> nodes( actsurf->NumNode() );
+              transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
+                         nodes.begin(), mem_fun( &DRT::Node::Id ) );
+              sort( nodes.begin(), nodes.end() );
 
-                if ( surfmap.find( nodes ) == surfmap.end() )
-                {
-                    RefCountPtr<DRT::Element> surf = rcp( actsurf->Clone() );
-                    // Set owning process of surface to node with smallest gid.
-                    surf->SetOwner( gNode( nodes[0] )->Owner() );
-                    surfmap[nodes] = surf;
-                }
+              if ( surfmap.find( nodes ) == surfmap.end() )
+              {
+                RefCountPtr<DRT::Element> surf = rcp( actsurf->Clone() );
+                // Set owning process of surface to node with smallest gid.
+                surf->SetOwner( gNode( nodes[0] )->Owner() );
+                surfmap[nodes] = surf;
+              }
+
+              foundvolele = true;
             }
             break;
           }
+        }
       }
     }
+    if (VolEleIDs.size() and foundvolele == false)
+      dserror("special surface condition: missing associated volume element");
   }
 
   // Surfaces be added to the condition: (line_id) -> (surface).
@@ -643,52 +654,47 @@ void DRT::Discretization::BuildVolumesinCondition(
                                         const string name,
                                         RefCountPtr<DRT::Condition> cond)
 {
-  // no geometry needs to be built for StructFluidVolCoupling, this is just an
-  // auxiliary condition for StructFluidSurfCoupling!
-  if (cond->Type() != DRT::Condition::StructFluidVolCoupling)
+  // get ptrs to all node ids that have this condition
+  const vector<int>* nodeids = cond->Nodes();
+  if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+
+  // extract colnodes on this proc from condition
+  const Epetra_Map* colmap = NodeColMap();
+  std::set<int> mynodes;
+
+  std::remove_copy_if(nodeids->begin(), nodeids->end(),
+                      std::inserter(mynodes, mynodes.begin()),
+                      std::not1(DRT::UTILS::MyGID(colmap)));
+
+  // this is the map we want to construct
+  std::map<int,RCP<DRT::Element> > geom;
+
+  for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
+       actele!=element_.end();
+       ++actele)
   {
-    // get ptrs to all node ids that have this condition
-    const vector<int>* nodeids = cond->Nodes();
-    if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+    std::vector<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
 
-    // extract colnodes on this proc from condition
-    const Epetra_Map* colmap = NodeColMap();
-    std::set<int> mynodes;
-
-    std::remove_copy_if(nodeids->begin(), nodeids->end(),
-                        std::inserter(mynodes, mynodes.begin()),
-                        std::not1(DRT::UTILS::MyGID(colmap)));
-
-    // this is the map we want to construct
-    std::map<int,RCP<DRT::Element> > geom;
-
-    for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
-         actele!=element_.end();
-         ++actele)
+    // check whether all node ids of the element are nodes belonging
+    // to the condition and stored on this proc
+    bool allin=true;
+    for(std::vector<int>::iterator myid=myelenodes.begin();myid!=myelenodes.end();++myid)
     {
-      std::vector<int> myelenodes(actele->second->NodeIds(),actele->second->NodeIds()+actele->second->NumNode());
-
-      // check whether all node ids of the element are nodes belonging
-      // to the condition and stored on this proc
-      bool allin=true;
-      for(std::vector<int>::iterator myid=myelenodes.begin();myid!=myelenodes.end();++myid)
+      if(mynodes.find(*myid)==mynodes.end())
       {
-        if(mynodes.find(*myid)==mynodes.end())
-        {
-          // myid is not in the condition
-          allin=false;
-          break;
-        }
-      }
-
-      if(allin)
-      {
-        geom[actele->first] = actele->second;
+        // myid is not in the condition
+        allin=false;
+        break;
       }
     }
 
-    cond->AddGeometry(geom);
+    if(allin)
+    {
+      geom[actele->first] = actele->second;
+    }
   }
+
+  cond->AddGeometry(geom);
 
   return;
 } // DRT::Discretization::BuildVolumesinCondition
@@ -697,60 +703,30 @@ void DRT::Discretization::BuildVolumesinCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT::Condition> cond)
+void DRT::Discretization::FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name)
 {
-  int counter = 0;
-
   // determine constraint number
-  int constrid = cond->GetInt("coupling id");
+  int condID = cond->GetInt("coupling id");
 
-  // map of surfaces in this cloud: (node_ids) -> (surface)
-  map< vector<int>, RefCountPtr<DRT::Element> > surfmap;
+  std::vector<DRT::Condition*> volcond;
+  GetCondition(name,volcond);
 
-  // get ptrs to all node ids that have this surface condition
-  const vector<int>* surfnodeids = cond->Nodes();
-  if (!surfnodeids) dserror("Cannot find array 'Node Ids' in condition");
-
-  // number of global nodes in this cloud
-  const int surfngnode = surfnodeids->size();
-
-  // ptrs to my column nodes of those
-  map<int,DRT::Node*> surfcolnodes;
-  for (int i=0; i<surfngnode; ++i)
+  for (unsigned int i = 0; i < volcond.size(); ++i)
   {
-    if (NodeColMap()->MyGID((*surfnodeids)[i]))
+    DRT::Condition& actvolcond = *(volcond[i]);
+
+    if (actvolcond.GetInt("coupling id") == condID)
     {
-      DRT::Node* actsurfnode = gNode((*surfnodeids)[i]);
-      if (!actsurfnode) dserror("Cannot find global node");
-      surfcolnodes[actsurfnode->Id()] = actsurfnode;
-    }
-  }
-
-  std::vector<DRT::Condition*> volconstrcond;
-  GetCondition("StructFluidVolCoupling",volconstrcond);
-
-  // in the beginning, we assume that no associated volume condition exists
-  int found = 0;
-
-  for (unsigned int i = 0; i < volconstrcond.size(); ++i)
-  {
-    DRT::Condition& volcond = *(volconstrcond[i]);
-
-    if (volcond.GetInt("coupling id") == constrid)
-    {
-      // the associated volume condition exists
-      found = 1;
-
-      // get ptrs to all node ids that have the volume condition
-      const vector<int>* volcondnodeids = volcond.Nodes();
-      if (!volcondnodeids) dserror("Cannot find array 'Node Ids' in condition");
+      // get ptrs to all node ids that have this condition
+      const vector<int>* nodeids = actvolcond.Nodes();
+      if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
       // extract colnodes on this proc from condition
       const Epetra_Map* colmap = NodeColMap();
-      std::set<int> myvolcondnodes;
+      std::set<int> mynodes;
 
-      std::remove_copy_if(volcondnodeids->begin(), volcondnodeids->end(),
-                          std::inserter(myvolcondnodes, myvolcondnodes.begin()),
+      std::remove_copy_if(nodeids->begin(), nodeids->end(),
+                          std::inserter(mynodes, mynodes.begin()),
                           std::not1(DRT::UTILS::MyGID(colmap)));
 
       for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
@@ -762,90 +738,23 @@ void DRT::Discretization::BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT
         // check whether all node ids of the element are nodes belonging
         // to the condition and stored on this proc
         bool allin=true;
-        bool containssurfnode=false;
         for(std::vector<int>::iterator myid=myelenodes.begin();myid!=myelenodes.end();++myid)
         {
-          if(myvolcondnodes.find(*myid)==myvolcondnodes.end())
+          if(mynodes.find(*myid)==mynodes.end())
           {
             // myid is not in the condition
             allin=false;
             break;
           }
-          else
-          {
-            // this is a preselection of volume elements -> later on, only
-            // volume elements with at least one node located at the surface
-            // need to be considered. this saves expensive looping over all
-            // element surfaces for interior elements
-            map<int,DRT::Node*>::iterator test = surfcolnodes.find(*myid);
-            if (test!=surfcolnodes.end())
-            {
-              containssurfnode=true;
-              continue;
-            }
-          }
         }
 
-        // check whether one or more surfaces of this element (which is part of the associated volume
-        // condition) are part of the enclosing surface (surface condition)
-        if (allin and containssurfnode)
+        if(allin)
         {
-          // loop all surfaces of this element
-          const int numsurfs = actele->second->NumSurface();
-          if (!numsurfs) continue;
-          vector<RCP<DRT::Element> >  surfs = actele->second->Surfaces();
-          if (surfs.size()==0) dserror("Element does not return any surfaces");
-          for (int j=0; j<numsurfs; ++j)
-          {
-            RCP<DRT::Element> actsurf = surfs[j];
-            // find surfs attached to actnode
-            const int nnodepersurf = actsurf->NumNode();
-            DRT::Node** nodespersurf = actsurf->Nodes();
-            if (!nodespersurf) dserror("Surface returned no nodes");
-            bool surfallin = true;
-
-            for (int k=0; k<nnodepersurf; ++k)
-            {
-              map<int,DRT::Node*>::iterator test = surfcolnodes.find(nodespersurf[k]->Id());
-              if (test==surfcolnodes.end())
-              {
-                surfallin = false;
-                continue;
-              }
-            }
-
-              // if all nodes are in our cloud, add surface
-            if (surfallin)
-            {
-              vector<int> nodes( actsurf->NumNode() );
-              transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
-                         nodes.begin(), mem_fun( &DRT::Node::Id ) );
-              sort( nodes.begin(), nodes.end() );
-
-              if ( surfmap.find( nodes ) == surfmap.end() )
-              {
-                RefCountPtr<DRT::Element> surf = rcp( actsurf->Clone() );
-                // Set owning process of surface to node with smallest gid.
-                surf->SetOwner( gNode( nodes[0] )->Owner() );
-                surfmap[nodes] = surf;
-                counter++;
-              }
-            }
-          }
+          VolEleIDs.insert(actele->second->Id());
         }
       }
     }
   }
-
-  if (found==0)
-    dserror("missing associated volume condition!");
-
-  // Surfaces to be added to the condition: (line_id) -> (surface).
-  map< int, RefCountPtr<DRT::Element> > finalsurfs;
-
-  AssignGlobalIDs( Comm(), surfmap, finalsurfs );
-  cond->AddGeometry( finalsurfs );
 }
-
 
 #endif  // #ifdef CCADISCRET

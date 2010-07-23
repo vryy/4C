@@ -32,7 +32,9 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   {
     DRT::Condition& cond = *(temp[i]);
     if (*(cond.Get<string>("field")) == "structure")
+    {
       constrcond_.push_back(temp[i]);
+    }
   }
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
 
@@ -48,67 +50,56 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   //----------------------------------------------------------------------
   // consistency check: for each condition, all dofs in the ASI coupling need
   // to be part of the volume coupling, too
-  std::map<int,std::vector<int> > constrdofs;
+
+  std::map<int,std::set<int> > AllConstrDofMap;
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
-    DRT::Condition& actconstrcond = *(constrcond_[i]);
-    int actcondID = actconstrcond.GetInt("coupling id");
-    const std::vector<int>* actconstrnodeIDs = actconstrcond.Nodes();
-    std::vector<int> actconstrdofs;
-    for (unsigned int j = 0; j < actconstrnodeIDs->size(); ++j)
+    DRT::Condition& constrcond = *(constrcond_[i]);
+    int condID = constrcond.GetInt("coupling id");
+    const std::vector<int>* constrnodeIDs = constrcond.Nodes();
+    std::set<int> & constrdofs = AllConstrDofMap[condID];
+    for (unsigned int j = 0; j < constrnodeIDs->size(); ++j)
     {
-      int gid = (*actconstrnodeIDs)[j];
+      int gid = (*constrnodeIDs)[j];
       if (Discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* actnode = Discretization()->gNode(gid);
-        std::vector<int> actdofs = Discretization()->Dof(actnode);
-        for (unsigned k = 0; k < actdofs.size(); ++k)
-          actconstrdofs.push_back(actdofs[k]);
+        DRT::Node* node = Discretization()->gNode(gid);
+        std::vector<int> dofs = Discretization()->Dof(node);
+        std::copy( dofs.begin(), dofs.end(),
+                   std::inserter( constrdofs, constrdofs.begin() ) );
       }
     }
-    constrdofs[actcondID] = actconstrdofs;
   }
-  std::map<int,std::vector<int> > asidofs;
+  std::map<int,std::set<int> > AllAsiDofMap;
   for (unsigned int i = 0; i < asicond_.size(); ++i)
   {
-    DRT::Condition& actasicond = *(asicond_[i]);
-    int actcondID = actasicond.GetInt("coupling id");
-    const std::vector<int>* actasinodeIDs = actasicond.Nodes();
-    std::vector<int> actasidofs;
-    for (unsigned int j = 0; j < actasinodeIDs->size(); ++j)
+    DRT::Condition& asicond = *(asicond_[i]);
+    int asicondID = asicond.GetInt("coupling id");
+    std::set<int>& asidofs = AllAsiDofMap[asicondID];
+    const std::vector<int>* asinodeIDs = asicond.Nodes();
+    for (unsigned int j = 0; j < asinodeIDs->size(); ++j)
     {
-      int gid = (*actasinodeIDs)[j];
+      int gid = (*asinodeIDs)[j];
       if (Discretization()->HaveGlobalNode(gid))
       {
-        DRT::Node* actnode = Discretization()->gNode(gid);
-        std::vector<int> actdofs = Discretization()->Dof(actnode);
-        for (unsigned k = 0; k < actdofs.size(); ++k)
-          actasidofs.push_back(actdofs[k]);
+        DRT::Node* node = Discretization()->gNode(gid);
+        std::vector<int> dofs = Discretization()->Dof(node);
+        std::copy( dofs.begin(), dofs.end(),
+                   std::inserter( asidofs, asidofs.begin() ) );
       }
     }
-    asidofs[actcondID] = actasidofs;
   }
-  map<int,std::vector<int> >::iterator it;
-  for (it = constrdofs.begin(); it != constrdofs.end(); ++it)
+  for (std::map<int,std::set<int> >::const_iterator it=AllAsiDofMap.begin(); it!=AllAsiDofMap.end(); ++it)
   {
     int condID = it->first;
-    std::vector<int> actconstrdofs = it->second;
-    std::vector<int> actasidofs = asidofs[condID];
-    bool found = false;
-
-    for (unsigned int i = 0; i < actasidofs.size(); ++i)
-    {
-      for (unsigned int j = 0; j < actconstrdofs.size(); ++j)
-      {
-        if (actconstrdofs[j] == actasidofs[i])
-        {
-          found = true;
-          break;
-        }
-      }
-      if (found == false)
-        dserror("dof of asi coupling is not contained in enclosing boundary");
-    }
+    const std::set<int> & asidofs = it->second;
+    const std::set<int> & constrdofs = AllConstrDofMap[condID];
+    std::set<int> intersection;
+    std::set_intersection(asidofs.begin(), asidofs.end(),
+                          constrdofs.begin(), constrdofs.end(),
+                          std::inserter(intersection,intersection.begin()));
+    if (intersection.size()!=asidofs.size())
+      dserror("missing ASI dofs or buggy assignment of ASI and volume coupling condition IDs");
   }
 
   //----------------------------------------------------------------------
@@ -388,6 +379,117 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   ConstrStructMatrix.UnComplete();
   ConstrStructMatrix.Add(StructMatrix->Matrix(0,1), true, 1.0, 0.0);
   StructMatrix->Complete();
+
+#if 0 // Debug
+  //############################################################################################
+  // test
+  LINALG::SparseMatrix& StructConstrMatrix = StructMatrix->Matrix(0,1);
+  Teuchos::RCP<Epetra_CrsMatrix> Aprime = StructConstrMatrix.EpetraMatrix();
+  int MaxNumEntries = Aprime->MaxNumEntries();
+  int NumEntries;
+
+  std::set<int> ConIDs;
+  for (unsigned int i=0; i<constrcond_.size();++i)
+  {
+    DRT::Condition& cond = *(constrcond_[i]);
+    int condID = cond.GetInt("coupling id");
+    if (ConIDs.find(condID) == ConIDs.end())
+    {
+      ConIDs.insert(condID);
+    }
+  }
+  std::map<int,std::vector<int> > AllColIndices;
+  for (std::set<int>::const_iterator it = ConIDs.begin(); it != ConIDs.end(); ++it)
+  {
+    // check StructConstrMat
+    int condID = *it;
+    const int gindex = condID-offsetID;
+    std::vector<int> & ColIndices = AllColIndices[condID];
+
+    for (int j=0; j<Aprime->NumMyRows(); ++j)
+    {
+      vector<int>    Indices(MaxNumEntries);
+      vector<double> Values(MaxNumEntries);
+      int Row = Aprime->GRID(j);
+      int ierr = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&Values[0],&Indices[0]);
+      if (ierr) dserror("ExtractGlobalRowCopy failed: err=%d",ierr);
+      for (unsigned int k=0; k<NumEntries; ++k)
+      {
+        if (Indices[k] == gindex)
+          ColIndices.push_back(Row);
+      }
+    }
+  }
+
+  std::map<int,std::vector<int> > AllAsiDofMap;
+  for (unsigned int i = 0; i < asicond_.size(); ++i)
+  {
+    DRT::Condition& asicond = *(asicond_[i]);
+    int asicondID = asicond.GetInt("coupling id");
+    std::vector<int> &  asidofs  = AllAsiDofMap[asicondID];
+    const std::vector<int>* asinodeIDs = asicond.Nodes();
+    for (unsigned int j = 0; j < asinodeIDs->size(); ++j)
+    {
+      int gid = (*asinodeIDs)[j];
+      if (Discretization()->HaveGlobalNode(gid))
+      {
+        DRT::Node* node = Discretization()->gNode(gid);
+        if (node->Owner() == Discretization()->Comm().MyPID())
+        {
+          std::vector<int> dofs = Discretization()->Dof(node);
+          for (unsigned int k = 0; k < dofs.size(); ++k)
+            asidofs.push_back(dofs[k]);
+        }
+      }
+    }
+  }
+
+  for (std::map<int,std::vector<int> >::const_iterator it=AllAsiDofMap.begin(); it!=AllAsiDofMap.end(); ++it)
+  {
+    int condID = it->first;
+    const std::vector<int> & asidofs = it->second;
+    const std::vector<int> & colindices = AllColIndices[condID];
+
+    for (unsigned int i=0; i<asidofs.size(); ++i)
+    {
+      bool found = false;
+      for (unsigned int j=0; j<colindices.size(); ++j)
+      {
+        if (asidofs[i] == colindices[j])
+        {
+          found = true;
+          break;
+        }
+      }
+      if (found == false)
+      {
+        dserror("something strange in StructConstrMatrix: missing asi dof %d",asidofs[i]);
+      }
+    }
+  }
+
+  // check ConstrStructMat
+
+  for (std::map<int,std::vector<int> >::const_iterator it=AllAsiDofMap.begin(); it!=AllAsiDofMap.end(); ++it)
+  {
+    int condID = it->first;
+    std::vector<int> asidofs = it->second;
+    std::vector<int> colindices = AllColIndices[condID];
+    int numcolind = colindices.size();
+    Epetra_Map ColIndices(-1, numcolind, &colindices[0], 0, Discretization()->Comm());
+    Epetra_Map RedColIndices = *(LINALG::AllreduceEMap(ColIndices));
+
+    for (unsigned int k=0; k<asidofs.size(); ++k)
+    {
+      int myind = asidofs[k];
+      if (RedColIndices.LID(myind) == -1)
+        dserror("ColIndices and Indices have different entries!");
+    }
+  }
+  // end test
+  //############################################################################################
+#endif // End debug
+
 
   // Apply Dirichlet BC to stiffness matrix and rhs vector and
   // exclude all forces on the outflow boundary (except those at the fsi

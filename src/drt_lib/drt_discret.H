@@ -1801,7 +1801,7 @@ private:
   volume coupling condition -> this is special since an associated volume
   conditions also needs to be considered
   */
-  void BuildSurfacesinStructFluidSurfCoupling(RefCountPtr<DRT::Condition> cond);
+  void FindAssociatedEleIDs(RefCountPtr<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
 
 
 protected:

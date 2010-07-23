@@ -92,7 +92,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   {
     std::cout << "with generalised-alpha" << std::endl;
     VerifyCoeff();
-    
+
     std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_)<<std::endl
               << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
@@ -304,7 +304,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual()
 
   // apply forces and stiffness due to contact / meshtying
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
-  
+
   // close stiffness matrix
   stiff_->Complete();
 

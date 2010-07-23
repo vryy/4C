@@ -736,7 +736,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(linefsi);
   condlist.push_back(surffsi);
-  
+
   /*--------------------------------------------------------------------*/
   // FSI
 
@@ -853,7 +853,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          "StructFluidVolCoupling",
                                          "StructFluidVolCoupling",
                                          DRT::Condition::StructFluidVolCoupling,
-                                         true,
+                                         false,
                                          DRT::Condition::Volume));
 
   for (unsigned i=0; i<sfvcomponents.size(); ++i)
@@ -1126,7 +1126,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(electro_repulsion_potential_line);
 
-  
+
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a surface
 
@@ -1139,8 +1139,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
              "nodalbased",
              Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"),
              Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"))));
-  
-  
+
+
   Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsSurf =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS",
                                          "FluctHydroStatisticsSurf",
@@ -1151,9 +1151,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   for (unsigned i=0; i<flucthydrostatsurfcomponents.size(); ++i)
     fluctHydro_statisticsSurf->AddComponent(flucthydrostatsurfcomponents[i]);
-  
+
   condlist.push_back(fluctHydro_statisticsSurf);
-  
+
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a line
 
@@ -1166,7 +1166,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
             "nodalbased",
             Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"),
             Teuchos::tuple<std::string>("elebased","nodalbased", "ele_and_nodalbased"))));
-  
+
   Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsLine =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
                                          "FluctHydroStatisticsLine",
@@ -1347,7 +1347,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       true)));
 
   condlist.push_back(volumeconstraint);
-  
+
   /*--------------------------------------------------------------------*/
   // volume constraint penalty
 
@@ -1409,7 +1409,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(areaconstraintpen);
 
-  
+
   /*--------------------------------------------------------------------*/
   // volume monitor
 
@@ -1584,7 +1584,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
        Teuchos::tuple<std::string>("rel","abs"),
        true)));
    condlist.push_back(nodemasterconst3D);
-   
+
    /*--------------------------------------------------------------------*/
    // Multi point constraint in 3D, moving all constraint nodes synchronously, penalty based
 
