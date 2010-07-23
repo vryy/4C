@@ -106,12 +106,6 @@ private:
 	double											amp_;
 	// \brief curve number, extracted from discretization
 	int 												curvenumber_;
-
-	// \brief a vector memorizing the bonding status of the crosslink molecules
-	std::vector<std::vector<int> >		crosslinkerbond_;
-	// \brief a vector containing the current postion of the crosslink molecules
-	std::vector<std::vector<double> >		crosslinkerpositions_;
-
 }; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H

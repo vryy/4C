@@ -59,7 +59,6 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   starttimeoutput_(-1.0),
   endtoendref_(0.0),
   istart_(0),
-  rlink_(params.get<double>("R_LINK",0.0)),
   basisnodes_(discret.NumGlobalNodes()),
   basiselements_(discret.NumGlobalElements()),
   currentelements_(discret.NumGlobalElements()),
@@ -144,6 +143,16 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
   //if dynamic crosslinkers are used additional variables are initialized
   if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
   {
+    /* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
+     * between two filaments, only their positions are calculated. When a crosslink is to be established between two filaments,
+     * an actual element is added. Here, the molecules' initial positions are determined (uniformly distributed).
+     * Furthermore, crosslinkerbond_ is initialized with values "-1". Calculations are made on Proc 0, only.*/
+    if(discret_.Comm().MyPID()==0)
+    {
+  		CrosslinkerPosInit();
+  		crosslinkerbond_.assign((int)statmechparams_.get("N_crosslink",0.0), std::vector<int>(3,-1) );
+    }
+
     /* and filamentnumber_ is generated based on a column map vector as each node has to
      * know about each other node its filament number in order to decide weather a crosslink may be established
      * or not; vectors is initalized with -1, which state is changed if filament numbering is used, only*/
@@ -2985,7 +2994,7 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 /*----------------------------------------------------------------------*
  | Initialize crosslinker positions  			        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerPosInit(std::vector<std::vector<double> >* crslnkpositions)
+void StatMechManager::CrosslinkerPosInit()
 {
 	// generate random numbers for each crosslinker and its respective components E [0.0; PeriodLength]
 	ranlib::UniformClosed<double> UniformGen;
@@ -2998,10 +3007,100 @@ void StatMechManager::CrosslinkerPosInit(std::vector<std::vector<double> >* crsl
 		upperbound = statmechparams_.get<double>("MaxRandValue", 0.0);
 
 	// set vector length and insert random values
-	crslnkpositions->assign((int)statmechparams_.get<double>("N_crosslink", 0.0), std::vector<double>() );
-	for(int i=0; i<(int)crslnkpositions->size(); i++)
+	crosslinkerpositions_.assign((int)statmechparams_.get<double>("N_crosslink", 0.0), std::vector<double>() );
+	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 		for(int j=0; j<3; j++)
-			crslnkpositions->at(i).push_back(upperbound*UniformGen.random() );
+			crosslinkerpositions_.at(i).push_back(upperbound*UniformGen.random() );
+}
+
+/*----------------------------------------------------------------------*
+ | Update crosslinker positions  			            (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::CrosslinkerPosUpdate(RCP<Epetra_Vector> dis,
+																					 RCP<Epetra_Vector> disi,
+																					 double mean,
+																					 double standarddev)
+{
+	// random number generator with normal distribution
+	ranlib::Normal<double> normalGen(mean,standarddev);
+
+	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+		{
+			// case 1: free crosslink molecule
+			if(crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)==-1)
+				crosslinkerpositions_.at(i).at(j) += normalGen.random();
+			// case 2: crosslink moelcule attached to one filament
+			if((crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)!=-1) || ( crosslinkerbond_.at(i).at(1)==-1 && crosslinkerbond_.at(i).at(0)!=-1))
+			{
+				DRT::Node *node;
+				std::vector<int> dofnode;
+				int gid;
+				int numdof;
+				if(crosslinkerbond_.at(i).at(0)==-1)
+				{
+					// obtain GID of the node to which the crosslinker is attached
+					gid = crosslinkerbond_.at(i).at(1);
+					node = discret_.gNode(gid);
+					dofnode = discret_.Dof(0,node);
+					for(int k=0; k<3; k++)
+						crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
+				}
+				else
+				{
+					gid = crosslinkerbond_.at(i).at(0);
+					node = discret_.gNode(gid);
+					numdof = (int)discret_.Dof(0, node).size();
+					for(int k=0; k<3; k++)
+						crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
+				}
+			}
+			// case 3: an actual crosslink has been established
+			if(crosslinkerbond_.at(i).at(0)!=-1 && crosslinkerbond_.at(i).at(1)!=-1)
+			{
+				// reinitialize position of i-th crosslinker
+				crosslinkerpositions_.at(i).assign(3,0.0);
+
+				for(int k=0; k<(int)crosslinkerbond_.at(i).size(); k++)
+				{
+					DRT::Node *node = discret_.gNode(crosslinkerbond_.at(i).at(k));
+					int dofgid = discret_.Dof(0,node).at(j);
+					double referenceposition = node->X()[j];
+					double displacement = (*dis)[ discret_.DofRowMap()->LID( dofgid ) ];
+					crosslinkerpositions_.at(i).at(j) +=  referenceposition + displacement;
+				}
+				// calculate new crosslink mid position
+				crosslinkerpositions_.at(i).at(j) /= (double)crosslinkerbond_.at(i).size();
+			}
+		}
+	/*for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+	{
+		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+			cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_.at(i).at(j)<<" ";
+		cout<<endl;
+	}*/
+}
+
+/*----------------------------------------------------------------------*
+ | Periodic Boundary Shift for crosslinker diffusion simulation					|
+ |																						  	(public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::CrosslinkerPeriodicBoundaryShift()
+{
+	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+		{
+			if(crosslinkerpositions_.at(i).at(j) > statmechparams_.get<double>("PeriodLength", 0.0))
+			{
+				crosslinkerpositions_.at(i).at(j) -= statmechparams_.get<double>("PeriodLength", 0.0);
+				//cout<<"===crosslinker "<<i<<" shifted back in "<<j<<"-direction"<<endl;
+			}
+			if(crosslinkerpositions_.at(i).at(j) < 0.0)
+			{
+				crosslinkerpositions_.at(i).at(j) += statmechparams_.get<double>("PeriodLength", 0.0);
+				//cout<<"===crosslinker "<<i<<" shifted forth in "<<j<<"-direction"<<endl;
+			}
+		}
 }
 
 #endif  // #ifdef CCADISCRET

@@ -121,11 +121,19 @@ public:
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
 
-  /*! \brief initializes array with crosslinker positions
-   *  \param crslnkpositions (in) pointer to an array which is to be filled with random values
-   *  \param length          (in) indicates the length of the array
+  /*! \brief updates vector by adding displacement increments
+   *  \param dis             (in) latest displacement
+   *  \param disi						 (in) latest displacement increment in row map format
+   *  \param mean						 (in) mean of the normal distribution
+   *  \param standarddev     (in) standard deviation of the normal distribution
    */
-  void CrosslinkerPosInit(std::vector<std::vector<double> >* crslnkpositions);
+  void CrosslinkerPosUpdate(RCP<Epetra_Vector> dis,
+														RCP<Epetra_Vector> disi,
+														double mean,
+														double standarddev);
+
+  //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
+	void CrosslinkerPeriodicBoundaryShift();
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -147,6 +155,9 @@ protected:
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
+
+  //! \brief initializes vector with crosslinker positions
+  void CrosslinkerPosInit();
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
@@ -172,9 +183,6 @@ protected:
 
   //! \brief position of last nodein last time step
   LINALG::Matrix<3,1> endold_;
-
-  //! \brief maximal radius within which crosslinkers are established
-  double rlink_;
 
   //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
   int basisnodes_;
@@ -217,6 +225,10 @@ protected:
   //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
   Teuchos::RCP<GEO::SearchTree>  octTree_;
 
+	// \brief a vector memorizing the bonding status of the crosslink molecules
+	std::vector<std::vector<int> >		crosslinkerbond_;
+	// \brief a vector containing the current postion of the crosslink molecules
+	std::vector<std::vector<double> >		crosslinkerpositions_;
 
 }; // class StatMechManager
 

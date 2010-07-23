@@ -127,17 +127,6 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
-  /* Initialization of N_CROSSLINK crosslinker molecule representations. As long as the molecules do not act as link
-   * between two filaments, their position is calculated only hypothetically. Only, when a crosslink is to be established,
-   * an actual element is added. Here, the molecules' initial positions are determined (uniformly distributed).
-   * Furthermore, crosslinkerbond_ is initialized. All of this is supposed to happen on Proc 0 only.
-   * */
-  if(discret_.Comm().MyPID()==0)
-  {
-  	statmechmanager_->CrosslinkerPosInit(&crosslinkerpositions_);
-  	crosslinkerbond_.assign((int)statmechmanager_->statmechparams_.get("N_crosslink",0.0), std::vector<int>(3,-1) );
-  }
-
   return;
 } // StatMechTime::StatMechTime
 
@@ -219,7 +208,7 @@ void StatMechTime::Integrate()
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in oder to simplify it
 
-        //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)0.5
+        //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
         statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
 
         /*/test: StructPolyMorphOutput in initial configuration
@@ -253,6 +242,20 @@ void StatMechTime::Integrate()
       const double t_admin = Teuchos::Time::wallTime();
 
       UpdateandOutput();
+
+    	/*crosslinker positions of the diffusion simulation for crosslink molecules are updated. (note: this update
+    	 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
+    	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.
+    	 * */
+      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") && discret_.Comm().MyPID()==0)
+      {
+				statmechmanager_->CrosslinkerPosUpdate(dis_, disi_, 0.0, sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
+																																		 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0)*
+																																				 statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt));
+				// in case of periodic boundary conditions
+				if(statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+					statmechmanager_->CrosslinkerPeriodicBoundaryShift();
+      }
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
