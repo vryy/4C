@@ -274,3 +274,6 @@ Input/potential_surf_pointapprox_VDW_3D.dat             x        x        x     
 Input/mfsi_ow32x32_sti_drt_mtrss.dat                    x        x        x        x        -        -
 Input/mfsi_ow32x32_sti_drt_ss.dat                       x        x        x        x        -        -
 Input/mfsi_ow3D_mtr_drt.dat                             x        x        x        x        -        -
+Input/mfsi_ow32x32_sti_drt_mtrfs.dat                    x        x        x        x        -        -
+Input/mfsi_ow32x32_sti_drt_fs.dat                       x        x        x        x        -        -
+Input/mfsi_oval3D_sliding_up_fs.dat                     x        x        x        x        -        -
