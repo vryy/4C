@@ -211,6 +211,7 @@ endif(BLAS_FOUND)
 
 add_definitions("-DLINUX_MUENCH")
 add_definitions("-DPARALLEL")
+add_definitions("-DPARMETIS")
 add_definitions("-DLOOPL=15")
 add_definitions("-DCCADISCRET")
 add_definitions("-DTRILINOS_PACKAGE")
@@ -1196,10 +1197,6 @@ if (INVERSEDESIGNUSE)
   add_definitions("-DINVERSEDESIGNUSE")
 endif(INVERSEDESIGNUSE)
 
-option (PARMETIS "use parmetis for parallel setup of node graph" OFF)
-if (PARMETIS)
-  add_definitions("-DPARMETIS")
-endif(PARMETIS)
 
 
 #   tools

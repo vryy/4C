@@ -31,7 +31,6 @@ Trilinos_DIR="/lnm/lib/openmpi/gcc/trilinos"
     -D BLAS_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
     -D LAPACK_LIBRARIES:FILEPATH="/opt/acml4.4.0/gfortran64/lib/libacml.a" \
     -D DEBUG:BOOL=OFF \
-    -D PARALLEL:BOOL=ON \
     -D COLOROUTPUT:BOOL=OFF \
     -D QHULL:BOOL=OFF \
     -D D_EXODUS:BOOL=ON \
