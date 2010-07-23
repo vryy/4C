@@ -652,6 +652,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   ParameterList p;
   SetTimeForNeumannEvaluation(p);
   p.set("scatratype",scatratype_);
+  p.set("isale",isale_);
 
   discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
