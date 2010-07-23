@@ -309,6 +309,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
         coupling == fsi_iter_lung_monolithicfluidsplit or
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
+        coupling == fsi_iter_mortar_monolithicfluidsplit or
         coupling == fsi_iter_mortar_monolithicstructuresplit)
     {
       if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
@@ -481,6 +482,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_lung_monolithicfluidsplit)
          or (coupling == fsi_iter_constr_monolithicfluidsplit)
          or (coupling == fsi_iter_constr_monolithicstructuresplit)
+         or (coupling == fsi_iter_mortar_monolithicfluidsplit)
          or (coupling == fsi_iter_mortar_monolithicstructuresplit))
     {
       if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
