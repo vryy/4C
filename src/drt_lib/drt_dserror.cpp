@@ -194,7 +194,7 @@ void cpp_dserror_func(const char* text, ...)
 #ifdef PARALLEL
     MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-    exit(0);
+    exit(1);
 #endif
   }
 } /* end of dserror_func */

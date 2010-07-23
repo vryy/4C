@@ -1444,18 +1444,18 @@ ENABLE_TESTING()
 include(CTest)
 
 macro (baci_test arg nproc restart)
-  add_test(NAME ${arg}-${nproc}
+  add_test(NAME ${arg}-p${nproc}
     #CONFIGURATIONS Debug
     COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
-  set_tests_properties (${arg}-${nproc} 
-    PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
+  #set_tests_properties (${arg}-${nproc} 
+  #  PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
 
   if (${restart})
-    add_test(NAME ${arg}-${nproc}-r
+    add_test(NAME ${arg}-p${nproc}-restart
       #CONFIGURATIONS Debug
       COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
-    set_tests_properties (${arg}-${nproc}-r
-      PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
+    #set_tests_properties (${arg}-${nproc}-r
+    #  PROPERTIES PASS_REGULAR_EXPRESSION "processor 0 finished normally")
   endif (${restart})
 endmacro (baci_test)
 
