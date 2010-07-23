@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_ale/ale_resulttest.H"
 #if 0
 #include "../drt_io/io_gmsh.H"
 #endif
@@ -170,6 +171,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 
       // perform the result test
       DRT::Problem::Instance()->AddFieldTest(elch->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(elch->AleField().CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(elch->CreateScaTraFieldTest());
       DRT::Problem::Instance()->TestAll(comm);
     }

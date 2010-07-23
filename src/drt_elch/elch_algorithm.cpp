@@ -257,7 +257,7 @@ void ELCH::Algorithm::DoTransportStep()
   {
     cout<<"\n";
     cout<<"************************\n";
-    cout<<"    TRANSPORT SOLVER    \n";
+    cout<<"       ELCH SOLVER      \n";
     cout<<"************************\n";
   }
 

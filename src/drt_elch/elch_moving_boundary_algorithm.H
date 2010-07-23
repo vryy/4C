@@ -57,11 +57,16 @@ namespace ELCH
     /// start a new time step
     void PrepareTimeStep();
 
-    /// solve Navier-Stokes equations for current time step
-    void DoFluidStep();
+    /// solve Navier-Stokes and ALE for current time step
+    void SolveFluidAle();
 
     /// solve transport equations for current time step
-    void DoTransportStep();
+    void SolveScaTra();
+
+    /// compute interface displacement and velocity
+    void ComputeInterfaceVectors(
+        RCP<Epetra_Vector> idispnp_,
+        RCP<Epetra_Vector> iveln_);
 
     /// take current results for converged and save for next time step
     void Update();
@@ -71,11 +76,17 @@ namespace ELCH
 
   private:
 
-    // molar volume for flux to shape change conversion (unit: m^3/mol )
+    /// molar volume for flux to shape change conversion (unit: m^3/mol )
     const double molarvolume_;
 
-    /// interface displacement
+    /// interface displacement at time t^{n}
     RCP<Epetra_Vector> idispn_;
+
+    /// interface displacement at time t^{n+1}
+    RCP<Epetra_Vector> idispnp_;
+
+    /// fluid velocity at interface (always zero!)
+    RCP<Epetra_Vector> iveln_;
 
   };
 
