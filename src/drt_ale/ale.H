@@ -40,6 +40,7 @@ Maintainer: Ulrich Kuettler
 #include <set>
 
 #include "ale_utils_mapextractor.H"
+#include "ale_resulttest.H"
 
 
 namespace ALE {
@@ -147,6 +148,9 @@ public:
 
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true) = 0;
+
+  /// create result test for encapsulated algorithm
+  virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
   //@}
 };

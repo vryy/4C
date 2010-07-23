@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ale_lin.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "ale_resulttest.H"
 
 #define scaling_infnorm true
 
@@ -305,6 +306,14 @@ void ALE::AleLinear::ReadRestart(int step)
 
   reader.ReadVector(dispnp_, "dispnp");
   reader.ReadVector(dispn_,  "dispn");
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ALE::AleLinear::CreateFieldTest()
+{
+  return Teuchos::rcp(new ALE::AleResultTest(*this));
 }
 
 

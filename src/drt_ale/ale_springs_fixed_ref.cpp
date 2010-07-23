@@ -298,4 +298,11 @@ void ALE::AleSpringsFixedRef::ReadRestart(int step)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ALE::AleSpringsFixedRef::CreateFieldTest()
+{
+  return Teuchos::rcp(new ALE::AleResultTest(*this));
+}
+
 #endif

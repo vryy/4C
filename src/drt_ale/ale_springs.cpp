@@ -222,7 +222,7 @@ void ALE::AleSprings::EvaluateElements()
     //
     //
     // NOTE: This is still uncomplete or even incorrect. The correct
-    // implementation is sketched in Lorenz Görcke's bachelor thesis.
+    // implementation is sketched in Lorenz Gï¿½rcke's bachelor thesis.
     //
     // The height function like in Genkinger (21) must not be implemented by a
     // straightforward manipulation of nodal values (as is done here). Due to
@@ -324,7 +324,7 @@ void ALE::AleSprings::EvaluateElements()
       {
         int rgid = rdofGID[i];
 
-#if DEBUG
+#ifdef DEBUG
         if (!ndnorm0->Map().MyGID(rgid))
           dserror("Sparse vector does not have global row  %d",rgid);
 
@@ -338,7 +338,7 @@ void ALE::AleSprings::EvaluateElements()
         rdofLID[i] = ndnorm0->Map().LID(rgid);
       }
 
-#if DEBUG
+#ifdef DEBUG
       std::vector<double> gdbnorm(4);
 #endif
 
@@ -397,7 +397,7 @@ void ALE::AleSprings::EvaluateElements()
       double pointproduct = 0.0;
       for (int i=0; i<numdof; i++)
       {
-#if DEBUG
+#ifdef DEBUG
         gdbnorm[i] = (*ndnorm0)[rdofLID[i]];
 #endif
         //mass-consistent heightfuntion acc. to Wall (7.13)
@@ -487,7 +487,7 @@ void ALE::AleSprings::EvaluateElements()
       {
         int rgid = dofGID[i];
 
-#if DEBUG
+#ifdef DEBUG
         if (!ndnorm0->Map().MyGID(rgid))
           dserror("Vector does not have global row %d",rgid);
 #endif
@@ -591,5 +591,12 @@ void ALE::AleSprings::ReadRestart(int step)
   reader.ReadVector(dispn_,  "dispn");
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ALE::AleSprings::CreateFieldTest()
+{
+  return Teuchos::rcp(new ALE::AleResultTest(*this));
+}
 
 #endif

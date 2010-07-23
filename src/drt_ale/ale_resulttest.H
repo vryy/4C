@@ -18,20 +18,32 @@ Maintainer: Ulrich Kuettler
 #define ALE_RESULTTEST_H
 
 #include "../drt_lib/drt_resulttest.H"
-#include "ale.H"
-#include "ale_lin.H"
-#include "ale_springs.H"
+#include <Epetra_Vector.h>
 
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace ALE {
 
+// forward declarations
 class AleLinear;
+class AleSprings;
+class AleLaplace;
+class AleSpringsFixedRef;
 
 /// Result test subclass for linear ale algorithm
 class AleResultTest : public DRT::ResultTest
 {
 public:
-  AleResultTest(AleLinear& ale);
+  AleResultTest(ALE::AleLinear& ale);
+
+  AleResultTest(ALE::AleSprings& ale);
+
+  AleResultTest(ALE::AleLaplace& ale);
+
+  AleResultTest(ALE::AleSpringsFixedRef& ale);
 
   /// our version of nodal value tests
   /*!
@@ -40,13 +52,16 @@ public:
    */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  /// return true if this is a ale test
+  /// return true if this is an ale test
   virtual bool Match(DRT::INPUT::LineDefinition& res);
 
 private:
 
-  /// our ale algorithmus
-  AleLinear& ale_;
+  /// pointer to ALE discretization
+  Teuchos::RCP<DRT::Discretization> aledis_;
+
+  /// pointer to ALE displacement result vector
+  Teuchos::RCP<Epetra_Vector>       dispnp_;
 
 };
 

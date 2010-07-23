@@ -90,6 +90,9 @@ public:
   /// communication object at the interface
   const ALE::UTILS::MapExtractor& Interface() const { return interface_; }
 
+  /// create result test
+  virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
 private:
 
   /// the interface map setup for interface <-> full translation

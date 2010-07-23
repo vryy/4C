@@ -16,6 +16,10 @@ Maintainer: Ulrich Kuettler
 
 #include "ale_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "ale_lin.H"
+#include "ale_springs.H"
+#include "ale_laplace.H"
+#include "ale_springs_fixed_ref.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -23,7 +27,26 @@ Maintainer: Ulrich Kuettler
 
 
 ALE::AleResultTest::AleResultTest(ALE::AleLinear& ale)
-  : ale_(ale)
+: aledis_(ale.Discretization()),
+    dispnp_(ale.Disp())
+{
+}
+
+ALE::AleResultTest::AleResultTest(ALE::AleSprings& ale)
+: aledis_(ale.Discretization()),
+    dispnp_(ale.Disp())
+{
+}
+
+ALE::AleResultTest::AleResultTest(ALE::AleLaplace& ale)
+: aledis_(ale.Discretization()),
+    dispnp_(ale.Disp())
+{
+}
+
+ALE::AleResultTest::AleResultTest(ALE::AleSpringsFixedRef& ale)
+: aledis_(ale.Discretization()),
+    dispnp_(ale.Disp())
 {
 }
 
@@ -38,33 +61,33 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (ale_.discret_->HaveGlobalNode(node))
+  if (aledis_->HaveGlobalNode(node))
   {
-    DRT::Node* actnode = ale_.discret_->gNode(node);
+    DRT::Node* actnode = aledis_->gNode(node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
     // interested in our nodes!
-    if (actnode->Owner() != ale_.discret_->Comm().MyPID())
+    if (actnode->Owner() != aledis_->Comm().MyPID())
       return;
 
     double result = 0.;
 
-    const Epetra_BlockMap& dispnpmap = ale_.dispnp_->Map();
+    const Epetra_BlockMap& dispnpmap = dispnp_->Map();
 
     std::string position;
     res.ExtractString("POSITION",position);
     if (position=="dispx")
     {
-      result = (*ale_.dispnp_)[dispnpmap.LID(ale_.discret_->Dof(actnode,0))];
+      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,0))];
     }
     else if (position=="dispy")
     {
-      result = (*ale_.dispnp_)[dispnpmap.LID(ale_.discret_->Dof(actnode,1))];
+      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,1))];
     }
     else if (position=="dispz")
     {
-      result = (*ale_.dispnp_)[dispnpmap.LID(ale_.discret_->Dof(actnode,2))];
+      result = (*dispnp_)[dispnpmap.LID(aledis_->Dof(actnode,2))];
     }
     else
     {

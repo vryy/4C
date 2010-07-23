@@ -308,4 +308,11 @@ void ALE::AleLaplace::ReadRestart(int step)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ALE::AleLaplace::CreateFieldTest()
+{
+  return Teuchos::rcp(new ALE::AleResultTest(*this));
+}
+
 #endif
