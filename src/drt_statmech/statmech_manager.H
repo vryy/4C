@@ -121,19 +121,19 @@ public:
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
 
-  /*! \brief updates vector by adding displacement increments
+  /*! \brief Handles Crosslinker diffusion
    *  \param dis             (in) latest displacement
    *  \param disi						 (in) latest displacement increment in row map format
    *  \param mean						 (in) mean of the normal distribution
    *  \param standarddev     (in) standard deviation of the normal distribution
+   *  \param init						 (in) switch between methods
    */
-  void CrosslinkerPosUpdate(RCP<Epetra_Vector> dis,
+  void CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
 														RCP<Epetra_Vector> disi,
 														double mean,
-														double standarddev);
-
-  //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
-	void CrosslinkerPeriodicBoundaryShift();
+														double standarddev,
+														int	 mypid,
+														bool init);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -158,6 +158,9 @@ protected:
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerPosInit();
+
+  //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
+	void CrosslinkerPeriodicBoundaryShift();
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);

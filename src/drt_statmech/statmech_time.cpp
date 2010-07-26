@@ -127,6 +127,12 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
+  /* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
+   * between two filaments, only their positions are calculated. When a crosslink is to be established between two filaments,
+   * an actual element is added. Here, the molecules' initial positions are determined.
+   * Calculations are made on Proc 0, only.*/
+		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,discret_.Comm().MyPID(),true);
+
   return;
 } // StatMechTime::StatMechTime
 
@@ -247,15 +253,11 @@ void StatMechTime::Integrate()
     	 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
     	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.
     	 * */
-      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") && discret_.Comm().MyPID()==0)
-      {
-				statmechmanager_->CrosslinkerPosUpdate(dis_, disi_, 0.0, sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
+      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+				statmechmanager_->CrosslinkerDiffusion(dis_, disi_, 0.0, sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
 																																		 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0)*
-																																				 statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt));
-				// in case of periodic boundary conditions
-				if(statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
-					statmechmanager_->CrosslinkerPeriodicBoundaryShift();
-      }
+																																		  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt),
+																																			discret_.Comm().MyPID(), false);
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
