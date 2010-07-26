@@ -2991,16 +2991,20 @@ void StatMechManager::CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
 																					 int mypid,
 																					 bool init)
 {
-	// only proceed for mypid==0
-	if(mypid!=0)
-		return;
-
 	/*Initial Crosslinker positions*/
 	if(init)
+		// initialize on all processors so that information about vector sizes is present
 		CrosslinkerPosInit();
 	else
 	{
+		// set up arrays that are to be communicated to other processors in advance (need to be allocated in order to broadcast)
+		double crosslinkerposarray[(int)crosslinkerpositions_.at(0).size()*(int)crosslinkerpositions_.size()];
+		int crosslinkerbondarray[(int)crosslinkerpositions_.at(0).size()*(int)crosslinkerbond_.size()];
+
 		/*In this section, Crosslinker positions are updated*/
+		// only proceed for mypid==0
+		if(mypid!=0)
+			return;
 
 		// random number generator with normal distribution
 		ranlib::Normal<double> normalGen(mean,standarddev);
@@ -3060,6 +3064,19 @@ void StatMechManager::CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
 		if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
 			CrosslinkerPeriodicBoundaryShift();
 
+		// Broadcast updates to all processors
+		// convert vector information to 1D-array (for now, I can't think of another way; dynamic memory allocation for an array i
+		for(int i=0; i<(int)crosslinkerpositions_.at(0).size(); i++)
+			for(int j=0; j<(int)crosslinkerpositions_.size(); j++)
+				crosslinkerposarray[i*(int)crosslinkerpositions_.size()+j] = crosslinkerpositions_.at(j).at(i);
+
+		for(int i=0; i<(int)crosslinkerbond_.at(0).size(); i++)
+			for(int j=0; j<(int)crosslinkerbond_.size(); j++)
+				crosslinkerbondarray[i*(int)crosslinkerbond_.size()+j] = crosslinkerbond_.at(j).at(i);
+
+		discret_.Comm().Broadcast(crosslinkerposarray, (int)crosslinkerpositions_.at(0).size()*(int)crosslinkerpositions_.size(), 0);
+		discret_.Comm().Broadcast(crosslinkerbondarray, (int)crosslinkerpositions_.at(0).size()*(int)crosslinkerbond_.size(), 0);
+
 		/*for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 		{
 			for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
@@ -3112,15 +3129,9 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift()
 		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
 		{
 			if(crosslinkerpositions_.at(i).at(j) > statmechparams_.get<double>("PeriodLength", 0.0))
-			{
 				crosslinkerpositions_.at(i).at(j) -= statmechparams_.get<double>("PeriodLength", 0.0);
-				cout<<"===crosslinker "<<i<<" shifted back in "<<j<<"-direction"<<endl;
-			}
 			if(crosslinkerpositions_.at(i).at(j) < 0.0)
-			{
 				crosslinkerpositions_.at(i).at(j) += statmechparams_.get<double>("PeriodLength", 0.0);
-				cout<<"===crosslinker "<<i<<" shifted forth in "<<j<<"-direction"<<endl;
-			}
 		}
 }
 
