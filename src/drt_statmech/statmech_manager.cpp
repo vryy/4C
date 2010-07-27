@@ -2988,97 +2988,98 @@ void StatMechManager::CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
 																					 RCP<Epetra_Vector> disi,
 																					 double mean,
 																					 double standarddev,
-																					 int mypid,
 																					 bool init)
 {
+	//double test[]={ 0.0, 0.0, 0.0};
+
 	/*Initial Crosslinker positions*/
 	if(init)
-		// initialize on all processors so that information about vector sizes is present
+	{
+		/* initialize on all processors so that information about vector sizes is present. Different initial random numbers do not matter.
+		 * They will be overwritten with each new step.*/
 		CrosslinkerPosInit();
+	}
 	else
 	{
-		/*In this section, Crosslinker positions are updated*/
-		// only proceed for mypid==0
-		if(mypid!=0)
-			return;
-
-		// random number generator with normal distribution
-		ranlib::Normal<double> normalGen(mean,standarddev);
-
-		for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+		/*In this section, crosslinker positions are updated*/
+		// only proceed for Proc 0
+		if(discret_.Comm().MyPID()==0)
 		{
-			for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
-			{
-				// case 1: free crosslink molecule
-				if(crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)==-1)
-					crosslinkerpositions_.at(i).at(j) += normalGen.random();
-				// case 2: crosslink moelcule attached to one filament
-				if((crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)!=-1) || ( crosslinkerbond_.at(i).at(1)==-1 && crosslinkerbond_.at(i).at(0)!=-1))
-				{
-					DRT::Node *node;
-					std::vector<int> dofnode;
-					int gid;
-					int numdof;
-					if(crosslinkerbond_.at(i).at(0)==-1)
-					{
-						// obtain GID of the node to which the crosslinker is attached
-						gid = crosslinkerbond_.at(i).at(1);
-						node = discret_.gNode(gid);
-						dofnode = discret_.Dof(0,node);
-						for(int k=0; k<3; k++)
-							crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
-					}
-					else
-					{
-						gid = crosslinkerbond_.at(i).at(0);
-						node = discret_.gNode(gid);
-						numdof = (int)discret_.Dof(0, node).size();
-						for(int k=0; k<3; k++)
-							crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
-					}
-				}
-				// case 3: an actual crosslink has been established
-				if(crosslinkerbond_.at(i).at(0)!=-1 && crosslinkerbond_.at(i).at(1)!=-1)
-				{
-					// reinitialize position of i-th crosslinker
-					crosslinkerpositions_.at(i).assign(3,0.0);
+			// random number generator with normal distribution
+			ranlib::Normal<double> normalGen(mean,standarddev);
 
-					for(int k=0; k<(int)crosslinkerbond_.at(i).size(); k++)
+			for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+			{
+				for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+				{
+					// case 1: free crosslink molecule
+					if(crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)==-1)
+						crosslinkerpositions_.at(i).at(j) += normalGen.random();
+					// case 2: crosslink moelcule attached to one filament
+					if((crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)!=-1) || ( crosslinkerbond_.at(i).at(1)==-1 && crosslinkerbond_.at(i).at(0)!=-1))
 					{
-						DRT::Node *node = discret_.gNode(crosslinkerbond_.at(i).at(k));
-						int dofgid = discret_.Dof(0,node).at(j);
-						double referenceposition = node->X()[j];
-						double displacement = (*dis)[ discret_.DofRowMap()->LID( dofgid ) ];
-						crosslinkerpositions_.at(i).at(j) +=  referenceposition + displacement;
+						DRT::Node *node;
+						std::vector<int> dofnode;
+						int gid;
+						int numdof;
+						if(crosslinkerbond_.at(i).at(0)==-1)
+						{
+							// obtain GID of the node to which the crosslinker is attached
+							gid = crosslinkerbond_.at(i).at(1);
+							node = discret_.gNode(gid);
+							dofnode = discret_.Dof(0,node);
+							for(int k=0; k<3; k++)
+								crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
+						}
+						else
+						{
+							gid = crosslinkerbond_.at(i).at(0);
+							node = discret_.gNode(gid);
+							numdof = (int)discret_.Dof(0, node).size();
+							for(int k=0; k<3; k++)
+								crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
+						}
 					}
-					// calculate new crosslink mid position
-					crosslinkerpositions_.at(i).at(j) /= (double)crosslinkerbond_.at(i).size();
+					// case 3: an actual crosslink has been established
+					if(crosslinkerbond_.at(i).at(0)!=-1 && crosslinkerbond_.at(i).at(1)!=-1)
+					{
+						// reinitialize position of i-th crosslinker
+						crosslinkerpositions_.at(i).assign(3,0.0);
+
+						for(int k=0; k<(int)crosslinkerbond_.at(i).size(); k++)
+						{
+							DRT::Node *node = discret_.gNode(crosslinkerbond_.at(i).at(k));
+							int dofgid = discret_.Dof(0,node).at(j);
+							double referenceposition = node->X()[j];
+							double displacement = (*dis)[ discret_.DofRowMap()->LID( dofgid ) ];
+							crosslinkerpositions_.at(i).at(j) +=  referenceposition + displacement;
+						}
+						// calculate new crosslink mid position
+						crosslinkerpositions_.at(i).at(j) /= (double)crosslinkerbond_.at(i).size();
+					}
 				}
 			}
+			// when periodic boundary conditions are applied
+			if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+				CrosslinkerPeriodicBoundaryShift();
 		}
-		// when periodic boundary conditions are applied
-		if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
-			CrosslinkerPeriodicBoundaryShift();
-
-		// Broadcast updates to all processors
-		// convert vector information to 1D-array (for now, I can't think of another way; dynamic memory allocation for an array i
-		cout<<"array size = "<<(int)crosslinkerpositions_.at(0).size()*(int)crosslinkerpositions_.size()<<endl;
-
+		// Copy this information to all processors
 		for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-			for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
-				discret_.Comm().Broadcast(&crosslinkerpositions_.at(i).at(j), 1, 0);
-
-		for(int i=0; i<(int)crosslinkerbond_.size(); i++)
-			for(int j=0; j<(int)crosslinkerbond_.at(i).size(); j++)
-				discret_.Comm().Broadcast(&crosslinkerbond_.at(i).at(j),1 , 0);
-
-		/*for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-		{
-			for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
-				cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_.at(i).at(j)<<" ";
-			cout<<endl;
-		}*/
+			for(int j=0; j<(int)crosslinkerpositions_[i].size(); j++)
+			{
+				discret_.Comm().Broadcast(&(crosslinkerpositions_[i])[0], (int)crosslinkerpositions_[i].size(), 0);
+				discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
+			}
 	}
+	/*/ test output
+	discret_.Comm().Barrier();
+	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+	{
+		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+			cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_.at(i).at(j)<<" ";
+		cout<<i<<" Proc "<<discret_.Comm().MyPID()<<endl;
+	}
+	discret_.Comm().Barrier();*/
 }
 /*----------------------------------------------------------------------*
  | Initialize crosslinker positions  			        (public) mueller 07/10|

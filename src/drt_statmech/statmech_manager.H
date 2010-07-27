@@ -132,7 +132,6 @@ public:
 														RCP<Epetra_Vector> disi,
 														double mean,
 														double standarddev,
-														int	 mypid,
 														bool init);
 
   //! \brief containing statistical mechanics input parameters

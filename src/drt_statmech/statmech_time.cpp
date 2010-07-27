@@ -131,7 +131,7 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    * between two filaments, only their positions are calculated. When a crosslink is to be established between two filaments,
    * an actual element is added. Here, the molecules' initial positions are determined.
    * Calculations are made on Proc 0, only.*/
-		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,discret_.Comm().MyPID(),true);
+		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,true);
 
   return;
 } // StatMechTime::StatMechTime
@@ -256,8 +256,7 @@ void StatMechTime::Integrate()
       if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
 				statmechmanager_->CrosslinkerDiffusion(dis_, disi_, 0.0, sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
 																																		 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0)*
-																																		  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt),
-																																			discret_.Comm().MyPID(), false);
+																																		  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt),false);
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
