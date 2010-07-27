@@ -280,6 +280,20 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   if (friction_)
     jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
 
+  // in the case of dual quad 3D, also the modified D matrices are setup  
+  if (Dualquadslave3d())
+   {  
+    // initialize Dold and Mold if not done already
+    if (doldmod_==null)
+    {
+      doldmod_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+      doldmod_->Zero();
+      doldmod_->Complete();
+    }
+    // setup of dmatrixmod_
+    dmatrixmod_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+   } 
+  
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
@@ -341,19 +355,6 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   InitEvalInterface();
   InitEvalMortar();
   
-  //----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// Concretely, we apply the following transformations:
-	// D         ---->   D * T^(-1)
-	//----------------------------------------------------------------------
-	if (Dualquadslave3d())
-	{
-		// modify dmatrix_
-		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-		dmatrix_ = temp;
-	}
-
   // store contact state to contact nodes (active or inactive)
   StoreNodalQuantities(MORTAR::StrategyBase::activeold);
 
@@ -363,6 +364,13 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   // store nodal entries from D and M to old ones
   StoreToOld(MORTAR::StrategyBase::dm);
   
+  // transform dold_ in the case of dual quadratic 3d
+  if (Dualquadslave3d())
+  {
+    RCP<LINALG::SparseMatrix> tempold = LINALG::MLMultiply(*dold_,false,*invtrafo_,false,false,false,true);
+    doldmod_ = tempold;
+  }  
+
   // evaluate relative movement
   EvaluateRelMov();
 
@@ -420,11 +428,29 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   if (friction_ == false)
     return;
   
+  // transformation of slave displacement dofs
+  // Dmod       ---->   D * T^(-1)
+  if (Dualquadslave3d())
+  {
+    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    dmatrixmod_ = temp;
+  }
+  
+  // vector of slave coordinates xs
+  RCP<Epetra_Vector> xsmod = rcp(new Epetra_Vector(*gsdofrowmap_));
+ 
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->AssembleSlaveCoord(xsmod);
+ 
+  // in case of 3D dual quadratic case, slave coordinates xs are modified
+  if (Dualquadslave3d())
+    invtrafo_->Multiply(false,*xsmod,*xsmod);
+  
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    interface_[i]->EvaluateRelMov();
+    interface_[i]->EvaluateRelMov(xsmod,dmatrixmod_,doldmod_);
     interface_[i]->AssembleRelMov(*jump_);
   }
   return;
@@ -707,6 +733,7 @@ void CONTACT::CoAbstractStrategy::StoreDM(const string& state)
   {
     dold_ = dmatrix_;
     mold_ = mmatrix_;
+    doldmod_=dmatrixmod_;
   }
 
   // unknown conversion

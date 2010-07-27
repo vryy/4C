@@ -4721,12 +4721,12 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
           {
             double minusval = -val;
             snode->AddMValue(sdof,col,minusval);   
-            snode->AddMNode(mnode->Id()); // only for friction!
+            if(abs(val)>1e-12) snode->AddMNode(mnode->Id()); // only for friction!
           }
           else
           { 
             snode->AddDValue(sdof,col,val);
-            snode->AddSNode(mnode->Id()); // only for friction!
+            if(abs(val)>1e-12) snode->AddSNode(mnode->Id()); // only for friction!
           }  
         }
       }
@@ -4794,7 +4794,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
 
           // assembly
           sintnode->AddDValue(sdof,col,val);
-          sintnode->AddSNode(mnode->Id()); // only for friction!
+          if(abs(val)>1e-12) sintnode->AddSNode(mnode->Id()); // only for friction!
         }
       }
     }
@@ -4852,8 +4852,8 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
           int col = mdofs[mdof];
           double val = mseg(slave*sndof+sdof,master*mndof+mdof);
           snode->AddMValue(sdof,col,val);
+          if(abs(val)>1e-12) snode->AddMNode(mnode->Id());  // only for friction!
         }         
-        snode->AddMNode(mnode->Id()); // only for friction!
       }
     }
     /*
@@ -4917,8 +4917,8 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
           int col = mdofs[mdof];
           double val = mseg(slave*sintndof+sdof,master*mndof+mdof);
           sintnode->AddMValue(sdof,col,val);
+          if(abs(val)>1e-12) sintnode->AddMNode(mnode->Id()); // only for friction!
         }
-        sintnode->AddMNode(mnode->Id()); // only for friction!
       }
     }
   }

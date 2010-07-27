@@ -4443,7 +4443,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // contents of Evaluate()
     // *******************************************************************
     Evaluate();
-    EvaluateRelMov();
+    //EvaluateRelMov();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -4650,7 +4650,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // contents of Evaluate()
     // *******************************************************************
     Evaluate();
-    EvaluateRelMov();
+    //EvaluateRelMov();
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements();++k)
@@ -4813,7 +4813,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   // back to normal...
   Initialize();
   Evaluate();
-  EvaluateRelMov();
+  //EvaluateRelMov();
 
   return;
 } // FDCheckPenaltyFricTrac

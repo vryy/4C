@@ -624,7 +624,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool                       dualquadslave3d_; // flag indicating whether trafo should be applied
     RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case
     RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
-
+    RCP<LINALG::SparseMatrix>  dmatrixmod_;      // modified global Mortar matrix D
+    RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
+    
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

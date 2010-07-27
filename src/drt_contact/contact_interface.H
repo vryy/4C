@@ -274,13 +274,21 @@ public:
   evaluated here.
 
   */
-  virtual void EvaluateRelMov();
+  virtual void EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
+                              const RCP<LINALG::SparseMatrix> dmatrixmod,
+                              const RCP<LINALG::SparseMatrix> doldmod);
 
   /*!
   \brief Assemble jump vector into global jump vector
 
   */
   virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
+  
+  /*!
+  \brief Assemble slave coordinates (xs)
+
+  */
+  virtual void AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod);
   
   /*!
   \brief Evaluate L2 Norm of tangential contact conditions

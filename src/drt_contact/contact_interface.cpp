@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #ifndef PARALLEL
 #include "Epetra_SerialComm.h"
 #endif
+#include <Epetra_CrsMatrix.h>
 #include "contact_interface.H"
 #include "contact_node.H"
 #include "contact_element.H"
@@ -552,7 +553,9 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node      gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::EvaluateRelMov()
+void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
+                                          const RCP<LINALG::SparseMatrix> dmatrixmod,
+                                          const RCP<LINALG::SparseMatrix> doldmod)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -649,7 +652,8 @@ void CONTACT::CoInterface::EvaluateRelMov()
 
         for (int dim=0;dim<csnode->NumDof();++dim)
         {
-            jump[dim]-=(dik-dikold)*(csnode->xspatial()[dim]);
+          int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
+          jump[dim]-=(dik-dikold)*(*xsmod)[locid];
         }
       } //  loop over adjacent slave nodes
 
@@ -705,26 +709,78 @@ void CONTACT::CoInterface::EvaluateRelMov()
       
       /*** 01  **********************************************************/
       
-      // loop over according slave nodes 
-      for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
-      {
-        int gid = *scurr;
-        DRT::Node* snode = idiscret_->gNode(gid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* csnode = static_cast<CoNode*>(snode);
-        const int* sdofs = csnode->Dofs();
-
-        double dik = (dmap[0])[sdofs[0]];
-        double dikold=(dmapold[0])[sdofs[0]];
-
-        for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+      if(dmatrixmod==null)
+      {  
+        // loop over according slave nodes 
+        for (scurr=snodes.begin(); scurr != snodes.end(); scurr++)
         {
-          int col = csnode->Dofs()[dimrow];
-          double val = -(dik-dikold);
-          cnode->AddDerivJumpValue(dimrow,col,val);
+          int gid = *scurr;
+          DRT::Node* snode = idiscret_->gNode(gid);
+          if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
+          CoNode* csnode = static_cast<CoNode*>(snode);
+          const int* sdofs = csnode->Dofs();
+
+          double dik = (dmap[0])[sdofs[0]];
+          double dikold=(dmapold[0])[sdofs[0]];
+
+          for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+          {
+            int col = csnode->Dofs()[dimrow];
+            double val = -(dik-dikold);
+            cnode->AddDerivJumpValue(dimrow,col,val);
+          }
         }
       }
+      // in the 3D quadratic case, the values are obtained from the
+      // global matrices Dmod and Doldmod
+      else
+      {  
+        // loop over dimension of the node
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {  
+          int NumEntries = 0;
+          int NumEntriesOld = 0;
+          std::vector<double> Values((dmatrixmod->EpetraMatrix())->MaxNumEntries());
+          std::vector<int> Indices((dmatrixmod->EpetraMatrix())->MaxNumEntries());
+          std::vector<double> ValuesOld((dmatrixmod->EpetraMatrix())->MaxNumEntries());
+          std::vector<int> IndicesOld((dmatrixmod->EpetraMatrix())->MaxNumEntries());
 
+          // row           
+          int row = cnode->Dofs()[dim];
+      
+          // extract entries of this row from matrix
+          int err = (dmatrixmod->EpetraMatrix())->ExtractGlobalRowCopy(row,(dmatrixmod->EpetraMatrix())->MaxNumEntries(),NumEntries,&Values[0], &Indices[0]);
+          if (err) dserror("ExtractMyRowView failed: err=%d", err);
+
+          int errold = (doldmod->EpetraMatrix())->ExtractGlobalRowCopy(row,(doldmod->EpetraMatrix())->MaxNumEntries(),NumEntriesOld,&ValuesOld[0], &IndicesOld[0]);
+          if (errold) dserror("ExtractMyRowView failed: err=%d", err);
+
+          // loop over entries of this vector
+          for (int j=0;j<NumEntries;++j)
+          {  
+            double ValueOld=0;
+            bool found = false;
+         
+            // find value with the same index in vector of Dold
+            for (int k=0;k<NumEntriesOld;++k)
+            {
+              if (Indices[k]==Indices[j])
+              {
+                ValueOld = ValuesOld[k];
+                found = true;
+                break;
+              }  
+            }
+
+            if(found==false or abs(ValueOld) < 1e-12)
+              dserror("Error in EvaluareRelMov(): No old D value exists");
+            
+            // write to node
+            cnode->AddDerivJumpValue(dim,Indices[j],Values[j]-ValueOld);
+          }  
+        }
+      }
+ 
       /*** 02  **********************************************************/
       // loop over according master nodes 
       for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
@@ -758,7 +814,6 @@ void CONTACT::CoInterface::EvaluateRelMov()
         DRT::Node* snode = idiscret_->gNode(gid);
         if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* csnode = static_cast<CoNode*>(snode);
-        double* dxi = csnode->xspatial();
 
         // compute entry of the current stick node / slave node pair
         map<int,double>& thisdmmap = cnode->CoData().GetDerivD(gid);
@@ -769,10 +824,11 @@ void CONTACT::CoInterface::EvaluateRelMov()
           int col = colcurr->first;
 
           // loop over dimensions
-          for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
+          for(int dim=0;dim<cnode->NumDof();++dim)
           {
-            double val =-colcurr->second*dxi[dimrow];
-            cnode->AddDerivJumpValue(dimrow,col,val);
+            int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
+            double val =-colcurr->second*(*xsmod)[locid];
+            cnode->AddDerivJumpValue(dim,col,val);
           }
         }
       }
@@ -844,6 +900,40 @@ void CONTACT::CoInterface::AssembleRelMov(Epetra_Vector& jumpglobal)
     LINALG::Assemble(jumpglobal, jumpnode, jumpdof, jumpowner);
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble slave coordinates (xs)                        gitterle 10/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleSlaveCoord(RCP<Epetra_Vector>& xsmod)
+{
+   
+  // loop over all slave nodes
+  for (int j=0; j<snoderowmap_->NumMyElements(); ++j)
+  {
+    int gid = snoderowmap_->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    int dim = cnode->NumDof();
+
+    Epetra_SerialDenseVector xspatial(dim);
+    vector<int> dof(dim);
+    vector<int> owner(dim);
+
+    for( int k=0; k<dim; ++k )
+    {
+      xspatial(k) = cnode->xspatial()[k];
+      dof[k] = cnode->Dofs()[k];
+      owner[k] = cnode->Owner();
+    }
+
+    // do assembly
+    LINALG::Assemble(*xsmod, xspatial, dof, owner);
+  }
   return;
 }
 
