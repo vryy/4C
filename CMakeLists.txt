@@ -1923,10 +1923,8 @@ if (D_BEAM3II)
   baci_test(beam3iitest2linear 2 "")
 endif (D_BEAM3II)
 
-if (INVERSEDESIGNCREATE)
-  baci_test(inversedesign_wedge6 1 "")
-  baci_test(inversedesign_wedge6 2 "")
-endif (INVERSEDESIGNCREATE)
+baci_test(inversedesign_wedge6 1 "")
+baci_test(inversedesign_wedge6 2 "")
 
 if (QHULL)
   baci_test(fluidfluidCoupling_hex20_constinflow 1 "")
