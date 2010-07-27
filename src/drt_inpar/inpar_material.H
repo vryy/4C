@@ -18,10 +18,6 @@ Maintainer: Burkhard Bornemann
 #ifdef __cplusplus /* stuff which is c++ specific */
 
 /*----------------------------------------------------------------------*/
-/* headers */
-#include "../drt_lib/drt_dserror.H"
-
-/*----------------------------------------------------------------------*/
 namespace INPAR
 {
 
@@ -90,7 +86,7 @@ namespace INPAR
       m_matlist,       ///< collection of single materials (used for scalar transport problems)
       m_biocell,       ///< biological cell model
       m_ion,            ///< properties of an ion species in an electrolyte solution
-      m_charmm,		///< CHARMm API
+      m_charmm,         ///< CHARMm API
       m_logneohooke,   ///< logarithmic Neo-Hooke material
       m_protein,        ///< CHARMm API to compute proteins
       m_elasthyper,    ///< collection of hyperelastic materials
