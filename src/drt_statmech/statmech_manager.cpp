@@ -3065,11 +3065,10 @@ void StatMechManager::CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
 		}
 		// Copy this information to all processors
 		for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-			for(int j=0; j<(int)crosslinkerpositions_[i].size(); j++)
-			{
-				discret_.Comm().Broadcast(&(crosslinkerpositions_[i])[0], (int)crosslinkerpositions_[i].size(), 0);
-				discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
-			}
+		{
+			discret_.Comm().Broadcast(&(crosslinkerpositions_[i])[0], (int)crosslinkerpositions_[i].size(), 0);
+			discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
+		}
 	}
 	/*/ test output
 	discret_.Comm().Barrier();
