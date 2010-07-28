@@ -3,6 +3,8 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>
+#include "MLAPI_LoadBalanceOperator.h"
+#include "MLAPI_LoadBalanceInverseOperator.h"
 #include "MLAPI_Operator_Utils.h"
 #include "MLAPI_CompObject.h"
 #include "MLAPI_MultiVector.h"
@@ -328,7 +330,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   RAPoffdiagonals();
 
   //================set up MLAPI smoothers for structure, fluid, ale on each level
-  MLAPI::InverseOperator S;
+  RCP<MLAPI::InverseOperator> S;
+  RCP<MLAPI::LoadBalanceInverseOperator> lbS;
   // structure
   for (int i=0; i<snlevel_-1; ++i)
   {
@@ -339,13 +342,25 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
     SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU") WrapILUSmoother(sml,Ass_[i],S,i);
-    else             S.Reshape(Ass_[i],type,p,&pushlist);
-    Sss_[i] = S;
+    if (type=="ILU")
+    {
+      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+      WrapILUSmoother(sml,Ass_[i],*lbS,i);
+      Sss_[i] = lbS;
+    }
+    else
+    {
+      S = rcp(new MLAPI::InverseOperator());
+      S->Reshape(Ass_[i],type,p,&pushlist);
+      Sss_[i] = S;
+    }
   }
-  // coarse grid:
-  S.Reshape(Ass_[snlevel_-1],"Amesos-KLU");
+  // structure coarse grid:
+  S = rcp(new MLAPI::InverseOperator());
+  S->Reshape(Ass_[snlevel_-1],"Amesos-KLU");
   Sss_[snlevel_-1] = S;
+  
+  
   // fluid
   for (int i=0; i<fnlevel_-1; ++i)
   {
@@ -356,13 +371,25 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
     SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU") WrapILUSmoother(fml,Aff_[i],S,i);
-    else             S.Reshape(Aff_[i],type,p,&pushlist);
-    Sff_[i] = S;
+    if (type=="ILU") 
+    {
+      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+      WrapILUSmoother(fml,Aff_[i],*lbS,i);
+      Sff_[i] = lbS;
+    }
+    else             
+    {
+      S = rcp(new MLAPI::InverseOperator());
+      S->Reshape(Aff_[i],type,p,&pushlist);
+      Sff_[i] = S;
+    }
   }
-  // coarse grid:
-  S.Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
+  // fluid coarse grid:
+  S = rcp(new MLAPI::InverseOperator());
+  S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
   Sff_[fnlevel_-1] = S;
+  
+  
   // ale
   for (int i=0; i<anlevel_-1; ++i)
   {
@@ -373,12 +400,22 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
     string type = "";
     SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU") WrapILUSmoother(aml,Aaa_[i],S,i);
-    else             S.Reshape(Aaa_[i],type,p,&pushlist);
-    Saa_[i] = S;
+    if (type=="ILU") 
+    {
+      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+      WrapILUSmoother(aml,Aaa_[i],*lbS,i);
+      Saa_[i] = lbS;
+    }
+    else             
+    {
+      S = rcp(new MLAPI::InverseOperator());
+      S->Reshape(Aaa_[i],type,p,&pushlist);
+      Saa_[i] = S;
+    }
   }
-  // coarse grid:
-  S.Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
+  // ale coarse grid:
+  S = rcp(new MLAPI::InverseOperator());
+  S->Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
   Saa_[anlevel_-1] = S;
 
   //-------------------------------------------------------------- timing
@@ -488,31 +525,66 @@ void FSI::OverlappingBlockMatrixFSIAMG::RAPcoarse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(ML* ml,
-                                                        MLAPI::Operator& A,
-                                                        MLAPI::InverseOperator& S,
-                                                        const int level)
+void FSI::OverlappingBlockMatrixFSIAMG::WrapILUSmoother(
+                                     ML* ml,
+                                     MLAPI::Operator& A,
+                                     MLAPI::LoadBalanceInverseOperator& S,
+                                     const int level)
 {
   // we use pre == post smoother here, so get postsmoother from ml
-  void* data = ml->post_smoother[level].smoother->data;
-  Ifpack_Preconditioner* prec = static_cast<Ifpack_Preconditioner*>(data);
-  Epetra_RowMatrix& mat = const_cast<Epetra_RowMatrix&>(prec->Matrix());
-  
-  // make sure this really is an Epetra_Operator
-  //std::string test = prec->Label();
-  //if (!prec->Comm().MyPID()) cout << test << endl;
+  void* data = ml->pre_smoother[level].smoother->data;
+  Ifpack_Handle_Struct* handle = static_cast<Ifpack_Handle_Struct*>(data);
+  bool takepart = false;
+  if (handle->A_Base) takepart = true;
+  Ifpack_Preconditioner* prec = NULL;
+  Epetra_RowMatrix* mat = NULL;
+  if (takepart)
+  {
+    prec = static_cast<Ifpack_Preconditioner*>(handle->A_Base);
+    mat = const_cast<Epetra_RowMatrix*>(&(prec->Matrix()));
+  }
 
-#if 0  
-  S.Reshape(prec,A,false);
-#else 
-  // better use operator from underneath Ifpack preconditioner,
-  // otherwise overlapping Ifpack will crash
-  MLAPI::Space range(mat.OperatorRangeMap());
-  MLAPI::Space domain(mat.OperatorDomainMap());
-  MLAPI::Operator tmp;
-  tmp.Reshape(domain,range,&mat,false);
+
+  int NumMyElements = 0;
+  int* MyGlobalElements = NULL;
+  if (takepart)
+  {
+    NumMyElements = mat->OperatorRangeMap().NumMyElements();
+    MyGlobalElements = mat->OperatorRangeMap().MyGlobalElements();
+  }
+  MLAPI::Space range(-1,NumMyElements,MyGlobalElements);
+  if (takepart)
+  {
+    NumMyElements = mat->OperatorDomainMap().NumMyElements(); 
+    MyGlobalElements = mat->OperatorDomainMap().MyGlobalElements();
+  }
+  MLAPI::Space domain(-1,NumMyElements,MyGlobalElements);
+  
+  MLAPI::LoadBalanceOperator tmp;
+  tmp.Reshape(domain,range,mat,false);  
   S.Reshape(prec,tmp,false);
+
+
+#if 0 // debug testing only
+  MLAPI::MultiVector invec(S.GetDomainSpace(),1,true);
+  MLAPI::MultiVector outvec(S.GetRangeSpace(),1,true);
+  invec = 1.0;
+  S.Apply(invec,outvec);
+  cout << outvec;
+  MLAPI::Space foolr(mat->OperatorRangeMap());
+  MLAPI::Space foold(mat->OperatorDomainMap());
+  MLAPI::Operator foolop;
+  foolop.Reshape(foold,foolr,mat,false);
+  MLAPI::InverseOperator foolinvop;
+  foolinvop.Reshape(prec,foolop,false);
+  MLAPI::MultiVector invec2(foolinvop.GetDomainSpace(),1,true);
+  MLAPI::MultiVector outvec2(foolinvop.GetRangeSpace(),1,true);
+  invec2 = 1.0;
+  foolinvop.Apply(invec,outvec2);
+  cout << outvec2;
+  exit(0);
 #endif
+
 
   return;
 }
@@ -801,7 +873,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
         sx.Update(-1.0,tmp,1.0);
       }
       sz = 0.0;
-      if (!amgsolve) Sss_[level].Apply(sx,sz);
+      if (!amgsolve) Sss_[level]->Apply(sx,sz);
       else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
       mlsy.Update(pcomega_[level],sz,1.0);
     }
@@ -818,7 +890,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
         ax.Update(-1.0,tmp,1.0);
       }
       az = 0.0;
-      if (!amgsolve) Saa_[level].Apply(ax,az);
+      if (!amgsolve) Saa_[level]->Apply(ax,az);
       else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
       mlay.Update(pcomega_[level],az,1.0);
     }
@@ -840,7 +912,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
         fx.Update(-1.0,tmp,1.0);
       }
       fz = 0.0;
-      if (!amgsolve) Sff_[level].Apply(fx,fz);
+      if (!amgsolve) Sff_[level]->Apply(fx,fz);
       else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
       mlfy.Update(pcomega_[level],fz,1.0);
     }
@@ -931,14 +1003,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<MLAPI::InverseOperator>& S,
+                     const vector<RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R
                      ) const
 {
   // do one iteration in any case (start counting iterations from zero)
   if (!amgsolve)
-    S[level].Apply(b,z);
+    S[level]->Apply(b,z);
   else
     Vcycle(level,nlevel,z,b,A,S,P,R);
 
@@ -951,7 +1023,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
     {
       tmpb = b - A[level] * z;
       tmpz = 0.0;
-      if (!amgsolve) S[level].Apply(tmpb,tmpz);
+      if (!amgsolve) S[level]->Apply(tmpb,tmpz);
       else           Vcycle(level,nlevel,tmpz,tmpb,A,S,P,R);
       z = z + omega * tmpz;
     }
@@ -1364,7 +1436,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
                                                MLAPI::MultiVector& z,
                                                const MLAPI::MultiVector& b,
                                                const vector<MLAPI::Operator>& A,
-                                               const vector<MLAPI::InverseOperator>& S,
+                                               const vector<RCP<MLAPI::InverseOperator> >& S,
                                                const vector<MLAPI::Operator>& P,
                                                const vector<MLAPI::Operator>& R,
                                                const bool trigger) const
@@ -1379,13 +1451,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
   // coarse solve
   if (level==nlevel-1)
   {
-    z = S[level] * b;
+    z = *(S[level]) * b;
     return;
   }
 
   // presmoothing (initial guess = 0)
   z = 0.0;
-  S[level].Apply(b,z);
+  S[level]->Apply(b,z);
 
   // coarse level residual and correction
   MLAPI::MultiVector bc;
@@ -1406,7 +1478,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
   MLAPI::MultiVector dz(b.GetVectorSpace(),true);
   r = A[level] * z;
   r.Update(1.0,b,-1.0);
-  S[level].Apply(r,dz);
+  S[level]->Apply(r,dz);
   z.Update(1.0,dz,1.0);
 
 

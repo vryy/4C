@@ -5,7 +5,7 @@
 
 #include "fsi_overlapprec.H"
 #include "MLAPI_Operator.h"
-#include "MLAPI_InverseOperator.h"
+#include "MLAPI_LoadBalanceInverseOperator.h"
 
 
 namespace FSI
@@ -63,7 +63,8 @@ namespace FSI
     /// wrap ILU smoother from ML
     void WrapILUSmoother(ML* ml,
                          MLAPI::Operator& A,
-                         MLAPI::InverseOperator& S,const int level);
+                         MLAPI::LoadBalanceInverseOperator& S,
+                         const int level);
 
 
     /// generic Vcycle that works on all fields
@@ -72,7 +73,7 @@ namespace FSI
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<MLAPI::InverseOperator>& S,
+                     const vector<RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R,
                      const bool trigger = false) const;
@@ -129,7 +130,7 @@ namespace FSI
                      MLAPI::MultiVector& z,
                      const MLAPI::MultiVector& b,
                      const vector<MLAPI::Operator>& A,
-                     const vector<MLAPI::InverseOperator>& S,
+                     const vector<RCP<MLAPI::InverseOperator> >& S,
                      const vector<MLAPI::Operator>& P,
                      const vector<MLAPI::Operator>& R
                      ) const;
@@ -157,48 +158,48 @@ namespace FSI
     void RAPoffdiagonals();
 
 
-    int                             minnlevel_; /// min of the below nlevel_
-    vector<double>                  pcomega_;
-    vector<int>                     pciter_;
-    vector<double>                  somega_;
-    vector<int>                     siterations_;
-    vector<double>                  fomega_;
-    vector<int>                     fiterations_;
-    vector<double>                  aomega_;
-    vector<int>                     aiterations_;
+    int                                  minnlevel_; /// min of the below nlevel_
+    vector<double>                       pcomega_;
+    vector<int>                          pciter_;
+    vector<double>                       somega_;
+    vector<int>                          siterations_;
+    vector<double>                       fomega_;
+    vector<int>                          fiterations_;
+    vector<double>                       aomega_;
+    vector<int>                          aiterations_;
 
-    int                             snlevel_;   /// num level in structure AMG
-    Teuchos::ParameterList          sparams_;
-    mutable vector<MLAPI::Operator> Ass_;
-    vector<MLAPI::InverseOperator>  Sss_;
-    vector<MLAPI::Operator>         Pss_;
-    vector<MLAPI::Operator>         Rss_;
+    int                                  snlevel_;   /// num level in structure AMG
+    Teuchos::ParameterList               sparams_;
+    mutable vector<MLAPI::Operator>      Ass_;
+    vector<RCP<MLAPI::InverseOperator> > Sss_;
+    vector<MLAPI::Operator>              Pss_;
+    vector<MLAPI::Operator>              Rss_;
 
-    int                             fnlevel_;   /// num level in fluid AMG
-    Teuchos::ParameterList          fparams_;
-    mutable vector<MLAPI::Operator> Aff_;
-    vector<MLAPI::InverseOperator>  Sff_;
-    vector<MLAPI::Operator>         Pff_;
-    vector<MLAPI::Operator>         Rff_;
+    int                                  fnlevel_;   /// num level in fluid AMG
+    Teuchos::ParameterList               fparams_;
+    mutable vector<MLAPI::Operator>      Aff_;
+    vector<RCP<MLAPI::InverseOperator> > Sff_;
+    vector<MLAPI::Operator>              Pff_;
+    vector<MLAPI::Operator>              Rff_;
 
-    int                             anlevel_;   /// num level in ale AMG
-    Teuchos::ParameterList          aparams_;
-    mutable vector<MLAPI::Operator> Aaa_;
-    vector<MLAPI::InverseOperator>  Saa_;
-    vector<MLAPI::Operator>         Paa_;
-    vector<MLAPI::Operator>         Raa_;
+    int                                  anlevel_;   /// num level in ale AMG
+    Teuchos::ParameterList               aparams_;
+    mutable vector<MLAPI::Operator>      Aaa_;
+    vector<RCP<MLAPI::InverseOperator> > Saa_;
+    vector<MLAPI::Operator>              Paa_;
+    vector<MLAPI::Operator>              Raa_;
 
     // these are for implicit off-diagonal in block smoother
-    mutable MLAPI::Operator         Asf_;
-    mutable MLAPI::Operator         Afs_;
-    mutable MLAPI::Operator         Afa_;
-    mutable MLAPI::Operator         Aaf_;
+    mutable MLAPI::Operator              Asf_;
+    mutable MLAPI::Operator              Afs_;
+    mutable MLAPI::Operator              Afa_;
+    mutable MLAPI::Operator              Aaf_;
 
     // these are for explicit coarse off-diagonals in block smoother
-    mutable vector<MLAPI::Operator> ASF_;
-    mutable vector<MLAPI::Operator> AFS_;
-    mutable vector<MLAPI::Operator> AFA_;
-    mutable vector<MLAPI::Operator> AAF_;
+    mutable vector<MLAPI::Operator>      ASF_;
+    mutable vector<MLAPI::Operator>      AFS_;
+    mutable vector<MLAPI::Operator>      AFA_;
+    mutable vector<MLAPI::Operator>      AAF_;
 
   };
 
