@@ -1150,7 +1150,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       break;
       default: dserror("Unknown type of ml preconditioner");
       }
-      mllist.set("output"                          ,inparams.get<int>("ML_PRINT"));
+      mllist.set("ML output"                       ,inparams.get<int>("ML_PRINT"));
       if (inparams.get<int>("ML_PRINT")==10)
         mllist.set("print unused"                  ,1);
       else
