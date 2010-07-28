@@ -147,6 +147,30 @@ void DRT::Discretization::AddNode(RCP<DRT::Node> node)
 }
 
 /*----------------------------------------------------------------------*
+ |  delete an node (public)                                  mwgee 10/08|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::DeleteNode(RCP<DRT::Node> ele)
+{
+  map<int,RCP<DRT::Node> >::iterator fool = node_.find(ele->Id());
+  if (fool==node_.end()) return false;
+  node_.erase(fool);
+  Reset();
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  delete an node (public)                                  mwgee 10/08|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::DeleteNode(const int gid)
+{
+  map<int,RCP<DRT::Node> >::iterator fool = node_.find(gid);
+  if (fool==node_.end()) return false;
+  node_.erase(fool);
+  Reset();
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  delete an element (public)                               mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElement(RCP<DRT::Element> ele)
@@ -651,6 +675,22 @@ DRT::Condition* DRT::Discretization::GetCondition(const string& name) const
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
   return curr->second.get();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::GetConditionNames( std::vector<std::string> & names ) const
+{
+  std::set<std::string> n;
+  for ( multimap<string,RCP<Condition> >::const_iterator curr=condition_.begin();
+        curr!=condition_.end();
+        ++curr )
+  {
+    n.insert( curr->first );
+  }
+  names.reserve( n.size() );
+  names.assign( n.begin(), n.end() );
 }
 
 

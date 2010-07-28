@@ -1,0 +1,34 @@
+#ifndef DRT_DIRICHLETEXTRACTOR_H
+#define DRT_DIRICHLETEXTRACTOR_H
+
+#include "../linalg/linalg_mapextractor.H"
+
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace DRT
+{
+
+  /// MapExtractor that covers all Dirichlet dofs
+  class DirichletExtractor : public LINALG::MultiMapExtractor
+  {
+  public:
+
+    enum {
+      cond_nondirichlet = 0,
+      cond_dirichlet = 1
+    };
+
+    /// setup the whole thing
+    void Setup(const DRT::Discretization& dis);
+
+    void ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual );
+
+    MAP_EXTRACTOR_VECTOR_METHODS( NonDirichlet, cond_nondirichlet )
+    MAP_EXTRACTOR_VECTOR_METHODS( Dirichlet   , cond_dirichlet )
+  };
+}
+
+#endif

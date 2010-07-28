@@ -86,6 +86,8 @@ typedef struct _GENPROB
 
   INT               restart;       /* is restart or not */
 
+  INT               adaptive;      /* adaptive mesh algorithms */
+  
   INT               numsf;         /* actual number of struct-field */
   INT               numff;         /* actual number of fluid field */
   INT               numaf;         /* actual number of ale field */

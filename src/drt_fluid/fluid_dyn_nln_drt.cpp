@@ -36,7 +36,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 
-
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
  *

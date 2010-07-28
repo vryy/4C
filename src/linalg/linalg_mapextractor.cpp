@@ -47,6 +47,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_getConst.hpp>
 
 #include <numeric>
+#include <cmath>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -283,6 +284,53 @@ void LINALG::MultiMapExtractor::AddVector(const Epetra_MultiVector& partial, int
   Teuchos::RCP<Epetra_MultiVector> v = ExtractVector(full, block);
   v->Update(scale,partial,1.0);
   InsertVector(*v,block,full);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::PutScalar( Epetra_Vector& full, int block, double scalar )
+{
+  const Epetra_Map& bm = *Map( block );
+  const Epetra_Map& fm = *FullMap();
+
+  int numv = bm.NumMyElements();
+  int * v = bm.MyGlobalElements();
+
+  for ( int i=0; i<numv; ++i )
+  {
+    int lid = fm.LID( v[i] );
+    if ( lid==-1 )
+      dserror( "maps do not match" );
+    full[lid] = 0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double LINALG::MultiMapExtractor::Norm2( const Epetra_Vector& full, int block )
+{
+  const Epetra_Map& bm = *Map( block );
+  const Epetra_Map& fm = *FullMap();
+
+  int numv = bm.NumMyElements();
+  int * v = bm.MyGlobalElements();
+
+  double local_norm = 0;
+
+  for ( int i=0; i<numv; ++i )
+  {
+    int lid = fm.LID( v[i] );
+    if ( lid==-1 )
+      dserror( "maps do not match" );
+    double value = full[lid];
+    local_norm += value*value;
+  }
+
+  double global_norm = 0;
+  fm.Comm().SumAll( &local_norm, &global_norm, 1 );
+  return std::sqrt( global_norm );
 }
 
 

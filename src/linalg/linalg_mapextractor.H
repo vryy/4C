@@ -310,6 +310,12 @@ namespace LINALG
 
     //@}
 
+    /// PutScalar to one block only
+    void PutScalar( Epetra_Vector& full, int block, double scalar );
+
+    /// L2-norm of one block only
+    double Norm2( const Epetra_Vector& full, int block );
+
   private:
 
     /// the full row map
@@ -348,7 +354,13 @@ namespace LINALG
                                                                         \
   const Teuchos::RCP<const Epetra_Map>& name ## Map() const { return Map(pos); } \
                                                                         \
-  bool name ## Relevant() const { return name ## Map()->NumGlobalElements()!=0; }
+  bool name ## Relevant() const { return name ## Map()->NumGlobalElements()!=0; } \
+                                                                        \
+  void name ## PutScalar( Epetra_Vector& full, double scalar )          \
+  { PutScalar( full,pos,scalar ); }                                     \
+                                                                        \
+  double name ## Norm2( const Epetra_Vector& full )                     \
+  { return Norm2( full, pos ); }
 
 
   /// Split a dof row map in two and establish the communication pattern between those maps

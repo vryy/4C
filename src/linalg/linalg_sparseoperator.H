@@ -43,6 +43,7 @@ Maintainer: Michael Gee
 
 #include <vector>
 
+#include <Epetra_Operator.h>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
@@ -51,7 +52,7 @@ namespace LINALG
 {
   // forward declarations
   class BlockSparseMatrixBase;
-  class SparseMatrix;
+  class SparseMatrixBase;
 
 
   /// Linear operator interface enhanced for use in FE simulations
@@ -202,8 +203,8 @@ class SparseOperator : public Epetra_Operator
     /// Add one operator to another
     virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,  const double scalarB) = 0;
 
-    /// Add one SparseMatrix to another
-    virtual const void AddOther(LINALG::SparseMatrix& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
+    /// Add one SparseMatrixBase to another
+    virtual const void AddOther(LINALG::SparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
 
     /// Add one BlockSparseMatrix to another
     virtual const void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;

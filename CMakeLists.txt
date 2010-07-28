@@ -62,6 +62,109 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+#
+# Legacy defines
+
+add_definitions("-DLINUX_MUENCH")
+add_definitions("-DPARALLEL")
+add_definitions("-DPARMETIS")
+add_definitions("-DLOOPL=15")
+add_definitions("-DCCADISCRET")
+add_definitions("-DTRILINOS_PACKAGE")
+add_definitions("-DD_FLUID")
+add_definitions("-DD_FSI")
+
+# external library variable
+set(LIBRARIES "")
+
+#
+### compile time options
+
+option (DEBUG "Turn on special debug code" OFF)
+if (DEBUG)
+  add_definitions("-DDEBUG")
+endif (DEBUG)
+
+option (STKADAPTIVE "adaptive meshes based on the stk library" OFF)
+if (STKADAPTIVE)
+  add_definitions("-DSTKADAPTIVE")
+endif (STKADAPTIVE)
+
+#   additional features
+
+option (BINIO "binary io" ON)
+if (BINIO)
+  find_package(HDF5 REQUIRED)
+  if (HDF5_FOUND)
+    include_directories(${HDF5_INCLUDE_DIRS})
+    link_directories(${HDF5_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${HDF5_LIBRARIES}
+      )
+  endif(HDF5_FOUND)
+  add_definitions("-DBINIO")
+endif(BINIO)
+
+option (QHULL "needed for XFEM simulations" ON)
+if (QHULL)
+  find_package(Qhull REQUIRED)
+  if (QHULL_FOUND)
+    include_directories(${QHULL_INCLUDE_DIRS})
+    link_directories(${QHULL_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${QHULL_LIBRARIES}
+      )
+  endif (QHULL_FOUND)
+
+  find_package(Tetgen REQUIRED)
+  if (TETGEN_FOUND)
+    include_directories(${TETGEN_INCLUDE_DIRS})
+    link_directories(${TETGEN_LIBRARY_DIRS})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${TETGEN_LIBRARIES}
+      )
+  endif (TETGEN_FOUND)
+
+  add_definitions("-DQHULL")
+endif(QHULL)
+
+option (D_EXODUS "Pre_exodus (exodusII, netcdf)" OFF)
+if (D_EXODUS)
+  add_definitions("-DD_EXODUS")
+endif(D_EXODUS)
+
+#   tools
+
+option (PERF "detailed time measurement" OFF)
+if (PERF)
+  add_definitions("-DPERF")
+endif(PERF)
+
+#   fancy stuff
+
+option (COLOROUTPUT "use colored output to the terminal" OFF)
+if (COLOROUTPUT)
+  add_definitions("-DCOLOROUTPUT")
+endif(COLOROUTPUT)
+
+option (DSERROR_DUMP "dserror creates a core file" OFF)
+if (DSERROR_DUMP)
+  add_definitions("-DDSERROR_DUMP")
+endif(DSERROR_DUMP)
+
+option (TRAP_FE "crash ccarat if a nan of inf occurs" OFF)
+if (TRAP_FE)
+  add_definitions("-DTRAP_FE")
+endif(TRAP_FE)
+
+option (THROWELEMENTERRORS "throw errors at element level so all element error can be found" OFF)
+if (THROWELEMENTERRORS)
+  add_definitions("-DTHROWELEMENTERRORS")
+endif(THROWELEMENTERRORS)
+
 # these are the fedora 8 with openmpi paths
 
 if (NOT INCLUDE_INSTALL_DIR)
@@ -79,8 +182,6 @@ endif (NOT Trilinos_DIR)
 #
 ### External Libraries
 
-set(LIBRARIES "")
-
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(MPI REQUIRED)
@@ -97,9 +198,7 @@ find_package(Trilinos REQUIRED)
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    #${Trilinos_LIBRARIES}
+  set(USED_Trilinos_LIBRARIES
     trilinoscouplings
     noxepetra
     nox
@@ -111,7 +210,31 @@ if (Trilinos_FOUND)
     epetraext
     epetra
     teuchos
-    #stk_mesh_fem stk_mesh_base stk_util_use_cases stk_util_parallel stk_util_diag stk_util_env stk_util_util
+    )
+  
+  # some parts of baci might require additional trilinos libraries
+
+  if (STKADAPTIVE)
+    set(USED_Trilinos_LIBRARIES
+      stk_search stk_linsys
+      stk_mesh_fem stk_mesh_base 
+      #stk_util_use_cases 
+      stk_util_parallel 
+      #stk_util_diag 
+      #stk_util_env 
+      stk_util_util
+      #intrepid
+      #fei_test_utils fei_trilinos fei_base
+      shards
+      #isorropia
+      #zoltan
+      ${USED_Trilinos_LIBRARIES}
+      )
+  endif (STKADAPTIVE)
+
+  set(LIBRARIES
+    ${USED_Trilinos_LIBRARIES}
+    ${LIBRARIES}
     )
 
 # define of which library we are using - for compatibility checks
@@ -213,25 +336,6 @@ if (BLAS_FOUND)
     )
 endif(BLAS_FOUND)
 
-#
-# Legacy defines
-
-add_definitions("-DLINUX_MUENCH")
-add_definitions("-DPARALLEL")
-add_definitions("-DPARMETIS")
-add_definitions("-DLOOPL=15")
-add_definitions("-DCCADISCRET")
-add_definitions("-DTRILINOS_PACKAGE")
-add_definitions("-DD_FLUID")
-add_definitions("-DD_FSI")
-
-### compile time options
-
-option (DEBUG "Turn on special debug code" OFF)
-if (DEBUG)
-  add_definitions("-DDEBUG")
-endif (DEBUG)
-
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
   src/drt_ale2/ale2.cpp
@@ -255,6 +359,7 @@ set(OBJS_DRT_B2_LIB
 set(OBJS_DRT_LIB
   src/drt_fluid/drt_pbcdofset.cpp
   src/drt_fluid/drt_periodicbc.cpp
+  src/drt_lib/drt_assemblestrategy.cpp
   src/drt_lib/drt_condition.cpp
   src/drt_lib/drt_conditiondefinition.cpp
   src/drt_lib/drt_container.cpp
@@ -590,6 +695,7 @@ set(OBJS_DRT_UTILS
   src/drt_io/io_gmsh_xfem_extension.cpp
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
+  src/drt_lib/drt_dirichletextractor.cpp
   src/drt_lib/drt_dserror.cpp
   src/drt_lib/drt_elementdefinition.cpp
   src/drt_lib/drt_elementtype.cpp
@@ -895,6 +1001,7 @@ set(OBJS_LINALG
   src/linalg/linalg_blocksparsematrix.cpp
   src/linalg/linalg_condest.cpp
   src/linalg/linalg_downwindmatrix.cpp
+  src/linalg/linalg_fixedsparsematrix.cpp
   src/linalg/linalg_krylov_projector.cpp
   src/linalg/linalg_mapextractor.cpp
   src/linalg/linalg_mlapi_operator.cpp
@@ -906,6 +1013,7 @@ set(OBJS_LINALG
   src/linalg/linalg_solver.cpp
   src/linalg/linalg_solver_spooles.cpp
   src/linalg/linalg_sparsematrix.cpp
+  src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp
   src/linalg/saddlepointpreconditioner.cpp
   src/linalg/simpler_operator.cpp
@@ -1039,6 +1147,28 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/selfcontact_binarytree.cpp
   src/drt_contact/strugenalpha_cmt.cpp
 )
+set(OBJS_STK_LIB
+  src/stk_lib/stk_comm.cpp
+  src/stk_lib/stk_field_comm.cpp
+  src/stk_lib/stk_gnuplot.cpp
+  src/stk_lib/stk_io.cpp
+  src/stk_lib/stk_iterator.cpp
+  src/stk_lib/stk_mesh.cpp
+  src/stk_lib/stk_refine.cpp
+  src/stk_lib/stk_topology.cpp
+  src/stk_lib/stk_unrefine.cpp
+  src/stk_lib/stk_utils.cpp
+)
+set(OBJS_DRT_STK
+  src/drt_stk/stk_adaptive.cpp
+  src/drt_stk/stk_adaptive_main.cpp
+  src/drt_stk/stk_assemblestrategy.cpp
+  src/drt_stk/stk_errorestimate.cpp
+  #src/drt_stk/stk_fixedsparsematrix.cpp
+  src/drt_stk/stk_fluid.cpp
+  src/drt_stk/stk_fluidresulttest.cpp
+  src/drt_stk/stk_gmsh.cpp
+)
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -1138,105 +1268,6 @@ if (D_RED_AIRWAYS)
   add_definitions("-DD_RED_AIRWAYS")
 endif(D_RED_AIRWAYS)
 
-#   additional features
-
-option (BINIO "binary io" ON)
-if (BINIO)
-  find_package(HDF5 REQUIRED)
-  if (HDF5_FOUND)
-    include_directories(${HDF5_INCLUDE_DIRS})
-    link_directories(${HDF5_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${HDF5_LIBRARIES}
-      )
-  endif(HDF5_FOUND)
-  add_definitions("-DBINIO")
-endif(BINIO)
-
-option (QHULL "needed for XFEM simulations" ON)
-if (QHULL)
-  find_package(Qhull REQUIRED)
-  if (QHULL_FOUND)
-    include_directories(${QHULL_INCLUDE_DIRS})
-    link_directories(${QHULL_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${QHULL_LIBRARIES}
-      )
-  endif (QHULL_FOUND)
-
-  find_package(Tetgen REQUIRED)
-  if (TETGEN_FOUND)
-    include_directories(${TETGEN_INCLUDE_DIRS})
-    link_directories(${TETGEN_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${TETGEN_LIBRARIES}
-      )
-  endif (TETGEN_FOUND)
-
-  add_definitions("-DQHULL")
-endif(QHULL)
-
-option (D_EXODUS "Pre_exodus (exodusII, netcdf)" OFF)
-if (D_EXODUS)
-  add_definitions("-DD_EXODUS")
-endif(D_EXODUS)
-
-option (PRESTRESS "prestress a structure with Neumann loads only" OFF)
-if (PRESTRESS)
-  add_definitions("-DPRESTRESS")
-endif(PRESTRESS)
-
-option (POSTSTRESS "restart with a prestressed structure" OFF)
-if (POSTSTRESS)
-  add_definitions("-DPOSTSTRESS")
-endif(POSTSTRESS)
-
-option (INVERSEDESIGNCREATE "run an inverse design problem" OFF)
-if (INVERSEDESIGNCREATE)
-  add_definitions("-DINVERSEDESIGNCREATE")
-endif(INVERSEDESIGNCREATE)
-
-option (INVERSEDESIGNUSE "use a previously created inverse design" OFF)
-if (INVERSEDESIGNUSE)
-  add_definitions("-DINVERSEDESIGNUSE")
-endif(INVERSEDESIGNUSE)
-
-
-
-#   tools
-
-option (PERF "detailed time measurement" OFF)
-if (PERF)
-  add_definitions("-DPERF")
-endif(PERF)
-
-
-#   fancy stuff
-
-option (COLOROUTPUT "use colored output to the terminal" OFF)
-if (COLOROUTPUT)
-  add_definitions("-DCOLOROUTPUT")
-endif(COLOROUTPUT)
-
-option (DSERROR_DUMP "dserror creates a core file" OFF)
-if (DSERROR_DUMP)
-  add_definitions("-DDSERROR_DUMP")
-endif(DSERROR_DUMP)
-
-option (TRAP_FE "crash ccarat if a nan of inf occurs" OFF)
-if (TRAP_FE)
-  add_definitions("-DTRAP_FE")
-endif(TRAP_FE)
-
-option (THROWELEMENTERRORS "throw errors at element level so all element error can be found" OFF)
-if (THROWELEMENTERRORS)
-  add_definitions("-DTHROWELEMENTERRORS")
-endif(THROWELEMENTERRORS)
-
-
 ###------------------------------------------------------------------ Binaries
 
 # hide libraries
@@ -1319,6 +1350,9 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 
+add_library(stk_adaptive_lib ${OBJS_STK_LIB})
+add_library(drt_lib_stk ${OBJS_DRT_STK})
+
 set(SUPPORT_LIBRARIES
   drt_lib
   drt_lib_artnet 
@@ -1327,6 +1361,8 @@ set(SUPPORT_LIBRARIES
   drt_lib_statmech
   drt_lib_constraint
   drt_lib_contact
+  drt_lib_stk
+  stk_adaptive_lib
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_potential

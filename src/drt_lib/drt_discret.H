@@ -71,7 +71,7 @@ namespace LINALG
 */
 namespace DRT
 {
-
+  class AssembleStrategy;
   class DofSetProxy;
 
 /*!
@@ -774,6 +774,43 @@ public:
   virtual void AddNode(RCP<DRT::Node> node);
 
   /*!
+  \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
+
+  Delete an node from the discretization. Node can either be ghosted or not.
+  If node on calling processor is not found nothing is done and false is returned.
+  Note that this is not a fatal error and no message will be posted;
+  note furthermore that in this method Reset() is called only on the processor where
+  an node has been deleted actually; however, as such a modification may affect the
+  discretization as a whole it may be required to call Reset() on each processor
+  subsequently; to do so, please, call CheckFilledGlobally() if required
+
+  \return Returns true upon successful deletion or node, returns false if node
+          was not found on calling proc.
+
+  \note Sets Filled()=false and calls Reset() upon discretization.
+  */
+  virtual bool DeleteNode(RCP<DRT::Node> ele);
+
+  /*!
+  \brief Delete an node with global id gid from the discretization
+         (Filled()==true NOT prerequisite)
+
+  Delete an node from the discretization. Node can either be ghosted or not.
+  If node on calling processor is not found nothing is done and false is returned.
+  Note that this is not a fatal error and no message will be posted;
+  note furthermore that in this method Reset() is called only on the processor where
+  an node has been deleted actually; however, as such a modification may affect the
+  discretization as a whole it may be required to call Reset() on each processor
+  subsequently; to do so, please, call CheckFilledGlobally() if required
+
+  \return Returns true upon successful deletion or node, returns false if node
+          was not found on calling proc.
+
+  \note Sets Filled()=false and calls Reset() upon discretization.
+  */
+  virtual bool DeleteNode(const int gid);
+
+  /*!
   \brief Delete an element from the discretization (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.
@@ -926,6 +963,9 @@ public:
   \return Returns NULL if condition with that name does not exist
   */
   virtual DRT::Condition* GetCondition(const string& name) const;
+
+  /// return all condition names defined in this discretization
+  virtual void GetConditionNames( std::vector<std::string> & names ) const;
 
   //@}
 
@@ -1299,6 +1339,9 @@ public:
                         Teuchos::RCP<Epetra_Vector>    systemvector2,
                         Teuchos::RCP<Epetra_Vector>    systemvector3);
 
+  /// Call elements to evaluate
+  virtual void Evaluate( Teuchos::ParameterList & params,
+                         DRT::AssembleStrategy & strategy );
 
   /// Call elements to evaluate
   /*!

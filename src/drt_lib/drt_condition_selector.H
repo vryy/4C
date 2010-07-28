@@ -17,10 +17,11 @@ Maintainer: Ulrich Kuettler
 #define DRT_CONDITION_SELECTOR_H
 
 #include <vector>
+#include <set>
 #include <string>
 
-#include "drt_condition.H"
-#include "drt_discret.H"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Map.h>
 
 namespace LINALG
 {
@@ -29,6 +30,10 @@ namespace LINALG
 
 namespace DRT
 {
+  class Discretization;
+  class Condition;
+  class Node;
+
 namespace UTILS
 {
 
@@ -47,28 +52,24 @@ namespace UTILS
   {
   public:
 
-    ConditionSelector(const DRT::Discretization& dis, std::string condname) : dis_(dis), condname_(condname)
-    {
-      dis.GetCondition(condname, conds_);
-    }
+    ConditionSelector(const DRT::Discretization& dis, std::string condname);
 
     virtual ~ConditionSelector() {}
 
+    /// select all matching dofs of the node and put them into conddofset
+    virtual bool SelectDofs( DRT::Node* node, std::set<int> & conddofset );
+
     /// tell if the node gid is known by any condition of the given name
-    bool ContainsNode(int ngid) const
-    {
-      for (unsigned j=0; j<conds_.size(); ++j)
-      {
-        if (conds_[j]->ContainsNode(ngid))
-        {
-          return true;
-        }
-      }
-      return false;
-    }
+    virtual bool ContainsNode(int ngid);
 
     /// tell if the dof of a node from this condition is covered as well
-    virtual bool ContainsDof(int dof, int pos) const { return true; }
+    virtual bool ContainsDof(int dof, int pos) { return true; }
+
+  protected:
+
+    const DRT::Discretization& Discretization() const { return dis_; }
+
+    const std::vector<DRT::Condition*> & Conditions() const { return conds_; }
 
   private:
     const DRT::Discretization& dis_;
@@ -96,11 +97,25 @@ namespace UTILS
                           int enddim)
       : ConditionSelector(dis, condname), startdim_(startdim), enddim_(enddim) {}
 
-    virtual bool ContainsDof(int dof, int pos) const { return startdim_<=pos and pos<enddim_; }
+    virtual bool ContainsDof(int dof, int pos) { return startdim_<=pos and pos<enddim_; }
 
   private:
     int startdim_;
     int enddim_;
+  };
+
+
+  /// select all dirichlet dofs
+  class DirichletSelector : public ConditionSelector
+  {
+  public:
+
+    DirichletSelector( const DRT::Discretization& dis )
+      : ConditionSelector( dis, "Dirichlet" )
+    {
+    }
+
+    virtual bool SelectDofs( DRT::Node* node, std::set<int> & conddofset );
   };
 
 
@@ -124,7 +139,7 @@ namespace UTILS
   public:
 
     /// add a new ConditionSelector
-    void AddSelector(RCP<ConditionSelector> s) { selectors_.push_back(s); }
+    void AddSelector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
 
     /// Do the setup
     void SetupExtractor(const DRT::Discretization& dis,
@@ -136,7 +151,7 @@ namespace UTILS
     /// evaluate the ConditionSelector objects
     void SetupCondDofSets(const DRT::Discretization& dis);
 
-    std::vector<RCP<ConditionSelector> > selectors_;
+    std::vector<Teuchos::RCP<ConditionSelector> > selectors_;
     std::vector<std::set<int> > conddofset_;
   };
 

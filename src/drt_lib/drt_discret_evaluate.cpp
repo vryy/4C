@@ -49,6 +49,7 @@ Maintainer: Michael Gee
 #include "drt_parobjectfactory.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "drt_assemblestrategy.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
@@ -67,24 +68,21 @@ void DRT::Discretization::Evaluate(
                         Teuchos::RCP<Epetra_Vector>          systemvector2,
                         Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
+  DRT::AssembleStrategy strategy( systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
+  Evaluate( params, strategy );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Evaluate(
+                        Teuchos::ParameterList&              params,
+                        DRT::AssembleStrategy & strategy )
+{
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  // see what we have for input
-  bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  bool assemblevec1 = systemvector1!=Teuchos::null;
-  bool assemblevec2 = systemvector2!=Teuchos::null;
-  bool assemblevec3 = systemvector3!=Teuchos::null;
-
-  // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
 
   // call the element's register class preevaluation method
   // for each type of element
@@ -92,8 +90,12 @@ void DRT::Discretization::Evaluate(
   // that does nothing
   {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate PreEvaluate");
-    ParObjectFactory::Instance().PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
-                                             systemvector1,systemvector2,systemvector3);
+    ParObjectFactory::Instance().PreEvaluate(*this,params,
+                                             strategy.Systemmatrix1(),
+                                             strategy.Systemmatrix2(),
+                                             strategy.Systemvector1(),
+                                             strategy.Systemvector2(),
+                                             strategy.Systemvector3());
   }
 
 #ifdef THROWELEMENTERRORS
@@ -120,41 +122,7 @@ void DRT::Discretization::Evaluate(
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = la[0].Size();
-    if (assemblemat1)
-    {
-      if (elematrix1.M()!=eledim or elematrix1.N()!=eledim)
-        elematrix1.Shape(eledim,eledim);
-      else
-        memset(elematrix1.A(),0,eledim*eledim*sizeof(double));
-    }
-    if (assemblemat2)
-    {
-      if (elematrix2.M()!=eledim or elematrix2.N()!=eledim)
-        elematrix2.Shape(eledim,eledim);
-      else
-        memset(elematrix2.A(),0,eledim*eledim*sizeof(double));
-    }
-    if (assemblevec1)
-    {
-      if (elevector1.Length()!=eledim)
-        elevector1.Size(eledim);
-      else
-        memset(elevector1.Values(),0,eledim*sizeof(double));
-    }
-    if (assemblevec2)
-    {
-      if (elevector2.Length()!=eledim)
-        elevector2.Size(eledim);
-      else
-        memset(elevector2.Values(),0,eledim*sizeof(double));
-    }
-    if (assemblevec3)
-    {
-      if (elevector3.Length()!=eledim)
-        elevector3.Size(eledim);
-      else
-        memset(elevector3.Values(),0,eledim*sizeof(double));
-    }
+    strategy.ClearElementStorage( eledim );
     }
 
 #ifdef THROWELEMENTERRORS
@@ -164,19 +132,23 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
     // call the element evaluate method
-    int err = actele->Evaluate(params,*this,la,elematrix1,elematrix2,
-                               elevector1,elevector2,elevector3);
+    int err = actele->Evaluate(params,*this,la,
+                               strategy.Elematrix1(),
+                               strategy.Elematrix2(),
+                               strategy.Elevector1(),
+                               strategy.Elevector2(),
+                               strategy.Elevector3());
     if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
     }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();
-      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,la[0].lm_,la[0].lmowner_);
-      if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,la[0].lm_,la[0].lmowner_);
-      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,la[0].lm_,la[0].lmowner_);
-      if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,la[0].lm_,la[0].lmowner_);
-      if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,la[0].lm_,la[0].lmowner_);
+      strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lmowner_);
+      strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_);
+      strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+      strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
+      strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
     }
 
 #ifdef THROWELEMENTERRORS
@@ -730,8 +702,9 @@ void DoDirichletCondition(DRT::Condition&             cond,
       // factor given by spatial function
       double functfac = 1.0;
       int funct_num = -1;
-      if (funct) funct_num = (*funct)[j];
+      if (funct)
       {
+         funct_num = (*funct)[j];
          if (funct_num>0)
            functfac =
              DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,

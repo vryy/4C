@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fluid_utils_mapextractor.H"
+#include "fluid_utils.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_selector.H"
@@ -60,4 +61,13 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::KSPMapExtractor::ConditionedElementMap(
   return condelements;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
+{
+  FLD::UTILS::SetupFluidSplit( dis, genprob.ndim, *this );
+}
+
 #endif
+

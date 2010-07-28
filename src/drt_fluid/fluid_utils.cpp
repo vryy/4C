@@ -18,13 +18,14 @@ Maintainer: Axel Gerstenberger
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
                                  int ndim,
-                                 LINALG::MapExtractor& extractor)
+                                 LINALG::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -73,7 +74,10 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
                                 dis.Comm()));
   otherdofmapvec.clear();
 
-  extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps( 2 );
+  maps[0] = otherdofmap;
+  maps[1] = conddofmap;
+  extractor.Setup(*dis.DofRowMap(),maps);
 }
 
 /*----------------------------------------------------------------------*

@@ -345,7 +345,7 @@ const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrix& A,
+const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrixBase& A,
                                                    const bool transposeA,
                                                    const double scalarA,
                                                    const double scalarB) const

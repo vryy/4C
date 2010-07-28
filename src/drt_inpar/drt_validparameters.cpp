@@ -349,6 +349,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(1,0),
                                &type);
 
+  setStringToIntegralParameter<int>("ADAPTIVE","No",
+                                    "If on switches to spacial adaptive algorithms",
+                                    yesnotuple,yesnovalue,&type);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& ps = list->sublist("PATIENT SPECIFIC",false,"");
 

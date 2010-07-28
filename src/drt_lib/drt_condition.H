@@ -427,6 +427,33 @@ protected:
   //! A communicator
   RefCountPtr<Epetra_Comm>            comm_;     // a communicator
 }; // class Condition
+
+
+/// Predicate used to sort a list of conditions
+class ConditionLess
+{
+public:
+
+  /// compare two conditions by type and id
+  bool operator()( const Condition& lhs, const Condition& rhs ) const
+  {
+    Condition::ConditionType lhs_type = lhs.Type();
+    Condition::ConditionType rhs_type = rhs.Type();
+    if ( lhs_type==rhs_type )
+    {
+      return lhs.Id() < rhs.Id();
+    }
+    return lhs_type < rhs_type;
+  }
+
+  /// compare two conditions by type and id
+  bool operator()( const Condition* lhs, const Condition* rhs ) const
+  {
+    return operator()( *lhs, *rhs );
+  }
+
+};
+
 } // namespace DRT
 
 

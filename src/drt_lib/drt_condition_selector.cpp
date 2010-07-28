@@ -16,8 +16,100 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "drt_condition_selector.H"
+#include "drt_dserror.H"
+#include "drt_condition.H"
+#include "drt_discret.H"
+
 #include "../linalg/linalg_utils.H"
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::ConditionSelector::ConditionSelector(const DRT::Discretization& dis, std::string condname)
+  : dis_(dis), condname_(condname)
+{
+  dis.GetCondition(condname, conds_);
+  std::sort( conds_.begin(), conds_.end(), DRT::ConditionLess() );
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::ConditionSelector::SelectDofs( DRT::Node* node, std::set<int> & conddofset )
+{
+  bool found = false;
+
+  // put all conditioned dofs into conddofset
+  if ( ContainsNode( node->Id() ) )
+  {
+    std::vector<int> dof = Discretization().Dof( node );
+    for ( unsigned k=0; k<dof.size(); ++k )
+    {
+      // test for dof position
+      if ( ContainsDof( dof[k], k ) )
+      {
+        conddofset.insert( dof[k] );
+        found = true;
+      }
+    }
+  }
+  return found;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::ConditionSelector::ContainsNode(int ngid)
+{
+  for (unsigned j=0; j<conds_.size(); ++j)
+  {
+    if (conds_[j]->ContainsNode(ngid))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::DirichletSelector::SelectDofs( DRT::Node* node, std::set<int> & conddofset )
+{
+  bool found = false;
+  int ngid = node->Id();
+
+  // The condition vector is sorted by condition type. Thus lesser entity
+  // ranks are considered first. The first condition that covers a node gets
+  // it.
+
+  const std::vector<DRT::Condition*> & conds = Conditions();
+  for ( std::vector<DRT::Condition*>::const_iterator i=conds.begin();
+        i!=conds.end();
+        ++i )
+  {
+    DRT::Condition & c = **i;
+    const std::vector<int> * onoff = c.Get<std::vector<int> >("onoff");
+    if ( onoff==NULL )
+      dserror( "not a valid Dirichlet condition" );
+    if ( c.ContainsNode( ngid ) )
+    {
+      std::vector<int> dof = Discretization().Dof( node );
+      for ( unsigned k=0; k<dof.size(); ++k )
+      {
+        if ( k > onoff->size() )
+          dserror( "not a valid Dirichlet condition" );
+        if ( ( *onoff )[k] != 0 )
+        {
+          conddofset.insert( dof[k] );
+        }
+      }
+
+      // if a node has been covered by one Dirichlet condition do not look for
+      // further conditions
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -78,22 +170,8 @@ void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretizat
     {
       ConditionSelector& conds = *selectors_[j];
 
-      // put all conditioned dofs into conddofset
-      if (conds.ContainsNode(node->Id()))
-      {
-        std::vector<int> dof = dis.Dof(node);
-        for (unsigned k=0; k<dof.size(); ++k)
-        {
-          // test for dof position
-          if (conds.ContainsDof(dof[k],k))
-          {
-            conddofset_[j].insert(dof[k]);
-          }
-        }
-
-        // Node has been found. Done with this one.
+      if ( conds.SelectDofs( node, conddofset_[j] ) )
         break;
-      }
     }
   }
 }

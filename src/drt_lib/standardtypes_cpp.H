@@ -54,6 +54,11 @@ extern "C" /* stuff which is c and is accessed from c++ */
 {
 #endif
 #include "../headers/standardtypes.h"
+
+/* global variable declarations are meant to be inside header files */
+/* (Ok. We do not want to have global variables. But there are some...) */
+extern struct _GENPROB      genprob;
+
 #ifdef __cplusplus
 }
 #endif

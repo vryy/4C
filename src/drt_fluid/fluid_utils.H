@@ -24,9 +24,14 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_xfem/dof_management.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include <Teuchos_TimeMonitor.hpp>
+
+namespace LINALG
+{
+  class MultiMapExtractor;
+  class MapExtractor;
+}
 
 namespace FLD
 {
@@ -328,7 +333,7 @@ namespace UTILS
  */
 void SetupFluidSplit(const DRT::Discretization& dis,
                      int ndim,
-                     LINALG::MapExtractor& extractor);
+                     LINALG::MultiMapExtractor& extractor);
 
 /// Split dof row map of discretization into velocity and pressure maps
 /*!

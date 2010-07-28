@@ -53,6 +53,22 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(
+    Teuchos::RCP<Epetra_CrsGraph> crsgraph,
+    Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps)
+  : explicitdirichlet_(true),
+    savegraph_(true),
+    maxnumentries_(-1),
+    matrixtype_(CRS_MATRIX)
+{
+  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*crsgraph));
+  graph_ = crsgraph;
+  dbcmaps_ = dbcmaps;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+LINALG::SparseMatrix::SparseMatrix(
     const Epetra_Map&   rowmap,
     const int           npr,
     bool                explicitdirichlet,
@@ -131,7 +147,7 @@ LINALG::SparseMatrix::SparseMatrix(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access)
-  : LINALG::SparseOperator(mat),
+  : LINALG::SparseMatrixBase(mat),
     explicitdirichlet_(mat.explicitdirichlet_),
     savegraph_(mat.savegraph_),
     maxnumentries_(0),
@@ -148,6 +164,7 @@ LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess ac
     graph_ = mat.graph_;
     maxnumentries_ = mat.maxnumentries_;
     matrixtype_ = mat.matrixtype_;
+    dbcmaps_ = mat.dbcmaps_;
   }
 }
 
@@ -200,6 +217,7 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
   explicitdirichlet_ = mat.explicitdirichlet_;
   savegraph_ = mat.savegraph_;
   matrixtype_ = mat.matrixtype_;
+  dbcmaps_ = mat.dbcmaps_;
 
   if(not mat.Filled())
   {
@@ -257,6 +275,7 @@ void LINALG::SparseMatrix::Assign(Epetra_DataAccess access, const SparseMatrix& 
     explicitdirichlet_ = mat.explicitdirichlet_;
     savegraph_ = mat.savegraph_;
     matrixtype_ = mat.matrixtype_;
+    dbcmaps_ = mat.dbcmaps_;
   }
 }
 
@@ -265,19 +284,9 @@ void LINALG::SparseMatrix::Assign(Epetra_DataAccess access, const SparseMatrix& 
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Zero()
 {
-  // graph_==Teuchos::null if savegraph_==false only
   if (graph_==Teuchos::null)
   {
-    const Epetra_Map rowmap = sysmat_->RowMap();
-    // Remove old matrix before creating a new one so we do not have old and
-    // new matrix in memory at the same time!
-    sysmat_ = Teuchos::null;
-    if(matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries_,false));
-    else if(matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries_,false));
-    else
-      dserror("matrix type is not correct");
+    Reset();
   }
   else
   {
@@ -302,11 +311,26 @@ void LINALG::SparseMatrix::Zero()
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Reset()
 {
-  Epetra_Map rowmap = sysmat_->RowMap();
+  const Epetra_Map rowmap = sysmat_->RowMap();
+  std::vector<int> numentries( rowmap.NumMyElements(), maxnumentries_ );
+  if ( Filled() )
+  {
+    const Epetra_CrsGraph & graph = sysmat_->Graph();
+    for ( unsigned i=0; i<numentries.size(); ++i )
+    {
+      int *indices;
+      int err = graph.ExtractMyRowView(i, numentries[i], indices);
+      if ( err!=0 )
+        dserror( "ExtractMyRowView failed" );
+    }
+  }
+  // Remove old matrix before creating a new one so we do not have old and
+  // new matrix in memory at the same time!
+  sysmat_ = Teuchos::null;
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries_,false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&numentries[0],false));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries_,false));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,&numentries[0],false));
   else
     dserror("matrix type is not correct");
 
@@ -337,6 +361,7 @@ void LINALG::SparseMatrix::Assemble(
 
   if (sysmat_->Filled())
   {
+#ifdef DEBUG
     // There is the case of nodes without dofs (XFEM).
     // If no row dofs are present on this proc, their is nothing to assemble.
     // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
@@ -348,6 +373,7 @@ void LINALG::SparseMatrix::Assemble(
         break;
       }
     if (!doit) return;
+#endif
 
     std::vector<double> values(lcoldim);
     std::vector<int> localcol(lcoldim);
@@ -368,6 +394,10 @@ void LINALG::SparseMatrix::Assemble(
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
+
+      // if we have a Dirichlet map check if this row is a Dirichlet row
+      if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) ) continue;
+
       const int rlid = rowmap.LID(rgid);
 #ifdef DEBUG
       if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
@@ -395,6 +425,9 @@ void LINALG::SparseMatrix::Assemble(
 #ifdef DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
 #endif
+
+      // if we have a Dirichlet map check if this row is a Dirichlet row
+      if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) ) continue;
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
@@ -500,6 +533,9 @@ void LINALG::SparseMatrix::FEAssemble(
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
 {
+  if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) )
+    dserror( "no assembling to Dirichlet row" );
+
   // SumIntoGlobalValues works for filled matrices as well!
   int errone = sysmat_->SumIntoGlobalValues(rgid,1,&val,&cgid);
   if (errone>0)
@@ -593,7 +629,6 @@ void LINALG::SparseMatrix::UnComplete()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::UnComplete");
 
-
   if (not Filled())
     return;
 
@@ -654,6 +689,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(
   // distributed
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
+
+  if ( dbcmaps_!=Teuchos::null )
+  {
+    dserror( "Dirichlet map and toggle vector cannot be combined" );
+  }
 
   const Epetra_Vector& dbct = *dbctoggle;
 
@@ -759,6 +799,29 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
 {
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
+
+  if ( dbcmaps_!=Teuchos::null )
+  {
+#ifdef DEBUG
+    if ( not dbctoggle.SameAs( *dbcmaps_->Map( 1 ) ) )
+    {
+      dserror( "Dirichlet maps mismatch" );
+    }
+#endif
+    if ( diagonalblock )
+    {
+      double v = 1.0;
+      int numdbc = dbctoggle.NumMyElements();
+      int * dbc = dbctoggle.MyGlobalElements();
+      for ( int i=0; i<numdbc; ++i )
+      {
+        int row = dbc[i];
+        int err = sysmat_->ReplaceGlobalValues(row,1,&v,&row);
+        if (err<0) dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d",err);
+      }
+    }
+    return;
+  }
 
   if (explicitdirichlet_)
   {
@@ -866,6 +929,11 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 {
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
+
+  if ( dbcmaps_!=Teuchos::null )
+  {
+    dserror( "Dirichlet map and transformations cannot be combined" );
+  }
 
   if (explicitdirichlet_)
   {
@@ -1072,169 +1140,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::SetUseTranspose(bool UseTranspose)
-{
-  return sysmat_->SetUseTranspose(UseTranspose);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  return sysmat_->Apply(X,Y);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  return sysmat_->ApplyInverse(X,Y);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 const char* LINALG::SparseMatrix::Label() const
 {
   return "LINALG::SparseMatrix";
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrix::UseTranspose() const
-{
-  return sysmat_->UseTranspose();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrix::HasNormInf() const
-{
-  return sysmat_->HasNormInf();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Comm& LINALG::SparseMatrix::Comm() const
-{
-  return sysmat_->Comm();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::SparseMatrix::OperatorDomainMap() const
-{
-  return sysmat_->OperatorDomainMap();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::SparseMatrix::OperatorRangeMap() const
-{
-  return sysmat_->OperatorRangeMap();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::MaxNumEntries() const
-{
-  return sysmat_->MaxNumEntries();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double LINALG::SparseMatrix::NormInf() const
-{
-  return sysmat_->NormInf();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double LINALG::SparseMatrix::NormOne() const
-{
-  return sysmat_->NormOne();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double LINALG::SparseMatrix::NormFrobenius() const
-{
-  return sysmat_->NormFrobenius();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::Multiply(bool TransA, const Epetra_Vector &x, Epetra_Vector &y) const
-{
-  return sysmat_->Multiply(TransA,x,y);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  return sysmat_->Multiply(TransA,X,Y);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::LeftScale(const Epetra_Vector &x)
-{
-  return sysmat_->LeftScale(x);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::RightScale(const Epetra_Vector &x)
-{
-  return sysmat_->RightScale(x);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::PutScalar(double ScalarConstant)
-{
-  return sysmat_->PutScalar(ScalarConstant);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::Scale(double ScalarConstant)
-{
-  return sysmat_->Scale(ScalarConstant);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::ReplaceDiagonalValues(const Epetra_Vector &Diagonal)
-{
-  return sysmat_->ReplaceDiagonalValues(Diagonal);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::ExtractDiagonalCopy(Epetra_Vector &Diagonal) const
-{
-  return sysmat_->ExtractDiagonalCopy(Diagonal);
 }
 
 
@@ -1266,45 +1174,12 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
+void LINALG::SparseMatrix::Add(const LINALG::SparseMatrixBase& A,
                                const bool transposeA,
                                const double scalarA,
                                const double scalarB)
 {
-  Add(*A.sysmat_,transposeA,scalarA,scalarB);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Add(const LINALG::SparseOperator& A,
-                               const bool transposeA,
-                               const double scalarA,
-                               const double scalarB)
-{
-  A.AddOther(*this, transposeA, scalarA, scalarB);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void const LINALG::SparseMatrix::AddOther(LINALG::SparseMatrix& A,
-                                          const bool transposeA,
-                                          const double scalarA,
-                                          const double scalarB) const
-{
-  A.Add(*this, transposeA, scalarA, scalarB);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void const LINALG::SparseMatrix::AddOther(LINALG::BlockSparseMatrixBase& A,
-                                          const bool transposeA,
-                                          const double scalarA,
-                                          const double scalarB) const
-{
-  dserror("BlockSparseMatrix and SparseMatrix cannot be added");
+  Add(*A.EpetraMatrix(),transposeA,scalarA,scalarB);
 }
 
 
@@ -1315,57 +1190,7 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
                                const double scalarA,
                                const double scalarB)
 {
-  if (!A.Filled()) dserror("FillComplete was not called on A");
-
-  Epetra_CrsMatrix* Aprime = NULL;
-  RCP<EpetraExt::RowMatrix_Transpose> Atrans;
-
-  if (transposeA)
-  {
-    Atrans = rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
-  }
-  else
-  {
-    Aprime = const_cast<Epetra_CrsMatrix*>(&A);
-  }
-
-  if (scalarB == 0.0)
-    sysmat_->PutScalar(0.0);
-  else if (scalarB != 1.0)
-    sysmat_->Scale(scalarB);
-
-  //Loop over Aprime's rows and sum into
-  int MaxNumEntries = Aprime->MaxNumEntries();
-  int NumEntries;
-  vector<int>    Indices(MaxNumEntries);
-  vector<double> Values(MaxNumEntries);
-
-  const int NumMyRows = Aprime->NumMyRows();
-  int Row, err;
-  if (scalarA)
-  {
-    for( int i = 0; i < NumMyRows; ++i )
-    {
-      Row = Aprime->GRID(i);
-      int ierr = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&Values[0],&Indices[0]);
-      if (ierr) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",ierr);
-      if (scalarA != 1.0)
-        for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
-      for (int j=0; j<NumEntries; ++j)
-      {
-        err = sysmat_->SumIntoGlobalValues(Row,1,&Values[j],&Indices[j]);
-        if (err==2)
-        {
-          err = sysmat_->InsertGlobalValues(Row,1,&Values[j],&Indices[j]);
-          if (err<0)
-            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
-        }
-        else if (err)
-          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned err=%d",err);
-      }
-    }
-  }
+  LINALG::Add( A, transposeA, scalarA, *sysmat_, scalarB );
 }
 
 

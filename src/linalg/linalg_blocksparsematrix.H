@@ -213,7 +213,7 @@ class BlockSparseMatrixBase : public SparseOperator
                    const double scalarB);
 
   /// Resolve virtual function of parent class
-  virtual const void AddOther(SparseMatrix& A,
+  virtual const void AddOther(SparseMatrixBase& A,
                               const bool transposeA,
                               const double scalarA,
                               const double scalarB) const;

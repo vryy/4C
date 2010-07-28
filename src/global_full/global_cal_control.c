@@ -13,8 +13,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern struct _GENPROB      genprob;
-
 /* header for DRT style input */
 #include "../drt_structure/stru_static_drt.H"
 #include "../drt_lib/global_inp_control2.H"
@@ -30,11 +28,20 @@ extern struct _GENPROB      genprob;
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
 
+#include "../drt_stk/stk_adaptive_main.H"
+
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+  if ( genprob.adaptive )
+  {
+    adaptive_main();
+  }
+  else
+  {
+  
   switch (genprob.probtyp)
   {
     case prb_structure:
@@ -133,6 +140,7 @@ void ntacal()
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
       break;
   }
-
+  }
+  
   drt_problem_done();
 }

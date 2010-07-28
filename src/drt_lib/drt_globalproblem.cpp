@@ -235,6 +235,9 @@ void DRT::Problem::InputControl()
   if ( genprob.restart==0 )
     genprob.restart        = type.get<int>("RESTART");
 
+  // If we have an adaptive mesh, things are totally different.
+  genprob.adaptive       = Teuchos::getIntegralValue<int>(type,"ADAPTIVE");
+
   // set field numbers depending on problem type and numfld
   switch (genprob.probtyp)
   {
