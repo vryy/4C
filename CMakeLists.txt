@@ -113,6 +113,13 @@ if (Trilinos_FOUND)
     teuchos
     #stk_mesh_fem stk_mesh_base stk_util_use_cases stk_util_parallel stk_util_diag stk_util_env stk_util_util
     )
+
+# define of which library we are using - for compatibility checks
+if (Trilinos_VERSION STREQUAL "10.1d") 
+add_definitions("-DTRILINOS_10_1d")
+else ()
+endif ()
+
 endif (Trilinos_FOUND)
 
 find_package(Umfpack)
