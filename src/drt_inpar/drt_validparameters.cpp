@@ -1225,6 +1225,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
                                yesnotuple,yesnovalue,&statmech);
+  //Reading whether diffusion of crosslinkers is to simulated
+  setStringToIntegralParameter<int>("CRSLNKDIFFUSION","No","If chosen crosslinker diffusion is simulated",
+                               yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
