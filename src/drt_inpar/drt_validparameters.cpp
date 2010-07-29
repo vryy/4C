@@ -1470,7 +1470,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::incompressible,
                                      INPAR::FLUID::varying_density,
                                      INPAR::FLUID::loma,
-									 INPAR::FLUID::boussinesq),
+                                     INPAR::FLUID::boussinesq),
                                &fdyn);
 
   setStringToIntegralParameter<int>("DYNAMICTYP","Nlin_Time_Int",
@@ -1497,37 +1497,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                fluid_solver_ale_xfluid),
                                     &fdyn);
 
-  setStringToIntegralParameter<FLUID_TIMEINTTYPE>("TIMEINTEGR","One_Step_Theta",
-                               "Time Integration Scheme",
-                               tuple<std::string>(
-                                 "Stationary",
-                                 "Gen_Alfa",
-                                 "Gen_Alpha",
-                                 "Af_Gen_Alpha",
-                                 "One_Step_Theta",
-                                 "BDF2",
-                                 "Inc_Acc_Gen_Alpha",
-                                 "Theta_Adamsbashforth",
-                                 "Fluid_Stoch"
-                                 ),
-                               tuple<FLUID_TIMEINTTYPE>(
-                                 timeint_stationary,
-                                 timeint_gen_alpha,
-                                 timeint_gen_alpha,
-                                 timeint_afgenalpha,
-                                 timeint_one_step_theta,
-                                 timeint_bdf2,
-                                 timeint_inc_acc_gen_alpha,
-                                 timeint_theta_adamsbashforth,
-                                 timeint_stoch
-                                 ),
-                               &fdyn);
+  setStringToIntegralParameter<INPAR::FLUID::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",
+      "Time Integration Scheme",
+      tuple<std::string>(
+          "Stationary",
+          "Gen_Alpha",
+          "Af_Gen_Alpha",
+          "One_Step_Theta",
+          "BDF2"),
+      tuple<INPAR::FLUID::TimeIntegrationScheme>(
+          INPAR::FLUID::timeint_stationary,
+          INPAR::FLUID::timeint_gen_alpha,
+          INPAR::FLUID::timeint_afgenalpha,
+          INPAR::FLUID::timeint_one_step_theta,
+          INPAR::FLUID::timeint_bdf2),
+          &fdyn);
+
   setStringToIntegralParameter<int>("STARTINGALGO","One_Step_Theta","",
                                tuple<std::string>(
                                  "One_Step_Theta"
                                  ),
                                tuple<int>(
-                                 timeint_one_step_theta
+                                 INPAR::FLUID::timeint_one_step_theta
                                  ),
                                &fdyn);
   setStringToIntegralParameter<int>("NONLINITER","fixed_point_like",

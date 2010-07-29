@@ -637,7 +637,7 @@ void SysmatDomainNitsche(
     const V2&                      ephi,         ///< nodal G-function values for this element
     const M2&                      etau,         ///< element stresses (?) not used in combustion
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
-    const FLUID_TIMEINTTYPE        timealgo,     ///< time discretization scheme
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
     const double                   dt,           ///< delta t (time step size)
     const double                   theta,        ///< parameter for one step theta scheme
     const bool                     newton,       ///< full Newton or fixed-point-like
@@ -1078,7 +1078,7 @@ void SysmatBoundaryNitsche(
     const V2&                                  ephi,           ///<
     const M2&                                  etau,           ///<
     Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
-    const FLUID_TIMEINTTYPE                    timealgo,       ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
     const double&                              theta,          ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<

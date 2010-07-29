@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3.H"
 #include "../drt_xfem/xfem_enums.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 namespace XFLUID
 {
@@ -41,7 +42,7 @@ namespace XFLUID
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
           Teuchos::RCP<const MAT::Material> material,
-          const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+          const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
           const double                      theta,         ///< factor for one step theta scheme
           const bool                        newton ,
@@ -70,7 +71,7 @@ namespace XFLUID
           Epetra_SerialDenseMatrix&         estif,         ///< element stiffness matrix
           Epetra_SerialDenseVector&         eforce,        ///< element rhs vector
           Teuchos::RCP<const MAT::Material> material,
-          const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+          const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
           const double                      theta,         ///< factor for one step theta scheme
           const bool                        newton ,
@@ -101,7 +102,7 @@ namespace XFLUID
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
           Teuchos::RCP<const MAT::Material> material,
-          const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+          const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
           const double                      theta,         ///< factor for one step theta scheme
           const bool                        newton ,

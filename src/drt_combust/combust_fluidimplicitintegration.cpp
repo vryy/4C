@@ -79,7 +79,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   maxtime_ (params_.get<double>("total time")),
   dta_     (params_.get<double> ("time step size")),
   dtp_     (params_.get<double> ("time step size")),
-  timealgo_(params_.get<FLUID_TIMEINTTYPE>("time int algo")),
+  timealgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
   theta_   (params_.get<double>("theta")),
   extrapolationpredictor_(params.get("do explicit predictor",false)),
   uprestart_(params.get("write restart every", -1)),
@@ -95,7 +95,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
-  if (timealgo_ == timeint_stationary)
+  if (timealgo_ == INPAR::FLUID::timeint_stationary)
   {
     dta_ = 1.0;
     dtp_ = 1.0;
@@ -279,33 +279,33 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 
-  if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
+  if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_stationary)
   {
     // for stationary problems PrepareTimeStep() should only be called for output related reasons
     cout << "Warning: 'time' and 'time step' are set to 1.0 and 1 for output control file" << endl;
-    timealgo_ = timeint_stationary;
+    timealgo_ = INPAR::FLUID::timeint_stationary;
     step_ = 1;
     time_ = 1.0;
     theta_ = 1.0;
   }
-  else if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_bdf2)
+  else if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_bdf2)
   {
     // do a backward Euler step for the first time step
     if (step_==1)
     {
-      timealgo_ = timeint_one_step_theta;
+      timealgo_ = INPAR::FLUID::timeint_one_step_theta;
       theta_ = params_.get<double>("start theta");
     }
     else
     {
-      timealgo_ = timeint_bdf2;
+      timealgo_ = INPAR::FLUID::timeint_bdf2;
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
       theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
   }
   else
   {
-    timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+    timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
     theta_ = params_.get<double>("theta");
   }
 }
@@ -584,7 +584,7 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
 
   //TODO
   //stationary case (timealgo_== timeint_stationary))
-  if (timealgo_==timeint_one_step_theta)
+  if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
     FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
     dserror("time integration scheme not supported");
@@ -620,7 +620,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   double dtele   = 0.0;
 
   // action for elements
-  if (timealgo_!=timeint_stationary and theta_ < 1.0)
+  if (timealgo_!=INPAR::FLUID::timeint_stationary and theta_ < 1.0)
   {
     cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
   }
@@ -677,7 +677,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       ParameterList eleparams;
 
       // action for elements
-      if (timealgo_==timeint_stationary)
+      if (timealgo_==INPAR::FLUID::timeint_stationary)
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
         eleparams.set("action","calc_fluid_systemmat_and_residual");
@@ -1604,7 +1604,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
   {
     PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
-    if (timealgo_ != timeint_stationary)
+    if (timealgo_ != INPAR::FLUID::timeint_stationary)
     {
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_), "solution_field_velocity_n","Velocity Solution (Physical) n",false, step, time);

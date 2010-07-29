@@ -278,7 +278,7 @@ namespace ADAPTER {
     virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
 
     /// return type of time integration scheme
-    virtual const FLUID_TIMEINTTYPE TimIntScheme() const = 0;
+    virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
     /// The idea is to have one function that does the extraction and call it

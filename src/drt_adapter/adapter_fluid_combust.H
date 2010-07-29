@@ -199,7 +199,7 @@ namespace ADAPTER
     virtual void SetItemax(int itemax);
 
     /// return type of time integration scheme
-    virtual const FLUID_TIMEINTTYPE TimIntScheme() const { return fluid_.TimIntScheme(); }
+    virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const { return fluid_.TimIntScheme(); }
 
     virtual void LiftDrag();
 

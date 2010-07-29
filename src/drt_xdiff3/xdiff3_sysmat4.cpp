@@ -201,7 +201,7 @@ void SysmatDomain4(
 //    const M1&                           eaccn,
     const M2&                           eflux,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
-    const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
     const bool                          newton,        ///< full Newton or fixed-point-like
@@ -630,7 +630,7 @@ void SysmatBoundary4(
     const M2&                         eflux,
     const Teuchos::RCP<const Epetra_Vector>& ivelcolnp,       ///< velocity for interface nodes
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-    const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
@@ -942,7 +942,7 @@ void Sysmat4(
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
         Teuchos::RCP<const MAT::Material> material,      ///< fluid material
-        const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+        const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme
         const bool                        newton,        ///< full Newton or fixed-point-like
@@ -1003,7 +1003,7 @@ void XDIFF::callSysmat4(
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
         Teuchos::RCP<const MAT::Material> material,
-        const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+        const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme
         const bool                        newton ,

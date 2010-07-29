@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 
@@ -63,7 +64,7 @@ namespace TIMEINT_THETA_BDF2
       const Teuchos::RCP<Epetra_Vector>&   veln,
       const Teuchos::RCP<Epetra_Vector>&   velnm,
       const Teuchos::RCP<Epetra_Vector>&   accn,
-      const FLUID_TIMEINTTYPE              timealgo,
+      const INPAR::FLUID::TimeIntegrationScheme timealgo,
       const double                         dta,
       const double                         theta,
       Teuchos::RCP<Epetra_Vector>&         histmom
@@ -82,7 +83,7 @@ namespace TIMEINT_THETA_BDF2
       const Teuchos::RCP<const Epetra_Vector>   veln,
       const Teuchos::RCP<const Epetra_Vector>   velnm,
       const Teuchos::RCP<const Epetra_Vector>   accn,
-      const FLUID_TIMEINTTYPE                   timealgo,
+      const INPAR::FLUID::TimeIntegrationScheme timealgo,
       const double                              dta,
       const double                              dtp,
       const Teuchos::RCP<Epetra_Vector>         velnp
@@ -98,7 +99,7 @@ namespace TIMEINT_THETA_BDF2
       const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
       const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
       const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
-      const FLUID_TIMEINTTYPE                    timealgo, ///< time integration id
+      const INPAR::FLUID::TimeIntegrationScheme  timealgo, ///< time integration id
       const int                                  step,     ///< time step
       const double                               theta,    ///< factor for OST method
       const double                               dta,      ///< time step size (delta t) n

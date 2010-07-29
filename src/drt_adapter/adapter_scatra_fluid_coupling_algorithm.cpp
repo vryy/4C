@@ -45,26 +45,26 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   {
   case INPAR::SCATRA::timeint_stationary:
   {
-    if (FluidField().TimIntScheme() != timeint_stationary)
+    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }
   case INPAR::SCATRA::timeint_one_step_theta:
   {
-    if (FluidField().TimIntScheme() != timeint_one_step_theta)
+    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }
   case INPAR::SCATRA::timeint_bdf2:
   {
-    if (FluidField().TimIntScheme() != timeint_bdf2)
+    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_bdf2)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }
   case INPAR::SCATRA::timeint_gen_alpha:
   {
-    if (FluidField().TimIntScheme() != timeint_gen_alpha and
-        FluidField().TimIntScheme() != timeint_afgenalpha)
+    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_gen_alpha and
+        FluidField().TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }

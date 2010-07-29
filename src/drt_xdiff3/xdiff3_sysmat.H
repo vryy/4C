@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xdiff3.H"
 #include "../drt_xfem/xfem_enums.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 namespace XDIFF
 {
@@ -40,7 +41,7 @@ namespace XDIFF
           Epetra_SerialDenseMatrix&         estif,
           Epetra_SerialDenseVector&         eforce,
           Teuchos::RCP<const MAT::Material> material,
-          const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+          const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
           const double                      dt,            ///< delta t (time step size)
           const double                      theta,         ///< factor for one step theta scheme
           const bool                        newton ,

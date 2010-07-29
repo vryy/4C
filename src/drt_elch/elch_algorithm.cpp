@@ -136,9 +136,9 @@ void ELCH::Algorithm::InitialCalculations()
   // a safety check
   switch((FluidField().TimIntScheme()))
   {
-  case timeint_stationary:
-  case timeint_one_step_theta:
-  case timeint_bdf2:
+  case INPAR::FLUID::timeint_stationary:
+  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
     break;
   default: dserror("Selected time integration scheme is not available");
   }
@@ -183,7 +183,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
 
   switch((FluidField().TimIntScheme()))
   {
-  case timeint_stationary:
+  case INPAR::FLUID::timeint_stationary:
   {
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),
@@ -195,8 +195,8 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         ScaTraField().Discretization());
     break;
   }
-  case timeint_one_step_theta:
-  case timeint_bdf2:
+  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
   {
     FluidField().SetIterLomaFields(
         ScaTraField().DensElchNp(),

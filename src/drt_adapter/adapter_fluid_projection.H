@@ -124,7 +124,7 @@ public:
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 
-    const FLUID_TIMEINTTYPE TimIntScheme() const {/*return fluid_.TimIntScheme();*/ dserror("not implemented");return timeint_gen_alpha;}
+    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {/*return fluid_.TimIntScheme();*/ dserror("not implemented");return INPAR::FLUID::timeint_gen_alpha;}
 
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);

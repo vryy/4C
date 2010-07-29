@@ -277,7 +277,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
-      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
@@ -385,8 +385,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         dserror("unknown type of stabilization parameter definition");
 
       // time integration factors
-      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
-      dsassert(timealgo == timeint_stationary, "must be stationary!");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      dsassert(timealgo == INPAR::FLUID::timeint_stationary, "must be stationary!");
       const double            dt       = 1.0;
       const double            theta    = 1.0;
 

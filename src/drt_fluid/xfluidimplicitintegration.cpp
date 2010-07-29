@@ -76,7 +76,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   step_(0),
   stepmax_(params.get<int>   ("max number timesteps")),
   maxtime_(params.get<double>("total time")),
-  timealgo_(params.get<FLUID_TIMEINTTYPE>("time int algo")),
+  timealgo_(params.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
   itemax_(params.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get<bool>("do explicit predictor")),
   uprestart_(params.get<int>("write restart every")),
@@ -95,12 +95,12 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
-  if (timealgo_ == timeint_stationary and params_.get<double>("time step size") != 1.0)
+  if (timealgo_ == INPAR::FLUID::timeint_stationary and params_.get<double>("time step size") != 1.0)
     dserror("Timestep size (delta t) has to be 1.0 for stationary computations!");
 
   // parameter theta for time-integration schemes
   theta_    = params_.get<double>("theta");
-  if (timealgo_ == timeint_stationary)
+  if (timealgo_ == INPAR::FLUID::timeint_stationary)
     theta_ = 1.0;
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
   // (may be reset below when starting algorithm is used)
@@ -380,7 +380,7 @@ void FLD::XFluidImplicitTimeInt::Integrate(
   }
 
   // distinguish stationary and instationary case
-  if (timealgo_==timeint_stationary) SolveStationaryProblem(cutterdiscret);
+  if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem(cutterdiscret);
   else TimeLoop(cutterdiscret);
 
   // print the results of time measurements
@@ -438,15 +438,15 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
     {
       switch (timealgo_)
       {
-      case timeint_one_step_theta:
+      case INPAR::FLUID::timeint_one_step_theta:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
               time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_afgenalpha:
+      case INPAR::FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_bdf2:
+      case INPAR::FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
@@ -557,9 +557,9 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
   step_ += 1;
   time_ += dta_;
 
-  if (params_.get<FLUID_TIMEINTTYPE>("time int algo") == timeint_stationary)
+  if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_stationary)
   {
-    timealgo_ = timeint_stationary;
+    timealgo_ = INPAR::FLUID::timeint_stationary;
     theta_ = 1.0;
   }
   else
@@ -567,16 +567,16 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
     // do a backward Euler step for the first timestep
     if (step_==1)
     {
-      timealgo_ = timeint_one_step_theta;
+      timealgo_ = INPAR::FLUID::timeint_one_step_theta;
       theta_ = params_.get<double>("start theta");
     }
     else
     {
-      timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+      timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
       theta_ = params_.get<double>("theta");
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-      if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+      if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
   }
 
@@ -640,7 +640,7 @@ void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->ClearState();
 
     // set all parameters and states required for Neumann conditions
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
       eleparams.set("thsl",1.0);
@@ -800,7 +800,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
 
   // project old interpolated velocity vector onto divergence free space
   if (xparams_.get<bool>("INCOMP_PROJECTION"))
-    if (timealgo_ != timeint_stationary)
+    if (timealgo_ != INPAR::FLUID::timeint_stationary)
       ProjectOldTimeStepValues(velpressplitter_);
 
   neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
@@ -1089,7 +1089,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-  if (timealgo_!=timeint_stationary and theta_ < 1.0)
+  if (timealgo_!=INPAR::FLUID::timeint_stationary and theta_ < 1.0)
   {
     cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
   }
@@ -1126,7 +1126,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
-    if (timealgo_==timeint_stationary)
+    if (timealgo_==INPAR::FLUID::timeint_stationary)
     {
       std::cout << "Stationary computation!\n";
     }

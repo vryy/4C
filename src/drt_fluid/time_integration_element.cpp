@@ -29,7 +29,7 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     const LINALG::Matrix<3,1>&                 veln,
     const LINALG::Matrix<3,1>&                 velnm,
     const LINALG::Matrix<3,1>&                 accn,
-    const FLUID_TIMEINTTYPE             timealgo,
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
     const double                        dta,
     const double                        theta
 )
@@ -37,12 +37,12 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
   LINALG::Matrix<3,1> hist;
   switch (timealgo)
   {
-  case timeint_stationary:
+  case INPAR::FLUID::timeint_stationary:
   {
     hist = 0.0;
     break;
   }
-  case timeint_one_step_theta:
+  case INPAR::FLUID::timeint_one_step_theta:
   {
     const int nsd = 3;
     for(int isd = 0; isd < nsd; ++isd)
@@ -51,7 +51,7 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     }
     break;
   }
-  case timeint_bdf2:
+  case INPAR::FLUID::timeint_bdf2:
   {
     const int nsd = 3;
     for(int isd = 0; isd < nsd; ++isd)
@@ -70,23 +70,23 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
-    const FLUID_TIMEINTTYPE    timealgo,
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,
     const double               dt,
     const double               theta
-    )
+  )
 {
   double timefac;
   switch (timealgo)
   {
-  case timeint_stationary:
+  case INPAR::FLUID::timeint_stationary:
     timefac = 1.0;
     break;
 
-  case timeint_one_step_theta:
+  case INPAR::FLUID::timeint_one_step_theta:
     timefac = theta*dt;
     break;
 
-  case timeint_bdf2:
+  case INPAR::FLUID::timeint_bdf2:
     timefac = 2.0/3.0 * dt;
     break;
 

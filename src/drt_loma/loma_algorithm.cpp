@@ -84,10 +84,10 @@ void LOMA::Algorithm::TimeLoop()
     PrepareTimeStep();
 
     // do outer iteration loop for particular type of algorithm
-    if (FluidField().TimIntScheme() == timeint_afgenalpha)
+    if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
       GenAlphaOuterLoop();
-    else if (FluidField().TimIntScheme() == timeint_one_step_theta or
-             FluidField().TimIntScheme() == timeint_bdf2)
+    else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_one_step_theta or
+             FluidField().TimIntScheme() == INPAR::FLUID::timeint_bdf2)
       OSTBDF2OuterLoop();
     else dserror("desired type of low-Mach-number algorithm not supported");
 

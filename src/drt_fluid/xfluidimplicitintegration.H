@@ -269,7 +269,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
+  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /// introduce surface split extractor object
   /*!
@@ -479,7 +479,7 @@ protected:
   //@}
 
   /// time algorithm flag
-  FLUID_TIMEINTTYPE timealgo_;
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
   /// max nonlin iter steps
   int itemax_;

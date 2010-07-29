@@ -248,7 +248,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 
   // check time integration schemes of single fields
   // remark: this was already done in ScaTraFluidCouplingAlgorithm() before
-  if (FluidField().TimIntScheme() != timeint_stationary)
+  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
     dserror("Fluid time integration scheme is not stationary");
   if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");

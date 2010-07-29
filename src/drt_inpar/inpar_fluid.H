@@ -102,7 +102,9 @@ namespace INPAR
     {
       timeint_stationary,
       timeint_one_step_theta,
-      timeint_gen_alpha
+      timeint_gen_alpha,
+      timeint_afgenalpha,
+      timeint_bdf2,
     };
 
     /// initial field

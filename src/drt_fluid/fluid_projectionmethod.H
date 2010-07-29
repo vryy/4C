@@ -158,7 +158,7 @@ protected:
     int							myrank_;
     bool						alefluid_;
 
-    FLUID_TIMEINTTYPE timealgo_;
+    INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
     double dta_;
     double dtp_;

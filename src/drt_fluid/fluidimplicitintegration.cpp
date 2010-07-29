@@ -96,7 +96,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
   physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
   // type of time-integration
-  timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+  timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
   // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
   // maximum number of timesteps
@@ -106,7 +106,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // parameter theta for time-integration schemes
   theta_    = params_.get<double>("theta");
   // compute or set 1.0 - theta for time-integration schemes
-  if (timealgo_ == timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
+  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
   else                                      omtheta_ = 0.0;
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
   // (may be reset below when starting algorithm is used)
@@ -121,7 +121,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   startalgo_ = false;
   if (numstasteps_ > 0)
   {
-    if (timealgo_ != timeint_afgenalpha)
+    if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
       dserror("no starting algorithm supported for schemes other than af-gen-alpha");
     else startalgo_= true;
     if (numstasteps_>stepmax_)
@@ -140,7 +140,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
-  if (physicaltype_ == INPAR::FLUID::loma and timealgo_==timeint_afgenalpha and convform_ == "conservative")
+  if (physicaltype_ == INPAR::FLUID::loma and timealgo_==INPAR::FLUID::timeint_afgenalpha and convform_ == "conservative")
      dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // fine-scale subgrid viscosity?
@@ -577,7 +577,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
   }
 
   // distinguish stationary and instationary case
-  if (timealgo_==timeint_stationary) SolveStationaryProblem();
+  if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem();
   else TimeLoop();
 
   // print the results of time measurements
@@ -627,15 +627,15 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     {
       switch (timealgo_)
       {
-      case timeint_one_step_theta:
+      case INPAR::FLUID::timeint_one_step_theta:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
               time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_afgenalpha:
+      case INPAR::FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_bdf2:
+      case INPAR::FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
@@ -709,7 +709,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   time_ += dta_;
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-  if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+  if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
@@ -786,7 +786,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // set all parameters and states required for Neumann conditions
     eleparams.set("Physical Type",physicaltype_);
     eleparams.set("thermpress at n+1",thermpressaf_);
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
       eleparams.set("thsl",1.0);
@@ -810,7 +810,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //  prescribed Dirichlet values for generalized-alpha time
   //  integration and values at intermediate time steps
   // -------------------------------------------------------------------
-  if (timealgo_==timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     // starting algorithm
     if (startalgo_)
@@ -997,7 +997,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // set scheme-specific element parameters and vector values
-      if (timealgo_==timeint_stationary)
+      if (timealgo_==INPAR::FLUID::timeint_stationary)
       {
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
@@ -1006,7 +1006,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         discret_->SetState("velaf",velnp_);
       }
-      else if (timealgo_==timeint_afgenalpha)
+      else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
       {
         eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",true);
@@ -1084,7 +1084,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // set vector values needed by elements
           discret_->ClearState();
           discret_->SetState("scaaf",scaaf_);
-          if (timealgo_==timeint_afgenalpha)
+          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
           {
             condparams.set("using generalized-alpha time integration",true);
             discret_->SetState("velaf",velaf_);
@@ -1100,7 +1100,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->ClearState();
         }
 
-        if (timealgo_==timeint_afgenalpha)
+        if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
         {
           // For af-generalized-alpha scheme, we already have the true residual,...
           trueresidual_->Update(1.0,*residual_,0.0);
@@ -1472,7 +1472,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
     // -------------------------------------------------------------------
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       GenAlphaUpdateAcceleration();
 
@@ -1994,7 +1994,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
     // -------------------------------------------------------------------
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       GenAlphaUpdateAcceleration();
 
@@ -2227,7 +2227,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==timeint_stationary)
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
   {
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
@@ -2236,7 +2236,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
     discret_->SetState("velaf",velnp_);
   }
-  else if (timealgo_==timeint_afgenalpha)
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
@@ -2282,7 +2282,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("scaaf",scaaf_);
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       condparams.set("using generalized-alpha time integration",true);
       discret_->SetState("velaf",velaf_);
@@ -2298,7 +2298,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     discret_->ClearState();
   }
 
-  if (timealgo_==timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     // For af-generalized-alpha scheme, we already have the true residual,...
     trueresidual_->Update(1.0,*residual_,0.0);
@@ -2436,7 +2436,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
@@ -2963,7 +2963,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==timeint_stationary)
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
   {
     eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",false);
@@ -2972,7 +2972,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
     discret_->SetState("velaf",velnp_);
   }
-  else if (timealgo_==timeint_afgenalpha)
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     eleparams.set("using generalized-alpha time integration",true);
@@ -3071,8 +3071,10 @@ void FLD::FluidImplicitTimeInt::AVM3Separation()
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
   // get fine-scale part of velocity at time n+alpha_F or n+1
-  if (timealgo_==timeint_afgenalpha) Sep_->Multiply(false,*velaf_,*fsvelaf_);
-  else                               Sep_->Multiply(false,*velnp_,*fsvelaf_);
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    Sep_->Multiply(false,*velaf_,*fsvelaf_);
+  else
+    Sep_->Multiply(false,*velnp_,*fsvelaf_);
 
   // set fine-scale vector
   discret_->SetState("fsvelaf",fsvelaf_);
@@ -4074,7 +4076,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("gridv", zeros_);
 
     // set scheme-specific element parameters and vector values
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
       eleparams.set("using generalized-alpha time integration",true);

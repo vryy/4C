@@ -245,7 +245,7 @@ void Sysmat(
     Epetra_SerialDenseMatrix&         estif,          ///< element matrix to calculate
     Epetra_SerialDenseVector&         eforce,         ///< element rhs to calculate
     Teuchos::RCP<const MAT::Material> material,       ///< fluid material
-    const FLUID_TIMEINTTYPE           timealgo,       ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
     const double                      dt,             ///< delta t (time step size)
     const double                      theta,          ///< factor for one step theta scheme
     const bool                        newton,         ///< full Newton or fixed-point-like
@@ -375,7 +375,7 @@ void COMBUST::callSysmat(
     Epetra_SerialDenseMatrix&            estif,
     Epetra_SerialDenseVector&            eforce,
     Teuchos::RCP<const MAT::Material>    material,
-    const FLUID_TIMEINTTYPE              timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double                         dt,            ///< delta t (time step size)
     const double                         theta,         ///< factor for one step theta scheme
     const bool                           newton,

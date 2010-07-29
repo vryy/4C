@@ -625,7 +625,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const FLUID_TIMEINTTYPE TimIntScheme() const {return timeint_gen_alpha;}
+  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return INPAR::FLUID::timeint_gen_alpha;}
 
   /*!
   \brief determine grid velocity according to genalpha time integration

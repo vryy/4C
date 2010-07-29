@@ -156,7 +156,7 @@ namespace ADAPTER {
     \brief return type of time integration scheme
 
     */
-    virtual const FLUID_TIMEINTTYPE TimIntScheme() const {return fluid_.TimIntScheme();}
+    virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return fluid_.TimIntScheme();}
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 

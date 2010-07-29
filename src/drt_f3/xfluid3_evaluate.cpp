@@ -258,10 +258,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       // time integration factors
-      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
 
       // extract local values from the global vectors
-      const bool instationary = (timealgo != timeint_stationary);
+      const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
 
@@ -298,12 +298,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
       // extract local values from the global vectors
-      const bool instationary = (timealgo != timeint_stationary);
+      const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
       DRT::DEBUGGING::NaNChecker(mystate.velnp);
@@ -402,8 +402,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
 
-        const bool stationary_monolithic_FSI = (monolithic_FSI and (timealgo == timeint_stationary));
-        const bool instationary_monolithic_FSI = (monolithic_FSI and (timealgo != timeint_stationary));
+        const bool stationary_monolithic_FSI = (monolithic_FSI and (timealgo == INPAR::FLUID::timeint_stationary));
+        const bool instationary_monolithic_FSI = (monolithic_FSI and (timealgo != INPAR::FLUID::timeint_stationary));
 
         if (stationary_monolithic_FSI)
         {
@@ -538,12 +538,12 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const FLUID_TIMEINTTYPE timealgo = params.get<FLUID_TIMEINTTYPE>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
       // extract local values from the global vectors
-      const bool instationary = (timealgo != timeint_stationary);
+      const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
       DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
 
@@ -684,7 +684,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               this, ih_, *eleDofManager_, mystate, elemat1, elemat2, elevec1, elevec2,
               pstab, ifaceForceContribution);
 
-#if DEBUG
+#ifdef DEBUG
       if (std::isnan(elevec1.Norm2()))   { cout << *this << endl; dserror("NaNs in elevec1 detected! Quitting..."); }
       if (std::isnan(elemat1.InfNorm())) { cout << *this << endl; dserror("NaNs in elemat1 detected! Quitting..."); }
 #endif

@@ -274,13 +274,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+  INPAR::FLUID::TimeIntegrationScheme timeint = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
-    if (iop == timeint_stationary)
+    if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for FSI.");
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -307,7 +307,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (genprob.probtyp == prb_freesurf)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
-    if (iop == timeint_stationary)
+    if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for Freesurface problem.");
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -357,10 +357,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  if(iop == timeint_stationary or
-     iop == timeint_one_step_theta or
-     iop == timeint_bdf2 or
-     iop == timeint_afgenalpha
+  if(timeint == INPAR::FLUID::timeint_stationary or
+     timeint == INPAR::FLUID::timeint_one_step_theta or
+     timeint == INPAR::FLUID::timeint_bdf2 or
+     timeint == INPAR::FLUID::timeint_afgenalpha
     )
   {
     // -----------------------------------------------------------------
@@ -368,7 +368,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
-    fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
+    fluidtimeparams->set<INPAR::FLUID::TimeIntegrationScheme>("time int algo",timeint);
     // parameter theta for time-integration schemes
     fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // number of steps for potential start algorithm
@@ -462,7 +462,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         fluid_ = tmpfluid;
     }
   }
-  else if (iop == timeint_gen_alpha)
+  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
   {
     // -------------------------------------------------------------------
     // no additional parameters in list for generalized-alpha scheme

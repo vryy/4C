@@ -56,7 +56,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     // get basic parameters first
 
     // type of time-integration
-    timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+    timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
     // time-step size
     dtp_ = dta_ = params_.get<double>("time step size");
     // maximum number of timesteps
@@ -81,7 +81,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     startalgo_ = false;
     if (numstasteps_ > 0)
     {
-        if (timealgo_ != timeint_afgenalpha)
+        if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
             dserror("no starting algorithm supported for schemes other than af-gen-alpha");
         else startalgo_= true;
         if (numstasteps_>stepmax_)
@@ -125,7 +125,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     accnm_        = LINALG::CreateVector(*dofrowmap,true);
 
     // vectors only required for af-generalized-alpha scheme
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
         // velocity/pressure at time n+alpha_F
         velaf_        = LINALG::CreateVector(*dofrowmap,true);
@@ -206,7 +206,7 @@ void FLD::FluidProjectionMethod::Integrate()
     }
 
     // distinguish stationary and instationary case
-    if (timealgo_==timeint_stationary) dserror("no stationary problems supported");
+    if (timealgo_==INPAR::FLUID::timeint_stationary) dserror("no stationary problems supported");
     else TimeLoop();
 
     // print the results of time measurements
@@ -244,15 +244,15 @@ void FLD::FluidProjectionMethod::TimeLoop()
         {
             switch (timealgo_)
             {
-            case timeint_one_step_theta:
+            case INPAR::FLUID::timeint_one_step_theta:
                 printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
                         time_,maxtime_,dta_,step_,stepmax_);
                 break;
-            case timeint_afgenalpha:
+            case INPAR::FLUID::timeint_afgenalpha:
                 printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
                         time_,maxtime_,dta_,step_,stepmax_);
                 break;
-            case timeint_bdf2:
+            case INPAR::FLUID::timeint_bdf2:
                 printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
                         time_,maxtime_,dta_,step_,stepmax_);
                 break;
@@ -319,7 +319,7 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
     time_ += dta_;
 
     // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-    if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
 
     // NOTE: we don't want any predictor or RHS for pressure part
     // we bypass it by storing the pressure part in a temporary variable
@@ -404,7 +404,7 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
         discret_->ClearState();
 
         // set all parameters and states required for Neumann conditions
-        if (timealgo_==timeint_afgenalpha)
+        if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
         {
             eleparams.set("total time",time_-(1-alphaF_)*dta_);
             eleparams.set("thsl",1.0);
@@ -428,7 +428,7 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
     //  prescribed Dirichlet values for generalized-alpha time
     //  integration.
     // -------------------------------------------------------------------
-    if (timealgo_==timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
         // starting algorithm
         if (startalgo_)

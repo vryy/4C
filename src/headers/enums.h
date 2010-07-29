@@ -615,25 +615,6 @@ typedef enum _FLUID_SOLVINGSTRATEGIES
 } FLUID_SOLVINGSTRATEGIES;
 
 /*----------------------------------------------------------------------*/
-/* The known time integration methods for fluids. */
-/*----------------------------------------------------------------------*/
-typedef enum _FLUID_TIMEINTTYPE
-{
-  timeint_stationary=0,
-  timeint_gen_alpha=1,
-  timeint_afgenalpha=2,
-  timeint_one_step_theta=4,
-  timeint_bdf2=7,
-  timeint_inc_acc_gen_alpha=8,
-
-  /* One step theta / Adams-Bashforth */
-  /**/
-  timeint_theta_adamsbashforth,
-  timeint_stoch
-} FLUID_TIMEINTTYPE;
-
-
-/*----------------------------------------------------------------------*/
 /* The coupling methods for FSI. */
 /*----------------------------------------------------------------------*/
 typedef enum _FSI_COUPLING

@@ -263,7 +263,7 @@ void SysmatDomainStress(
     const M2&                           etau,         ///< element stresses
     const V3&                           ediscpres,    ///<
     Teuchos::RCP<const MAT::Material>   material,     ///< fluid material
-    const FLUID_TIMEINTTYPE             timealgo,     ///< time discretization scheme
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
     const double                        dt,           ///< delta t (time step size)
     const double                        theta,        ///< parameter for one step theta scheme
     const bool                          newton,       ///< full Newton or fixed-point-like
@@ -825,7 +825,7 @@ void SysmatBoundaryStress(
     const M2&                         etau,                   ///< discontinuous (deviatoric) stress
     const V3&                         ediscpres,              ///< discontinuous pressure
     Teuchos::RCP<const MAT::Material> material,               ///< fluid materials
-    const FLUID_TIMEINTTYPE           timealgo,               ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,               ///< time discretization type
     const double&                     dt,                     ///< delta t (time step size)
     const double&                     theta,                  ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
@@ -1670,7 +1670,7 @@ void SysmatBoundaryStressDoubleOneSided(
     const M2&                         etau,
     const V3&                         ediscpres,
     Teuchos::RCP<const MAT::Material> material,      ///< fluid material
-    const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,

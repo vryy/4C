@@ -38,7 +38,6 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_lib/standardtypes_cpp.H" // only due to old FLUID_TIMEINTTYPE
 #include "fluid_utils_mapextractor.H" // should go away
 
 using namespace std;
@@ -289,7 +288,7 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
   double ResidualScaling() const
-  { if (TimIntScheme()==timeint_stationary) return density_;
+  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary) return density_;
     else return density_/dta_/theta_;}
   double Dt() const { return dta_; }
 
@@ -303,7 +302,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
+  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /*!
   \brief set fields for low-Mach-number flow within outer iteration loop
@@ -434,7 +433,7 @@ protected:
   //@}
 
   /// time algorithm flag
-  FLUID_TIMEINTTYPE timealgo_;
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
   /// constant density extracted from element material for incompressible flow
   /// (set to 1.0 for low-Mach-number flow)

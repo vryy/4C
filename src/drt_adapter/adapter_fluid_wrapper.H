@@ -111,7 +111,7 @@ namespace ADAPTER
     { return fluid_->TimeScaling(); }
     virtual const FLD::UTILS::MapExtractor& Interface() const
     { return fluid_->Interface(); }
-    virtual const FLUID_TIMEINTTYPE TimIntScheme() const
+    virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
     { return fluid_->TimIntScheme(); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractVelocityPart(velpres); }

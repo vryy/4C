@@ -402,7 +402,7 @@ void ADAPTER::XFluidImpl::ComputeInterfaceVelocities()
   // The displacement - velocity relation can be chosen freely and is used as defined
   // in the FSI parameter list (see "SECONDORDER")
 
-  if (fluid_.TimIntScheme() == timeint_stationary)
+  if (fluid_.TimIntScheme() == INPAR::FLUID::timeint_stationary)
   {
     ivelnp_->PutScalar(0.0);
     iveln_->PutScalar(0.0);
@@ -431,7 +431,7 @@ void ADAPTER::XFluidImpl::ComputeInterfaceAccelerations()
   // material velocity and acceleration into the previously unknown
   // fluid domain.
 
-  if (fluid_.TimIntScheme() == timeint_stationary)
+  if (fluid_.TimIntScheme() == INPAR::FLUID::timeint_stationary)
   {
     iaccnp_->PutScalar(0.0);
     iaccn_->PutScalar(0.0);
@@ -687,7 +687,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   itrueresnp_->PutScalar(0.0);
   itrueresnp_->Export(*itruerescol,*conimpo,Add);
 
-  if (TimIntScheme() == timeint_stationary)
+  if (TimIntScheme() == INPAR::FLUID::timeint_stationary)
   {
     LiftDrag();
   }

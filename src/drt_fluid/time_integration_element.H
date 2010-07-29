@@ -25,6 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 namespace FLD
 {
@@ -57,7 +58,7 @@ namespace TIMEINT_THETA_BDF2
       const LINALG::Matrix<3,1>&        veln,       ///< velocity      n
       const LINALG::Matrix<3,1>&        velnm,      ///< velocity      n-1
       const LINALG::Matrix<3,1>&        accn,       ///< acceleration  n
-      const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
+      const INPAR::FLUID::TimeIntegrationScheme    timealgo,   ///< time discretization type
       const double               dta,        ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme
   );
@@ -67,7 +68,7 @@ namespace TIMEINT_THETA_BDF2
    * \return timefac time integration factor
    */
   double ComputeTimeFac(
-      const FLUID_TIMEINTTYPE    timealgo,   ///< time discretization type
+      const INPAR::FLUID::TimeIntegrationScheme    timealgo,   ///< time discretization type
       const double               dt,         ///< delta t (time step size)
       const double               theta       ///< factor for one step theta scheme
       );

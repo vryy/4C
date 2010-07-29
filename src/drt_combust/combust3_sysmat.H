@@ -61,7 +61,7 @@ namespace COMBUST
       Epetra_SerialDenseMatrix&               estif,
       Epetra_SerialDenseVector&               eforce,
       Teuchos::RCP<const MAT::Material>       material,
-      const FLUID_TIMEINTTYPE                 timealgo,     ///< time discretization type
+      const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization type
       const double                            dt,           ///< delta t (time step size)
       const double                            theta,        ///< factor for one step theta scheme
       const bool                              newton,
@@ -95,7 +95,7 @@ namespace COMBUST
   template <class M1, class V1>
   void GetMaterialParams(
       Teuchos::RCP<const MAT::Material> material, ///< pointer to material (list)
-      const FLUID_TIMEINTTYPE timealgo,           ///< type of time integration scheme
+      const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< type of time integration scheme
       const bool indomplus,      ///< boolean indicating side of the interface
       const V1& escaaf,          ///< element scalar alpha_f field
       const V1& escaam,          ///< element scalar alpha_m field
@@ -180,7 +180,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->EosFacA()*densaf;
-      if (timealgo == timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
       {
         // compute density at n+alpha_M based on mixture fraction
         densam = mat->ComputeDensity(scaamgp);
@@ -214,7 +214,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp,thermpressaf);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = 1.0/scaafgp;
-      if (timealgo == timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
       {
         // factor for scalar time derivative at n+alpha_M
         scadtfac = 1.0/scaamgp;
@@ -251,7 +251,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->ComputeFactor(scaafgp);
-      if (timealgo == timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
       {
         // compute density at n+alpha_M based on progress variable
         densam = mat->ComputeDensity(scaamgp);
@@ -287,7 +287,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->ComputeFactor(scaafgp);
-      if (timealgo == timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
       {
         // compute density at n+alpha_M based on progress variable
         densam = mat->ComputeDensity(scaamgp);
@@ -317,7 +317,7 @@ namespace COMBUST
       dserror("material parameters could not be determined");
     if (scadtfac == 0.0 or scaconvfacaf == 0.0)
       dserror("time integraton factors could not be determined");
-    if (timealgo == timeint_one_step_theta and (densn < 0 or scaconvfacn == 0.0))
+    if (timealgo == INPAR::FLUID::timeint_one_step_theta and (densn < 0 or scaconvfacn == 0.0))
       dserror("parameters for OST could not be determined");
 #endif
 

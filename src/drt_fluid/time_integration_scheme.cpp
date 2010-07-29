@@ -31,7 +31,7 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
     const Teuchos::RCP<Epetra_Vector>&   veln,
     const Teuchos::RCP<Epetra_Vector>&   velnm,
     const Teuchos::RCP<Epetra_Vector>&   accn,
-    const FLUID_TIMEINTTYPE              timealgo,
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,
     const double                         dta,
     const double                         theta,
     Teuchos::RCP<Epetra_Vector>&         hist
@@ -59,16 +59,16 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
   */
   switch (timealgo)
   {
-    case timeint_stationary: /* Stationary algorithm */
-    case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+    case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
+    case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
       hist->PutScalar(0.0);
       break;
 
-    case timeint_one_step_theta: /* One step Theta time integration */
+    case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
       hist->Update(1.0, *veln, dta*(1.0-theta), *accn, 0.0);
       break;
 
-    case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+    case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       hist->Update(4./3., *veln, -1./3., *velnm, 0.0);
       break;
 
@@ -85,7 +85,7 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     const Teuchos::RCP<const Epetra_Vector>    veln,
     const Teuchos::RCP<const Epetra_Vector>    velnm,
     const Teuchos::RCP<const Epetra_Vector>    accn,
-    const FLUID_TIMEINTTYPE                    timealgo,
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
     const double                               dta,
     const double                               dtp,
     const Teuchos::RCP<Epetra_Vector>          velnp
@@ -93,16 +93,16 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
 {
   switch (timealgo)
   {
-    case timeint_stationary: /* Stationary algorithm */
+    case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
       // do nothing
       break;
-    case timeint_afgenalpha: /* Generalized-alpha time integration */
+    case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
     {
       // do nothing for the time being, that is, steady-state predictor
       break;
     }
-    case timeint_one_step_theta: /* One step Theta time integration */
-    case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+    case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+    case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
     {
       const double fact1 = dta*(1.0+dta/dtp);
       const double fact2 = DSQR(dta/dtp);
@@ -128,7 +128,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     const Teuchos::RCP<const Epetra_Vector>    veln,
     const Teuchos::RCP<const Epetra_Vector>    velnm,
     const Teuchos::RCP<const Epetra_Vector>    accn,
-    const FLUID_TIMEINTTYPE                    timealgo,
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
     const int                                  step,
     const double                               theta,
     const double                               dta,
@@ -140,19 +140,19 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
   {
     switch (timealgo)
     {
-      case timeint_stationary: /* no accelerations for stationary problems*/
+      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
       {
         accnp->PutScalar(0.0);
         break;
       }
-      case timeint_one_step_theta: /* One step Theta time integration */
-      case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
         // do just a linear interpolation within the first timestep
         accnp->Update( 1.0/dta,*velnp,-1.0/dta,*veln, 0.0);
         break;
       }
-      case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
         // startup is handled separately
         break;
@@ -187,12 +187,12 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
 
     switch (timealgo)
     {
-      case timeint_stationary: /* no accelerations for stationary problems*/
+      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
       {
         accnp->PutScalar(0.0);
         break;
       }
-      case timeint_one_step_theta: /* One-step-theta time integration */
+      case INPAR::FLUID::timeint_one_step_theta: /* One-step-theta time integration */
       {
         const double fact1 = 1.0/(theta*dta);
         const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
@@ -202,7 +202,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         accnp->Update( fact2,*accn,1.0);
         break;
       }
-      case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
         if (dta*dtp < EPS15) dserror("Zero time step size!!!!!");
         const double sum = dta + dtp;
@@ -211,7 +211,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         accnp->Update(dta/(dtp*sum),*velnm,1.0);
         break;
       }
-      case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
         // do nothing: new acceleration is calculated at beginning of next time step
         break;

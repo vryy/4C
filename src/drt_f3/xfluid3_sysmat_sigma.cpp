@@ -741,7 +741,7 @@ void SysmatDomainSigma(
     const V1&                           eprenp,
     const M2&                           etau,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
-    const FLUID_TIMEINTTYPE             timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,///< time discretization type
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
     const bool                          newton,        ///< full Newton or fixed-point-like
@@ -756,7 +756,7 @@ void SysmatDomainSigma(
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // switch between stationary and instationary formulation
-    const bool instationary = (timealgo != timeint_stationary);
+    const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
     // space dimension for 3d fluid element
     const size_t nsd = 3;
@@ -1231,7 +1231,7 @@ void SysmatBoundarySigma(
     const M1&                         evelnp,
     const M2&                         etau,
     const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
-    const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+    const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
     LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
@@ -1718,7 +1718,7 @@ void SysmatSigma(
         Epetra_SerialDenseMatrix&         estif,         ///< element matrix to calculate
         Epetra_SerialDenseVector&         eforce,        ///< element rhs to calculate
         Teuchos::RCP<const MAT::Material> material,      ///< fluid material
-        const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+        const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme
         const bool                        newton,        ///< full Newton or fixed-point-like
@@ -1783,7 +1783,7 @@ void XFLUID::callSysmatSigma(
         Epetra_SerialDenseMatrix&         estif,
         Epetra_SerialDenseVector&         eforce,
         Teuchos::RCP<const MAT::Material> material,
-        const FLUID_TIMEINTTYPE           timealgo,      ///< time discretization type
+        const INPAR::FLUID::TimeIntegrationScheme timealgo,///< time discretization type
         const double                      dt,            ///< delta t (time step size)
         const double                      theta,         ///< factor for one step theta scheme
         const bool                        newton ,

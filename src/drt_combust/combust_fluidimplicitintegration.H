@@ -269,7 +269,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const FLUID_TIMEINTTYPE TimIntScheme() const {return timealgo_;}
+  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /// introduce (robin) fsi surface extractor object
   /*!
@@ -379,7 +379,7 @@ protected:
   //@}
 
   /// time algorithm flag
-  FLUID_TIMEINTTYPE timealgo_;
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
   //! @name time-integration-scheme factors
   double theta_;
