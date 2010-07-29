@@ -125,19 +125,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   case INPAR::SCATRA::solvertype_nonlinear:
   {
     incremental_ = true;
-    nonlinear_   = true;
   }
   break;
   case INPAR::SCATRA::solvertype_linear_incremental:
   {
     incremental_ = true;
-    nonlinear_   = false;
   }
   break;
   case INPAR::SCATRA::solvertype_linear_full:
   {
     incremental_ = false;
-    nonlinear_   = false;
   }
   break;
   default:
@@ -380,7 +377,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     // a safety check for the solver type
-    if ((numscal_ > 1) && (!nonlinear_))
+    if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
         dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
@@ -779,7 +776,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // residual values are supposed to be zero at Dirichlet boundaries
     increment_->PutScalar(0.0);
 
-    // Apply dirichlet boundary conditions to system matrix
+    // Apply Dirichlet boundary conditions to system matrix
     {
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
@@ -1001,7 +998,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     return true;
   }
 
-  // return the maximum residual value -> used for adaptivity of linear solver tolarance
+  // return the maximum residual value -> used for adaptivity of linear solver tolerance
   actresidual = max(conresnorm,potresnorm);
   actresidual = max(actresidual,incconnorm_L2/connorm_L2);
   actresidual = max(actresidual,incpotnorm_L2/potnorm_L2);
@@ -1015,8 +1012,10 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Solve()
 {
-  if (nonlinear_) NonlinearSolve();
-  else            LinearSolve();
+  if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
+    NonlinearSolve();
+  else
+    LinearSolve();
   //that's all
   return;
 }
@@ -2104,8 +2103,10 @@ void SCATRA::ScaTraTimIntImpl::Reinitialize()
 			SetReinitVelocityField();
 			SetOldPartOfRighthandside();
 
-			if(nonlinear_) NonlinearSolve();
-			else Solve();
+			if(solvtype_==INPAR::SCATRA::solvertype_nonlinear)
+			  NonlinearSolve();
+			else
+			  Solve();
 
 			dtp_=dta_;
 

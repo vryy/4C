@@ -514,7 +514,6 @@ protected:
   /// solvertype and flags for nonlinear (always incremental) and
   /// (linear) incremental solver
   INPAR::SCATRA::SolverType solvtype_;
-  bool nonlinear_;
   bool incremental_;
 
   /// flag for Eulerian or ALE formulation of equation(s)

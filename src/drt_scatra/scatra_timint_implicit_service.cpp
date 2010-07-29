@@ -1406,9 +1406,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   if ((normals_ == Teuchos::null) or (isale_== true))
     normals_ = ComputeNormalVectors(condnames);
 
-  // was the residual already prepared? (Important only for
-  // the result test)
-  if ((!nonlinear_) and (lastfluxoutputstep_ != step_))
+  // was the residual already prepared? (Important only for the result test)
+  if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) and (lastfluxoutputstep_ != step_))
   {
     lastfluxoutputstep_ = step_;
 
@@ -1464,7 +1463,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // scaling to get true residual vector for all time integration schemes
     trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
-  } // if ((!nonlinear_) && (lastfluxoutputstep_ != step_))
+  } // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
 
   vector<double> normfluxsum(numscal_);
 
