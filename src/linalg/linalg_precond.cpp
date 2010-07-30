@@ -202,8 +202,9 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   {
     is3d = true;
   }
-  else 
+  else
 #endif
+#if 0
 #ifdef D_FLUID2
   if ( eot==DRT::ELEMENTS::Fluid2Type::Instance() or
             eot==DRT::ELEMENTS::NURBS::Fluid2NurbsType::Instance() )
@@ -211,6 +212,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
     is3d = false;
   }
   else
+#endif
 #endif
   {
     dserror("Element type not supported by ML");
