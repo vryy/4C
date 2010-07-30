@@ -241,12 +241,9 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
     ElementType * eot = dynamic_cast<ElementType*>( pot );
     if ( eot!=NULL )
     {
-      if ( active_elements_.count( eot )==0 )
-      {
-        active_elements_.insert( eot );
-        int err = eot->Initialize( dis );
-        if (err) dserror("Element Initialize returned err=%d",err);
-      }
+      active_elements_.insert( eot );
+      int err = eot->Initialize( dis );
+      if (err) dserror("Element Initialize returned err=%d",err);
     }
     else
     {
