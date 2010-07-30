@@ -222,6 +222,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter(
 // parameter for turbulence and subgrid-viscosity approach
 //---------------------------------------------------------------------------------
 
+  //TODO: change Parameter in ValidParameter
   // get flag for fine-scale subgrid-viscosity approach
   {
     const string fssgvdef = params.get<string>("fs subgrid viscosity","No");
