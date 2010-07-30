@@ -35,6 +35,97 @@ namespace DRT
 namespace ELEMENTS
 {
 
+// This class includes all general parameter.
+
+class Fluid3ImplParameter
+{
+public:
+
+  static Fluid3ImplParameter* Instance();
+
+  //! general parameter are set
+  void SetParameter(ParameterList&            params);
+
+  /// Flags to switch on/off the different fluid formulations
+  //! flag to (de)activate generalized-alpha time-integration scheme
+  bool is_genalpha_;
+  //! flag to (de)activate conservative formulation
+  bool is_conservative_;
+  //! flag to (de)activate stationary formulation
+  bool is_stationary_;
+  //! flag to (de)activate Newton linearization
+  bool is_newton_;
+  //! flag to (de)activate second derivatives
+  bool is_inconsistent_;
+  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
+  INPAR::FLUID::PhysicalType physicaltype_;
+  //! Flag to (de)activate time-dependent subgrid stabilization
+  INPAR::FLUID::SubscalesTD tds_;
+  //! Flag to (de)activate time-dependent term in large-scale momentum equation
+  INPAR::FLUID::Transient transient_;
+  //! Flag to (de)activate PSPG stabilization
+  INPAR::FLUID::PSPG pspg_;
+  //! Flag to (de)activate SUPG stabilization
+  INPAR::FLUID::SUPG supg_;
+  //! Flag to (de)activate viscous term in residual-based stabilization
+  INPAR::FLUID::VStab vstab_;
+  //! Flag to (de)activate least-squares stabilization of continuity equation
+  INPAR::FLUID::CStab cstab_;
+  //! Flag to (de)activate cross-stress term -> residual-based VMM
+  INPAR::FLUID::CrossStress cross_;
+  //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
+  INPAR::FLUID::ReynoldsStress reynolds_;
+  //! Flag to define tau
+  INPAR::FLUID::TauType whichtau_;
+  //! flag to (de)activate fine-scale subgrid viscosity
+  INPAR::FLUID::FineSubgridVisc fssgv_;
+  //! flag to define turbulence model
+  INPAR::FLUID::TurbModelAction turb_mod_action_;
+  //! flag for material evaluation at Gaussian integration points
+  bool mat_gp_;
+  //! flag for stabilization parameter evaluation at Gaussian integration points
+  bool tau_gp_;
+
+  /// parameters for the time integration
+  //! actual time to evaluate the body BC
+  double time_;
+  //! time-step length
+  double dt_;
+  //! timefac = dt_ * theta_
+  double timefac_;
+  //! factor for right-hand side due to time-integration scheme
+  double omtheta_;
+  //! generalised-alpha parameter (connecting velocity and acceleration)
+  double gamma_;
+  //! generalised-alpha parameter (velocity)
+  double alphaF_;
+  //! generalised-alpha parameter (acceleration)
+  double alphaM_;
+  //! generalised-alpha parameter, alphaF_*gamma_*dt_
+  double afgdt_;
+
+  /// constant parameters for the turbulence formulation
+  //! smagorinsky constant
+  double Cs_;
+  //! channel length to normalize the normal wall distance
+  double l_tau_;
+
+private:
+
+  // private constructor
+  Fluid3ImplParameter();
+
+  /// no copying
+  Fluid3ImplParameter(const Fluid3ImplParameter&);
+
+  /// no copying
+  Fluid3ImplParameter& operator=(const Fluid3ImplParameter&);
+
+  /// the single instance
+  static Fluid3ImplParameter* instance_;
+};
+
+
   /// Interface base class for Fluid3Impl
   /*!
     This class exists to provide a common interface for all template
@@ -54,7 +145,7 @@ namespace ELEMENTS
       This class does not provide a definition for this function, it
       must be defined in Fluid3Impl.
      */
-    virtual int Evaluate(Fluid3*                   ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
                          ParameterList&            params,
                          DRT::Discretization&      discretization,
                          vector<int>&              lm,
@@ -66,7 +157,8 @@ namespace ELEMENTS
                          RefCountPtr<MAT::Material> mat) = 0;
 
     /// Internal implementation class for fluid element
-    static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* ele);
+    //static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* ele);
+    static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
 
   };
 
@@ -105,12 +197,16 @@ namespace ELEMENTS
     \author u.kue
     \date 07/07
   */
+
+
   template<DRT::Element::DiscretizationType distype>
   class Fluid3Impl: public Fluid3ImplInterface
   {
   public:
+
+    friend class Fluid3ImplParameter;
     /// Constructor
-    Fluid3Impl(int numdofpernode);
+    Fluid3Impl();
 
     //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
     static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -118,10 +214,12 @@ namespace ELEMENTS
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
+    static const int numdofpernode_ = nsd_+1;
+
     /*!
       \brief evaluate function for Fluid3 element
      */
-    virtual int Evaluate(Fluid3*                    ele,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*     ele,
                          ParameterList&             params,
                          DRT::Discretization&       discretization,
                          vector<int>&               lm,
@@ -176,6 +274,7 @@ namespace ELEMENTS
                                   damping function and defined on input
       */
     // 3D sysmat
+#if 0
     void Sysmat(Fluid3*                                       ele,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
@@ -222,7 +321,7 @@ namespace ELEMENTS
                 Teuchos::RCP<const MAT::Material>        material,
                 const double                             timefac,
                 double&                                  Cs);
-
+#endif
     // 2D/3D mixed sysmat
     void Sysmat2D3D(Fluid3*                                    ele,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
@@ -243,10 +342,7 @@ namespace ELEMENTS
                 const double                                   thermpressam,
                 const double                                   thermpressdtam,
                 Teuchos::RCP<const MAT::Material>              material,
-                const double                                   timefac,
-                double&                                        Cs,
-                double&                                        Cs_delta_sq,
-                double&                                        l_tau);
+                double&                                        Cs_delta_sq);
 
     // FD-check for debugging
     void FDcheck(
@@ -305,8 +401,8 @@ namespace ELEMENTS
     /*!
        \brief set solution flags and parameters
      */
-    const double SetSolutionParameter(Fluid3*                    ele,
-                              ParameterList&             params);
+    //const double SetSolutionParameter(Fluid3*                    ele,
+    //                          ParameterList&             params);
 
     /*!
      * \brief fill elment matrix and vectors with the global values
@@ -367,9 +463,9 @@ namespace ELEMENTS
      */
     void GetTurbulenceParams(Fluid3*                    ele,
                              ParameterList&             turbmodelparams,
-                             double&                    Cs,
+                             //double&                    Cs,
                              double&                    Cs_delta_sq,
-                             double&                    l_tau,
+                             //double&                    l_tau,
                              int&                       nlayer);
 
     /*!
@@ -643,7 +739,7 @@ namespace ELEMENTS
 
   private:
     //! DOF's per node
-    const int numdofpernode_;
+    //const int numdofpernode_;
     //! node coordinates
     LINALG::Matrix<nsd_,nen_> xyze_;
     //! dead load in nodes at n+alpha_F/n+1
@@ -710,7 +806,7 @@ namespace ELEMENTS
 
     LINALG::Matrix<nsd_,nsd_> vderiv_;
 
-    /*
+
     //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
     LINALG::Matrix<nsd_,1> resM_Du_;
     //! linearisation of residual of momentum equation wrt velocities (precomputed)
@@ -723,15 +819,15 @@ namespace ELEMENTS
 
     LINALG::Matrix<nen_,1>      preforce;
     LINALG::Matrix<nsd_,nen_>   velforce;
-*/
+
 
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
 
     //! flag for material evaluation at Gaussian integration points
-    bool mat_gp_;
+    //bool mat_gp_;
     //! flag for stabilization parameter evaluation at Gaussian integration points
-    bool tau_gp_;
+    //bool tau_gp_;
     //! Jacobian determinant
     double det_;
     //! integration factor
@@ -744,6 +840,8 @@ namespace ELEMENTS
     double visceff_;
     //! fine-scale subgrid viscosity
     double fssgvisc_;
+
+#if 0
     //! time-step length
     double dt_;
     //! factor for right-hand side due to time-integration scheme
@@ -756,7 +854,7 @@ namespace ELEMENTS
     double alphaM_;
     //! generalised-alpha parameter, alphaF_*gamma_*dt_
     double afgdt_;
-
+#endif
 
     //! LOMA-specific variables:
     //! right-hand-side term at int.-point for continuity equation
@@ -795,11 +893,15 @@ namespace ELEMENTS
     //double thermpressam_;
     //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
     //double thermpressdtam_;
-    //! for the handling of rotationally symmetric periodic boundary conditions
+    //! for the handling of rotationally sym- vor allem den unspektakulären Spielstil aufpolieren. Der Triple-Gewinn bringt Benitez aber enormmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
 
     // flags
-
+    //! Flag to (de)activate higher order elements
+    //! elements with only mixed second order derivatives are not counted as higher order elements
+    //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
+    bool is_higher_order_ele_;
+#if 0
     //! actual time to evaluate the body BC
     double time_;
     //! flag to (de)activate generalized-alpha time-integration scheme
@@ -840,6 +942,20 @@ namespace ELEMENTS
     Fluid3::FineSubgridVisc fssgv_;
     //! flag to define turbulence model
     Fluid3::TurbModelAction turb_mod_action_;
+
+
+    double timefac;
+
+    double Cs;
+    double l_tau;
+#endif
+/*
+    bool boussinesq_;
+    bool loma_;
+    bool varyingdensity_;
+*/
+
+    DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
   };
 }
 }
