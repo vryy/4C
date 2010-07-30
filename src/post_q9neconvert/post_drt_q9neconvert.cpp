@@ -7,7 +7,6 @@
 
 #ifdef CCADISCRET
 #if 0
-#ifdef D_FLUID2
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_f2/fluid2.H"
@@ -440,10 +439,13 @@ void FSIConverter::write_pre_vector_result(string result_name, PostField* field,
 	prewriter_->WriteVector(result_name, dstdata);
 }
 
+#endif 
+
 /////////////////////////////////////////////
 // Hauptroutine
 int main(int argc, char** argv)
 {
+#if 0
 	Teuchos::CommandLineProcessor My_CLP;
 	My_CLP.setDocString("Post DRT quad9 (non equal) conversion program\n");
 
@@ -486,11 +488,9 @@ int main(int argc, char** argv)
 	default:
 		dserror("problem type %d not yet supported",problem.Problemtype());
 	}
+#endif
 
 	return 0;
 }
 
-
-#endif
-#endif
 #endif
