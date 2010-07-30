@@ -79,8 +79,8 @@ PSPG             yes_pspg
 SUPG             yes_supg
 VSTAB            no_vstab
 CSTAB            cstab_qs
-CROSS-STRESS     yes_cross
-REYNOLDS-STRESS  yes_reynolds
+CROSS-STRESS     cross_rhs
+REYNOLDS-STRESS  reynolds_rhs
 EVALUATION_TAU   integration_point
 EVALUATION_MAT   integration_point
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
