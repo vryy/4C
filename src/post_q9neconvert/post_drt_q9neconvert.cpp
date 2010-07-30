@@ -6,6 +6,7 @@
  */
 
 #ifdef CCADISCRET
+#if 0
 #ifdef D_FLUID2
 
 #include "../post_drt_common/post_drt_common.H"
@@ -490,5 +491,6 @@ int main(int argc, char** argv)
 }
 
 
+#endif
 #endif
 #endif
