@@ -47,10 +47,12 @@ namespace ELEMENTS
 {
 // forward declarations
 
+//class Fluid3ImplParameter;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
-template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
+//template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
+//class DRT::ELEMENTS::Fluid3ImplInterface;
 
 class Fluid3Boundary;
 
@@ -77,6 +79,15 @@ public:
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+  /// preevaluation
+  virtual void PreEvaluate(DRT::Discretization& dis,
+                          Teuchos::ParameterList& p,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector3);
+
 private:
 
   static Fluid3Type instance_;
@@ -98,9 +109,10 @@ public:
 
   // All the template specializations that are used, new ones must be
   // added here.
-  friend class Fluid3StationaryImplInterface;
+  //friend class Fluid3StationaryImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
+/*
   friend class Fluid3StationaryImpl<DRT::Element::hex8>;
   friend class Fluid3StationaryImpl<DRT::Element::hex20>;
   friend class Fluid3StationaryImpl<DRT::Element::hex27>;
@@ -122,7 +134,7 @@ public:
   // 1D
   friend class Fluid3StationaryImpl<DRT::Element::line2>;
   friend class Fluid3StationaryImpl<DRT::Element::line3>;
-
+*/
   // TODO: linImpl will be deleted and this friendships will vanish
 
   friend class Fluid3lin_ImplInterface;
@@ -605,7 +617,7 @@ private:
     oberai                                   ,
     tau_not_defined
   };
-
+//TODO: check if it must be defined here (genalfa)
 
   //! physical turbulence models recognized by fluid3_genalpha implementation
   enum TurbModelAction

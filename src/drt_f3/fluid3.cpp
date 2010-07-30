@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "fluid3.H"
+//#include "fluid3_impl.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -40,6 +41,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const string elety
   if ( eletype=="FLUID3" )
   {
     if ( eledistype!="NURBS8" and eledistype!="NURBS27" )
+    {
+      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+    }
+  }
+  else if ( eletype=="FLUID2" )
+  {
+    if ( eledistype!="NURBS4" and eledistype!="NURBS9" )
+    {
+      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+    }
+  }
+  else if (eletype=="FLUID")
+  {
+    if ( eledistype!="NURBS4" and eledistype!="NURBS9" and
+         eledistype!="NURBS8" and eledistype!="NURBS27" )
     {
       return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
     }
@@ -174,7 +190,58 @@ void DRT::ELEMENTS::Fluid3Type::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;
+
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs2D = definitions["FLUID2"];
+
+   defs2D["QUAD4"]
+     .AddIntVector("QUAD4",4)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["QUAD8"]
+     .AddIntVector("QUAD8",8)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["QUAD9"]
+     .AddIntVector("QUAD9",9)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["TRI3"]
+     .AddIntVector("TRI3",3)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["TRI6"]
+     .AddIntVector("TRI6",6)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["NURBS4"]
+     .AddIntVector("NURBS4",4)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["NURBS9"]
+     .AddIntVector("NURBS9",9)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
+
+   defs2D["THQ9"]
+     .AddIntVector("THQ9",9)
+     .AddNamedInt("MAT")
+     .AddNamedString("NA")
+     ;
 }
+
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int id, const int owner )
