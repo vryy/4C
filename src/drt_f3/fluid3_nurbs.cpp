@@ -38,6 +38,21 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid3NurbsType::Create( const 
       return rcp(new DRT::ELEMENTS::NURBS::Fluid3Nurbs(id,owner));
     }
   }
+  else if ( eletype=="FLUID2" )
+  {
+    if ( eledistype=="NURBS4" || eledistype=="NURBS9")
+    {
+      return rcp(new DRT::ELEMENTS::NURBS::Fluid3Nurbs(id,owner));
+    }
+  }
+  else if (eletype=="FLUID")
+  {
+    if ( eledistype=="NURBS4" and eledistype=="NURBS9" and
+         eledistype=="NURBS8" and eledistype=="NURBS27" )
+    {
+      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+    }
+  }
   return Teuchos::null;
 }
 
@@ -63,7 +78,7 @@ void DRT::ELEMENTS::NURBS::Fluid3NurbsType::ComputeNullSpace( DRT::Discretizatio
 }
 
 
-DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType DRT::ELEMENTS::NURBS::Fluid3NurbsSurfaceType::instance_;
+DRT::ELEMENTS::NURBS::Fluid3NurbsBoundaryType DRT::ELEMENTS::NURBS::Fluid3NurbsBoundaryType::instance_;
 
 
 /*----------------------------------------------------------------------*
@@ -117,6 +132,10 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Fluid3Nurbs::Shape() cons
 {
   switch (NumNode())
   {
+  // 2D
+  case   4: return nurbs4;
+  case   9: return nurbs9;
+  // 3D
   case   8: return nurbs8;
   case  27: return nurbs27;
   default:
@@ -135,7 +154,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Surfaces()
 
   return
     DRT::UTILS::ElementBoundaryFactory
-    <Fluid3NurbsSurface,Fluid3Nurbs>
+    <Fluid3NurbsBoundary,Fluid3Nurbs>
     (
       DRT::UTILS::buildSurfaces,
       this
@@ -152,7 +171,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Surfaces()
  |  ctor (public)                                            gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Fluid3NurbsSurface(
+DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary::Fluid3NurbsBoundary(
   int                    id      ,
   int                    owner   ,
   int                    nnode   ,
@@ -171,8 +190,8 @@ DRT::ELEMENTS::Fluid3Boundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
  |  copy-ctor (public)                                       gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Fluid3NurbsSurface
-(const DRT::ELEMENTS::NURBS::Fluid3NurbsSurface& old) :
+DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary::Fluid3NurbsBoundary
+(const DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary& old) :
 DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(old)
 {
   return;
@@ -182,7 +201,7 @@ DRT::ELEMENTS::Fluid3Boundary::Fluid3Boundary(old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 02/09|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::~Fluid3NurbsSurface()
+DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary::~Fluid3NurbsBoundary()
 {
   return;
 }
@@ -192,11 +211,11 @@ DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::~Fluid3NurbsSurface()
  |                                                             (public) |
  |                                                          gammi 02/09 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Clone() const
+DRT::Element* DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary::Clone() const
 {
-  DRT::ELEMENTS::NURBS::Fluid3NurbsSurface* newelement
+  DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary* newelement
     =
-    new DRT::ELEMENTS::NURBS::Fluid3NurbsSurface(*this);
+    new DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary(*this);
   return newelement;
 }
 
@@ -204,10 +223,14 @@ DRT::Element* DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Clone() const
  |                                                             (public) |
  |                                                          gammi 02/09 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Fluid3NurbsSurface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Fluid3NurbsBoundary::Shape() const
 {
   switch (NumNode())
   {
+  // 1D
+  case   2: return nurbs2;
+  case   3: return nurbs3;
+  // 2D
   case   4: return nurbs4;
   case   9: return nurbs9;
   default:

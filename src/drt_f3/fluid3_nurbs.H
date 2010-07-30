@@ -73,7 +73,7 @@ private:
 };
 
 // forward declarations
-class Fluid3NurbsSurface;
+class Fluid3NurbsBoundary;
 
 class Fluid3Nurbs : public DRT::ELEMENTS::Fluid3
 {
@@ -142,6 +142,10 @@ public:
     {
       return 12;
     }
+    else if (NumNode()==9 || NumNode()==4)
+    {
+      return 4;
+    }
     else
     {
       dserror("Could not determine number of lines");
@@ -157,6 +161,10 @@ public:
     if (NumNode()==27 || NumNode()==8)
     {
       return 6;
+    }
+    else if (NumNode()==9 || NumNode()==4)
+    {
+      return 1;
     }
     else
     {
@@ -183,17 +191,17 @@ private:
 
 };
 
-class Fluid3NurbsSurfaceType : public Fluid3BoundaryType
+class Fluid3NurbsBoundaryType : public Fluid3BoundaryType
 {
 public:
 
   std::string Name() const { return "Fluid3NurbsSurfaceType"; }
 
-  static Fluid3NurbsSurfaceType & Instance() { return instance_; };
+  static Fluid3NurbsBoundaryType & Instance() { return instance_; };
 
 private:
 
-  static Fluid3NurbsSurfaceType instance_;
+  static Fluid3NurbsBoundaryType instance_;
 };
 
 /*----------------------------------------------------------------------
@@ -204,7 +212,7 @@ private:
   \author gammi (gamnitzer@lnm.mw.tum.de), 02/09
 
   ----------------------------------------------------------------------*/
-class Fluid3NurbsSurface : public DRT::ELEMENTS::Fluid3Boundary
+class Fluid3NurbsBoundary : public DRT::ELEMENTS::Fluid3Boundary
 {
 
 public:
@@ -221,7 +229,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
 
   */
-  Fluid3NurbsSurface(
+  Fluid3NurbsBoundary(
     int                    id,
     int                    owner,
     int                    nnode,
@@ -237,13 +245,13 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid3NurbsSurface(const Fluid3NurbsSurface& old);
+  Fluid3NurbsBoundary(const Fluid3NurbsBoundary& old);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Fluid3NurbsSurface();
+  virtual ~Fluid3NurbsBoundary();
 
   /*!
   \brief Deep copy this instance of Fluid3NurbsSurface
@@ -260,10 +268,10 @@ public:
 
   \return my parobject id
   */
-  virtual int UniqueParObjectId() const { return Fluid3NurbsSurfaceType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return Fluid3NurbsBoundaryType::Instance().UniqueParObjectId(); }
 
   virtual DRT::ElementType & ElementType() const
-  { return Fluid3NurbsSurfaceType::Instance(); }
+  { return Fluid3NurbsBoundaryType::Instance(); }
 
   /*!
   \brief Get shape type of element
