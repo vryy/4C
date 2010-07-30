@@ -1874,8 +1874,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<std::string>(
                                  "No Reynolds-stress term",
-                                 "Include Reynolds-stress term explicitly on right hand side",
-                                 "Include Reynolds-stress term with linearisation"
+                                 "Include Reynolds-stress term with linearisation",
+                                 "Include Reynolds-stress term explicitly on right hand side"
                                  //""
                                  ),
                                tuple<INPAR::FLUID::ReynoldsStress>(
