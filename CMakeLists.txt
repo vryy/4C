@@ -486,19 +486,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
 )
-set(OBJS_DRT_F2_LIB
-  src/drt_f2/fluid2.cpp
-  src/drt_f2/fluid2_evaluate.cpp
-  src/drt_f2/fluid2_genalpha_resVMM.cpp
-  src/drt_f2/fluid2_impl.cpp
-  src/drt_f2/fluid2_input.cpp
-  src/drt_f2/fluid2_line.cpp
-  src/drt_f2/fluid2_line_evaluate.cpp
-  src/drt_f2/fluid2_nurbs.cpp
-  src/drt_f2/fluid2_stationary.cpp
-  src/drt_f2/fluid2_th.cpp
-  src/drt_f2/fluid2_weak_dbc.cpp
-)
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp
   src/drt_contact/contact_node.cpp
@@ -1082,7 +1069,7 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_lin_impl.cpp
   src/drt_f3/fluid3_nurbs.cpp
   src/drt_f3/fluid3_stabilization.cpp
-  src/drt_f3/fluid3_stationary.cpp
+  #src/drt_f3/fluid3_stationary.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
   src/drt_f3/xfluid3.cpp
   src/drt_f3/xfluid3_evaluate.cpp
@@ -1379,7 +1366,7 @@ add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
-add_library(ele_f2 ${OBJS_DRT_F2_LIB})
+#add_library(ele_f2 ${OBJS_DRT_F2_LIB})
 add_library(ele_f3 ${OBJS_DRT_F3_LIB})
 add_library(ele_sr ${OBJS_DRT_SR_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
@@ -1400,7 +1387,7 @@ set(ELEMENT_LIBRARIES
   ele_b3ii
   ele_bele3
   ele_combust3
-  ele_f2
+  #ele_f2
   ele_f3
   ele_sr
   ele_s8
