@@ -624,6 +624,7 @@ bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
   bool isale = false;
   bool found = false;
 
+#if 0
 #ifdef D_FLUID2
     DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
     if (not found and f2!=NULL)
@@ -634,15 +635,25 @@ bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
         eletype.push_back("ALE2");
     }
 #endif
+#endif
 
 #ifdef D_FLUID3
     DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
     if (not found and f3!=NULL)
     {
+      const int  nsd = DRT::UTILS::getDimension(f3->Shape());
       found = true;
       isale = f3->IsAle();
+
       if (isale and ismyele)
-        eletype.push_back("ALE3");
+      {
+        if (nsd == 3)
+          eletype.push_back("ALE3");
+        else if (nsd == 2)
+          eletype.push_back("ALE2");
+        else
+          dserror("%i D Dimension not supported", nsd);
+      }
     }
 #endif
 
