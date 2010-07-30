@@ -41,7 +41,6 @@ Trilinos_DIR="/lnm/lib/openmpi/gcc/trilinos"
     -D D_BEAM2R:BOOL=ON \
     -D D_BEAM3:BOOL=ON \
     -D D_BEAM3II:BOOL=ON \
-    -D D_FLUID2:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=ON \
     -D D_SOH8:BOOL=ON \
