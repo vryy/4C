@@ -14,8 +14,8 @@ Maintainer: Georg Bauer
 
 
 #include "fluid3.H"
-#include "fluid3_impl.H"
-#include "fluid3_stationary.H"
+#include "../drt_f3/fluid3_impl.H"
+//#include "fluid3_stationary.H"
 #include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
 
@@ -125,6 +125,27 @@ DRT::ELEMENTS::Fluid3::StabilisationAction DRT::ELEMENTS::Fluid3::ConvertStringT
   return act;
 }
 
+void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
+                        Teuchos::ParameterList& p,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector1,
+                        Teuchos::RCP<Epetra_Vector>          systemvector2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector3)
+{
+  const string action = p.get<string>("action","none");
+
+  DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+  if(action == "calc_fluid_systemmat_and_residual"or
+      action == "calc_fluid_afgenalpha_systemmat_and_residual" or
+      action == "calc_fluid_stationary_systemmat_and_residual")
+  {
+    f3Parameter->SetParameter(p);
+  }
+
+  return;
+}
+
 
  /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
@@ -158,42 +179,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //-----------------------------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       case calc_fluid_afgenalpha_systemmat_and_residual:
-      {
-        // if not available, define map from string to action
-        if(stabstrtoact_.empty())
-        {
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["yes_cross"      ]=cross_stress_stab;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
-        }
-
-        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(this)->Evaluate(
-               this,
-               params,
-               discretization,
-               lm,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3,
-               mat);
-      }
-      break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
+#if 0
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
@@ -213,8 +201,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
           stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
         }
+#endif
 
-        return DRT::ELEMENTS::Fluid3StationaryImplInterface::Impl(this)->Evaluate(
+        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
                this,
                params,
                discretization,
