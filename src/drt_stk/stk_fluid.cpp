@@ -152,6 +152,11 @@ void STK::Fluid::SetupDRTMesh()
     drt_ = Teuchos::null;
   }
   drt_ = Teuchos::rcp( new FluidDRT( counter, *this ) );
+
+  if ( GetMesh().parallel_rank()==0 )
+  {
+    std::cout << "mesh number " << counter << "\n";
+  }
 }
 
 
@@ -952,6 +957,10 @@ void STK::Fluid::AdaptiveNonlinearSolve()
     int r = 0;
     for ( ; r < maxrefine_; ++r )
     {
+#ifdef DEBUG
+      //GnuplotDump( GetMesh(), "fluid", step_, r, *velnp_ );
+#endif
+
       //if ( refine.size()==0 and unrefine.size()==0 )
       if ( refine.size()==0 )
         break;

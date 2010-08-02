@@ -651,8 +651,28 @@ void STK::Adaptive::SyncDRT( bool refine )
     switch ( key.rank() )
     {
     case stk::mesh::Node:
-      dis_.DeleteNode( key.id()-1 );
+    {
+      int gid = key.id()-1;
+      dis_.DeleteNode( gid );
+
+      // change conditions
+
+      for ( std::map<stk::mesh::Part*, DRT::Condition*>::iterator pc=part_condition_.begin();
+            pc!=part_condition_.end();
+            ++pc )
+      {
+        DRT::Condition * cond = pc->second;
+        std::vector<int> * nodes = cond->GetMutable<std::vector<int> >( "Node Ids" );
+
+        std::vector<int>::iterator j = std::lower_bound( nodes->begin(), nodes->end(), gid );
+        if ( j!=nodes->end() and *j==gid )
+        {
+          nodes->erase( j );
+        }
+      }
+
       break;
+    }
     case stk::mesh::Element:
       dis_.DeleteElement( key.id()-1 );
       break;

@@ -281,21 +281,6 @@ int main( int argc, char** argv )
       eids.clear();
     }
 
-    // debug
-
-    stk::mesh::Entity & e = * mesh.BulkData().get_entity( stk::mesh::Element, 1667 );
-    double * err = stk::mesh::field_data( error , e );
-    if ( err!=NULL )
-    {
-      *err = 1;
-    }
-    else
-    {
-      std::cout << "element 1667 not found\n";
-    }
-
-    fields.push_back( &error );
-
     save( meta, mesh, "success.exo", fields );
     iterate( mesh );
   }

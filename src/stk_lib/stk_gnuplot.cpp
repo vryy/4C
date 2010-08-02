@@ -1,9 +1,19 @@
 #ifdef STKADAPTIVE
 
 #include <fstream>
+#include <sstream>
 
 #include "stk_gnuplot.H"
 #include "stk_mesh.H"
+
+
+void STK::GnuplotDump( STK::Mesh & mesh, std::string basename, int step, int version, stk::mesh::FieldBase & field )
+{
+  std::stringstream str;
+  str << basename << "-" << step << "-" << version << ".dat";
+  GnuplotDump( mesh, str.str(), field );
+}
+
 
 void STK::GnuplotDump( STK::Mesh & mesh, std::string filename, stk::mesh::FieldBase & field )
 {
@@ -39,6 +49,7 @@ void STK::GnuplotDump( STK::Mesh & mesh, std::string filename, stk::mesh::FieldB
               << coord[1] << " "
               << f[0] << " "
               << f[1] << " "
+              << std::sqrt( f[0]*f[0] + f[1]*f[1] ) << " "
               << "\n";
         }
 
