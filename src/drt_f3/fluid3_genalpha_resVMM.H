@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid3_genalpha_resVMM.H
-
+FineSubgridVisc
 \brief Internal implementation of Fluid3 element with a generalised alpha
        time integration. The major difference to the standard
        one-step-theta/BDF2 implementation is that the pressure and the
@@ -425,9 +425,9 @@ namespace DRT
                          const double                               gamma,
                          const double                               dt,
                          const double                               time,
-                         const enum Fluid3::LinearisationAction     newton,
+                         const enum INPAR::FLUID::LinearisationAction     newton,
                          const bool                                 higher_order_ele,
-                         const enum Fluid3::FineSubgridVisc         fssgv,
+                         const enum INPAR::FLUID::FineSubgridVisc         fssgv,
                          const enum INPAR::FLUID::Transient         inertia,
                          const enum INPAR::FLUID::PSPG              pspg,
                          const enum INPAR::FLUID::SUPG              supg,
@@ -435,8 +435,8 @@ namespace DRT
                          const enum INPAR::FLUID::CStab             cstab,
                          const enum INPAR::FLUID::CrossStress       cross,
                          const enum INPAR::FLUID::ReynoldsStress    reynolds,
-                         const enum Fluid3::TauType                 whichtau,
-                         const enum Fluid3::TurbModelAction         turb_mod_action,
+                         const enum INPAR::FLUID::TauType_genalpha                 whichtau,
+                         const enum INPAR::FLUID::TurbModelAction         turb_mod_action,
                          double&                                    Cs,
                          double&                                    Cs_delta_sq,
                          double&                                    visceff,
@@ -503,9 +503,9 @@ namespace DRT
                          const double                               gamma,
                          const double                               dt,
                          const double                               time,
-                         const enum Fluid3::LinearisationAction     newton,
+                         const enum INPAR::FLUID::LinearisationAction     newton,
                          const bool                                 higher_order_ele,
-                         const enum Fluid3::FineSubgridVisc         fssgv,
+                         const enum INPAR::FLUID::FineSubgridVisc         fssgv,
                          const enum INPAR::FLUID::Transient         inertia,
                          const enum INPAR::FLUID::PSPG              pspg,
                          const enum INPAR::FLUID::SUPG              supg,
@@ -513,8 +513,8 @@ namespace DRT
                          const enum INPAR::FLUID::CStab             cstab,
                          const enum INPAR::FLUID::CrossStress       cross,
                          const enum INPAR::FLUID::ReynoldsStress    reynolds,
-                         const enum Fluid3::TauType                 whichtau,
-                         const enum Fluid3::TurbModelAction         turb_mod_action,
+                         const enum INPAR::FLUID::TauType_genalpha                 whichtau,
+                         const enum INPAR::FLUID::TurbModelAction         turb_mod_action,
                          double&                                    Cs,
                          double&                                    Cs_delta_sq,
                          double&                                    visceff,
@@ -580,17 +580,17 @@ namespace DRT
                           const double                               gamma,
                           const double                               dt,
                           const double                               time,
-                          const enum Fluid3::LinearisationAction     newton,
+                          const enum INPAR::FLUID::LinearisationAction     newton,
                           const bool                                 higher_order_ele,
-                          const enum Fluid3::FineSubgridVisc         fssgv,
+                          const enum INPAR::FLUID::FineSubgridVisc         fssgv,
                           const enum INPAR::FLUID::PSPG              pspg,
                           const enum INPAR::FLUID::SUPG              supg,
                           const enum INPAR::FLUID::VStab             vstab,
                           const enum INPAR::FLUID::CStab             cstab,
                           const enum INPAR::FLUID::CrossStress       cross,
                           const enum INPAR::FLUID::ReynoldsStress    reynolds,
-                          const enum Fluid3::TauType                 whichtau,
-                          const enum Fluid3::TurbModelAction         turb_mod_action,
+                          const enum INPAR::FLUID::TauType_genalpha                 whichtau,
+                          const enum INPAR::FLUID::TurbModelAction         turb_mod_action,
                           double&                                    Cs,
                           double&                                    Cs_delta_sq,
                           double&                                    visceff,
@@ -657,9 +657,9 @@ namespace DRT
                           const double                               gamma,
                           const double                               dt,
                           const double                               time,
-                          const enum Fluid3::LinearisationAction     newton,
+                          const enum INPAR::FLUID::LinearisationAction     newton,
                           const bool                                 higher_order_ele,
-                          const enum Fluid3::FineSubgridVisc         fssgv,
+                          const enum INPAR::FLUID::FineSubgridVisc         fssgv,
                           const enum INPAR::FLUID::Transient         inertia,
                           const enum INPAR::FLUID::PSPG              pspg,
                           const enum INPAR::FLUID::SUPG              supg,
@@ -667,8 +667,8 @@ namespace DRT
                           const enum INPAR::FLUID::CStab             cstab,
                           const enum INPAR::FLUID::CrossStress       cross,
                           const enum INPAR::FLUID::ReynoldsStress    reynolds,
-                          const enum Fluid3::TauType                 whichtau,
-                          const enum Fluid3::TurbModelAction         turb_mod_action,
+                          const enum INPAR::FLUID::TauType_genalpha                 whichtau,
+                          const enum INPAR::FLUID::TurbModelAction         turb_mod_action,
                           double&                                    Cs,
                           double&                                    Cs_delta_sq,
                           double&                                    visceff,
@@ -694,7 +694,7 @@ namespace DRT
         const double                           gamma,
         const double                           dt,
         const double                           time,
-        const enum Fluid3::LinearisationAction newton,
+        const enum INPAR::FLUID::LinearisationAction newton,
         const bool                             higher_order_ele,
         const enum INPAR::FLUID::Transient         inertia,
         const enum INPAR::FLUID::PSPG              pspg,
@@ -703,7 +703,7 @@ namespace DRT
         const enum INPAR::FLUID::CStab             cstab,
         const enum INPAR::FLUID::CrossStress       cross,
         const enum INPAR::FLUID::ReynoldsStress    reynolds,
-        const enum Fluid3::TauType             whichtau,
+        const enum INPAR::FLUID::TauType_genalpha             whichtau,
         double&                                visceff,
         const bool                             compute_elemat
         );
@@ -757,7 +757,7 @@ namespace DRT
         const double                           gamma,
         const double                           dt,
         const double                           time,
-        const enum Fluid3::LinearisationAction newton,
+        const enum INPAR::FLUID::LinearisationAction newton,
         const bool                             higher_order_ele,
         const enum INPAR::FLUID::Transient         inertia,
         const enum INPAR::FLUID::PSPG              pspg,
@@ -766,7 +766,7 @@ namespace DRT
         const enum INPAR::FLUID::CStab             cstab,
         const enum INPAR::FLUID::CrossStress       cross,
         const enum INPAR::FLUID::ReynoldsStress    reynolds,
-        const enum Fluid3::TauType             whichtau,
+        const enum INPAR::FLUID::TauType_genalpha             whichtau,
         double&                                visceff,
         const bool                             compute_elemat
         );
@@ -820,7 +820,7 @@ namespace DRT
         const double                           gamma,
         const double                           dt,
         const double                           time,
-        const enum Fluid3::LinearisationAction newton,
+        const enum INPAR::FLUID::LinearisationAction newton,
         const bool                             higher_order_ele,
         const enum INPAR::FLUID::PSPG              pspg,
         const enum INPAR::FLUID::SUPG              supg,
@@ -828,7 +828,7 @@ namespace DRT
         const enum INPAR::FLUID::CStab             cstab,
         const enum INPAR::FLUID::CrossStress       cross,
         const enum INPAR::FLUID::ReynoldsStress    reynolds,
-        const enum Fluid3::TauType             whichtau,
+        const enum INPAR::FLUID::TauType_genalpha             whichtau,
         double&                                visceff,
         const bool                             compute_elemat
         );
@@ -883,7 +883,7 @@ namespace DRT
         const double                           gamma,
         const double                           dt,
         const double                           time,
-        const enum Fluid3::LinearisationAction newton,
+        const enum INPAR::FLUID::LinearisationAction newton,
         const bool                             higher_order_ele,
         const enum INPAR::FLUID::Transient         inertia,
         const enum INPAR::FLUID::PSPG              pspg,
@@ -892,7 +892,7 @@ namespace DRT
         const enum INPAR::FLUID::CStab             cstab,
         const enum INPAR::FLUID::CrossStress       cross,
         const enum INPAR::FLUID::ReynoldsStress    reynolds,
-        const enum Fluid3::TauType             whichtau,
+        const enum INPAR::FLUID::TauType_genalpha             whichtau,
         double&                                visceff,
         const bool                             compute_elemat
         );
@@ -930,8 +930,8 @@ namespace DRT
       void SetParametersForTurbulenceModel(
         const Fluid3*                       ele            ,
         ParameterList                     & turbmodelparams,
-        const Fluid3::FineSubgridVisc     & fssgv          ,
-        Fluid3::TurbModelAction           & turb_mod_action,
+        const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
+        INPAR::FLUID::TurbModelAction           & turb_mod_action,
         double                            & Cs             ,
         double                            & Cs_delta_sq    ,
         double                            & l_tau          ,
@@ -954,7 +954,7 @@ namespace DRT
       //  \param fsevelaf       (o) fine-scale velocity
 
       void ExtractValuesFromGlobalVectors(
-        const Fluid3::FineSubgridVisc fssgv         ,
+        const INPAR::FLUID::FineSubgridVisc fssgv         ,
         const bool                    is_ale        ,
         const DRT::Discretization&    discretization,
         const vector<int>&            lm,
@@ -1089,7 +1089,7 @@ namespace DRT
     	\param mk         (i) element dependent constant
         \param visceff    (i) effective viscosity
        */
-      void CalcTau(const enum Fluid3::TauType             whichtau ,
+      void CalcTau(const enum INPAR::FLUID::TauType_genalpha             whichtau ,
                    const enum INPAR::FLUID::SubscalesTD           tds      ,
                    const double &                         gamma    ,
                    const double &                         dt       ,
@@ -1139,8 +1139,8 @@ namespace DRT
         double                                     & mk             ,
         Teuchos::RCP<const MAT::Material>            material       ,
         double                                     & visc           ,
-        const enum Fluid3::FineSubgridVisc           fssgv          ,
-        const enum Fluid3::TurbModelAction           turb_mod_action,
+        const enum INPAR::FLUID::FineSubgridVisc           fssgv          ,
+        const enum INPAR::FLUID::TurbModelAction           turb_mod_action,
         const double                                 l_tau          ,
         double                                     & Cs             ,
         double                                     & Cs_delta_sq    ,
@@ -1190,7 +1190,7 @@ namespace DRT
         const LINALG::Matrix<nsd_,iel>            & evelaf          ,
         const LINALG::Matrix<nsd_,iel>            & fsevelaf        ,
         const double                              & visceff         ,
-        const enum Fluid3::FineSubgridVisc          fssgv           ,
+        const enum INPAR::FLUID::FineSubgridVisc          fssgv           ,
         const bool                                  higher_order_ele);
 
 
@@ -1343,7 +1343,7 @@ namespace DRT
       \param mk         (i) element dependent constant
         \param visceff    (i) effective viscosity
        */
-      void CalcTau_2D(const enum Fluid3::TauType             whichtau ,
+      void CalcTau_2D(const enum INPAR::FLUID::TauType_genalpha             whichtau ,
                    const enum INPAR::FLUID::SubscalesTD           tds      ,
                    const double &                         gamma    ,
                    const double &                         dt       ,

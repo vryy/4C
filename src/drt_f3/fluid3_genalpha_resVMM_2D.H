@@ -50,7 +50,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs_2D(
   const double                           gamma,
   const double                           dt,
   const double                           time,
-  const enum Fluid3::LinearisationAction newton,
+  const enum INPAR::FLUID::LinearisationAction newton,
   const bool                             higher_order_ele,
   const enum INPAR::FLUID::Transient         inertia         ,
   const enum INPAR::FLUID::PSPG              pspg            ,
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs_2D(
   const enum INPAR::FLUID::CStab             cstab           ,
   const enum INPAR::FLUID::CrossStress       cross           ,
   const enum INPAR::FLUID::ReynoldsStress    reynolds        ,
-  const enum Fluid3::TauType             whichtau,
+  const enum INPAR::FLUID::TauType_genalpha             whichtau,
   double&                                visceff,
   const bool                             compute_elemat
   )
@@ -484,7 +484,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_qs_2D(
         } // ui
 
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_nu_afgdt_tauM_tauM=fac*visceff*afgdt*tauM*tauM;
 
@@ -720,7 +720,7 @@ N
         } // vi
       } // ui
 
-      if (higher_order_ele && newton!=Fluid3::minimal)
+      if (higher_order_ele && newton!=INPAR::FLUID::minimal)
       {
         for (int ui=0; ui<iel; ++ui) // loop columns
         {
@@ -752,7 +752,7 @@ N
       //    REACTIVE TYPE LINEARISATIONS, QUASISTATIC FORMULATION
       //
       //---------------------------------------------------------------
-      if (newton==Fluid3::Newton)
+      if (newton==INPAR::FLUID::Newton)
       {
         double temp[2][2];
         double supg_active_tauMresM[2];
@@ -849,7 +849,7 @@ N
         const double fac_gamma_dt_tauMp          = fac_tauMp*gamma*dt;
         const double fac_afgdt_tauMp             = fac_tauMp*afgdt;
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_tauMp
             =
@@ -954,7 +954,7 @@ N
           // ain't a higher order element or a linearisation of
           // the viscous term is not necessary
 
-        if (newton==Fluid3::Newton)
+        if (newton==INPAR::FLUID::Newton)
         {
           for (int vi=0; vi<iel; ++vi)  // loop rows
           {
@@ -1120,7 +1120,7 @@ N
             } // vi
           } // ui
 
-          if (newton==Fluid3::Newton)
+          if (newton==INPAR::FLUID::Newton)
           {
             for (int ui=0; ui<iel; ++ui) // loop columns
             {
@@ -1654,7 +1654,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
   const double                            gamma,
   const double                            dt,
   const double                            time,
-  const enum Fluid3::LinearisationAction  newton,
+  const enum INPAR::FLUID::LinearisationAction  newton,
   const bool                              higher_order_ele,
   const enum INPAR::FLUID::Transient      inertia         ,
   const enum INPAR::FLUID::PSPG           pspg            ,
@@ -1663,7 +1663,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
   const enum INPAR::FLUID::CStab          cstab           ,
   const enum INPAR::FLUID::CrossStress    cross           ,
   const enum INPAR::FLUID::ReynoldsStress reynolds        ,
-  const enum Fluid3::TauType              whichtau,
+  const enum INPAR::FLUID::TauType_genalpha              whichtau,
   double&                                 visceff,
   const bool                              compute_elemat
   )
@@ -2062,7 +2062,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
           } // ui
         } // vi
 
-        if(higher_order_ele && newton!=Fluid3::minimal)
+        if(higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_alphaM_tauM_facMtau
             =
@@ -2146,7 +2146,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
           }
 
           double temp=0.0;
-          if(whichtau==Fluid3::codina)
+          if(whichtau==INPAR::FLUID::codina)
           {
             /*
                                                   || n+af||
@@ -2161,7 +2161,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
 
             temp=fac*afgdt/hk*2.0/mk;
           }
-          else if(whichtau==Fluid3::smoothed_franca_barrenechea_valentin_wall)
+          else if(whichtau==INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall)
           {
             /*
                                   -x   '       -x
@@ -2182,7 +2182,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
 
 
           }
-          else if(whichtau==Fluid3::franca_barrenechea_valentin_wall)
+          else if(whichtau==INPAR::FLUID::franca_barrenechea_valentin_wall)
           {
 
             /*
@@ -2497,7 +2497,7 @@ N                   \                                                           
         } // vi
       } // ui
 
-      if (newton==Fluid3::Newton) // if newton and supg
+      if (newton==INPAR::FLUID::Newton) // if newton and supg
       {
         const double fac_afgdt_afgdt_tauM_facMtau = fac*afgdt*afgdt*facMtau*tauM;
 
@@ -2555,7 +2555,7 @@ N                   \                                                           
         } // vi
       } // ui
 
-      if(higher_order_ele && newton!=Fluid3::minimal)
+      if(higher_order_ele && newton!=INPAR::FLUID::minimal)
       {
         const double fac_visceff_afgdt_afgdt_tauM_facMtau=fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -2601,7 +2601,7 @@ N                   \                                                           
         const double fac_gdt_gdt_tauM_facMtau         = fac*gamma*dt*tauM*facMtau*gamma*dt;
         const double fac_alphaM_gamma_dt_tauM_facMtau = fac*alphaM*gamma*dt*tauM*facMtau;
 
-        if(higher_order_ele  && newton!=Fluid3::minimal)
+        if(higher_order_ele  && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_gamma_dt_tauM_facMtau
             =
@@ -2761,7 +2761,7 @@ N                   \                                                           
           } // end loop rows (test functions for matrix)
         } // end loop columns (solution for matrix, test function for vector)
 
-        if (newton==Fluid3::Newton) // if pspg and newton
+        if (newton==INPAR::FLUID::Newton) // if pspg and newton
         {
 
           for (int vi=0; vi<iel; ++vi) // loop columns
@@ -2949,7 +2949,7 @@ N                   \                                                           
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton==Fluid3::Newton)
+          if (newton==INPAR::FLUID::Newton)
           {
 
             double temp[2][2];
@@ -3188,7 +3188,7 @@ N                   \                                                           
           } // end loop rows (test functions for matrix)
         } // end loop columns (solution for matrix, test function for vector)
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_afgdt_tauM_facMtau=fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -3385,7 +3385,7 @@ N                   \                                                           
         } // end loop columns (solution for matrix, test function for vector)
 
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_nu_afgdt_afgdt_tauM_facMtau =fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -3838,7 +3838,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs_2D(
   const double                                gamma,
   const double                                dt,
   const double                                time,
-  const enum Fluid3::LinearisationAction      newton,
+  const enum INPAR::FLUID::LinearisationAction      newton,
   const bool                                  higher_order_ele,
   const enum INPAR::FLUID::PSPG               pspg            ,
   const enum INPAR::FLUID::SUPG               supg            ,
@@ -3846,7 +3846,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs_2D(
   const enum INPAR::FLUID::CStab              cstab           ,
   const enum INPAR::FLUID::CrossStress        cross           ,
   const enum INPAR::FLUID::ReynoldsStress     reynolds        ,
-  const enum Fluid3::TauType             whichtau,
+  const enum INPAR::FLUID::TauType_genalpha             whichtau,
   double&                                visceff,
   const bool                             compute_elemat
   )
@@ -4250,7 +4250,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_qs_2D(
         } // ui
 
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_nu_afgdt_tauM_tauM=fac*visceff*afgdt*tauM*tauM;
 
@@ -4516,7 +4516,7 @@ N
         } // vi
       } // ui
 
-      if (higher_order_ele && newton!=Fluid3::minimal)
+      if (higher_order_ele && newton!=INPAR::FLUID::minimal)
       {
         for (int ui=0; ui<iel; ++ui) // loop columns
         {
@@ -4551,7 +4551,7 @@ N
       //
       //---------------------------------------------------------------
 
-      if (newton==Fluid3::Newton)
+      if (newton==INPAR::FLUID::Newton)
       {
         double temp[2][2];
         double testlin[2];
@@ -4631,7 +4631,7 @@ N
 	const double fac_gamma_dt_tauMp          = fac_tauMp*gamma*dt;
 	const double fac_afgdt_tauMp             = fac_tauMp*afgdt;
 
-	if (higher_order_ele && newton!=Fluid3::minimal)
+	if (higher_order_ele && newton!=INPAR::FLUID::minimal)
 	{
 	  const double fac_visceff_afgdt_tauMp
 	    =
@@ -4735,7 +4735,7 @@ N
   	  // ain't a higher order element or a linearisation of
 	  // the viscous term is not necessary
 
-	if (newton==Fluid3::Newton)
+	if (newton==INPAR::FLUID::Newton)
 	{
 	  for (int vi=0; vi<iel; ++vi)  // loop rows
 	  {
@@ -4898,7 +4898,7 @@ N
 	    } // vi
 	  } // ui
 
-	  if (newton==Fluid3::Newton)
+	  if (newton==INPAR::FLUID::Newton)
 	  {
 	    for (int ui=0; ui<iel; ++ui) // loop columns
 	    {
@@ -5112,7 +5112,7 @@ N
 	  } // ui
 	} // vi
 
-	if (higher_order_ele && newton!=Fluid3::minimal)
+	if (higher_order_ele && newton!=INPAR::FLUID::minimal)
 	{
 	  const double fac_nu_afgdt_tauM=fac*visceff*afgdt*tauM;
 
@@ -5450,7 +5450,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
   const double                           gamma,
   const double                           dt,
   const double                           time,
-  const enum Fluid3::LinearisationAction newton,
+  const enum INPAR::FLUID::LinearisationAction newton,
   const bool                             higher_order_ele,
   const enum INPAR::FLUID::Transient         inertia         ,
   const enum INPAR::FLUID::PSPG              pspg            ,
@@ -5459,7 +5459,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
   const enum INPAR::FLUID::CStab             cstab           ,
   const enum INPAR::FLUID::CrossStress       cross           ,
   const enum INPAR::FLUID::ReynoldsStress    reynolds        ,
-  const enum Fluid3::TauType             whichtau,
+  const enum INPAR::FLUID::TauType_genalpha             whichtau,
   double&                                visceff,
   const bool                             compute_elemat
   )
@@ -5868,7 +5868,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
               elemat(tvip,tuip) -= afgdt*fac_alphaM_tauM_facMtau*conv_c_af_(ui)*funct_(vi);
           }
         }
-        if(newton==Fluid3::Newton)
+        if(newton==INPAR::FLUID::Newton)
         {
           double temp[2][2];
 
@@ -5913,7 +5913,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
           }
         }
 
-        if(higher_order_ele && newton!=Fluid3::minimal)
+        if(higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_alphaM_tauM_facMtau
             =
@@ -5996,7 +5996,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
           }
 
           double temp=0.0;
-          if(whichtau==Fluid3::codina)
+          if(whichtau==INPAR::FLUID::codina)
           {
             /*
                                                   || n+af||
@@ -6011,7 +6011,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
 
             temp=fac*afgdt/hk*2.0/mk;
           }
-          else if(whichtau==Fluid3::smoothed_franca_barrenechea_valentin_wall)
+          else if(whichtau==INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall)
           {
             /*
                                   -x   '       -x
@@ -6032,7 +6032,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_cons_td_2D(
 
 
           }
-          else if(whichtau==Fluid3::franca_barrenechea_valentin_wall)
+          else if(whichtau==INPAR::FLUID::franca_barrenechea_valentin_wall)
           {
 
             /*
@@ -6337,7 +6337,7 @@ N                   \                                                           
         } // vi
       } // ui
 
-      if (newton==Fluid3::Newton) // if newton and supg
+      if (newton==INPAR::FLUID::Newton) // if newton and supg
       {
         const double fac_afgdt_afgdt_tauM_facMtau = fac*afgdt*afgdt*facMtau*tauM;
 
@@ -6392,7 +6392,7 @@ N                   \                                                           
         } // vi
       } // ui
 
-      if(higher_order_ele && newton!=Fluid3::minimal)
+      if(higher_order_ele && newton!=INPAR::FLUID::minimal)
       {
         const double fac_visceff_afgdt_afgdt_tauM_facMtau=fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -6577,7 +6577,7 @@ N                   \                                                           
         } // end loop columns (solution for matrix, test function for vector)
 
 
-        if (higher_order_ele && newton!=Fluid3::minimal)
+        if (higher_order_ele && newton!=INPAR::FLUID::minimal)
         {
           const double fac_nu_afgdt_afgdt_tauM_facMtau =fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -6790,7 +6790,7 @@ N                   \                                                           
 	  } // ui
 	} // vi
 
-	if (higher_order_ele && newton!=Fluid3::minimal)
+	if (higher_order_ele && newton!=INPAR::FLUID::minimal)
 	{
 	  const double fac_nu_afgdt_afgdt_tauM_facMtau=fac*visceff*afgdt*afgdt*tauM*facMtau;
 
@@ -6851,7 +6851,7 @@ N                   \                                                           
         const double fac_gdt_gdt_tauM_facMtau         = fac*gamma*dt*tauM*facMtau*gamma*dt;
         const double fac_alphaM_gamma_dt_tauM_facMtau = fac*alphaM*gamma*dt*tauM*facMtau;
 
-        if(higher_order_ele  && newton!=Fluid3::minimal)
+        if(higher_order_ele  && newton!=INPAR::FLUID::minimal)
         {
           const double fac_visceff_afgdt_gamma_dt_tauM_facMtau
             =
@@ -7018,7 +7018,7 @@ N                   \                                                           
           } // end loop rows (test functions for matrix)
         } // end loop columns (solution for matrix, test function for vector)
 
-        if (newton==Fluid3::Newton) // if pspg and newton
+        if (newton==INPAR::FLUID::Newton) // if pspg and newton
         {
 
           for (int vi=0; vi<iel; ++vi) // loop columns
@@ -7206,7 +7206,7 @@ N                   \                                                           
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton==Fluid3::Newton)
+          if (newton==INPAR::FLUID::Newton)
           {
 
             double temp[2][2];
@@ -8307,7 +8307,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalVisc_2D(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
-  const enum Fluid3::TauType             whichtau ,
+  const enum INPAR::FLUID::TauType_genalpha             whichtau ,
   const enum INPAR::FLUID::SubscalesTD           tds      ,
   const double &                         gamma    ,
   const double &                         dt       ,
@@ -8327,7 +8327,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
     //          TAUS FOR TIME DEPENDENT SUBSCALES
     //-------------------------------------------------------
 
-    if(whichtau == Fluid3::bazilevs)
+    if(whichtau == INPAR::FLUID::bazilevs)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 
@@ -8466,9 +8466,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
       tau_(2) = 1./(tau_(0)*normgsq);
 
     }
-    else if(whichtau == Fluid3::franca_barrenechea_valentin_wall
+    else if(whichtau == INPAR::FLUID::franca_barrenechea_valentin_wall
             ||
-            whichtau == Fluid3::fbvw_wo_dt                      )
+            whichtau == INPAR::FLUID::fbvw_wo_dt                      )
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       //
@@ -8545,7 +8545,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
-    else if(whichtau == Fluid3::smoothed_franca_barrenechea_valentin_wall)
+    else if(whichtau == INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall)
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       //
@@ -8625,7 +8625,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
-    else if(whichtau == Fluid3::codina)
+    else if(whichtau == INPAR::FLUID::codina)
     {
       // Parameter from Codina, Badia (Constants are chosen according to
       // the values in the standard definition above)
@@ -8641,7 +8641,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
 
       tau_(2)=(hk*hk)/(CI*tau_(0));
     }
-    else if(whichtau == Fluid3::fbvw_gradient_based_hk)
+    else if(whichtau == INPAR::FLUID::fbvw_gradient_based_hk)
     {
       // this copy of velintaf_ will be used to store the normed velocity
       LINALG::Matrix<dim,1> normed_velgrad;
@@ -8748,7 +8748,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
     //-------------------------------------------------------
     //        TAUS FOR THE QUASISTATIC FORMULATION
     //-------------------------------------------------------
-    if(whichtau == Fluid3::bazilevs)
+    if(whichtau == INPAR::FLUID::bazilevs)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 
@@ -8885,7 +8885,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
       */
       tau_(2) = 1./(tau_(0)*normgsq);
     }
-    else if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
+    else if (whichtau == INPAR::FLUID::franca_barrenechea_valentin_wall)
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       // tau_M: Barrenechea, G.R. and Valentin, F.
@@ -8995,7 +8995,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
 
     }
-    else if(whichtau == Fluid3::franca_barrenechea_valentin_codina)
+    else if(whichtau == INPAR::FLUID::franca_barrenechea_valentin_codina)
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       // tau_M: Barrenechea, G.R. and Valentin, F.
@@ -9098,7 +9098,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
        * */
       tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
     }
-    else if (whichtau == Fluid3::codina)
+    else if (whichtau == INPAR::FLUID::codina)
     {
 
       // time factor
@@ -9118,7 +9118,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
 
       tau_(2)=(hk*hk)/(CI*tau_(0));
     }
-    else if(whichtau == Fluid3::fbvw_wo_dt)
+    else if(whichtau == INPAR::FLUID::fbvw_wo_dt)
     {
       // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
       //
@@ -9179,7 +9179,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
 
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
     }
-    else if(whichtau == Fluid3::fbvw_gradient_based_hk)
+    else if(whichtau == INPAR::FLUID::fbvw_gradient_based_hk)
     {
       // this copy of velintaf_ will be used to store the normed velocity
       LINALG::Matrix<dim,1> normed_velgrad;
