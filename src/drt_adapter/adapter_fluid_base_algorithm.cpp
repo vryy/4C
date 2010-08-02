@@ -193,8 +193,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // set adaptoive linear solver tolerance
   fluidtimeparams->set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
-  // use combined 2D/3D implementation
-  fluidtimeparams->set<bool>            ("mixed_formulation",getIntegralValue<int>(fdyn,"COMBISYSMAT")==1);
 
   // ----------------------------------------------- restart and output
   // restart
@@ -229,7 +227,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->sublist("SCATRA STABILIZATION")=scatradyn.sublist("STABILIZATION");
 
   fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-                             Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
+                             Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
 
   // ------------------------------------------- Robin scheme parameters
   if (genprob.probtyp == prb_fsi)
