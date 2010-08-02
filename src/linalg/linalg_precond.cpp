@@ -200,7 +200,17 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
        eot==DRT::ELEMENTS::XFluid3Type::Instance() or
        eot==DRT::ELEMENTS::Combust3Type::Instance() )
   {
-    is3d = true;
+    // number of space dimensions is always one less than the number of dof's,
+    // since there is the additional pressure dof
+    const int nsd = ele->NumDofPerNode(*(ele->Nodes()[0]));
+    const int idim = nsd-1;
+
+    if (idim == 3)
+      is3d = true;
+    else if (idim == 2)
+      is3d = false;
+    else
+      dserror("1D fluid element is not supported");
   }
   else
 #endif
