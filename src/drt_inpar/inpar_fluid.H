@@ -92,10 +92,23 @@ namespace INPAR
       tautype_bazilevs,                           // combustion & Fluid3
       tautype_bazilevs_wo_dt,                     // for time-dependent subgrid scales
       tautype_franca_barrenechea_valentin_codina, // Fluid3
-      tautype_oberai,
-      tautype_stationary,
+      tautype_oberai,                             // Fluid3
+      tautype_stationary,                         // Fluid3
       tau_not_defined
     };
+
+    enum TauType_genalpha
+    {
+    smoothed_franca_barrenechea_valentin_wall,
+    franca_barrenechea_valentin_wall         ,
+    franca_barrenechea_valentin_codina       ,
+    fbvw_gradient_based_hk                   ,
+    codina                                   ,
+    bazilevs                                 ,
+    fbvw_wo_dt                               ,
+    oberai                                   ,
+    tautype_not_defined
+  };
 
     /// time integration scheme
     enum TimeIntegrationScheme
@@ -134,6 +147,15 @@ namespace INPAR
       no_fssgv,
       smagorinsky_all,
       smagorinsky_small
+    };
+
+    //! linearisation actions recognized by fluid3 (genalpha implementation)
+    enum LinearisationAction
+    {
+      no_linearisation,
+      fixed_point_like,
+      Newton          ,
+      minimal
     };
 
     //---------------------------------------------
