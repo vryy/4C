@@ -102,7 +102,7 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
 }
-
+#if 0
 /*----------------------------------------------------------------------*
  // converts a string into an stabilisation action for this element
  //                                                          gammi 08/07
@@ -124,7 +124,7 @@ DRT::ELEMENTS::Fluid3::StabilisationAction DRT::ELEMENTS::Fluid3::ConvertStringT
   }
   return act;
 }
-
+#endif
 void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
                         Teuchos::ParameterList& p,
                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -223,6 +223,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //--------------------------------------------------
       case calc_fluid_genalpha_sysmat_and_residual:
       {
+#if 0
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
@@ -249,7 +250,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["reynolds_complete"      ]=reynolds_stress_stab;
           stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
         }
-
+#endif
         return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->Evaluate(
                this,
                params,
