@@ -105,36 +105,12 @@ public:
   //! @name Friends
   friend class Fluid3Boundary;
 
-  // TODO: StationaryImpl will be deleted and this friendships will vanish
-
   // All the template specializations that are used, new ones must be
   // added here.
   //friend class Fluid3StationaryImplInterface;
   // All the template specializations that are used, new ones must be
   // added here.
-/*
-  friend class Fluid3StationaryImpl<DRT::Element::hex8>;
-  friend class Fluid3StationaryImpl<DRT::Element::hex20>;
-  friend class Fluid3StationaryImpl<DRT::Element::hex27>;
-  friend class Fluid3StationaryImpl<DRT::Element::tet4>;
-  friend class Fluid3StationaryImpl<DRT::Element::tet10>;
-  friend class Fluid3StationaryImpl<DRT::Element::wedge6>;
-  friend class Fluid3StationaryImpl<DRT::Element::wedge15>;
-  friend class Fluid3StationaryImpl<DRT::Element::pyramid5>;
-  //friend class Fluid3StationaryImpl<DRT::Element::nurbs8>;
-  //friend class Fluid3StationaryImpl<DRT::Element::nurbs27>;
-  // 2D
-  friend class Fluid3StationaryImpl<DRT::Element::quad4>;
-  friend class Fluid3StationaryImpl<DRT::Element::quad8>;
-  friend class Fluid3StationaryImpl<DRT::Element::quad9>;
-  friend class Fluid3StationaryImpl<DRT::Element::tri3>;
-  friend class Fluid3StationaryImpl<DRT::Element::tri6>;
-  //friend class Fluid3StationaryImpl<DRT::Element::nurbs4>;
-  //friend class Fluid3StationaryImpl<DRT::Element::nurbs9>;
-  // 1D
-  friend class Fluid3StationaryImpl<DRT::Element::line2>;
-  friend class Fluid3StationaryImpl<DRT::Element::line3>;
-*/
+
   // TODO: linImpl will be deleted and this friendships will vanish
 
   friend class Fluid3lin_ImplInterface;
@@ -565,6 +541,7 @@ private:
     calc_fluid_elementvolume
   };
 
+#if 0
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
   enum StabilisationAction
   {
@@ -594,6 +571,7 @@ private:
     reynolds_stress_stab_only_rhs
   };
 
+
   //! linearisation actions recognized by fluid3 (genalpha implementation)
   enum LinearisationAction
   {
@@ -617,7 +595,6 @@ private:
     oberai                                   ,
     tau_not_defined
   };
-//TODO: check if it must be defined here (genalfa)
 
   //! physical turbulence models recognized by fluid3_genalpha implementation
   enum TurbModelAction
@@ -635,12 +612,12 @@ private:
     smagorinsky_all,
     smagorinsky_small
   };
-
+#endif
   //! discretization type
   DRT::Element::DiscretizationType distype_;
 
   //! map that converts strings to actions (stabilisation)
-  static map<string,StabilisationAction>          stabstrtoact_;
+  //static map<string,StabilisationAction>          stabstrtoact_;
 
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
@@ -919,7 +896,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   ActionType convertStringToActionType(const string& action) const;
 
   //! convert string to stabilisation action
-  StabilisationAction ConvertStringToStabAction (const string& action) const;
+  //StabilisationAction ConvertStringToStabAction (const string& action) const;
 
 }; // class Fluid3
 

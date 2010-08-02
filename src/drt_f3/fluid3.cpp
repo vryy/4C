@@ -254,7 +254,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3BoundaryType::Create( const int 
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
-map<string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3::stabstrtoact_;
+//map<string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/08|
