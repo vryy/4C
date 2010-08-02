@@ -2,6 +2,7 @@
 
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
+BUILD_TYPE="RELEASE"
 
 MPIDIR=/cluster/openmpi-1.1.4
 export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
