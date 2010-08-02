@@ -972,7 +972,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Linearisation",newton_);
       eleparams.set("Physical Type", physicaltype_);
-      eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2202,7 +2201,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set("Linearisation",newton_);
   eleparams.set("Physical Type", physicaltype_);
-  eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
