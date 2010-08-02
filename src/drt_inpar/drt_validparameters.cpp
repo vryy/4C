@@ -1521,14 +1521,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::FLUID::timeint_one_step_theta
                                  ),
                                &fdyn);
-  setStringToIntegralParameter<int>("NONLINITER","fixed_point_like",
+  setStringToIntegralParameter<INPAR::FLUID::LinearisationAction>("NONLINITER","fixed_point_like",
                                "Nonlinear iteration scheme",
                                tuple<std::string>(
                                  "fixed_point_like",
                                  "Newton",
                                  "minimal"
                                  ),
-                               tuple<int>(1,2,3),
+                               tuple<INPAR::FLUID::LinearisationAction>(
+                                     INPAR::FLUID::fixed_point_like,
+                                     INPAR::FLUID::Newton,
+                                     INPAR::FLUID::minimal),
                                &fdyn);
 
   setStringToIntegralParameter<int>("PREDICTOR","steady_state_predictor",
@@ -1644,13 +1647,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
+  setStringToIntegralParameter<INPAR::FLUID::FineSubgridVisc>("FSSUGRVISC","No","fine-scale subgrid viscosity",
                                tuple<std::string>(
                                  "No",
                                  "Smagorinsky_all",
                                  "Smagorinsky_small"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<INPAR::FLUID::FineSubgridVisc>(
+                                   INPAR::FLUID::no_fssgv,
+                                   INPAR::FLUID::smagorinsky_all,
+                                   INPAR::FLUID::smagorinsky_small
+                                   ),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
@@ -1673,8 +1680,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
   IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
-  setStringToIntegralParameter<int>("COMBISYSMAT","no",
-                                    "combined sysmat implementation 2D/3D", yesnotuple,yesnovalue,&fdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
