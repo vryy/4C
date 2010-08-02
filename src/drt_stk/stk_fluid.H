@@ -157,10 +157,10 @@ private:
   double min_volume_;
 
   /// time algorithm flag
-  FLUID_TIMEINTTYPE timealgo_;
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
   /// flag for physical type of fluid flow (standard: incompressible)
-  enum INPAR::FLUID::PhysicalType physicaltype_;
+  INPAR::FLUID::PhysicalType physicaltype_;
 
   int dyntype_;
   bool alefluid_;

@@ -387,6 +387,10 @@ void STK::UnrefineSet::FindConstraints()
       // see if a constraint is needed for this hanging node
 
       HangingNodeInfo & hni = hanging_[ hn ];
+
+      // The node will either become (stay) a hanging node or it is not used
+      // any more and will go away.
+
       hni.needconstraint = NeedConstraint( hn );
 
       // remember which parent uses this hanging node
@@ -434,6 +438,22 @@ bool STK::UnrefineSet::NeedConstraint( stk::mesh::Entity * hn )
       return true;
     }
   }
+
+  // If the node is part of a hanging node face and not the hanging node
+  // itself, it will stay.
+
+  for ( stk::mesh::PairIterRelation rel = hn->relations( stk::mesh::Constraint );
+        not rel.empty();
+        ++rel )
+  {
+    stk::mesh::Entity * c = rel->entity();
+    stk::mesh::PairIterRelation nodes = c->relations( stk::mesh::Node );
+    if ( nodes[0].entity() != hn )
+    {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -741,10 +761,12 @@ void STK::UnrefineSet::KeepParent( stk::mesh::Entity * parent )
     }
 
     HangingNodeInfo & hni = k->second;
+    //hni.needconstraint = NeedConstraint( hn );
+    hni.needconstraint = true;
     hni.parents.erase( parent );
 
     // If there are no more parent elements to this hanging node, drop the
-    // information. It is going to stay.
+    // information. The node is going to stay normal. (?)
     if ( hni.parents.size()==0 )
     {
       hanging_.erase( k );

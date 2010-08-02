@@ -1468,6 +1468,18 @@ if (D_EXODUS)
   target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 endif (D_EXODUS)
 
+if (STKADAPTIVE)
+
+  add_executable (stk_test
+    src/stk_test/stk_test.cpp
+    )
+  target_link_libraries (stk_test 
+    stk_adaptive_lib
+    ${LIBRARIES}
+    )
+
+endif (STKADAPTIVE)
+
 ###------------------------------------------------------------------ Test definitions
 
 ENABLE_TESTING()

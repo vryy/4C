@@ -30,7 +30,8 @@
 #include "stk_fixedsparsematrix.H"
 
 STK::Adaptive::Adaptive( DRT::Discretization & dis )
-  : dis_( dis )
+  : dis_( dis ),
+    refine_log_( "refine.log" )
 {
 }
 
@@ -335,6 +336,18 @@ void STK::Adaptive::RefineFirst()
 
 void STK::Adaptive::Refine( const std::vector<stk::mesh::EntityKey> & eids )
 {
+#if 1
+  refine_log_ << "Refine: ";
+  for ( std::vector<stk::mesh::EntityKey>::const_iterator i=eids.begin();
+        i!=eids.end(); ++i )
+  {
+    stk::mesh::EntityKey key = *i;
+    stk::mesh::print_entity_key( refine_log_ , GetMesh().MetaData() , key );
+    refine_log_ << " ";
+  }
+  refine_log_ << std::endl;
+#endif
+
   RefineSet rs( &*mesh_ );
   mesh_->Modify();
   rs.Refine( eids );
@@ -346,22 +359,22 @@ void STK::Adaptive::Refine( const std::vector<stk::mesh::EntityKey> & eids )
 
 void STK::Adaptive::Unrefine( const std::vector<stk::mesh::EntityKey> & eids )
 {
-  UnrefineSet rs( &*mesh_ );
-  mesh_->Modify();
-  rs.Unrefine( eids );
-  mesh_->Commit();
-
-#if 0
-  std::cout << "  eids: ";
+#if 1
+  refine_log_ << "Unrefine: ";
   for ( std::vector<stk::mesh::EntityKey>::const_iterator i=eids.begin();
         i!=eids.end(); ++i )
   {
     stk::mesh::EntityKey key = *i;
-    stk::mesh::print_entity_key( std::cout , GetMesh().MetaData() , key );
-    std::cout << " ";
+    stk::mesh::print_entity_key( refine_log_ , GetMesh().MetaData() , key );
+    refine_log_ << " ";
   }
-  std::cout << "\n";
+  refine_log_ << std::endl;
 #endif
+
+  UnrefineSet rs( &*mesh_ );
+  mesh_->Modify();
+  rs.Unrefine( eids );
+  mesh_->Commit();
 
   SyncDRT( false );
 }

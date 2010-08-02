@@ -462,6 +462,8 @@ WARN_LOGFILE           =
 INPUT                  = index.doc \
                          ../src/linalg \
                          ../src/drt_lib \
+                         ../src/stk_lib \
+                         ../src/drt_stk \
                          ../src/drt_inpar \
                          ../src/drt_io \
                          ../src/drt_xfem \
@@ -1070,6 +1072,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __cplusplus \
                          CCADISCRET \
+                         STKADAPTIVE \
                          TRILINOS_PACKAGE \
                          QHULL \
                          D_SHELL8 \

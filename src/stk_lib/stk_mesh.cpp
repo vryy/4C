@@ -195,4 +195,106 @@ void STK::Mesh::Dump(std::string filename)
   Print(f);
 }
 
+
+void STK::Mesh::OutputCounters( std::string name, std::vector<stk::mesh::EntityRank> & count )
+{
+  unsigned myrank = parallel_rank();
+  unsigned nprocs = parallel_size();
+  unsigned size = count.size();
+
+  std::vector<stk::mesh::EntityRank> localcount( size*( nprocs+1 ), 0 );
+  std::vector<stk::mesh::EntityRank> globalcount( size*( nprocs+1 ), 0 );
+  std::copy( count.begin(), count.end(), &localcount[size*myrank] );
+
+  stk::all_reduce_sum( parallel(), &localcount[0], &globalcount[0], localcount.size() );
+
+  for ( unsigned p = 0 ; p < nprocs ; ++p )
+  {
+    for ( unsigned i=0; i<size; ++i )
+    {
+      globalcount[size*nprocs+i] += globalcount[size*p+i];
+    }
+  }
+
+  if ( myrank == 0 )
+  {
+    std::cout << std::setw( 15 ) << name << " : ";
+    for ( unsigned p = 0 ; p < nprocs+1 ; ++p )
+    {
+      for ( stk::mesh::EntityRank* ptr=&globalcount[p*size];
+            ptr!=&globalcount[( p+1 )*size];
+            ++ptr )
+      {
+        std::cout << std::setw( 3 ) << ( *ptr ) << " ";
+      }
+      if ( p<nprocs )
+        std::cout << "| ";
+    }
+    std::cout << "\n";
+  }
+}
+
+
+void STK::Mesh::Statistics()
+{
+  std::vector<stk::mesh::EntityRank> count;
+
+  if ( parallel_rank() == 0 )
+    std::cout << "\n";
+
+  stk::mesh::Selector ownedselector = OwnedPart();
+  count_entities(ownedselector,mesh_bulk_data_,count);
+  OutputCounters( "owns", count );
+
+  stk::mesh::Selector sharedselector = SharedPart();
+  count_entities(sharedselector,mesh_bulk_data_,count);
+  OutputCounters( "shares", count );
+
+  stk::mesh::Selector activeownedselector = OwnedPart() & ActivePart();
+  count_entities(activeownedselector,mesh_bulk_data_,count);
+  OutputCounters( "active owns", count );
+
+  stk::mesh::Selector activesharedselector = SharedPart() & ActivePart();
+  count_entities(activesharedselector,mesh_bulk_data_,count);
+  OutputCounters( "active shares", count );
+
+  const std::vector<stk::mesh::Entity*> & entity_comm = mesh_bulk_data_.entity_comm();
+
+  std::fill(count.begin(),count.end(),0);
+  for ( std::vector<stk::mesh::Entity*>::const_iterator i = entity_comm.begin();
+        i != entity_comm.end();
+        ++i )
+  {
+    if ( stk::mesh::in_shared( **i ) )
+    {
+      count[( *i )->entity_rank()] += 1;
+    }
+  }
+  OutputCounters( "shared", count );
+
+  std::fill(count.begin(),count.end(),0);
+  for ( std::vector<stk::mesh::Entity*>::const_iterator i = entity_comm.begin();
+        i != entity_comm.end();
+        ++i )
+  {
+    if ( stk::mesh::in_send_ghost( **i ) )
+    {
+      count[( *i )->entity_rank()] += 1;
+    }
+  }
+  OutputCounters( "send", count );
+
+  std::fill(count.begin(),count.end(),0);
+  for ( std::vector<stk::mesh::Entity*>::const_iterator i = entity_comm.begin();
+        i != entity_comm.end();
+        ++i )
+  {
+    if ( stk::mesh::in_receive_ghost( **i ) )
+    {
+      count[( *i )->entity_rank()] += 1;
+    }
+  }
+  OutputCounters( "recv", count );
+}
+
 #endif

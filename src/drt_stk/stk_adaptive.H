@@ -5,6 +5,7 @@
 
 #include <map>
 #include <vector>
+#include <fstream>
 
 #include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/MetaData.hpp>
@@ -102,6 +103,8 @@ private:
   DRT::Discretization & dis_;
   Teuchos::RCP<MetaMesh> meta_;
   Teuchos::RCP<Mesh> mesh_;
+
+  std::ofstream refine_log_;
 
   std::map<stk::mesh::Part*, DRT::Condition*> part_condition_;
 

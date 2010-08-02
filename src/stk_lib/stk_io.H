@@ -178,20 +178,18 @@ private:
 
 //----------------------------------------------------------------------
 
-#if 0
-
 class FileInput {
 public:
   ~FileInput();
 
-  FileInput( const FileSchema & , BulkData & ,
+  FileInput( const FileSchema & , stk::mesh::BulkData & ,
              const std::string & arg_file_path ,
-             const std::vector< const FieldBase * > & );
+             const std::vector< const stk::mesh::FieldBase * > & );
 
   double read();
 
   const FileSchema & m_schema ;
-        BulkData       & m_mesh ;
+  stk::mesh::BulkData       & m_mesh ;
 
   int exo_id() const { return m_exo_id ; }
   int exo_step() const { return m_counter ; }
@@ -208,8 +206,6 @@ private:
   std::vector< FieldIO > m_field_node_universal ;
   std::vector< FieldIO > m_field_elem ;
 };
-
-#endif
 
 } // namespace exodus
 } // namespace phdmesh

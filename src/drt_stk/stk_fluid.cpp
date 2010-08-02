@@ -119,7 +119,7 @@ STK::Fluid::Fluid( DRT::Discretization & dis,
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   physicaltype_ = Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
-  timealgo_     = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+  timealgo_     = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
   dyntype_      = Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP");
   stepmax_      = fdyn.get<int>("NUMSTEP");
   maxtime_      = fdyn.get<double>("MAXTIME");
@@ -189,6 +189,8 @@ void STK::Fluid::Integrate()
   stk::mesh::BulkData & bulk_data = GetMesh().BulkData();
   int p_rank = bulk_data.parallel_rank();
 
+  StatisticsAndOutput();
+
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -199,13 +201,13 @@ void STK::Fluid::Integrate()
     {
       switch (timealgo_)
       {
-      case timeint_one_step_theta:
+      case INPAR::FLUID::timeint_one_step_theta:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_afgenalpha:
+      case INPAR::FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",time_,maxtime_,dta_,step_,stepmax_);
         break;
-      case timeint_bdf2:
+      case INPAR::FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",time_,maxtime_,dta_,step_,stepmax_);
         break;
       default:
@@ -273,7 +275,7 @@ void STK::Fluid::PrepareTimeStep()
   time_ += dta_;
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-  if (timealgo_==timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+  if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
@@ -289,16 +291,16 @@ void STK::Fluid::PrepareTimeStep()
 
   switch ( timealgo_ )
   {
-  case timeint_stationary: /* Stationary algorithm */
-  case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+  case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
+  case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
     algebra::PutScalar( bulk_data, *hist_, 0.0 );
     break;
 
-  case timeint_one_step_theta: /* One step Theta time integration */
+  case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
     algebra::Update( bulk_data, *hist_, 0.0, *veln_, 1.0, *accn_, dta_*(1.0-theta_) );
     break;
 
-  case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+  case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
     algebra::Update( bulk_data, *hist_, 0.0, *veln_, 4./3., *velnm_, -1./3. );
     break;
 
@@ -322,16 +324,16 @@ void STK::Fluid::PrepareTimeStep()
   {
     switch ( timealgo_ )
     {
-    case timeint_stationary: /* Stationary algorithm */
+    case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
       // do nothing
       break;
-    case timeint_afgenalpha: /* Generalized-alpha time integration */
+    case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
     {
       // do nothing for the time being, that is, steady-state predictor
       break;
     }
-    case timeint_one_step_theta: /* One step Theta time integration */
-    case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+    case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+    case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
     {
       const double fact1 = dta_*(1.0+dta_/dtp_);
       const double fact2 = (dta_/dtp_)*(dta_/dtp_);
@@ -400,7 +402,7 @@ void STK::Fluid::PrepareTimeStep()
   //  prescribed Dirichlet values for generalized-alpha time
   //  integration and values at intermediate time steps
   // -------------------------------------------------------------------
-  if (timealgo_==timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     throw std::runtime_error( "not supported" );
   }
@@ -599,7 +601,7 @@ void STK::Fluid::NonlinearSolve()
     }
 
     // set scheme-specific element parameters and vector values
-    if (timealgo_==timeint_stationary)
+    if (timealgo_==INPAR::FLUID::timeint_stationary)
     {
       eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       eleparams.set("using generalized-alpha time integration",false);
@@ -608,7 +610,7 @@ void STK::Fluid::NonlinearSolve()
 
       discret.SetState("velaf",velnp);
     }
-    else if (timealgo_==timeint_afgenalpha)
+    else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
 //       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
 //       eleparams.set("using generalized-alpha time integration",true);
@@ -800,19 +802,19 @@ void STK::Fluid::TimeUpdate()
   {
     switch ( timealgo_ )
     {
-      case timeint_stationary: /* no accelerations for stationary problems*/
+      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
       {
         algebra::PutScalar( bulk_data, *accnp_, 0.0 );
         break;
       }
-      case timeint_one_step_theta: /* One step Theta time integration */
-      case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
         // do just a linear interpolation within the first timestep
         algebra::Update( bulk_data, *accnp_, 0.0, *velnp_, 1.0/dta_, *veln_, -1.0/dta_ );
         break;
       }
-      case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
         // startup is handled separately
         break;
@@ -847,12 +849,12 @@ void STK::Fluid::TimeUpdate()
 
     switch ( timealgo_ )
     {
-      case timeint_stationary: /* no accelerations for stationary problems*/
+      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
       {
         algebra::PutScalar( bulk_data, *accnp_, 0.0 );
         break;
       }
-      case timeint_one_step_theta: /* One-step-theta time integration */
+      case INPAR::FLUID::timeint_one_step_theta: /* One-step-theta time integration */
       {
         const double fact1 = 1.0/(theta_*dta_);
         const double fact2 =-1.0/theta_ +1.0;   /* = -1/Theta + 1 */
@@ -860,7 +862,7 @@ void STK::Fluid::TimeUpdate()
         algebra::Update( bulk_data, *accnp_, 0.0, *velnp_, fact1, *veln_, -fact1, *accn_, fact2 );
         break;
       }
-      case timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
         if (dta_*dtp_ < 1e-15) throw std::runtime_error("zero time step size");
         const double sum = dta_ + dtp_;
@@ -872,7 +874,7 @@ void STK::Fluid::TimeUpdate()
                          *velnm_, dta_/(dtp_*sum) );
         break;
       }
-      case timeint_afgenalpha: /* Af-generalized-alpha time integration */
+      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
       {
         // do nothing: new acceleration is calculated at beginning of next time step
         break;
@@ -956,6 +958,8 @@ void STK::Fluid::AdaptiveNonlinearSolve()
 
       Refine( refine );
       Unrefine( unrefine );
+
+      GetMesh().Statistics();
 
       SetupDRTMesh();
 

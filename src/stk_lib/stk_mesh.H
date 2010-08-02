@@ -156,7 +156,11 @@ public:
   void Print(std::ostream& stream);
   void Dump(std::string filename);
 
+  void Statistics();
+
 private:
+
+  void OutputCounters( std::string name, std::vector<stk::mesh::EntityRank> & count );
 
   MetaMesh & meta_;
   stk::mesh::BulkData mesh_bulk_data_;

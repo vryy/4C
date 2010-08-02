@@ -44,7 +44,6 @@
 // #include <mesh/Comm.hpp>
 
 #include "stk_io.H"
-//#include "mesh.hpp"
 
 #include <stk_mesh/base/BulkData.hpp>
 #include <stk_mesh/base/GetEntities.hpp>
@@ -2263,16 +2262,14 @@ void FileOutput::write( int step, double time_value )
 //----------------------------------------------------------------------
 // Open and read file for meta-data
 
-#if 0
-
 namespace {
 
-std::pair< const CellTopology * , int >
+std::pair< const CellTopologyData * , int >
 map_from_exodus( const char * const element_type ,
                  const int node_count ,
                  const int space_dim )
 {
-  std::pair< const CellTopology * , int > result ;
+  std::pair< const CellTopologyData * , int > result ;
   result.first = NULL ;
   result.second = 0 ;
 
@@ -2284,71 +2281,71 @@ map_from_exodus( const char * const element_type ,
   }
   else if ( 0 == strncasecmp( "TRUSS" , element_type , 3 ) ) {
     if ( node_count == 2 ) {
-      result.first  = cell_topology< Line<2> >();
+      result.first  = shards::getCellTopologyData< shards::Line<2> >();
       result.second = 1 ;
     }
     else if ( node_count == 3 ) {
-      result.first  = cell_topology< Line<3> >();
+      result.first  = shards::getCellTopologyData< shards::Line<3> >();
       result.second = 1 ;
     }
   }
   else if ( 0 == strncasecmp( "BEAM" , element_type , 3 ) ) {
     if ( node_count == 2 ) {
-      result.first  = cell_topology< Line<2> >();
+      result.first  = shards::getCellTopologyData< shards::Line<2> >();
       result.second = space_dim == 2 ? 3 : (
                       space_dim == 3 ? 7 : 0 );
     }
     else if ( node_count == 3 ) {
-      result.first  = cell_topology< Line<3> >();
+      result.first  = shards::getCellTopologyData< shards::Line<3> >();
       result.second = space_dim == 2 ? 3 : (
                       space_dim == 3 ? 7 : 0 );
     }
   }
   else if ( 0 == strncasecmp( "SHELL" , element_type , 3 ) ) {
      if ( node_count == 2 ) {
-       result.first  = cell_topology< ShellLine<2> >();
+       result.first  = shards::getCellTopologyData< shards::ShellLine<2> >();
        result.second = 1 ;
      }
      else if ( node_count == 3 ) {
-       result.first  = cell_topology< ShellLine<3> >();
+       result.first  = shards::getCellTopologyData< shards::ShellLine<3> >();
        result.second = 1 ;
      }
      else if ( node_count == 4 ) {
-       result.first  = cell_topology< ShellQuadrilateral<4> >();
+       result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<4> >();
        result.second = 1 ;
      }
      else if ( node_count == 8 ) {
-       result.first  = cell_topology< ShellQuadrilateral<8> >();
+       result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<8> >();
        result.second = 1 ;
      }
      else if ( node_count == 9 ) {
-       result.first  = cell_topology< ShellQuadrilateral<9> >();
+       result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<9> >();
        result.second = 1 ;
      }
   }
   else if ( 0 == strncasecmp( "QUAD" , element_type , 3 ) ) {
     if ( space_dim == 2 ) {
       if ( node_count == 4 ) {
-        result.first = cell_topology< Quadrilateral<4> >();
+        result.first = shards::getCellTopologyData< shards::Quadrilateral<4> >();
       }
       else if ( node_count == 8 ) {
-        result.first = cell_topology< Quadrilateral<8> >();
+        result.first = shards::getCellTopologyData< shards::Quadrilateral<8> >();
       }
       else if ( node_count == 9 ) {
-        result.first = cell_topology< Quadrilateral<9> >();
+        result.first = shards::getCellTopologyData< shards::Quadrilateral<9> >();
       }
     }
     else if ( space_dim == 3 ) {
       if ( node_count == 4 ) {
-        result.first  = cell_topology< ShellQuadrilateral<4> >();
+        result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<4> >();
         result.second = 1 ;
       }
       else if ( node_count == 8 ) {
-        result.first  = cell_topology< ShellQuadrilateral<8> >();
+        result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<8> >();
         result.second = 1 ;
       }
       else if ( node_count == 9 ) {
-        result.first  = cell_topology< ShellQuadrilateral<9> >();
+        result.first  = shards::getCellTopologyData< shards::ShellQuadrilateral<9> >();
         result.second = 1 ;
       }
     }
@@ -2356,60 +2353,60 @@ map_from_exodus( const char * const element_type ,
   else if ( 0 == strncasecmp( "TRIANGLE" , element_type , 3 ) ) {
     if ( space_dim == 2 ) {
       if ( node_count == 3 ) {
-        result.first = cell_topology< Triangle<3> >();
+        result.first = shards::getCellTopologyData< shards::Triangle<3> >();
       }
       else if ( node_count == 6 ) {
-        result.first = cell_topology< Triangle<6> >();
+        result.first = shards::getCellTopologyData< shards::Triangle<6> >();
       }
     }
     else if ( space_dim == 3 ) {
       if ( node_count == 3 ) {
-        result.first = cell_topology< ShellTriangle<3> >();
+        result.first = shards::getCellTopologyData< shards::ShellTriangle<3> >();
       }
       else if ( node_count == 6 ) {
-        result.first = cell_topology< ShellTriangle<6> >();
+        result.first = shards::getCellTopologyData< shards::ShellTriangle<6> >();
       }
     }
   }
   else if ( 0 == strncasecmp( "PYRAMID" , element_type , 3 ) ) {
     if ( node_count == 5 ) {
-      result.first = cell_topology< Pyramid<5> >();
+      result.first = shards::getCellTopologyData< shards::Pyramid<5> >();
     }
     else if ( node_count == 13 ) {
-      result.first = cell_topology< Pyramid<13> >();
+      result.first = shards::getCellTopologyData< shards::Pyramid<13> >();
     }
     else if ( node_count == 14 ) {
-      result.first = cell_topology< Pyramid<14> >();
+      result.first = shards::getCellTopologyData< shards::Pyramid<14> >();
     }
   }
   else if ( 0 == strncasecmp( "TETRA" , element_type , 3 ) ) {
     if ( node_count == 4 ) {
-      result.first = cell_topology< Tetrahedron<4> >();
+      result.first = shards::getCellTopologyData< shards::Tetrahedron<4> >();
     }
     else if ( node_count == 10 ) {
-      result.first = cell_topology< Tetrahedron<10> >();
+      result.first = shards::getCellTopologyData< shards::Tetrahedron<10> >();
     }
   }
   else if ( 0 == strncasecmp( "WEDGE" , element_type , 3 ) ) {
     if ( node_count == 6 ) {
-      result.first = cell_topology< Wedge<6> >();
+      result.first = shards::getCellTopologyData< shards::Wedge<6> >();
     }
     else if ( node_count == 15 ) {
-      result.first = cell_topology< Wedge<15> >();
+      result.first = shards::getCellTopologyData< shards::Wedge<15> >();
     }
     else if ( node_count == 18 ) {
-      result.first = cell_topology< Wedge<18> >();
+      result.first = shards::getCellTopologyData< shards::Wedge<18> >();
     }
   }
   else if ( 0 == strncasecmp( "HEX" , element_type , 3 ) ) {
     if ( node_count == 8 ) {
-      result.first = cell_topology< Hexahedron<8> >();
+      result.first = shards::getCellTopologyData< shards::Hexahedron<8> >();
     }
     else if ( node_count == 20 ) {
-      result.first = cell_topology< Hexahedron<20> >();
+      result.first = shards::getCellTopologyData< shards::Hexahedron<20> >();
     }
     else if ( node_count == 27 ) {
-      result.first = cell_topology< Hexahedron<27> >();
+      result.first = shards::getCellTopologyData< shards::Hexahedron<27> >();
     }
   }
 
@@ -2432,23 +2429,25 @@ struct exo_elem_block_data {
 }
 
 FileSchema::FileSchema(
-  MetaData & arg_mesh_meta_data ,
-  const FieldBase & arg_node_coordinates ,
+  stk::mesh::MetaData & arg_mesh_meta_data ,
+  const stk::mesh::FieldBase & arg_node_coordinates ,
   const FileSchema::AttributeField  & arg_elem_attributes ,
+  stk::mesh::Part & active_part ,
   const std::string     & arg_file_path ,
-  ParallelMachine         arg_comm ,
+  stk::ParallelMachine         arg_comm ,
   const unsigned          arg_reader_rank )
   : m_schema( arg_mesh_meta_data ),
     m_io_rank( arg_reader_rank ),
-    m_dimension( arg_node_coordinates.max_size( Node ) ),
+    m_dimension( arg_node_coordinates.max_size( stk::mesh::Node ) ),
     m_field_node_coord( arg_node_coordinates ),
     m_field_elem_attr(  arg_elem_attributes ),
-    m_field_index( exo_index( arg_mesh_meta_data ) )
+    m_field_index( exo_index( arg_mesh_meta_data ) ),
+    m_active_part( active_part )
 {
   static const char method[] = "phdmesh::exodus::FileSchema::FileSchema" ;
 
-  ParallelMachine p_comm = arg_comm ;
-  const unsigned  p_rank = parallel_machine_rank( arg_comm );
+  stk::ParallelMachine p_comm = arg_comm ;
+  const unsigned  p_rank = stk::parallel_machine_rank( arg_comm );
   const unsigned  p_read = arg_reader_rank ;
 
   //--------------------------------------------------------------------
@@ -2600,14 +2599,14 @@ FileSchema::FileSchema(
     if ( ! exo_error ) {
       for ( int i = 0 ; i < num_elem_blk ; ++i ) {
 
-        std::pair< const CellTopology * , int > elem_info =
+        std::pair< const CellTopologyData * , int > elem_info =
           map_from_exodus( block_data[i].type ,
                            block_data[i].num_nodes ,
                            num_dim );
 
-        Part & part = m_schema.declare_part( std::string(block_data[i].name) );
+        stk::mesh::Part & part = m_schema.declare_part( std::string(block_data[i].name) );
 
-        const CellTopology * top = elem_info.first ;
+        const CellTopologyData * top = elem_info.first ;
 
         if ( NULL == top || elem_info.second != block_data[i].num_attr ) {
           std::ostringstream msg ;
@@ -2626,12 +2625,12 @@ FileSchema::FileSchema(
           internal_declare_part( m_schema ,
                                  part ,
                                  block_data[i].block_id ,
-                                 Element , top ,
+                                 stk::mesh::Element , top ,
                                  m_dimension ,
                                  block_data[i].num_attr ,
                                  m_field_elem_attr );
 
-        m_parts[ Element ].push_back( fp );
+        m_parts[ stk::mesh::Element ].push_back( fp );
       }
     }
   }
@@ -2700,7 +2699,7 @@ struct less_NodeData {
 
 FileInput::~FileInput()
 {
-  const BulkData       & M  = m_mesh ;
+  const stk::mesh::BulkData       & M  = m_mesh ;
   const FileSchema & FS = m_schema ;
   const unsigned  p_rank = M.parallel_rank();
   const unsigned  p_read = FS.m_io_rank ;
@@ -2710,9 +2709,9 @@ FileInput::~FileInput()
 
 FileInput::FileInput(
   const FileSchema  & arg_schema ,
-        BulkData        & arg_mesh ,
+  stk::mesh::BulkData        & arg_mesh ,
   const std::string & arg_file_path ,
-  const std::vector< const FieldBase * > & arg_fields )
+  const std::vector< const stk::mesh::FieldBase * > & arg_fields )
   : m_schema( arg_schema ),
     m_mesh( arg_mesh ),
     m_exo_id( 0 ),
@@ -2721,23 +2720,23 @@ FileInput::FileInput(
 {
   static const char method[] = "phdmesh::exodus::FileInput::FileInput" ;
 
-        BulkData       & M  = arg_mesh ;
-  const MetaData     & SM = M.mesh_meta_data();
+  stk::mesh::BulkData       & M  = arg_mesh ;
+  const stk::mesh::MetaData     & SM = M.mesh_meta_data();
   const FileSchema & FS = arg_schema ;
-  ParallelMachine p_comm = M.parallel();
+  stk::ParallelMachine p_comm = M.parallel();
   const unsigned  p_size = M.parallel_size();
   const unsigned  p_rank = M.parallel_rank();
   const unsigned  p_read = FS.m_io_rank ;
 
   const bool reader = p_read == p_rank ;
 
-  const Part & universal_part = SM.universal_part();
-        Part & owns_part      = SM.locally_owned_part();
+  const stk::mesh::Part & universal_part = SM.universal_part();
+        stk::mesh::Part & owns_part      = SM.locally_owned_part();
 
   // const std::vector<const FilePart *> & node_parts = FS.parts( Node );
   // const std::vector<const FilePart *> & edge_parts = FS.parts( Edge );
   // const std::vector<const FilePart *> & face_parts = FS.parts( Face );
-  const std::vector<const FilePart *> & elem_parts = FS.parts( Element );
+  const std::vector<const FilePart *> & elem_parts = FS.parts( stk::mesh::Element );
 
   //--------------------------------------------------------------------
 
@@ -2745,11 +2744,11 @@ FileInput::FileInput(
   std::vector< std::string > name_elem_var ;
   std::vector<int> exist_elem_var ;
 
-  for ( std::vector< const FieldBase * >::const_iterator
+  for ( std::vector< const stk::mesh::FieldBase * >::const_iterator
         i = arg_fields.begin() ; i != arg_fields.end() ; ++i ) {
 
-    const FieldBase  & f = **i ;
-    const FieldBase::Restriction & d = f.restriction( Node , universal_part );
+    const stk::mesh::FieldBase  & f = **i ;
+    const stk::mesh::FieldBase::Restriction & d = f.restriction( stk::mesh::Node , universal_part );
     const unsigned f_num_dim = f.rank();
 
     if ( d.stride[0] ) {
@@ -2760,10 +2759,11 @@ FileInput::FileInput(
       tmp.m_offset    = 0 ;
       tmp.m_var_index = 0 ;
 
-      const unsigned n = array_stride_size( f_num_dim, d.stride );
+      //const unsigned n = array_stride_size( f_num_dim, d.stride );
+      const unsigned n = 0 < f_num_dim ? d.stride[ f_num_dim - 1 ] : 0 ;
 
       for ( unsigned k = 0 ; k < n ; ++k ) {
-        name_node_var.push_back( variable_name(Node,universal_part, f, k) );
+        name_node_var.push_back( variable_name(stk::mesh::Node,universal_part, f, k) );
         tmp.m_offset    = k ;
         tmp.m_var_index = name_node_var.size();
         m_field_node_universal.push_back( tmp );
@@ -2771,21 +2771,21 @@ FileInput::FileInput(
     }
   }
 
-  for ( std::vector< const FieldBase * >::const_iterator
+  for ( std::vector< const stk::mesh::FieldBase * >::const_iterator
         i = arg_fields.begin() ; i != arg_fields.end() ; ++i ) {
 
-    const FieldBase & f = **i ;
+    const stk::mesh::FieldBase & f = **i ;
 
     bool is_element_var = false ;
 
-    for ( std::vector<FieldBase::Restriction>::const_iterator
+    for ( std::vector<stk::mesh::FieldBase::Restriction>::const_iterator
           j =  f.restrictions().begin() ;
           j != f.restrictions().end() && ! is_element_var ; ++j ) {
 
-      is_element_var = entity_type( j->key ) == Element ;
+      is_element_var = entity_rank( j->key ) == stk::mesh::Element ;
     }
     if ( is_element_var ) {
-      variable_add( Element , f , elem_parts , name_elem_var , m_field_elem );
+      variable_add( stk::mesh::Element , f , elem_parts , name_elem_var , m_field_elem );
     }
   }
 
@@ -3122,7 +3122,7 @@ FileInput::FileInput(
 
       const unsigned recv_size = num_needed_node * NodeData::size_of();
 
-      CommGather node_request( p_comm, p_read, sizeof(int) * num_needed_node );
+      stk::CommGather node_request( p_comm, p_read, sizeof(int) * num_needed_node );
 
       node_request.send_buffer().pack<int>( & *iter_needed_node_beg ,
                                             num_needed_node );
@@ -3148,7 +3148,7 @@ FileInput::FileInput(
 
         unsigned total_num_send = 0 ;
         for ( unsigned p = 0 ; p < p_size ; ++p ) {
-          CommBuffer & buf_request = node_request.recv_buffer(p);
+          stk::CommBuffer & buf_request = node_request.recv_buffer(p);
           const unsigned num_send = buf_request.remaining() / sizeof(int);
           send_size[p] = num_send * NodeData::size_of();
           total_num_send += num_send ;
@@ -3159,7 +3159,7 @@ FileInput::FileInput(
         total_num_send = 0 ;
 
         for ( unsigned p = 0 ; p < p_size ; ++p ) {
-          CommBuffer & buf_request = node_request.recv_buffer(p);
+          stk::CommBuffer & buf_request = node_request.recv_buffer(p);
           while ( buf_request.remaining() ) {
             int index_node_request ;
             buf_request.unpack<int>( index_node_request );
@@ -3200,7 +3200,8 @@ FileInput::FileInput(
 
   if ( ! exo_error ) {
 
-    PartSet entity_parts(2);
+    std::vector<stk::mesh::Part *> empty_parts;
+    std::vector<stk::mesh::Part *> entity_parts(2);
     entity_parts[0] = & owns_part ;
 
     // Now have all needed data to create nodes and elements
@@ -3226,9 +3227,8 @@ FileInput::FileInput(
         const int elem_index = elem_data_local[ size_elem_data_local++ ];
         const stk::mesh::EntityId elem_ident =
             elem_data_local[ size_elem_data_local++ ] ;
-        const entity_key_type elem_key = entity_key( Element , elem_ident );
 
-        Entity & elem = M.declare_entity( elem_key , entity_parts );
+        stk::mesh::Entity & elem = M.declare_entity( stk::mesh::Element , elem_ident , entity_parts );
 
         field_data( FS.m_field_index , elem )[0] = elem_index ;
 
@@ -3253,9 +3253,8 @@ FileInput::FileInput(
           }
 
           const stk::mesh::EntityId node_ident = iter_node_data->ident ;
-          const entity_key_type node_key = entity_key( Node , node_ident );
 
-          Entity & node = M.declare_entity( node_key, entity_parts );
+          stk::mesh::Entity & node = M.declare_entity( stk::mesh::Node , node_ident, empty_parts );
 
           M.declare_relation( elem , node , j );
 
@@ -3274,8 +3273,8 @@ FileInput::FileInput(
 
   // Nodes and elements are created, discover sharing and generate aura
 
-  comm_mesh_discover_sharing( M );
-  comm_mesh_regenerate_aura( M );
+  //comm_mesh_discover_sharing( M );
+  //comm_mesh_regenerate_aura( M );
 
   if ( exo_error ) {
     std::ostringstream msg ;
@@ -3285,8 +3284,6 @@ FileInput::FileInput(
     throw std::runtime_error( msg.str() );
   }
 }
-
-#endif
 
 }
 }
