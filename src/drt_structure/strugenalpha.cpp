@@ -3014,7 +3014,6 @@ void StruGenAlpha::Update()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
 
-
   if (pstype==INPAR::STR::prestress_mulf && timen <= pstime)
   {
     if (!discret_.Comm().MyPID()) cout << "====== Entering PRESTRESS update\n"; fflush(stdout);
@@ -3043,6 +3042,7 @@ void StruGenAlpha::Update()
     dis_->Scale(0.0);
     vel_->Scale(0.0);
     acc_->Scale(0.0);
+    dism_->Scale(0.0); // just to be safe, adapters from outside take it to update
   }
 
 
@@ -3650,7 +3650,6 @@ void StruGenAlpha::ReadRestart(int step)
   // to switch to poststress mode. To do so, we'll lie to the elements
   // that the time is actually dt later than it currently is :-)
   // This transforms them to poststress mode.
-  printf("time  %10.5e pstime %10.5e\n",time,pstime);
   if (pstype==INPAR::STR::prestress_id && time <= pstime && time+dt > pstime)
   {
     if (!discret_.Comm().MyPID()) cout << "XXXXXX Entering INVERSEDESIGN SWITCH\n"; fflush(stdout);

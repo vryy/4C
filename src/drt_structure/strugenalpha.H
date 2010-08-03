@@ -323,6 +323,15 @@ public:
   }
 
   /*!
+  \brief Get time increment
+
+  */
+  virtual inline double GetTimeStepSize()
+  {
+    return params_.get<double>("delta time");
+  }
+
+  /*!
   \brief Set time step
 
   */
