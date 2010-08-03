@@ -275,14 +275,16 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // allow monolithic in the post-phase
   {
     double time = 0.0;
+    double dt = 0.0;
     double pstime = -1.0;
     const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
     INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
       time   = StructureField().GetTime();
+      dt     = StructureField().GetTimeStepSize();
       pstime = pslist.get<double>("PRESTRESSTIME");
-      if (time <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
+      if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
   }
   
