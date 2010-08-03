@@ -153,6 +153,22 @@ public:
     }
   }
 
+
+  /*!
+  \brief Get vector of RefCountPtrs to the lines of this element
+
+  According to Georg, we do NOT store line or surface elements inside
+  the parent element after their creation.
+  Reason: if a Redistribute() is performed on the discretization,
+          stored node ids and node pointers owned by these boundary
+	  elements might have become illegal
+
+  -> new line elements are allocated each time
+
+  */
+  virtual vector<RCP<DRT::Element> > Lines();
+
+
   /*!
   \brief Return number of surfaces of this element
   */

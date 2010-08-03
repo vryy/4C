@@ -161,6 +161,19 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Surfaces()
     );
 }
 
+/*----------------------------------------------------------------------*
+ |  get vector of lines              (public)                 ae  02/010|
+ *----------------------------------------------------------------------*/
+vector<RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Fluid3Nurbs::Lines()
+{
+
+  // 1D boundary element and 3D parent element
+  {
+    return DRT::UTILS::ElementBoundaryFactory<Fluid3NurbsBoundary,DRT::ELEMENTS::NURBS::Fluid3Nurbs>(DRT::UTILS::buildLines,this);
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
