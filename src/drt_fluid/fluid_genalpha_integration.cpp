@@ -32,11 +32,12 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
-  RefCountPtr<DRT::Discretization> actdis,
-  LINALG::Solver&                  solver,
+  RefCountPtr<DRT::Discretization>    actdis,
+  LINALG::Solver&                     solver,
   ParameterList&                   params,
   IO::DiscretizationWriter&        output,
-  bool                             alefluid
+  bool                                alefluid,
+  RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave
   )
   :
   // call constructor for "nontrivial" objects
@@ -51,6 +52,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get("write stresses", 0)),
+  pbcmapmastertoslave_(pbcmapmastertoslave),
   locsysman_(Teuchos::null)
 {
 
@@ -74,19 +76,6 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // time measurement --- start TimeMonitor tm7
   tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
-
-  // -------------------------------------------------------------------
-  // connect degrees of freedom for periodic boundary conditions
-  // -------------------------------------------------------------------
-
-#if 1
-  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
-  pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-  pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
-#else
-  pbcmapmastertoslave_= Teuchos::rcp(new map<int,vector<int> > ());
-#endif
 
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
@@ -801,6 +790,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
+
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
@@ -3075,17 +3065,17 @@ void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > 
                                                    const LINALG::MultiMapExtractor& rangemaps   ,
                                                    bool                             splitmatrix )
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat;
 
   if (splitmatrix)
   {
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
                          domainmaps,
                          rangemaps,
                          500,
                          false,
                          true));
-    mat->SetCondElements(condelements);
+    //    mat->SetCondElements(condelements);
     sysmat_ = mat;
   }
 
@@ -3093,13 +3083,13 @@ void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > 
   if (params_.get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
                          domainmaps,
                          rangemaps,
                          500,
                          false,
                          true));
-    mat->SetCondElements(condelements);
+    //    mat->SetCondElements(condelements);
     shapederivatives_ = mat;
   }
 
