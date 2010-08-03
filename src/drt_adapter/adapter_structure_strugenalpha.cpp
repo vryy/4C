@@ -53,19 +53,25 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
 {
   // prestressing business
   double time = 0.0;
+  double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time   = structure_->GetTime();
+    dt     = structure_->GetTimeStepSize();
     pstime = pslist.get<double>("PRESTRESSTIME");
   }
 
-  if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(structure_->Getdu().Map(),true));
+  }
   else
+  {
     return Teuchos::rcp(&structure_->Getdu(),false);
+  }
 }
 
 
@@ -83,17 +89,21 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 {
   // prestressing business
   double time = 0.0;
+  double dt = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
+    dt = structure_->GetTimeStepSize();
     pstime = pslist.get<double>("PRESTRESSTIME");
   }
 
-  if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
+  }
   else
   {
     double alphaf = structure_->AlphaF();
@@ -120,9 +130,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
   }
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
+  }
   else
+  {
     return structure_->Disp();
+  }
 }
 
 
@@ -142,9 +156,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
   }
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(*dis_->DofRowMap(),true));
+  }
   else
+  {
     return structure_->Dispm();
+  }
 }
 
 
@@ -398,7 +416,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
   }
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap(),true));
+  }
   else
   {
     Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractFSICondVector(structure_->Disp());
@@ -413,17 +433,21 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
 {
   // prestressing business
   double time = 0.0;
+  double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
+    dt = structure_->GetTimeStepSize();
     pstime = pslist.get<double>("PRESTRESSTIME");
   }
 
-  if (pstype != INPAR::STR::prestress_none && time <= pstime)
+  if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+  {
     return Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap(),true));
+  }
   else
   {
     Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractFSICondVector(structure_->Dispm());
@@ -451,12 +475,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
 {
   // prestressing business
   double time = 0.0;
+  double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
+    dt = structure_->GetTimeStepSize();
     pstime = pslist.get<double>("PRESTRESSTIME");
   }
 
@@ -469,10 +495,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
   {
     // d(n)
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+    {
       idis = Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap(),true));
+    }
     else
+    {
       idis  = interface_.ExtractFSICondVector(structure_->Dispn());
+    }
     break;
   }
   case 2:
@@ -481,8 +511,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     break;
   case 3:
   {
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+    {
       idis = Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap(),true));
+    }
     else
     {
       // d(n)+dt*v(n)
@@ -495,8 +527,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
   }
   case 4:
   {
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
+    {
       idis = Teuchos::rcp(new Epetra_Vector(*interface_.FSICondMap(),true));
+    }
     else
     {
       // d(n)+dt*v(n)+0.5*dt^2*a(n)

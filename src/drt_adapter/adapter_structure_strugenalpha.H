@@ -81,7 +81,7 @@ namespace ADAPTER {
     virtual double GetTimeEnd() const { dserror("Not impl."); return -1.0; }
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const { dserror("Not impl."); return -1.0; }
+    virtual double GetTimeStepSize() const { return structure_->GetTimeStepSize();}
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
     virtual int GetTimeStep() const { dserror("Not impl."); return -1; }
