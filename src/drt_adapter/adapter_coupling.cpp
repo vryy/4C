@@ -88,7 +88,9 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
     dserror("master dof map mismatch");
 
   if (not slavedofmap_->SameAs(*slavecondmap))
+  {
     dserror("slave dof map mismatch");
+  }
 
   masterdofmap_ = mastercondmap;
   masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
@@ -259,8 +261,8 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 
 #if 1
   if (masternodes.size() != coupling.size())
-    dserror("Did not get 1:1 correspondence. masternodes.size()=%d, coupling.size()=%d",
-            masternodes.size(), coupling.size());
+    dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
+            masternodes.size(),masterdis.Name().c_str(), coupling.size(),slavedis.Name().c_str());
 #endif
 
   // extract permutation
