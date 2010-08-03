@@ -97,6 +97,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
     for (int i=0; i<numcolele; ++i)
     {
+      // first baci progress bar
       if(myrank==0 && i%every==0)
       {
         printf(".");
