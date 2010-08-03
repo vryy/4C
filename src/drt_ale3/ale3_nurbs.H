@@ -135,6 +135,8 @@ public:
   */
   virtual int NumLine() const
   {
+    return(0);
+    /*
     if (NumNode()==27 || NumNode()==8)
     {
       return 12;
@@ -143,6 +145,7 @@ public:
       dserror("Could not determine number of lines");
       return -1;
     }
+    */
   }
 
 
