@@ -938,56 +938,60 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // get all node gids of nodes on this proc
     discret_->NodeRowMap()->MyGlobalElements(&nodesonthisproc[0]);
 
-    // remove all node gids of slave nodes on this proc
+    set<int>    nodeset;
+
+    for(vector<int>::const_iterator rr=nodesonthisproc.begin();
+        rr!=nodesonthisproc.end();
+        ++rr)
     {
-      vector<int>::iterator curr;
-      for( curr = nodesonthisproc.begin(); curr != nodesonthisproc.end(); )
+      nodeset.insert(*rr);
+    }
+
+    // -----------------------------------------------
+    // remove all node gids of slave nodes on this proc
+
+    // get all periodic boundary conditions on this node
+    vector<DRT::Condition*> thiscond;
+
+    discret_->GetCondition("SurfacePeriodic",thiscond);
+
+    for (unsigned numcond=0;numcond<thiscond.size();++numcond)
+    {
+
+      const string* mymasterslavetoggle
+        = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
+
+      if(*mymasterslavetoggle=="Slave")
       {
-        // get the node if it's available on the processor
-        if(discret_->HaveGlobalNode(*curr))
+        const vector <int>* slaveidstodel;
+
+        slaveidstodel = thiscond[numcond]->Nodes();
+
+        for(vector<int>::const_iterator idtodel =(*slaveidstodel).begin();
+            idtodel!=(*slaveidstodel).end();
+            ++idtodel)
         {
-          DRT::Node* actnode = discret_->gNode(*curr);
-
-          // get all periodic boundary conditions on this node
-          vector<DRT::Condition*> thiscond;
-          actnode->GetCondition("SurfacePeriodic",thiscond);
-
-          if(thiscond.empty())
+          if(discret_->HaveGlobalNode(*idtodel))
           {
-            actnode->GetCondition("LinePeriodic",thiscond);
-          }
+            // erase the coupled nodes from the map --- they are redundant
+            allcoupledrownodes_->erase(*idtodel);
+            std::set<int>::iterator curr=nodeset.find(*idtodel);
 
-          // loop them and check, whether this is a pbc slave node of the
-          // current condition
-          bool erased=false;
-
-          for (unsigned numcond=0;numcond<thiscond.size();++numcond)
-          {
-            const string* mymasterslavetoggle
-              = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
-
-            if(*mymasterslavetoggle=="Slave")
+            if(curr!=nodeset.end())
             {
-              // erase the coupled nodes from the map --- they are redundant
-              allcoupledrownodes_->erase(*curr);
-                // erase id from vector --- be careful, curr is increased by return value!
-              curr=nodesonthisproc.erase(curr);
-              erased=true;
-              break;
-            } // end is slave?
-          } // end loop this conditions
-
-          if(erased==false)
-          {
-            ++curr;
+              // erase id from vector
+              nodeset.erase(curr);
+            }
           }
-
-        } // is the node available on the proc?
-        else
-        {
-          dserror("RowNode not available on proc");
         }
-      }// iteration over all nodes associated with this proc
+      }
+    }
+
+    nodesonthisproc.clear();
+
+    for(std::set<int>::iterator rr=nodeset.begin();rr!=nodeset.end();++rr)
+    {
+      nodesonthisproc.push_back(*rr);
     }
 
     // append slavenodes to this list of nodes on this proc
@@ -1012,6 +1016,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
                                        &nodesonthisproc[0],
                                        0,
                                        discret_->Comm()));
+
+    // make sure we have a filled discretisation at this place
+    // dofs are not required yet, they are assigned after 
+    // redistribution
+    if(!discret_->Filled())
+    {
+      discret_->FillComplete(false,false,false);
+    }
 
     // create nodal graph of problem, according to old RowNodeMap
     RefCountPtr<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
