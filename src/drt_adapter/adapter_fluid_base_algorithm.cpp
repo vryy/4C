@@ -67,6 +67,22 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
+
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  // -------------------------------------------------------------------
+  RCP<map<int,vector<int> > > pbcmapmastertoslave
+    =
+    Teuchos::rcp(new map<int,vector<int> > ());
+
+  if(genprob.probtyp != prb_fsi)
+  {
+    PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
+    pbc.UpdateDofsForPeriodicBoundaryConditions();
+
+    pbcmapmastertoslave = pbc.ReturnAllCoupledNodesOnThisProc();
+  }
+
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
@@ -471,7 +487,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // velocity degrees of freedom
     //------------------------------------------------------------------
     RCP<Fluid> tmpfluid;
-    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
     if (genprob.probtyp == prb_fsi_lung)
       fluid_ = rcp(new FluidLung(rcp(new FluidWrapper(tmpfluid))));
     else

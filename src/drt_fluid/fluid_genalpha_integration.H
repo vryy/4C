@@ -147,11 +147,12 @@ public:
 
   */
   FluidGenAlphaIntegration(
-    RCP<DRT::Discretization>  actdis,
-    LINALG::Solver&           solver,
-    ParameterList&            params,
-    IO::DiscretizationWriter& output,
-    bool                      alefluid);
+    RCP<DRT::Discretization>    actdis,
+    LINALG::Solver&             solver,
+    ParameterList&              params,
+    IO::DiscretizationWriter&   output,
+    bool                        alefluid,
+    RCP<map<int,vector<int> > > pbcmapmastertoslave);
 
    /*!
   \brief Destructor

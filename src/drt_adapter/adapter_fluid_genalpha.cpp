@@ -22,8 +22,9 @@ ADAPTER::FluidGenAlpha::FluidGenAlpha(
   Teuchos::RCP<LINALG::Solver>           solver,
   Teuchos::RCP<ParameterList>            params,
   Teuchos::RCP<IO::DiscretizationWriter> output,
-  bool                                   isale)
-  : fluid_ (dis, *solver, *params, *output, isale),
+  bool                                   isale,
+  Teuchos::RCP<map<int,vector<int> > >   pbcmapmastertoslave)
+  : fluid_ (dis, *solver, *params, *output, isale,pbcmapmastertoslave),
     dis_   (dis),
     solver_(solver),
     params_(params),

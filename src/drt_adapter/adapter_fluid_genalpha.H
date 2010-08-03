@@ -73,7 +73,8 @@ namespace ADAPTER {
       Teuchos::RCP<LINALG::Solver>           solver,
       Teuchos::RCP<ParameterList>            params,
       Teuchos::RCP<IO::DiscretizationWriter> output,
-      bool isale
+      bool                                   isale,
+      Teuchos::RCP<map<int,vector<int> > >   pbcmapmastertoslave
       );
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
