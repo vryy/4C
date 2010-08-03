@@ -747,15 +747,34 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   //********************************************************************
   // LAGRANGE MULTIPLIER DOFS
   //********************************************************************
-  // temporary vector
+  // NOTE: we want no gap between the displacement dofs and the newly
+  // defined Lagrange multiplier dofs!! Thus, if the maximum displacement
+  // dof is 12.345, we want the LM dofs to start with 12.346. This can
+  // be readily achieved, because we know that the lmdofmap will have
+  // the same parallel distribution as the slavedofrowmap. The only
+  // thing we need to take care of is to avoid overlapping of the LM
+  // dofs among different processors. Therefore, the total number of
+  // slave nodes (and thus LM nodes) of each processor is communicated
+  // to ALL other processors and an offset is then determined for each
+  // processor based on this information.
+  //********************************************************************
+  // temporary vector of LM dofs
   vector<int> lmdof;
 
-  // loop over all slave dofs
+  // gather information over all procs
+  vector<int> localnumlmdof(Comm().NumProc());
+  vector<int> globalnumlmdof(Comm().NumProc());
+  localnumlmdof[Comm().MyPID()] = sdofrowmap_->NumMyElements();
+  Comm().SumAll(&localnumlmdof[0],&globalnumlmdof[0],Comm().NumProc());
+
+  // compute offet for LM dof initialization for all procs
+  int offset = 0;
+  for (int k=0;k<Comm().MyPID();++k)
+  	offset += globalnumlmdof[k];
+
+  // loop over all slave dofs and initialize LM dofs
   for (int i=0; i<sdofrowmap_->NumMyElements(); ++i)
-  {
-    int gid = sdofrowmap_->GID(i);
-    lmdof.push_back(gid + MaxDofGlobal() + 1);
-  }
+    lmdof.push_back(MaxDofGlobal() + 1 + offset + i);
 
   // create interface LM map
   // (if maxdofglobal_ == 0, we do not want / need this)
