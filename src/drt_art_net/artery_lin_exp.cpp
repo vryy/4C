@@ -1168,7 +1168,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       }
 
       // -----------------------------------------------------------------------------
-      // break the for loopIf the boundary condition is a junction, since it will be solved later
+      // break the for loop if the boundary condition is a junction,
+      // since it will be solved later
       // -----------------------------------------------------------------------------
       if(ele->Nodes()[i]->GetCondition("ArtJunctionCond")==NULL)
       {

@@ -72,8 +72,6 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     // -----------------------------------------------------------------
     Type = *(condition->Get<string>("type"));
     BC   = *(condition->Get<string>("boundarycond"));
-
-
     
     // -----------------------------------------------------------------
     // Read in the bc curve information
@@ -136,6 +134,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RefCountPtr<DRT::Discretization> actd
     // -------------------------------------------------------------------
     CoupledTo3DParams =
       params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
     // -----------------------------------------------------------------
