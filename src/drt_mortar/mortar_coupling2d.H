@@ -181,10 +181,7 @@ public:
 
   This method integrates the overlap of the current MortarElement
   pair sele_ / mele_ based on the integration limits (xiproj). The
-  integration always includes the Mortar matrix M and the gap g.
-  In some cases it also includes the Mortar matrix D (if the
-  flag MORTARONELOOP is chosen) and the Mortar matrix
-  Mmod (if the respective conditions are fulfilled).
+  integration always includes the Mortar matrices D/M and the gap g.
 
   */
   virtual bool IntegrateOverlap(vector<double>& xiproj);

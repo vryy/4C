@@ -2873,10 +2873,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
       
-      // assembly of intcell contributions to M (and possibly D)
-#ifdef MORTARONELOOP
+      // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
     }
     
@@ -2907,10 +2905,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
       
-      // assembly of intcell contributions to M (and possibly D)
-#ifdef MORTARONELOOP
+      // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
     }
     
@@ -2942,11 +2938,9 @@ bool MORTAR::Coupling3d::IntegrateCells()
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
       
-      // assembly of intcell contributions to M (and possibly D)
+      // assembly of intcell contributions to D and M
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
-#ifdef MORTARONELOOP
       integrator.AssembleD(Comm(),SlaveElement(),sintref,*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
     }
     

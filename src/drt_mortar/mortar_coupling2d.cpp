@@ -566,9 +566,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg);
 
   // do the two assemblies into the slave nodes
-#ifdef MORTARONELOOP
   integrator.AssembleD(Comm(),sele_,*dseg);
-#endif // #ifdef MORTARONELOOP
   integrator.AssembleM(Comm(),sele_,mele_,*mseg);
 
   /*----------------------------------------------------------------------

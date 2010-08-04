@@ -150,6 +150,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
       RCP<Epetra_SerialDenseMatrix> dseg)
 {
+  //**********************************************************************
+  dserror("ERROR: IntegrateDerivSlave2D3D method is outdated!");
+  //**********************************************************************
+
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSlave2D3D called without specific shape function defined!");
@@ -316,22 +320,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     double dxdsxi = sele.Jacobian(sxi);
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
-    // reflect the MORTARONELOOP flag:
-    // decide whether D and LinD have to be integrated or not
-    
-    // this is the standard case
-    // integration of D and LinD is done separately in IntegrateDerivSlave2D3D
-    // (dissimilar ways of computing the entries is employed)
-    bool dod = false;
-    
-#ifdef MORTARONELOOP
-    // this is the special case
-    // integration of M, LinM and D, LinD is done here in combination
-    // (evaluation of occuring terms is handled similarly)
-    dod = true;
-#endif // #ifdef MORTARONELOOP
-
     // compute segment D/M matrix ****************************************
+    // standard shape functions
     if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
@@ -341,10 +331,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
       // sometimes be rectangular, not quadratic!)
       for (int j=0; j<nrow*ndof; ++j)
       {
-        // for standard shape functions we use the same algorithm
-        // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
-        // hence, mseg and dseg can not be combined into one loop
-
+      	// integrate mseg
         for (int k=0; k<ncol*ndof; ++k)
         {
           int jindex = (int)(j/ndof);
@@ -362,28 +349,27 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
           }
         }
 
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
 
-            // multiply the two shape functions
-            double prod = lmval[jindex]*sval[kindex];
+					// multiply the two shape functions
+					double prod = lmval[jindex]*sval[kindex];
 
-            // isolate the mseg and dseg entries to be filled
-            // (both the main diagonal and every other secondary diagonal)
-            // and add current Gauss point's contribution to mseg and dseg
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-            {
-              (*dseg)(j, k) += prod*dxdsxi*dsxideta*wgt;
-            }
-          }
-        }
+					// isolate the mseg and dseg entries to be filled
+					// (both the main diagonal and every other secondary diagonal)
+					// and add current Gauss point's contribution to mseg and dseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+					{
+						(*dseg)(j, k) += prod*dxdsxi*dsxideta*wgt;
+					}
+				}
       } // nrow*ndof loop
     }
     
+    // dual shape functions
     else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     { 
       // loop over all mseg matrix entries
@@ -393,9 +379,32 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
       // sometimes be rectangular, not quadratic!)
       for (int j=0;j<nrow*ndof;++j)
       {
-        // evaluate dseg entries seperately
-        // (only for one mortar loop AND boundary modification)
-        if (dod && bound)
+        // for dual shape functions we can make use
+        // of the row summing lemma: D_jj = Sum(k) M_jk
+        // hence, they can be combined into one single loop
+
+        // integrate mseg and dseg (no boundary modification)
+        for (int k=0;k<ncol*ndof;++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[kindex];
+
+          // isolate the mseg and dseg entries to be filled
+          // (both the main diagonal and every other secondary diagonal for mseg)
+          // (only the main diagonal for dseg)
+          // and add current Gauss point's contribution to mseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          {
+            (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
+            if(!bound) (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
+          }
+        }
+
+        // integrate dseg (boundary modification)
+        if (bound)
         {
           MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
           if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
@@ -423,27 +432,6 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
               (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
           }
         }
-        
-        // evaluate mseg entries
-        // (and dseg entries for one mortar loop and NO boundary modification)
-        for (int k=0;k<ncol*ndof;++k)
-        {
-          int jindex = (int)(j/ndof);
-          int kindex = (int)(k/ndof);
-  
-          // multiply the two shape functions
-          double prod = lmval[jindex]*mval[kindex];
-  
-          // isolate the mseg and dseg entries to be filled
-          // (both the main diagonal and every other secondary diagonal for mseg)
-          // (only the main diagonal for dseg)
-          // and add current Gauss point's contribution to mseg
-          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          {
-            (*mseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
-            if(dod && !bound) (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
-          }
-        } 
       }
     } // shapefcn_ switch
     // compute segment D/M matrix ****************************************
@@ -466,6 +454,10 @@ RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegrator::IntegrateMmod2D(MORTAR::
                                                                  MORTAR::MortarElement& mele,
                                                                  double& mxia, double& mxib)
 {
+	//**********************************************************************
+	dserror("ERROR: IntegrateMmod2D method is outdated!");
+	//**********************************************************************
+
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
@@ -694,23 +686,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
     double jaccell = cell->Jacobian(eta);
     double jacslave = sele.Jacobian(sxi);
 
-    // reflect the MORTARONELOOP flag:
-    // decide whether D and LinD have to be integrated or not
-    
-    // this is the standard case
-    // integration of D and LinD is done separately in IntegrateDerivSlave2D3D
-    // (dissimilar ways of computing the entries is employed)
-    bool dod = false;
-    
-#ifdef MORTARONELOOP
-    // this is the special case
-    // integration of M, LinM and D, LinD is done here in combination
-    // (evaluation of occuring terms is handled similarly)
-    dod = true;
-#endif // #ifdef MORTARONELOOP
-
     // compute cell D/M matrix *******************************************
-    
+    // standard shape functions
     if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
@@ -720,10 +697,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
       // sometimes be rectangular, not quadratic!)
       for (int j=0; j<nrow*ndof; ++j)
       {
-        // for standard shape functions we use the same algorithm
-        // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
-        // hence, mseg and dseg can not be combined into one loop
-        
+        // integrate mseg
         for (int k=0; k<ncol*ndof; ++k)
         {
           int jindex = (int)(j/ndof);
@@ -738,28 +712,26 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
             (*mseg)(j, k) += prod*jaccell*jacslave*wgt;
         }
         
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
-    
-            // multiply the two shape functions
-            double prod = lmval[jindex]*sval[kindex];
-    
-            // isolate the mseg entries to be filled and
-            // add current Gauss point's contribution to mseg  
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-                (*dseg)(j, k) += prod*jaccell*jacslave*wgt;
-          }
-        }
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
+
+					// multiply the two shape functions
+					double prod = lmval[jindex]*sval[kindex];
+
+					// isolate the mseg entries to be filled and
+					// add current Gauss point's contribution to mseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+							(*dseg)(j, k) += prod*jaccell*jacslave*wgt;
+				}
       } 
     }
     
+    // dual shape functions
     else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     {
-      
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
       // !!! ncol represents the master dofs                !!!
@@ -771,6 +743,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
         // of the row summing lemma: D_jj = Sum(k) M_jk
         // hence, they can be combined into one single loop
         
+      	// integrate mseg and dseg
         for (int k=0; k<ncol*ndof; ++k)
         {
           int jindex = (int)(j/ndof);
@@ -784,7 +757,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
           if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
           {
             (*mseg)(j, k) += prod*jaccell*jacslave*wgt;
-            if (dod) (*dseg)(j, j) += prod*jaccell*jacslave*wgt;
+            (*dseg)(j, j) += prod*jaccell*jacslave*wgt;
           }
         }
       }
@@ -921,22 +894,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
     // evaluate the integration cell Jacobian
     double jac = cell->Jacobian(eta);
 
-    // reflect the MORTARONELOOP flag:
-    // decide whether D and LinD have to be integrated or not
-    
-    // this is the standard case
-    // integration of D and LinD is done separately in IntegrateDerivSlave2D3D
-    // (dissimilar ways of computing the entries is employed)
-    bool dod = false;
-    
-#ifdef MORTARONELOOP
-    // this is the special case
-    // integration of M, LinM and D, LinD is done here in combination
-    // (evaluation of occuring terms is handled similarly)
-    dod = true;
-#endif // #ifdef MORTARONELOOP
-
     // compute cell D/M matrix *******************************************
+    // standard shape functions
     if (shapefcn_ == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
@@ -946,10 +905,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
       // sometimes be rectangular, not quadratic!)
       for (int j=0; j<nrow*ndof; ++j)
       {
-        // for standard shape functions we use the same algorithm
-        // for dseg as in IntegrateDerivSlave2D3D (but with modified integration area)
-        // hence, mseg and dseg can not be combined into one loop
-
+      	// integrate mseg
         for (int k=0; k<ncol*ndof; ++k)
         {
           int jindex = (int)(j/ndof);
@@ -964,25 +920,24 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
             (*mseg)(j, k) += prod*jac*wgt;
         }
 
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
 
-            // multiply the two shape functions
-            double prod = lmval[jindex]*sval[kindex];
+					// multiply the two shape functions
+					double prod = lmval[jindex]*sval[kindex];
 
-            // isolate the mseg entries to be filled and
-            // add current Gauss point's contribution to mseg
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-              (*dseg)(j, k) += prod*jac*wgt;
-          }
-        }
+					// isolate the mseg entries to be filled and
+					// add current Gauss point's contribution to mseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+						(*dseg)(j, k) += prod*jac*wgt;
+				}
       }
     }
     
+    // dual shape functions
     else if (shapefcn_ == INPAR::MORTAR::shape_dual)
     {
       // loop over all mseg matrix entries
@@ -996,6 +951,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
         // of the row summing lemma: D_jj = Sum(k) M_jk
         // hence, they can be combined into one single loop
 
+      	// integrate mseg and dseg
         for (int k=0; k<ncol*ndof; ++k)
         {
           int jindex = (int)(j/ndof);
@@ -1009,7 +965,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
           if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
           {
             (*mseg)(j, k) += prod*jac*wgt;
-            if (dod) (*dseg)(j, j) += prod*jac*wgt;
+            (*dseg)(j, j) += prod*jac*wgt;
           }
         }
       } // nrow*ndof loop
@@ -1204,33 +1160,17 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // evaluate the integration cell Jacobian
     double jac = cell->Jacobian(eta);
-        
-    // reflect the MORTARONELOOP flag:
-    // decide whether D and LinD have to be integrated or not
-    
-    // this is the standard case
-    // integration of D and LinD is done separately in IntegrateDerivSlave2D3D
-    // (dissimilar ways of computing the entries is employed)
-    bool dod = false;
-    
-#ifdef MORTARONELOOP
-    // this is the special case
-    // integration of M, LinM and D, LinD is done here in combination
-    // (evaluation of occuring terms is handled similarly)
-    dod = true;
-#endif // #ifdef MORTARONELOOP
 
     // compute cell D/M matrix *******************************************
-    
     // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
     if (shapefcn_ == INPAR::MORTAR::shape_standard &&
         (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
-      // compute all mseg (and dseg) matrix entries
+      // compute all mseg and dseg matrix entries
       // loop over Lagrange multiplier dofs j
       for (int j=0; j<nrow*ndof; ++j)
       {
-        // loop over master displacement dofs l
+        // integrate mseg
         for (int l=0; l<ncol*ndof; ++l)
         {
           int jindex = (int)(j/ndof);
@@ -1245,23 +1185,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             (*mseg)(j,l) += prod*jac*wgt;
         }
   
-        // loop over slave displacement dofs k
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
-  
-            // multiply the two shape functions
-            double prod = lmval[jindex]*sval[kindex];
-  
-            // isolate the dseg entries to be filled and
-            // add current Gauss point's contribution to dseg
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-              (*dseg)(j,k) += prod*jac*wgt;
-          }
-        }
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
+
+					// multiply the two shape functions
+					double prod = lmval[jindex]*sval[kindex];
+
+					// isolate the dseg entries to be filled and
+					// add current Gauss point's contribution to dseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+						(*dseg)(j,k) += prod*jac*wgt;
+				}
       }
     }
     
@@ -1273,7 +1210,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       // loop over Lagrange multiplier dofs j
       for (int j=0; j<nintrow*ndof; ++j)
       {
-        // loop over master displacement dofs l
+        // integrate mseg
         for (int l=0; l<ncol*ndof; ++l)
         {
           int jindex = (int)(j/ndof);
@@ -1288,23 +1225,20 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             (*mseg)(j,l) += prod*jac*wgt;
         }
   
-        // loop over slave displacement dofs k
-        if (dod)
-        {
-          for (int k=0; k<nrow*ndof; ++k)
-          {
-            int jindex = (int)(j/ndof);
-            int kindex = (int)(k/ndof);
-  
-            // multiply the two shape functions
-            double prod = lmintval[jindex]*sval[kindex];
-  
-            // isolate the dseg entries to be filled and
-            // add current Gauss point's contribution to dseg
-            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-              (*dseg)(j,k) += prod*jac*wgt;
-          }
-        }
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
+
+					// multiply the two shape functions
+					double prod = lmintval[jindex]*sval[kindex];
+
+					// isolate the dseg entries to be filled and
+					// add current Gauss point's contribution to dseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+						(*dseg)(j,k) += prod*jac*wgt;
+				}
       }
     }
     
@@ -1320,7 +1254,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         // of the row summing lemma: D_jj = Sum(l) M_jl
         // hence, they can be combined into one single loop
 
-        // loop over master displacement dofs l
+        // integrate mseg and dseg
         for (int l=0; l<ncol*ndof; ++l)
         {
           int jindex = (int)(j/ndof);
@@ -1334,7 +1268,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
           if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
           {
             (*mseg)(j,l) += prod*jac*wgt;
-            if (dod) (*dseg)(j,j) += prod*jac*wgt;
+            (*dseg)(j,j) += prod*jac*wgt;
           }
         }
       }
@@ -1586,6 +1520,10 @@ bool MORTAR::MortarIntegrator::AssembleMmod(const Epetra_Comm& comm,
                                        MORTAR::MortarElement& mele,
                                        Epetra_SerialDenseMatrix& mmodseg)
 {
+	//**********************************************************************
+	dserror("ERROR: AssembleMmod method is outdated!");
+	//**********************************************************************
+
   // get adjacent slave nodes and master nodes
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)

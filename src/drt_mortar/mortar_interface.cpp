@@ -981,20 +981,6 @@ void MORTAR::MortarInterface::Evaluate()
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     MortarElement* selement = static_cast<MortarElement*>(ele1);
 
-    //********************************************************************
-    // 1) integrate Mortar matrix D (lives on slave side only!)
-    // 2) compute directional derivative of D and store into nodes
-    //********************************************************************
-    // we only do this on a slave element basis in the case with
-    // two separate Mortar loops for D and M. If MORTARONELOOP
-    // is applied, we combine the construction of D with the construction
-    // of M and linearization of D with the linearization of M in
-    // MortarIntegrator::IntegrateDerivSegment2D()!
-    //********************************************************************
-#ifndef MORTARONELOOP
-    IntegrateSlave(*selement);
-#endif // #ifndef MORTARONELOOP
-
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->NumSearchElements();++j)
@@ -1385,6 +1371,10 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 {
+	//**********************************************************************
+	dserror("ERROR: IntegrateSalve method is outdated!");
+	//**********************************************************************
+
   // create an integrator instance with correct NumGP and Dim
   MORTAR::MortarIntegrator integrator(shapefcn_,sele.Shape());
 

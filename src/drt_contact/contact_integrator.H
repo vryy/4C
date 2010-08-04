@@ -111,11 +111,10 @@ public:
 
   /*!
   \brief Build all integrals and linearizations on a 1D or 2D
-         slave element (i.e. D, LinD).
+         slave element (i.e. onl D, LinD possible).
 
-  This method is only called if the flag MORTARONELOOP is
-  not set. Otherwise we obtain the D-matrix entries via a fundamental
-  Mortar equation from the M-matrix entries.
+  This method is outdated!!! We now obtain the D-matrix by
+  integrating the mortar segments (just like the M-matrix entries).
 
   */
   void IntegrateDerivSlave2D3D(

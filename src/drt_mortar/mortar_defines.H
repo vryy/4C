@@ -47,7 +47,7 @@ using namespace std;
 /* Mortar algorithm options                                             */
 /************************************************************************/
 
-#define MORTARONELOOP            /* flag for computing D and M in one loop */
+// currently none
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */

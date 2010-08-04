@@ -234,10 +234,8 @@ public:
   \brief Integrate Mortar matrix D on slave element
 
   Derived version!
-  
-  This method is only called, if the flag MORTARONELOOP is
-  not chosen. Then it integrates the Mortar matrix D on the current
-  slave MortarElement sele (full integration from -1 to 1).
+  This method is outdated!!! We now obtain the D-matrix by
+  integrating the mortar segments (just like the M-matrix entries).
 
   */
   bool IntegrateSlave(MORTAR::MortarElement& sele);

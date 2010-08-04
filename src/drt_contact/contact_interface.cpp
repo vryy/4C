@@ -356,6 +356,10 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 {
+	//**********************************************************************
+	dserror("ERROR: IntegrateSlave method is outdated!");
+  //**********************************************************************
+
   // create a CONTACT integrator instance with correct NumGP and Dim
   CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
 

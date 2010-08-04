@@ -182,9 +182,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
   
       // do the assembly into the slave nodes
-#ifdef MORTARONELOOP
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
@@ -222,9 +220,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
       
       // do the assembly into the slave nodes
-#ifdef MORTARONELOOP
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
@@ -259,9 +255,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       
       // do the assembly into the slave nodes
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
-#ifdef MORTARONELOOP
       integrator.AssembleD(Comm(),SlaveElement(),sintref,*dseg);
-#endif // #ifdef MORTARONELOOP
       integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
       integrator.AssembleG(Comm(),sintref,*gseg);
     }
