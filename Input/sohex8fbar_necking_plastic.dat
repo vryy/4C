@@ -67,7 +67,7 @@ ITWANT                          0
 K_DAMP                          0.5
 MAXDT                           0
 MAXITER                         50
-MAXTIME                         50000000000
+MAXTIME                         50000000000.0
 M_DAMP                          0.5
 NLNSOL                          ptc //fullnewton newtonlinuzawa augmentedlagrange lsnewton modnewton nlncg ptc
 NUMSTEP                         10
