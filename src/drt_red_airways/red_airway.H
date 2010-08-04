@@ -390,7 +390,8 @@ private:
     calc_sys_matrix_rhs,
     get_initial_state,
     set_bc,
-    calc_flow_rates
+    calc_flow_rates,
+    get_coupled_values
   };
 
 

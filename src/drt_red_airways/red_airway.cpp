@@ -321,7 +321,6 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {
-    cout<<"Error"<<endl;
     dserror ("[%s] is not found with in the element variables",name.c_str());
     exit(1);
   }

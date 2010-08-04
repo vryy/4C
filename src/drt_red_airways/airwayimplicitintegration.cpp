@@ -50,7 +50,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   time_(0.0),
   step_(0),
   uprestart_(params.get("write restart every", -1)),
-  upres_(params.get("write solution every", -1))
+  upres_(params.get("write solution every", -1)),
+  coupledTo3D_(false)
 {
 
   // -------------------------------------------------------------------
@@ -59,7 +60,11 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   myrank_  = discret_->Comm().MyPID();
 
   // time measurement: initialization
-  TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
+  if(!coupledTo3D_)
+  {
+    // time measurement: initialization
+    TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
+  }
 
   // -------------------------------------------------------------------
   // get the basic parameters first
@@ -230,6 +235,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
                                                  RCP<ParameterList> CouplingParams)
 {
+  coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
   {
     dserror("Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is defined\n");
@@ -238,7 +244,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
   TimeLoop(CoupledTo3D,CouplingParams);
 
   // print the results of time measurements
+  if (!coupledTo3D_)
+  {
     TimeMonitor::summarize();
+  }
 
   return;
 } // RedAirwayImplicitTimeInt::Integrate
@@ -257,10 +266,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
 void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
                                                 RCP<ParameterList> CouplingTo3DParams)
 {
-
+  coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop
-  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
-  
+  if(!coupledTo3D_)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
+  }
+
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -269,8 +281,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
     // -------------------------------------------------------------------
     if (myrank_==0)
     {
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n",
-              time_,maxtime_,dta_,step_,stepmax_);
+      if(!coupledTo3D_)
+      {
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+      }
+      else
+      {
+        printf("SUBSCALE_TIME: %11.4E/%11.4E  SUBSCALE_DT = %11.4E   Solving Reduced Dimensional Airways    SUBSCALE_STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+      }
     }
 
     Solve(CouplingTo3DParams);
@@ -285,7 +305,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
     //  lift'n'drag forces, statistics time sample and output of solution
     //  and statistics
     // -------------------------------------------------------------------
-    Output();
+    if (!CoupledTo3D)
+    {
+      Output(CoupledTo3D,CouplingTo3DParams);
+    }
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -338,8 +361,10 @@ Some detials!!
 void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
 {
   // time measurement: Airways
-  TEUCHOS_FUNC_TIME_MONITOR("   + solving reduced dimensional airways");
-
+  if(!coupledTo3D_)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("   + solving reduced dimensional airways");
+  }
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -351,7 +376,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   {
     //    cout<<"get sysmat_"<<endl;
     // time measurement: element
-    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+    if(!coupledTo3D_)
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+    }
 
     // set both system matrix and rhs vector to zero
     sysmat_->Zero();
@@ -387,6 +415,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     sysmat_->Complete();
     //    cout<<"compl sysmat"<<endl;
 
+    
 
 #if 0  // Exporting some values for debugging purposes
 
@@ -438,6 +467,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     //    eleparams.set("abc",abc_);
     eleparams.set("rhs",rhs_);
 
+    // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
+    eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     //    cout<<"BC evaluated"<<endl;
@@ -449,7 +481,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   // -------------------------------------------------------------------
   {
     // time measurement: application of dbc
-    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+    if(!coupledTo3D_)
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+    }
 
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
     //    cout<<"Dirich applied"<<endl;
@@ -460,7 +495,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   const double tcpusolve = Teuchos::Time::wallTime();
   {
     // time measurement: solver
-    TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+    if(!coupledTo3D_)
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+    }
 
 #if 0  // Exporting some values for debugging purposes
 
@@ -512,6 +550,30 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->Evaluate(eleparams,sysmat_,rhs_);
   }
 
+  if(coupledTo3D_)
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","get_coupled_values");
+
+    // set vecotr values needed by elements
+    discret_->ClearState();
+    discret_->SetState("pnp",pnp_);
+    //    discret_->SetState("qcn" ,qcn_ );
+
+    //    eleparams.set("qcnp",qcnp_);
+    eleparams.set("time step size",dta_);
+    eleparams.set("total time",time_);
+
+    // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
+    eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+  }
+
 } // RedAirwayImplicitTimeInt::Solve
 
 
@@ -533,7 +595,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::AssembleMatAndRHS()
   dtele_    = 0.0;
   dtfilter_ = 0.0;
   // time measurement: element
-  TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+  if(!coupledTo3D_)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+  }
 
   // get cpu time
   //  const double tcpu=Teuchos::Time::wallTime();
@@ -596,8 +661,27 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void AIRWAY::RedAirwayImplicitTimeInt::Output()
+void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
+                                              RCP<ParameterList> CouplingParams)
 {
+  int step, upres, uprestart;
+  double time_backup;
+  // -------------------------------------------------------------------
+  // if coupled to 3D problem, then get the export information from 
+  // the 3D problem
+  // -------------------------------------------------------------------
+  if (CoupledTo3D)
+  {
+    step        = step_;
+    upres       = upres_;
+    uprestart   = uprestart_;
+    time_backup = time_;
+    step_      = CouplingParams->get<int>("step");
+    upres_     = CouplingParams->get<int>("upres");
+    uprestart_ = CouplingParams->get<int>("uprestart");
+    time_      = CouplingParams->get<double>("time");
+  }
+
 
   if (step_%upres_ == 0)
   {
@@ -627,6 +711,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
+
+    if (CoupledTo3D)
+    {
+      output_.WriteDouble("Actual_RedD_step", step);
+    }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -651,6 +740,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
+
+    if (CoupledTo3D)
+    {
+      output_.WriteDouble("Actual_RedD_step", step);
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // if coupled to 3D problem, then retrieve the old information of the
+  // the reduced model problem
+  // -------------------------------------------------------------------
+  if (CoupledTo3D)
+  {
+    step_     = step;
+    upres_    = upres;
+    uprestart_= uprestart;
+    time_     = time_backup;
   }
 
   return;
@@ -672,7 +778,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   cout<<"Reading Restart"<<endl;
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+
+  if (coupledTo3D_)
+  {
+    step_ = reader.ReadInt("Actual_RedD_step");
+  }
+  else
+  {
+    step_ = reader.ReadInt("step");
+  }
+
   reader.ReadVector(pnp_,"pnp");
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");

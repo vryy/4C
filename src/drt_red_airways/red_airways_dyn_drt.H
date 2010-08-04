@@ -33,6 +33,7 @@ Maintainer: Mahmoud Ismail
 #include "../linalg/linalg_solver.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_io/io.H"
+#include "airwayimplicitintegration.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -43,6 +44,7 @@ extern "C"
   void dyn_red_airways_drt();
 }
 
+Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D);
 #endif /* endif __cplusplus*/
 
 #endif  /* #ifndef RED_AIRWAYS_DRT_DRT_H */

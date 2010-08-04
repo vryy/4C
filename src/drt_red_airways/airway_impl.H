@@ -73,6 +73,12 @@ namespace ELEMENTS
                                vector<int>&                  lm,
                                RefCountPtr<MAT::Material>    mat) = 0;
 
+    virtual void GetCoupledValues(RedAirway*                   ele,
+                                  ParameterList&               params,
+                                  DRT::Discretization&         discretization,
+                                  vector<int>&                 lm,
+                                  RefCountPtr<MAT::Material>   material) = 0;
+
     /// Internal implementation class for airway element
     static RedAirwayImplInterface* Impl(DRT::ELEMENTS::RedAirway* airway);
 
@@ -174,6 +180,16 @@ namespace ELEMENTS
                                DRT::Discretization&          discretization,
                                vector<int>&                  lm,
                                RefCountPtr<MAT::Material>    mat);
+
+    /*!
+     \Essential functions to evaluate the coupled results
+    */
+    virtual void GetCoupledValues(RedAirway*                   ele,
+                                  ParameterList&               params,
+                                  DRT::Discretization&         discretization,
+                                  vector<int>&                 lm,
+                                  RefCountPtr<MAT::Material>   material);
+
   private:
   };
 

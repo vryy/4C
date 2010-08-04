@@ -69,7 +69,14 @@ namespace ART
 {
   class ArtNetExplicitTimeInt;
 }
-#endif
+#endif //D_ARTNET
+
+#ifdef D_RED_AIRWAYS
+namespace AIRWAY
+{
+  class RedAirwayImplicitTimeInt;
+}
+#endif //D_RED_AIRWAYS
 
 /// fluid algorithms
 namespace FLD
@@ -85,6 +92,8 @@ namespace UTILS
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
 #ifdef D_ARTNET
+  class Fluid_couplingWrapperBase;
+  template <class red_D_time_int>
   class Fluid_couplingWrapper;
 #endif
 }
@@ -588,7 +597,7 @@ protected:
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
-  
+
   /// Krylov space projection map extractor
   FLD::UTILS::KSPMapExtractor kspsplitter_;
 
@@ -603,12 +612,21 @@ protected:
 
 #ifdef D_ARTNET
   /// bio related, 3D to redued-D coupling
-  RCP<UTILS::Fluid_couplingWrapper> coupled3D_redDbc_;
+  RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
 
   /// 1D arterial network time integration
   RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
 #endif // D_ARTNET
 
+#ifdef D_RED_AIRWAYS
+
+  /// bio related, 3D to redued-D coupling
+  RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
+
+  /// 1D arterial network time integration
+  RCP<AIRWAY::RedAirwayImplicitTimeInt>   airway_imp_timeInt_;
+
+#endif //D_RED_AIRWAYS
   /// @name special relaxation state
 
   bool inrelaxation_;

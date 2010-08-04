@@ -189,7 +189,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     p0np->ReplaceGlobalValues(1,&val,&gid);
     p0n ->ReplaceGlobalValues(1,&val,&gid);
     p0nm->ReplaceGlobalValues(1,&val,&gid);
-    double val2 = 0.0;
+
+
+    if (gid == 0)
+    {
+      double val2 = 0.0;
+      double A;
+      ele->getParams("Area",A);
+
+      val2 = sqrt(A/M_PI);
+      radii->ReplaceGlobalValues(1,&val2,&gid);
+    }
   }
   if(myrank == (*lmowner)[1])
   {
@@ -232,7 +242,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double                                   dt)
 {
 
-  //    cout<<">>>>>>>>>>>>>>>>>Hello Sysmat"<<endl;
   double dens = 0.0;
   double visc = 0.0;
 
@@ -282,7 +291,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
           + pow(xyze(2,0) - xyze(2,1),2));
 
   double q_out = 0.0;
-  //  cout<<"hello Element type"<<endl;
+
   if(ele->type() == "PoiseuilleResistive")
   {
     // get element information
@@ -308,7 +317,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   }
   else if(ele->type() == "ComplientResistive")
   {
-    //    cout<<"Hello ComplientRes"<<endl;
     // get element information
     double A, Ew, tw;
     ele->getParams("Area",A);
@@ -341,19 +349,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // calculate out flow at the current time step
     q_out = (epnp(0)-epnp(1))/R;
     
-    //    cout<<"bye bye RC"<<endl;
   }
   else if(ele->type() == "RLC")
   {
-    //    cout<<"RLC"<<endl;
     // get element information
     double A, Ew, tw;
     ele->getParams("Area",A);
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
-    //    cout<<"A:  "<<A<<endl;
-    //    cout<<"Ew: "<<Ew<<endl;
-    //    cout<<"tw: "<<tw<<endl;
+
     // find Resistance 
     const double R = 8.0*PI*visc*dens*L/(pow(A,2));
 
@@ -363,9 +367,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // find Inductance I
     const double I = dens*L/A;
 
-    //  cout<<"R: "<<R<<endl;
-    //  cout<<"C: "<<C<<endl;
-    //  cout<<"L: "<<I<<endl;
+
     //------------------------------------------------------------
     //               Calculate the System Matrix
     //------------------------------------------------------------
@@ -385,8 +387,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     ele->getVars("capacitor_flow",qcn);
     ele->getVars("inductor_flow",qln);
     qln =  (epnp(2)-epnp(1))/R;
-    //    cout<<"qcn: "<<qcn<<endl;
-    //    cout<<"qln: "<<qln<<endl;
+
     //------------------------------------------------------------
     //               Calculate the right hand side
     //------------------------------------------------------------
@@ -394,8 +395,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     rhs(1) = 0.0;
     rhs(2) = -qln - dt/(2.0*I)*(epnp(0)-epnp(2));
 
-    //    cout<<sysmat<<endl;
-    //    cout<<rhs<<endl;
     // calculate out flow at the current time step
     q_out = (epnp(2)-epnp(1))/R;
   }
@@ -459,7 +458,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
     }
   }
-  //    cout<<"bye bye sysmat"<<endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -516,44 +514,111 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   {
     if (ele->Nodes()[i]->Owner()== myrank)
     {
-      
-      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
-        // Get the type of prescribed bc
-        string Bc = *(condition->Get<string>("boundarycond"));
-        
-        // double get bc value
+        string Bc;
         double BCin = 0.0;
-        
-        const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
-        double curvefac = 1.0;
-        const  vector<double>* vals   = condition->Get<vector<double> >("val");
-        
-        // -----------------------------------------------------------------
-        // Read in the value of the applied BC
-        // -----------------------------------------------------------------
-        if((*curve)[0]>=0)
+        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-          BCin = (*vals)[0]*curvefac;
+          DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+          // Get the type of prescribed bc
+          Bc = *(condition->Get<string>("boundarycond"));
+          
+        
+          const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+          double curvefac = 1.0;
+          const  vector<double>* vals   = condition->Get<vector<double> >("val");
+          
+          // -----------------------------------------------------------------
+          // Read in the value of the applied BC
+          // -----------------------------------------------------------------
+          if((*curve)[0]>=0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+            BCin = (*vals)[0]*curvefac;
+          }
+          else
+          {
+            dserror("no boundary condition defined!");
+            exit(1);
+          }
+          
+          // -----------------------------------------------------------------------------
+          // get the local id of the node to whome the bc is prescribed
+          // -----------------------------------------------------------------------------
+          int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          if (local_id< 0 )
+          {
+            dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
+            exit(1);
+          }
+        }
+        else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+        {
+          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+
+          RCP<ParameterList> CoupledTo3DParams  =
+            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          // -----------------------------------------------------------------
+          // If the parameter list is empty, then something is wrong!
+          // -----------------------------------------------------------------
+          if (CoupledTo3DParams.get()==NULL)
+          {
+            dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+            exit(1);
+          }
+          
+          // -----------------------------------------------------------------
+          // Read in Condition type
+          // -----------------------------------------------------------------
+          //        Type = *(condition->Get<string>("CouplingType"));
+          // -----------------------------------------------------------------
+          // Read in coupling variable rescribed by the 3D simulation
+          //
+          //     In this case a map called map3D has the following form:
+          //     +-----------------------------------------------------------+
+          //     |           map< string               ,  double        >    |
+          //     |     +------------------------------------------------+    |
+          //     |     |  ID  | coupling variable name | variable value |    |
+          //     |     +------------------------------------------------+    |
+          //     |     |  1   |   flow1                |     0.12116    |    |
+          //     |     +------+------------------------+----------------+    |
+          //     |     |  2   |   pressure2            |    10.23400    |    |
+          //     |     +------+------------------------+----------------+    |
+          //     |     .  .   .   ....                 .     .......    .    |
+          //     |     +------+------------------------+----------------+    |
+          //     |     |  N   |   variableN            |    value(N)    |    |
+          //     |     +------+------------------------+----------------+    |
+          //     +-----------------------------------------------------------+
+          // -----------------------------------------------------------------
+          
+          int ID = condition->GetInt("ConditionID");
+          RCP<map<string,double> > map3D;
+          map3D   = CoupledTo3DParams->get<RCP<map<string,double > > >("3D map of values");
+          
+          // find the applied boundary variable
+          std::stringstream stringID;
+          stringID<< "_"<<ID;
+          for (map<string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
+          {
+            string VariableWithId = itr->first;
+            size_t found;
+            found= VariableWithId.rfind(stringID.str());
+            if (found!=string::npos)
+            {
+              Bc   = string(VariableWithId,0,found);
+              BCin = itr->second;
+              break;
+            }
+          }
+
+          cout<<"Return ["<<Bc<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
         }
         else
         {
-          dserror("no boundary condition defined!");
-          exit(1);
+
         }
-        
-        // -----------------------------------------------------------------------------
-        // get the local id of the node to whome the bc is prescribed
-        // -----------------------------------------------------------------------------
-        int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
-        if (local_id< 0 )
-        {
-          dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
-          exit(1);
-        }
-        
+
         if (Bc == "pressure")
         {
           RefCountPtr<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
@@ -580,6 +645,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         }
         else if (Bc == "flow")
         {
+          // ----------------------------------------------------------
+          // Since a node might belong to multiple elements then the 
+          // flow might be added to the rhs multiple time.
+          // To fix this the flow is devided by the number of elements
+          // (which is the number of branches). Thus the sum of the
+          // final added values is the actual prescribed flow.
+          // ----------------------------------------------------------
+          int numOfElems = (ele->Nodes()[i])->NumElement();
+          BCin /= double(numOfElems);
+
+          // get rhs
           RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
           if (rhs==null)
           {
@@ -600,7 +676,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           dserror("precribed [%s] is not defined for reduced airways",Bc.c_str());
           exit(1);
         }
+        
       }
+      
       else if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
       {
         #if 0
@@ -685,8 +763,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           //rhs->ReplaceGlobalValues(1,&val,&gid);
         }
         #endif
-
       } // END of if there is no BC but the node still is at the terminal
+      
     } // END of if node is available on this processor
   } // End of node i has a condition
 }
@@ -918,6 +996,149 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   ele->setVars("flow_in",qin);
   ele->setVars("flow_out",qout);
 
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Get the coupled the values on the coupling interface    ismail 07/10|
+ |  of the 3D/reduced-D problem                                         |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
+  RedAirway*                   ele,
+  ParameterList&               params,
+  DRT::Discretization&         discretization,
+  vector<int>&                 lm,
+  RefCountPtr<MAT::Material>   material)
+{
+  const int   myrank  = discretization.Comm().MyPID();
+
+  // get total time
+  const double time = params.get<double>("total time");
+
+  // get time-step size
+  //  const double dt = params.get<double>("time step size");
+
+  // the number of nodes
+  const int numnode = lm.size();
+  vector<int>::iterator it_vcr;
+
+  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+
+  if (pnp==null)
+    dserror("Cannot get state vectors 'pnp'");
+
+  // extract local values from the global vectors
+  vector<double> mypnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
+
+  // create objects for element arrays
+  Epetra_SerialDenseVector epnp(numnode);
+
+  //get time step size
+  //  const double dt = params.get<double>("time step size");
+
+  //get all values at the last computed time step
+  for (int i=0;i<numnode;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    epnp(i)    = mypnp[i];
+  }
+
+  // ---------------------------------------------------------------------------------
+  // Resolve the BCs
+  // ---------------------------------------------------------------------------------
+
+  for(int i = 0; i<ele->NumNode(); i++)
+  {
+    if (ele->Nodes()[i]->Owner()== myrank)
+    {
+      if(ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      {
+
+          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");        
+          RCP<ParameterList> CoupledTo3DParams  =
+            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          // -----------------------------------------------------------------
+          // If the parameter list is empty, then something is wrong!
+          // -----------------------------------------------------------------
+          if (CoupledTo3DParams.get()==NULL)
+          {
+            dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+            exit(1);
+          }
+
+
+        // -----------------------------------------------------------------
+        // Compute the variable solved by the reduced D simulation to be
+        // passed to the 3D simulation
+        //
+        //     In this case a map called map1D has the following form:
+        //     +-----------------------------------------------------------+
+        //     |              map< string            ,  double        > >  |
+        //     |     +------------------------------------------------+    |
+        //     |     |  ID  | coupling variable name | variable value |    |
+        //     |     +------------------------------------------------+    |
+        //     |     |  1   |   flow1                |     xxxxxxx    |    |
+        //     |     +------+------------------------+----------------+    |
+        //     |     |  2   |   pressure2            |     xxxxxxx    |    |
+        //     |     +------+------------------------+----------------+    |
+        //     |     .  .   .   ....                 .     .......    .    |
+        //     |     +------+------------------------+----------------+    |
+        //     |     |  N   |   variable(N)          | trash value(N) |    |
+        //     |     +------+------------------------+----------------+    |
+        //     +-----------------------------------------------------------+
+        // -----------------------------------------------------------------
+
+        int ID = condition->GetInt("ConditionID");
+        RCP<map<string,double> >  map1D;
+        map1D   = CoupledTo3DParams->get<RCP<map<string,double> > >("reducedD map of values");
+
+        string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+
+        double BC3d = 0.0;
+        if (returnedBC  == "flow")
+        {
+          if (i==0)
+            ele->getVars("flow_in", BC3d);
+          else
+            ele->getVars("flow_out", BC3d);
+        }
+        else if (returnedBC == "pressure")
+        {
+          BC3d     = epnp(i);
+        }
+        else
+        {
+          string str = (*condition->Get<string>("ReturnedVariable"));
+          dserror("%s, is an unimplimented type of coupling",str.c_str());
+          exit(1);
+        }
+        std::stringstream returnedBCwithId;
+        returnedBCwithId << returnedBC <<"_" << ID;
+        
+        cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
+
+        // -----------------------------------------------------------------
+        // Check whether the coupling wrapper has already initialized this
+        // map else wise we will have problems with parallelization, that's
+        // because of the preassumption that the map is filled and sorted
+        // Thus we can use parallel addition
+        // -----------------------------------------------------------------
+        
+        map<string,double>::iterator itrMap1D;
+        itrMap1D = map1D->find(returnedBCwithId.str());
+        if (itrMap1D == map1D->end())
+        {
+          dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
+          exit(1);
+        }
+        
+        // update the 1D map
+        (*map1D)[returnedBCwithId.str()] = BC3d;
+      }   
+    } // END of if node is available on this processor
+  } // End of node i has a condition
 }
 
 #endif

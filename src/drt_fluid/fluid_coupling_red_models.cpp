@@ -29,16 +29,16 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discretization> dis_3D,
+FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RefCountPtr<DRT::Discretization> dis_3D,
                                                          RefCountPtr<DRT::Discretization> dis_redD,
-                                                         RefCountPtr<ART::ArtNetExplicitTimeInt>  ArtExpTime_integ,
+                                                         //                                                         RefCountPtr<red_D_time_int>      RedD_Time_integ,
                                                          IO::DiscretizationWriter& output,
                                                          double dt_3D,
                                                          double dt_redD) :
   // call constructor for "nontrivial" objects
   discret3D_(dis_3D),
   discret_redD_(dis_redD),
-  ArtExpTime_integ_(ArtExpTime_integ),
+  //  reduced_D_time_integ_(RedD_Time_integ),
   output_ (output)
 {
 
@@ -57,7 +57,7 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
   {
     dserror("\"Fluid 3D\" must have a time step multiple of that of \"reduced-D\" problem");
   }
-  
+
   // ---------------------------------------------------------------------
   // Read in all conditions
   // ---------------------------------------------------------------------
@@ -72,7 +72,7 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
   // which is then marked by the same 'ConditionID'
   // The corresponding resorting of result values has to be done later
   unsigned int numcondlines = couplingcond.size();
-  
+
   // ---------------------------------------------------------------------
   // Check whether the 2nd conditions are similar in number as the first
   // ---------------------------------------------------------------------
@@ -83,8 +83,8 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
 
   if (numcondlines > 0) // if there is at least one coupling bc
   {
-      map3_Dnp_   = rcp(new map<string, double >);  
-      map3_Dn_    = rcp(new map<string, double >);  
+      map3_Dnp_   = rcp(new map<string, double >);
+      map3_Dn_    = rcp(new map<string, double >);
       mapRed_Dnp_ = rcp(new map<string, double >);
       mapRed_Dn_  = rcp(new map<string, double >);
     // -------------------------------------------------------------------
@@ -144,7 +144,7 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
       // ------------------------------------------------------------------
       // allocate the coupling bc class members for every case
       // ------------------------------------------------------------------
-      RCP<Fluid_couplingBc> couplingbc = rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
+      RCP<Fluid_couplingBc > couplingbc = rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
 
       // -----------------------------------------------------------------
       // sort coupling bc's in map and test, if one condition ID appears
@@ -165,7 +165,7 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
     //    |         flow10              .        20.43       |
     //    +-----------------------------+--------------------+
     // -------------------------------------------------------------------
-    
+
     // -------------------------------------------------------------------
     // Fill the 3D coupling variable
     // -------------------------------------------------------------------
@@ -173,22 +173,22 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
     {
       // Get condition ID
       int    id       = (couplingcond[i])->GetInt("ConditionID");
-      
+
       // Get returned coupling variable
       string variable = *((couplingcond[i])->Get<string>("ReturnedVariable"));
-      
+
       // Build a new string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
       VariableWithId << variable<<"_"<< id;
       double value = 0.0;
-      
+
       // Build the map
 
-      map3_Dnp_->insert(make_pair(VariableWithId.str(),value)); 
-      map3_Dn_->insert(make_pair(VariableWithId.str(),value)); 
+      map3_Dnp_->insert(make_pair(VariableWithId.str(),value));
+      map3_Dn_->insert(make_pair(VariableWithId.str(),value));
 
     }
-    
+
     // ------------------------------------------------------------------
     // Fill the reduced-D coupling variable
     // ------------------------------------------------------------------
@@ -196,24 +196,24 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
     {
       // Get condition ID
       int    id       = (couplingcond2[i])->GetInt("ConditionID");
-      
+
       // Get returned coupling variable
       string variable = *((couplingcond2[i])->Get<string>("ReturnedVariable"));
-      
+
       // Build a new string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
       VariableWithId << variable<<"_"<< id;
       double value = 0.0;
-      
+
       // Build the map
-      mapRed_Dnp_->insert(make_pair(VariableWithId.str(),value)); 
-      mapRed_Dn_->insert(make_pair(VariableWithId.str(),value)); 
+      mapRed_Dnp_->insert(make_pair(VariableWithId.str(),value));
+      mapRed_Dn_->insert(make_pair(VariableWithId.str(),value));
     }
-    
+
   } // end if there were conditions
 
   return;
-} // end Fluid_couplingWrapper
+} // end Fluid_couplingWrapperBase
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -225,7 +225,8 @@ FLD::UTILS::Fluid_couplingWrapper::Fluid_couplingWrapper(RefCountPtr<DRT::Discre
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingWrapper::~Fluid_couplingWrapper()
+
+FLD::UTILS::Fluid_couplingWrapperBase::~Fluid_couplingWrapperBase()
 {
   return;
 }
@@ -239,14 +240,14 @@ FLD::UTILS::Fluid_couplingWrapper::~Fluid_couplingWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::FlowRateCalculation(double time, double dta)
+void FLD::UTILS::Fluid_couplingWrapperBase ::FlowRateCalculation(double time, double dta)
 {
   // get an iterator to my map
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  map<const int, RCP< class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
-    mapiter->second->Fluid_couplingBc::FlowRateCalculation(time,dta,mapiter->first);
+    mapiter->second->Fluid_couplingBc ::FlowRateCalculation(time,dta,mapiter->first);
   }
 
   return;
@@ -261,10 +262,11 @@ void FLD::UTILS::Fluid_couplingWrapper::FlowRateCalculation(double time, double 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::PressureCalculation(double time, double dta)
+void FLD::UTILS::Fluid_couplingWrapperBase::PressureCalculation(double time, double dta)
 {
+
   // get an iterator to my map
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
@@ -284,11 +286,11 @@ void FLD::UTILS::Fluid_couplingWrapper::PressureCalculation(double time, double 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, double dta, double theta)
+void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time, double dta, double theta)
 {
 
   // get an iterator to my map
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   // ---------------------------------------------------------------------
   // Read in all conditions
@@ -308,7 +310,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
     // Get condition ID
     condID = mapiter->first;
 
-    //----------------------------------------------------------------    
+    //----------------------------------------------------------------
     // find the parameters that must be calculated and returned by
     // the 3D problem
     //----------------------------------------------------------------
@@ -318,11 +320,11 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
       {
         // get returned value name from 3D boundary
         string variable_str = *(conds3D[i]->Get<string>("ReturnedVariable"));
-        
+
         // concatenate the variable name with the variable id
         std::stringstream CouplingVariable;
         CouplingVariable << variable_str<< "_"<< condID;
-        
+
         if (variable_str == "flow")
         {
           map<string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
@@ -369,7 +371,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
       // Get condition ID
       condID = mapiter->first;
       //----------------------------------------------------------------
-      // find the parameters that must be calculated and returned by 
+      // find the parameters that must be calculated and returned by
       // the reducedD problem
       //----------------------------------------------------------------
       for (unsigned int i=0; i<conds3D.size(); i++)
@@ -378,11 +380,11 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
         {
           // get returned value name from 3D boundary
           string variable_str = *(conds_redD[i]->Get<string>("ReturnedVariable"));
-          
+
           // concatenate the variable name with the variable id
           std::stringstream CouplingVariable;
           CouplingVariable << variable_str<< "_"<< condID;
-          
+
           if (variable_str == "pressure")
           {
             map<string,double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
@@ -401,7 +403,7 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
             }
             (*mapRed_Dnp_)[CouplingVariable.str()] = 0.0;
           }
-          
+
           else
           {
             dserror("(%s): No such coupling variable on the 3D side is defined yet",variable_str.c_str());
@@ -419,33 +421,33 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
     double dstep = 1.0/double(NumOfSteps);
     // -----------------------------------------------------------------
     // Calculate the variables with in the reduced-D time subscale
-    //                                                                  
-    //                                                                  
-    //    ^                                                             
-    // V  |                                                             
-    //    |                                      +                      
-    //    |                                   .  .                      
-    //    |                               o                             
-    //    |                           .   .      .                      
-    //    |                       //                                    
-    //    |                   .   .       .      .                      
-    //    |               o                                             
-    //    |           .   .       .       .      .                      
-    //    |       +                                                     
-    //    |       .       .       .       .      .                      
-    //    |                                                             
-    //    |       .       .       .       .      .                      
-    //    +-------+-------+-------//------+------+--------->            
-    //    |       0       1       i      N-2     N-1     Step           
-    //                                                                  
-    //                                                                  
-    //  ds = 1/N                                                        
-    //                /  i  \                                              
-    //  V|   =  V|  + |-----|*                                              
-    //    i       1   \ N-1 /                                              
-    //                                                                  
-    //                                                                  
-    //                                                                  
+    //
+    //
+    //    ^
+    // V  |
+    //    |                                      +
+    //    |                                   .  .
+    //    |                               o
+    //    |                           .   .      .
+    //    |                       //
+    //    |                   .   .       .      .
+    //    |               o
+    //    |           .   .       .       .      .
+    //    |       +
+    //    |       .       .       .       .      .
+    //    |
+    //    |       .       .       .       .      .
+    //    +-------+-------+-------//------+------+--------->
+    //    |       0       1       i      N-2     N-1     Step
+    //
+    //
+    //  ds = 1/N
+    //                /  i  \
+    //  V|   =  V|  + |-----|*
+    //    i       1   \ N-1 /
+    //
+    //
+    //
     // -----------------------------------------------------------------
     map<string,double>::iterator itr_sub ;
     for (itr_sub = map3_Dnp_->begin(); itr_sub != map3_Dnp_->end(); itr_sub++)
@@ -463,23 +465,22 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
     params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
 //#endif
-    
+
 //    RCP<Teuchos::ParameterList> params = rcp( new Teuchos::ParameterList);
 //    params->set("3D map of values", map3_Dnp_);
 //    params->set("reducedD map of values", mapRed_Dnp_);
-                
-                
-    cout<<"STEP ["<<N<<"] integrate reduce-D"<<endl;
-    ArtExpTime_integ_->Integrate(true,params);
+
+
+    this->Integrate(true,params);
 
   }
 
   // -------------------------------------------------------------------
   // Get the reduced-D results from all of the processors
-  // if a processor doesn't have any reduced-D results then it must 
+  // if a processor doesn't have any reduced-D results then it must
   // return values equivelant to zero
   // -------------------------------------------------------------------
-  
+
   for (unsigned int i = 0; i< conds3D.size(); i++)
   {
 
@@ -516,7 +517,6 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
     }
 
   }
-
   return;
 }
 
@@ -529,18 +529,19 @@ void FLD::UTILS::Fluid_couplingWrapper::ApplyBoundaryConditions(double time, dou
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
+void FLD::UTILS::Fluid_couplingWrapperBase::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
 
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   (*mapRed_Dn_) = (*mapRed_Dnp_);
   (*map3_Dn_  ) = (*map3_Dnp_);
-  
+
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
     mapiter->second->Fluid_couplingBc::UpdateResidual(residual);
   }
+
   return;
 }
 
@@ -554,20 +555,20 @@ void FLD::UTILS::Fluid_couplingWrapper::UpdateResidual(RCP<Epetra_Vector>  resid
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::EvaluateDirichlet(RCP<Epetra_Vector>  velnp ,
+void FLD::UTILS::Fluid_couplingWrapperBase::EvaluateDirichlet(RCP<Epetra_Vector>  velnp ,
                                                           const Epetra_Map &  condmap,
                                                           double              time)
 {
-
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   (*mapRed_Dn_) = (*mapRed_Dnp_);
   (*map3_Dn_  ) = (*map3_Dnp_);
-  
+
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
     mapiter->second->Fluid_couplingBc::EvaluateDirichlet(velnp, condmap, time);
   }
+
   return;
 }
 
@@ -580,15 +581,15 @@ void FLD::UTILS::Fluid_couplingWrapper::EvaluateDirichlet(RCP<Epetra_Vector>  ve
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::WriteRestart( IO::DiscretizationWriter&  output )
+void FLD::UTILS::Fluid_couplingWrapperBase::WriteRestart( IO::DiscretizationWriter&  output )
 {
-
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
     mapiter->second->Fluid_couplingBc::WriteRestart(output,mapiter->first);
   }
+
   return;
 }
 
@@ -601,10 +602,10 @@ void FLD::UTILS::Fluid_couplingWrapper::WriteRestart( IO::DiscretizationWriter& 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapper::ReadRestart( IO::DiscretizationReader& reader)
+void FLD::UTILS::Fluid_couplingWrapperBase::ReadRestart( IO::DiscretizationReader& reader)
 {
 
-  map<const int, RCP<class Fluid_couplingBc> >::iterator mapiter;
+  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
     mapiter->second->Fluid_couplingBc::ReadRestart(reader,mapiter->first);
@@ -622,13 +623,13 @@ void FLD::UTILS::Fluid_couplingWrapper::ReadRestart( IO::DiscretizationReader& r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RefCountPtr<DRT::Discretization> dis_3D,
-                                               RefCountPtr<DRT::Discretization> dis_redD,
-                                               IO::DiscretizationWriter& output,
-                                               double dt_3d,
-                                               double dt_rm,
-                                               int condid,
-                                               int numcond,
-                                               int numcond2) :
+                                                               RefCountPtr<DRT::Discretization> dis_redD,
+                                                               IO::DiscretizationWriter& output,
+                                                               double dt_3d,
+                                                               double dt_rm,
+                                                               int condid,
+                                                               int numcond,
+                                                               int numcond2) :
   // call constructor for "nontrivial" objects
   condid_ (condid),
   discret_3D_(dis_3D),
@@ -647,7 +648,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RefCountPtr<DRT::Discretization> 
   // ---------------------------------------------------------------------
   dt_f3_          = dt_3d;
   dt_rm_          = dt_rm;
-  
+
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
@@ -659,31 +660,31 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RefCountPtr<DRT::Discretization> 
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
-  couplingbc_  = LINALG::CreateVector(*dofrowmap,true);    
+  couplingbc_  = LINALG::CreateVector(*dofrowmap,true);
 
   flowrate_    = 0.0;
 
   // ---------------------------------------------------------------------
   // Calculate alfa, the velocity correction factor:
-  //                                                                      
-  //                                                                      
-  //  -------------+                     -------------+<------            
-  //               +<------                           +<------            
-  //       3D      +<------                   3D      +<------            
-  //    GEOMETRY   +<------                GEOMETRY   +<------            
-  //               +<------                           +<------            
-  //               +<------                           +<------            
-  //  -------------+                     -------------+<------            
-  //                   ^                                  ^               
-  //                   |                                  |               
-  //           Actual applied                      Actual calculated      
-  //              velocity                             velocity           
-  //                                                                      
-  //              Q|                                                      
-  //               |calcutated                                            
-  //      alfa = --------                                                 
-  //              Q|                                                      
-  //               |applied                                               
+  //
+  //
+  //  -------------+                     -------------+<------
+  //               +<------                           +<------
+  //       3D      +<------                   3D      +<------
+  //    GEOMETRY   +<------                GEOMETRY   +<------
+  //               +<------                           +<------
+  //               +<------                           +<------
+  //  -------------+                     -------------+<------
+  //                   ^                                  ^
+  //                   |                                  |
+  //           Actual applied                      Actual calculated
+  //              velocity                             velocity
+  //
+  //              Q|
+  //               |calcutated
+  //      alfa = --------
+  //              Q|
+  //               |applied
   // ---------------------------------------------------------------------
 
   if(*(couplingcond[numcond2]->Get<string>("ReturnedVariable")) == "flow")
@@ -705,7 +706,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RefCountPtr<DRT::Discretization> 
     {
       cout<<"Velocity correction factor cond("<<condid<<") is: "<<alfa_<<endl;
     }
-    
+
   }
   else
   {
@@ -986,7 +987,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
 */
 void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time, double dta, double theta,int condid)
 {
-    
+
   // call the element to apply the pressure
   ParameterList eleparams;
   // action for elements
@@ -1025,7 +1026,6 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
   (2) Apply this flowrate as a Dirichlet boundary at the inflow boundary
 
 */
-
 void FLD::UTILS::Fluid_couplingBc::InflowBoundary(double flowrate, double time, double dta, double theta,int condid)
 {
 
@@ -1051,7 +1051,7 @@ void FLD::UTILS::Fluid_couplingBc::InflowBoundary(double flowrate, double time, 
 
   area =  Area( density, viscosity,condid_);
   velocity_ =  flowrate/area;
-  
+
 #endif
   return;
 } //Fluid_couplingBc::InflowBoundary
@@ -1090,6 +1090,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
                                                      const Epetra_Map & condmap,
                                                      double                time)
 {
+  return;
   cout<<"Evaluating Dirich!"<<endl;
   //dserror("Dirichlet coupling is not fixed yet, if you see the message then something is wrong!");
   //  cout<<"3D discretization:"<<endl<<*discret_3D_<<endl;
@@ -1105,7 +1106,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
       break;
     }
   }
-  
+
   if (*(cond_red->Get<string>("ReturnedVariable")) != "flow")
   {
     return;
@@ -1159,7 +1160,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
         if (condmap.MyGID(dof_gid))
         {
           int lid = discret_3D_->DofRowMap()->LID(dof_gid);
-          
+
           double val = (*velnp) [lid] * velocity_;
           //        cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<endl;
           if((*velnp) [lid]>1.0)
@@ -1171,7 +1172,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
           velnp -> ReplaceGlobalValues(1,&val,&dof_gid);
         }
       }
-      
+
     }
     cout<<endl;
   }

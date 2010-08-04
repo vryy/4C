@@ -49,6 +49,11 @@ extern struct _GENPROB     genprob;
 
 void dyn_red_airways_drt()
 {
+  dyn_red_airways_drt(false);
+}
+
+Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
+{
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -61,6 +66,27 @@ void dyn_red_airways_drt()
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // check if descretization exits
+  // -------------------------------------------------------------------
+  int NumberOfElements = actdis->NumMyRowElements();
+  int TotalNumberOfElements = 0;
+  actdis->Comm().SumAll(&NumberOfElements,&TotalNumberOfElements,1);
+
+  if(TotalNumberOfElements == 0 && CoupledTo3D)
+  {
+    if (actdis->Comm().MyPID()==0)
+    {
+      cout<<"+--------------------- WARNING ---------------------+"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"| Reduced-dimensional airways is compiled, but no   |"<<endl;
+      cout<<"| airways elements are defined!                     |"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"+---------------------------------------------------+"<<endl;
+    }
+    return Teuchos::null;
+  }
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -123,7 +149,7 @@ void dyn_red_airways_drt()
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
   // initial field from restart or calculated by given function
 
-  if (probtype.get<int>("RESTART"))
+  if (probtype.get<int>("RESTART") && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
     airwayimplicit->ReadRestart(probtype.get<int>("RESTART"));
@@ -136,8 +162,20 @@ void dyn_red_airways_drt()
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-  RCP<ParameterList> param_temp;
-  airwayimplicit->Integrate();
+  if (!CoupledTo3D)
+  {
+    // call time-integration (or stationary) scheme
+    RCP<ParameterList> param_temp;
+    airwayimplicit->Integrate();
+
+    return airwayimplicit;
+    //    return  Teuchos::null;
+  }
+  else
+  {
+    return airwayimplicit;
+  }
+
 
 } // end of dyn_red_airways_drt()
 

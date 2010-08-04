@@ -235,6 +235,7 @@ void DRT::Problem::InputControl()
   if ( genprob.restart==0 )
     genprob.restart        = type.get<int>("RESTART");
 
+
   // If we have an adaptive mesh, things are totally different.
   genprob.adaptive       = Teuchos::getIntegralValue<int>(type,"ADAPTIVE");
 
@@ -245,6 +246,9 @@ void DRT::Problem::InputControl()
   {
 #ifdef D_ARTNET
     genprob.numartf = 3;
+#endif
+#ifdef D_RED_AIRWAYS
+    genprob.numawf  = 4;
 #endif
   }
   case prb_fsi_lung:
@@ -268,6 +272,9 @@ void DRT::Problem::InputControl()
     genprob.numaf=1;
 #ifdef D_ARTNET
     genprob.numartf = 2;
+#endif
+#ifdef D_RED_AIRWAYS
+    genprob.numawf  = 3;
 #endif
     break;
   }
@@ -716,17 +723,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
-#ifdef D_ARTNET
-    // create empty discretizations
-    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-#endif
+
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
     if ( xfluiddis!=Teuchos::null )
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 #ifdef D_ARTNET
+    // create empty discretizations
+    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
     AddDis(genprob.numartf, arterydis);
+#endif
+#ifdef D_RED_AIRWAYS
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    AddDis(genprob.numawf, airwaydis);
 #endif
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");

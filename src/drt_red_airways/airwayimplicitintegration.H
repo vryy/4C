@@ -150,7 +150,8 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
+  void Output  (bool               CoupledTo3D,
+                RCP<ParameterList> CouplingParams);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix 
@@ -284,9 +285,12 @@ protected:
   //  RCP<Epetra_Vector>          abc_;
   //@}
 
-  /// connection between master and slave nodes on this proc
+  //! connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+  //@}
 
+  //!
+  bool coupledTo3D_;
   //@}
 
 }; // class RedAirwayImplicitTimeInt

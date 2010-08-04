@@ -4492,6 +4492,7 @@ NODE 1525 COORD -1.0000000000 -10.00000000000 92.32
      615 ART    LINE2    1521   1522 MAT 3 GP 5 TYPE NonLin
      616 ART    LINE2    1523   1524 MAT 4 GP 5 TYPE NonLin
      617 ART    LINE2    1524   1525 MAT 4 GP 5 TYPE NonLin
+--------------------------------------------------REDUCED D AIRWAYS ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -----------------------------------------------------------LEVELSET ELEMENTS

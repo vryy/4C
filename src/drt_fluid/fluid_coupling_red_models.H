@@ -29,6 +29,10 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
+//#include "../drt_art_net/artnetexplicitintegration.H"
+#include "../drt_red_airways/red_airways_dyn_drt.H"
+//#include "../drt_red_airways/airwayimplicitintegration.H"
+
 #include "../drt_io/io.H"
 
 using namespace std;
@@ -38,6 +42,7 @@ namespace FLD
 {
 namespace UTILS
 {
+
 
 //--------------------------------------------------------------------
 // Wrapper class (to be called from outside) for coupling 3D/red D  bc
@@ -49,26 +54,26 @@ this class is meant to do some organisation stuff
 
 \author ismail (ismail@lnm.mw.tum.de)
 */
-class Fluid_couplingWrapper
+
+class Fluid_couplingBc;
+
+class Fluid_couplingWrapperBase
 {
   friend class FluidImplicitTimeInt;
-
-
 public:
   /*!
   \brief Standard Constructor
   */
-  Fluid_couplingWrapper( RCP<DRT::Discretization>  dis_3D,
+  Fluid_couplingWrapperBase( RCP<DRT::Discretization>  dis_3D,
                          RCP<DRT::Discretization>  dis_redD,
-                         RCP<ART::ArtNetExplicitTimeInt>,
 			 IO::DiscretizationWriter& output,
-                         double dt_3d,
-                         double dt_rm);
+                         double                    dt_3d,
+                         double                    dt_rm);
 
   /*!
   \brief Destructor
   */
-  virtual ~Fluid_couplingWrapper();
+  virtual ~Fluid_couplingWrapperBase()=0;
 
   /*!
   \brief Wrapper for Fluid_couplingWrapper::FlowRateCalculation
@@ -105,11 +110,15 @@ public:
   void ReadRestart( IO::DiscretizationReader& reader);
 
 
+  virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & ) = 0;
+
 private:
+
+
   /*!
   \brief all single coupling conditions
   */
-  map<const int, RCP<class Fluid_couplingBc> > coup_map3D_;
+  map<const int, RCP<Fluid_couplingBc> > coup_map3D_;
 
   //! map of coupling variables returned by the reduced-D model at time step n+1
   RCP<map<string, double > >                   mapRed_Dnp_;
@@ -130,7 +139,8 @@ private:
   RCP<DRT::Discretization>                     discret_redD_;
 
   //! Reduced-D artery network time integration
-  RCP<ART::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
+  //  RCP<ART::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
+
 
   //! the output writer
   IO::DiscretizationWriter&                    output_;
@@ -143,7 +153,31 @@ private:
 
 }; // class Fluid_couplingWrapper
 
+template <class red_D_time_int>
 
+class Fluid_couplingWrapper : public Fluid_couplingWrapperBase
+{
+public:
+  Fluid_couplingWrapper ( RCP<DRT::Discretization>  dis_3D,
+                          RCP<DRT::Discretization>  dis_redD,
+                          RCP<red_D_time_int>       time_intg,
+                          IO::DiscretizationWriter& output,
+                          double                    dt_3d,
+                          double                    dt_rm):
+    Fluid_couplingWrapperBase ( dis_3D, dis_redD, output, dt_3d, dt_rm),
+    reduced_D_time_integ_(time_intg)
+    { }
+    
+  void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params )
+    {
+      reduced_D_time_integ_->Integrate(true,params);
+    }
+  
+  ~Fluid_couplingWrapper (){};
+private:
+  //! Reduced-D artery network time integration
+  RCP<red_D_time_int>                          reduced_D_time_integ_;
+};
 
 //--------------------------------------------------------------------
 // Actual coupling bc calculation
@@ -153,9 +187,10 @@ private:
 
 \author ismail (ismail@lnm.mw.tum.de)
 */
+
 class Fluid_couplingBc
 {
-  friend class Fluid_couplingWrapper;
+  friend class Fluid_couplingWrapperBase;
 
 public:
 
@@ -214,7 +249,7 @@ protected:
     \brief compute convolution integral and apply pressure
     to elements
   */
-  void OutflowBoundary(double pressure, 
+  void OutflowBoundary(double pressure,
                        double time,
                        double dta,
                        double theta,
@@ -223,7 +258,7 @@ protected:
   /*!
     \brief compute apply inflow as a Dirichlet BC
   */
-  void InflowBoundary(double flowrate, 
+  void InflowBoundary(double flowrate,
                       double time,
                       double dta,
                       double theta,
@@ -234,6 +269,8 @@ protected:
   void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
                           const Epetra_Map &  condmap,
                           double              time);
+
+  void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params ){}
 
 private:
   /*!
@@ -285,7 +322,7 @@ private:
 
   //! pressure
   double pressure_;
-  
+
   //! corrector variable for dirichlet velocity s.t. applied flowrate is correct
   double alfa_;
 

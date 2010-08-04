@@ -60,6 +60,8 @@ int DRT::ELEMENTS::RedAirway::Evaluate(ParameterList& params,
     act = RedAirway::set_bc;
   else if (action == "calc_flow_rates")
     act = RedAirway::calc_flow_rates;
+  else if (action == "get_coupled_values")
+    act = RedAirway::get_coupled_values;
   else
   {
 
@@ -117,6 +119,16 @@ Here must add the steps for evaluating an element
                                                                        discretization,
                                                                        lm,
                                                                        mat);
+
+    }
+    break;
+    case get_coupled_values:
+    {
+      DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetCoupledValues(this,
+                                                                          params,
+                                                                          discretization,
+                                                                          lm,
+                                                                          mat);
 
     }
     break;
