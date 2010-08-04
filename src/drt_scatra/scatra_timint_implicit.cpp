@@ -1374,7 +1374,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
 
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
 
-#ifdef DEBUG
+//#ifdef DEBUG   // is this costly, when we do this test always?
   // We rely on the fact, that the nodal distribution of both fields is the same.
   // Although Scatra discretization was constructed as a clone of the fluid mesh
   // at the beginning, the fluid nodal distribution can have changed meanwhile
@@ -1382,7 +1382,7 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
   // We have to be sure, that everything is still matching.
   if (not fluiddis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
     dserror("Fluid and Scatra noderowmaps are NOT identical. Emergency!");
-#endif
+//#endif
 
   int err(0);
 

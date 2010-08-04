@@ -44,7 +44,6 @@ using namespace std;
 using namespace Teuchos;
 
 //forward declarations
-class PeriodicBoundaryConditions;
 
 namespace DRT
 {
@@ -592,9 +591,6 @@ protected:
   
   /// Krylov space projection map extractor
   FLD::UTILS::KSPMapExtractor kspsplitter_;
-
-  /// Periodic Boundary Conditions. Guess what.
-  RCP<PeriodicBoundaryConditions> pbc_;
 
   /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;

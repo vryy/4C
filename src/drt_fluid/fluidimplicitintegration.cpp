@@ -33,7 +33,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "drt_periodicbc.H"
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
 #include "dyn_smag.H"
@@ -153,13 +152,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
-  // connect degrees of freedom for periodic boundary conditions
+  // care for periodic boundary conditions
   // -------------------------------------------------------------------
-  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
-  pbc_->UpdateDofsForPeriodicBoundaryConditions();
-
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
-
+  pbcmapmastertoslave_ = params_.get<RCP<map<int,vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set

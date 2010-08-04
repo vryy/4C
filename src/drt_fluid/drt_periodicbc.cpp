@@ -98,7 +98,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(discret_->Comm().MyPID()==0)
     {
-      cout << "Generate new dofset";
+      cout << "Generate new dofset for discretization "<<discret_->Name();
       cout<<endl<<endl;
     }
 

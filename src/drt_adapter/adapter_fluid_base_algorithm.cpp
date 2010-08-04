@@ -151,6 +151,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
 
+  // --------------------provide info about periodic boundary conditions
+  fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
+
   fluidtimeparams->set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
   fluidtimeparams->set<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner",Teuchos::getIntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
 
