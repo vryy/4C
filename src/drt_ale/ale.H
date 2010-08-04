@@ -151,6 +151,8 @@ public:
 
   /// create result test for encapsulated algorithm
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+  
+  virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
   //@}
 };

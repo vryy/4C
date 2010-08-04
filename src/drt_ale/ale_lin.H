@@ -81,6 +81,10 @@ public:
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
+  
+  virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    { return dbcmaps_; }
+
 
   //@}
 
