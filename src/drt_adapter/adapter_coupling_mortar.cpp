@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_colors.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -35,8 +36,8 @@ ADAPTER::CouplingMortar::CouplingMortar()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis, Epetra_Comm& comm)
+void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
+    DRT::Discretization& slavedis, Epetra_Comm& comm)
 {
   // initialize maps for row nodes
   map<int, DRT::Node*> masternodes;
@@ -224,10 +225,204 @@ void ADAPTER::CouplingMortar::Setup(const DRT::Discretization& masterdis,
 
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
 
-  //store interface
+  // store interface
   interface_ = interface;
 
+  // mesh initialization (for rotational invariance)
+  MeshInit(masterdis,slavedis,masterdofrowmap,slavedofrowmap,comm);
+
+  // check for overlap of slave and Dirichlet boundaries
+  // (this is not allowed in order to avoid over-constraint)
+  bool overlap = false;
+	Teuchos::ParameterList p;
+	p.set("total time", 0.0);
+	RCP<LINALG::MapExtractor> dbcmaps = rcp(new LINALG::MapExtractor());
+	RCP<Epetra_Vector > temp = LINALG::CreateVector(*(slavedis.DofRowMap()), true);
+	slavedis.EvaluateDirichlet(p,temp,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps);
+
+	// loop over all slave row nodes of the interface
+	for (int j=0;j<interface_->SlaveRowNodes()->NumMyElements();++j)
+	{
+		int gid = interface_->SlaveRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// check if this node's dofs are in dbcmap
+		for (int k=0;k<mtnode->NumDof();++k)
+		{
+			int currdof = mtnode->Dofs()[k];
+			int lid = (dbcmaps->CondMap())->LID(currdof);
+
+			// found slave node with dbc
+			if (lid>=0)
+			{
+				overlap = true;
+				break;
+			}
+		}
+	}
+
+	// print warning message to screen
+  if (overlap && comm.MyPID()==0)
+  {
+  	cout << RED << "WARNING: Slave boundary and Dirichlet boundary conditions overlap!" << endl;
+  	cout << "This leads to over-constraint, so you might encounter some problems!" << END_COLOR << endl;
+  }
+
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
+    DRT::Discretization& slavedis, RCP<Epetra_Map> masterdofrowmap,
+    RCP<Epetra_Map> slavedofrowmap, Epetra_Comm& comm)
+{
+	// problem dimension
+	int dim = genprob.ndim;
+
+	//**********************************************************************
+	// (0) check constraints in reference configuration
+	//**********************************************************************
+	// intialize and assemble g-vector
+	RCP<Epetra_Vector> gold = LINALG::CreateVector(*slavedofrowmap, true);
+	interface_->AssembleG(*gold);
+	double gnorm = 0.0;
+	gold->Norm2(&gnorm);
+
+	// no need to do mesh initialization if g already very small
+	if (gnorm < 1.0e-12) return;
+
+  // print message
+  if(comm.MyPID()==0)
+  {
+    cout << "Performing mesh initialization...........";
+    fflush(stdout);
+  }
+
+	//**********************************************************************
+	// (1) get master positions on global level
+	//**********************************************************************
+	// fill Xmaster first
+	RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*masterdofrowmap, true);
+
+	// loop over all master row nodes on the current interface
+	for (int j=0; j<interface_->MasterRowNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->MasterRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// do assembly (overwrite duplicate nodes)
+		for (int k=0;k<dim;++k)
+		{
+			int dof = mtnode->Dofs()[k];
+			(*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->X()[k];
+		}
+	}
+
+	//**********************************************************************
+	// (2) solve for modified slave positions on global level
+	//**********************************************************************
+	// initialize modified slave positions
+	RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*slavedofrowmap,true);
+
+	// this is trivial for dual Lagrange multipliers
+	DinvM_->Multiply(false,*Xmaster,*Xslavemod);
+
+
+	//**********************************************************************
+	// (3) perform mesh initialization node by node
+	//**********************************************************************
+	// export Xslavemod to standard column map overlap for current interface
+	Epetra_Vector Xslavemodcol(*(interface_->SlaveColDofs()),false);
+	LINALG::Export(*Xslavemod,Xslavemodcol);
+
+	// loop over all slave column nodes on the current interface
+	for (int j=0; j<interface_->SlaveColNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->SlaveColNodes()->GID(j);
+
+		// be careful to modify BOTH mtnode in interface discret ...
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// ... AND standard node in underlying slave discret
+		DRT::Node* pnode = slavedis.gNode(gid);
+		if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+
+		// new nodal position
+		double Xnew[3] = {0.0, 0.0, 0.0};
+
+		// get corresponding entries from Xslavemod
+		int numdof = mtnode->NumDof();
+		if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+		// find DOFs of current node in Xslavemod and extract this node's position
+		vector<int> locindex(numdof);
+
+		for (int dof=0;dof<numdof;++dof)
+		{
+			locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
+			if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
+			Xnew[dof] = Xslavemodcol[locindex[dof]];
+		}
+
+		// check is mesh distortion is still OK
+		// (throw a dserror if length of relocation is larger than 80%
+		// of an adjacent element edge -> see Puso, IJNME, 2004)
+		double limit = 0.8;
+		double relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+											+(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
+											+(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
+		bool isok = mtnode->CheckMeshDistortion(relocation,limit);
+		if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
+
+		// const_cast to force modifed X() into mtnode
+		// (remark: this is REALLY BAD coding)
+		const_cast<double&>(mtnode->X()[0]) = Xnew[0];
+		const_cast<double&>(mtnode->X()[1]) = Xnew[1];
+		const_cast<double&>(mtnode->X()[2]) = Xnew[2];
+
+		// const_cast to force modifed xspatial() into mtnode
+		// (remark: this is REALLY BAD coding)
+		const_cast<double&>(mtnode->xspatial()[0]) = Xnew[0];
+		const_cast<double&>(mtnode->xspatial()[1]) = Xnew[1];
+		const_cast<double&>(mtnode->xspatial()[2]) = Xnew[2];
+
+		// const_cast to force modifed X() into pnode
+		// (remark: this is REALLY BAD coding)
+		const_cast<double&>(pnode->X()[0]) = Xnew[0];
+		const_cast<double&>(pnode->X()[1]) = Xnew[1];
+		const_cast<double&>(pnode->X()[2]) = Xnew[2];
+	}
+
+	//**********************************************************************
+	// (4) re-evaluate constraints in reference configuration
+	//**********************************************************************
+	// intialize and assemble g-vector
+	RCP<Epetra_Vector > gnew = LINALG::CreateVector(*slavedofrowmap, true);
+	interface_->AssembleG(*gnew);
+	gnew->Norm2(&gnorm);
+
+	// error if g is still non-zero
+  if (gnorm > 1.0e-12) dserror("ERROR: Mesh initialization was not successful!");
+
+	//**********************************************************************
+	// (5) re-initialize finite elements
+	//**********************************************************************
+	// call fill complete again
+	// (actually slavedis.InitializeElements() is enough)
+	slavedis.FillComplete(false,true,false);
+
+  // print message
+  if (comm.MyPID()==0) cout << "done!\n" << endl;
+
+  return;
+
 }
 
 /*----------------------------------------------------------------------*

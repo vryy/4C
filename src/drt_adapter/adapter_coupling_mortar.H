@@ -60,10 +60,16 @@ namespace ADAPTER
     CouplingMortar();
 
     /// setup the machinery
-    void Setup( const DRT::Discretization& masterdis,
-                const DRT::Discretization& slavedis,
+    void Setup( DRT::Discretization& masterdis,
+                DRT::Discretization& slavedis,
                 Epetra_Comm& comm );
 
+    /// perform mesh initialization
+    void MeshInit( DRT::Discretization& masterdis,
+    		           DRT::Discretization& slavedis,
+    		           RCP<Epetra_Map> masterdofrowmap,
+    		           RCP<Epetra_Map> slavedofrowmap,
+    		           Epetra_Comm& comm);
 
     ///filling matrices
     void Evaluate(RCP<Epetra_Vector> idisp);
