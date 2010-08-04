@@ -658,7 +658,8 @@ namespace LINALG
   \brief Apply dirichlet boundary condition to a linear system of equations
 
   This is a flexible routine. The vectors x and dbcval might have different
-  maps. The map does not need to contain all Dirichlet dofs.
+  maps. The dbcmap does not need to contain all Dirichlet dofs, but the vectors
+  all dofs defined in it.
 
   The purpose is to set Dirichlet values at a subset of all Dirichlet
   boundaries.
@@ -666,7 +667,7 @@ namespace LINALG
   \param x (in/out)         : vector x of Ax=b
   \param b (in/out)         : vector b of Ax=b
   \param dbcval (in)        : vector holding values that are supposed to be prescribed
-  \param dbctoggle (in)     : unique map of all dofs that should be constrained
+  \param dbcmap (in)        : unique map of all dofs that should be constrained
 
   \pre The map dbctoggle must be subset of the maps of the vectors.
   */
@@ -675,6 +676,27 @@ namespace LINALG
                               RCP<const Epetra_Vector> dbcval,
                               const Epetra_Map&        dbcmap);
 
+  /*!
+   \brief Apply dirichlet boundary condition to a linear system of equations
+
+   This is a flexible routine. The vectors x and dbcval might have different
+   maps. The map does not need to contain all Dirichlet dofs.
+
+   NOTE: Vector b does not need to contain all Dirichlet dofs defined in dbcmap
+
+   The purpose is to set Dirichlet values at a subset of all Dirichlet
+   boundaries.
+
+   \param b (in/out)         : vector b of Ax=b
+   \param dbcval (in)        : vector holding values that are supposed to be prescribed
+   \param dbcmap (in)        : unique map of all dofs that should be constrained
+
+   \pre The map dbctoggle must be subset of the maps of the vectors.
+   */
+  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
+                              const RCP<const Epetra_Vector> dbcval,
+                              const Epetra_Map&              dbcmap);
+ 
 
   /*!
   \brief Convert a Dirichlet toggle vector in a Dirichlet map

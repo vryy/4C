@@ -710,6 +710,46 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
+                                    const RCP<const Epetra_Vector> dbcval,
+                                    const Epetra_Map&              dbcmap)
+{
+  if (not dbcmap.UniqueGIDs())
+    dserror("unique map required");
+
+  if (b != null)
+  {
+    Epetra_Vector&       B    = *b;
+    const Epetra_Vector& dbcv = *dbcval;
+
+    // We use two maps since we want to allow dbcv and X to be independent of
+    // each other. So we are slow and flexible...
+    const Epetra_BlockMap& bmap = B.Map();
+    const Epetra_BlockMap& dbcvmap = dbcv.Map();
+
+    const int mylength = dbcmap.NumMyElements();
+    const int* mygids  = dbcmap.MyGlobalElements();
+    for (int i=0; i<mylength; ++i)
+    {
+      int gid = mygids[i];
+
+      int dbcvlid = dbcvmap.LID(gid);
+      
+      int blid = bmap.LID(gid);
+      // Note:
+      // if gid is not found in vector b, just continue
+      // b might only be a subset of a larger field vector
+      if (blid>=0)
+        if (dbcvlid<0)
+          dserror("illegal Dirichlet map");
+        else
+          B[blid] = dbcv[dbcvlid];
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
