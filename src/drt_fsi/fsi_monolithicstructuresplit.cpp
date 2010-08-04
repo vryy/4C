@@ -765,7 +765,6 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
 
   Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
   Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
-  combo->addStatusTest(update);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
