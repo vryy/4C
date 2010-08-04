@@ -274,6 +274,10 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 #ifdef FLUIDSPLITAMG
     rhs = FluidField().Interface().InsertOtherVector(rhs);
 #endif
+    
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    
     Extractor().AddVector(*rhs,1,f);
 
     rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
@@ -288,6 +292,10 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     mortar->Apply(*rhs,*tmprhs);
     mortar->SetUseTranspose(false);
     rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
+    
+    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    
     Extractor().AddVector(*rhs,0,f);
   }
 
@@ -341,21 +349,30 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   RCP<LINALG::SparseMatrix> fgg = MLMultiply(f->Matrix(1,1),false,*mortar,false,false,false,true);
   fgg = MLMultiply(*mortar,true,*fgg,false,false,false,true);
+  
+  fgg->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+  
   s->Add(*fgg,false,scale*timescale,1.0);
   mat.Assign(0,0,View,*s);
   
   RCP<LINALG::SparseMatrix> fgi = MLMultiply(*mortar,true,f->Matrix(1,0),false,false,false,true);
-  RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81));
+  RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
   lfgi->Add(*fgi,false,scale,0.0);
   lfgi->Complete(fgi->DomainMap(),s->RangeMap());
+  
+  lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+  
   mat.Assign(0,1,View,*lfgi);
   
   RCP<LINALG::SparseMatrix> fig = MLMultiply(f->Matrix(0,1),false,*mortar,false,false,false,true);
-  RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig->RowMap(),81));
+  RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig->RowMap(),81,false));
 
   lfig->Add(*fig,false,timescale,0.0);
   lfig->Complete(s->DomainMap(),fig->RangeMap());
+  
+  lfig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+  
   mat.Assign(1,0,View,*lfig);
   
   LINALG::SparseMatrix& fii = f->Matrix(0,0);
@@ -379,10 +396,13 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   
   laig->Complete(f->Matrix(1,1).DomainMap(),aii.RangeMap());
   RCP<LINALG::SparseMatrix> llaig = MLMultiply(*laig,false,*mortar,false,false,false,true);
-  laig = rcp(new LINALG::SparseMatrix(llaig->RowMap(),81));
+  laig = rcp(new LINALG::SparseMatrix(llaig->RowMap(),81,false));
 
   laig->Add(*llaig,false,1.0,0.0);
   laig->Complete(s->DomainMap(),llaig->RangeMap());
+  
+  laig->ApplyDirichlet( *(AleField().GetDBCMapExtractor()->CondMap()),false);
+  
   mat.Assign(2,0,View,*laig);
   
   mat.Assign(2,2,View,aii);
@@ -400,6 +420,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     RCP<LINALG::SparseMatrix> fmgg = MLMultiply(mmm->Matrix(1,1),false,*mortar,false,false,false,true);
     fmgg = MLMultiply(*mortar,true,*fmgg,false,false,false,true);
+    
+    fmgg->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+    
     mat.Matrix(0,0).Add(*fmgg,false,scale,1.0);
     
     RCP<LINALG::SparseMatrix> fmig = MLMultiply(mmm->Matrix(0,1),false,*mortar,false,false,false,true);
@@ -407,6 +430,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     lfmig->Add(*fmig,false,1.0,0.0);
     lfmig->Complete(s->DomainMap(),fmig->RangeMap());
+    
+    lfmig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+    
     mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
     
     // We cannot copy the pressure value. It is not used anyway. So no exact
@@ -435,6 +461,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     lfmgi->Add(*llfmgi,false,scale,0.0);
     lfmgi->Complete(aii.DomainMap(),s->RangeMap());
+    
+    lfmgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+    
     mat.Assign(0,2,View,*lfmgi);
     
   }
@@ -639,6 +668,9 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(scv);
     modsv->Update(1.0, *sv, fluidscale);
 
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
+    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    
     Extractor().InsertVector(*modsv,0,f);
     
   }

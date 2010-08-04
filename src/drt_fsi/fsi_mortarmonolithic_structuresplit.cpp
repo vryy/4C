@@ -285,6 +285,10 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     mortar->Apply(*fveln,*tmprhs);
     s->Matrix(0,1).Apply(*tmprhs,*rhs);
     rhs->Scale(-1.*Dt());
+    
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+    
 
     Extractor().AddVector(*rhs,0,f);
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(1,1).RowMap()));
@@ -298,6 +302,9 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     rhs = FluidField().Interface().InsertFSICondVector(tmprhs);
     double scale     = FluidField().ResidualScaling();
     rhs->Scale(-1.*Dt()/scale);
+    
+    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
 
     Extractor().AddVector(*rhs,1,f);
     // shape derivatives
@@ -406,22 +413,30 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   mat.Assign(0,0,View,s->Matrix(0,0));
 
   RCP<LINALG::SparseMatrix> sig = MLMultiply(s->Matrix(0,1),false,*mortar,false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsig = rcp(new LINALG::SparseMatrix(sig->RowMap(),81));
+  RCP<LINALG::SparseMatrix> lsig = rcp(new LINALG::SparseMatrix(sig->RowMap(),81,false));
 
   lsig->Add(*sig,false,1./timescale,0.0);
   lsig->Complete(f->DomainMap(),sig->RangeMap());
 
+  lsig->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+  
   mat.Assign(0,1,View,*lsig);
 
   RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortar,true,s->Matrix(1,0),false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81));
+  RCP<LINALG::SparseMatrix> lsgi = rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
 
   lsgi->Add(*sgi,false,1./scale,0.0);
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
+
+  lsgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+  
   mat.Assign(1,0,View,*lsgi);
 
   RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortar,false,false,false,true);
   sgg = MLMultiply(*mortar,true,*sgg,false,false,false,true);
+  
+  sgg->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+  
   f->Add(*sgg,false,1./(scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
 
@@ -742,6 +757,9 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(fcv);
     modfv->Update(1.0, *fv, 1./fluidscale);
 
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));
+    LINALG::ApplyDirichlettoSystem(modfv,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
+    
     Extractor().InsertVector(*modfv,1,f);
   }
   else
@@ -837,7 +855,7 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
-  combo->addStatusTest(update);
+//  combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
@@ -890,7 +908,7 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
 
   AddStatusTest(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
-  //interfacecombo->addStatusTest(interfaceTestUpdate);
+//  interfacecombo->addStatusTest(interfaceTestUpdate);
 
   converged->addStatusTest(interfacecombo);
 
