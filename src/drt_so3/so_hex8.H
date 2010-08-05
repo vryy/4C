@@ -583,6 +583,13 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,1>& elevec1, ///< nodal normal stresses
       LINALG::Matrix<NUMDOF_SOH8,1>& elevec2  ///< nodal shear stresses
   );
+  
+  //! remodeling for fibers at the end of time step (st 01/10)
+  void soh8_remodel(
+        vector<int>&              lm,             // location matrix
+        vector<double>&           disp,           // current displacements
+        ParameterList&            params,         // algorithmic parameters e.g. time
+        RCP<MAT::Material>        mat);            // material
 
   //! Evaluate Hex8 Shapefcts to keep them static
   const vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();

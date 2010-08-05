@@ -25,6 +25,10 @@ written by : Alexander Volf
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_patspec/patspec.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/anisoexpotwo.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -349,14 +353,42 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      ;// there is nothing to do here at the moment
+      // determine new fiber directions
+      bool remodel;
+      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      RCP<MAT::Material> mat = Material();
+      if (remodel &&
+          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        so_tet4_remodel(lm,mydisp,params,mat);
+      }
     }
     break;
 
     //==================================================================================
     case calc_struct_update_imrlike:
     {
-      ;// there is nothing to do here at the moment
+      // determine new fiber directions
+      bool remodel;
+      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      RCP<MAT::Material> mat = Material();
+      if (remodel &&
+          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        so_tet4_remodel(lm,mydisp,params,mat);
+      }
     }
     break;
 
@@ -1169,6 +1201,168 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  remodeling of fiber directions (protected)               tinkl 01/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
+      vector<int>&              lm,             // location matrix
+      vector<double>&           disp,           // current displacements
+      ParameterList&            params,         // algorithmic parameters e.g. time
+      RCP<MAT::Material>        mat)            // material
+{
+// in a first step ommit everything with prestress
+
+  // current  displacements of element
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
+  }
+
+  /* =========================================================================*/
+  /* ============================================== Loop over Gauss Points ===*/
+  /* =========================================================================*/
+  for (int gp=0; gp<NUMGPT_SOTET4; gp++)
+  {
+    const LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& nxyz = nxyz_;
+
+    //                                      d xcurr
+    // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
+    //                                      d xrefe
+
+    /*structure of F
+    **             [    dx       dy       dz    ]
+    **             [  ------   ------   ------  ]
+    **             [    dX       dX       dX    ]
+    **             [                            ]
+    **      F   =  [    dx       dy       dz    ]
+    **             [  ------   ------   ------  ]
+    **             [    dY       dY       dY    ]
+    **             [                            ]
+    **             [    dx       dy       dz    ]
+    **             [  ------   ------   ------  ]
+    **             [    dZ       dZ       dZ    ]
+    */
+
+    // size is 3x3
+    LINALG::Matrix<3,3> defgrd(false);
+    defgrd.MultiplyTN(xdisp,nxyz);
+    defgrd(0,0)+=1;
+    defgrd(1,1)+=1;
+    defgrd(2,2)+=1;
+
+    // Right Cauchy-Green tensor = F^T * F
+    // size is 3x3
+    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<6,1> glstrain(false);
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+  
+
+    /* non-linear B-operator (may so be called, meaning
+    ** of B-operator is not so sharp in the non-linear realm) *
+    ** B = F . Bl *
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
+    for (int i=0; i<NUMNOD_SOTET4; i++)
+    {
+      bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
+      bop(0,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,0);
+      bop(0,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,0);
+      bop(1,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,1);
+      bop(1,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,1);
+      bop(1,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,1);
+      bop(2,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,2);
+      bop(2,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,2);
+      bop(2,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,2);
+      /* ~~~ */
+      bop(3,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
+      bop(3,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
+      bop(3,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
+      bop(4,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
+      bop(4,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
+      bop(4,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
+      bop(5,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
+      bop(5,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
+      bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
+    }
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    ** Here all possible material laws need to be incorporated,
+    ** the stress vector, a C-matrix, and a density must be retrieved,
+    ** every necessary data must be passed.
+    */
+    double density = 0.0;
+    LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
+    LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
+    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    
+    // Cauchy stress
+    const double detF = defgrd.Determinant();
+
+    LINALG::Matrix<3,3> pkstress;
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
+
+    LINALG::Matrix<3,3> temp(true);
+    LINALG::Matrix<3,3> cauchystress(true);
+    temp.Multiply(1.0/detF,defgrd,pkstress);
+    cauchystress.MultiplyNT(temp,defgrd);
+
+    // evaluate eigenproblem based on stress of previous step
+    LINALG::Matrix<3,3> lambda(true);
+    LINALG::Matrix<3,3> locsys(true);
+    LINALG::SYEV(cauchystress,lambda,locsys);
+
+    // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+    double newgamma = atan(lambda(1,1)/lambda(2,2));
+    //compression in 2nd max direction, thus fibers are alligned to max principal direction
+    if (lambda(1,1) < 0) newgamma = 0.0;
+
+    if (mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
+      MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holz->EvaluateFiberVecs(gp,newgamma,locsys,defgrd);
+    } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
+      MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(mat.get());
+      hum->EvaluateFiberVecs(gp,locsys,defgrd);
+    } else dserror("material not implemented for remodeling");
+
+  } // end loop over gauss points
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

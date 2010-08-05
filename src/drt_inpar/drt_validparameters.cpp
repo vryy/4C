@@ -371,6 +371,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&ps);
 
+  BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
@@ -2931,6 +2933,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::XFEM::BoundaryTypeSigma,
                                    INPAR::XFEM::BoundaryTypeTauPressure),
                                &xfem_general);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);

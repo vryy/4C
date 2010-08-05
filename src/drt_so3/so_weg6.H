@@ -454,6 +454,13 @@ protected:
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params);         // algorithmic parameters e.g. time
+  
+  //! remodeling for fibers at the end of time step (st 01/10)
+  void sow6_remodel(
+        vector<int>&              lm,             // location matrix
+        vector<double>&           disp,           // current displacements
+        ParameterList&            params,         // algorithmic parameters e.g. time
+        RCP<MAT::Material>        mat);            // material
 
   //! Evaluate Wedge6 Shapefcts to keep them static
   const vector<LINALG::Matrix<NUMNOD_WEG6,1> > sow6_shapefcts();

@@ -24,7 +24,11 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/holzapfelcardiovascular.H"
+#include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/anisoexpotwo.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -279,13 +283,41 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      // determine new fiber directions
+      bool remodel;
+      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      if (remodel &&
+          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        sow6_remodel(lm,mydisp,params,mat);
+      }
     }
     break;
 
     //==================================================================================
     case calc_struct_update_imrlike:
     {
-      ;// there is nothing to do here at the moment
+      // determine new fiber directions
+      bool remodel;
+      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      RCP<MAT::Material> mat = Material();
+      if (remodel &&
+          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        sow6_remodel(lm,mydisp,params,mat);
+      }
     }
     break;
 
@@ -993,6 +1025,157 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
   } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  remodeling of fiber directions (protected)               tinkl 01/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::sow6_remodel(
+      vector<int>&              lm,             // location matrix
+      vector<double>&           disp,           // current displacements
+      ParameterList&            params,         // algorithmic parameters e.g. time
+      RCP<MAT::Material>        mat)            // material
+{
+// in a first step ommit everything with prestress and EAS!!
+  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+
+  // update element geometry
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<NUMNOD_WEG6; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xcurr(i,0) = x[0] + disp[i*NODDOF_WEG6+0];
+    xcurr(i,1) = x[1] + disp[i*NODDOF_WEG6+1];
+    xcurr(i,2) = x[2] + disp[i*NODDOF_WEG6+2];
+  }
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> defgrd(false);
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp)
+  {
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+    // Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+//    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_WEG6);
+//    LINALG::Matrix<NUMSTR_WEG6,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::Matrix<6,1> glstrain(false);
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+    
+    /* non-linear B-operator (may so be called, meaning
+    ** of B-operator is not so sharp in the non-linear realm) *
+    ** B = F . Bl *
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> bop;
+    for (int i=0; i<NUMNOD_WEG6; ++i)
+    {
+      bop(0,NODDOF_WEG6*i+0) = defgrd(0,0)*N_XYZ(0,i);
+      bop(0,NODDOF_WEG6*i+1) = defgrd(1,0)*N_XYZ(0,i);
+      bop(0,NODDOF_WEG6*i+2) = defgrd(2,0)*N_XYZ(0,i);
+      bop(1,NODDOF_WEG6*i+0) = defgrd(0,1)*N_XYZ(1,i);
+      bop(1,NODDOF_WEG6*i+1) = defgrd(1,1)*N_XYZ(1,i);
+      bop(1,NODDOF_WEG6*i+2) = defgrd(2,1)*N_XYZ(1,i);
+      bop(2,NODDOF_WEG6*i+0) = defgrd(0,2)*N_XYZ(2,i);
+      bop(2,NODDOF_WEG6*i+1) = defgrd(1,2)*N_XYZ(2,i);
+      bop(2,NODDOF_WEG6*i+2) = defgrd(2,2)*N_XYZ(2,i);
+      /* ~~~ */
+      bop(3,NODDOF_WEG6*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+      bop(3,NODDOF_WEG6*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+      bop(3,NODDOF_WEG6*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+      bop(4,NODDOF_WEG6*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+      bop(4,NODDOF_WEG6*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+      bop(4,NODDOF_WEG6*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+      bop(5,NODDOF_WEG6*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+      bop(5,NODDOF_WEG6*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+      bop(5,NODDOF_WEG6*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+    }
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    ** Here all possible material laws need to be incorporated,
+    ** the stress vector, a C-matrix, and a density must be retrieved,
+    ** every necessary data must be passed.
+    */
+    double density = 0.0;
+    LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6> cmat(true);
+    LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    
+    // Cauchy stress
+    const double detF = defgrd.Determinant();
+
+    LINALG::Matrix<3,3> pkstress;
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
+
+    LINALG::Matrix<3,3> temp(true);
+    LINALG::Matrix<3,3> cauchystress(true);
+    temp.Multiply(1.0/detF,defgrd,pkstress);
+    cauchystress.MultiplyNT(temp,defgrd);
+    
+    // evaluate eigenproblem based on stress of previous step
+    LINALG::Matrix<3,3> lambda(true);
+    LINALG::Matrix<3,3> locsys(true);
+    LINALG::SYEV(cauchystress,lambda,locsys);
+
+    // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+    double newgamma = atan(lambda(1,1)/lambda(2,2));
+    //compression in 2nd max direction, thus fibers are alligned to max principal direction
+    if (lambda(1,1) < 0) newgamma = 0.0;
+
+    if (mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
+      MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(mat.get());
+      holz->EvaluateFiberVecs(gp,newgamma,locsys,defgrd);
+    } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
+      MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(mat.get());
+      hum->EvaluateFiberVecs(gp,locsys,defgrd);
+    } else dserror("material not implemented for remodeling");
+
+  } // end loop over gauss points
 }
 
 #endif  // #ifdef CCADISCRET
