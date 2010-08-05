@@ -403,6 +403,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elasthyper.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/growth_ip.cpp
   src/drt_mat/holzapfelcardiovascular.cpp
   src/drt_mat/humphreycardiovascular.cpp
   src/drt_mat/ion.cpp

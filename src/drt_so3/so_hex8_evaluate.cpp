@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -383,6 +384,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
     }
     break;
 
@@ -438,6 +444,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
       }
     }
     break;

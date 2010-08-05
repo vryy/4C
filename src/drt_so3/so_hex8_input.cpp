@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -60,14 +61,17 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
     aaadamage->Setup(NUMGPT_SOH8,strength);
   } else if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-	  MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
-	  holzcard->Setup(NUMGPT_SOH8, linedef);
+	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+	holzcard->Setup(NUMGPT_SOH8, linedef);
   } else if (Material()->MaterialType() == INPAR::MAT::m_plneohooke){
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
 	MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
 	humcard->Setup(NUMGPT_SOH8, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_growth){
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    grow->Setup(NUMGPT_SOH8);
   }
 
   // temporary variable for read-in

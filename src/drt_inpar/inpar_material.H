@@ -112,6 +112,7 @@ namespace INPAR
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_holzapfelcardiovascular,   ///< anisotropic fiber material for arteries
       m_humphreycardiovascular,   ///< anisotropic material for arteries cf Humphrey
+      m_growth,   ///< integration point based growth
       m_none          ///< undefined
     };
 

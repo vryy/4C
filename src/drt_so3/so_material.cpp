@@ -56,7 +56,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/humphreycardiovascular.H"
-
+#include "../drt_mat/growth_ip.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -393,6 +393,16 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       humcard->Evaluate(glstrain,gp,cmat,stress);
       //humcard->UpdateFiberDirs(gp,defgrd);
       *density = humcard->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_growth: /*------- integration point based growth */
+    {
+      MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+      const double dt = params.get<double>("delta time",-1.0);
+      const double t = params.get<double>("total time",-1.0);
+      grow->Evaluate(glstrain,gp,cmat,stress,dt,t);
+      *density = grow->Density();
       return;
       break;
     }

@@ -1352,6 +1352,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // integration point based growth
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH",
+                                            "integration point based growth",
+                                            INPAR::MAT::m_growth));
+
+    AddNamedReal(m,"DENS","Density");
+    AddNamedInt(m,"MATELASTIC","number of elastic material in input file: MAT MATELASTIC ...");
+    AddNamedReal(m,"STARTTIME","start growth after this time");
+    AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
+    AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
+    AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
+    AddNamedReal(m,"MMINUS","growth law parameter mthetaminus");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

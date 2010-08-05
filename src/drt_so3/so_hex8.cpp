@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -547,6 +548,13 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     fiber = "Fiber4";
     names[fiber] = 3;
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_growth)
+  {
+    string fiber = "Theta";
+    names[fiber] = 1;
+    fiber = "Mandel";
+    names[fiber] = 1;
+  }
 
   return;
 }
@@ -747,6 +755,22 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     } else if (name == "Fiber4"){
       if ((int)data.size()!=3) dserror("size mismatch");
       data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
+    } else {
+      return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_growth){
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    if (name == "Theta"){
+      if ((int)data.size()!=1) dserror("size mismatch");
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += grow->Gettheta()->at(iter);
+      data[0] = temp/NUMGPT_SOH8;
+    } else if (name == "Mandel"){
+      if ((int)data.size()!=1) dserror("size mismatch");
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += grow->Getmandel()->at(iter);
+      data[0] = temp/NUMGPT_SOH8;
     } else {
       return false;
     }

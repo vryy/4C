@@ -58,6 +58,7 @@ Maintainer: Lena Wiechert
 #include "fourieriso.H"
 #include "holzapfelcardiovascular.H"
 #include "humphreycardiovascular.H"
+#include "growth_ip.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -379,6 +380,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::HumphreyCardio(curmat));
     MAT::PAR::HumphreyCardio* params = static_cast<MAT::PAR::HumphreyCardio*>(curmat->Parameter());
     return Teuchos::rcp(new HumphreyCardio(params));
+  }
+  case INPAR::MAT::m_growth:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Growth(curmat));
+    MAT::PAR::Growth* params = static_cast<MAT::PAR::Growth*>(curmat->Parameter());
+    return Teuchos::rcp(new Growth(params));
   }
   case INPAR::MAT::m_pl_mises_3D:
   case INPAR::MAT::m_pl_mises:
