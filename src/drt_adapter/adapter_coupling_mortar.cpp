@@ -229,7 +229,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   interface_ = interface;
 
   // mesh initialization (for rotational invariance)
-  MeshInit(masterdis,slavedis,masterdofrowmap,slavedofrowmap,comm);
+  //MeshInit(masterdis,slavedis,masterdofrowmap,slavedofrowmap,comm);
 
   // check for overlap of slave and Dirichlet boundaries
   // (this is not allowed in order to avoid over-constraint)
