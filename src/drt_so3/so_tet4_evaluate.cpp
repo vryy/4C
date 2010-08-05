@@ -27,7 +27,6 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
-#include "../drt_mat/anisoexpotwo.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

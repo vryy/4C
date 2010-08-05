@@ -27,7 +27,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
-#include "../drt_mat/anisoexpotwo.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
