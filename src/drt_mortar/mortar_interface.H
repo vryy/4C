@@ -484,15 +484,27 @@ public:
   /*!
   \brief Update interface master and slave sets
   
-  This update is usually only done ONCE during FillComplete() in
-  the initialization phase and sets up the slave and master sets
-  (elements, nodes, dofs) for the whole simulation. Yet, in the
-  case of self contact the sets need to be updated again and again
-  during simulation time, as the slave/master status is assigned dynamically.
+  This update is usually only done ONCE in the initialization phase
+  and sets up the slave and master sets (elements, nodes, dofs) for
+  the whole simulation. Yet, in the case of self contact the sets
+  need to be updated again and again during simulation time, as the
+  slave/master status is assigned dynamically.
 
   */
   virtual void UpdateMasterSlaveSets();
   
+  /*!
+  \brief Update interface Lagrange multiplier sets
+
+  This update is usually only done ONCE in the initialization phase
+  and sets up the Lagrange mutliplier set (only dofs) for the whole
+  simulation. Yet, in the case of self contact the sets need to be
+  updated again and again during simulation time, as the slave/master
+  status and thus the LM set is assigned dynamically.
+
+  */
+  virtual void UpdateLagMultSets(int offset_if);
+
   /*!
   \brief Initialize / reset mortar interface
 

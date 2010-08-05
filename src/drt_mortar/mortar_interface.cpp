@@ -744,6 +744,14 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  update Lagrange multiplier set (dofs)                     popp 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if)
+{
   //********************************************************************
   // LAGRANGE MULTIPLIER DOFS
   //********************************************************************
@@ -774,7 +782,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
 
   // loop over all slave dofs and initialize LM dofs
   for (int i=0; i<sdofrowmap_->NumMyElements(); ++i)
-    lmdof.push_back(MaxDofGlobal() + 1 + offset + i);
+    lmdof.push_back(MaxDofGlobal() + 1 + offset_if + offset + i);
 
   // create interface LM map
   // (if maxdofglobal_ == 0, we do not want / need this)

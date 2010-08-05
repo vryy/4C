@@ -88,11 +88,19 @@ dualquadslave3d_(false)
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------
 
+	// make numbering of LM dofs consecutive and unique across N interfaces
+	int offset_if = 0;
+
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    // merge interface Lagrange multiplier dof maps to global LM dof map
-    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+  	// build Lagrange multiplier dof map
+		interface_[i]->UpdateLagMultSets(offset_if);
+
+		// merge interface Lagrange multiplier dof maps to global LM dof map
+		glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+		offset_if = glmdofrowmap_->NumGlobalElements();
+		if (offset_if < 0) offset_if = 0;
         
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
@@ -216,14 +224,27 @@ void CONTACT::CoAbstractStrategy::SetState(const string& statename, const RCP<Ep
 void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
 {
   // reset global slave / master Epetra Maps
-  gsnoderowmap_   = rcp(new Epetra_Map(0,0,Comm()));
+  gsnoderowmap_  = rcp(new Epetra_Map(0,0,Comm()));
   gsdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
   gmdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
+  glmdofrowmap_  = rcp(new Epetra_Map(0,0,Comm()));
+
+	// make numbering of LM dofs consecutive and unique across N interfaces
+	int offset_if = 0;
 
   // setup global slave / master Epetra_Maps
   // (this is done by looping over all interfaces and merging)
   for (int i=0;i<(int)interface_.size();++i)
   {
+  	// build Lagrange multiplier dof map
+		interface_[i]->UpdateLagMultSets(offset_if);
+
+		// merge interface Lagrange multiplier dof maps to global LM dof map
+		glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+		offset_if = glmdofrowmap_->NumGlobalElements();
+		if (offset_if < 0) offset_if = 0;
+
+		// merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
@@ -1269,8 +1290,10 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (!output && Comm().MyPID()==0)
     {
-      printf("Slave Contact Force:   % e  % e  % e\n",ggfcs[0],ggfcs[1],ggfcs[2]);
-      printf("Master Contact Force:  % e  % e  % e\n",ggfcm[0],ggfcm[1],ggfcm[2]);
+    	double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
+    	double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
+      printf("Slave Contact Force:   % e  % e  % e \tNorm: % e\n",ggfcs[0],ggfcs[1],ggfcs[2], snorm);
+      printf("Master Contact Force:  % e  % e  % e \tNorm: % e\n",ggfcm[0],ggfcm[1],ggfcm[2], mnorm);
       printf("Slave Contact Moment:  % e  % e  % e\n",ggmcs[0],ggmcs[1],ggmcs[2]);
       //printf("Slave Contact Moment:  % e  % e  % e\n",ggmcsnew[0],ggmcsnew[1],ggmcsnew[2]);
       printf("Master Contact Moment: % e  % e  % e\n",ggmcm[0],ggmcm[1],ggmcm[2]);
