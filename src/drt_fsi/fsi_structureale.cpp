@@ -64,7 +64,8 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
     matchingnodes_ = false;
     coupsfm_.Setup( *StructureField().Discretization(),
                     *MBFluidField().Discretization(),
-                    comm );
+                    *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+                    comm,false);
   }
 
 }

@@ -62,14 +62,18 @@ namespace ADAPTER
     /// setup the machinery
     void Setup( DRT::Discretization& masterdis,
                 DRT::Discretization& slavedis,
-                Epetra_Comm& comm );
+                DRT::Discretization& aledis, ///> we need this for mesh initialization
+                Epetra_Comm& comm,
+                bool structslave = false);
 
     /// perform mesh initialization
     void MeshInit( DRT::Discretization& masterdis,
     		           DRT::Discretization& slavedis,
+    		           DRT::Discretization& aledis,
     		           RCP<Epetra_Map> masterdofrowmap,
     		           RCP<Epetra_Map> slavedofrowmap,
-    		           Epetra_Comm& comm);
+    		           Epetra_Comm& comm,
+    		           bool structslave = false);
 
     ///filling matrices
     void Evaluate(RCP<Epetra_Vector> idisp);
