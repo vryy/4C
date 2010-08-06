@@ -9,10 +9,10 @@ BUILD_TYPE="DEBUG"
 MPIDIR=/usr
 INCLUDE_INSTALL_DIR="/lnm/lib/fc8/openmpi/include"
 LIB_INSTALL_DIR="/lnm/lib/fc8/openmpi/lib"
-Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
-#Trilinos_DIR="/lnm/lib/Trilinos_dev_10022010/fc8_openmpi_trilinos_dbg"
+#Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
+Trilinos_DIR="/lnm/lib/Trilinos_dev_10022010/fc8_openmpi_trilinos_dbg"
 
-/lnm/programs/cmake-2.8.0/bin/cmake \
+/lnm/programs/cmake-2.8.2/bin/cmake \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
