@@ -107,7 +107,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact()) return;
+  if (!IsInContact() && !WasInContact()) return;
 
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
@@ -857,7 +857,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact()) return;
+  if (!IsInContact() && !WasInContact()) return;
 
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
@@ -1996,32 +1996,71 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
     kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
     kteff->Complete();
-    
-    // add contact force terms
-    RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true,*z_,*fs);
-    RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fs,*fsexp);
-    feff->Update(-(1.0-alphaf_),*fsexp,1.0);
-    
-    RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true,*z_,*fm);
-    RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fm,*fmexp);
-    feff->Update(1.0-alphaf_,*fmexp,1.0);
 
-    // add old contact forces (t_n)
-    RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true,*zold_,*fsold);
-    RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fsold,*fsoldexp);
-    feff->Update(-alphaf_,*fsoldexp,1.0);
+		// for self contact, slave and master sets may have changed,
+		// thus we have to export the products Dold^T * zold / D^T * z to fit
+    // thus we have to export the products Mold^T * zold / M^T * z to fit
+		if (IsSelfContact())
+		{
+			// add contact force terms
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecd  = rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+			RCP<Epetra_Vector> zexp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+	    if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+	    dmatrix_->Multiply(true,*zexp,*tempvecd);
+      LINALG::Export(*tempvecd,*fsexp);
+      feff->Update(-(1.0-alphaf_),*fsexp,1.0);
 
-    RCP<Epetra_Vector> fmold = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true,*zold_,*fmold);
-    RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fmold,*fmoldexp);
-    feff->Update(alphaf_,*fmoldexp,1.0);
+      RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecm  = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+			mmatrix_->Multiply(true,*zexp,*tempvecm);
+			LINALG::Export(*tempvecm,*fmexp);
+			feff->Update(1.0-alphaf_,*fmexp,1.0);
+
+			// add old contact forces (t_n)
+			RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecdold  = rcp(new Epetra_Vector(dold_->DomainMap()));
+			RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(dold_->RowMap()));
+			if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+			dold_->Multiply(true,*zoldexp,*tempvecdold);
+			LINALG::Export(*tempvecdold,*fsoldexp);
+			feff->Update(-alphaf_,*fsoldexp,1.0);
+
+			RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecmold  = rcp(new Epetra_Vector(mold_->DomainMap()));
+			mold_->Multiply(true,*zoldexp,*tempvecmold);
+			LINALG::Export(*tempvecmold,*fmoldexp);
+			feff->Update(alphaf_,*fmoldexp,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			// add contact force terms
+			RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+			dmatrix_->Multiply(true,*z_,*fs);
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fs,*fsexp);
+			feff->Update(-(1.0-alphaf_),*fsexp,1.0);
+
+			RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mmatrix_->Multiply(true,*z_,*fm);
+			RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fm,*fmexp);
+			feff->Update(1.0-alphaf_,*fmexp,1.0);
+
+			// add old contact forces (t_n)
+			RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
+			dold_->Multiply(true,*zold_,*fsold);
+			RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fsold,*fsoldexp);
+			feff->Update(-alphaf_,*fsoldexp,1.0);
+
+			RCP<Epetra_Vector> fmold = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mold_->Multiply(true,*zold_,*fmold);
+			RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fmold,*fmoldexp);
+			feff->Update(alphaf_,*fmoldexp,1.0);
+		}
   }
   
 #ifdef CONTACTFDGAP
@@ -2053,6 +2092,14 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
                   RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
                   int numiter)
 {
+  // check if contact contributions are present,
+  // if not we make a standard solver call to speed things up
+  if (!IsInContact() && !WasInContact())
+  {
+  	solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+  	return;
+  }
+
   //**********************************************************************
   // prepare saddle point system
   //**********************************************************************
@@ -2219,17 +2266,40 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
-    RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true,*z_,*fs);
-    RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fs,*fsexp);
-    fd->Update((1.0-alphaf_),*fsexp,1.0);
-    
-    RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true,*z_,*fm);
-    RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fm,*fmexp);
-    fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+    // for self contact, slave and master sets may have changed,
+		// thus we have to export the product D^T * z to fit
+		// thus we have to export the product M^T * z to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecd  = rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+			RCP<Epetra_Vector> zexp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+			if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+			dmatrix_->Multiply(true,*zexp,*tempvecd);
+			LINALG::Export(*tempvecd,*fsexp);
+			fd->Update((1.0-alphaf_),*fsexp,1.0);
+
+			RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecm  = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+			mmatrix_->Multiply(true,*zexp,*tempvecm);
+			LINALG::Export(*tempvecm,*fmexp);
+			fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+			dmatrix_->Multiply(true,*z_,*fs);
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fs,*fsexp);
+			fd->Update((1.0-alphaf_),*fsexp,1.0);
+
+			RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mmatrix_->Multiply(true,*z_,*fm);
+			RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fm,*fmexp);
+			fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+		}
     
     // export weighted gap vector
     RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
@@ -2389,17 +2459,40 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
-    RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true,*z_,*fs);
-    RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fs,*fsexp);
-    fd->Update((1.0-alphaf_),*fsexp,1.0);
-    
-    RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true,*z_,*fm);
-    RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fm,*fmexp);
-    fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+    // for self contact, slave and master sets may have changed,
+		// thus we have to export the product D^T * z to fit
+		// thus we have to export the product M^T * z to fit
+		if (IsSelfContact())
+		{
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecd  = rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+			RCP<Epetra_Vector> zexp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+			if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+			dmatrix_->Multiply(true,*zexp,*tempvecd);
+			LINALG::Export(*tempvecd,*fsexp);
+			fd->Update((1.0-alphaf_),*fsexp,1.0);
+
+			RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			RCP<Epetra_Vector> tempvecm  = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+			mmatrix_->Multiply(true,*zexp,*tempvecm);
+			LINALG::Export(*tempvecm,*fmexp);
+			fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+		}
+		// if there is no self contact everything is ok
+		else
+		{
+			RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+			dmatrix_->Multiply(true,*z_,*fs);
+			RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fs,*fsexp);
+			fd->Update((1.0-alphaf_),*fsexp,1.0);
+
+			RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+			mmatrix_->Multiply(true,*z_,*fm);
+			RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+			LINALG::Export(*fm,*fmexp);
+			fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+		}
     
     // export weighted gap vector
     RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
@@ -2516,8 +2609,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   mapext.ExtractCondVector(mergedsol,sold);
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*slavemap);
-  z_->Update(1.0,*sollm,0.0);
-  
+
+  // for self contact, slave and master sets may have changed,
+	// thus we have to reinitialize the LM vector map
+  if (IsSelfContact()) z_ = rcp(new Epetra_Vector(*sollm));
+  else                 z_->Update(1.0,*sollm,0.0);
+
   return;
 }
 
@@ -2527,8 +2624,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
-  // if not we can skip this routine to speed things up
-  if (!IsInContact()) return;
+	// if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact()) return;
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
@@ -2955,6 +3052,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
+  else
+  	IsInContact()=false;
 
   return;
 }
@@ -3229,6 +3328,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
+  else
+  	IsInContact()=false;
 
   return;
 }

@@ -194,7 +194,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   Comm().SumAll(&localcontact, &globalcontact, 1);
   Comm().SumAll(&localchange, &globalchange, 1);
 
-  if (globalcontact>=1) isincontact_=true;
+  if (globalcontact>=1) isincontact_ = true;
   else                  isincontact_ = false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
@@ -218,7 +218,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact()) return;
+  if (!IsInContact() && !WasInContact()) return;
 
   // since we will modify the graph of kteff by adding additional
   // meshtyong stiffness entries, we have to uncomplete it

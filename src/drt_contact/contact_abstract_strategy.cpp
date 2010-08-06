@@ -63,6 +63,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, T
 MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 interface_(interface),
 isincontact_(false),
+wasincontact_(false),
 isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false)
@@ -128,9 +129,12 @@ dualquadslave3d_(false)
   gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
 
-  // initialize flag for global contact status
+  // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())
+  {
     IsInContact()=true;
+    WasInContact()=true;
+  }
   
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
@@ -839,6 +843,12 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // reset active set status for next time step
   ResetActiveSet();
 
+  // update flag for global contact status of last time step
+  if (gactivenodes_->NumGlobalElements())
+  	WasInContact()=true;
+  else
+  	WasInContact()=false;
+
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several
   // information and quantities at the end of a time step (converged
@@ -1022,8 +1032,12 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
     }  
   }
 
-  // update flag for global contact status
-  if (gactivenodes_->NumGlobalElements()) IsInContact()=true;
+  // update flags for global contact status
+  if (gactivenodes_->NumGlobalElements())
+  {
+  	IsInContact()=true;
+  	WasInContact()=true;
+  }
 
   return;
 }

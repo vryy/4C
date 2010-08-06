@@ -159,6 +159,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool& IsInContact() { return isincontact_; }
 
     /*!
+    \brief Return old global contact status (last time step)
+
+    */
+    bool& WasInContact() { return wasincontact_; }
+
+    /*!
     \brief Return global self contact status
 
     Note that at the moment this only gives information about the
@@ -618,6 +624,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     // global storage fields
     bool isincontact_;        // flag indicating global contact status
+    bool wasincontact_;       // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
 
