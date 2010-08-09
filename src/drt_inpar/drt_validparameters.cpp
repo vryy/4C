@@ -1892,7 +1892,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                ),
                                &fdyn_stab);
 
-  // TODO: delete one of the two input parameter
   // this parameter selects the tau definition applied
   setStringToIntegralParameter<INPAR::FLUID::TauType>("DEFINITION_TAU",
                                "Barrenechea_Franca_Valentin_Wall",
@@ -1907,17 +1906,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Bazilevs_wo_dt",
                                  "Codina",
                                  "Oberai"),
-#if 0
-                               tuple<std::string>(
-                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
-                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall, gradien based element length",
-                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea (smoothed max operator using exp function); tau_C: Wall",
-                                 "tau_M : Barrenechea, Valentin, Franca, Barrenechea; tau_C: Wall; no dt contribution",
-                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina"  ,
-                                 "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
-                                 "tau_M and tau_C: Codina",
-                                 "tau_M: Oberai, tau_C: Wall")  ,
-#endif
                                tuple<INPAR::FLUID::TauType>(
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                                    INPAR::FLUID::tau_not_defined,
@@ -1930,6 +1918,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tautype_oberai),
                                &fdyn_stab);
 
+#if 0
   setStringToIntegralParameter<INPAR::FLUID::TauType>("TAUTYPE","Franca_Barrenechea_Valentin_Wall",
                                "Type of definition of stabilization parameter",
                                tuple<std::string>(
@@ -1939,6 +1928,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
                                  INPAR::FLUID::tautype_bazilevs),
                                &fdyn_stab);
+#endif
 
   // this parameter selects the location where tau is evaluated
   setStringToIntegralParameter<int>("EVALUATION_TAU",
@@ -2933,7 +2923,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::XFEM::BoundaryTypeSigma,
                                    INPAR::XFEM::BoundaryTypeTauPressure),
                                &xfem_general);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);

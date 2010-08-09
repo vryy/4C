@@ -270,7 +270,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool supg  = true;
       const bool cstab = true;
       // stabilization parameters
-      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
+      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
             tautype == INPAR::FLUID::tautype_bazilevs))
@@ -378,7 +378,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool supg  = true;
       const bool cstab = true;
       // stabilization parameters
-      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"TAUTYPE");
+      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
             tautype == INPAR::FLUID::tautype_bazilevs))
