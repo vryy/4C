@@ -19,7 +19,8 @@ Maintainer: Ulrich Kuettler
 #ifndef FLUID3_IMPL_H
 #define FLUID3_IMPL_H
 
-#include "../drt_f3/fluid3.H"
+#include "fluid3_interface.H"
+
 #include "../drt_f3/fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -34,42 +35,6 @@ namespace ELEMENTS
 {
 
   class Fluid3ImplParameter;
-
-  /// Interface base class for Fluid3Impl
-  /*!
-    This class exists to provide a common interface for all template
-    versions of Fluid3Impl. The only function
-    this class actually defines is Impl, which returns a pointer to
-    the appropriate version of Fluid3Impl.
-   */
-  class Fluid3ImplInterface
-  {
-  public:
-    /// Empty constructor
-    Fluid3ImplInterface() {}
-    /// Empty destructor
-    virtual ~Fluid3ImplInterface() {}
-    /// Evaluate the element
-    /*!
-      This class does not provide a definition for this function, it
-      must be defined in Fluid3Impl.
-     */
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
-                         ParameterList&            params,
-                         DRT::Discretization&      discretization,
-                         vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat) = 0;
-
-    /// Internal implementation class for fluid element
-    //static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* ele);
-    static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
-
-  };
 
   /// Internal Fluid3 implementation
   /*!
@@ -278,8 +243,6 @@ namespace ELEMENTS
       const double&                                         Cs,
       const double&                                         Cs_delta_sq,
       const double&                                         l_tau);
-
-
 
   private:
 
@@ -802,7 +765,7 @@ namespace ELEMENTS
     //double thermpressam_;
     //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
     //double thermpressdtam_;
-    //! for the handling of rotationally sym- vor allem den unspektakulären Spielstil aufpolieren. Der Triple-Gewinn bringt Benitez aber enormmetric periodic boundary conditions
+    //! for the handling of rotationally symmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
 
     // flags
