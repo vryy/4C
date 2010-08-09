@@ -371,8 +371,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     // active, stick and slip part of invd
     RCP<LINALG::SparseMatrix> invda, invdsl, invdst;
     LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
-    LINALG::SplitMatrix2x2(invda,gslipdofs_,gstdofs,gactivedofs_,gidofs,invdsl,tempmtx1,tempmtx2,tempmtx3);
-    LINALG::SplitMatrix2x2(invda,gstdofs,gslipdofs_,gactivedofs_,gidofs,invdst,tempmtx1,tempmtx2,tempmtx3);
+    LINALG::SplitMatrix2x2(invda,gactivedofs_,gidofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,tempmtx3);
+    LINALG::SplitMatrix2x2(invda,gactivedofs_,gidofs,gstdofs,gslipdofs_,invdst,tempmtx1,tempmtx2,tempmtx3);
     
     // coupling part of dmatrix (only nonzero for 3D quadratic case!)
     RCP<LINALG::SparseMatrix> dai;
@@ -503,7 +503,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kstnmod;
     if (stickset)
     { 
-      kstnmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      kstnmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       kstnmod = LINALG::MLMultiply(*kstnmod,false,*kan,false,false,false,true);
     }
     
@@ -511,7 +511,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kstmmod;
     if(stickset)
     {
-      kstmmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      kstmmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       kstmmod = LINALG::MLMultiply(*kstmmod,false,*kam,false,false,false,true);
     }
       
@@ -519,7 +519,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kstimod;
     if(stickset && iset)
     {  
-      kstimod = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      kstimod = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       kstimod = LINALG::MLMultiply(*kstimod,false,*kai,false,false,false,true);
     }
     
@@ -527,7 +527,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kstslmod;
     if(stickset && slipset)
     {  
-      kstslmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      kstslmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       kstslmod = LINALG::MLMultiply(*kstslmod,false,*kasl,false,false,false,true);
     }
     
@@ -535,7 +535,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kststmod;
     if (stickset)
     {
-      kststmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      kststmod = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       kststmod = LINALG::MLMultiply(*kststmod,false,*kast,false,false,false,true);
     }
     
@@ -546,7 +546,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kslnmod;
     if(slipset)
     {
-      kslnmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      kslnmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslnmod = LINALG::MLMultiply(*kslnmod,false,*kan,false,false,false,true);
     } 
     
@@ -554,7 +554,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kslmmod;
     if(slipset)
     {  
-      kslmmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      kslmmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslmmod = LINALG::MLMultiply(*kslmmod,false,*kam,false,false,false,true);
     }
     
@@ -562,7 +562,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kslimod;
     if (slipset && iset)
     {  
-      kslimod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      kslimod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslimod = LINALG::MLMultiply(*kslimod,false,*kai,false,false,false,true);
     }
     
@@ -570,7 +570,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kslslmod;
     if(slipset)
     {
-      kslslmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      kslslmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslslmod = LINALG::MLMultiply(*kslslmod,false,*kasl,false,false,false,true);
     }
     
@@ -578,7 +578,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<LINALG::SparseMatrix> kslstmod;
     if (slipset && stickset)
     {  
-      kslstmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      kslstmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslstmod = LINALG::MLMultiply(*kslstmod,false,*kast,false,false,false,true);
     }
     
@@ -635,7 +635,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     if (stickset)
     {  
       fstmod = rcp(new Epetra_Vector(*gstickt));
-      RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*linstickLM_,false,*invdst,false,false,false,true);
+      RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       temp1->Multiply(false,*fa,*fstmod);
     }
 
@@ -645,7 +645,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     if (slipset)
     {  
       fslmod = rcp(new Epetra_Vector(*gslipt_));
-      RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*linslipLM_,false,*invdsl,false,false,false,true);
+      RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       temp->Multiply(false,*fa,*fslmod);
     }
 
