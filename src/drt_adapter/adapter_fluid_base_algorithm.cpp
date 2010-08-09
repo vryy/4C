@@ -203,6 +203,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
   fluidtimeparams->set<string>          ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
+  // set bool flag "Newton true or false" for combustion formulation and XFEM
+  //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+  //                           Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
   // maximum number of nonlinear iteration steps
   fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
@@ -244,9 +247,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
   fluidtimeparams->sublist("SCATRA STABILIZATION")=scatradyn.sublist("STABILIZATION");
-
-  fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-                             Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
 
   // ------------------------------------------- Robin scheme parameters
   if (genprob.probtyp == prb_fsi)

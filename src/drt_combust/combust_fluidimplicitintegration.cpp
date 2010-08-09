@@ -699,7 +699,14 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
-      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+      //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+      //type of linearisation: include reactive terms for linearisation
+      if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+        eleparams.set("include reactive terms for linearisation",true);
+      else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+        dserror("LinearisationAction minimal is not defined in the combustion formulation");
+      else
+        eleparams.set("include reactive terms for linearisation",false);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1192,7 +1199,7 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
 //  std::cout << state_.velnp_->GlobalLength() << std::endl;
 //  std::cout << state_.veln_->GlobalLength() << std::endl;
 //  std::cout << state_.velnm_->GlobalLength() << std::endl;
-  
+
   std::cout << "Read restart" << std::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");

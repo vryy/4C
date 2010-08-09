@@ -149,25 +149,25 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   conditions_to_copy.push_back("FluidFluidCoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   FluidFluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "FluidFluidCoupling", "FluidFluidboundary", "BELE3", conditions_to_copy);
-   
+
   // Note: The nodal structure doesn't change, so we'll create the nodal maps in the constructor.
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map ffnoderowmap = *FluidFluidboundarydis_->NodeRowMap();
   const Epetra_Map ffelemrowmap = *FluidFluidboundarydis_->ElementRowMap();
-    
+
   // put all boundary nodes and elements onto all processors
   // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
   const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
   const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
-    
+
   // redistribute nodes and elements to column (ghost) map
   FluidFluidboundarydis_->ExportColumnNodes(ffnodecolmap);
   FluidFluidboundarydis_->ExportColumnElements(ffelemcolmap);
-  
+
   FluidFluidboundarydis_->FillComplete();
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(discret_, FluidFluidboundarydis_);
   discret_->Redistribute(*(discret_->NodeRowMap()), *newcolnodemap);
-  
+
   output_->WriteMesh(0,0.0);
 
   if (actdis->Comm().MyPID()==0)
@@ -291,7 +291,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   conditions_to_copy_mf.push_back("MovingFluid");
   conditions_to_copy_mf.push_back("XFEMCoupling");
   MovingFluiddis_ = DRT::UTILS::CreateDiscretizationFromCondition(discret_, "MovingFluid", "MovingFluid", "VELE3", conditions_to_copy_mf);
-  
+
   //create ALE Fluid Boundary discretization
   vector<string> conditions;
   conditions.push_back("ALEFluidCoupling");
@@ -988,27 +988,27 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     DRT::Element* MovingFluidele = MovingFluiddis_->lColElement(iele);
     MovingFluideleGIDs.push_back(MovingFluidele->Id());
   }
-  
+
   vector<int> MovingFluidNodeGIDs;
   for (int node=0; node<MovingFluiddis_->NumMyColNodes(); node++)
   {
     DRT::Node*  MovingFluidnode = MovingFluiddis_->lColNode(node);
     MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
-  }  
-  
+  }
+
   //information how many processors work at all
   vector<int> allproc(MovingFluiddis_->Comm().NumProc());
 
   //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<MovingFluiddis_->Comm().NumProc(); ++i) allproc[i] = i;
-  
-  //gathers information of MovingFluideleGIDs and writes it into fluidfluidstate_.MovingFluideleGIDs_ 
+
+  //gathers information of MovingFluideleGIDs and writes it into fluidfluidstate_.MovingFluideleGIDs_
   LINALG::Gather<int>(MovingFluideleGIDs,fluidfluidstate_.MovingFluideleGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
-  
+
   //gathers information of MovingFluidNodeGIDs and writes it into fluidfluidstate_.MovingFluidNodeGIDs_
   LINALG::Gather<int>(MovingFluidNodeGIDs,fluidfluidstate_.MovingFluidNodeGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
 
-  if (ALEFluidboundarydis_->NumGlobalElements() > 0) 
+  if (ALEFluidboundarydis_->NumGlobalElements() > 0)
     ComputeInterfaceAndSetDOFs(ALEFluidboundarydis_);
 
   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
@@ -1180,7 +1180,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
-      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+      //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+      if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+        eleparams.set("include reactive terms for linearisation",true);
+      else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+        dserror("LinearisationAction minimal is not defined in the XFEM formulation");
+      else
+        eleparams.set("include reactive terms for linearisation",false);
 
       // parameters for stabilization
 //      eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1667,7 +1673,13 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);
   eleparams.set("interface second order", params_.get<bool>("interface second order"));
-  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+  //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+  if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+    eleparams.set("include reactive terms for linearisation",true);
+  else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+    dserror("LinearisationAction minimal is not defined in the XFEM formulation");
+  else
+    eleparams.set("include reactive terms for linearisation",false);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -3842,9 +3854,9 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
   const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
-  
+
   PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
-  
+
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_patch_pres", step_, 5, screen_out, discret_->Comm().MyPID());
@@ -3859,7 +3871,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
           const DRT::Element* actele = discret_->lColElement(i);
 
           const bool is_moving = (std::find(fluidfluidstate_.MovingFluideleGIDs_.begin(), fluidfluidstate_.MovingFluideleGIDs_.end(), actele->Id()) != fluidfluidstate_.MovingFluideleGIDs_.end());
-            
+
           if (is_moving)
             {
               // create local copy of information about dofs
