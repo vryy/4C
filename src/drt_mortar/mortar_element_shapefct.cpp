@@ -232,8 +232,11 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 		derivtmp(5,0)=-4.0*s;
 		derivtmp(5,1)= 4.0*(1.0-r-2.0*s);
 
-		// define constant modification factor 1/12
-		double fac = 1.0/12.0;
+		// define constant modification factor 1/5
+		// (NOTE: lower factors, e.g. 1/12 would be sufficient here
+		// as well, but in order to be globally continuous for mixed
+		// meshes with tet10/hex20 elements, we always choose 1/5.)
+		double fac = 1.0/5.0;
 
 		// apply constant modification at vertex nodes and PoU
 		val[0] = valtmp[0]+(valtmp[3]+valtmp[5])*fac;
