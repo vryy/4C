@@ -55,7 +55,7 @@ public:
   void StatMechReadRestart(IO::DiscretizationReader& reader);
 
   //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim);
+  void StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -63,13 +63,35 @@ public:
   //! \brief write output for Gmsh postprocessing
   void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
 
-  //! \brief gmsh output in case of periodic boundary conditions
-  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
+  /*! \brief gmsh output in case of periodic boundary conditions
+   *  \param coord 						(in)
+   *  \param color 						(in)
+   *  \param gmshfilecontent  (in)
+   *  \param eleid 						(in)
+   *  \param crosslinkdiff		(in) determines the visualization mode (actual elements vs. crosslink molecule representations)
+   */
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
+
+  //! \brief gmsh output of periodic boundary box
+  void GmshOutputBoundaryBox(double color, const std::ostringstream *filename);
+
+  //! \brief gmsh output for crosslink molecule diffusion
+  void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
+
+  //! \brief prepare visualization vectors
+  void GmshPrepareVisualization(const Epetra_Vector& dis, const Epetra_Vector& deltadis);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
   void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                        const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,
                        LINALG::Matrix<3,1> >& currentrotations, Epetra_MultiVector& crosslinkerneighbours);
+
+  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
+  void SearchAndSetCrosslinkers(const double& dt,
+															const Epetra_Map& noderowmap,
+															const Epetra_Map& nodecolmap,
+															const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+															const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
@@ -84,7 +106,7 @@ public:
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
-    \param coord  (in/out)  set of nodal coordinates
+    \param coord  (in)  set of nodal coordinates
 		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
 		\param broken (in/out)  continuous==false, broken==true
 		\date 03/10
@@ -129,10 +151,17 @@ public:
    *  \param init						 (in) switch between methods
    */
   void CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
-														RCP<Epetra_Vector> disi,
+														RCP<Epetra_Vector> deltadis,
 														double mean,
 														double standarddev,
+														double &dt,
 														bool init);
+
+  /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
+   *  \param currentpositions			(in) column map node positions
+   *  \param LID									(in) column map node LIDs
+   *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
+  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID, int crosslinkernumber);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -149,8 +178,17 @@ protected:
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
   void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
+  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+  void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
+
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours);
+
+  /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
+   *  \param currentpositions (in) 		 column map node positions
+   *  \param neighboursLID 		(in/out) vector holding LIDs of neighbour nodes
+   *  \param numbond					(in)		 number of existing bonds between crosslink molecule and filament node*/
+  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions, std::vector<int>* neighboursLID, int index);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
@@ -159,11 +197,10 @@ protected:
   void CrosslinkerPosInit();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
-	void CrosslinkerPeriodicBoundaryShift();
+	void CrosslinkerPeriodicBoundaryShift(std::vector<std::vector<double> >* crosslinkerpositions);
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
-
 
   //! \brief switch between different on and off-rates
   bool konswitch_;
@@ -231,6 +268,13 @@ protected:
 	std::vector<std::vector<int> >		crosslinkerbond_;
 	// \brief a vector containing the current postion of the crosslink molecules
 	std::vector<std::vector<double> >		crosslinkerpositions_;
+	// \brief a vector indicating the number of attached crosslinkers to a node
+	RCP<Epetra_Vector>	numcrossnodes_;
+	// \brief a vector indicating the number of attached nodes to a crosslinker
+	std::vector<int>	numbond_;
+	// \brief a vector just for the sake of visual quality
+	std::vector<std::vector<double> > visualizepositions_;
+
 
 }; // class StatMechManager
 

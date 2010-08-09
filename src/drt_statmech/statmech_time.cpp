@@ -54,6 +54,7 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output),
 isconverged_(0),
 unconvergedsteps_(0),
+disprev_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
 isinit_(false),
 deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
@@ -131,7 +132,10 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    * between two filaments, only their positions are calculated. When a crosslink is to be established between two filaments,
    * an actual element is added. Here, the molecules' initial positions are determined.
    * Calculations are made on Proc 0, only.*/
-		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,true);
+  if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
+  	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
+		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,params_.get<double>("delta time", 0.0),true);
+
 
   return;
 } // StatMechTime::StatMechTime
@@ -177,7 +181,7 @@ void StatMechTime::Integrate()
 
 
     /*in the very first step and in case that special output for statistical mechanics is requested we have
-     * to initialized the related output method*/
+     * to initialize the related output method*/
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
 
@@ -246,23 +250,34 @@ void StatMechTime::Integrate()
       while(isconverged_ == 0);
 
       const double t_admin = Teuchos::Time::wallTime();
-
       UpdateandOutput();
-
     	/*crosslinker positions of the diffusion simulation for crosslink molecules are updated. (note: this update
     	 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
-    	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.
-    	 * */
-      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-				statmechmanager_->CrosslinkerDiffusion(dis_, disi_, 0.0, sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
-																																		 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0)*
-																																		  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt),false);
+    	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.*/
+      // calculate the change in displacement
+      RCP<Epetra_Vector> deltadis = rcp(new Epetra_Vector(*(discret_.DofRowMap()), true));
+      for(int j=0; j<deltadis->MyLength(); j++)
+      	(*deltadis)[j] = (*dis_)[j] - (*disprev_)[j];
+
+      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
+      	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
+      {
+        // calculate standard deviation
+      	double standarddev = sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
+																 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0) *
+																  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt);
+				statmechmanager_->CrosslinkerDiffusion(dis_, deltadis, 0.0, standarddev, dt,false);
+
+				statmechmanager_->GmshPrepareVisualization(*dis_, *deltadis);
+      }
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
       statmechmanager_->StatMechUpdate(dt,*dis_,stiff_,ndim);
 
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
+      // copy displacement to be able to calculate the change in the next time step
+      *disprev_ = *dis_;
 
       if(!discret_.Comm().MyPID())
       cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
@@ -1371,9 +1386,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  // number of DOFs per node
 	  int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
 	  // positions of nodes of an element with n nodes
-	  LINALG::SerialDenseMatrix coord(numdof,(int)discret_.lRowElement(lid)->NumNode(), true);
+	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
 	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-	  LINALG::SerialDenseMatrix cut(numdof,(int)discret_.lRowElement(lid)->NumNode()-1,true);
+	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
 //-------------------------------- obtain nodal coordinates of the current element
 	  // get nodal coordinates and LIDs of the nodal DOFs
 	  statmechmanager_->GetElementNodeCoords(element, disn_, coord, &lids);

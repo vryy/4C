@@ -634,10 +634,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim, cons
          * and the second one marking the newton iteration number, where numbers are written with zeros in the front
          * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
 
-        //note: this kind of output is possilbe for serial computing only (otherwise the following method would have to be adapted to parallel use*/
-        //if(discret_.Comm().NumProc() > 1)
-          //dserror("No Gmsh output for parallel computation possible so far");
-
         // first index = time step index
         std::ostringstream filename;
 
@@ -720,7 +716,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   {
   	if(discret_.Comm().MyPID()==proc)
   	{
-  		//open file again to append output data into
+  		//open file again to append ("a") output data into
   		fp = fopen(filename.str().c_str(), "a");
   		// write output to temporary stringstream;
   		std::stringstream gmshfilecontent;
@@ -897,92 +893,28 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 			fprintf(fp,gmshfilecontent.str().c_str());
 			fclose(fp);
   	}
+  	discret_.Comm().Barrier();
   }
+  // plot the periodic boundary box
+  GmshOutputBoundaryBox(0.0, &filename);
 
-  // wait again until all processors have arrived here
-  discret_.Comm().Barrier();
+  // plot crosslink molecule diffusion and (partial) bonding
+  GmshOutputCrosslinkDiffusion(0.25, &filename, disrow);
 
-  // finish the output by plotting the periodic box in case of periodic boundary conditions (first processor)
+	// finish data section of this view by closing curly brackets
   if(discret_.Comm().MyPID()==0)
   {
 		fp = fopen(filename.str().c_str(), "a");
-		std::stringstream gmshfilefooter;
-
-    if(statmechparams_.get<double>("PeriodLength",0.0) > 0)
-    {
-    	// get current period length
-    	double pl = statmechparams_.get<double>("PeriodLength",0.0);
-
-			double boundarycolor=0.0;
-
-    	// define boundary lines
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
-											<< pl << "," << 0.0 << "," << 0.0 ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 2
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
-    									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 3
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << pl << "," << 0.0 << ","
-    									<< pl << "," << pl << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 4
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << pl << "," << pl << ","
-    									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 5
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << pl << "," << pl << ","
-    									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 6
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << 0.0 << "," << pl << ","
-											<< 0.0 << "," << 0.0 << "," << 0.0 ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 7
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
-    									<< 0.0 << "," << pl << "," << 0.0 ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 8
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
-    									<< pl << "," << pl << "," << 0.0 ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 9
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
-    									<< 0.0 << "," << pl << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 10
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
-    									<< pl << "," << 0.0 << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 11
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
-    									<< pl << "," << pl << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
-    	// line 12
-    	gmshfilefooter << "SL(" << scientific;
-    	gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
-    									<< 0.0 << "," << 0.0 << "," << pl ;
-    	gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};"<< endl;
-    }
-    //finish data section of this view by closing curley brackets
-    gmshfilefooter << "};" << endl;
-
-		fprintf(fp,gmshfilefooter.str().c_str());
+		std::stringstream gmshfileend;
+		gmshfileend << "};" << endl;
+		fprintf(fp,gmshfileend.str().c_str());
 		fclose(fp);
-  }
-  return;
+	}
+
+  // return simultaneously (not sure if really needed)
+	discret_.Comm().Barrier();
+
+	return;
 } // StatMechManager::GmshOutput()
 
 
@@ -990,7 +922,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
  | gmsh output data in case of periodic boundary conditions             |
  |                                                    public)cyron 02/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid)
+void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
 {
   //number of spatial dimensions
   const int ndim = 3;
@@ -1000,23 +932,28 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   // draw colored lines between two nodes of a beam3 or truss3 element (meant for filaments/crosslinks/springs)
   const DRT::ElementType & eot = element->ElementType();
   bool dotline = false;
+  bool kinked = false;
 
+  if(ignoreeleid)
+  	dotline = true;
+  else
+  {
 #ifdef D_BEAM3
-  if(element->ElementType().Name()=="Beam3Type")
-  	dotline = eot==DRT::ELEMENTS::Beam3Type::Instance();
+		if(element->ElementType().Name()=="Beam3Type")
+			dotline = eot==DRT::ELEMENTS::Beam3Type::Instance();
 #endif
 #ifdef D_BEAM3II
-  if(element->ElementType().Name()=="Beam3iiType")
-  	dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
+		if(element->ElementType().Name()=="Beam3iiType")
+			dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
 #endif
 #ifdef D_TRUSS3
-  if(element->ElementType().Name()=="Truss3Type")
-  	dotline = dotline or eot==DRT::ELEMENTS::Truss3Type::Instance();
+		if(element->ElementType().Name()=="Truss3Type")
+			dotline = dotline or eot==DRT::ELEMENTS::Truss3Type::Instance();
 #endif
-
-  // determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
-  // variable triggers different visualizations
-  bool kinked = CheckForKinkedVisual(color, element->Id());
+	  /* determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
+	   * variable triggers different visualizations.*/
+  	kinked = CheckForKinkedVisual(color, element->Id());
+  }
 
   if (dotline)
   {
@@ -1025,7 +962,11 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
      * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
      * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
      * 0 close to boundary at PeriodLength);*/
-    LINALG::SerialDenseMatrix cut(3,(int)element->NumNode()-1,true);
+    LINALG::SerialDenseMatrix cut;
+    if(ignoreeleid)
+    	cut = LINALG::SerialDenseMatrix(3,1,true);
+    else
+    	cut = LINALG::SerialDenseMatrix(3,(int)element->NumNode()-1,true);
 
     /* "coord" currently holds the shifted set of coordinates.
      * In order to determine the correct vector "dir" of the visualization at the boundaries,
@@ -1048,6 +989,14 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         }
       }
     }
+    /*for(int i=0;i<coord.M(); i++)
+    {
+    	for(int j=0; j<coord.N(); j++)
+    		if(coord(i,j)-unshift(i,j)>0.0)
+    			cout<<"shift++ : "<<coord(i,j) - unshift(i,j)<<endl;
+    		else if(coord(i,j)-unshift(i,j)<0.0)
+    			cout<<"shift-- : "<<coord(i,j) - unshift(i,j)<<endl;
+    }*/
 
     // write special output for broken elements
     for(int i=0; i<cut.N() ; i++)
@@ -1097,20 +1046,29 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           }
         }
 
-        //writing element by nodal coordinates as a scalar line
-        gmshfilecontent << "SL(" << scientific;
-        gmshfilecontent<< coord(0,i)  << "," << coord(1,i) << "," << coord(2,i) << ","
-                       << coord(0,i) + lambda0*dir(0)  << "," << coord(1,i) + lambda0*dir(1)  << "," << coord(2,i) + lambda0*dir(2)  ;
-        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-         * interpolating these two colors between the nodes*/
-        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
-        //writing element by nodal coordinates as a scalar line
-        gmshfilecontent << "SL(" << scientific;
-        gmshfilecontent<< coord(0,i+1)  << "," << coord(1,i+1) << "," << coord(2,i+1) << ","
-                       << coord(0,i+1) + lambda1*dir(0)  << "," << coord(1,i+1) + lambda1*dir(1)  << "," << coord(2,i+1) + lambda1*dir(2)  ;
-        /*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-         * interpolating these two colors between the nodes*/
-        gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent<< coord(0,i)  << "," << coord(1,i) << "," << coord(2,i) << ","
+											 << coord(0,i) + lambda0*dir(0)  << "," << coord(1,i) + lambda0*dir(1)  << "," << coord(2,i) + lambda0*dir(2)  ;
+				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+				 * interpolating these two colors between the nodes*/
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+				//writing element by nodal coordinates as a scalar line
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent<< coord(0,i+1)  << "," << coord(1,i+1) << "," << coord(2,i+1) << ","
+											 << coord(0,i+1) + lambda1*dir(0)  << "," << coord(1,i+1) + lambda1*dir(1)  << "," << coord(2,i+1) + lambda1*dir(2)  ;
+				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
+				 * interpolating these two colors between the nodes*/
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+
+        // crosslink molecules with one bond
+        if(ignoreeleid)
+        {
+        	double beadcolor = color;
+					gmshfilecontent << "SP(" << scientific;
+					gmshfilecontent<< coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1) ;
+					gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+        }
       }
       else	// output for continuous elements
       {
@@ -1124,6 +1082,14 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
 					 * interpolating these two colors between the nodes*/
 					gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+
+	        if(ignoreeleid)
+	        {
+	        	double beadcolor = color; //blue
+						gmshfilecontent << "SP(" << scientific;
+						gmshfilecontent<< coord(0,i+1) << "," << coord(1,i+1) << "," << coord(2,i+1) ;
+						gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+	        }
       	}
     		else
     		{
@@ -1150,7 +1116,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     double beadcolor = 0.75;
     for(int i=0; i<element->NumNode(); i++)
     {
-      //writing element by nodal coordinates as a scalar line
+      //writing element by nodal coordinates as a sphere
       gmshfilecontent << "SP(" << scientific;
       gmshfilecontent<< coord(0,i) << "," << coord(1,i) << "," << coord(2,i);
       gmshfilecontent << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
@@ -1160,6 +1126,319 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
   return;
 } // StatMechManager::GmshOutputPeriodicBoundary()
 
+/*----------------------------------------------------------------------*
+ | plot the periodic boundary box                  (public) mueller 7/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshOutputBoundaryBox(double boundarycolor, const std::ostringstream *filename)
+{
+  // plot the periodic box in case of periodic boundary conditions (first processor)
+  if(statmechparams_.get<double>("PeriodLength",0.0) > 0 && discret_.Comm().MyPID()==0)
+  {
+		FILE *fp = fopen(filename->str().c_str(), "a");
+		std::stringstream gmshfilefooter;
+		// get current period length
+		double pl = statmechparams_.get<double>("PeriodLength",0.0);
+
+		// define boundary lines
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
+										<< pl << "," << 0.0 << "," << 0.0 ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 2
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
+										<< pl << "," << pl << "," << 0.0 ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 3
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << pl << "," << 0.0 << ","
+										<< pl << "," << pl << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 4
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << pl << "," << pl << ","
+										<< 0.0 << "," << pl << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 5
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << pl << "," << pl << ","
+										<< 0.0 << "," << 0.0 << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 6
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << 0.0 << "," << pl << ","
+										<< 0.0 << "," << 0.0 << "," << 0.0 ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 7
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << ","
+										<< 0.0 << "," << pl << "," << 0.0 ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 8
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
+										<< pl << "," << pl << "," << 0.0 ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 9
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << ","
+										<< 0.0 << "," << pl << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 10
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << ","
+										<< pl << "," << 0.0 << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 11
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
+										<< pl << "," << pl << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};" << endl;
+		// line 12
+		gmshfilefooter << "SL(" << scientific;
+		gmshfilefooter << pl << "," << 0.0 << "," << pl << ","
+										<< 0.0 << "," << 0.0 << "," << pl ;
+		gmshfilefooter << ")" << "{" << scientific << boundarycolor << "," << boundarycolor << "};"<< endl;
+
+		fprintf(fp,gmshfilefooter.str().c_str());
+		fclose(fp);
+  }
+  // wait for Proc 0 to catch up to the others
+  discret_.Comm().Barrier();
+}
+
+/*----------------------------------------------------------------------*
+ | Gmsh output for crosslink molecule diffusion    (public) mueller 7/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow)
+{
+  // Visualization of crosslink molecule diffusion
+  if(Teuchos::getIntegralValue<int>(statmechparams_, "CRSLNKDIFFUSION"))
+  {
+		FILE *fp = fopen(filename->str().c_str(), "a");
+		/*/ visualization of crosslink molecule positions by spheres on Proc 0
+  	if(discret_.Comm().MyPID()==0)
+  	{
+			for(int i=0; i<(int)visualizepositions_.size(); i++)
+			{
+				if(numbond_.at(i)==0)
+				{
+					double beadcolor = color;
+					std::stringstream gmshfilecross;
+
+					//writing element by nodal coordinates as a sphere
+					gmshfilecross << "SP(" << scientific;
+					gmshfilecross<< visualizepositions_[i].at(0) << "," << visualizepositions_[i].at(1) << "," << visualizepositions_[i].at(2);
+					gmshfilecross << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+				}
+			}
+			fprintf(fp,gmshfilecross.str().c_str());
+			fclose(fp);
+  	}
+  	// wait for all processors to arrive at this point
+  	discret_.Comm().Barrier();*/
+
+    //special visualization for crosslink molecules with one/two bond(s); going through the Procs
+  	for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
+  	{
+  		if(discret_.Comm().MyPID()==proc)
+  		{
+  			// export row displacement to column map format
+  			Epetra_Vector  discol(*(discret_.DofColMap()),true);
+  			LINALG::Export(disrow,discol);
+
+  			fp = fopen(filename->str().c_str(), "a");
+  			std::stringstream gmshfileonebond;
+
+  			for(int i=0; i<(int)crosslinkerbond_.size(); i++)
+  			{
+  				std::vector<std::vector<double> > visualizedpos(1,std::vector<double>(3,0.0));
+					switch(numbond_.at(i))
+					{
+						// crosslink molecule - filament node pair
+						case 1:
+						{
+							// determine position of nodeGID entry
+							int occupied = 0;
+							for(int j=0; j<(int)crosslinkerbond_[i].size(); j++)
+								if(crosslinkerbond_[i].at(j) != -1)
+								{
+									occupied = j;
+									break;
+								}
+							int nodeGID = crosslinkerbond_[i].at(occupied);
+							DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+							LINALG::SerialDenseMatrix coord(3,2,true);
+							for(int j=0; j<coord.M(); j++)
+							{
+								int dofgid = discret_.Dof(node)[j];
+								coord(j,0) = node->X()[j] + discol[dofgid];
+								coord(j,1) = visualizepositions_[i].at(j);
+							}
+
+							double beadcolor = color;
+							// in case of periodic boundary conditions
+							if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+							{
+								GmshOutputPeriodicBoundary(coord, color, gmshfileonebond, 0, true);
+								// testwise: visualization of real crosslink molecule positions
+								beadcolor = 0.0; //black
+								gmshfileonebond << "SP(" << scientific;
+								gmshfileonebond<< crosslinkerpositions_[i].at(0) << "," << crosslinkerpositions_[i].at(1) << "," << crosslinkerpositions_[i].at(2) ;
+								gmshfileonebond << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+							}
+							else
+							{
+								gmshfileonebond << "SL(" << scientific;
+								gmshfileonebond << coord(0,0) << "," << coord(1,0) << "," << coord(2,0)<< ","
+																<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+								gmshfileonebond << ")" << "{" << scientific << color << "," << color << "};"<< endl;
+								gmshfileonebond << "SP(" << scientific;
+								gmshfileonebond<< coord(0,1) << "," << coord(1,1) << "," << coord(2,1) ;
+								gmshfileonebond << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+							}
+						}
+						break;
+						// crosslinker element: crosslink molecule (representation) position
+						case 2:
+						{
+							double beadcolor = 2*color; //red
+							gmshfileonebond << "SP(" << scientific;
+							gmshfileonebond<< visualizepositions_[i].at(0) << "," << visualizepositions_[i].at(1)<< "," <<visualizepositions_[i].at(2);
+							gmshfileonebond << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+						}
+						break;
+						default: continue;
+					}
+  			}
+  			fprintf(fp,gmshfileonebond.str().c_str());
+  			fclose(fp);
+  		}
+  		// make sure everything happens in sequence
+  		discret_.Comm().Barrier();
+  	}
+  }
+  discret_.Comm().Barrier();
+}
+
+/*----------------------------------------------------------------------*
+ | prepare visualization vector for Gmsh Output  (private) mueller 08/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis, const Epetra_Vector& deltadis)
+{
+	if(discret_.Comm().MyPID()==0)
+		for(int i=0; i<(int)visualizepositions_.size(); i++)
+			if(numbond_.at(i)==0)
+				visualizepositions_[i] = crosslinkerpositions_[i];
+
+	//Broadcast
+	for(int i=0; i<(int)visualizepositions_.size(); i++)
+		discret_.Comm().Broadcast(&(visualizepositions_[i])[0], (int)visualizepositions_[i].size(), 0);
+
+	for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
+	{
+		if(proc == discret_.Comm().MyPID())
+		{
+			// column map displacement and displacement increment
+			Epetra_Vector  discol(*(discret_.DofColMap()),true);
+			LINALG::Export(dis,discol);
+		  Epetra_Vector  deltadiscol(*(discret_.DofColMap()),true);
+		  LINALG::Export(deltadis,deltadiscol);
+
+			for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+			{
+				// flag indicating an additional coordinate check at the end of each iteration
+				bool periodiccheck = false;
+				bool positionupdated = false;
+				std::vector<std::vector<double> > visualizedpos(1,std::vector<double>(3,0.0));
+				switch(numbond_.at(i))
+				{
+					// one bonded crosslink molecule
+					case 1:
+					{
+						positionupdated = true;
+						if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+							periodiccheck = true;
+
+						// determine position of nodeGID entry
+						int occupied = 0;
+						for(int j=0; j<(int)crosslinkerbond_[i].size(); j++)
+							if(crosslinkerbond_[i].at(j) != -1)
+							{
+								occupied = j;
+								break;
+							}
+
+						int nodeGID = crosslinkerbond_[i].at(occupied);
+						if(discret_.lRowNode(discret_.NodeRowMap()->LID(nodeGID)) != NULL)
+						{
+							const DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+							for(int j = 0; j<(int)visualizepositions_[i].size(); j++)
+							{
+								int dofgid = discret_.Dof(node).at(j);
+								// add nodal DOF-wise displacement increment to achieve synchronized movement with bonded node
+								visualizedpos[0].at(j) = visualizepositions_[i].at(j) + deltadiscol[dofgid];
+							}
+						}
+					}
+					break;
+					case 2:
+					{
+						positionupdated = true;
+						if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+							periodiccheck = true;
+
+						// loop over filament node components
+						for(int j=0; j<(int)visualizepositions_[i].size(); j++)
+						{
+							std::vector<double> dofnodepositions((int)crosslinkerbond_[i].size(), 0.0);
+							// loop over filament node GIDs
+							for(int k=0; k<(int)crosslinkerbond_[i].size(); k++)
+							{
+								int nodeGID = crosslinkerbond_[i].at(k);
+								DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+								int dofgid = discret_.Dof(node)[j];
+								dofnodepositions.at(k) = node->X()[j] + discol[dofgid];
+							}
+
+							/* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
+							 * It does not matter which value is shifted as long the shift occurs in a consistent way.*/
+							if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+							{
+								visualizedpos[0].at(j) = dofnodepositions.at(0);
+								for(int k=0; k<(int)crosslinkerbond_[i].size()-1; k++)
+								{
+									// shift position if it is found to be outside the boundary box
+									if(fabs(dofnodepositions.at(k+1)-statmechparams_.get<double>("PeriodLength",0.0)-dofnodepositions.at(k)) < fabs(dofnodepositions.at(k+1)-dofnodepositions.at(k)))
+										dofnodepositions.at(k+1) -= statmechparams_.get<double>("PeriodLength",0.0);
+									if(fabs(dofnodepositions.at(k+1)+statmechparams_.get<double>("PeriodLength",0.0)-dofnodepositions.at(k)) < fabs(dofnodepositions.at(k+1)-dofnodepositions.at(k)))
+										dofnodepositions.at(k+1) += statmechparams_.get<double>("PeriodLength",0.0);
+
+									visualizedpos[0].at(j) += dofnodepositions.at(k+1);
+								}
+								// new crosslink molecule position
+								visualizedpos[0].at(j) /= (double)crosslinkerbond_[i].size();
+							}
+							else
+								visualizedpos[0].at(j) /= (double)crosslinkerbond_[i].size();
+						}
+					}
+					break;
+					default: continue;
+				}
+				if(periodiccheck)
+					CrosslinkerPeriodicBoundaryShift(&visualizedpos);
+				//Broadcast
+				if(positionupdated)
+				{
+					visualizepositions_[i] = visualizedpos[0];
+					discret_.Comm().Broadcast(&(visualizepositions_[i])[0], (int)visualizepositions_[i].size(), discret_.Comm().MyPID());
+				}
+			}
+		}
+		discret_.Comm().Barrier();
+	}
+}
 
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
@@ -1527,7 +1806,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
 
-  /*first we modify the displacement vector so that current nodal position at the end of current time step compies with
+  /*first we modify the displacement vector so that current nodal position at the end of current time step complies with
    * periodic boundary conditions, i.e. no node lies outside a cube of edge length Hperiodic*/
   PeriodicBoundaryShift(disrow,ndim);
 
@@ -1562,6 +1841,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
 
     for (int i = 0; i <discret_.NumMyColNodes(); ++i)
     {
+
       //get pointer at a node
       const DRT::Node* node = discret_.lColNode(i);
 
@@ -1585,13 +1865,15 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
       currentrotations[node->LID()] = currrot;
     }
 
-
     //if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )(for now, call for each time step)
     //new search for neighbour nodes after average time specified in input file
     RCP<Epetra_MultiVector> crosslinkerneighbours;
-    SearchNeighbours(currentpositions,crosslinkerneighbours);
-
-    cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
+    // in case of deactivated crosslink molecule diffusion (i.e. crosslinking is a purely geometric matter: node-to-node-distance of filaments)
+    if(!(Teuchos::getIntegralValue<int>(statmechparams_,"CRSLNKDIFFUSION")))
+    {
+    	SearchNeighbours(currentpositions,crosslinkerneighbours);
+			cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
+    }
 
 
 #ifdef MEASURETIME
@@ -1600,12 +1882,23 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
 
     //number of elements in this time step before adding or deleting any elements
     currentelements_ = discret_.NumGlobalElements();
-    //set crosslinkers
-    SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations,*crosslinkerneighbours);
+    //set crosslinkers the "old way", i.e. geometric proximity check of filament nodes
+    if(!(Teuchos::getIntegralValue<int>(statmechparams_,"CRSLNKDIFFUSION")))
+    {
+			SetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations,*crosslinkerneighbours);
 
-    //delete crosslinkers
-    DelCrosslinkers(dt,noderowmap,nodecolmap);
-
+			//delete crosslinkers
+			DelCrosslinkers(dt,noderowmap,nodecolmap);
+    }
+    // set crosslinkers the "new way", i.e. considering crosslink molecule diffusion
+    else
+    {
+    	SearchAndSetCrosslinkers(dt,noderowmap,nodecolmap,currentpositions,currentrotations);
+    	// filled in because #DEBUG wanted it
+      discret_.CheckFilledGlobally();
+      discret_.FillComplete(true,false,false);
+    	SearchAndDeleteCrosslinkers(dt,noderowmap,nodecolmap);
+    }
 
     /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
      *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
@@ -1614,8 +1907,6 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP
     discret_.CheckFilledGlobally();
     discret_.FillComplete(true,false,false);
     stiff->Reset();
-
-
 
 #ifdef MEASURETIME
     cout << "\n***\nadministration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
@@ -1888,7 +2179,6 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
 #endif
 }
-
 /*----------------------------------------------------------------------*
  | Searches and saves in variable  crosslinkerneighbours neighbours for|
  | each col node                                              cyron 07/09|
@@ -2000,8 +2290,416 @@ void StatMechManager::SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > 
 }//void SearchNeighbours(const int rlink, const std::map<int,LINALG::Matrix<3,1> > currentpositions)
 
 /*----------------------------------------------------------------------*
+ | detect neighbour nodes to crosslink molecules (public) mueller (7/10)|
+ *----------------------------------------------------------------------*/
+void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions, std::vector<int>* neighboursLID, int index)
+{
+	double rmin, rmax;
+	if(numbond_.at(index)==0)
+	{
+		rmin = (statmechparams_.get<double>("R_LINK",0.0) - statmechparams_.get<double>("DeltaR_LINK",0.0))/2.0;
+		rmax = (statmechparams_.get<double>("R_LINK",0.0) + statmechparams_.get<double>("DeltaR_LINK",0.0))/2.0;
+	}
+	else
+	{
+		rmin = statmechparams_.get<double>("R_LINK",0.0) - statmechparams_.get<double>("DeltaR_LINK",0.0);
+		rmax = statmechparams_.get<double>("R_LINK",0.0) + statmechparams_.get<double>("DeltaR_LINK",0.0);
+	}
+	// detect all neighbours of crosslink molecule i
+	for(std::map<int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.begin(); posj != currentpositions.end(); posj++)
+	{
+		// calculate distance crosslinker-node
+		LINALG::Matrix<3,1> difference;
+		for(int k=0; k<(int)difference.M(); k++)
+			difference(k) = crosslinkerpositions_[index].at(k) - (posj->second)(k);
+
+		if(difference.Norm2()<rmax && difference.Norm2()>rmin)
+			neighboursLID->push_back(posj->first);
+	}
+	//cout<<neighboursLID->size()<<" neighbour nodes, rmax = "<<rmax<<", numbond = "<<numbond_.at(index)<<endl;
+}
+
+/*----------------------------------------------------------------------*
+ | Searches for crosslink molecule-filament node pairs and adds actual  |
+ | crosslinker elements once linking conditions are met.       					|
+ | (public)                                               mueller (7/10)|
+ *----------------------------------------------------------------------*/
+void StatMechManager::SearchAndSetCrosslinkers(const double& dt,const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+																							 const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+																							 const std::map<int,LINALG::Matrix<3,1> >& currentrotations)
+{
+#ifdef D_TRUSS3
+#ifdef D_BEAM3
+//#ifdef D_BEAM3II
+  // update the number of times the function SearchNeighbours has already been called
+  nsearch_++;
+
+  double t_search = Teuchos::Time::wallTime();
+  /*<preliminaries>*/
+
+  // NODAL TRIAD UPDATE
+  //first get triads at all row nodes
+  Epetra_MultiVector nodaltriadsrow(noderowmap,4);
+  nodaltriadsrow.PutScalar(0);
+
+  //update nodaltriads_
+  for(int i = 0; i< noderowmap.NumMyElements(); i++)
+  {
+    //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+    int lowestid( ( (discret_.lRowNode(i)->Elements())[0] )->Id() );
+    int lowestidele(0);
+    for(int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
+      if( ( (discret_.lRowNode(i)->Elements())[j] )->Id() < lowestid )
+      {
+        lowestid = ( (discret_.lRowNode(i)->Elements())[j] )->Id();
+        lowestidele = j;
+      }
+
+    //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
+    DRT::ELEMENTS::Beam3ii* filele = NULL;
+    DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+    if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_.lRowNode(i)->Elements()[lowestidele]);
+    else
+      dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+
+    //check whether crosslinker is connected to first or second node of that element
+    int nodenumber = 0;
+    if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+      nodenumber = 1;
+
+    //save nodal triad of this node in nodaltriadrow
+    for(int j = 0; j<4; j++)
+      nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+  }
+
+  //export nodaltriadsrow to col map variable
+  Epetra_MultiVector nodaltriadscol(nodecolmap,4,true);
+  Epetra_Import importer(nodecolmap,noderowmap);
+  nodaltriadscol.Import(nodaltriadsrow,importer,Insert); // NODAL TRIAD UPDATE
+
+
+  //get current on-rate for crosslinkers
+  double kon = 0;
+  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) && !konswitch_)
+    kon = statmechparams_.get<double>("K_ON_start",0.0);
+  else
+  {
+    kon = statmechparams_.get<double>("K_ON_end",0.0);
+    konswitch_=true;
+  }
+
+  //probability with which a crosslinker is established between crosslink molecule and neighbour node
+  double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+
+  //creating a random generator object which creates uniformly distributed random numbers in [0;1]
+  ranlib::UniformClosed<double> UniformGen;
+
+  /*if FIXEDSEED is set to Yes, reproducible simulations are required. Note: Blitz uses a different
+   *seed for each type of random generator (e.g. normal, uniform, ...); thus former seed e.g. for
+   *normally distributed random generators are not sufficient to guarantee a seed for the generator
+   *UniformGen*/
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+    UniformGen.seed((unsigned int)(time_/dt));
+  /*</preliminaries>*/
+
+  // a vector indicating the crosslink molecule which is going to constitute a crosslinker element
+  std::vector<int> doublebond((int)statmechparams_.get<double>("N_crosslink", 0.0), 0);
+
+  /*the following part of the code is executed on processor 0 only and leads to the decision, at which nodes crosslinks shall be set
+   *processor 0 goes through all the crosslink molecules and checks whether a crosslink is to be set; this works precisely as follows:
+   *(1) the crosslink molecules are looped through in a random order
+   *(2) if a node has not yet reached its maximal number of crosslinks, a crosslink may be set
+   *(3) a crosslink is set if and only if the node passes a probability check
+   *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
+  if(discret_.Comm().MyPID()==0)
+  {
+  	// obtain a random order in which the crosslinkers are addressed
+  	std::vector<int> order = Permutation((int)statmechparams_.get<double>("N_crosslink", 0.0));
+		int setelecount = 0;
+
+  	for(int i=0; i<(int)crosslinkerbond_.size(); i++)
+  	{
+  		int irandom = order[i];
+
+  		// skip this crosslink molecule if it already bonded with two nodes, hence constituting a crosslinker element
+  		if(numbond_.at(irandom)==(int)crosslinkerbond_[i].size())
+  			continue;
+
+  		// search for neighbour nodes
+    	// vector storing the LIDs of neighbour nodes
+    	std::vector<int> neighboursLID;
+    	DetectNeighbourNodes(currentpositions, &neighboursLID, irandom);
+
+  		// PROBABILITY CHECK & PREPARATION OF VECTORS
+  		// obtain a random order of neighboursLID indices
+  		std::vector<int> neighbourorder = Permutation((int)neighboursLID.size());
+
+  	  for(int j=0; j<(int)neighboursLID.size(); j++)
+  	  {
+  	  	// random index
+  	  	int index = neighbourorder[j];
+  	  	// current neighbour LID
+  	  	int nodeLID = neighboursLID.at(index);
+
+  	  	// necessary conditions to be fulfilled in order to set a crosslinker
+  	  	if( (UniformGen.random() < plink) && (*numcrossnodes_)[nodeLID] < statmechparams_.get<int>("N_CROSSMAX", 0) )
+  	  	{
+  	  		//cout<<"chosen LID = "<<nodeLID<<endl;
+    	  	int free = 0;
+    	  	int occupied = 0;
+    	  	bool set = false;
+
+    	  	// check both entries of crosslinkerbond_
+    	  	for(int k=0; k<(int)crosslinkerbond_[irandom].size(); k++)
+    	  		if(crosslinkerbond_[irandom].at(k) == -1)
+    	  		{
+    	  			if(!set)
+    	  			{
+    	  				// store free bond position
+    	  				free = k;
+    	  				set = true;
+    	  			}
+    	  		}
+    	  		else
+    	  			occupied = k;
+
+    	  	switch(numbond_.at(irandom))
+    	  	{
+    	  		// free crosslink molecule
+    	  		case 0:
+						{
+							// update of crosslink molecule positions
+							LINALG::SerialDenseMatrix LID(1,1,true);
+							LID(0,0) = nodeLID;
+							CrosslinkerIntermediateUpdate(currentpositions, LID, irandom);
+							// insert the GID of the node in question as first entry
+							DRT::Node *node = discret_.lColNode(nodeLID);
+							crosslinkerbond_[irandom].at(0) = node->Id();
+							// increment the number of crosslinkers at this node
+							((*numcrossnodes_)[nodeLID])++;
+							// increment the number of bonds of this crosslinker
+							(numbond_.at(irandom))++;
+							CrosslinkerIntermediateUpdate(currentpositions, LID, irandom);
+						}
+						break;
+						// one bond already exists -> establish a second bond
+						// Potentially, add an element (later)
+    	  		case 1:
+						{
+							/*Orientation Check: only if the two nodes in question pass a check for their
+							 * orientation, a marker, indicating an element to be added, will be set*/
+							//Col map LIDs of nodes to be crosslinked
+							LINALG::Matrix<2,1> LID;
+							LID(0) = nodecolmap.LID(crosslinkerbond_[irandom].at(occupied));
+
+							//conduct another search because molecule position and search radius were altered
+							std::vector<int> dbondneighboursLID;
+							DetectNeighbourNodes(currentpositions, &dbondneighboursLID, irandom);
+				  	  std::vector<int> dbondorder = Permutation((int)dbondneighboursLID.size());
+				  	  for(int i=0; i<(int)dbondneighboursLID.size(); i++)
+				  	  {
+				  	  	int idbond = dbondorder[i];
+				  	  	if((UniformGen.random() < plink))
+				  	  	{
+									LID(1) = dbondneighboursLID.at(idbond);
+									break;
+				  	  	}
+				  	  }
+
+							//unit direction vector between currently considered two nodes
+							LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0)))->second);
+							direction -= (currentpositions.find((int)LID(1)))->second;
+							direction.Scale(1.0 / direction.Norm2());
+
+							if(CheckOrientation(direction,nodaltriadscol,LID))
+							{
+								setelecount++;
+								LINALG::SerialDenseMatrix lid(2,1,true);
+								lid(0,0) = LID(0);
+								lid(1,0) = LID(1);
+
+								DRT::Node *node = discret_.lColNode(nodeLID);
+								crosslinkerbond_[irandom].at(free) = node->Id();
+								((*numcrossnodes_)[nodeLID])++;
+								(numbond_.at(irandom))++;
+								doublebond.at(irandom) = 1;
+								// update molecule positions
+								CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
+							}
+						}
+						break;
+						// nothing to be done
+    	  		default: continue;
+    	  	}
+  	  	}
+  	  }// PROBABILITY CHECK & PREPARATION OF VECTORS
+  	}
+  	//cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<setelecount<<" crosslinker elements will be set!"<<endl;
+  	cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
+  }// if(discret_.Comm().MypPID==0)
+  else
+  {
+    /* zerofy numcrossnodes at the beginning of each search except for Proc 0.
+     * It conducts the search and communicates its findings to the others.*/
+  	numcrossnodes_->PutScalar(0.0);
+  }
+
+  // Broadcast the findings of Proc 0: doublebond, crosslinkerbond_, numbond_, numcrossnodes_
+  for(int i=0; i<(int)statmechparams_.get<double>("N_crosslink", 0.0); i++)
+  {
+  	discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
+  	discret_.Comm().Broadcast(&(crosslinkerpositions_[i])[0], (int)crosslinkerpositions_[i].size(), 0);
+  	discret_.Comm().Broadcast(&(visualizepositions_[i])[0], (int)visualizepositions_[i].size(), 0);
+  }
+
+	discret_.Comm().Broadcast(&numbond_[0], (int)numbond_.size(), 0);
+	discret_.Comm().Broadcast(&doublebond[0], (int)doublebond.size(), 0);
+
+  //synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
+  Epetra_Export exporter(nodecolmap,noderowmap);
+  Epetra_Vector numcrossnodesrow(noderowmap,true);
+  numcrossnodesrow.Export(*numcrossnodes_,exporter,Add);
+  numcrossnodes_->Import(numcrossnodesrow,importer,Insert);
+
+	/*for(int h=0; h<discret_.Comm().NumProc(); h++)
+	{
+		if(discret_.Comm().MyPID()==h)
+		{
+			cout<<"Broadcast  to Proc "<<discret_.Comm().MyPID()<<" done!"<<endl;
+			cout<<"numcrossnodes_Proc "<<discret_.Comm().MyPID()<<endl;
+		for(int i=0; i<numcrossnodes_->MyLength(); i++)
+				if((*numcrossnodes_)[i]>statmechparams_.get<int>("N_CROSSMAX", 0) || (*numcrossnodes_)[i] < 0)
+					cout<<"Proc "<<discret_.Comm().MyPID()<<", numcrossnodes["<<i<<"] = "<<(*numcrossnodes_)[i]<<endl;
+			for(int i=0; i<(int)numbond_.size(); i++)
+				if(numbond_[i] > (int)crosslinkerbond_[i].size() || numbond_[i] < 0)
+					cout<<"numbond_["<<i<<"] = "<<numbond_[i]<<", something's wrong here!"<<endl;
+		}
+		discret_.Comm().Barrier();
+	}*/
+
+  int elementcount = 0;
+  // ADDING ELEMENTS
+  for(int i=0; i<(int)doublebond.size(); i++)
+  {
+  	// testwise && : just to make sure
+  	if(doublebond.at(i)==1 && numbond_.at(i)==(int)crosslinkerbond_[i].size())
+  	{
+			// obtain node GID
+			int nodeGID[2] = {crosslinkerbond_[i].at(0),crosslinkerbond_[i].at(1)};
+			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
+			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
+			 *crosslinker element will be present as a ghost element only*/
+			if(noderowmap.LID(nodeGID[0]) > -0.9 || noderowmap.LID(nodeGID[1]) > -0.9)
+			{
+				//getting current position and rotational status of nodes with GID nodeGID[]
+				// node 1
+				map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find( nodecolmap.LID(nodeGID[0]) );
+				map< int,LINALG::Matrix<3,1> >::const_iterator rot0 = currentrotations.find( nodecolmap.LID(nodeGID[0]) );
+				// node 2
+				map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find( nodecolmap.LID(nodeGID[1]) );
+				map< int,LINALG::Matrix<3,1> >::const_iterator rot1 = currentrotations.find( nodecolmap.LID(nodeGID[1]) );
+
+				/*there is the problem of how to assign to a crosslinker element a GID which is certainly not used by any
+				 * other element; we know that for a network at the beginning (without crosslinkers) each node has a
+				 * connectivity of 1 or 2 so that the number of all elements used to discretize the filaments is smaller
+				 * than basisnodes_. Thus we choose crosslinker GIDs >= basisnodes_ for the additionally added crosslinker
+				 * elements. To make sure that two crosslinkers never have the same GID we add to basisnodes_ the value
+				 * basisnodes_*GID1, where GID1 is the GID of the first node of the crosslinker element. Then we add GID2
+				 * (note: GID2 < basisnodes_), which is the GID of the second node of the crosslinker element.
+				 * Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be used by any other element;
+				 * the first node of the crosslinker element is always assumed to be the one with the greater GID; the owner
+				 * of the first node is assumed to be the owner of the crosslinker element*/
+				int GID2 = min(nodeGID[0],nodeGID[1]);
+				int GID1 = max(nodeGID[0],nodeGID[1]);
+				int globalnodeids[2] = {GID1, GID2};
+				int newcrosslinkerGID = (GID1 + 1)*basisnodes_ + GID2;
+
+				DRT::Node* nodes[2] = {discret_.gNode( GID1 ) , discret_.gNode( GID2 )};
+
+				//save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
+				std::vector<double> rotrefe(6);
+				std::vector<double> xrefe(6);
+
+				for(int k = 0; k<3; k++)
+				{
+					//the first three positions in xrefe and rotrefe are for the data of node GID1
+					if(nodeGID[0] > nodeGID[1])
+					{
+						//set nodal positions
+						xrefe[k  ] = (pos0->second)(k);
+						xrefe[k+3] = (pos1->second)(k);
+
+						//set nodal rotations (not true ones, only those given in the displacement vector)
+						rotrefe[k  ] = (rot0->second)(k);
+						rotrefe[k+3] = (rot1->second)(k);
+					}
+					else
+					{
+						//set nodal positions
+						xrefe[k  ] = (pos1->second)(k);
+						xrefe[k+3] = (pos0->second)(k);
+
+						//set nodal rotations (not true ones, only those given in the displacement vector)
+						rotrefe[k  ] = (rot1->second)(k);
+						rotrefe[k+3] = (rot0->second)(k);
+					}
+				}
+				if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
+				{
+					elementcount++;
+					RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(newcrosslinkerGID,(discret_.gNode(GID1))->Owner() ) );
+
+					newcrosslinker->SetNodeIds(2,globalnodeids);
+					newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+					//setting up crosslinker element parameters and reference geometry
+					newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+					newcrosslinker ->crosssecshear_ = 1.1*statmechparams_.get<double>("ALINK",0.0);
+					newcrosslinker ->Iyy_ = statmechparams_.get<double>("ILINK",0.0);
+					newcrosslinker ->Izz_ = statmechparams_.get<double>("ILINK",0.0);
+					newcrosslinker ->Irr_ = statmechparams_.get<double>("IPLINK",0.0);
+					newcrosslinker->SetMaterial(2);
+
+					//set up reference configuration of crosslinker
+					newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+
+					//add element to discretization
+					discret_.AddElement(newcrosslinker);
+          //cout<<"ADDED GID = "<<newcrosslinkerGID<<", numbond = "<<numbond_[i]<<endl;
+				}
+				else
+				{
+					RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(newcrosslinkerGID, (discret_.gNode(GID1))->Owner() ) );
+
+					newcrosslinker->SetNodeIds(2,globalnodeids);
+					newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+					//setting up crosslinker element parameters
+					newcrosslinker ->crosssec_ = statmechparams_.get<double>("ALINK",0.0);
+					newcrosslinker->SetMaterial(2);
+
+					//correct reference configuration data is computed for the new crosslinker element;
+					newcrosslinker->SetUpReferenceGeometry(xrefe);
+
+					//add new element to discretization
+					//cout<<"crosslinker element with GID="<<newcrosslinker<<" ADDED!"<<endl;
+					discret_.AddElement(newcrosslinker);
+				}
+			}
+  	}
+  } // ADDING ELEMENTS
+
+  cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<elementcount<<" crosslinker elements added!\n"<<endl;
+  discret_.Comm().Barrier();
+#endif //#ifdef D_TRUSS3
+#endif //#ifdef D_BEAM3
+//#endif //#ifdef D_BEAM3II
+}//void SearchAndSetCrosslinkers()
+
+/*----------------------------------------------------------------------*
  | set crosslinkers between neighbouring nodes after probability check  |
- | (private)                                                 cyron 02/09|
+ | (public)                                                  cyron 02/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
                                       const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
@@ -2032,7 +2730,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
       }
 
     //check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
-    DRT::ELEMENTS::Beam3ii* filele;
+    DRT::ELEMENTS::Beam3ii* filele = NULL;
     DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
     if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
       filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_.lRowNode(i)->Elements()[lowestidele]);
@@ -2120,7 +2818,6 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
           //get LID of current neighbor node
           int neighbourLID = nodecolmap.LID((int)crosslinkerneighbours[neighboursorder[j]][nodenumber]);
-
 
           //unit direction vector between currently considered two nodes
           LINALG::Matrix<3,1> direction((currentpositions.find(neighbourLID))->second);
@@ -2323,6 +3020,122 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 #endif  // #ifdef D_BEAM3
 #endif  // #ifdef D_BEAM3II
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
+
+/*----------------------------------------------------------------------*
+ | searches crosslinkers and deletes them if probability check is passed|
+ | (private)																							mueller (7/10)|
+ *----------------------------------------------------------------------*/
+void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
+{
+	// a vector indicating the upcoming deletion of crosslinker elements
+	std::vector<int> delcrosslinkers;
+	std::vector<int> numbondpos;
+
+  //get current off-rate for crosslinkers
+  double koff = 0;
+  if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) )
+    koff = statmechparams_.get<double>("K_OFF_start",0.0);
+  else
+    koff = statmechparams_.get<double>("K_OFF_end",0.0);
+
+  //probability with which a crosslink breaks up in the current time step
+  double punlink = 1.0 - exp( -dt*koff );
+
+  //creating a random generator object which creates uniformly distributed random numbers in [0;1]
+  ranlib::UniformClosed<double> UniformGen;
+
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+    UniformGen.seed((unsigned int)(time_/dt));
+
+  // SEARCH
+  // search and setup for the deletion of elements is done by Proc 0
+  if(discret_.Comm().MyPID()==0)
+  {
+  	for(int i=0; i<(int)numbond_.size(); i++)
+  	{
+  		// take action according to the number of bonds of a crosslink molecule
+  		switch(numbond_.at(i))
+  		{
+  			// crosslink molecule with one bond
+  			case 1:
+  			{
+  				for(int j=0; j<(int)crosslinkerbond_[i].size(); j++)
+  					if(crosslinkerbond_[i].at(j) != -1)
+  						if(UniformGen.random() < punlink)
+							{
+								// obtain LID and reset crosslinkerbond_ at this position
+								int nodeLID = nodecolmap.LID(crosslinkerbond_[i].at(j));
+								((*numcrossnodes_)[nodeLID])--;
+								(numbond_[i])--;
+								crosslinkerbond_[i].at(j) = -1;
+							}
+  			}
+  			break;
+  			// crosslinker element
+  			case 2:
+  			{
+  				bool deleteelement = false;
+  				for(int j=0; j<(int)crosslinkerbond_[i].size(); j++)
+  				{
+  					if(UniformGen.random() < punlink)
+  					{
+  						// get the nodal LID and then reset the entry
+  						int nodeLID = nodecolmap.LID(crosslinkerbond_[i].at(j));
+  						if(!deleteelement)
+  						{
+  							// get the crosslinker GID and store it for later use
+  							DRT::Node *node = discret_.lColNode(nodeLID);
+  							for(int k=0; k<node->NumElement(); k++)
+  							{
+  								if(node->Elements()[k]->Id() > basisnodes_)
+  								{
+  									delcrosslinkers.push_back(node->Elements()[k]->Id());
+  									numbondpos.push_back(i);
+  								}
+  							}
+  							deleteelement = true;
+  						}
+  						((*numcrossnodes_)[nodeLID])--;
+  						(numbond_[i])--;
+  						crosslinkerbond_[i].at(j) = -1;
+  					}
+  				}
+  			}
+  			break;
+  			default: continue;
+  		}
+  	}
+  }// if(discret_.Comm().MyPID()==0)
+  else
+  	numcrossnodes_->PutScalar(0.0);
+
+  discret_.Comm().Barrier();
+
+  // Broadcasts
+  for(int i=0; i<(int)crosslinkerbond_.size(); i++)
+  	discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
+
+	discret_.Comm().Broadcast(&numbond_[0], (int)numbond_.size(), 0);
+  discret_.Comm().Broadcast(&delcrosslinkers[0], (int)delcrosslinkers.size(), 0);
+
+  //synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
+  Epetra_Export exporter(nodecolmap,noderowmap);
+  Epetra_Import importer(nodecolmap,noderowmap);
+  Epetra_Vector numcrossnodesrow(noderowmap,true);
+  numcrossnodesrow.Export(*numcrossnodes_,exporter,Add);
+  numcrossnodes_->Import(numcrossnodesrow,importer,Insert);
+
+  // DELETION OF ELEMENTS
+  int delelement = 0;
+  for(int i=0; i<(int)delcrosslinkers.size(); i++)
+  	if(discret_.HaveGlobalElement(delcrosslinkers.at(i)))
+  	{
+  		delelement++;
+  		//cout<<"DEL GID = "<<delcrosslinkers.at(i)<<" numbond = "<<numbond_[numbondpos.at(i)]<<endl;
+  		discret_.DeleteElement(delcrosslinkers.at(i));
+  	}
+  cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<delelement<<" crosslinker elements deleted!"<<endl;
+} //StatMechManager::SearchAndDeleteCrosslinkers()
 
 /*----------------------------------------------------------------------*
  | delete crosslinkers listed in crosslinkerpartner_ after random check;|
@@ -2549,8 +3362,7 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
 	lids->clear();
 	for(int j=0; j<element->NumNode();j++)
 	{
-		int numdof = discret_.Dof(0,element->Nodes()[j]).size();
-		for(int k = 0; k<numdof; k++)
+		for(int k = 0; k<3; k++)
 	 	{
 			// obtain k-th spatial component of the reference position of the j-th node
 	 		double referenceposition = ((element->Nodes())[j])->X()[k];
@@ -2985,101 +3797,180 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
  | simulation of crosslinker diffusion		        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
-																					 RCP<Epetra_Vector> disi,
+																					 RCP<Epetra_Vector> deltadis,
 																					 double mean,
 																					 double standarddev,
+																					 double &dt,
 																					 bool init)
 {
-	//double test[]={ 0.0, 0.0, 0.0};
+	/* Here, the diffusion of crosslink molecules is handled.
+	 * Depending on the number of occupied binding spots of the molecule, its movement
+	 * is calculated differently. As a matter of convenience, preparations for the
+	 * visualization of the crosslink molecules are made within this method, too.
+	 */
 
 	/*Initial Crosslinker positions*/
 	if(init)
 	{
 		/* initialize on all processors so that information about vector sizes is present. Different initial random numbers do not matter.
-		 * They will be overwritten with each new step.*/
+		 * They will be overwritten by Proc 0.*/
 		CrosslinkerPosInit();
 	}
 	else
 	{
 		/*In this section, crosslinker positions are updated*/
-		// only proceed for Proc 0
+		// diffusion processed by Proc 0
 		if(discret_.Comm().MyPID()==0)
 		{
 			// random number generator with normal distribution
 			ranlib::Normal<double> normalGen(mean,standarddev);
 
-			for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-			{
-				for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
-				{
-					// case 1: free crosslink molecule
-					if(crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)==-1)
-						crosslinkerpositions_.at(i).at(j) += normalGen.random();
-					// case 2: crosslink moelcule attached to one filament
-					if((crosslinkerbond_.at(i).at(0)==-1 && crosslinkerbond_.at(i).at(1)!=-1) || ( crosslinkerbond_.at(i).at(1)==-1 && crosslinkerbond_.at(i).at(0)!=-1))
-					{
-						DRT::Node *node;
-						std::vector<int> dofnode;
-						int gid;
-						int numdof;
-						if(crosslinkerbond_.at(i).at(0)==-1)
-						{
-							// obtain GID of the node to which the crosslinker is attached
-							gid = crosslinkerbond_.at(i).at(1);
-							node = discret_.gNode(gid);
-							dofnode = discret_.Dof(0,node);
-							for(int k=0; k<3; k++)
-								crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
-						}
-						else
-						{
-							gid = crosslinkerbond_.at(i).at(0);
-							node = discret_.gNode(gid);
-							numdof = (int)discret_.Dof(0, node).size();
-							for(int k=0; k<3; k++)
-								crosslinkerpositions_.at(i).at(j) += (*disi)[discret_.DofRowMap()->LID(dofnode[k])];
-						}
-					}
-					// case 3: an actual crosslink has been established
-					if(crosslinkerbond_.at(i).at(0)!=-1 && crosslinkerbond_.at(i).at(1)!=-1)
-					{
-						// reinitialize position of i-th crosslinker
-						crosslinkerpositions_.at(i).assign(3,0.0);
+			if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+				normalGen.seed((unsigned int)(time_/dt));
 
-						for(int k=0; k<(int)crosslinkerbond_.at(i).size(); k++)
-						{
-							DRT::Node *node = discret_.gNode(crosslinkerbond_.at(i).at(k));
-							int dofgid = discret_.Dof(0,node).at(j);
-							double referenceposition = node->X()[j];
-							double displacement = (*dis)[ discret_.DofRowMap()->LID( dofgid ) ];
-							crosslinkerpositions_.at(i).at(j) +=  referenceposition + displacement;
-						}
-						// calculate new crosslink mid position
-						crosslinkerpositions_.at(i).at(j) /= (double)crosslinkerbond_.at(i).size();
-					}
-				}
-			}
+			// bonding case 1: free crosslink molecule
+			for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+				for(int j=0; j<(int)crosslinkerpositions_[i].size(); j++)
+					if(numbond_.at(i)==0)
+						crosslinkerpositions_[i].at(j) += normalGen.random();
+
 			// when periodic boundary conditions are applied
 			if(statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
-				CrosslinkerPeriodicBoundaryShift();
-		}
-		// Copy this information to all processors
+				CrosslinkerPeriodicBoundaryShift(&crosslinkerpositions_);
+
+
+		} // if(discret_.Comm().MyPID()==0)
+
+		// Update by Broadcast: copy this information to all processors
 		for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-		{
 			discret_.Comm().Broadcast(&(crosslinkerpositions_[i])[0], (int)crosslinkerpositions_[i].size(), 0);
-			discret_.Comm().Broadcast(&(crosslinkerbond_[i])[0], (int)crosslinkerbond_[i].size(), 0);
-		}
-	}
-	/*/ test output
+
+		// handle other cases (on all processors)
+		for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
+		{
+			if(discret_.Comm().MyPID()==proc)
+			{
+				// export row displacement to column map format
+				Epetra_Vector  discol(*(discret_.DofColMap()),true);
+				LINALG::Export(*dis,discol);
+				// export row displacement increment to column map format
+				Epetra_Vector  deltadiscol(*(discret_.DofColMap()),true);
+				LINALG::Export(*deltadis,deltadiscol);
+
+				for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
+				{
+					std::vector<std::vector<double> > currcrosslinkpos(1,std::vector<double>(3,0.0));
+
+					//  flags indicating if molecule position was altered and if a recheck of the position is required
+					bool positionupdated = false;
+					bool recheckposition = false;
+					// temporary storage vector, initialize with volume center values (if periodic BC), else 0.0
+					//std::vector<std::vector<double> > currcrosslinkpos(1, std::vector<double>(3,0.0));
+
+					// number of crosslink molecule bonds to filament nodes, larger GID in case of two bonds
+					bool set = false;
+					int marker = 0;
+					int largergid = -1;
+					for(int j=0; j<(int)crosslinkerbond_[i].size(); j++)
+						if(crosslinkerbond_[i].at(j) != -1)
+						{
+							if(!set)
+							{
+								marker = j;
+								set = true;
+							}
+							if(crosslinkerbond_[i].at(j) > largergid)
+								largergid = crosslinkerbond_[i].at(j);
+						}
+
+					for(int j=0; j<(int)crosslinkerpositions_[i].size(); j++)
+					{
+						switch(numbond_.at(i))
+						{
+							// bonding case 2: crosslink molecule attached to one filament
+							case 1:
+							{
+								int nodegid = crosslinkerbond_[i].at(marker);
+								if(discret_.lRowNode(discret_.NodeRowMap()->LID(nodegid)) != NULL)
+								{
+									positionupdated = true;
+									if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0);
+										recheckposition = true;
+
+									DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodegid));
+									int dofgid = discret_.Dof(node).at(j);
+									// set current crosslink position to coordinates of node which it is attached to
+									currcrosslinkpos[0].at(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofgid)];
+								}
+							}
+							break;
+							// bonding case 3: an actual crosslinker has been established
+							case 2:
+							{
+								// the processor owning the node with the larger GID calculates the new crosslink molecule position
+								if(discret_.lRowNode(discret_.NodeRowMap()->LID(largergid)) != NULL)
+								{
+									positionupdated = true;
+									if(statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+										recheckposition = true;
+
+									// crosslink molecule position is set to position of the node with the larger GID
+									DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(largergid));
+									int dofgid = discret_.Dof(node).at(j);
+									currcrosslinkpos[0].at(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofgid)];
+								}
+							}
+							break;
+							default: continue;
+						}
+					}// end of j-loop
+
+					// recheck the crosslink molecule position as it may lie outside the boundaries if periodic BCs are applied
+					if(recheckposition)
+						CrosslinkerPeriodicBoundaryShift(&currcrosslinkpos);
+
+					// Broadcast new position if it was indeed updated
+					if(positionupdated)
+					{
+						// write current crosslink molecule position into visuals vector
+						crosslinkerpositions_[i] = currcrosslinkpos[0];
+						discret_.Comm().Broadcast(&(crosslinkerpositions_[i].at(0)), (int)crosslinkerpositions_[i].size(), discret_.Comm().MyPID());
+					}
+				}// end of i-loop
+			}// if(discret_.Comm().MypPID()==proc)
+			// wait after each iteration
+			discret_.Comm().Barrier();
+		}// end of proc-loop
+	}// if(init)-else
 	discret_.Comm().Barrier();
-	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-	{
-		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
-			cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_.at(i).at(j)<<" ";
-		cout<<i<<" Proc "<<discret_.Comm().MyPID()<<endl;
-	}
-	discret_.Comm().Barrier();*/
 }
+
+/*----------------------------------------------------------------------*
+ | update visualization of crosslink molecule positions									|
+ |																				        (public) mueller 08/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+																										const LINALG::SerialDenseMatrix& LID,
+																										int crosslinkernumber)
+{
+	// case: one-bonded crosslink molecule
+	if(LID.M()==1)
+	{
+		// set molecule position to node position
+		map< int,LINALG::Matrix<3,1> >::const_iterator pos0         = currentpositions.find((int)LID(0,0));
+		for(int i=0; i<(int)crosslinkerpositions_[crosslinkernumber].size(); i++)
+			crosslinkerpositions_[crosslinkernumber].at(i) = (pos0->second)(i);
+	}
+	// case: crosslinker element
+	if(LID.M()==2)
+	{
+		int largerlid = max((int)LID(0,0), (int)LID(1,0));
+		map< int,LINALG::Matrix<3,1> >::const_iterator updatedpos         = currentpositions.find(largerlid);
+		for(int i=0; i<(int)crosslinkerpositions_[crosslinkernumber].size(); i++)
+			crosslinkerpositions_[crosslinkernumber].at(i) = (updatedpos->second)(i);
+	}
+}
+
 /*----------------------------------------------------------------------*
  | Initialize crosslinker positions  			        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
@@ -3087,6 +3978,9 @@ void StatMechManager::CrosslinkerPosInit()
 {
 	// generate random numbers for each crosslinker and its respective components E [0.0; PeriodLength]
 	ranlib::UniformClosed<double> UniformGen;
+
+	if(Teuchos::getIntegralValue<int>(statmechparams_, "FIXEDSEED"))
+		UniformGen.seed(0);
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions
@@ -3099,34 +3993,42 @@ void StatMechManager::CrosslinkerPosInit()
 	crosslinkerpositions_.assign((int)statmechparams_.get<double>("N_crosslink", 0.0), std::vector<double>() );
 	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 		for(int j=0; j<3; j++)
-			crosslinkerpositions_.at(i).push_back(upperbound*UniformGen.random() );
+			crosslinkerpositions_[i].push_back(upperbound*UniformGen.random() );
 
 	// initial bonding status is set (no bonds)
-	crosslinkerbond_.assign((int)statmechparams_.get("N_crosslink",0.0), std::vector<int>(3,-1) );
+	crosslinkerbond_.assign((int)statmechparams_.get("N_crosslink",0.0), std::vector<int>(2,-1) );
+
+	// bond count vector is initialized
+	numbond_.assign((int)statmechparams_.get<double>("N_crosslink", 0.0), 0);
+
+	// initialize the beautiful visuals vector (aka beevee-vector)
+	visualizepositions_ = crosslinkerpositions_;
+
+	// initialize vectors with zeros
+	numcrossnodes_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())));
+	numcrossnodes_->PutScalar(0);
 
 	/*for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 	{
 		for(int j=0; j<3; j++)
-			cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_.at(i).at(j)<<" ";
+			cout<<scientific<<std::setprecision(5)<<crosslinkerpositions_[i].at(j)<<" ";
 		cout<<endl;
-	}
-	for(int i=0; i<(int)crosslinkerbond_.size(); i++)
-		cout<<crosslinkerbond_.at(i).at(0)<<" "<<crosslinkerbond_.at(i).at(1)<<endl;*/
+	}*/
 }
 
 /*----------------------------------------------------------------------*
  | Periodic Boundary Shift for crosslinker diffusion simulation					|
  |																						  	(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerPeriodicBoundaryShift()
+void StatMechManager::CrosslinkerPeriodicBoundaryShift(std::vector<std::vector<double> >* crosslinkerpositions)
 {
-	for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
-		for(int j=0; j<(int)crosslinkerpositions_.at(i).size(); j++)
+	for(int i=0; i<(int)crosslinkerpositions->size(); i++)
+		for(int j=0; j<(int)(*crosslinkerpositions)[i].size(); j++)
 		{
-			if(crosslinkerpositions_.at(i).at(j) > statmechparams_.get<double>("PeriodLength", 0.0))
-				crosslinkerpositions_.at(i).at(j) -= statmechparams_.get<double>("PeriodLength", 0.0);
-			if(crosslinkerpositions_.at(i).at(j) < 0.0)
-				crosslinkerpositions_.at(i).at(j) += statmechparams_.get<double>("PeriodLength", 0.0);
+			if((*crosslinkerpositions)[i].at(j) > statmechparams_.get<double>("PeriodLength", 0.0))
+				(*crosslinkerpositions)[i].at(j) -= statmechparams_.get<double>("PeriodLength", 0.0);
+			if((*crosslinkerpositions)[i].at(j) < 0.0)
+				(*crosslinkerpositions)[i].at(j) += statmechparams_.get<double>("PeriodLength", 0.0);
 		}
 }
 
