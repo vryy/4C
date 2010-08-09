@@ -1093,6 +1093,7 @@ set(OBJS_DRT_F3_LIB
 )
 set(OBJS_DRT_F3_IMPL_LIB
   src/drt_f3_impl/fluid3_impl.cpp
+  src/drt_f3_impl/fluid3_impl_parameter.cpp
 )
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp

@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "fluid3_impl.H"
+#include "fluid3_impl_parameter.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"
