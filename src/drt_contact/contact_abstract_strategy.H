@@ -159,10 +159,20 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool& IsInContact() { return isincontact_; }
 
     /*!
-    \brief Return old global contact status (last time step)
+    \brief Return old global contact status (this time step)
 
+    True if there has been contact in any nonlinear iteration
+    step of the current time step.
     */
     bool& WasInContact() { return wasincontact_; }
+
+    /*!
+    \brief Return old global contact status (last time step)
+
+    True if there has been contact at the end of the last
+    time step (last converged state)
+    */
+    bool& WasInContactLastTimeStep() { return wasincontactlts_; }
 
     /*!
     \brief Return global self contact status
@@ -624,7 +634,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     // global storage fields
     bool isincontact_;        // flag indicating global contact status
-    bool wasincontact_;       // flag indicating global contact status of last time step
+    bool wasincontact_;       // flag indicating global contact status of this time step (history)
+    bool wasincontactlts_;    // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
 

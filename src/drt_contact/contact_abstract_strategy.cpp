@@ -64,6 +64,7 @@ MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
 interface_(interface),
 isincontact_(false),
 wasincontact_(false),
+wasincontactlts_(false),
 isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false)
@@ -134,6 +135,7 @@ dualquadslave3d_(false)
   {
     IsInContact()=true;
     WasInContact()=true;
+    WasInContactLastTimeStep()=true;
   }
   
   // ------------------------------------------------------------------------
@@ -845,9 +847,15 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
 
   // update flag for global contact status of last time step
   if (gactivenodes_->NumGlobalElements())
+  {
   	WasInContact()=true;
+  	WasInContactLastTimeStep()=true;
+  }
   else
+  {
   	WasInContact()=false;
+  	WasInContactLastTimeStep()=false;
+  }
 
   //----------------------------------------friction: store history values
   // in the case of frictional contact we have to store several
@@ -1037,6 +1045,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   {
   	IsInContact()=true;
   	WasInContact()=true;
+  	WasInContactLastTimeStep()=true;
   }
 
   return;

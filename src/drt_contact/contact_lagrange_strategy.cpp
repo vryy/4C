@@ -108,7 +108,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact()) return;
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
@@ -906,7 +906,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact()) return;
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // input parameters
   bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
@@ -2143,7 +2143,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 {
   // check if contact contributions are present,
   // if not we make a standard solver call to speed things up
-  if (!IsInContact() && !WasInContact())
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
   	solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
   	return;
@@ -2602,6 +2602,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   else if (systype==INPAR::CONTACT::system_spsimpler)
   {
+  	dserror("ERROR: Simple(r) not yet tested for mortar contact!");
+
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
@@ -2674,7 +2676,7 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
 	// if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact()) return;
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
@@ -3100,7 +3102,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
+  {
     IsInContact()=true;
+    WasInContact()=true;
+  }
   else
   	IsInContact()=false;
 
@@ -3376,7 +3381,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
-    IsInContact()=true;
+  {
+      IsInContact()=true;
+      WasInContact()=true;
+  }
   else
   	IsInContact()=false;
 
