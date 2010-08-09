@@ -15,7 +15,6 @@ Maintainer: Georg Bauer
 
 #include "fluid3.H"
 #include "../drt_f3/fluid3_impl.H"
-//#include "fluid3_stationary.H"
 #include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
 
@@ -102,29 +101,10 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
 }
-#if 0
-/*----------------------------------------------------------------------*
- // converts a string into an stabilisation action for this element
- //                                                          gammi 08/07
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Fluid3::StabilisationAction DRT::ELEMENTS::Fluid3::ConvertStringToStabAction(
-  const string& action) const
-{
-  DRT::ELEMENTS::Fluid3::StabilisationAction act = stabaction_unspecified;
 
-  map<string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
-
-  if (iter != stabstrtoact_.end())
-  {
-    act = (*iter).second;
-  }
-  else
-  {
-    dserror("looking for stab action (%s) not contained in map",action.c_str());
-  }
-  return act;
-}
-#endif
+/*---------------------------------------------------------------------*
+|  Call the element to set all basic parameter                         |
+*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
                         Teuchos::ParameterList& p,
                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -181,27 +161,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       case calc_fluid_afgenalpha_systemmat_and_residual:
       case calc_fluid_stationary_systemmat_and_residual:
       {
-#if 0
-        // if not available, define map from string to action
-        if(stabstrtoact_.empty())
-        {
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["yes_cross"      ]=cross_stress_stab;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["yes_reynolds"   ]=reynolds_stress_stab;
-        }
-#endif
 
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
                this,
@@ -223,34 +182,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //--------------------------------------------------
       case calc_fluid_genalpha_sysmat_and_residual:
       {
-#if 0
-        // if not available, define map from string to action
-        if(stabstrtoact_.empty())
-        {
-          stabstrtoact_["quasistatic"            ]=subscales_quasistatic;
-          stabstrtoact_["time_dependent"         ]=subscales_time_dependent;
-          stabstrtoact_["no_transient"           ]=inertia_stab_drop;
-          stabstrtoact_["yes_transient"          ]=inertia_stab_keep;
-          stabstrtoact_["transient_complete"     ]=inertia_stab_keep_complete;
-          stabstrtoact_["no_pspg"                ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"               ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"                ]=convective_stab_none;
-          stabstrtoact_["yes_supg"               ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"               ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"              ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"          ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"            ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"        ]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"               ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"               ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"               ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete"         ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"              ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"            ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_complete"      ]=reynolds_stress_stab;
-          stabstrtoact_["reynolds_rhs"           ]=reynolds_stress_stab_only_rhs;
-        }
-#endif
         return DRT::ELEMENTS::Fluid3GenalphaResVMMInterface::Impl(this)->Evaluate(
                this,
                params,

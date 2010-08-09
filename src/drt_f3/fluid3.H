@@ -105,12 +105,6 @@ public:
   //! @name Friends
   friend class Fluid3Boundary;
 
-  // All the template specializations that are used, new ones must be
-  // added here.
-  //friend class Fluid3StationaryImplInterface;
-  // All the template specializations that are used, new ones must be
-  // added here.
-
   // TODO: linImpl will be deleted and this friendships will vanish
 
   friend class Fluid3lin_ImplInterface;
@@ -134,33 +128,6 @@ public:
   friend class Fluid3lin_Impl<DRT::Element::line2>;
   friend class Fluid3lin_Impl<DRT::Element::line3>;
 
-  //friend class Fluid3ImplInterface;
-  // All the template specializations that are used, new ones must be
-  // added here.
-  /*
-  friend class Fluid3GenalphaResVMM<DRT::Element::hex8>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::hex20>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::hex27>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::tet4>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::tet10>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::wedge6>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::wedge15>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::pyramid5>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs8>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs27>;
-  // 2D
-  friend class Fluid3GenalphaResVMM<DRT::Element::quad4>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::quad8>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::quad9>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::tri3>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::tri6>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs4>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::nurbs9>;
-  // 1D
-  friend class Fluid3GenalphaResVMM<DRT::Element::line2>;
-  friend class Fluid3GenalphaResVMM<DRT::Element::line3>;
-  friend class Fluid3GenalphaResVMMInterface;
-*/
   friend class Fluid3SystemEvaluator;
 
   //@}
@@ -541,83 +508,8 @@ private:
     calc_fluid_elementvolume
   };
 
-#if 0
-  //! stabilisation actions recognized by fluid3 (genalpha implementation)
-  enum StabilisationAction
-  {
-    stabaction_unspecified,
-    subscales_quasistatic,
-    subscales_time_dependent,
-    inertia_stab_drop,
-    inertia_stab_keep,
-    inertia_stab_keep_complete,
-    //
-    pstab_assume_inf_sup_stable,
-    pstab_use_pspg,
-    convective_stab_none,
-    convective_stab_supg,
-    viscous_stab_none,
-    viscous_stab_gls,
-    viscous_stab_gls_only_rhs,
-    viscous_stab_usfem,
-    viscous_stab_usfem_only_rhs,
-    continuity_stab_none,
-    continuity_stab_yes,
-    cross_stress_stab_none,
-    cross_stress_stab,
-    cross_stress_stab_only_rhs,
-    reynolds_stress_stab_none,
-    reynolds_stress_stab,
-    reynolds_stress_stab_only_rhs
-  };
-
-
-  //! linearisation actions recognized by fluid3 (genalpha implementation)
-  enum LinearisationAction
-  {
-    no_linearisation,
-    Newton          ,
-    fixed_point_like,
-    minimal
-  };
-
-  //! possible options for the stabilisation parameter
-  // this is only used in genalpha_resVMM
-  enum TauType
-  {
-    smoothed_franca_barrenechea_valentin_wall,
-    franca_barrenechea_valentin_wall         ,
-    franca_barrenechea_valentin_codina       ,
-    fbvw_gradient_based_hk                   ,
-    codina                                   ,
-    bazilevs                                 ,
-    fbvw_wo_dt                               ,
-    oberai                                   ,
-    tau_not_defined
-  };
-
-  //! physical turbulence models recognized by fluid3_genalpha implementation
-  enum TurbModelAction
-  {
-    no_model,
-    smagorinsky,
-    smagorinsky_with_wall_damping,
-    dynamic_smagorinsky
-  };
-
-  //! options for fine-scale subgrid viscosity
-  enum FineSubgridVisc
-  {
-    no_fssgv,
-    smagorinsky_all,
-    smagorinsky_small
-  };
-#endif
   //! discretization type
   DRT::Element::DiscretizationType distype_;
-
-  //! map that converts strings to actions (stabilisation)
-  //static map<string,StabilisationAction>          stabstrtoact_;
 
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
@@ -894,9 +786,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
    */
 
   ActionType convertStringToActionType(const string& action) const;
-
-  //! convert string to stabilisation action
-  //StabilisationAction ConvertStringToStabAction (const string& action) const;
 
 }; // class Fluid3
 
