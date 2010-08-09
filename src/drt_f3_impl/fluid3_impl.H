@@ -19,8 +19,8 @@ Maintainer: Ulrich Kuettler
 #ifndef FLUID3_IMPL_H
 #define FLUID3_IMPL_H
 
-#include "fluid3.H"
-#include "fluid3_ele_impl_utils.H"
+#include "../drt_f3/fluid3.H"
+#include "../drt_f3/fluid3_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"

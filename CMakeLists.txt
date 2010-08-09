@@ -1065,7 +1065,6 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_element_boundary_evaluate.cpp
   src/drt_f3/fluid3_evaluate.cpp
   src/drt_f3/fluid3_genalpha_resVMM.cpp
-  src/drt_f3/fluid3_impl.cpp
   src/drt_f3/fluid3_input.cpp
   src/drt_f3/fluid3_lin_impl.cpp
   src/drt_f3/fluid3_nurbs.cpp
@@ -1091,6 +1090,9 @@ set(OBJS_DRT_F3_LIB
   src/drt_xdiff3/xdiff3_surface.cpp
   src/drt_xdiff3/xdiff3_surface_evaluate.cpp
   src/drt_xdiff3/xdiff3_sysmat4.cpp
+)
+set(OBJS_DRT_F3_IMPL_LIB
+  src/drt_f3_impl/fluid3_impl.cpp
 )
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
@@ -1367,8 +1369,8 @@ add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
-#add_library(ele_f2 ${OBJS_DRT_F2_LIB})
 add_library(ele_f3 ${OBJS_DRT_F3_LIB})
+add_library(ele_f3_impl ${OBJS_DRT_F3_IMPL_LIB})
 add_library(ele_sr ${OBJS_DRT_SR_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
@@ -1388,8 +1390,8 @@ set(ELEMENT_LIBRARIES
   ele_b3ii
   ele_bele3
   ele_combust3
-  #ele_f2
   ele_f3
+  ele_f3_impl
   ele_sr
   ele_s8
   ele_scatra

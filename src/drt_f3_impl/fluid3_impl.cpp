@@ -20,7 +20,7 @@ Maintainer: Ulrich Kuettler
 //#include "fluid3_impl_sysmat2D.H"
 #include "fluid3_impl_sysmat2D3D.H"
 
-#include "fluid3_stabilization.H"
+#include "../drt_f3/fluid3_stabilization.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"

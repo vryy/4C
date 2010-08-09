@@ -14,7 +14,7 @@ Maintainer: Georg Bauer
 
 
 #include "fluid3.H"
-#include "../drt_f3/fluid3_impl.H"
+#include "../drt_f3_impl/fluid3_impl.H"
 #include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
 
