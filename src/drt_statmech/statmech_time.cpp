@@ -129,12 +129,11 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
   /* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
-   * between two filaments, only their positions are calculated. When a crosslink is to be established between two filaments,
-   * an actual element is added. Here, the molecules' initial positions are determined.
+   * between two filaments, only their positions are calculated. Here, the molecules' initial positions are determined.
    * Calculations are made on Proc 0, only.*/
   if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
   	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
-		statmechmanager_->CrosslinkerDiffusion(Teuchos::null,Teuchos::null,0.0,0.0,params_.get<double>("delta time", 0.0),true);
+		statmechmanager_->CrosslinkerDiffusion(*dis_,*dis_,0.0,0.0,params_.get<double>("delta time", 0.0),true);
 
 
   return;
@@ -255,25 +254,26 @@ void StatMechTime::Integrate()
     	 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
     	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.*/
       // calculate the change in displacement
-      RCP<Epetra_Vector> deltadis = rcp(new Epetra_Vector(*(discret_.DofRowMap()), true));
-      for(int j=0; j<deltadis->MyLength(); j++)
-      	(*deltadis)[j] = (*dis_)[j] - (*disprev_)[j];
+      /*Epetra_Vector deltadis(*(discret_.DofRowMap()), true);
+      for(int j=0; j<deltadis.MyLength(); j++)
+      	deltadis[j] = (*dis_)[j] - (*disprev_)[j];*/
 
-      if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
+      /*if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
       	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
       {
         // calculate standard deviation
       	double standarddev = sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
 																 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0) *
 																  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt);
-				statmechmanager_->CrosslinkerDiffusion(dis_, deltadis, 0.0, standarddev, dt,false);
+				statmechmanager_->CrosslinkerDiffusion(*dis_, deltadis, 0.0, standarddev, dt,false);
 
-				statmechmanager_->GmshPrepareVisualization(*dis_, *deltadis);
-      }
+				if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_,"SPECIAL_OUTPUT")==INPAR::STATMECH::statout_gmsh)
+					statmechmanager_->GmshPrepareVisualization(*dis_, deltadis);
+      }*/
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
-      statmechmanager_->StatMechUpdate(dt,*dis_,stiff_,ndim);
+      statmechmanager_->StatMechUpdate(dt,*dis_, *disprev_, stiff_,ndim);
 
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
       // copy displacement to be able to calculate the change in the next time step

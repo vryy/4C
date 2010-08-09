@@ -54,8 +54,14 @@ public:
   //! \brief reading all necessary information after a restart
   void StatMechReadRestart(IO::DiscretizationReader& reader);
 
-  //! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
-  void StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
+  /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
+   *  \param dt				(in)	current time step size
+   *  \param disrow		(in)	current displacement vector
+   *  \param disprev	(in)	displacement vector of previous time step
+   *  \param stiff		(in)
+   *  \param ndim			(in)
+   */
+  void StatMechUpdate(const double dt, Epetra_Vector& disrow, Epetra_Vector& disprev, RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -78,7 +84,10 @@ public:
   //! \brief gmsh output for crosslink molecule diffusion
   void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
 
-  //! \brief prepare visualization vectors
+  /*! \brief prepare visualization vectors
+   * 	\param dis        (in) discplacement
+   * 	\param deltadis   (in) displacement increment
+   */
   void GmshPrepareVisualization(const Epetra_Vector& dis, const Epetra_Vector& deltadis);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
@@ -150,11 +159,11 @@ public:
    *  \param standarddev     (in) standard deviation of the normal distribution
    *  \param init						 (in) switch between methods
    */
-  void CrosslinkerDiffusion(RCP<Epetra_Vector> dis,
-														RCP<Epetra_Vector> deltadis,
+  void CrosslinkerDiffusion(const Epetra_Vector& dis,
+														const Epetra_Vector& deltadis,
 														double mean,
 														double standarddev,
-														double &dt,
+														const double &dt,
 														bool init);
 
   /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
