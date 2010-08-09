@@ -613,10 +613,6 @@ protected:
 	  Teuchos::RCP<Epetra_Vector>    mfvelnp_;
 	  /// Nonlinear iteration increment vector
 	  Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
-	  
-	  /// grid velocity
-	  Teuchos::RCP<Epetra_Vector>    gridv_;
-	  
   }fluidfluidstate_;
   
   struct ALEFluidState
@@ -626,6 +622,10 @@ protected:
     Teuchos::RCP<Epetra_Vector>            afivelnp_;    ///< ALE fluid interface velocity      n+1
     Teuchos::RCP<Epetra_Vector>            afiveln_;     ///< ALE fluid interface velocity      n
     Teuchos::RCP<Epetra_Vector>            afivelnm_;    ///< ALE fluid interface velocity      n-1
+    
+    /// grid velocity
+    Teuchos::RCP<Epetra_Vector>            gridv_;
+     
   }ALEfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
