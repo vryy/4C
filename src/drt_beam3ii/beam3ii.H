@@ -111,9 +111,10 @@ public:
   friend class Beam3iiType;
   friend class StatMechManager;
   friend void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,LINALG::Matrix<3,1> >& currentrotations, Epetra_MultiVector& crosslinkerneighbours);
+  friend void StatMechManager::SearchAndSetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap, const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
   friend void StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element);
   friend void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
-  friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid);
+  friend void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid);
   friend void StatMechTime::Integrate();
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 #ifdef D_BEAM3
@@ -556,7 +557,7 @@ private:
 
       //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
       vector<vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
-      
+
       //exact Gauss integration requires as many integration points as nodes
       Qconvmass_.resize(nnode);
       Qnewmass_.resize(nnode);
@@ -564,7 +565,7 @@ private:
       //evaluate basis functions
       evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
 
-      
+
       //Loop through all GPs for exact integration and compute initial jacobi determinant
       for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
       {
@@ -583,7 +584,7 @@ private:
 
         //Store Jacobi determinant with respect to reference configuration
         jacobimass_[numgp]= drdxi.Norm2();
-        
+
         //in evaluatebasisfunctionsandtriads Qnewmass_ was initialized; copy that to Qconvmass_
         Qconvmass_[numgp].PutScalar(0);
         Qconvmass_[numgp] += Qnewmass_[numgp];
