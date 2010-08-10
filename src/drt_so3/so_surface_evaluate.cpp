@@ -13,7 +13,6 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
 #include "so_surface.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -1371,10 +1370,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     SurfaceIntegration(detA,normal,x,deriv);
     A += detA*intpoints.qwgt[gpid];
 
-    blitz::Array<double,2> ddet(3,ndof);
-    blitz::Array<double,3> ddet2(3,ndof,ndof);
-    ddet2 = 0.;
-    blitz::Array<double,1> jacobi_deriv(ndof);
+    LINALG::SerialDenseMatrix ddet(3,ndof);
+    LINALG::SerialDenseMatrix ddet2(3*ndof,ndof);
+    LINALG::SerialDenseVector jacobi_deriv(ndof);
 
     dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
 
@@ -1414,14 +1412,14 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
       {
         for (int o=0;o<numnode;++o)
         {
-          ddet2(0,n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
-          ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
+          ddet2(n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
+          ddet2(n*3+2,o*3+1) = - ddet2(n*3+1,o*3+2);
 
-          ddet2(1,n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
-          ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
+          ddet2(ndof+n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
+          ddet2(ndof+n*3+2,o*3  ) = - ddet2(ndof+n*3,o*3+2);
 
-          ddet2(2,n*3  ,o*3+1) = ddet2(0,n*3+1,o*3+2);
-          ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
+          ddet2(2*ndof+n*3  ,o*3+1) = ddet2(n*3+1,o*3+2);
+          ddet2(2*ndof+n*3+1,o*3  ) = - ddet2(2*ndof+n*3,o*3+1);
         }
       }
 
@@ -1455,8 +1453,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
         for (int j=0;j<ndof;++j)
         {
           (*Adiff2)(i,j) += (-1/detA*jacobi_deriv(j)*jacobi_deriv(i)+1/detA*
-                             (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
-                              ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
+                             (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1*ndof+i,j)+
+                              ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2*ndof+i,j)))*intpoints.qwgt[gpid];
         }
       }
     }
