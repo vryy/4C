@@ -22,10 +22,11 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_interface.H"
 
 #include "../drt_f3/fluid3_ele_impl_utils.H"
+#include "../drt_f3_impl/fluid3_impl_parameter.cpp"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_lib/drt_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 
@@ -44,10 +45,9 @@ namespace ELEMENTS
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Fluid3)
-    from the mathematical contents (this class). Of course there are
-    different implementations of the Fluid3 element, this is just one
-    such implementation.
+    The idea is to separate the element maintenance (class Fluid3) from the
+    mathematical contents (this class). There are different implementations of
+    the Fluid3 element, this is just one such implementation.
 
     The Fluid3 will allocate exactly one object of this class for all
     fluid elements with the same number of nodes in the mesh. This
@@ -59,28 +59,37 @@ namespace ELEMENTS
     a minimum so that the element fits into the cache. (There might be
     room for improvements.)
 
+    <h3>Usability</h3>
+
+    The calculations are done by the Evaluate() method. There are two
+    version. The virtual method that is inherited from Fluid3ImplInterface
+    (and called from Fluid3) and the non-virtual one that does the actual
+    work. The non-virtual Evaluate() method must be callable without an actual
+    Fluid3 object.
+
     <h3>History</h3>
 
     The implementation here is based on the work by Christiane
     Foerster. The core element code has been linearized using MuPAD.
     The reaction terms have been removed from the lhs.
 
-    Right now we do not read any stabilization parameters from the
-    input file but have a fixed version with precompiled values.
-
     \author u.kue
     \date 07/07
   */
-
-
   template<DRT::Element::DiscretizationType distype>
-  class Fluid3Impl: public Fluid3ImplInterface
+  class Fluid3Impl : public Fluid3ImplInterface
   {
+    friend class Fluid3ImplParameter;
+
+    /// private Constructor since we are a Singleton.
+    Fluid3Impl();
+
   public:
 
-    friend class Fluid3ImplParameter;
-    /// Constructor
-    Fluid3Impl();
+    virtual ~Fluid3Impl() {}
+
+    /// Singleton access method
+    static Fluid3Impl<distype> * Instance();
 
     //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
     static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -90,22 +99,56 @@ namespace ELEMENTS
 
     static const int numdofpernode_ = nsd_+1;
 
+    /// Evaluate the element
     /*!
-      \brief evaluate function for Fluid3 element
+      Generic virtual interface function. Called via base pointer.
      */
-    virtual int Evaluate(DRT::ELEMENTS::Fluid3*     ele,
-                         ParameterList&             params,
-                         DRT::Discretization&       discretization,
-                         vector<int>&               lm,
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                         DRT::Discretization & discretization,
+                         const std::vector<int> & lm,
+                         Teuchos::ParameterList&    params,
+                         Teuchos::RCP<MAT::Material> & mat,
                          Epetra_SerialDenseMatrix&  elemat1_epetra,
                          Epetra_SerialDenseMatrix&  elemat2_epetra,
                          Epetra_SerialDenseVector&  elevec1_epetra,
                          Epetra_SerialDenseVector&  elevec2_epetra,
-                         Epetra_SerialDenseVector&  elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat);
+                         Epetra_SerialDenseVector&  elevec3_epetra );
+
+    /*!
+      \brief evaluate function for Fluid3 element
+
+      Specific evaluate function without any knowledge about DRT objects. This
+      way the element evaluation is independent of the specific mesh storage.
+     */
+    int Evaluate(int                        eid,
+                 Teuchos::ParameterList&    params,
+                 const LINALG::Matrix<nsd_,nen_> & edeadaf,
+                 LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
+                 LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
+                 LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
+                 const LINALG::Matrix<nsd_,nen_> & evelaf,
+                 const LINALG::Matrix<nen_,1>    & epreaf,
+                 const LINALG::Matrix<nen_,1>    & escaaf,
+                 const LINALG::Matrix<nsd_,nen_> & emhist,
+                 const LINALG::Matrix<nsd_,nen_> & eaccam,
+                 const LINALG::Matrix<nen_,1>    & escadtam,
+                 const LINALG::Matrix<nsd_,nen_> & eveln,
+                 const LINALG::Matrix<nen_,1>    & escaam,
+                 const LINALG::Matrix<nsd_,nen_> & edispnp,
+                 const LINALG::Matrix<nsd_,nen_> & egridv,
+                 const LINALG::Matrix<nsd_,nen_> & fsevelaf,
+                 Teuchos::RCP<MAT::Material> mat,
+                 bool                       isale,
+                 bool                       isowned,
+                 double CsDeltaSq,
+                 double * saccn,
+                 double * sveln,
+                 double * svelnp);
 
     /*!
       \brief calculate element matrix and rhs
+
+      2D/3D mixed sysmat
 
       \param ele              (i) the element those matrix is calculated
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
@@ -147,9 +190,8 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
-
-    // 2D/3D mixed sysmat
-    void Sysmat(Fluid3*                                    ele,
+    void Sysmat(int                                        eid,
+                const LINALG::Matrix<nsd_,nen_> & edeadaf,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
@@ -168,11 +210,15 @@ namespace ELEMENTS
                 const double                                   thermpressam,
                 const double                                   thermpressdtam,
                 Teuchos::RCP<const MAT::Material>              material,
-                double&                                        Cs_delta_sq);
+                double&                                        Cs_delta_sq,
+                bool                                           isale,
+                double * saccn,
+                double * sveln,
+                double * svelnp);
 
     // FD-check for debugging
     void FDcheck(
-      Fluid3*                                               ele,
+      int                                                   eid,
       const LINALG::Matrix<nsd_,nen_>&                      evelaf,
       const LINALG::Matrix<nsd_,nen_>&                      eveln,
       const LINALG::Matrix<nsd_,nen_>&                      fsevelaf,
@@ -198,10 +244,10 @@ namespace ELEMENTS
 
   private:
 
-    /*!
-     * \brief calculate body force from node condition
-     */
-    void BodyForce(Fluid3*      ele);
+//     /*!
+//      * \brief calculate body force from node condition
+//      */
+//     void BodyForce(Fluid3*      ele);
 
     //! number of components necessary to store second derivatives
     // 1 component  for nsd=1:  (N,xx)
@@ -228,47 +274,6 @@ namespace ELEMENTS
     //const double SetSolutionParameter(Fluid3*                    ele,
     //                          ParameterList&             params);
 
-    /*!
-     * \brief fill elment matrix and vectors with the global values
-     */
-
-    // TODO: think about location
-    void ExtractValuesFromGlobalVector( const DRT::Discretization&          discretization, ///< discretization
-                                        const vector<int>&                  lm,             ///<
-                                        LINALG::Matrix<nsd_,nen_> *         matrixtofill,   ///< vector field
-                                        LINALG::Matrix<nen_,1> *            vectortofill,   ///< scalar field
-                                        const string                        state)          ///< state of the global vector
-    {
-      // get state of the global vector
-      RefCountPtr<const Epetra_Vector> matrix_state = discretization.GetState(state);
-      if(matrix_state == null)
-        dserror("Cannot get state vector %s", state.c_str());
-
-      // extract local values of the global vectors
-      vector<double> mymatrix(lm.size());
-      DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
-
-      // rotate the vector field in the case of rotationally symmetric boundary conditions
-      if(matrixtofill != NULL)
-        rotsymmpbc_->RotateMyValuesIfNecessary(mymatrix);
-
-      for (int inode=0; inode<nen_; ++inode)  // number of nodes
-      {
-        // fill a vector field via a pointer
-        if (matrixtofill != NULL)
-        {
-          for(int idim=0; idim<nsd_; ++idim) // number of dimensions
-            {
-              (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-            }  // end for(idim)
-        }
-        // fill a scalar field via a pointer
-        if (vectortofill != NULL)
-          (*vectortofill)(inode,0) = mymatrix[nsd_+(inode*numdofpernode_)];
-      } // end for(inodes)
-
-      return;
-   }  // End FillElementVector
 
 
     /*!
@@ -285,12 +290,12 @@ namespace ELEMENTS
     /*!
        \brief get material parameters
      */
-    void GetTurbulenceParams(Fluid3*                    ele,
-                             ParameterList&             turbmodelparams,
+    void GetTurbulenceParams(ParameterList&             turbmodelparams,
                              //double&                    Cs,
                              double&                    Cs_delta_sq,
                              //double&                    l_tau,
-                             int&                       nlayer);
+                             int&                       nlayer,
+                             double CsDeltaSq);
 
     /*!
       \brief calculate (all-scale) subgrid viscosity
@@ -345,12 +350,15 @@ namespace ELEMENTS
         double &                                      rhsfac);
 
     void UpdateSubscaleVelocity(
-        Fluid3*       ele,
         double &      fac1,
         double &      fac2,
         double &      fac3,
         double &      facMtau,
-        int &         iquad);
+        int &         iquad,
+        double *        saccn,
+        double *        sveln,
+        double *        svelnp
+      );
 
 
     void GetResidualContinuityEq(
@@ -560,13 +568,48 @@ namespace ELEMENTS
       return(sqrt(rateofstrain/2.0));
     }
 
+    /*!
+     * \brief fill elment matrix and vectors with the global values
+     */
+    void ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
+                                        const vector<int>&           lm,             ///<
+                                        FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
+                                        LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
+                                        LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
+                                        const std::string            state)          ///< state of the global vector
+    {
+      // get state of the global vector
+      Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
+      if(matrix_state == null)
+        dserror("Cannot get state vector %s", state.c_str());
 
-    //! DOF's per node
-    //const int numdofpernode_;
+      // extract local values of the global vectors
+      std::vector<double> mymatrix(lm.size());
+      DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+      // rotate the vector field in the case of rotationally symmetric boundary conditions
+      if(matrixtofill != NULL)
+        rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
+
+      for (int inode=0; inode<nen_; ++inode)  // number of nodes
+      {
+        // fill a vector field via a pointer
+        if (matrixtofill != NULL)
+        {
+          for(int idim=0; idim<nsd_; ++idim) // number of dimensions
+          {
+            (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
+          }  // end for(idim)
+        }
+        // fill a scalar field via a pointer
+        if (vectortofill != NULL)
+          (*vectortofill)(inode,0) = mymatrix[nsd_+(inode*numdofpernode_)];
+      }
+    }
+
+
     //! node coordinates
     LINALG::Matrix<nsd_,nen_> xyze_;
-    //! dead load in nodes at n+alpha_F/n+1
-    LINALG::Matrix<nsd_,nen_> edeadaf_;
     //! array for shape functions
     LINALG::Matrix<nen_,1> funct_;
     //! array for shape function derivatives w.r.t r,s,t

@@ -19,20 +19,27 @@ Maintainer: Georg Bauer
 #include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
 
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_exporter.H"
+
+#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
+
 #include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/sutherland.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_geometry/position_array.H"
 
@@ -162,18 +169,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       case calc_fluid_afgenalpha_systemmat_and_residual:
       case calc_fluid_stationary_systemmat_and_residual:
       {
-
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
                this,
-               params,
                discretization,
                lm,
+               params,
+               mat,
                elemat1,
                elemat2,
                elevec1,
                elevec2,
-               elevec3,
-               mat);
+               elevec3 );
       }
       break;
       //--------------------------------------------------
@@ -3206,6 +3212,101 @@ bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
   return hoel;
 }
 */
+
+
+/*----------------------------------------------------------------------*
+ |  get the body force in the nodes of the element (private) gammi 04/07|
+ |  the Neumann condition associated with the nodes is stored in the    |
+ |  array edeadaf only if all nodes have a VolumeNeumann condition      |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3::BodyForce( int nsd,
+                                       DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter,
+                                       Epetra_SerialDenseMatrix & edeadaf )
+{
+  vector<DRT::Condition*> myneumcond;
+
+  int nen = NumNode();
+
+  edeadaf.Shape( nsd, nen );
+
+  // check whether all nodes have a unique VolumeNeumann condition
+  if (nsd==3)
+    DRT::UTILS::FindElementConditions(this, "VolumeNeumann", myneumcond);
+  else if (nsd==2)
+    DRT::UTILS::FindElementConditions(this, "SurfaceNeumann", myneumcond);
+  else
+    dserror("Body force for a 1D problem is not yet implemented");
+
+  if (myneumcond.size()>1)
+    dserror("more than one VolumeNeumann cond on one node");
+
+  if (myneumcond.size()==1)
+  {
+    // find out whether we will use a time curve
+    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    if (curve) curvenum = (*curve)[0];
+
+    // initialisation
+    double curvefac    = 0.0;
+
+    if (curvenum >= 0) // yes, we have a timecurve
+    {
+      // time factor for the intermediate step
+      if (f3Parameter->time_ >= 0.0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(f3Parameter->time_);
+      }
+      else
+      {
+	// do not compute an "alternative" curvefac here since a negative time value
+	// indicates an error.
+        dserror("Negative time value in body force calculation: time = %f", f3Parameter->time_);
+        //curvefac = DRT::Problem::Instance()->Curve(curvenum).f(0.0);
+      }
+    }
+    else // we do not have a timecurve --- timefactors are constant equal 1
+    {
+      curvefac = 1.0;
+    }
+
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
+
+    // factor given by spatial function
+    double functionfac = 1.0;
+    int functnum = -1;
+
+    // set this condition to the edeadaf array
+    for (int isd=0;isd<nsd;isd++)
+    {
+      // get factor given by spatial function
+      if (functions) functnum = (*functions)[isd];
+      else functnum = -1;
+
+      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+
+      for ( int jnode=0; jnode<nen; ++jnode )
+      {
+        if (functnum>0)
+        {
+          // evaluate function at the position of the current node
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
+                                                                             (Nodes()[jnode])->X(),
+                                                                             f3Parameter->time_,
+                                                                             NULL);
+        }
+        else functionfac = 1.0;
+
+        edeadaf(isd,jnode) = num*functionfac;
+      }
+    }
+  }
+}
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

@@ -17,7 +17,9 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include "fluid3_impl.H"
-#include "fluid3_impl_parameter.cpp"
+#include "fluid3_impl_parameter.H"
+
+#include "../drt_lib/drt_element.H"
 
 #include "../drt_f3/fluid3_stabilization.H"
 
@@ -28,12 +30,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -50,104 +49,76 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
   {
   case DRT::Element::hex8:
   {
-    static Fluid3Impl<DRT::Element::hex8>* fh8;
-    if (fh8==NULL)
-      fh8 = new Fluid3Impl<DRT::Element::hex8>();
-    return fh8;
+    return Fluid3Impl<DRT::Element::hex8>::Instance();
   }
   case DRT::Element::hex20:
   {
-    static Fluid3Impl<DRT::Element::hex20>* fh20;
-    if (fh20==NULL)
-      fh20 = new Fluid3Impl<DRT::Element::hex20>();
-    return fh20;
+    return Fluid3Impl<DRT::Element::hex20>::Instance();
   }
   case DRT::Element::hex27:
   {
-    static Fluid3Impl<DRT::Element::hex27>* fh27;
-    if (fh27==NULL)
-      fh27 = new Fluid3Impl<DRT::Element::hex27>();
-    return fh27;
+    return Fluid3Impl<DRT::Element::hex27>::Instance();
   }
   case DRT::Element::tet4:
   {
-    static Fluid3Impl<DRT::Element::tet4>* ft4;
-    if (ft4==NULL)
-      ft4 = new Fluid3Impl<DRT::Element::tet4>();
-    return ft4;
+    return Fluid3Impl<DRT::Element::tet4>::Instance();
   }
   case DRT::Element::tet10:
   {
-    static Fluid3Impl<DRT::Element::tet10>* ft10;
-    if (ft10==NULL)
-      ft10 = new Fluid3Impl<DRT::Element::tet10>();
-    return ft10;
+    return Fluid3Impl<DRT::Element::tet10>::Instance();
   }
   case DRT::Element::wedge6:
   {
-    static Fluid3Impl<DRT::Element::wedge6>* fw6;
-    if (fw6==NULL)
-      fw6 = new Fluid3Impl<DRT::Element::wedge6>();
-    return fw6;
+    return Fluid3Impl<DRT::Element::wedge6>::Instance();
   }
   /* wedge15 cannot be used since no mesh generator exists
   case DRT::Element::wedge15:
   {
-    static Fluid3Impl<DRT::Element::wedge15>* fw15;
-    if (fw15==NULL)
-      fw15 = new Fluid3Impl<DRT::Element::wedge15>(numdofpernode);
-    return fw15;
+    return Fluid3Impl<DRT::Element::wedge15>::Instance();
   }
   */
   case DRT::Element::pyramid5:
   {
-    static Fluid3Impl<DRT::Element::pyramid5>* fp5;
-    if (fp5==NULL)
-      fp5 = new Fluid3Impl<DRT::Element::pyramid5>();
-    return fp5;
+    return Fluid3Impl<DRT::Element::pyramid5>::Instance();
   }
   case DRT::Element::quad4:
   {
-    static Fluid3Impl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
-      cp4 = new Fluid3Impl<DRT::Element::quad4>();
-    return cp4;
+    return Fluid3Impl<DRT::Element::quad4>::Instance();
   }
   case DRT::Element::quad8:
   {
-    static Fluid3Impl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
-      cp8 = new Fluid3Impl<DRT::Element::quad8>();
-    return cp8;
+    return Fluid3Impl<DRT::Element::quad8>::Instance();
   }
   case DRT::Element::quad9:
   {
-    static Fluid3Impl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
-      cp9 = new Fluid3Impl<DRT::Element::quad9>();
-    return cp9;
+    return Fluid3Impl<DRT::Element::quad9>::Instance();
   }
   case DRT::Element::tri3:
   {
-    static Fluid3Impl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
-      cp3 = new Fluid3Impl<DRT::Element::tri3>();
-    return cp3;
+    return Fluid3Impl<DRT::Element::tri3>::Instance();
   }
   case DRT::Element::tri6:
   {
-    static Fluid3Impl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
-      cp6 = new Fluid3Impl<DRT::Element::tri6>();
-    return cp6;
+    return Fluid3Impl<DRT::Element::tri6>::Instance();
   }
   // no 1D elements
   //nurbs are not available yet
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
-    //dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(f3->Shape()).c_str());
   }
   return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::Fluid3Impl<distype> * DRT::ELEMENTS::Fluid3Impl<distype>::Instance()
+{
+  static Fluid3Impl<distype> * instance;
+  if ( instance==NULL )
+    instance = new Fluid3Impl<distype>();
+  return instance;
 }
 
 
@@ -156,7 +127,6 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
   : xyze_(true),
-    edeadaf_(true),
     funct_(true),
     deriv_(true),
     deriv2_(true),
@@ -213,47 +183,55 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
 {
   rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 
+  // pointer to class Fluid3ImplParameter (access to the general parameter)
   f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
-  DRT::ELEMENTS::Fluid3*                    ele,
-  ParameterList&                            params,
-  DRT::Discretization&                      discretization,
-  vector<int>&                              lm,
-  Epetra_SerialDenseMatrix&                 elemat1_epetra,
-  Epetra_SerialDenseMatrix&                 elemat2_epetra,
-  Epetra_SerialDenseVector&                 elevec1_epetra,
-  Epetra_SerialDenseVector&                 elevec2_epetra,
-  Epetra_SerialDenseVector&                 elevec3_epetra,
-  RefCountPtr<MAT::Material>                mat)
+int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                                                 DRT::Discretization & discretization,
+                                                 const std::vector<int> & lm,
+                                                 Teuchos::ParameterList&    params,
+                                                 Teuchos::RCP<MAT::Material> & mat,
+                                                 Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                 Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                 Epetra_SerialDenseVector&  elevec1_epetra,
+                                                 Epetra_SerialDenseVector&  elevec2_epetra,
+                                                 Epetra_SerialDenseVector&  elevec3_epetra )
 {
-  // construct views
-  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat1(elemat1_epetra,true);
-  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
-  LINALG::Matrix<(nsd_+1)*nen_,    1> elevec1(elevec1_epetra,true);
-  // elevec2 and elevec3 are currently not use
-
   // rotationally symmetric periodic bc's: do setup for current element
   rotsymmpbc_->Setup(ele);
 
-  // flag for higher order elements
-  is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
-  // overrule higher_order_ele if input-parameter is set
-  // this might be interesting for fast (but slightly
-  // less accurate) computations
-  if (f3Parameter_->is_inconsistent_ == true) is_higher_order_ele_ = false;
+  // construct views
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat1(elemat1_epetra,true);
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
+  LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
+  // elevec2 and elevec3 are currently not in use
 
-  // stationary formulation does not support Ale formulation
-  if (ele->IsAle() and f3Parameter_->is_stationary_) dserror("No ALE support within stationary fluid solver.");
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  Epetra_SerialDenseMatrix edeadaf_epetra;
+  ele->BodyForce( nsd_, f3Parameter_, edeadaf_epetra );
 
-  // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
-  // its time derivative at n+alpha_M/n+1
-  const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
-  const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
-  const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
+  // a view to the body forces
+  LINALG::Matrix<nsd_,nen_> edeadaf( edeadaf_epetra, true );
+
+  double * saccn = NULL;
+  double * sveln = NULL;
+  double * svelnp = NULL;
+
+  // if not available, the arrays for the subscale quantities have to be
+  // resized and initialised to zero
+  if ( f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent )
+  {
+    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+    ele->ActivateTDS( intpoints.IP().nquad, nsd_, &saccn, &sveln, &svelnp );
+  }
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -267,21 +245,21 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // fill the local element vector/matrix with the global values
   LINALG::Matrix<nsd_,nen_> evelaf(true);
   LINALG::Matrix<nen_,1> epreaf(true);
-  ExtractValuesFromGlobalVector(discretization,lm, &evelaf, &epreaf,"velaf");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"velaf");
 
   LINALG::Matrix<nen_,1> escaaf(true);
-  ExtractValuesFromGlobalVector(discretization,lm, NULL, &escaaf,"scaaf");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf,"scaaf");
 
   LINALG::Matrix<nsd_,nen_> emhist(true);
-  ExtractValuesFromGlobalVector(discretization,lm, &emhist, NULL,"hist");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &emhist, NULL,"hist");
 
   LINALG::Matrix<nsd_,nen_> eaccam(true);
   LINALG::Matrix<nen_,1> escadtam(true);
-  ExtractValuesFromGlobalVector(discretization,lm, &eaccam, &escadtam,"accam");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eaccam, &escadtam,"accam");
 
   LINALG::Matrix<nsd_,nen_> eveln(true);
   LINALG::Matrix<nen_,1> escaam(true);
-  ExtractValuesFromGlobalVector(discretization,lm, &eveln, &escaam,"scaam");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
 
   if (f3Parameter_->is_genalpha_)
     eveln.Clear();
@@ -295,10 +273,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   LINALG::Matrix<nsd_, nen_> egridv(true);
 
-  if(ele-> IsAle())
+  if (ele->IsAle())
   {
-    ExtractValuesFromGlobalVector(discretization,lm, &edispnp, NULL,"dispnp");
-    ExtractValuesFromGlobalVector(discretization,lm, &egridv, NULL,"gridv");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
   }
 
   // ---------------------------------------------------------------------
@@ -311,8 +289,92 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<nsd_,nen_> fsevelaf(true);
   if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
   {
-    ExtractValuesFromGlobalVector(discretization,lm, &fsevelaf, NULL,"fsvelaf");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &fsevelaf, NULL,"fsvelaf");
   }
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // Call the inner evaluate that does not know about the DRT element or the
+  // discretization object.
+
+  int result = Evaluate(
+    ele->Id(),
+    params,
+    edeadaf,
+    elemat1,
+    elemat2,
+    elevec1,
+    evelaf,
+    epreaf,
+    escaaf,
+    emhist,
+    eaccam,
+    escadtam,
+    eveln,
+    escaam,
+    edispnp,
+    egridv,
+    fsevelaf,
+    mat,
+    ele->IsAle(),
+    ele->Owner()==discretization.Comm().MyPID(),
+    ele->CsDeltaSq(),
+    saccn,
+    sveln,
+    svelnp);
+
+  // rotate matrices and vectors if we have a rotationally symmetric problem
+  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
+
+  return result;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
+  int                                           eid,
+  Teuchos::ParameterList&                       params,
+  const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
+  LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
+  const LINALG::Matrix<nsd_,nen_> & evelaf,
+  const LINALG::Matrix<nen_,1>    & epreaf,
+  const LINALG::Matrix<nen_,1>    & escaaf,
+  const LINALG::Matrix<nsd_,nen_> & emhist,
+  const LINALG::Matrix<nsd_,nen_> & eaccam,
+  const LINALG::Matrix<nen_,1>    & escadtam,
+  const LINALG::Matrix<nsd_,nen_> & eveln,
+  const LINALG::Matrix<nen_,1>    & escaam,
+  const LINALG::Matrix<nsd_,nen_> & edispnp,
+  const LINALG::Matrix<nsd_,nen_> & egridv,
+  const LINALG::Matrix<nsd_,nen_> & fsevelaf,
+  Teuchos::RCP<MAT::Material>               mat,
+  bool                                      isale,
+  bool                                      isowned,
+  double CsDeltaSq,
+  double * saccn,
+  double * sveln,
+  double * svelnp)
+{
+  // flag for higher order elements
+  is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
+  // overrule higher_order_ele if input-parameter is set
+  // this might be interesting for fast (but slightly
+  // less accurate) computations
+  if (f3Parameter_->is_inconsistent_ == true) is_higher_order_ele_ = false;
+
+  // stationary formulation does not support Ale formulation
+  if (isale and f3Parameter_->is_stationary_) dserror("No ALE support within stationary fluid solver.");
+
+  // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
+  // its time derivative at n+alpha_M/n+1
+  const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
+  const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
+  const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
 
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
@@ -325,86 +387,61 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   // remember the layer of averaging for the dynamic Smagorinsky model
   int  nlayer=0;
 
-  GetTurbulenceParams(ele,
-                      turbmodelparams,
+  GetTurbulenceParams(turbmodelparams,
                       Cs_delta_sq,
-                      nlayer);
+                      nlayer,
+                      CsDeltaSq);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
 
-#if 0
-      if(ele->Id()==100 && 1)
-      {
-        FDcheck(ele,
-                evelaf,
-                eveln,
-                fsevelaf,
-                epreaf,
-                eaccam,
-                escaaf,
-                escaam,
-                escadtam,
-                emhist,
-                edispnp,
-                egridv,
-                elemat1,
-                elemat2,
-                elevec1,
-                thermpressaf,
-                thermpressam,
-                thermpressdtam,
-                mat,
-                timefac,
-                Cs,
-                Cs_delta_sq,
-                l_tau);
-      }
-#endif
-
-    Sysmat(ele,
-               evelaf,
-               eveln,
-               fsevelaf,
-               epreaf,
-               eaccam,
-               escaaf,
-               escaam,
-               escadtam,
-               emhist,
-               edispnp,
-               egridv,
-               elemat1,
-               elemat2,  // -> emesh
-               elevec1,
-               thermpressaf,
-               thermpressam,
-               thermpressdtam,
-               mat,
-               Cs_delta_sq);
-
+  Sysmat(eid,
+         edeadaf,
+         evelaf,
+         eveln,
+         fsevelaf,
+         epreaf,
+         eaccam,
+         escaaf,
+         escaam,
+         escadtam,
+         emhist,
+         edispnp,
+         egridv,
+         elemat1,
+         elemat2,  // -> emesh
+         elevec1,
+         thermpressaf,
+         thermpressam,
+         thermpressdtam,
+         mat,
+         Cs_delta_sq,
+         isale,
+         saccn,
+         sveln,
+         svelnp);
 
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
   // ---------------------------------------------------------------------
-  if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  //
+  // do the fastest test first
+  if (isowned)
   {
-    //string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
-
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky
-        ||
-        f3Parameter_->turb_mod_action_ ==  INPAR::FLUID::smagorinsky_with_van_Driest_damping
+        or
+        f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping
       )
     {
-      if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-          ==
-          "channel_flow_of_height_2")
+      if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
       {
-        // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
-        // to compare it with the standard Smagorinsky Cs
-        if(ele->Owner() == discretization.Comm().MyPID())
+        if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+            ==
+            "channel_flow_of_height_2")
         {
+          // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
+          // to compare it with the standard Smagorinsky Cs
           (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=f3Parameter_->Cs_;
           (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
           (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
@@ -413,18 +450,17 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
     }
   }
 
-  //rotate matrices and vectors if we have a rotationally symmetric problem
-  rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
-
   return 0;
 }
+
 
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
-  Fluid3*                                       ele,
+  int                                           eid,
+  const LINALG::Matrix<nsd_,nen_>&              edeadaf,
   const LINALG::Matrix<nsd_,nen_>&              evelaf,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
@@ -443,12 +479,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   const double                                  thermpressam,
   const double                                  thermpressdtam,
   Teuchos::RCP<const MAT::Material>             material,
-  double&                                       Cs_delta_sq
+  double&                                       Cs_delta_sq,
+  bool                                          isale,
+  double * saccn,
+  double * sveln,
+  double * svelnp
   )
 {
-  // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
   LINALG::Matrix<nen_*nsd_,nen_*nsd_>     estif_u(true);
   LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v(true);
   LINALG::Matrix<nen_, nen_*nsd_>         estif_q_u(true);
@@ -463,16 +500,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   LINALG::Matrix<nsd_,1>                  resM_Du(true);
 
   // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) xyze_ += edispnp;
-
-  // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
-  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-  // ---------------------------------------------------------------------
-  BodyForce(ele);
+  if (isale) xyze_ += edispnp;
 
   // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
+  EvalShapeFuncAndDerivsAtEleCenter(eid);
 
   // element aera or volume
   const double vol = fac_;
@@ -519,15 +550,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   //const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
-  // if not available, the arrays for the subscale quantities have to
-  // be resized and initialised to zero
-  if(f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent)
-  {
-    ele->ActivateTDS(intpoints.IP().nquad,nsd_);
-  }
-
   //------------------------------------------------
-  //------------------------------- ----------------
+  //------------------------------------------------
   //    INTEGRATION LOOP
   //------------------------------------------------
   //------------------------------------------------
@@ -539,7 +563,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // evaluate shape functions and derivatives at integration point
   //----------------------------------------------------------------------
 
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,eid);
 
   //----------------------------------------------------------------------
   // get material parameters (evaluation at integration point)
@@ -595,7 +619,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // movement dependent) convective velocity. This avoids a lot of ale terms
     // we used to calculate.
     convvelint_.Update(velint_);
-    if (ele->IsAle()) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
+    if (isale) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
 
     // get pressure gradient at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -607,7 +631,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    bodyforce_.Multiply(edeadaf_,funct_);
+    bodyforce_.Multiply(edeadaf,funct_);
 
     // get second derivative of the viscous term:
     // div(epsilon(u))
@@ -696,12 +720,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     double fac3   =0.0;
     double facMtau=0.0;
 
-    UpdateSubscaleVelocity(ele,
-                           fac1,
+    UpdateSubscaleVelocity(fac1,
                            fac2,
                            fac3,
                            facMtau,
-                           iquad);
+                           iquad,
+                           saccn,
+                           sveln,
+                           svelnp);
 
 
   /*-------------------------------------------------------------------*
@@ -1111,7 +1137,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 */
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
-  Fluid3*                                               ele,
+  int                                                   eid,
   const LINALG::Matrix<nsd_,nen_>&                      evelaf,
   const LINALG::Matrix<nsd_,nen_>&                      eveln,
   const LINALG::Matrix<nsd_,nen_>&                      fsevelaf,
@@ -1160,7 +1186,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
 
   // echo to screen
   printf("+-------------------------------------------+\n");
-  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",ele->Id());
+  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",eid);
   printf("+-------------------------------------------+\n");
   printf("\n");
   // loop columns of matrix by looping nodes and then dof per nodes
@@ -1225,8 +1251,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
       }
 
       // calculate the right hand side for the perturbed vector
-      Sysmat2D3D(ele,
-                 checkevelaf,
+      Sysmat2D3D(checkevelaf,
                  eveln,
                  fsevelaf,
                  checkepreaf,
@@ -1294,99 +1319,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
         printf("\n");
       }
     }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  get the body force in the nodes of the element (private) gammi 04/07|
- |  the Neumann condition associated with the nodes is stored in the    |
- |  array edeadaf only if all nodes have a VolumeNeumann condition      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(Fluid3* ele)
-{
-  vector<DRT::Condition*> myneumcond;
-
-  // check whether all nodes have a unique VolumeNeumann condition
-  if(nsd_==3)
-    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
-  else if (nsd_==2)
-    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
-  else
-    dserror("Body force for a 1D problem is not yet implemented");
-
-  if (myneumcond.size()>1)
-    dserror("more than one VolumeNeumann cond on one node");
-
-  if (myneumcond.size()==1)
-  {
-    // find out whether we will use a time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
-    int curvenum = -1;
-
-    if (curve) curvenum = (*curve)[0];
-
-    // initialisation
-    double curvefac    = 0.0;
-
-    if (curvenum >= 0) // yes, we have a timecurve
-    {
-      // time factor for the intermediate step
-      if(f3Parameter_->time_ >= 0.0)
-      {
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(f3Parameter_->time_);
-      }
-      else
-      {
-	// do not compute an "alternative" curvefac here since a negative time value
-	// indicates an error.
-        dserror("Negative time value in body force calculation: time = %f",f3Parameter_->time_);
-        //curvefac = DRT::Problem::Instance()->Curve(curvenum).f(0.0);
-      }
-    }
-    else // we do not have a timecurve --- timefactors are constant equal 1
-    {
-      curvefac = 1.0;
-    }
-
-    // get values and switches from the condition
-    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-    const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
-
-    // factor given by spatial function
-    double functionfac = 1.0;
-    int functnum = -1;
-
-    // set this condition to the edeadaf array
-    for(int isd=0;isd<nsd_;isd++)
-    {
-      // get factor given by spatial function
-      if (functions) functnum = (*functions)[isd];
-      else functnum = -1;
-
-      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
-
-      for (int jnode=0; jnode<nen_; jnode++)
-      {
-        if (functnum>0)
-        {
-          // evaluate function at the position of the current node
-          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,(ele->Nodes()[jnode])->X(),f3Parameter_->time_,NULL);
-        }
-        else functionfac = 1.0;
-
-        edeadaf_(isd,jnode) = num*functionfac;
-      }
-    }
-  }
-  else
-  {
-    // we have no dead load
-    edeadaf_.Clear();
   }
 
   return;
@@ -1803,10 +1735,10 @@ return;
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
-                               Fluid3*                    ele,
                                ParameterList&             turbmodelparams,
                                double&                    Cs_delta_sq,
-                               int&                       nlayer)
+                               int&                       nlayer,
+                               double CsDeltaSq)
 {
   if(f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model and nsd_ == 2)
     dserror("turbulence and 2D flow does not make any sense");
@@ -1819,10 +1751,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
     // be able to do the output of visceff etc.
     double center = 0;
 
-    DRT::Node** nodes = ele->Nodes();
     for(int inode=0;inode<nen_;inode++)
     {
-      center+=nodes[inode]->X()[1];
+      center += xyze_( 1, inode );
     }
     center/=nen_;
 
@@ -1869,10 +1800,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
       // here, the layer is determined in order to get the correct
       // averaged value from the vector of averaged (M/L)ijMij
       double center = 0;
-      DRT::Node** nodes = ele->Nodes();
       for(int inode=0;inode<nen_;inode++)
       {
-        center+=nodes[inode]->X()[1];
+        center += xyze_( 1, inode );
       }
       center/=nen_;
 
@@ -1907,7 +1837,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
     else
     {
       // when no averaging was done, we just keep the calculated (clipped) value
-      Cs_delta_sq = ele->CsDeltaSq();
+      Cs_delta_sq = CsDeltaSq;
     }
   }
   return;
@@ -2823,12 +2753,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
-    Fluid3*         ele,
     double &        fac1,
     double &        fac2,
     double &        fac3,
     double &        facMtau,
-    int    &        iquad)
+    int    &        iquad,
+    double *        saccn,
+    double *        sveln,
+    double *        svelnp
+  )
 {
   if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
   {
@@ -2863,6 +2796,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
     {
       dserror("there is no time dependent subgrid scale closure for stationary problems\n");
     }
+    if ( saccn==NULL or sveln==NULL or svelnp==NULL )
+    {
+      dserror( "no subscale array provided" );
+    }
+
+    double alphaF = f3Parameter_->alphaF_;
+    double alphaM = f3Parameter_->alphaM_;
+    double gamma  = f3Parameter_->gamma_;
+    double dt     = f3Parameter_->dt_;
 
     /*
                                             1.0
@@ -2870,7 +2812,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
                      n+aM                      n+aF
                   rho     * alphaM * tauM + rho     * alphaF * gamma * dt
     */
-    facMtau = 1.0/(densam_*f3Parameter_->alphaM_*tau_(1)+densaf_*f3Parameter_->afgdt_);
+    facMtau = 1.0/(densam_*alphaM*tau_(1)+densaf_*f3Parameter_->afgdt_);
 
     /*
        factor for old subgrid velocities:
@@ -2878,20 +2820,20 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
                  n+aM                      n+aF
        fac1 = rho     * alphaM * tauM + rho     * gamma * dt * (alphaF-1)
     */
-    fac1=(densam_*f3Parameter_->alphaM_*tau_(1)+densaf_*f3Parameter_->gamma_*f3Parameter_->dt_*(f3Parameter_->alphaF_-1.0))*facMtau;
+    fac1=(densam_*alphaM*tau_(1)+densaf_*gamma*dt*(alphaF-1.0))*facMtau;
     /*
       factor for old subgrid accelerations
 
                  n+aM
        fac2 = rho     * tauM * dt * (alphaM-gamma)
     */
-    fac2=(densam_*f3Parameter_->dt_*tau_(1)*(f3Parameter_->alphaM_-f3Parameter_->gamma_))*facMtau;
+    fac2=(densam_*dt*tau_(1)*(alphaM-gamma))*facMtau;
     /*
       factor for residual in current subgrid velocities:
 
        fac3 = gamma * dt * tauM
     */
-    fac3=(f3Parameter_->gamma_*f3Parameter_->dt_*tau_(1))*facMtau;
+    fac3=(gamma*dt*tau_(1))*facMtau;
 
     // if no generalised alpha time integration is used, the momres_old_
     // contains a scaled residual
@@ -2917,15 +2859,43 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
 
     for (int rr=0;rr<nsd_;++rr)
     {
-      ele->UpdateSvelnpInOneDirection(
-        fac1           ,
-        fac2           ,
-        fac3           ,
-        momres_old_(rr),
-        f3Parameter_->alphaF_        ,
-        rr             ,
-        iquad          ,
-        sgvelint_(rr)  );
+//       ele->UpdateSvelnpInOneDirection(
+//         fac1           ,
+//         fac2           ,
+//         fac3           ,
+//         momres_old_(rr),
+//         f3Parameter_->alphaF_        ,
+//         rr             ,
+//         iquad          ,
+//         sgvelint_(rr)  );
+
+      int pos = rr + nsd_*iquad;
+
+      /*
+       *  ~n+1           ~n           ~ n            n+1
+       *  u    =  fac1 * u  + fac2 * acc  -fac3 * res
+       *   (i)
+       *
+       */
+
+      svelnp[pos] =
+        fac1*sveln[pos]
+        +
+        fac2*saccn[pos]
+        -
+        fac3*momres_old_(rr);
+
+      /* compute the intermediate value of subscale velocity
+       *
+       *          ~n+af            ~n+1                   ~n
+       *          u     = alphaF * u     + (1.0-alphaF) * u
+       *           (i)              (i)
+       *
+       */
+      sgvelint_(rr) =
+        alphaF      *svelnp[pos]
+        +
+        (1.0-alphaF)*sveln [pos];
     }
   } // end time dependent subgrid scale closure
 
@@ -2945,8 +2915,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
   {
     sgconv_c_.Clear();
   }
-
-  return;
 }
 
 

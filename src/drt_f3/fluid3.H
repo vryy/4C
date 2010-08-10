@@ -47,7 +47,7 @@ namespace ELEMENTS
 {
 // forward declarations
 
-//class Fluid3ImplParameter;
+class Fluid3ImplParameter;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
 //template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
@@ -425,7 +425,7 @@ public:
   /*!
   \brief Memory allocation for subgrid-scale arrays
   */
-  void ActivateTDS(int nquad,int nsd);
+  void ActivateTDS(int nquad,int nsd, double** saccn=NULL, double** sveln=NULL, double** svelnp=NULL);
 
   /*!
   \brief Nonlinear update for current subgrid velocities according to the current
@@ -483,6 +483,11 @@ public:
 
   //@}
 
+  /// calculate body force from nodal conditions
+  void BodyForce( int nsd,
+                  DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter,
+                  Epetra_SerialDenseMatrix & edeadaf );
+
 private:
 
   //! action parameters recognized by fluid3
@@ -513,8 +518,6 @@ private:
 
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
-  //! container containing all kind of fluid3 thisandthat
-  //DRT::Container                                  data_;
 
   //! factor including Smagorinsky's constant
   double                                          Cs_delta_sq_;

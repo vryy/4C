@@ -484,7 +484,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Fluid3::Volumes()
 /*----------------------------------------------------------------------*
  |  activate time dependend subscales (public)           gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd)
+void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd, double** saccn, double** sveln, double** svelnp)
    {
      if(saccn_.M() != nsd
         ||
@@ -499,7 +499,9 @@ void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd)
        svelnp_.Shape(nsd,nquad);
        memset(svelnp_.A(),0,nsd*nquad*sizeof(double));
      }
-     return;
+     if ( saccn !=NULL ) *saccn = saccn_.A();
+     if ( sveln !=NULL ) *sveln = sveln_.A();
+     if ( svelnp!=NULL ) *sveln = svelnp_.A();
    }
 
 

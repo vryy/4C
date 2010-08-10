@@ -18,28 +18,31 @@ namespace ELEMENTS
   class Fluid3ImplInterface
   {
   public:
+
     /// Empty constructor
     Fluid3ImplInterface() {}
+
     /// Empty destructor
     virtual ~Fluid3ImplInterface() {}
+
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function, it
       must be defined in Fluid3Impl.
      */
     virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
-                         ParameterList&            params,
-                         DRT::Discretization&      discretization,
-                         vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         RefCountPtr<MAT::Material> mat) = 0;
+                         DRT::Discretization & discretization,
+                         const std::vector<int> & lm,
+                         Teuchos::ParameterList&    params,
+                         Teuchos::RCP<MAT::Material> & mat,
+                         Epetra_SerialDenseMatrix&  elemat1_epetra,
+                         Epetra_SerialDenseMatrix&  elemat2_epetra,
+                         Epetra_SerialDenseVector&  elevec1_epetra,
+                         Epetra_SerialDenseVector&  elevec2_epetra,
+                         Epetra_SerialDenseVector&  elevec3_epetra
+      ) = 0;
 
     /// Internal implementation class for fluid element
-    //static Fluid3ImplInterface* Impl(DRT::ELEMENTS::Fluid3* ele);
     static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
 
   };
