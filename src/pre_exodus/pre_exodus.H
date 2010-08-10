@@ -26,11 +26,9 @@ or the well-known .dat file is created.
 
 #ifdef CCADISCRET
 
+#include <mpi.h>
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
 #include <exodusII.h>
-}
 
 using namespace std;
 

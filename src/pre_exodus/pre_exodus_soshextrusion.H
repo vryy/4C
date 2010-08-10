@@ -25,10 +25,7 @@ Here everything related with solid-shell body extrusion
 #include "../drt_lib/drt_dserror.H"
 #include "pre_exodus_reader.H"
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
 #include <exodusII.h>
-}
 
 using namespace std;
 using namespace Teuchos;
