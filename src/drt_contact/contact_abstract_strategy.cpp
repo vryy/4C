@@ -304,12 +304,11 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
-  if (friction_)
-    jump_    = rcp(new Epetra_Vector(*gsdofrowmap_));
+  if (friction_) jump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 
-  // in the case of dual quad 3D, also the modified D matrices are setup  
-  if (Dualquadslave3d())
-   {  
+  // in the case of frictional dual quad 3D, also the modified D matrices are setup
+  if (friction_ && Dualquadslave3d())
+  {
     // initialize Dold and Mold if not done already
     if (doldmod_==null)
     {
@@ -319,7 +318,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     }
     // setup of dmatrixmod_
     dmatrixmod_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-   } 
+  }
   
   // (re)setup global matrices containing fc derivatives
   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -760,7 +759,7 @@ void CONTACT::CoAbstractStrategy::StoreDM(const string& state)
   {
     dold_ = dmatrix_;
     mold_ = mmatrix_;
-    doldmod_=dmatrixmod_;
+    if (friction_) doldmod_ = dmatrixmod_;
   }
 
   // unknown conversion
