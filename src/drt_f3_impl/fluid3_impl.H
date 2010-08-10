@@ -147,57 +147,9 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       */
-    // 3D sysmat
-#if 0
-    void Sysmat(Fluid3*                                       ele,
-                const LINALG::Matrix<nsd_,nen_>&               evelaf,
-                const LINALG::Matrix<nsd_,nen_>&               eveln,
-                const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
-                const LINALG::Matrix<nen_,1>&                  epreaf,
-                const LINALG::Matrix<nsd_,nen_>&               eaccam,
-                const LINALG::Matrix<nen_,1>&                  escaaf,
-                const LINALG::Matrix<nen_,1>&                  escaam,
-                const LINALG::Matrix<nen_,1>&                  escadtam,
-                const LINALG::Matrix<nsd_,nen_>&               emhist,
-                const LINALG::Matrix<nsd_,nen_>&               edispnp,
-                const LINALG::Matrix<nsd_,nen_>&               egridv,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    estif,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&    emesh,
-                LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
-                const double                                   thermpressaf,
-                const double                                   thermpressam,
-                const double                                   thermpressdtam,
-                Teuchos::RCP<const MAT::Material>             material,
-                const double                                  timefac,
-                double&                                       Cs,
-                double&                                       Cs_delta_sq,
-                double&                                       l_tau);
 
-    // 2D sysmat
-    void Sysmat2D(Fluid3*                                  ele,
-                const LINALG::Matrix<nsd_,nen_>&             evelaf,
-                const LINALG::Matrix<nsd_,nen_>&             eveln,
-                const LINALG::Matrix<nsd_,nen_>&             fsevelaf,
-                const LINALG::Matrix<nen_,1>&             epreaf,
-                const LINALG::Matrix<nsd_,nen_>&             ,
-                const LINALG::Matrix<nen_,1>&             escaaf,
-                const LINALG::Matrix<nen_,1>&             escaam,
-                const LINALG::Matrix<nen_,1>&             escadtam,
-                const LINALG::Matrix<nsd_,nen_>&             emhist,
-                const LINALG::Matrix<nsd_,nen_>&             edispnp,
-                const LINALG::Matrix<nsd_,nen_>&             egridv,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&             estif,
-                LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&             emesh,
-                LINALG::Matrix<(nsd_+1)*nen_,    1>&             eforce,
-                const double                                   thermpressaf,
-                const double                                   thermpressam,
-                const double                                   thermpressdtam,
-                Teuchos::RCP<const MAT::Material>        material,
-                const double                             timefac,
-                double&                                  Cs);
-#endif
     // 2D/3D mixed sysmat
-    void Sysmat2D3D(Fluid3*                                    ele,
+    void Sysmat(Fluid3*                                    ele,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
@@ -609,7 +561,6 @@ namespace ELEMENTS
     }
 
 
-  private:
     //! DOF's per node
     //const int numdofpernode_;
     //! node coordinates
