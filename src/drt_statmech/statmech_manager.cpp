@@ -1326,7 +1326,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 /*----------------------------------------------------------------------*
  | prepare visualization vector for Gmsh Output  (private) mueller 08/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis, const Epetra_Vector& deltadis)
+void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 {
 	// pure diffusion
 	for(int i=0; i<(int)visualizepositions_.size(); i++)
@@ -1346,8 +1346,6 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis, const E
 			// column map displacement and displacement increment
 			Epetra_Vector  discol(*(discret_.DofColMap()),true);
 			LINALG::Export(dis,discol);
-		  Epetra_Vector  deltadiscol(*(discret_.DofColMap()),true);
-		  LINALG::Export(deltadis,deltadiscol);
 
 			for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 			{
@@ -1848,15 +1846,12 @@ void StatMechManager::StatMechInitOutput(const int ndim,const double& dt)
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, Epetra_Vector& disprev, RCP<LINALG::SparseOperator>& stiff, int ndim)
+void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim)
 {
 
 #ifdef MEASURETIME
     const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef MEASURETIME
-    Epetra_Vector dis = disrow;
-    // displacement increment vector
-		Epetra_Vector deltadis(*(discret_.DofRowMap()), true);
   /*first we modify the displacement vector so that current nodal position at the end of current time step complies with
    * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
   PeriodicBoundaryShift(disrow,ndim);
@@ -1871,14 +1866,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, Epe
 															 (2*M_PI*statmechparams_.get<double>("ETA", 0.0) *
 															  statmechparams_.get<double>("R_LINK", 0.0))*dt);
 
-    	/*crosslinker positions of the diffusion simulation for crosslink molecules are updated. (note: this update
-			 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
-			 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.*/
-			// calculate the change in displacement
-			for(int j=0; j<deltadis.MyLength(); j++)
-				deltadis[j] = disrow[j] - disprev[j];
-
-			CrosslinkerDiffusion(disrow, deltadis, 0.0, standarddev, dt,false);
+			CrosslinkerDiffusion(disrow, 0.0, standarddev, dt,false);
   	}
 
 
@@ -1972,7 +1960,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow, Epe
       discret_.FillComplete(true,false,false);
 
     	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_,"SPECIAL_OUTPUT")==INPAR::STATMECH::statout_gmsh)
-				GmshPrepareVisualization(disrow, deltadis);
+				GmshPrepareVisualization(disrow);
     }
 
     /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
@@ -3869,7 +3857,6 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
  | simulation of crosslinker diffusion		        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis,
-																					 const Epetra_Vector& deltadis,
 																					 double mean,
 																					 double standarddev,
 																					 const double &dt,
@@ -3925,9 +3912,6 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis,
 				// export row displacement to column map format
 				Epetra_Vector  discol(*(discret_.DofColMap()),true);
 				LINALG::Export(dis,discol);
-				// export row displacement increment to column map format
-				Epetra_Vector  deltadiscol(*(discret_.DofColMap()),true);
-				LINALG::Export(deltadis,deltadiscol);
 
 				for(int i=0; i<(int)crosslinkerpositions_.size(); i++)
 				{

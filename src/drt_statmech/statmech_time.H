@@ -96,8 +96,6 @@ protected:
   int   unconvergedsteps_;
 
 private:
-	// \brief displacement vector of the previous time step
-	RCP<Epetra_Vector>					disprev_;
 	// variables needed for EvaluateDirichletPeriodic()
 	bool 												isinit_;
 	// \brief incremental displacement which is to be added to the displacement in DoDirichletConditionPeriodic()

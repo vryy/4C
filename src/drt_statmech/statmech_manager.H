@@ -57,11 +57,10 @@ public:
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param dt				(in)	current time step size
    *  \param disrow		(in)	current displacement vector
-   *  \param disprev	(in)	displacement vector of previous time step
    *  \param stiff		(in)
    *  \param ndim			(in)
    */
-  void StatMechUpdate(const double dt, Epetra_Vector& disrow, Epetra_Vector& disprev, RCP<LINALG::SparseOperator>& stiff, int ndim);
+  void StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -86,9 +85,8 @@ public:
 
   /*! \brief prepare visualization vectors
    * 	\param dis        (in) discplacement
-   * 	\param deltadis   (in) displacement increment
    */
-  void GmshPrepareVisualization(const Epetra_Vector& dis, const Epetra_Vector& deltadis);
+  void GmshPrepareVisualization(const Epetra_Vector& dis);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
   void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
@@ -160,7 +158,6 @@ public:
    *  \param init						 (in) switch between methods
    */
   void CrosslinkerDiffusion(const Epetra_Vector& dis,
-														const Epetra_Vector& deltadis,
 														double mean,
 														double standarddev,
 														const double &dt,

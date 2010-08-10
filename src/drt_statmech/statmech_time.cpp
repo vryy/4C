@@ -54,7 +54,6 @@ StatMechTime::StatMechTime(ParameterList& params,
 StruGenAlpha(params,dis,solver,output),
 isconverged_(0),
 unconvergedsteps_(0),
-disprev_(LINALG::CreateVector(*(discret_.DofRowMap()),true)),
 isinit_(false),
 deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
@@ -133,7 +132,7 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    * Calculations are made on Proc 0, only.*/
   if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
   	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
-		statmechmanager_->CrosslinkerDiffusion(*dis_,*dis_,0.0,0.0,params_.get<double>("delta time", 0.0),true);
+		statmechmanager_->CrosslinkerDiffusion(*dis_,0.0,0.0,params_.get<double>("delta time", 0.0),true);
 
 
   return;
@@ -250,34 +249,12 @@ void StatMechTime::Integrate()
 
       const double t_admin = Teuchos::Time::wallTime();
       UpdateandOutput();
-    	/*crosslinker positions of the diffusion simulation for crosslink molecules are updated. (note: this update
-    	 * does NOT directly add or delete elements. It simply updates the position of the midpoints of hypothetical
-    	 * crosslinkers. A hypothetical crosslinker becomes a real element only if it links two filaments.*/
-      // calculate the change in displacement
-      /*Epetra_Vector deltadis(*(discret_.DofRowMap()), true);
-      for(int j=0; j<deltadis.MyLength(); j++)
-      	deltadis[j] = (*dis_)[j] - (*disprev_)[j];*/
-
-      /*if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
-      	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
-      {
-        // calculate standard deviation
-      	double standarddev = sqrt(statmechmanager_->statmechparams_.get<double>("KT", 0.0) /
-																 (2*M_PI*statmechmanager_->statmechparams_.get<double>("ETA", 0.0) *
-																  statmechmanager_->statmechparams_.get<double>("R_LINK", 0.0))*dt);
-				statmechmanager_->CrosslinkerDiffusion(*dis_, deltadis, 0.0, standarddev, dt,false);
-
-				if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_,"SPECIAL_OUTPUT")==INPAR::STATMECH::statout_gmsh)
-					statmechmanager_->GmshPrepareVisualization(*dis_, deltadis);
-      }*/
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
-      statmechmanager_->StatMechUpdate(dt,*dis_, *disprev_, stiff_,ndim);
+      statmechmanager_->StatMechUpdate(dt,*dis_, stiff_,ndim);
 
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
-      // copy displacement to be able to calculate the change in the next time step
-      *disprev_ = *dis_;
 
       if(!discret_.Comm().MyPID())
       cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
