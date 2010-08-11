@@ -1370,9 +1370,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     SurfaceIntegration(detA,normal,x,deriv);
     A += detA*intpoints.qwgt[gpid];
 
-    LINALG::SerialDenseMatrix ddet(3,ndof);
-    LINALG::SerialDenseMatrix ddet2(3*ndof,ndof);
-    LINALG::SerialDenseVector jacobi_deriv(ndof);
+    LINALG::SerialDenseMatrix ddet(3,ndof,true);
+    LINALG::SerialDenseMatrix ddet2(3*ndof,ndof,true);
+    LINALG::SerialDenseVector jacobi_deriv(ndof,true);
 
     dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
 
