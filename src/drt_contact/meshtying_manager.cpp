@@ -445,8 +445,20 @@ void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
   RCP<Epetra_Vector> tractionexp = rcp(new Epetra_Vector(*problem));
   LINALG::Export(*traction, *tractionexp);
 
+  // evaluate slave and master forces
+  RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  RCP<Epetra_Vector> fcslaveexp = rcp(new Epetra_Vector(*problem));
+  RCP<Epetra_Vector> fcmasterexp = rcp(new Epetra_Vector(*problem));
+  GetStrategy().DMatrix()->Multiply(true, *traction, *fcslave);
+  GetStrategy().MMatrix()->Multiply(true, *traction, *fcmaster);
+	LINALG::Export(*fcslave, *fcslaveexp);
+	LINALG::Export(*fcmaster, *fcmasterexp);
+
   // write to output
   output.WriteVector("interfacetraction",tractionexp);
+  output.WriteVector("slaveforces",fcslaveexp);
+  output.WriteVector("masterforces",fcmasterexp);
 
   return;
 }

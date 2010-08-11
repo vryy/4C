@@ -295,6 +295,32 @@ public:
   virtual bool& SetSlave() { return isslave_; }
 
   /*!
+  \brief Is slave node tied or untied
+  */
+  virtual bool IsTiedSlave() const { return istiedslave_;}
+
+  /*!
+  \brief Modify tying status of current slave node
+
+  This changing of status becomes necessary for meshtying simulations
+  where the given slave surface only partially overlaps with the master
+  surface. Then the flag istiedslave_ needs to be initialized according
+  to the actual tying status. True means that the node is participating
+  in meshtying and thus carries mortar contributions. False means that
+  the node is not involved in meshtying and does not need to carry
+  Lagrange multipliers anyway. There is some similarity with an active
+  set definition in contact mechanics, yet the set is static here in the
+  meshtying case, of course.
+  
+  During problem initialization this flag is first set to the same value
+  as isslave_, i.e. we assume a complete projection of the slave surface.
+  Then, the actual meshtying zone is identified and this flag is adapted
+  for each node accordingly.
+
+  */
+  virtual bool& SetTiedSlave() { return istiedslave_; }
+
+  /*!
   \brief Is node on boundary of slave side of mortar interface
   */
   virtual bool IsOnBound() const { return isonbound_; }
@@ -452,6 +478,7 @@ public:
 protected:
 
   bool            isslave_;        // true if cnode is on slave side of contact problem
+  bool            istiedslave_;    // true if cnode is on slave side and actually tied
   bool            isonbound_;      // true if cnode is on slave side boundary
   bool            isdbc_;          // true if cnode has D.B.C.applied to at least one dof
   int             numdof_;         // number of degrees of freedom (length of dofs_)

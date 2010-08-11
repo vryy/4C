@@ -153,6 +153,7 @@ MORTAR::MortarNode::MortarNode(int id, const double* coords, const int owner,
                 const int numdof, const vector<int>& dofs, const bool isslave) :
 DRT::Node(id,coords,owner),
 isslave_(isslave),
+istiedslave_(isslave),
 isonbound_(false),
 isdbc_(false),
 numdof_(numdof),
@@ -175,6 +176,7 @@ kappa_(1.0)
 MORTAR::MortarNode::MortarNode(const MORTAR::MortarNode& old) :
 DRT::Node(old),
 isslave_(old.isslave_),
+istiedslave_(old.istiedslave_),
 isonbound_(old.isonbound_),
 isdbc_(old.isdbc_),
 numdof_(old.numdof_),
@@ -245,6 +247,8 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // add isslave_
   AddtoPack(data,isslave_);
+  // add istiedslave_
+  AddtoPack(data,istiedslave_);
   // add isonbound_
   AddtoPack(data,isonbound_);
   // add isdbc_
@@ -290,6 +294,8 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   DRT::Node::Unpack(basedata);
   // isslave_
   ExtractfromPack(position,data,isslave_);
+  // istiedslave_
+  ExtractfromPack(position,data,istiedslave_);
   // isonbound_
   ExtractfromPack(position,data,isonbound_);
   // isdbc_

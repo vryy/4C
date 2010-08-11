@@ -65,6 +65,26 @@ probdiscret_(discret),
 interface_(interface),
 dualquadslave3d_(false)
 {
+  // call setup method to do all the work
+  Setup();
+
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  << operator                                              mwgee 10/07|
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
+{
+  strategy.Print(os);
+  return os;
+}
+
+/*----------------------------------------------------------------------*
+ | setup this strategy object                                popp 08/10 |
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::Setup()
+{
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     
@@ -146,15 +166,6 @@ dualquadslave3d_(false)
 }
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 10/07|
- *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
-{
-  strategy.Print(os);
-  return os;
-}
-
-/*----------------------------------------------------------------------*
  | set current deformation state                             popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::SetState(const string& statename,
@@ -189,6 +200,11 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   }
   
   //********************************************************************
+	// restrict mortar treatment to actual meshtying zone
+	//********************************************************************
+  RestrictMeshtyingZone();
+
+  //********************************************************************
   // initialize and evaluate global mortar stuff
   //********************************************************************
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
@@ -209,6 +225,45 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  restrict slave boundary to actual meshtying zone          popp 08/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
+{
+	// Step 1: detect tied slave nodes on all interfaces
+	int localfounduntied = 0;
+	int globalfounduntied = 0;
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->DetectTiedSlaveNodes(localfounduntied);
+  Comm().SumAll(&localfounduntied,&globalfounduntied,1);
+
+  // get out of here if the whole slave surface is tied
+  if (globalfounduntied == 0) return;
+
+  // print message
+  if (Comm().MyPID()==0)
+  {
+    cout << "*RMZ*...............";
+    fflush(stdout);
+  }
+
+  // Step 2: restrict slave node/dof sets of all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->RestrictSlaveSets();
+
+  // Step 3: reset affected global maps
+  gsnoderowmap_ = Teuchos::null;
+  gsdofrowmap_  = Teuchos::null;
+  gmdofrowmap_  = Teuchos::null;
+  gndofrowmap_  = Teuchos::null;
+  glmdofrowmap_ = Teuchos::null;
+
+  // Step 4: re-setup global maps and vectors
+  Setup();
+
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -563,9 +618,9 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   RCP<Epetra_Vector> fcslavetempend = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fcmastertempend = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-  dmatrix_->Multiply(false, *z_, *fcslavetemp);
+  dmatrix_->Multiply(true, *z_, *fcslavetemp);
   mmatrix_->Multiply(true, *z_, *fcmastertemp);
-  dmatrix_->Multiply(false, *zold_, *fcslavetempend);
+  dmatrix_->Multiply(true, *zold_, *fcslavetempend);
   mmatrix_->Multiply(true, *zold_, *fcmastertempend);
   
   // export the interface forces to full dof layout
@@ -781,8 +836,10 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (!output && Comm().MyPID()==0)
     {
-      printf("Slave Meshtying Force:   % e  % e  % e\n",ggfcs[0],ggfcs[1],ggfcs[2]);
-      printf("Master Meshtying Force:  % e  % e  % e\n",ggfcm[0],ggfcm[1],ggfcm[2]);
+    	double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
+			double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
+			printf("Slave Contact Force:   % e  % e  % e \tNorm: % e\n",ggfcs[0],ggfcs[1],ggfcs[2], snorm);
+			printf("Master Contact Force:  % e  % e  % e \tNorm: % e\n",ggfcm[0],ggfcm[1],ggfcm[2], mnorm);
       printf("Slave Meshtying Moment:  % e  % e  % e\n",ggmcs[0],ggmcs[1],ggmcs[2]);
       //printf("Slave Meshtying Moment:  % e  % e  % e\n",ggmcsnew[0],ggmcsnew[1],ggmcsnew[2]);
       printf("Master Meshtying Moment: % e  % e  % e\n",ggmcm[0],ggmcm[1],ggmcm[2]);

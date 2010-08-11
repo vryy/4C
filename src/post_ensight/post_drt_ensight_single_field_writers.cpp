@@ -31,6 +31,8 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("slaveforces", "slaveforces", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("masterforces", "masterforces", dofbased, field->problem()->num_dim());
   
   // thermo results
   EnsightWriter::WriteResult("temperature", "temperature", nodebased, 1);

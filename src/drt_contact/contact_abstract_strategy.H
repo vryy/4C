@@ -135,6 +135,18 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     }
 
     /*!
+		\brief Return mortar matrix D
+
+		*/
+		RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
+		
+		/*!
+		\brief Return mortar matrix M
+
+		*/
+		RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
+
+    /*!
     \brief Return jump vector (t_n+1)
 
     */
@@ -210,6 +222,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     //@}
 
     //! @name Evaluation methods
+
+    /*!
+    \brief Setup this strategy object (maps, vectors, etc.)
+
+    */
+    void Setup();
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -589,6 +607,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     // are defined as empty here in the case of contact. They can be called from the
     // control routine (time integrator), whenever you like.
     
+    virtual void RestrictMeshtyingZone() {}
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) {}
     virtual void MeshInitialization() {}
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) {}

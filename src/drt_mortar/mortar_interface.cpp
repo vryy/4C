@@ -748,6 +748,94 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
 }
 
 /*----------------------------------------------------------------------*
+ |  restrict slave sets to actual meshtying zone              popp 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::RestrictSlaveSets()
+{
+  //********************************************************************
+  // NODES
+  //********************************************************************
+  {
+    vector<int> sc;          // slave column map
+    vector<int> sr;          // slave row map
+    vector<int> scfull;      // slave full map
+    vector<int> scb;         // slave column map + boundary nodes
+    vector<int> scfullb;     // slave full map + boundary nodes
+
+    for (int i=0; i<snodefullmap_->NumMyElements(); ++i)
+    {
+      int gid = snodefullmap_->GID(i);
+      bool istied = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsTiedSlave();
+      bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBound();
+
+      if (istied || isonbound) scfullb.push_back(gid);
+      if (istied) scfull.push_back(gid);
+
+      if (snodecolmap_->MyGID(gid))
+      {
+        if (istied || isonbound) scb.push_back(gid);
+        if (istied) sc.push_back(gid);
+      }
+
+      if (snoderowmap_->MyGID(gid))
+      {
+        if (istied) sr.push_back(gid);
+      }
+    }
+
+    snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
+    snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+    snodecolmapbound_ = rcp(new Epetra_Map(-1,(int)scb.size(),&scb[0],0,Comm()));
+    snodefullmapbound_ = rcp(new Epetra_Map(-1,(int)scfullb.size(),&scfullb[0],0,Comm()));
+  }
+
+  //********************************************************************
+  // ELEMENTS
+  //********************************************************************
+  // no need to do this for elements, because all mortar quantities
+  // are defined with respect to node or dof maps (D,M,...). As all
+  // mortar stuff has already been evaluated, it would not matter if
+  // we adapted the element maps as well, but we just skip it.
+  
+  //********************************************************************
+  // DOFS
+  //********************************************************************
+  {
+    vector<int> sc;          // slave column map
+    vector<int> sr;          // slave row map
+    vector<int> scfull;      // slave full map
+
+    for (int i=0; i<snodefullmap_->NumMyElements(); ++i)
+		{
+			int gid = snodefullmap_->GID(i);
+			DRT::Node* node = Discret().gNode(gid);
+			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+			MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+			bool istied = mrtrnode->IsTiedSlave();
+
+			if (istied)
+				for (int j=0;j<mrtrnode->NumDof();++j)
+				  scfull.push_back(mrtrnode->Dofs()[j]);
+
+			if (snodecolmap_->MyGID(gid) && istied)
+			  for (int j=0;j<mrtrnode->NumDof();++j)
+					sc.push_back(mrtrnode->Dofs()[j]);
+
+			if (snoderowmap_->MyGID(gid) && istied)
+				for (int j=0;j<mrtrnode->NumDof();++j)
+					sr.push_back(mrtrnode->Dofs()[j]);
+		}
+
+    sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    sdoffullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
+    sdofcolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  update Lagrange multiplier set (dofs)                     popp 08/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::UpdateLagMultSets(int offset_if)
@@ -2219,6 +2307,66 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
 	}
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Detect actual meshtying zone (node by node)               popp 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // loop over proc's slave nodes of the interface for detection
+	// use fully overlapping map to store tying info on all procs
+	for (int i=0;i<snodefullmap_->NumMyElements();++i)
+	{
+		int gid = snodefullmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+		// initialize detection
+		int sized = 0;
+		int sizem = 0;
+
+		// only perform detection for owner proc
+		if (Comm().MyPID()==mrtrnode->Owner())
+		{
+			vector<map<int,double> > dmap = mrtrnode->MoData().GetD();
+			vector<map<int,double> > mmap = mrtrnode->MoData().GetM();
+			sized = dmap.size();
+			sizem = mmap.size();
+		}
+
+		// communicate among all lComm (interface) procs
+		lComm()->Broadcast(&sized,1,procmap_[mrtrnode->Owner()]);
+		lComm()->Broadcast(&sizem,1,procmap_[mrtrnode->Owner()]);
+
+    // found untied node
+    if (sized==0 && sizem==0)
+    {
+    	// increase counter
+    	founduntied += 1;
+
+    	// set node status to untied slave
+    	mrtrnode->SetTiedSlave()=false;
+    }
+
+    // found tied node
+    else if (sized>0 && sizem>0)
+    {
+    	// do nothing
+    }
+
+    // found inconsistency
+    else
+    {
+    	dserror("ERROR: Inconsistency in tied/untied node detection");
+    }
+	}
+
+	return;
 }
 
 #endif  // #ifdef CCADISCRET

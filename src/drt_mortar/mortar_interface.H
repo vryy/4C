@@ -494,6 +494,17 @@ public:
   virtual void UpdateMasterSlaveSets();
   
   /*!
+  \brief Restrict slave sets to actual meshtying zone
+
+  This update is done ONCE in the initialization phase, when the
+  slave surface only partially overlaps with the master surface.
+  It restricts the slave sets (nodes, dofs, but NOT the elements)
+  to the actual meshtying zone for the whole simulation.
+
+  */
+  virtual void RestrictSlaveSets();
+
+  /*!
   \brief Update interface Lagrange multiplier sets
 
   This update is usually only done ONCE in the initialization phase
@@ -614,6 +625,12 @@ public:
   virtual void AssembleTrafo(LINALG::SparseMatrix& trafo,
                              LINALG::SparseMatrix& invtrafo,
                              set<int>& donebefore);
+
+  /*!
+  \brief Detect actual meshtying zone (node by node)
+
+  */
+  virtual void DetectTiedSlaveNodes(int& founduntied);
 
   //@}
 

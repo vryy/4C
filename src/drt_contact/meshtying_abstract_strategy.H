@@ -145,6 +145,18 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     }  
     
     /*!
+	  \brief Return mortar matrix D
+
+	  */
+	  RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
+	  
+	  /*!
+	  \brief Return mortar matrix M
+
+	  */
+	  RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
+
+    /*!
     \brief Get dual quadratic 3d slave element flag
 
     Returns TRUE if at least one higher-order 3d slave element with
@@ -156,6 +168,12 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     //@}
 
     //! @name Evaluation methods
+
+    /*!
+    \brief Setup this strategy object (maps, vectors, etc.)
+
+    */
+    void Setup();
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -217,6 +235,22 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     
     */
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis);
+
+    /*!
+		\brief Restrict slave boundary to actual meshtying zone
+
+		Only do this ONCE for meshtying upon initialization!
+		This method first detects for each interface the actually tied part
+		of the slave surface (i.e. the nodes that carry a D/M contribution).
+		Then all slave maps on interface level and on global level are
+		re-initialized and re-setup according to the the above defined
+		actual slave meshtying zone. This is necessary for problems in which
+		the slave surface does not fully project onto the master surface
+		and thus the actual meshtying zone cannot be defined within the
+		input file. Thus, it is computed here.
+
+		*/
+		virtual void RestrictMeshtyingZone();
 
     /*!
     \brief Do mesh intialization for rotational invariance

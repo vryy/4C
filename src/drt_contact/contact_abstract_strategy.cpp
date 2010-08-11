@@ -69,6 +69,26 @@ isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false)
 {
+	// call setup method to do all the work
+	Setup();
+
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  << operator                                              mwgee 10/07|
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
+{
+  strategy.Print(os);
+  return os;
+}
+
+/*----------------------------------------------------------------------*
+ | setup this strategy object                                popp 08/10 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::Setup()
+{
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
   bool selfcontact = 0;
@@ -78,7 +98,7 @@ dualquadslave3d_(false)
   if (selfcontact) isselfcontact_=true;
   
   // check for infeasible self contact combinations
-  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(params,"FRICTION");
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
   
@@ -198,15 +218,6 @@ dualquadslave3d_(false)
 	}
 
 	return;
-}
-
-/*----------------------------------------------------------------------*
- |  << operator                                              mwgee 10/07|
- *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
-{
-  strategy.Print(os);
-  return os;
 }
 
 /*----------------------------------------------------------------------*
