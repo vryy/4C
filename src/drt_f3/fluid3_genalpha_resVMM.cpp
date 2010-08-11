@@ -233,19 +233,17 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // --------------------------------------------------
   // set parameters for nonlinear treatment
-  string newtonstr=params.get<string>("Linearisation");
-
   INPAR::FLUID::LinearisationAction newton = INPAR::FLUID::no_linearisation;
 
-  if(newtonstr=="Newton")
+  if(params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
   {
     newton=INPAR::FLUID::Newton;
   }
-  else if (newtonstr=="fixed_point_like")
+  else if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::fixed_point_like)
   {
     newton=INPAR::FLUID::fixed_point_like;
   }
-  else if (newtonstr=="minimal")
+  else if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::minimal)
   {
     newton=INPAR::FLUID::minimal;
   }

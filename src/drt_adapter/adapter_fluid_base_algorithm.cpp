@@ -202,7 +202,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // type of predictor
   fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
-  fluidtimeparams->set<string>          ("Linearisation"             ,fdyn.get<string>("NONLINITER"));
+  fluidtimeparams->set<INPAR::FLUID::LinearisationAction>("Linearisation", Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // set bool flag "Newton true or false" for combustion formulation and XFEM
   //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
   //                           Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);

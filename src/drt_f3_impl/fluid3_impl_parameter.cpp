@@ -69,8 +69,11 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
   is_genalpha_ = params.get<bool>("using generalized-alpha time integration");
 
   // set flag for type of linearization (fixed-point-like or Newton)
-  std::string newtonstr   = params.get<std::string>("Linearisation");
-  if (newtonstr=="Newton")          is_newton_       = true;
+  //std::string newtonstr   = params.get<std::string>("Linearisation");
+  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
+    is_newton_       = true;
+  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::minimal)
+    dserror("There is no LinearisationAction minimal in the fluid formulation");
 
   // set flags for formuation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");

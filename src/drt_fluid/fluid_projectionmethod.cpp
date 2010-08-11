@@ -89,7 +89,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     }
 
     // parameter for linearization scheme (fixed-point-like or Newton)
-    newton_ = params_.get<string>("Linearisation");
+    newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
 
     // ensure that degrees of freedom in the discretization have been set
     if(!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();

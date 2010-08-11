@@ -166,7 +166,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   const int err =  FluidFluidboundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
-  
+
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(discret_, FluidFluidboundarydis_);
   discret_->Redistribute(*(discret_->NodeRowMap()), *newcolnodemap);
 
@@ -306,20 +306,20 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     DRT::Node*  MovingFluidnode = MovingFluiddis_->lColNode(node);
     MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
-  }  
-    
+  }
+
   //information how many processors work at all
   vector<int> allproc(MovingFluiddis_->Comm().NumProc());
-  
+
   //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<MovingFluiddis_->Comm().NumProc(); ++i) allproc[i] = i;
-    
-  //gathers information of MovingFluideleGIDs and writes it into fluidfluidstate_.MovingFluideleGIDs_ 
+
+  //gathers information of MovingFluideleGIDs and writes it into fluidfluidstate_.MovingFluideleGIDs_
   LINALG::Gather<int>(MovingFluideleGIDs,fluidfluidstate_.MovingFluideleGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
-    
+
   //gathers information of MovingFluidNodeGIDs and writes it into fluidfluidstate_.MovingFluidNodeGIDs_
   LINALG::Gather<int>(MovingFluidNodeGIDs,fluidfluidstate_.MovingFluidNodeGIDs_,MovingFluiddis_->Comm().NumProc(),&allproc[0],MovingFluiddis_->Comm());
-  
+
   if (!fluidfluidstate_.MovingFluideleGIDs_.empty())
     fluidfluidCoupling_ = true;
 
@@ -359,7 +359,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   if (fluidfluidCoupling_)
     preparefluidfluidboundaryDofset();
-  
+
 //  if (alefluid_ == true)
 //  {
 //    ALEfluidstate_.gridv_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
@@ -3476,7 +3476,7 @@ void FLD::XFluidImplicitTimeInt::preparefluidfluidboundaryDofset(
         )
 {
    ComputeInterfaceAndSetDOFs(ALEFluidboundarydis_);
-  
+
    RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(discret_));
    FluidFluidboundarydis_->ReplaceDofSet(newdofset);
    const int error = FluidFluidboundarydis_->FillComplete();
@@ -3603,7 +3603,7 @@ void FLD::XFluidImplicitTimeInt::ComputeFluidFluidInterfaceAccelerationsAndVeloc
     fluidfluidstate_.fiaccnp_->Update(-1.0/(beta*dt),*fluidfluidstate_.fiveln_,1.0);
     fluidfluidstate_.fiaccnp_->Update(1.0/(beta*dt*dt),*fluidfluidstate_.fidispnp_,-1.0/(beta*dt*dt),*fluidfluidstate_.fidispn_,1.0);
 
-    // For fluid-fluid Coupling the interface velocity is updated at the end of while-loop in Nonlinearsolve. 
+    // For fluid-fluid Coupling the interface velocity is updated at the end of while-loop in Nonlinearsolve.
     // compute velocity at timestep n+1
     //fluidfluidstate_.fivelnp_->Update(1.0,*fluidfluidstate_.fiveln_,0.0);
     //fluidfluidstate_.fivelnp_->Update(gamma*dt,*fluidfluidstate_.fiaccnp_,(1-gamma)*dt,*fluidfluidstate_.fiaccn_,1.0);

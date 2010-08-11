@@ -747,7 +747,7 @@ private:
   //! @name parameters for nonlinear iteration
   //
   //! parameter for linearisation
-  string                      newton_;
+  INPAR::FLUID::LinearisationAction   newton_;
 
   //! predictor used in nonlinear iteration
   string                      predictor_;
@@ -944,7 +944,7 @@ private:
   //! @name Turbulent inflow conditions
   //        ---------------------------
   //
-  //! a manager doing the transfer of boundary data for 
+  //! a manager doing the transfer of boundary data for
   //! turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
   //@}

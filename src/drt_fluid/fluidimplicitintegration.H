@@ -457,7 +457,7 @@ protected:
   double gasconstant_;
 
   //! use (or not) linearisation of reactive terms on the element
-  string newton_;
+  INPAR::FLUID::LinearisationAction newton_;
 
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;

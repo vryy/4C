@@ -179,7 +179,7 @@ protected:
     int uprestart_;
     int upres_;
 
-    string newton_;
+    INPAR::FLUID::LinearisationAction newton_;
 
     // MapExtractor velocity <-> pressure
     LINALG::MapExtractor      velpressplitter_;

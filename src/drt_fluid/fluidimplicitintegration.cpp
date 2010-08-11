@@ -128,7 +128,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = params_.get<string>("Linearisation");
+  newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
 
   // use of predictor
   // (might be used for af-generalized-alpha, but not yet activated)

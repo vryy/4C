@@ -129,7 +129,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // parameter for linearisation scheme (fixed point like or newton like)
-  newton_    = params_.get<string>("Linearisation");
+  newton_    = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
 
   itenum_    = 0;
   itemax_    = params_.get<int>   ("max nonlin iter steps");
@@ -335,7 +335,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // check whether we have a coupling to a turbulent inflow generating
   // computation and initialise the transfer if necessary
   // -------------------------------------------------------------------
-  turbulent_inflow_condition_ 
+  turbulent_inflow_condition_
     = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
 
   //--------------------------------------------------------------------
@@ -930,15 +930,15 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
                     (equivalent to what is done for BDF2)
 
-                           /                      \  
-        n+1        1      |     n+1       n    n-1 | 
-     u_G     = -------- * | 3* d   - 4 * d  + d    | 
-                2 * dt    |                        | 
-                           \                      /          
+                           /                      \
+        n+1        1      |     n+1       n    n-1 |
+     u_G     = -------- * | 3* d   - 4 * d  + d    |
+                2 * dt    |                        |
+                           \                      /
     */
     gridveln_->Update(1.5/dt_, *dispnp_, -2.0/dt_, *dispn_, 0.0);
     gridveln_->Update(0.5/dt_, *dispnm_, 1.0);
-   
+
     //    n+1         n
     //   d      ---> d
     //
@@ -2540,8 +2540,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         cout << "\n";
 
         // linearisation
-	cout << "Linearisation              : ";
-	cout << params_.get<string>("Linearisation");
+	cout << "Linearisation (0=fixed_point; 1=Newton; 2=minimal): ";
+	cout << params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
         cout << endl;
 
         // predictor
@@ -2903,11 +2903,11 @@ void FLD::FluidGenAlphaIntegration::UpdateGridv()
 
                     (equivalent to what is done for BDF2)
 
-                           /       \          
-        n+1        3      |  n+1  n |    1       n 
-     u_G     = -------- * | d   -d  | - --- * u_G  
+                           /       \
+        n+1        3      |  n+1  n |    1       n
+     u_G     = -------- * | d   -d  | - --- * u_G
                 2 * dt    |         |    2
-                           \       /          
+                           \       /
   */
   gridvelaf_->Update(-0.5,*gridveln_,0.0);
   gridvelaf_->Update( 3.0/(2.0*dt_),*dispnp_,
@@ -2918,7 +2918,7 @@ void FLD::FluidGenAlphaIntegration::UpdateGridv()
     now do a linear interpolation to the intermediate time level
 
             n+af      n+1               n    /          \
-         u_G     = u_G    * alphaF + u_G  * | 1 - alphaF |  
+         u_G     = u_G    * alphaF + u_G  * | 1 - alphaF |
                                              \          /
   */
   gridvelaf_->Update((1-alphaF_),*gridveln_,alphaF_);
@@ -2942,7 +2942,7 @@ void FLD::FluidGenAlphaIntegration::UpdateGridv()
 
   /*
                 shouldn't it be something like
- 
+
                              /       \     /            \
         n+af     alphaF     |  n+1  n |   |       alphaF |   .n
      u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d
