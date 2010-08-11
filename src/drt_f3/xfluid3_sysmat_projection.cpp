@@ -242,7 +242,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1>
 void SysmatDomainProjection(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+    XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           eveln,
     const M1&                           eaccn,
@@ -641,7 +641,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void SysmatProject(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+        XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
         Epetra_SerialDenseMatrix&         estif_veln,         ///< element matrix to calculate
@@ -687,7 +687,7 @@ void SysmatProject(
 void XFLUID::callSysmatProjection(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+        XFEM::InterfaceHandleXFSI*  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
         Epetra_SerialDenseMatrix&         estif_veln,         ///< element matrix to calculate

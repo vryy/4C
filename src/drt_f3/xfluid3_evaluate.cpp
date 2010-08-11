@@ -134,7 +134,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // from the last nonlinear iteration
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
-      ih_ = Teuchos::null;
+      ih_ = NULL;
       DLM_info_ = Teuchos::null;
       break;
     }
@@ -144,7 +144,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // reset dof managers if present
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
-      ih_ = Teuchos::null;
+      ih_ = NULL;
       DLM_info_ = Teuchos::null;
       break;
     }
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       output_mode_ = false;
 
       // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle");
+      ih_ = &*params.get< Teuchos::RCP< XFEM::InterfaceHandleXFSI > >("interfacehandle");
 
       // get access to global dofman
       const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
@@ -1227,7 +1227,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void integrateShapefunctionT(
         const DRT::Element*                             ele,     ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+        XFEM::InterfaceHandleXFSI*  ih,      ///< connection to the interface handler
         const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
         Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
         Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate
@@ -1371,7 +1371,7 @@ void integrateShapefunctionT(
 void DRT::ELEMENTS::XFluid3::integrateShapefunction(
         const XFEM::AssemblyType&                       assembly_type,
         const DRT::Element*                             ele,     ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+        XFEM::InterfaceHandleXFSI*  ih,      ///< connection to the interface handler
         const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
         Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
         Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate

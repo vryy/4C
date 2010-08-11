@@ -193,7 +193,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2>
 void SysmatDomain4(
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+    XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           evelnp,
 //    const M1&                           eveln,
@@ -279,7 +279,7 @@ void SysmatDomain4(
 
         const XFEM::ElementEnrichmentValues enrvals(
               *ele,
-              ih,
+              &*ih,
               dofman,
               cellcenter_xyz, false, -1);
 
@@ -624,7 +624,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2>
 void SysmatBoundary4(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+    XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M2&                         eflux,
@@ -791,7 +791,7 @@ void SysmatBoundary4(
 //              dserror("for an intersected element, we assume only 1 enrichment for now!");
             const XFEM::ElementEnrichmentValues enrvals(
                   *ele,
-                  ih,
+                  &*ih,
                   dofman,
                   gauss_pos_xyz,
                   true,
@@ -978,13 +978,13 @@ void Sysmat4(
     fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, etau);
 
     SysmatDomain4<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, etau,
+        ele, &*ih, dofman, evelnp, etau,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, instationary, assembler, L2);
 
     if (ih->ElementIntersected(ele->Id()))
     {
       SysmatBoundary4<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, etau, ivelcol, iforcecol,
+          ele, &*ih, dofman, evelnp, etau, ivelcol, iforcecol,
           timealgo, dt, theta, assembler, ifaceForceContribution);
     }
 }

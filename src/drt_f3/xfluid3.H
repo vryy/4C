@@ -317,7 +317,8 @@ private:
         bool                             output_mode_;
 
         //! store information about the intersection handle
-        Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
+        //Teuchos::RCP<XFEM::InterfaceHandleXFSI>                       ih_;
+        XFEM::InterfaceHandleXFSI*                       ih_;
 
         //! store element stress info and corresponding matrices used during condensation
         class DLMInfo
@@ -408,7 +409,7 @@ private:
         void integrateShapefunction(
                 const XFEM::AssemblyType&                       assembly_type,
                 const DRT::Element*                             ele,     ///< the element those matrix is calculated
-                const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,      ///< connection to the interface handler
+                XFEM::InterfaceHandleXFSI*  ih,      ///< connection to the interface handler
                 const XFEM::ElementDofManager&                  dofman,  ///< dofmanager of the current element
                 Epetra_SerialDenseMatrix&                       estif,   ///< element matrix to calculate
                 Epetra_SerialDenseVector&                       eforce   ///< element rhs to calculate

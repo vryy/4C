@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
         const DRT::Element&                    ele,
-        const RCP<XFEM::InterfaceHandle>&      ih,                ///< interface information
+        XFEM::InterfaceHandle*      ih,                ///< interface information
         const XFEM::ElementDofManager&         dofman,
         const LINALG::Matrix<3,1>&             actpos,
         const bool                             boundary_integral,
@@ -63,7 +63,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
  *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&                   ele,
-  const RCP<XFEM::InterfaceHandle>&     ih,
+  XFEM::InterfaceHandle*     ih,
   const XFEM::ElementDofManager&        dofman,
   const GEO::DomainIntCell&             cell,
   const XFEM::PHYSICS::Field            field,
@@ -245,7 +245,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
  *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&                 ele,
-  const RCP<XFEM::InterfaceHandle>&   ih,
+  XFEM::InterfaceHandle*   ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::DomainIntCell&           cell,
   const XFEM::PHYSICS::Field          field,
@@ -294,7 +294,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
  *----------------------------------------------------------------------*/
 void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   const DRT::Element&                 ele,
-  const RCP<XFEM::InterfaceHandle>&   ih,
+  XFEM::InterfaceHandle*   ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::DomainIntCell&           cell,
   const XFEM::PHYSICS::Field          field,
@@ -345,7 +345,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
  *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
   const DRT::Element&                 ele,
-  const RCP<XFEM::InterfaceHandle>&   ih,
+  XFEM::InterfaceHandle*   ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::DomainIntCell&           cell,
   const XFEM::PHYSICS::Field          field,
@@ -391,7 +391,7 @@ void XFEM::computeVectorCellNodeValues(
  *----------------------------------------------------------------------*/
 void XFEM::computeVectorCellNodeValues(
   const DRT::Element&                 ele,
-  const RCP<XFEM::InterfaceHandle>&   ih,
+  XFEM::InterfaceHandle*   ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::BoundaryIntCell&         cell,
   const XFEM::PHYSICS::Field          field,

@@ -41,7 +41,7 @@ namespace XFEM
     */
     explicit ElementEnrichmentValues(
         const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>&     ih,               ///< interface information
+        XFEM::InterfaceHandle*     ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const bool                            boundary_integral,
@@ -676,7 +676,7 @@ namespace XFEM
  */
 void computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&                 ele,
-  const RCP<XFEM::InterfaceHandle>&   ih,
+  XFEM::InterfaceHandle*  ih,
   const XFEM::ElementDofManager&      dofman,
   const GEO::DomainIntCell&           cell,
   const XFEM::PHYSICS::Field          field,
@@ -722,7 +722,7 @@ void InterpolateCellValuesFromElementValuesLevelSetKink(
 //! for output, compute values on the integration cells
 void computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&                   ele,
-  const RCP<XFEM::InterfaceHandle>&     ih,
+  XFEM::InterfaceHandle*     ih,
   const XFEM::ElementDofManager&        dofman,
   const GEO::DomainIntCell&             cell,
   const XFEM::PHYSICS::Field            field,
@@ -734,7 +734,7 @@ void computeScalarCellNodeValuesFromElementUnknowns(
 //! for output, compute values on the integration cells
 void computeTensorCellNodeValuesFromElementUnknowns(
   const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
+  XFEM::InterfaceHandle*  ih,
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
@@ -745,7 +745,7 @@ void computeTensorCellNodeValuesFromElementUnknowns(
 //! for output, compute values on the integration cells
 void computeVectorCellNodeValues(
   const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
+  XFEM::InterfaceHandle*  ih,
   const XFEM::ElementDofManager& dofman,
   const GEO::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
@@ -756,7 +756,7 @@ void computeVectorCellNodeValues(
 //! for output, compute values on the integration cells
 void computeVectorCellNodeValues(
   const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
+  XFEM::InterfaceHandle*  ih,
   const XFEM::ElementDofManager& dofman,
   const GEO::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,

@@ -732,7 +732,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
 void SysmatDomainSigma(
     ParameterList&                      params,        ///< parameter list
     const DRT::Element*                 ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+    XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           evelnp,
     const M1&                           eveln,
@@ -1226,7 +1226,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2>
 void SysmatBoundarySigma(
     const DRT::Element*               ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+    XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const M2&                         etau,
@@ -1711,7 +1711,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
 void SysmatSigma(
         ParameterList&                    params,
         const DRT::Element*               ele,           ///< the element those matrix is calculated
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,   ///< connection to the interface handler
+        XFEM::InterfaceHandleXFSI*  ih,   ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,  ///< element state variables
         const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
@@ -1776,7 +1776,7 @@ void XFLUID::callSysmatSigma(
         ParameterList&                    params,
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
-        const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+        XFEM::InterfaceHandleXFSI*  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
         const Teuchos::RCP<Epetra_Vector>&  iforcecol,     ///< reaction force due to given interface velocity

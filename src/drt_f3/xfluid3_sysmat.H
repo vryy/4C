@@ -35,7 +35,7 @@ namespace XFLUID
           ParameterList&                    params,
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+          XFEM::InterfaceHandleXFSI*  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
@@ -64,7 +64,7 @@ namespace XFLUID
           ParameterList&                    params,
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+          XFEM::InterfaceHandleXFSI*  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
@@ -95,7 +95,7 @@ namespace XFLUID
           ParameterList&                    params,
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+          XFEM::InterfaceHandleXFSI*  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           const Teuchos::RCP<Epetra_Vector>& iforcecol,     ///< reaction force due to given interface velocity
@@ -140,7 +140,7 @@ namespace XFLUID
   void callSysmatProjection(
           const XFEM::AssemblyType          assembly_type,
           const DRT::ELEMENTS::XFluid3*     ele,
-          const Teuchos::RCP<XFEM::InterfaceHandleXFSI>&  ih,
+          XFEM::InterfaceHandleXFSI*  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const DRT::ELEMENTS::XFluid3::MyState&  mystate,   ///< element state variables
           Epetra_SerialDenseMatrix&         estif_veln,         ///< element matrix to calculate
