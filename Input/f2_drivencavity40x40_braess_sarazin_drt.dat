@@ -70,7 +70,7 @@ PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
 SUPG                            yes_supg
-TAUTYPE                         Franca_Barrenechea_Valentin_Wall
+DEFINITION_TAU                  Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
