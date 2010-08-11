@@ -796,13 +796,14 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   kteff->Complete();
 
   // convert maps (from structure discretization to thermo discretization)
-  // slave-, active-, inactive-, master-, activemaster- and ndofs
-  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs;
+  // slave-, active-, inactive-, master-, activemaster-, n- smdofs
+  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
   ConvertMaps (sdofs,adofs,mdofs,cmtman);
 
   // map of active and master dofs
   amdofs = LINALG::MergeMap(adofs,mdofs,false);
   idofs =  LINALG::SplitMap(*sdofs,*adofs);
+  smdofs = LINALG::MergeMap(sdofs,mdofs,false);
 
   // row map of thermal problem
   RCP<const Epetra_Map> problemrowmap = ThermoField().DofRowMap();
@@ -885,12 +886,12 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // split into slave/master part + structure part
   RCP<LINALG::SparseMatrix> kteffmatrix = rcp(new LINALG::SparseMatrix(*kteff));
 
-  LINALG::SplitMatrix2x2(kteffmatrix,amdofs,ndofs,amdofs,ndofs,ksmsm,ksmn,knsm,knn);
+  LINALG::SplitMatrix2x2(kteffmatrix,smdofs,ndofs,smdofs,ndofs,ksmsm,ksmn,knsm,knn);
 
   // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(ksmsm,adofs,mdofs,adofs,mdofs,kss,ksm,kms,kmm);
-  LINALG::SplitMatrix2x2(ksmn,adofs,mdofs,ndofs,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-  LINALG::SplitMatrix2x2(knsm,ndofs,tempmap,adofs,mdofs,kns,knm,tempmtx1,tempmtx2);
+  LINALG::SplitMatrix2x2(ksmsm,sdofs,mdofs,sdofs,mdofs,kss,ksm,kms,kmm);
+  LINALG::SplitMatrix2x2(ksmn,sdofs,mdofs,ndofs,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+  LINALG::SplitMatrix2x2(knsm,ndofs,tempmap,sdofs,mdofs,kns,knm,tempmtx1,tempmtx2);
 
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
@@ -902,9 +903,9 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<Epetra_Vector> fsm;
 
   // do the vector splitting smn -> sm+n -> s+m+n
-  LINALG::SplitVector(*problemrowmap,*feff,amdofs,fsm,ndofs,fn);
-  LINALG::SplitVector(*amdofs,*fsm,adofs,fs,mdofs,fm);
-
+  LINALG::SplitVector(*problemrowmap,*feff,smdofs,fsm,ndofs,fn);
+  LINALG::SplitVector(*smdofs,*fsm,sdofs,fs,mdofs,fm);
+  
   /**********************************************************************/
   /* Split slave quantities into active / inactive                      */
   /**********************************************************************/
@@ -943,14 +944,14 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // kmn: add T(mbaractive)*kan
   RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
   kmnmod->Add(*kmn,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix,true,*ksn,false,false,false,true);
+  RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix,true,*kan,false,false,false,true);
   kmnmod->Add(*kmnadd,false,1.0,1.0);
   kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
   // kmm: add T(mbaractive)*kam
   RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
   kmmmod->Add(*kmm,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix,true,*ksm,false,false,false,true);
+  RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix,true,*kam,false,false,false,true);
   kmmmod->Add(*kmmadd,false,1.0,1.0);
   kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
