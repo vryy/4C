@@ -1497,8 +1497,8 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
                                  bool overlap)
 {
   // check for unique GIDs and for identity
-  if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
-    dserror("LINALG::MergeMap: One or both input maps are not unique");
+  //if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+  //  dserror("LINALG::MergeMap: One or both input maps are not unique");
   if (map1.SameAs(map2))
   {
     if ((overlap==false) && map1.NumGlobalElements()>0)
