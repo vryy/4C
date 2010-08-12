@@ -85,6 +85,7 @@ def getSymbols(fname):
                     symbollist.add(flag.split(":")[0])
     symbollist.add("CCADISCRET")
     symbollist.add("PARALLEL")
+    symbollist.add("PARMETIS")
     return symbollist
 
 def adapt(do_configure_file):
