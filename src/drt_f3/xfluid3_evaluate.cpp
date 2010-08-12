@@ -429,9 +429,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *fluidfluidmatrices_.Gsui_uncond,
             *fluidfluidmatrices_.Guis_uncond,
             *fluidfluidmatrices_.rhsui_uncond,
-            *fluidfluidmatrices_.GNudi_uncond,
-            *fluidfluidmatrices_.GNsdi_uncond,
-            *fluidfluidmatrices_.GNdidi_uncond,
+            fluidfluidmatrices_.GNudi_uncond,
+            fluidfluidmatrices_.GNsdi_uncond,
+            fluidfluidmatrices_.GNdidi_uncond,
             elemat1, elevec1,
             *Cfi, *Cif, *Cii, *rhsi,
             *ifacepatchlm,
@@ -640,9 +640,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *fluidfluidmatrices_.Gsui_uncond,
             *fluidfluidmatrices_.Guis_uncond,
             *fluidfluidmatrices_.rhsui_uncond,
-            *fluidfluidmatrices_.GNudi_uncond,
-            *fluidfluidmatrices_.GNsdi_uncond,
-            *fluidfluidmatrices_.GNdidi_uncond,
+            fluidfluidmatrices_.GNudi_uncond,
+            fluidfluidmatrices_.GNsdi_uncond,
+            fluidfluidmatrices_.GNdidi_uncond,
             elemat1, elevec1,
             *Cud, *Cdu, *Cdd, *rhsd,
             *ifacepatchlm,
@@ -1067,9 +1067,9 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
     const Epetra_SerialDenseMatrix& Gsui_uncond,
     const Epetra_SerialDenseMatrix& Guis_uncond,
     const Epetra_SerialDenseVector& rhsui_uncond,
-    const Epetra_SerialDenseMatrix& GNudi_uncond,
-    const Epetra_SerialDenseMatrix& GNsdi_uncond,
-    const Epetra_SerialDenseMatrix& GNdidi_uncond,
+    RCP<Epetra_SerialDenseMatrix> GNudi_uncond,
+    RCP<Epetra_SerialDenseMatrix> GNsdi_uncond,
+    RCP<Epetra_SerialDenseMatrix> GNdidi_uncond,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix& Cuui,
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
         {
           Gsui(j,i) = Gsui_uncond(nu+j, i);
           if (monolithic_FSI)
-            Gsui(j,i) += GNsdi_uncond(nu+j, i);
+            Gsui(j,i) += (*GNsdi_uncond)(nu+j, i);
           Guis(i,j) = Guis_uncond(i, nu+j);
         }
       }
@@ -1170,7 +1170,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
         for (size_t j=0;j<nui;j++)
         {
           if (monolithic_FSI)
-            Cuui(i,j) += GNudi_uncond(i,j);
+            Cuui(i,j) += (*GNudi_uncond)(i,j);
           for (size_t k=0;k<ns;k++)
             Cuui(i,j) += -GusKssinv(i,k)*Gsui(k,j);
         }
@@ -1182,7 +1182,7 @@ void DRT::ELEMENTS::XFluid3::CondenseElementStressAndStoreOldIterationStep(
         for (size_t j=0;j<nui;j++)
         {
           if (monolithic_FSI)
-            Cuiui(i,j) += GNdidi_uncond(i,j);
+            Cuiui(i,j) += (*GNdidi_uncond)(i,j);
           for (size_t k=0;k<ns;k++)
             Cuiui(i,j) += -GuisKssinv(i,k)*Gsui(k,j);
         }
