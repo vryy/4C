@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "meshtying_defines.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
@@ -851,48 +852,9 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   constrmt->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
   constrmt->Complete(*slavemap,*dispmap);
 
-  // mapping of gids
-  map<int,int> gidmap;
-  DRT::Exporter ex(constrmt->RowMap(),constrmt->ColMap(),constrmt->Comm());
-  for (int i=0; i<slavemap->NumMyElements(); ++i) gidmap[slavemap->GID(i)] = lmmap->GID(i);
-  ex.Export(gidmap);
-    
-  // transform constraint matrix to lmdofmap
-  RCP<LINALG::SparseMatrix> trconstrmt = rcp(new LINALG::SparseMatrix(*dispmap,100,false,true)); 
-  for (int i=0;i<(constrmt->EpetraMatrix())->NumMyRows();++i)
-  {
-    int NumEntries = 0;
-    double *Values;
-    int *Indices;
-    int err = (constrmt->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err!=0) dserror("ExtractMyRowView error: %d", err);
-    std::vector<int> idx;
-    std::vector<double> vals;
-    idx.reserve(NumEntries);
-    vals.reserve(NumEntries);
+  // transform constraint matrix to lmdofmap (MatrixColTransform)
+  RCP<LINALG::SparseMatrix> trconstrmt = MORTAR::MatrixColTransform(constrmt,lmmap);
 
-    for (int j=0;j<NumEntries;++j)
-    {
-      int gid = (constrmt->ColMap()).GID(Indices[j]);
-      std::map<int,int>::const_iterator iter = gidmap.find(gid);
-      if (iter!=gidmap.end())
-      {
-        idx.push_back(iter->second);
-        vals.push_back(Values[j]);
-      }
-      else
-        dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-    }
-
-    Values = &vals[0];
-    NumEntries = vals.size();
-    err = (trconstrmt->EpetraMatrix())->InsertGlobalValues(constrmt->RowMap().GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-    if (err<0) dserror("InsertGlobalValues error: %d", err);
-  }
-  
-  // complete transformed constraint matrix
-  trconstrmt->Complete(*lmmap,*dispmap);
- 
   // remove meshtying force terms again
   // (solve directly for z_ and not for increment of z_)
   RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));

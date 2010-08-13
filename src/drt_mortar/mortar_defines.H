@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file mortar_defines.H
 
-\brief A set of preprocessor defines and utility functions for mortar methods
+\brief A set of preprocessor defines for mortar methods
 
 <pre>
 -------------------------------------------------------------------------
@@ -75,39 +75,6 @@ using namespace std;
 //#define MORTARGMSH3          /* flag for gmsh output at t = 0.0 */
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
-
-/************************************************************************/
-/* Mortar utility functions                                             */
-/************************************************************************/
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-*/
-namespace MORTAR
-{
-  /*!
-  \brief Template to swap 2 instances of type kind
-  */
-  template<typename kind>
-  void Swap(kind& a, kind& b)
-  {
-    kind tmp = a;
-    a = b;
-    b = tmp;
-    return;
-  }
-  
-  /*!
-  \brief Sort vector in ascending order
-  
-  This routine is taken from Trilinos MOERTEL package.
-  
-  \param dlist (in): vector to be sorted (unsorted on input, sorted on output)
-  \param N (in):     length of vector to be sorted
-  \param list2 (in): another vector which is sorted accordingly  
-  */  
-  void Sort(double* dlist, int N, int* list2);
-
-} // namespace MORTAR
 
 #endif  // #ifndef MORTAR_DEFINES_H
 #endif  // #ifdef CCADISCRET

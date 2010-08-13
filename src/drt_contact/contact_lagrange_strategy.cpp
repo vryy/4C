@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "contact_interface.H"
 #include "contact_defines.H"
 #include "friction_node.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -2173,9 +2174,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   RCP<Epetra_Vector> constrrhs = rcp(new Epetra_Vector(*slavemap));
   
   // initialize transformed constraint matrices
-  RCP<LINALG::SparseMatrix> trkdz = rcp(new LINALG::SparseMatrix(*dispmap,100,false,true));
-  RCP<LINALG::SparseMatrix> trkzd = rcp(new LINALG::SparseMatrix(*lmmap,100,false,true));
-  RCP<LINALG::SparseMatrix> trkzz = rcp(new LINALG::SparseMatrix(*lmmap,100,false,true));
+  RCP<LINALG::SparseMatrix> trkdz, trkzd, trkzz;
   
   //**********************************************************************
   // build matrix and vector blocks
@@ -2188,76 +2187,18 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*slavemap,*dispmap);
-
-    // mapping of gids
-    map<int,int> gidmap;
-    DRT::Exporter ex(kdz->RowMap(),kdz->ColMap(),kdz->Comm());
-    for (int i=0; i<slavemap->NumMyElements(); ++i) gidmap[slavemap->GID(i)] = lmmap->GID(i);
-    ex.Export(gidmap);
-      
-    // transform constraint matrix kdz to lmdofmap 
-    for (int i=0;i<(kdz->EpetraMatrix())->NumMyRows();++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kdz->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-      std::vector<int> idx;
-      std::vector<double> vals;
-      idx.reserve(NumEntries);
-      vals.reserve(NumEntries);
-
-      for (int j=0;j<NumEntries;++j)
-      {
-        int gid = (kdz->ColMap()).GID(Indices[j]);
-        std::map<int,int>::const_iterator iter = gidmap.find(gid);
-        if (iter!=gidmap.end())
-        {
-          idx.push_back(iter->second);
-          vals.push_back(Values[j]);
-        }
-        else
-          dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-      }
-
-      Values = &vals[0];
-      NumEntries = vals.size();
-      err = (trkdz->EpetraMatrix())->InsertGlobalValues(kdz->RowMap().GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
-    
-    // complete transformed constraint matrix kdz
-    trkdz->Complete(*lmmap,*dispmap);
    
+    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    trkdz = MORTAR::MatrixColTransform(kdz,lmmap);
+
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
     if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
     if (gactivet_->NumGlobalElements()) kzd->Add(*pmatrix_,false,1.0,1.0);
     kzd->Complete(*dispmap,*slavemap);
     
-    // transform constraint matrix kzd to lmdofmap
-    for (int i=0; i<(kzd->EpetraMatrix())->NumMyRows(); ++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kzd->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-
-      // pull indices back to global
-      std::vector<int> idx(NumEntries);
-      for (int j=0; j<NumEntries; ++j)
-      {
-        idx[j] = (kzd->ColMap()).GID(Indices[j]);
-      }
-
-      err = (trkzd->EpetraMatrix())->InsertGlobalValues(lmmap->GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
-     
-    // complete transformed constraint matrix kzd
-    trkzd->Complete(*dispmap,*lmmap);
+    // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
+    trkzd = MORTAR::MatrixRowTransform(kzd,lmmap);
 
     // build unity matrix for inactive dofs
     RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
@@ -2272,47 +2213,9 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     if (gactivet_->NumGlobalElements()) kzz->Add(*tmatrix_,false,1.0,1.0);
     kzz->Complete(*slavemap,*slavemap);
     
-    // mapping of gids
-    map<int,int> gidmapzz;
-    DRT::Exporter exzz(kzz->RowMap(),kzz->ColMap(),kzz->Comm());
-    for (int i=0; i<slavemap->NumMyElements(); ++i) gidmapzz[slavemap->GID(i)] = lmmap->GID(i);
-    exzz.Export(gidmapzz);
-      
-    // transform constraint matrix kzz to lmdofmap
-    for (int i=0;i<(kzz->EpetraMatrix())->NumMyRows();++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kzz->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-      std::vector<int> idx;
-      std::vector<double> vals;
-      idx.reserve(NumEntries);
-      vals.reserve(NumEntries);
-
-      for (int j=0;j<NumEntries;++j)
-      {
-        int gid = (kzz->ColMap()).GID(Indices[j]);
-        std::map<int,int>::const_iterator iter = gidmapzz.find(gid);
-        if (iter!=gidmapzz.end())
-        {
-          idx.push_back(iter->second);
-          vals.push_back(Values[j]);
-        }
-        else
-          dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-      }
-
-      Values = &vals[0];
-      NumEntries = vals.size();
-      err = (trkzz->EpetraMatrix())->InsertGlobalValues(lmmap->GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
+    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    trkzz = MORTAR::MatrixRowColTransform(kzz,lmmap,lmmap);
     
-    // complete transformed constraint matrix kzz
-    trkzz->Complete(*lmmap,*lmmap);
-
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
     // for self contact, slave and master sets may have changed,
@@ -2380,46 +2283,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*slavemap,*dispmap);
 
-    // mapping of gids
-    map<int,int> gidmap;
-    DRT::Exporter ex(kdz->RowMap(),kdz->ColMap(),kdz->Comm());
-    for (int i=0; i<slavemap->NumMyElements(); ++i) gidmap[slavemap->GID(i)] = lmmap->GID(i);
-    ex.Export(gidmap);
-      
-    // transform constraint matrix kdz to lmdofmap 
-    for (int i=0;i<(kdz->EpetraMatrix())->NumMyRows();++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kdz->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-      std::vector<int> idx;
-      std::vector<double> vals;
-      idx.reserve(NumEntries);
-      vals.reserve(NumEntries);
-
-      for (int j=0;j<NumEntries;++j)
-      {
-        int gid = (kdz->ColMap()).GID(Indices[j]);
-        std::map<int,int>::const_iterator iter = gidmap.find(gid);
-        if (iter!=gidmap.end())
-        {
-          idx.push_back(iter->second);
-          vals.push_back(Values[j]);
-        }
-        else
-          dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-      }
-
-      Values = &vals[0];
-      NumEntries = vals.size();
-      err = (trkdz->EpetraMatrix())->InsertGlobalValues(kdz->RowMap().GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
-    
-    // complete transformed constraint matrix kdz
-    trkdz->Complete(*lmmap,*dispmap);
+    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    trkdz = MORTAR::MatrixColTransform(kdz,lmmap);
    
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
@@ -2428,28 +2293,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
     kzd->Complete(*dispmap,*slavemap);
     
-    // transform constraint matrix kzd to lmdofmap
-    for (int i=0; i<(kzd->EpetraMatrix())->NumMyRows(); ++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kzd->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-
-      // pull indices back to global
-      std::vector<int> idx(NumEntries);
-      for (int j=0; j<NumEntries; ++j)
-      {
-        idx[j] = (kzd->ColMap()).GID(Indices[j]);
-      }
-
-      err = (trkzd->EpetraMatrix())->InsertGlobalValues(lmmap->GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
-     
-    // complete transformed constraint matrix kzd
-    trkzd->Complete(*dispmap,*lmmap);
+    // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
+    trkzd = MORTAR::MatrixRowTransform(kzd,lmmap);
 
     // build unity matrix for inactive dofs
     RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
@@ -2465,46 +2310,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
     kzz->Complete(*slavemap,*slavemap);
     
-    // mapping of gids
-    map<int,int> gidmapzz;
-    DRT::Exporter exzz(kzz->RowMap(),kzz->ColMap(),kzz->Comm());
-    for (int i=0; i<slavemap->NumMyElements(); ++i) gidmapzz[slavemap->GID(i)] = lmmap->GID(i);
-    exzz.Export(gidmapzz);
-      
-    // transform constraint matrix kzz to lmdofmap
-    for (int i=0;i<(kzz->EpetraMatrix())->NumMyRows();++i)
-    {
-      int NumEntries = 0;
-      double *Values;
-      int *Indices;
-      int err = (kzz->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-      if (err!=0) dserror("ExtractMyRowView error: %d", err);
-      std::vector<int> idx;
-      std::vector<double> vals;
-      idx.reserve(NumEntries);
-      vals.reserve(NumEntries);
-
-      for (int j=0;j<NumEntries;++j)
-      {
-        int gid = (kzz->ColMap()).GID(Indices[j]);
-        std::map<int,int>::const_iterator iter = gidmapzz.find(gid);
-        if (iter!=gidmapzz.end())
-        {
-          idx.push_back(iter->second);
-          vals.push_back(Values[j]);
-        }
-        else
-          dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-      }
-
-      Values = &vals[0];
-      NumEntries = vals.size();
-      err = (trkzz->EpetraMatrix())->InsertGlobalValues(lmmap->GID(i), NumEntries, const_cast<double*>(Values),&idx[0]);
-      if (err<0) dserror("InsertGlobalValues error: %d", err);
-    }
-    
-    // complete transformed constraint matrix kzz
-    trkzz->Complete(*lmmap,*lmmap);
+    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    trkzz = MORTAR::MatrixRowColTransform(kzz,lmmap,lmmap);
 
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)

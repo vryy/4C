@@ -936,7 +936,7 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_coupling2d.cpp
   src/drt_mortar/mortar_coupling3d.cpp
   src/drt_mortar/mortar_coupling3d_classes.cpp
-  src/drt_mortar/mortar_defines.cpp
+  src/drt_mortar/mortar_utils.cpp
   src/drt_mortar/mortar_dofset.cpp
   src/drt_mortar/mortar_integrator.cpp
   src/drt_mortar/mortar_interface.cpp

@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
+#include "mortar_utils.H"
 #include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
