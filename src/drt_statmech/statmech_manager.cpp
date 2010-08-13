@@ -956,7 +956,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 			{
 				//writing element by nodal coordinates as a sphere
 				gmshfilecontent << "SP(" << scientific;
-				gmshfilecontent << coord(0, i) << "," << coord(1, i) << "," << coord(2,i);
+				gmshfilecontent << coord(0,i) << "," << coord(1, i) << "," << coord(2,i);
 				gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
 			}
 		}
@@ -977,7 +977,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 		if (ignoreeleid)
 			cut = LINALG::SerialDenseMatrix(3, 1, true);
 		else
-			cut = LINALG::SerialDenseMatrix(3, (int) element->NumNode() - 1, true);
+			cut = LINALG::SerialDenseMatrix(3, (int)element->NumNode()-1, true);
 
 		/* "coord" currently holds the shifted set of coordinates.
 		 * In order to determine the correct vector "dir" of the visualization at the boundaries,
@@ -986,17 +986,17 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 
 		for (int i=0; i<cut.N(); i++)
 		{
-			for (int dof = 0; dof < ndim; dof++)
+			for (int dof=0; dof<ndim; dof++)
 			{
-				if (fabs(coord(dof, i + 1) - statmechparams_.get<double>("PeriodLength", 0.0) - coord(dof, i)) < fabs(coord(dof, i + 1) - coord(dof, i)))
+				if (fabs(coord(dof,i+1)-statmechparams_.get<double>("PeriodLength",0.0)-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
 				{
 					cut(dof, i) = 1;
 					unshift(dof, i + 1) -= statmechparams_.get<double>("PeriodLength",0.0);
 				}
-				if (fabs(coord(dof, i + 1) + statmechparams_.get<double>("PeriodLength", 0.0) - coord(dof, i)) < fabs(coord(dof, i + 1) - coord(dof, i)))
+				if (fabs(coord(dof, i+1)+statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
 				{
-					cut(dof, i) = 2;
-					unshift(dof, i + 1) += statmechparams_.get<double> ("PeriodLength",0.0);
+					cut(dof,i) = 2;
+					unshift(dof,i+1) += statmechparams_.get<double>("PeriodLength",0.0);
 				}
 			}
 		}
@@ -1264,11 +1264,11 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 						if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
 						{
 							GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
-							// testwise: visualization of real crosslink molecule positions
-							beadcolor = 0.0; //black
-							gmshfilebonds << "SP(" << scientific;
-							gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
-							gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+							// visualization of "real" crosslink molecule positions
+							//beadcolor = 0.0; //black
+							//gmshfilebonds << "SP(" << scientific;
+							//gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
+							//gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
 						}
 						else
 						{
@@ -1437,8 +1437,8 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 				default: continue;
 			}
 		}
-		if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
-			CrosslinkerPeriodicBoundaryShift(*crosslinkerpositions_);
+		if (statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
+			CrosslinkerPeriodicBoundaryShift(*visualizepositions_);
 	}
 	else
 	{
@@ -3080,8 +3080,11 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
 					{
 						if (!deleteelement)
+						{
 							if (UniformGen.random() < punlink)
 							{
+								deleteelement = true;
+
 								// get the nodal LID and then reset the entry
 								int nodeLID = nodecolmap.LID((int) (*crosslinkerbond_)[j][i]);
 								markLID = nodeLID;
@@ -3089,13 +3092,13 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 								DRT::Node *node = discret_.lColNode(nodeLID);
 								for (int k=0; k<node->NumElement(); k++)
 									if (node->Elements()[k]->Id() > basisnodes_)
-										delcrosslinkers[nodeLID] = (double) node->Elements()[k]->Id();
+										delcrosslinkers[nodeLID] = (double)node->Elements()[k]->Id();
 
-								deleteelement = true;
 								((*numcrossnodes_)[nodeLID]) -= 1.0;
 								(*numbond_)[i] -= 1.0;
 								(*crosslinkerbond_)[j][i] = -1.0;
 							}
+						}
 					}
 					// get the other non-"-1" entry and update crosslink molecule position
 					if (deleteelement)
@@ -3133,11 +3136,14 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
 	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	// transfer vectors
+	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, true);
 	Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector delcrosslinkerstrans(*transfermap_, true);
 
 	//exports and reimports
+	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
+	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
