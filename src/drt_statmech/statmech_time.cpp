@@ -127,14 +127,6 @@ deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
-  /* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
-   * between two filaments, only their positions are calculated. Here, the molecules' initial positions are determined.
-   * Calculations are made on Proc 0, only.*/
-  if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS") &&
-  	 Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
-		statmechmanager_->CrosslinkerDiffusion(*dis_,0.0,0.0,params_.get<double>("delta time", 0.0),true);
-
-
   return;
 } // StatMechTime::StatMechTime
 

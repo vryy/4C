@@ -160,14 +160,14 @@ public:
   void CrosslinkerDiffusion(const Epetra_Vector& dis,
 														double mean,
 														double standarddev,
-														const double &dt,
-														bool init);
+														const double &dt);
 
   /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
    *  \param currentpositions			(in) column map node positions
    *  \param LID									(in) column map node LIDs
    *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
-  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID, int crosslinkernumber);
+  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
+																		 int crosslinkernumber, bool coupledmovement=true);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -185,7 +185,8 @@ protected:
   void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
+  void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours);
@@ -203,7 +204,7 @@ protected:
   void CrosslinkerPosInit();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
-	void CrosslinkerPeriodicBoundaryShift(std::vector<std::vector<double> >* crosslinkerpositions);
+	void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
@@ -270,16 +271,19 @@ protected:
   //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
   Teuchos::RCP<GEO::SearchTree>  octTree_;
 
+  // \brief an Epetra_Map handling crosslink molecules
+  RCP<Epetra_Map> crosslinkermap_;
+  RCP<Epetra_Map> transfermap_;
 	// \brief a vector memorizing the bonding status of the crosslink molecules
-	std::vector<std::vector<int> >		crosslinkerbond_;
+	RCP<Epetra_MultiVector>		crosslinkerbond_;
 	// \brief a vector containing the current postion of the crosslink molecules
-	std::vector<std::vector<double> >		crosslinkerpositions_;
+	RCP<Epetra_MultiVector>		crosslinkerpositions_;
 	// \brief a vector indicating the number of attached crosslinkers to a node
 	RCP<Epetra_Vector>	numcrossnodes_;
 	// \brief a vector indicating the number of attached nodes to a crosslinker
-	std::vector<int>	numbond_;
+	RCP<Epetra_Vector>	numbond_;
 	// \brief a vector just for the sake of visual quality
-	std::vector<std::vector<double> > visualizepositions_;
+	RCP<Epetra_MultiVector> visualizepositions_;
 
 
 }; // class StatMechManager
