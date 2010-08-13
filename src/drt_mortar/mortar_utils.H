@@ -44,6 +44,9 @@ Maintainer: Alexander Popp
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Epetra_Import.h>
+#include <Epetra_Export.h>
+#include <Epetra_CrsMatrix.h>
 #include "../linalg/linalg_sparsematrix.H"
 
 using namespace std;
@@ -82,7 +85,30 @@ namespace MORTAR
   \brief Transform the row map of a matrix
 
   */
+  RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
+  		                                             RCP<Epetra_Map> newrowmap);
+
+  /*!
+  \brief Transform the column map of a matrix
+
+  */
+  RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
+  		                                             RCP<Epetra_Map> newdomainmap);
+
+  /*!
+  \brief Transform the row and column maps of a matrix
+
+  */
+  RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
+  		                                                RCP<Epetra_Map> newrowmap,
+  		                                                RCP<Epetra_Map> newdomainmap);
+
+  /*!
+  \brief Transform the row map of a matrix
+
+  */
   RCP<LINALG::SparseMatrix> MatrixRowTransform(RCP<LINALG::SparseMatrix> inmat,
+  		                                         RCP<Epetra_Map> permrowmap,
   		                                         RCP<Epetra_Map> newrowmap);
 
   /*!
@@ -90,6 +116,7 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixColTransform(RCP<LINALG::SparseMatrix> inmat,
+  		                                         RCP<Epetra_Map> permdomainmap,
   		                                         RCP<Epetra_Map> newdomainmap);
 
   /*!
@@ -97,8 +124,17 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowColTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                           RCP<Epetra_Map> newrowmap,
-  		                                           RCP<Epetra_Map> newdomainmap);
+  		                                            RCP<Epetra_Map> permrowmap,
+  		                                            RCP<Epetra_Map> newrowmap,
+  		                                            RCP<Epetra_Map> permdomainmap,
+  		                                            RCP<Epetra_Map> newdomainmap);
+
+  /*!
+  \brief Parallel redistribution of a matrix according to permutation map
+
+  */
+  RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
+                                     const Epetra_Map& permsrcmap);
 
 } // namespace MORTAR
 

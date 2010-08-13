@@ -853,7 +853,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   constrmt->Complete(*slavemap,*dispmap);
 
   // transform constraint matrix to lmdofmap (MatrixColTransform)
-  RCP<LINALG::SparseMatrix> trconstrmt = MORTAR::MatrixColTransform(constrmt,lmmap);
+  RCP<LINALG::SparseMatrix> trconstrmt = MORTAR::MatrixColTransformGIDs(constrmt,lmmap);
 
   // remove meshtying force terms again
   // (solve directly for z_ and not for increment of z_)

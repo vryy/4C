@@ -2189,7 +2189,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Complete(*slavemap,*dispmap);
    
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransform(kdz,lmmap);
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz,lmmap);
 
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
@@ -2198,7 +2198,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kzd->Complete(*dispmap,*slavemap);
     
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransform(kzd,lmmap);
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,lmmap);
 
     // build unity matrix for inactive dofs
     RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
@@ -2214,7 +2214,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kzz->Complete(*slavemap,*slavemap);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransform(kzz,lmmap,lmmap);
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,lmmap,lmmap);
     
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
@@ -2284,7 +2284,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Complete(*slavemap,*dispmap);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransform(kdz,lmmap);
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz,lmmap);
    
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
@@ -2294,7 +2294,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kzd->Complete(*dispmap,*slavemap);
     
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransform(kzd,lmmap);
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,lmmap);
 
     // build unity matrix for inactive dofs
     RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
@@ -2311,7 +2311,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kzz->Complete(*slavemap,*slavemap);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransform(kzz,lmmap,lmmap);
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,lmmap,lmmap);
 
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
