@@ -95,8 +95,9 @@ STR::TimIntImpl::TimIntImpl
       ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));
   }
 
-  // verify: if system has constraints, then Uzawa-type solver is used
-  if ( conman_->HaveConstraint())
+  // verify: if system has constraints implemented with Lagrange multipliers,
+  // then Uzawa-type solver is used
+  if ( conman_->HaveConstraintLagr())
   {
     if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
          and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
