@@ -227,7 +227,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     \brief Setup this strategy object (maps, vectors, etc.)
 
     */
-    void Setup();
+    void Setup(bool redistributed = false);
 
     /*!
     \brief Global evaluation method called from time integrator

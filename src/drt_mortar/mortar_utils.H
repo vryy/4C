@@ -82,21 +82,38 @@ namespace MORTAR
   void Sort(double* dlist, int N, int* list2);
 
   /*!
-  \brief Transform the row map of a matrix
+  \brief Transform the row map of a matrix (only GIDs)
+
+  This method changes the row map of an input matrix to a new row map
+  with different GID numbering. However, the parallel distribution of
+  this new row map is exactly the same as in the old row map. Thus, this
+  is simply a processor-local 1:1 matching of old and new GIDs.
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
   		                                             RCP<Epetra_Map> newrowmap);
 
   /*!
-  \brief Transform the column map of a matrix
+  \brief Transform the column map of a matrix (only GIDs)
+
+  This method changes the column map of an input matrix to a new column
+  map with different GID numbering (and the domain map, accordingly).
+  However, the parallel distribution of the new domain map is exactly
+  the same as in the old domain map. Thus, this is simply a processor-local
+  1:1 matching of old and new GIDs.
 
   */
   RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
   		                                             RCP<Epetra_Map> newdomainmap);
 
   /*!
-  \brief Transform the row and column maps of a matrix
+  \brief Transform the row and column maps of a matrix (only GIDs)
+
+  This method changes the row and column maps of an input matrix to new
+  row and column maps with different GID numbering (and the domain map,
+  accordingly). However, the parallel distribution of the new row and
+  domain maps is exactly the same as in the old ones. Thus, this is simply
+  a processor-local 1:1 matching of old and new GIDs.
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
@@ -104,33 +121,42 @@ namespace MORTAR
   		                                                RCP<Epetra_Map> newdomainmap);
 
   /*!
-  \brief Transform the row map of a matrix
+  \brief Transform the row map of a matrix (parallel distribution)
+
+  This method changes the row map of an input matrix to a new
+  row map with identical GIDs but different parallel distribution.
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                         RCP<Epetra_Map> permrowmap,
   		                                         RCP<Epetra_Map> newrowmap);
 
   /*!
-  \brief Transform the column map of a matrix
+  \brief Transform the column map of a matrix (parallel distribution)
+
+  This method changes the column map of an input matrix to a new
+  column map with identical GIDs but different parallel distribution
+  (and the domain map, accordingly).
 
   */
   RCP<LINALG::SparseMatrix> MatrixColTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                         RCP<Epetra_Map> permdomainmap,
   		                                         RCP<Epetra_Map> newdomainmap);
 
   /*!
-  \brief Transform the row and column maps of a matrix
+  \brief Transform the row and column maps of a matrix (parallel distribution)
+
+  This method changes the row and column maps of an input matrix
+  to new row and column maps with identical GIDs but different
+  parallel distribution (and the domain map, accordingly).
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowColTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                            RCP<Epetra_Map> permrowmap,
   		                                            RCP<Epetra_Map> newrowmap,
-  		                                            RCP<Epetra_Map> permdomainmap,
   		                                            RCP<Epetra_Map> newdomainmap);
 
   /*!
-  \brief Parallel redistribution of a matrix according to permutation map
+  \brief Parallel redistribution of a sparse matrix
+
+  Helper method for the MatrixTransform() methods above.
 
   */
   RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,

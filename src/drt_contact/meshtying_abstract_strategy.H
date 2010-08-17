@@ -109,17 +109,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     DRT::Discretization& ProblemDiscret() const { return probdiscret_; }
 
-    /*!
-    \brief Return global slave node row map
-     
-    */
-    const RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
-    
-    /*!
-    \brief Return global slave dof row map
-     
-    */
-    const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
     
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
@@ -172,8 +161,14 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)
 
+    All global maps and vectors are initialized by collecting
+    the necessary information from all interfaces. In the case
+    of a parallel redistribution, this mehtod is called again
+    to re-setup the above mentioned quantities. In this case
+    the input parameter is set to TRUE, by default it is FALSE.
+    
     */
-    void Setup();
+    void Setup(bool redistributed = false);
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -435,10 +430,14 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     vector<RCP<MORTAR::MortarInterface> > interface_; // contact interfaces
     
     RCP<Epetra_Map> glmdofrowmap_;         // global Lagrange mult. dof row map (of all interfaces)
-    RCP<Epetra_Map> gsnoderowmap_;         // global slave node row map (of all interfaces)
     RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
     RCP<Epetra_Map> gmdofrowmap_;          // global master dof row map (of all interfaces)
-    RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map
+    RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map (of all interfaces)
+    RCP<Epetra_Map> gdisprowmap_;          // global displacement dof row map (s+m+n map)
+
+    RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
+    RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
+    RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
 
     RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
     RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M

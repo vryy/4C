@@ -37,11 +37,13 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_Time.hpp>
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -72,7 +74,11 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
     cout << "Performing mortar coupling...............";
     fflush(stdout);
   }
-    
+
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
  
@@ -92,21 +98,34 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
 		dmatrix_    = temp1;
   }
 
-  // initialize mortar matrix products
-  mtm_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  mtd_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  dtm_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  dtd_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  
   // build mortar matrix products
   mtm_ = LINALG::MLMultiply(*mmatrix_,true,*mmatrix_,false,false,false,true);
   mtd_ = LINALG::MLMultiply(*mmatrix_,true,*dmatrix_,false,false,false,true);
   dtm_ = LINALG::MLMultiply(*dmatrix_,true,*mmatrix_,false,false,false,true);
   dtd_ = LINALG::MLMultiply(*dmatrix_,true,*dmatrix_,false,false,false,true);
   
+  // transform mortar matrix products to parallel distribution
+  // of the global problem (stored in the "p"-version of dof maps)
+#ifdef MESHTYINGPAR
+  mtm_ = MORTAR::MatrixRowColTransform(mtm_,pgmdofrowmap_,pgmdofrowmap_);
+  mtd_ = MORTAR::MatrixRowColTransform(mtd_,pgmdofrowmap_,pgsdofrowmap_);
+  dtm_ = MORTAR::MatrixRowColTransform(dtm_,pgsdofrowmap_,pgmdofrowmap_);
+  dtd_ = MORTAR::MatrixRowColTransform(dtd_,pgsdofrowmap_,pgsdofrowmap_);
+#endif // #ifdef MESHTYINGPAR
+
+  // time measurement
+  Comm().Barrier();
+  const double t_end = Teuchos::Time::wallTime()-t_start;
+  if (Comm().MyPID()==0) cout << "in...." << t_end << " secs........";
+
   // print message
   if(Comm().MyPID()==0) cout << "done!" << endl;
-    
+
+  /**********************************************************************/
+  /* Mesh initialization (for rotational invariance)                    */
+  /**********************************************************************/
+  MeshInitialization();
+
   return;
 }
 

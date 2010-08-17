@@ -179,7 +179,7 @@ class StrategyBase
     virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0; 
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
-    virtual void Setup() = 0;
+    virtual void Setup(bool redistributed = false) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;

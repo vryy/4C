@@ -87,7 +87,7 @@ ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
 /*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::Setup()
+void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)

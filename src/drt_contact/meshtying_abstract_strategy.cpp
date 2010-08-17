@@ -68,6 +68,15 @@ dualquadslave3d_(false)
   // call setup method to do all the work
   Setup();
 
+  // store interface maps with parallel distribution of underlying
+  // problem discretization (i.e. interface maps before parallel
+  // redistribution of slave and master sides)
+#ifdef MESHTYINGPAR
+  pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+  pgsdofrowmap_ = rcp(new Epetra_Map(*gsdofrowmap_));
+  pgmdofrowmap_ = rcp(new Epetra_Map(*gmdofrowmap_));
+#endif // #ifdef MESHTYINGPAR
+
 	return;
 }
 
@@ -83,11 +92,19 @@ ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 /*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Setup()
+void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 {
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     
+
+	// make sure to remove all existing maps
+	// (do NOT remove map of non-interface dofs after redistribution)
+	gsdofrowmap_  = Teuchos::null;
+	gmdofrowmap_  = Teuchos::null;
+	glmdofrowmap_ = Teuchos::null;
+	gdisprowmap_  = Teuchos::null;
+	if (!redistributed) gndofrowmap_  = Teuchos::null;
 
 	// make numbering of LM dofs consecutive and unique across N interfaces
 	int offset_if = 0;
@@ -104,17 +121,23 @@ void CONTACT::MtAbstractStrategy::Setup()
     if (offset_if < 0) offset_if = 0;
 
     // merge interface master, slave maps to global master, slave map
-    gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
   }
 
   // setup global non-slave-or-master dof map
-  // (this is done by splitting from the dicretization dof map) 
-  gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
-  gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
-
+  // (this is done by splitting from the dicretization dof map)
+  // (no need to rebuild this map after redistribution)
+  if (!redistributed)
+  {
+    gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
+  }
   
+  // setup global displacement dof map
+  gdisprowmap_ = LINALG::MergeMap(*gsdofrowmap_,*gmdofrowmap_,false);
+  gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_,*gdisprowmap_,false);
+
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
   // ------------------------------------------------------------------------   
@@ -242,6 +265,11 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // get out of here if the whole slave surface is tied
   if (globalfounduntied == 0) return;
 
+  // this does not yet work together with parallel redistribution
+#ifdef MESHTYINGPAR
+  dserror("ERROR: RestrictMeshtyingZone() and Redistribute() not yet compatible!");
+#endif // #ifdef MESHTYINGPAR
+
   // print message
   if (Comm().MyPID()==0)
   {
@@ -253,14 +281,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->RestrictSlaveSets();
 
-  // Step 3: reset affected global maps
-  gsnoderowmap_ = Teuchos::null;
-  gsdofrowmap_  = Teuchos::null;
-  gmdofrowmap_  = Teuchos::null;
-  gndofrowmap_  = Teuchos::null;
-  glmdofrowmap_ = Teuchos::null;
-
-  // Step 4: re-setup global maps and vectors
+  // Step 3: re-setup global maps and vectors
   Setup();
 
 	return;
@@ -292,22 +313,27 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   // DRT:Nodes in the underlying problem discretization.
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
-  // to the distribution in the underlying problem discretization. The
-  // answer is yes here, so it is possible to do BOTH modifications
-  // (MortarNode and DRT::Node) within one loop!
+  // to the distribution in the underlying problem discretization. This
+	// is NOT necessarily the case, as we might have redistributed the
+	// interface among all processors. Thus, we loop over the fully over-
+	// lapping slave column map here to keep all processors around. Then,
+	// the first modification (MortarNode) is always performed, but the
+	// second modification (DRT::Node) is only performed if the respective
+	// node in contained in the problem node column map.
   //**************************************************************
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    // export Xslavemod to standard column map overlap for current interface
-    Epetra_Vector Xslavemodcol(*(interface_[i]->SlaveColDofs()),false);
+    // export Xslavemod to fully overlapping column map for current interface
+    Epetra_Vector Xslavemodcol(*(interface_[i]->SlaveFullDofs()),false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
     
-    // loop over all slave column nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
+    // loop over all slave nodes on the current interface
+    for (int j=0; j<interface_[i]->SlaveFullNodes()->NumMyElements(); ++j)
     {
-      int gid = interface_[i]->SlaveColNodes()->GID(j);
+    	// get global ID of current node
+      int gid = interface_[i]->SlaveFullNodes()->GID(j);
       
       // be careful to modify BOTH mtnode in interface discret ...
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
@@ -315,8 +341,16 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
       
       // ... AND standard node in underlying problem discret
-      DRT::Node* pnode = ProblemDiscret().gNode(gid);
-      if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+      // (check if the node is available on this processor)
+      bool isinproblemcolmap = false;
+      int lid = ProblemDiscret().NodeColMap()->LID(gid);
+      if (lid>=0) isinproblemcolmap = true;
+      DRT::Node* pnode = NULL;
+      if (isinproblemcolmap)
+      {
+	      pnode = ProblemDiscret().gNode(gid);
+	      if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+      }
       
       // new nodal position
       double Xnew[3] = {0.0, 0.0, 0.0};
@@ -364,7 +398,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
 			{
 				const_cast<double&>(mtnode->X()[k])        = Xnew[k];
 				const_cast<double&>(mtnode->xspatial()[k]) = Xnew[k];
-				const_cast<double&>(pnode->X()[k])         = Xnew[k];
+				if (isinproblemcolmap)
+					const_cast<double&>(pnode->X()[k])       = Xnew[k];
 			}
     }
   }

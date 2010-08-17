@@ -564,6 +564,102 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 }
 
 /*----------------------------------------------------------------------*
+ |  redistribute interface (public)                           popp 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::Redistribute()
+{
+	// we need PARALLEL and PARMETIS defined for this
+#if !defined(PARALLEL) || !defined(PARMETIS)
+	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
+#endif
+
+	// some local variables
+  RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+	const int myrank  = comm->MyPID();
+	const int numproc = comm->NumProc();
+	Epetra_Time time(*comm);
+
+	// vector containing all proc ids
+  vector<int> allproc(numproc);
+  for (int i=0; i<numproc; ++i) allproc[i] = i;
+
+	// redistribution useless if only one processor
+  if (numproc==1) return;
+
+  // print message
+  if (!myrank) cout << "\nRedistributing interface using PARMETIS.......";
+
+	//**********************************************************************
+	// (1) SLAVE redistribution
+	//**********************************************************************
+	// we need an arbitrary preliminary element row map
+  RCP<Epetra_Map> sroweles  = rcp(new Epetra_Map(*SlaveRowElements()));
+  RCP<Epetra_Map> scoleles  = Teuchos::null;
+	RCP<Epetra_Map> srownodes = Teuchos::null;
+	RCP<Epetra_Map> scolnodes = Teuchos::null;
+
+  // build redundant vector of all slave node ids on all procs
+  vector<int> snids;
+  vector<int> snidslocal(SlaveRowNodes()->NumMyElements());
+  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
+    snidslocal[i] = SlaveRowNodes()->GID(i);
+  LINALG::Gather<int>(snidslocal,snids,numproc,&allproc[0],Comm());
+
+	//**********************************************************************
+	// call PARMETIS (again with #ifdef to be on the safe side)
+#if defined(PARALLEL) && defined(PARMETIS)
+	DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,comm,time,false);
+#endif
+	//**********************************************************************
+
+	//**********************************************************************
+	// (2) MASTER redistribution
+	//**********************************************************************
+	// we need an arbitrary preliminary element row map
+	RCP<Epetra_Map> mroweles  = rcp(new Epetra_Map(*MasterRowElements()));
+	RCP<Epetra_Map> mcoleles  = Teuchos::null;
+	RCP<Epetra_Map> mrownodes = Teuchos::null;
+	RCP<Epetra_Map> mcolnodes = Teuchos::null;
+
+	// build redundant vector of all master node ids on all procs
+	vector<int> mnids;
+	vector<int> mnidslocal(MasterRowNodes()->NumMyElements());
+	for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i)
+		mnidslocal[i] = MasterRowNodes()->GID(i);
+	LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
+
+	//**********************************************************************
+	// call PARMETIS (again with #ifdef to be on the safe side)
+#if defined(PARALLEL) && defined(PARMETIS)
+	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,comm,time,false);
+#endif
+	//**********************************************************************
+
+	// merge node maps from slave and master parts
+	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
+  RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
+
+	// build reasonable element maps from the already valid and final node maps
+	// (note that nothing is actually redistributed in here)
+	RCP<Epetra_Map> roweles  = Teuchos::null;
+	RCP<Epetra_Map> coleles  = Teuchos::null;
+	Discret().BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+
+	// export nodes and elements to the row map
+	Discret().ExportRowNodes(*rownodes);
+	Discret().ExportRowElements(*roweles);
+
+	// export nodes and elements to the column map (create ghosting)
+	Discret().ExportColumnNodes(*colnodes);
+	Discret().ExportColumnElements(*coleles);
+
+	// print message
+	if (!myrank) cout << "done!" << endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  create search tree (public)                               popp 01/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::CreateSearchTree()

@@ -156,6 +156,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     
   protected:
 
+    RCP<LINALG::SparseMatrix> conmatrix_;   // constraint matrix for saddle point system
     RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M    
     RCP<Epetra_Map>           gsmdofs_;     // map of global slave AND master dofs 
     

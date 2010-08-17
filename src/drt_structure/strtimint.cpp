@@ -350,10 +350,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // initialization of contact or meshting
     {
       // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-      // (1) Do mortar coupling in reference configuration
-      // (2) Perform mesh intialization for rotational invariance
+      // (1) Do mortar coupling in reference configuration and
+      // perform mesh intialization for rotational invariance
       cmtman_->GetStrategy().MortarCoupling(zeros_);
-      cmtman_->GetStrategy().MeshInitialization();
 
       // FOR FRICTIONAL CONTACT AND STORAGE OF MORTAR MATRICES
       // (1) Mortar coupling in reference configuration

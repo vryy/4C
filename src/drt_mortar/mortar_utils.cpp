@@ -152,7 +152,7 @@ void MORTAR::Sort(double* dlist, int N, int* list2)
 }
 
 /*----------------------------------------------------------------------*
- | transform the row map of a matrix                          popp 08/10|
+ | transform the row map of a matrix (GIDs)                   popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
 		                                                     RCP<Epetra_Map> newrowmap)
@@ -180,14 +180,14 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransformGIDs(RCP<LINALG::SparseMatri
     if (err<0) dserror("InsertGlobalValues error: %d", err);
   }
 
-  // complete transformed constraint matrix kzd
+  // complete output matrix
   outmat->Complete(inmat->DomainMap(),*newrowmap);
 
 	return outmat;
 }
 
 /*----------------------------------------------------------------------*
- | transform the column map of a matrix                       popp 08/10|
+ | transform the column map of a matrix (GIDs)                popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
 		                                                     RCP<Epetra_Map> newdomainmap)
@@ -195,13 +195,14 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(RCP<LINALG::SparseMatri
 	// initialize output matrix
 	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(inmat->RowMap(),100,false,true));
 
-	// mapping of gids
+	// mapping of column gids
 	map<int,int> gidmap;
-	DRT::Exporter ex(inmat->RowMap(),inmat->ColMap(),inmat->Comm());
-	for (int i=0; i<inmat->DomainMap().NumMyElements(); ++i) gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
+	DRT::Exporter ex(inmat->DomainMap(),inmat->ColMap(),inmat->Comm());
+	for (int i=0; i<inmat->DomainMap().NumMyElements(); ++i)
+		gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
 	ex.Export(gidmap);
 
-	// transform constraint matrix inmat to lmdofmap
+	// transform input matrix to newdomainmap
 	for (int i=0;i<(inmat->EpetraMatrix())->NumMyRows();++i)
 	{
 		int NumEntries = 0;
@@ -233,14 +234,14 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(RCP<LINALG::SparseMatri
 		if (err<0) dserror("InsertGlobalValues error: %d", err);
 	}
 
-	// complete transformed constraint matrix inmat
+	// complete output matrix
 	outmat->Complete(*newdomainmap,inmat->RowMap());
 
 	return outmat;
 }
 
 /*----------------------------------------------------------------------*
- | transform the row and column maps of a matrix              popp 08/10|
+ | transform the row and column maps of a matrix (GIDs)       popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
 		                                                        RCP<Epetra_Map> newrowmap,
@@ -249,13 +250,14 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(RCP<LINALG::SparseMa
 	// initialize output matrix
 	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*newrowmap,100,false,true));
 
-	// mapping of gids
+	// mapping of column gids
 	map<int,int> gidmap;
-	DRT::Exporter ex(inmat->RowMap(),inmat->ColMap(),inmat->Comm());
-	for (int i=0; i<inmat->DomainMap().NumMyElements(); ++i) gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
+	DRT::Exporter ex(inmat->DomainMap(),inmat->ColMap(),inmat->Comm());
+	for (int i=0; i<inmat->DomainMap().NumMyElements(); ++i)
+		gidmap[inmat->DomainMap().GID(i)] = newdomainmap->GID(i);
 	ex.Export(gidmap);
 
-	// transform constraint matrix inmat to lmdofmap
+	// transform input matrix to newrowmap and newdomainmap
 	for (int i=0;i<(inmat->EpetraMatrix())->NumMyRows();++i)
 	{
 		int NumEntries = 0;
@@ -287,7 +289,7 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(RCP<LINALG::SparseMa
 		if (err<0) dserror("InsertGlobalValues error: %d", err);
 	}
 
-	// complete transformed constraint matrix inmat
+	// complete output matrix
 	outmat->Complete(*newdomainmap,*newrowmap);
 
 	return outmat;
@@ -297,35 +299,51 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(RCP<LINALG::SparseMa
  | transform the row map of a matrix                          popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransform(RCP<LINALG::SparseMatrix> inmat,
-		                                                 RCP<Epetra_Map> permrowmap,
 		                                                 RCP<Epetra_Map> newrowmap)
 {
-	// not yet implemented
-  return Teuchos::null;
+	// redistribute input matrix
+	RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap);
+
+	// output matrix
+	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
+
+	return outmat;
 }
 
 /*----------------------------------------------------------------------*
  | transform the column map of a matrix                       popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixColTransform(RCP<LINALG::SparseMatrix> inmat,
-		                                                 RCP<Epetra_Map> permdomainmap,
 		                                                 RCP<Epetra_Map> newdomainmap)
 {
-	// not yet implemented
-	return Teuchos::null;
+	// initialize output matrix
+	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*inmat));
+
+	// complete output matrix
+	outmat->UnComplete();
+	outmat->Complete(*newdomainmap,inmat->RowMap());
+
+	return outmat;
 }
 
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix              popp 08/10|
  *----------------------------------------------------------------------*/
 RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(RCP<LINALG::SparseMatrix> inmat,
-		                                                    RCP<Epetra_Map> permrowmap,
 		                                                    RCP<Epetra_Map> newrowmap,
-		                                                    RCP<Epetra_Map> permdomainmap,
 		                                                    RCP<Epetra_Map> newdomainmap)
 {
-	// not yet implemented
-	return Teuchos::null;
+	// redistribute input matrix
+  RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap);
+
+  // output matrix
+  RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
+
+  // complete output matrix
+  outmat->UnComplete();
+  outmat->Complete(*newdomainmap,*newrowmap);
+
+	return outmat;
 }
 
 /*----------------------------------------------------------------------*/

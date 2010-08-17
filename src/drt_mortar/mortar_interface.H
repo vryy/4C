@@ -474,6 +474,29 @@ public:
   virtual void FillComplete(int maxdof = 0);
   
   /*!
+  \brief Redistribute interface among all procs
+
+  When first creating a mortar interface, its parallel distribution
+  is simply copied from the underlying problem discretization. This,
+  of course, is not the optimal parallel distribution for evaluating
+  the mortar coupling terms, as the interface ownership might be
+  restricted to only very fee processors. Moreover, no parallel
+  scalability can be achieved with this procedure, because adding
+  processors to the problem discretization does not automatically
+  mean adding processors to the interface discretization.
+
+  Thus, an independent parallel distribution of the interface is
+  desirable, which divides the interface among all available
+  processors. Redistribute() is the method to achieve this.
+  Internally, we call ParMetis to re-partition both slave and
+  master side of the interface independently. This results in new
+  "optimal" node/element maps of the interface discretization.
+  Note that after Redistribute(), we must call FillComplete() again.
+
+  */
+  virtual void Redistribute();
+
+  /*!
   \brief Create binary search tree
 
   The methods creates a binary tree object for efficient search.

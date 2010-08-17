@@ -138,10 +138,9 @@ StruGenAlpha(params,dis,solver,output)
   //**********************************************************************
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-    // (1) Do mortar coupling in reference configuration  
-    // (2) Perform mesh intialization for rotational invariance
+    // (1) Do mortar coupling in reference configuration and
+    // perform mesh intialization for rotational invariance
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
-    cmtmanager_->GetStrategy().MeshInitialization();
     
     // FOR FRICTIONAL CONTACT (ONLY ONCE) AND STORAGE OF MORTAR MATRICES
     // IN REFERENCE CONFIGURATION (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES

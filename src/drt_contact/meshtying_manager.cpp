@@ -284,12 +284,10 @@ discret_(discret)
     //-------------------- finalize the meshtying interface construction
     interface->FillComplete(maxdof);
 
-    //---------------------------------------- create binary search tree
-    interface->CreateSearchTree();
-
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if(Comm().MyPID()==0) cout << "done!" << endl;
 
+  //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
   if(Comm().MyPID()==0)
@@ -308,13 +306,37 @@ discret_(discret)
   else
     dserror("Unrecognized strategy");
   if(Comm().MyPID()==0) cout << "done!" << endl;
-  // **** initialization of row/column maps moved to AbstractStrategy **** //
-  // since the manager does not operate over nodes, elements, dofs anymore
-  // ********************************************************************* //
+  //**********************************************************************
 
-  // print parallel distribution of interface discretization
+  // do some more stuff with interfaces
   for (int i=0; i<(int)interfaces.size();++i)
+  {
+  	// print parallel distribution
   	interfaces[i]->PrintParallelDistribution(i+1);
+
+  	//---------------------------------------
+  	// PARALLEL REDISTRIBUTION OF INTERFACES
+  	//---------------------------------------
+#ifdef MESHTYINGPAR
+  	// redistribute optimally among all procs
+  	interfaces[i]->Redistribute();
+
+  	// call fill complete again
+  	interfaces[i]->FillComplete(maxdof);
+
+  	// print parallel distribution again
+  	interfaces[i]->PrintParallelDistribution(i+1);
+#endif // #ifdef MESHTYINGPAR
+  	//---------------------------------------
+
+  	// create binary search tree
+  	interfaces[i]->CreateSearchTree();
+  }
+
+  // re-setup strategy object (with flag redistributed=TRUE)
+#ifdef MESHTYINGPAR
+  strategy_->Setup(true);
+#endif // #ifdef MESHTYINGPAR
 
   // print parameter list to screen
   if (Comm().MyPID()==0)
