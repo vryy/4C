@@ -317,6 +317,165 @@ void MonWriter::WriteMonStrFile(
     outfile.close();
 }
 
+
+/*----------------------------------------------------------------------*/
+void MonWriter::WriteMonHeatfluxFile(
+  PostProblem& problem,
+  string& infieldtype,
+  string heatfluxtype,
+  int node
+  )
+{
+  // stop it now
+  if ( (heatfluxtype != "none") and (heatfluxtype != "ndxyz") )
+    dserror("Cannot deal with requested heatflux output type: %s", heatfluxtype.c_str());
+
+  // write heatflux
+  if (heatfluxtype != "none")
+  {
+    // file name
+    const std::string filename = problem.outname() + ".heatflux.mon";
+
+    // define kind of heatfluxes
+    std::vector<std::string> groupnames;
+    groupnames.push_back("gauss_current_heatfluxes_xyz");
+    groupnames.push_back("gauss_initial_heatfluxes_xyz");
+
+    // write it, now
+    WriteMonThrFile(filename, problem, infieldtype, "heatflux", heatfluxtype, groupnames, node);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void MonWriter::WriteMonTempgradFile(
+  PostProblem& problem,
+  string& infieldtype,
+  string tempgradtype,
+  int node
+  )
+{
+  // stop it now
+  if ( (tempgradtype != "none") and (tempgradtype != "ndxyz") )
+    dserror("Cannot deal with requested temperature gradient output type: %s",
+      tempgradtype.c_str()
+      );
+
+  if (tempgradtype != "none")
+  {
+    // output file name
+    const std::string filename = problem.outname() + ".tempgrad.mon";
+
+    // define kind of temperature gradient
+    std::vector<std::string> groupnames;
+    groupnames.push_back("gauss_initial_tempgrad_xyz");
+    groupnames.push_back("gauss_current_tempgrad_xyz");
+
+    // write, now
+    WriteMonThrFile(filename, problem, infieldtype, "tempgrad", tempgradtype, groupnames, node);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void MonWriter::WriteMonThrFile(
+  const string& filename,
+  PostProblem& problem,
+  string& infieldtype,
+  const string thrname,
+  const string thrtype,
+  std::vector<std::string> groupnames,
+  int node
+  )
+{
+  // create my output file
+  std::ofstream outfile;
+  if (nodeowner_)
+  {
+    outfile.open(filename.c_str());
+  }
+//  int numdis = problem.num_discr();
+
+  // get pointer to discretisation of actual field
+  PostField* field = GetFieldPtr(problem);
+  if (field == NULL) dserror("Could not obtain field");
+
+  CheckInfieldType(infieldtype);
+
+  // pointer (rcp) to actual discretisation
+  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+  // space dimension of the problem
+  const int dim = problem.num_dim();
+
+  // get actual results of total problem
+  PostResult result = PostResult(field);
+
+  // global nodal dof numbers
+  std::vector<int> gdof;
+
+  // compute offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID().
+  // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
+  // this level. Hence offset is split up into two parts!
+  // First part:
+  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+
+  if (nodeowner_)
+  {
+    // test, if this node belongs to me
+    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+      FieldError(node);
+
+    // pointer to my actual node
+    const DRT::Node* mynode = mydiscrete->gNode(node);
+
+    // global nodal dof numbers
+    gdof = mydiscrete->Dof(mynode);
+    // set some dummy values
+    for(unsigned i=0;i < gdof.size();i++)
+    {
+      gdof[i] += offset1;
+    }
+
+    // write header
+    WriteHeader(outfile);
+    outfile << node << "\n";
+    outfile << "# control information: nodal coordinates   ";
+    outfile << "x = " << mynode->X()[0] << "    ";
+    outfile << "y = " << mynode->X()[1] << "    ";
+    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "\n";
+    outfile << "#\n";
+
+    WriteThrTableHead(outfile,thrname,thrtype,dim);
+  }
+  else // this proc is not the node owner
+  {
+    // set some dummy values
+    for(int i=0; i < dim+1; ++i)
+    {
+      gdof.push_back(-1);
+    }
+  }
+
+  // This is a loop over all possible stress or strain modes (called groupnames).
+  // The call is handed to _all_ processors, because the extrapolation of the
+  // heatfluxes/temperature gradients from Gauss points to nodes is done by
+  // DRT::Discretization utilising an assembly call. The assembly is parallel
+  // and thus all processors have to be incoporated --- at least I think so.
+  // (culpit: bborn, 07/09)
+  for (std::vector<std::string>::iterator gn=groupnames.begin(); gn!=groupnames.end(); ++gn)
+    WriteThrResults(outfile,problem,result,gdof,dim,thrtype,*gn,node);
+
+  if (outfile.is_open())
+    outfile.close();
+} // WriteMonThrFile()
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -645,9 +804,9 @@ void StructMonWriter::WriteStrResults(
     // DOFs at node
     int numdf = 0;
     if (dim == 3)
-      numdf = 6;
-    else if (dim == 2)
       numdf = 3;
+    else if (dim == 2)
+      numdf = 2;
     else
       dserror("Cannot handle dimension %d", dim);
 
@@ -990,6 +1149,324 @@ void ScatraMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ThermoMonWriter::CheckInfieldType(string& infieldtype)
+{
+  if (infieldtype != "thermo")
+    cout << "\nPure thermal problem, field option other than thermo has been ignored!\n\n";
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::FieldError(int node)
+{;
+  dserror("Node %i does not belong to thermal field!", node);
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteHeader(ofstream& outfile)
+{
+  outfile << "# thermo problem, writing nodal data of node ";
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteTableHead(ofstream& outfile, int dim)
+{
+  outfile << "#"
+          << std::right << std::setw(9) << "step"
+          << std::right << std::setw(16) << "time"
+          << std::right << std::setw(16) << "theta"
+          << std::right << std::setw(16) << "thetarate"
+          << std::endl;
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteResult(
+  ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
+{
+  // write front
+
+  // do output of general time step data
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(16) << std::scientific << result.time();
+
+  // temperature
+
+  // get actual result vector temperature
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("temperature");
+  const Epetra_BlockMap& dispmap = resvec->Map();
+
+  // compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+
+  // do output of temperature (always one DOF)
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    const int lid = dispmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+  }
+
+  // temperature rate
+
+  // get actual result vector temperature rate
+  resvec = result.read_result("rate");
+  const Epetra_BlockMap& velmap = resvec->Map();
+
+  // compute second part of offset
+  offset2 = velmap.MinAllGID();
+
+  // do output of temperature rate
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    const int lid = velmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+  }
+
+  outfile << "\n";
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteThrTableHead(
+  ofstream& outfile,
+  const string thrname,
+  const string thrtype,
+  const int dim
+  )
+{
+  switch (dim)
+  {
+  case 1:
+     outfile << "#"
+             << std::right << std::setw(9) << "step"
+             << std::right << std::setw(16) << "time"
+             << std::right << std::setw(16) << thrname+"_x"
+             << std::endl;
+     break;
+  case 2:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << thrname+"_x"
+            << std::right << std::setw(16) << thrname+"_y"
+            << std::endl;
+    break;
+  case 3:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << thrname+"_x"
+            << std::right << std::setw(16) << thrname+"_y"
+            << std::right << std::setw(16) << thrname+"_z"
+            << std::endl;
+    break;
+  default:
+    dserror("Number of dimensions in space differs from 2 and 3!");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteThrResults(
+  ofstream& outfile,
+  PostProblem& problem,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim,
+  string thrtype,
+  string groupname,
+  const int node
+  )
+{
+  result.next_result();  // needed
+  if (map_has_map(result.group(), groupname.c_str()))
+  {
+    // strings
+    std::string name;
+    std::string out;
+    if (groupname == "gauss_initial_heatfluxes_xyz")
+    {
+      name = "nodal_initial_heatfluxes_xyz";
+      out = "Initial heatfluxes";
+    }
+    else if (groupname == "gauss_current_heatfluxes_xyz")
+    {
+      name = "nodal_current_heatfluxes_xyz";
+      out = "Current heatfluxes";
+    }
+    else if (groupname == "gauss_initial_tempgrad_xyz")
+    {
+      name = "nodal_initial_tempgrad_xyz";
+      out = "Initial temperature gradients";
+    }
+    else if (groupname == "gauss_current_tempgrad_xyz")
+    {
+      name = "nodal_current_tempgrad_xyz";
+      out = "Current temperature gradients";
+    }
+    else
+    {
+      dserror("trying to write something that is not a heatflux or a temperature gradient");
+      exit(1);
+    }
+
+    // get pointer to discretisation of actual field
+    PostField* field = GetFieldPtr(problem);
+
+    // inform (eagerly waiting) user
+    if (myrank_ == 0)
+      cout << "writing node-based " << out << endl;
+
+    // DOFs at node
+    int numdf = 0;
+    if (dim == 3)
+      numdf = 3;
+    else if (dim == 2)
+      numdf = 2;
+    else if (dim == 1)
+      numdf = 1;
+    else
+      dserror("Cannot handle dimension %d", dim);
+
+    // this is a loop over all time steps that should be written
+    // bottom control here, because first set has been read already
+    do
+    {
+      WriteThrResult(outfile,field,result,groupname,name,numdf,node);
+    } while (result.next_result());
+
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ThermoMonWriter::WriteThrResult(
+  ofstream& outfile,
+  PostField*& field,
+  PostResult& result,
+  const string groupname,
+  const string name,
+  const int numdf,
+  const int node
+  ) const
+{
+  // get heatfluxes/temperature gradients at Gauss points
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data
+    = result.read_result_serialdensematrix(groupname);
+  // discretisation (once more)
+  const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
+
+  // extrapolate heatfluxes/temperature gradients to nodes
+  // and assemble them in two global vectors
+  Teuchos::ParameterList p;
+  p.set("action", "postproc_thermo_heatflux");
+  p.set("heatfluxtype", "ndxyz");
+  p.set("gpheatfluxmap", data);
+  p.set("total time", -1.0);
+
+  Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,heatfluxx,heatfluxy,heatfluxz);
+
+  const unsigned numdofpernode = 1;
+
+  // average heatfluxes/temperature gradients and print to file
+  if (nodeowner_)
+  {
+    const DRT::Node* lnode = dis->gNode(node);
+    const std::vector<int> lnodedofs = dis->Dof(lnode);
+    const int adjele = lnode->NumElement();
+
+    std::vector<double> nodal_heatfluxes;
+    if (numdf == 3)
+    {
+      if (lnodedofs.size() < numdofpernode)
+        dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
+      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
+      nodal_heatfluxes.push_back((*heatfluxz)[lnodedofs[0]]/adjele);
+    }
+    else if (numdf == 2)
+    {
+      if (lnodedofs.size() < numdofpernode)
+        dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
+      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
+    }
+    else if (numdf == 1)
+    {
+      if (lnodedofs.size() < numdofpernode)
+        dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
+    }
+    else
+    {
+      dserror("Don't know what to do with %d DOFs per node", numdf);
+    }
+
+    // print to file
+    outfile << std::right << std::setw(10) << result.step();
+    outfile << std::right << std::setw(16) << std::scientific << result.time();
+    for (std::vector<double>::iterator ns=nodal_heatfluxes.begin(); ns!=nodal_heatfluxes.end(); ++ns)
+      outfile << std::right << std::setw(16) << std::scientific << *ns;
+    outfile << std::endl;
+  }
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(0);
+  if (myfield->name() != "structure")
+    dserror("Fieldtype of field 1 is not structure.");
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void TsiStructMonWriter::WriteHeader(ofstream& outfile)
+{
+  outfile << "# TSI problem, writing nodal data of structure node ";
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
+{
+  // get pointer to discretisation of actual field
+  PostField* myfield = problem.get_discretization(1);
+  if (myfield->name() != "thermo")
+    dserror("Fieldtype of field 1 is not thermo.");
+  return myfield;
+}
+
+/*----------------------------------------------------------------------*/
+void TsiThermoMonWriter::WriteHeader(ofstream& outfile)
+{
+  outfile << "# TSI problem, writing nodal data of thermal node ";
+}
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
  * \brief filter main routine for monitoring filter
  *
@@ -1073,6 +1550,36 @@ int main(int argc, char** argv)
     {
       AleMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);
+      break;
+    }
+    case prb_thermo:
+    {
+      ThermoMonWriter mymonwriter(problem,infieldtype,node);
+      mymonwriter.WriteMonFile(problem,infieldtype,node);
+      mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
+      mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+      break;
+    }
+    case prb_tsi:
+    {
+      if(infieldtype == "structure")
+      {
+        TsiStructMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
+        mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
+      }
+      else if(infieldtype == "thermo")
+      {
+        TsiThermoMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+//        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
+//        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+      }
+      else
+      {
+        dserror("handling for monitoring of this fieldtype not yet implemented");
+      }
       break;
     }
     default:

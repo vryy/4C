@@ -38,7 +38,7 @@ Maintainer: Christiane FÃ¶rster
 class MonWriter
 {
 public:
-  
+
   //! constructor
   MonWriter(
     PostProblem& problem,
@@ -70,6 +70,22 @@ public:
     PostProblem& problem,
     string& infieldtype,
     string straintype,
+    int node
+    );
+
+  //! write something : heatflux a point
+  void WriteMonHeatfluxFile(
+    PostProblem& problem,
+    string& infieldtype,
+    string heatfluxtype,
+    int node
+    );
+
+  //! write something : temperature gradient a point
+  void WriteMonTempgradFile(
+    PostProblem& problem,
+    string& infieldtype,
+    string tempgradtype,
     int node
     );
 
@@ -119,6 +135,39 @@ protected:
     std::vector<int>& gdof,
     int dim,
     string strtype,
+    string groupname,
+    const int node)
+  {
+    dserror("Not impl.");
+  }
+
+  void WriteMonThrFile(
+    const string& filename,
+    PostProblem& problem,
+    string& infieldtype,
+    const string thrname,
+    const string thrtype,
+    vector<string> groupnames,
+    int node
+    );
+
+  virtual void WriteThrTableHead(
+    ofstream& outfile,
+    const string thrname,
+    const string thrtype,
+    const int dim
+    )
+  {
+    dserror("Not impl.");
+  }
+
+  virtual void WriteThrResults(
+    ofstream& outfile,
+    PostProblem& problem,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim,
+    string thrtype,
     string groupname,
     const int node)
   {
@@ -357,6 +406,74 @@ private:
 }; // end of class ScatraMonWriter
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class ThermoMonWriter : public FieldMonWriter
+{
+public:
+  //! constructor
+  ThermoMonWriter(
+    PostProblem& problem,
+    string& infieldtype,
+    int node
+    )
+    : FieldMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~ThermoMonWriter()
+  {}
+
+protected:
+
+  virtual void CheckInfieldType(string& infieldtype);
+
+  void FieldError(int node);
+
+  virtual void WriteHeader(ofstream& outfile);
+
+  void WriteTableHead(ofstream& outfile, int dim);
+
+  void WriteResult(
+    ofstream& outfile,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim
+    );
+
+  virtual void WriteThrTableHead(
+    ofstream& outfile,
+    const string thrname,
+    const string thrtype,
+    const int dim
+    );
+
+  virtual void WriteThrResults(
+    ofstream& outfile,
+    PostProblem& problem,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim,
+    string thrtype,
+    string groupname,
+    const int node
+    );
+
+  void WriteThrResult(
+    std::ofstream& file,
+    PostField*& field,
+    PostResult& result,
+    const std::string groupname,
+    const std::string name,
+    const int numdf,
+    const int node
+    ) const;
+
+private:
+}; // end of class ThermoMonWriter
+
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -460,6 +577,71 @@ protected:
 
 private:
 }; // end of class FsiAleMonWriter
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class TsiStructMonWriter : public StructMonWriter
+{
+public:
+  //! constructor
+  TsiStructMonWriter(
+    PostProblem& problem,
+    string& infieldtype,
+    int node
+    )
+    : StructMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~TsiStructMonWriter()
+  {}
+
+protected:
+
+  void CheckInfieldType(string& infieldtype){};
+
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  void WriteHeader(ofstream& outfile);
+
+private:
+}; // end of class TsiStructMonWriter
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class TsiThermoMonWriter : public ThermoMonWriter
+{
+public:
+  //! constructor
+  TsiThermoMonWriter(
+    PostProblem& problem,
+    string& infieldtype,
+    int node
+    )
+    : ThermoMonWriter(problem,infieldtype,node)
+  {}
+
+  //! destructor
+  virtual ~TsiThermoMonWriter()
+  {}
+
+protected:
+
+  void CheckInfieldType(string& infieldtype){};
+
+  PostField* GetFieldPtr(PostProblem& problem);
+
+  void WriteHeader(ofstream& outfile);
+
+private:
+}; // end of class TsiThermoMonWriter
+
 
 
 
