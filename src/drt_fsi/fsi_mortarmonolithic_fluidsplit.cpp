@@ -387,7 +387,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #endif
 
   
-  RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81));
+  RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
   aigtransform_(a->FullRowMap(),
                 a->FullColMap(),
                 aig,
@@ -427,7 +427,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     mat.Matrix(0,0).Add(*fmgg,false,scale,1.0);
     
     RCP<LINALG::SparseMatrix> fmig = MLMultiply(mmm->Matrix(0,1),false,*mortar,false,false,false,true);
-    RCP<LINALG::SparseMatrix> lfmig = rcp(new LINALG::SparseMatrix(fmig->RowMap(),81));
+    RCP<LINALG::SparseMatrix> lfmig = rcp(new LINALG::SparseMatrix(fmig->RowMap(),81,false));
 
     lfmig->Add(*fmig,false,1.0,0.0);
     lfmig->Complete(s->DomainMap(),fmig->RangeMap());
@@ -447,7 +447,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    false);
 
     
-    RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(fmgi.RowMap(),81));
+    RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(fmgi.RowMap(),81,false));
     fmiitransform_(mmm->FullRowMap(),
                   mmm->FullColMap(),
                   fmgi,
@@ -458,7 +458,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     
     lfmgi->Complete(aii.DomainMap(),mortar->RangeMap());
     RCP<LINALG::SparseMatrix> llfmgi = MLMultiply(*mortar,true,*lfmgi,false,false,false,true);
-    lfmgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81));
+    lfmgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
     lfmgi->Add(*llfmgi,false,scale,0.0);
     lfmgi->Complete(aii.DomainMap(),s->RangeMap());

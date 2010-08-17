@@ -856,7 +856,6 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
-//  combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
@@ -909,7 +908,6 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
 
   AddStatusTest(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
-//  interfacecombo->addStatusTest(interfaceTestUpdate);
 
   converged->addStatusTest(interfacecombo);
 
