@@ -198,7 +198,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   /**********************************************************************/
   /* Mesh initialization (for rotational invariance)                    */
   /**********************************************************************/
-  //MeshInitialization();
+  MeshInitialization();
 
   // transform parallel distribution of mhatmatrix
   // (only necessary in the MESHTYINGPAR case)
