@@ -45,7 +45,7 @@ Maintainer: Alexander Popp
 /* Meshtying algorithm options                                          */
 /************************************************************************/
 
-#define MESHTYINGPAR         /* flag for applying parallel redistribution */
+//#define MESHTYINGPAR       /* flag for applying parallel redistribution */
 #define MESHTYINGTWOCON      /* flag for applying 2 static condensations */
 #define MESHTYINGUCONSTR     /* flag for computing constraints b(u,\mu) */
 
