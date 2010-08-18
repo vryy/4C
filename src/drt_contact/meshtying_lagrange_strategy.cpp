@@ -221,6 +221,10 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
     fflush(stdout);
   }
   
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
   //**********************************************************************
   // (1) get master positions on global level
   //**********************************************************************
@@ -280,7 +284,12 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   //**********************************************************************
   // this can be done in the AbstractStrategy now
   MtAbstractStrategy::MeshInitialization(Xslavemod);
-      
+
+  // time measurement
+  Comm().Barrier();
+  const double t_end = Teuchos::Time::wallTime()-t_start;
+  if (Comm().MyPID()==0) cout << "in...." << t_end << " secs........";
+
   // print message
   if(Comm().MyPID()==0) cout << "done!\n" << endl;
       

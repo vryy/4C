@@ -38,6 +38,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "meshtying_manager.H"
 #include "meshtying_lagrange_strategy.H"
@@ -308,6 +309,9 @@ discret_(discret)
   if(Comm().MyPID()==0) cout << "done!" << endl;
   //**********************************************************************
 
+  // time measurement
+  vector<double> times((int)interfaces.size());
+
   // do some more stuff with interfaces
   for (int i=0; i<(int)interfaces.size();++i)
   {
@@ -318,6 +322,10 @@ discret_(discret)
   	// PARALLEL REDISTRIBUTION OF INTERFACES
   	//---------------------------------------
 #ifdef MESHTYINGPAR
+  	// time measurement
+  	Comm().Barrier();
+  	const double t_start = Teuchos::Time::wallTime();
+
   	// redistribute optimally among all procs
   	interfaces[i]->Redistribute();
 
@@ -326,6 +334,10 @@ discret_(discret)
 
   	// print parallel distribution again
   	interfaces[i]->PrintParallelDistribution(i+1);
+
+  	// time measurement
+		Comm().Barrier();
+		times[i] = Teuchos::Time::wallTime()-t_start;
 #endif // #ifdef MESHTYINGPAR
   	//---------------------------------------
 
@@ -335,7 +347,18 @@ discret_(discret)
 
   // re-setup strategy object (with flag redistributed=TRUE)
 #ifdef MESHTYINGPAR
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
+  // re-setup strategy object
   strategy_->Setup(true);
+
+  // time measurement
+  Comm().Barrier();
+  double t_sum = Teuchos::Time::wallTime()-t_start;
+  for (int i=0; i<(int)interfaces.size();++i) t_sum += times[i];
+  if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
 #endif // #ifdef MESHTYINGPAR
 
   // print parameter list to screen
