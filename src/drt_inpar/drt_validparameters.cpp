@@ -1239,6 +1239,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading number of elements that are taken into account when applying Dirichlet Conditions (useful to avoid redundant evaluation)
   // when Crosslink elements are added or the bead-spring-model is used
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);
+  // number of partitions along the edge length of the volume determining the resolution of the search grid
+  IntParameter("SEARCHRES",-1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
   //Reading whether DBCs shall be applied to broken elements
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);
