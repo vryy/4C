@@ -1200,8 +1200,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("N_crosslink",0.0,"number of crosslinkers for switching on- and off-rates",&statmech);
   //Maximal number of crosslinkers a node can establish to other nodes
   IntParameter("N_CROSSMAX",-1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
-  //average time between searching new neighbours for setting crosslinkers
-  DoubleParameter("Delta_t_search",0.0,"average time between searching new neighbours for setting crosslinkers",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
@@ -1241,6 +1239,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);
   // number of partitions along the edge length of the volume determining the resolution of the search grid
   IntParameter("SEARCHRES",1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
+  //search interval
+  IntParameter("SEARCHINTERVAL",1,"search for nieghbours every SEARCHINTERVAL steps",&statmech);
   //Reading whether DBCs shall be applied to broken elements
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);
