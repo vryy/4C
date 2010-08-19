@@ -269,7 +269,7 @@ int main(
     case prb_thermo:
     {
       PostField* field = problem.get_discretization(0);
-      ThermoEnsightWriter writer(field, problem.outname(), problem.tempgradtype(), problem.tempgradtype());
+      ThermoEnsightWriter writer(field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
       writer.WriteFiles();
       break;
     }
