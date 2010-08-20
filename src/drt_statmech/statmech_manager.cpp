@@ -2321,8 +2321,26 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 																					 std::vector<int>* partition,
 																					 int index)
 {
-	double t = Teuchos::Time::wallTime();
-	// Calculate search radius depending on bonding status
+	/* Description:
+	 * a three-component vector is handed over to this method. It contains the partition number
+	 * bay components. We loop over the partition number of the first (x) component and its two neighbouring partition numbers,
+	 * hence gathering information on all nodes within these three layers.
+	 *
+	 * Now, we check, whether or not an LID of the first component matches one of the LIDs in the second component's partition layers
+	 * (once again, we check the given partition number and its immediate neighbours).
+	 * If so, we head to the third component and repeat this procedure.
+	 * If a match is found for all components, we can be sure that the crosslink molecule in question lies within
+	 * the 27 partitions encompassing the crosslink molecule partition.
+	 *
+	 * Eventually, the distance between the crosslink molecule and the filament node is calculated.
+	 * If the distance lies beneath the boundaries given by the crosslinker lengths rmin and rmax,
+	 * the node's LID is added to a storage vector for further use.
+	 *
+	 * After having found a match in the next component, we exit the loop to avoid unnecessary computational cost
+	 */
+
+	//double t = Teuchos::Time::wallTime();
+	// Calculate search radii depending on bonding status
 	double rmin, rmax;
 	if ((int)(*numbond_)[index]==0)
 	{
@@ -2334,60 +2352,49 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 		rmin = statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0);
 		rmax = statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0);
 	}
-	//cout<<"i="<<index<<": det. search radius: "<< Teuchos::Time::wallTime()-t<<endl;
-	//t = Teuchos::Time::wallTime();
-	// search for neighbour nodes within the given and its neighbour volume partition layers
-	for(int i=0; i<(int)nodeinpartition_->size(); i++)
-	{
-		// for the first component, check all 3 relevant layers and fill up LID vector
-		if(i==0)
-		{
-			for(int j=partition->at(i)-1; j<partition->at(i)+2; j++)
-				// take into account the case of partition[0] being the outermost layer of the volume
-				if(j>-1 && j<statmechparams_.get<int>("SEARCHRES",1))
-				{
-					// append node LIDs to the temporary LIDs vector
-					std::vector<int>::iterator it = neighboursLID->end();
-					neighboursLID->insert(it,(*nodeinpartition_)[i][j].begin(), (*nodeinpartition_)[i][j].end());
-				}
-			//cout<<"size("<<i<<")="<<neighboursLID->size()<<endl;
-		}
-		// narrow down the choice, check for the intersection of the LIDs
-		else
-		{
-			std::vector<int> tmplids;
-			for(int j=0; j<(int)neighboursLID->size(); j++)
-				for(int k=partition->at(i)-1; k<partition->at(i)+2; k++)
-					if(k>-1 && k<statmechparams_.get<int>("SEARCHRES",1))
-						for(int l=0; l<(int)(*nodeinpartition_)[i][k].size(); l++)
-							if((*neighboursLID)[j]==(*nodeinpartition_)[i][k][l])
-								tmplids.push_back((*nodeinpartition_)[i][k][l]);
-			(*neighboursLID) = tmplids;
-			//cout<<"size("<<i<<")="<<neighboursLID->size()<<endl;
-		}
-	}
-	//cout<<"i="<<index<<": det. neighboursLID: "<< Teuchos::Time::wallTime()-t<<endl;
-	/*if(neighboursLID->size()>0)
-	{
-		for(int i=0; i<(int)neighboursLID->size(); i++)
-			cout<<neighboursLID->at(i)<<" ";
-		cout<<"\n"<<endl;
-	}*/
-	t = Teuchos::Time::wallTime();
-	// detect all neighbours of crosslink molecule 'index'
-	std::vector<int> lids;
-	for (int i=0; i<(int)neighboursLID->size(); i++)
-	{
-		//cout<<(*neighboursLID)[i]<<" ";
-		const map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.find((*neighboursLID)[i]);
-		// calculate distance crosslinker-node
-		LINALG::Matrix<3, 1> difference;
-		for (int j=0; j<(int)difference.M(); j++)
-			difference(j) = (*crosslinkerpositions_)[j][index]-(posi->second)(j);
-		if(difference.Norm2()<rmax && difference.Norm2()>rmin && (*numcrossnodes_)[posi->first]<statmechparams_.get<int>("N_CROSSMAX",0))
-			lids.push_back((*neighboursLID)[i]);
-	}
-	(*neighboursLID) = lids;
+
+	// search resolution
+	int N = statmechparams_.get<int>("SEARCHRES",1);
+	// first component
+	for(int ilayer=partition->at(0)-1; ilayer<partition->at(0)+2; ilayer++)
+		if(ilayer>-1 && ilayer<N)
+			for(int i=0; i<(int)(*nodeinpartition_)[0][ilayer].size(); i++)
+			{
+				int tmplid = (int)(*nodeinpartition_)[0][ilayer][i];
+				// second component
+				for(int jlayer=partition->at(1)-1; jlayer<partition->at(1)+2; jlayer++)
+					if(jlayer>-1 && jlayer<N)
+						for(int j=0; j<(int)(*nodeinpartition_)[1][jlayer].size(); j++)
+							if((*nodeinpartition_)[1][jlayer][j]==tmplid)
+							{
+								//third component
+								for(int klayer=partition->at(2)-1; klayer<partition->at(2)+2; klayer++)
+								{
+									if(klayer>-1 && klayer<N)
+										for(int k=0; k<(int)(*nodeinpartition_)[2][klayer].size(); k++)
+											if((*nodeinpartition_)[2][klayer][k]==tmplid)
+											{
+												// get the current node position for the node with LID==tmplid
+												const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
+												// calculate distance crosslinker-node
+												LINALG::Matrix<3, 1> difference;
+												for (int l=0; l<(int)difference.M(); l++)
+													difference(l) = (*crosslinkerpositions_)[l][index]-(nodepos->second)(l);
+												// only nodes within the search volume are stored
+												if(difference.Norm2()<rmax && difference.Norm2()>rmin && (*numcrossnodes_)[tmplid]<statmechparams_.get<int>("N_CROSSMAX",0))
+												{
+													//cout<<tmplid<<", rmax="<<rmax<<", dist="<<difference.Norm2()<<" ";
+													neighboursLID->push_back(tmplid);
+												}
+												// exit loop imediately
+												break;
+											}
+								}
+								break;
+							}
+			}
+	//if(neighboursLID->size()>0)
+		//cout<<" p="<<partition->at(0)<<","<<partition->at(1)<<","<<partition->at(2)<<endl;
 	//cout<<"i="<<index<<": det. neighbour nodes: "<< Teuchos::Time::wallTime()-t<<endl;
 }// StatMechManager::DetectNeighbourNodes
 
@@ -2521,7 +2528,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			std::vector<int> neighbourorder = Permutation((int)neighboursLID.size());
 
 			// loop over neighbour nodes
-			if((int)(int)neighboursLID.size()>0)
+			if((int)neighboursLID.size()>0)
 			{
 				for(int j=0; j<(int)neighboursLID.size(); j++)
 				{
