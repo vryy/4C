@@ -599,10 +599,11 @@ void MORTAR::MortarInterface::Redistribute()
 	RCP<Epetra_Map> scolnodes = Teuchos::null;
 
   // build redundant vector of all slave node ids on all procs
+  // (include crosspoints / boundary nodes if there are any)
   vector<int> snids;
-  vector<int> snidslocal(SlaveRowNodes()->NumMyElements());
-  for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
-    snidslocal[i] = SlaveRowNodes()->GID(i);
+  vector<int> snidslocal(SlaveRowNodesBound()->NumMyElements());
+  for (int i=0; i<SlaveRowNodesBound()->NumMyElements(); ++i)
+    snidslocal[i] = SlaveRowNodesBound()->GID(i);
   LINALG::Gather<int>(snidslocal,snids,numproc,&allproc[0],Comm());
 
 	//**********************************************************************
@@ -622,10 +623,11 @@ void MORTAR::MortarInterface::Redistribute()
 	RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
 	// build redundant vector of all master node ids on all procs
+	// (do not include crosspoints / boundary nodes if there are any)
 	vector<int> mnids;
-	vector<int> mnidslocal(MasterRowNodes()->NumMyElements());
-	for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i)
-		mnidslocal[i] = MasterRowNodes()->GID(i);
+	vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
+	for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
+		mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
 	LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
 
 	//**********************************************************************
@@ -705,8 +707,11 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     vector<int> mc;          // master column map
     vector<int> mr;          // master row map
     vector<int> mcfull;      // master full map
+    vector<int> srb;         // slave row map + boundary nodes
     vector<int> scb;         // slave column map + boundary nodes
     vector<int> scfullb;     // slave full map + boundary nodes
+    vector<int> mrb;         // master row map - boundary nodes
+    vector<int> mcb;         // master column map - boundary nodes
     vector<int> mcfullb;     // master full map - boundary nodes
 
     for (int i=0; i<nodecolmap->NumMyElements(); ++i)
@@ -717,6 +722,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       if (oldnodecolmap_->MyGID(gid))
       {
         if (isslave || isonbound) scb.push_back(gid);
+        else                      mcb.push_back(gid);
         if (isslave) sc.push_back(gid);
         else         mc.push_back(gid);
       }
@@ -725,6 +731,8 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       if (isslave) scfull.push_back(gid);
       else         mcfull.push_back(gid);
       if (!noderowmap->MyGID(gid)) continue;
+      if (isslave || isonbound) srb.push_back(gid);
+      else                      mrb.push_back(gid);
       if (isslave) sr.push_back(gid);
       else         mr.push_back(gid);
     }
@@ -736,8 +744,11 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     mnodefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
 
+    snoderowmapbound_ = rcp(new Epetra_Map(-1,(int)srb.size(),&srb[0],0,Comm()));
     snodecolmapbound_ = rcp(new Epetra_Map(-1,(int)scb.size(),&scb[0],0,Comm()));
     snodefullmapbound_ = rcp(new Epetra_Map(-1,(int)scfullb.size(),&scfullb[0],0,Comm()));
+    mnoderowmapnobound_ = rcp(new Epetra_Map(-1,(int)mrb.size(),&mrb[0],0,Comm()));
+    mnodecolmapnobound_ = rcp(new Epetra_Map(-1,(int)mcb.size(),&mcb[0],0,Comm()));
     mnodefullmapnobound_ = rcp(new Epetra_Map(-1,(int)mcfullb.size(),&mcfullb[0],0,Comm()));
   }
 
@@ -855,35 +866,20 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
     vector<int> sc;          // slave column map
     vector<int> sr;          // slave row map
     vector<int> scfull;      // slave full map
-    vector<int> scb;         // slave column map + boundary nodes
-    vector<int> scfullb;     // slave full map + boundary nodes
 
     for (int i=0; i<snodefullmap_->NumMyElements(); ++i)
     {
       int gid = snodefullmap_->GID(i);
       bool istied = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsTiedSlave();
-      bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBound();
 
-      if (istied || isonbound) scfullb.push_back(gid);
       if (istied) scfull.push_back(gid);
-
-      if (snodecolmap_->MyGID(gid))
-      {
-        if (istied || isonbound) scb.push_back(gid);
-        if (istied) sc.push_back(gid);
-      }
-
-      if (snoderowmap_->MyGID(gid))
-      {
-        if (istied) sr.push_back(gid);
-      }
+      if (istied && snodecolmap_->MyGID(gid)) sc.push_back(gid);
+      if (istied && snoderowmap_->MyGID(gid)) sr.push_back(gid);
     }
 
     snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
     snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
-    snodecolmapbound_ = rcp(new Epetra_Map(-1,(int)scb.size(),&scb[0],0,Comm()));
-    snodefullmapbound_ = rcp(new Epetra_Map(-1,(int)scfullb.size(),&scfullb[0],0,Comm()));
   }
 
   //********************************************************************

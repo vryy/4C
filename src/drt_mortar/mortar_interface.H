@@ -235,17 +235,6 @@ public:
   }
 
   /*!
-  \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> SlaveColNodesBound() const
-  {
-    if (Filled()) return snodecolmapbound_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-  
-  /*!
   \brief Get column map of master nodes (Filled()==true is prerequisite)
 
   */
@@ -274,6 +263,50 @@ public:
   virtual const RCP<Epetra_Map> MasterFullNodes() const
   {
     if (Filled()) return mnodefullmap_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveRowNodesBound() const
+  {
+    if (Filled()) return snoderowmapbound_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveColNodesBound() const
+  {
+    if (Filled()) return snodecolmapbound_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> MasterRowNodesNoBound() const
+  {
+    if (Filled()) return mnoderowmapnobound_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> MasterColNodesNoBound() const
+  {
+    if (Filled()) return mnodecolmapnobound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -715,8 +748,11 @@ protected:
   RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
   RCP<Epetra_Map>             mdoffullmap_;   // fully overlapping column map of all master dofs
 
+  RCP<Epetra_Map>             snoderowmapbound_;    // row map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)
+  RCP<Epetra_Map>             mnoderowmapnobound_;  // row map of master nodes (- boundary nodes)
+  RCP<Epetra_Map>             mnodecolmapnobound_;  // col map of master nodes (- boundary nodes)
   RCP<Epetra_Map>             mnodefullmapnobound_; // full map of master nodes (- boundary nodes)
 
   RCP<Epetra_Map>             lmdofmap_;      // row map of all Lagrange multiplier dofs

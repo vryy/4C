@@ -442,17 +442,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("Only quadratic/quadratic approach (for LM) implemented for 3D quadratic meshtying with DUAL shape fct.");
 
   // *********************************************************************
-  // not (yet) compatible with parallel redistribution
-  // *********************************************************************
-#ifdef MESHTYINGPAR
-  if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true)
-  	dserror("ERROR: Crosspoints / edge node modification not yet compatible with par. redistribution");
-
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin)
-  	dserror("ERROR: Linear LM for 3D quadratic meshtying not yet compatible with par. redistribution");
-#endif // #ifdef MESHTYINGPAR
-
-  // *********************************************************************
   // warnings
   // *********************************************************************
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
