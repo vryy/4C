@@ -2323,7 +2323,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 {
 	/* Description:
 	 * a three-component vector is handed over to this method. It contains the partition number
-	 * bay components. We loop over the partition number of the first (x) component and its two neighbouring partition numbers,
+	 * by components. We loop over the partition number of the first (x) component and its two neighbouring partition numbers,
 	 * hence gathering information on all nodes within these three layers.
 	 *
 	 * Now, we check, whether or not an LID of the first component matches one of the LIDs in the second component's partition layers
