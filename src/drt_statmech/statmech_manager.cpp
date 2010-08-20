@@ -270,7 +270,7 @@ discret_(discret)
 	 * between two filaments, only their positions are calculated. Here, the molecules' initial positions are determined.
 	 * Calculations are made on Proc 0, only.*/
 	if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"CRSLNKDIFFUSION"))
-		CrosslinkerPosInit();
+		CrosslinkerMoleculeInit();
 
 	}//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 	return;
@@ -1813,7 +1813,7 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim)
+void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim)
 {
 #ifdef MEASURETIME
 	const double t_start = Teuchos::Time::wallTime();
@@ -1885,7 +1885,6 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<
 			currentrotations[node->LID()] = currrot;
 		}
 
-		//if(time_ - nsearch_*statmechparams_.get<double>("Delta_t_search",0.0) > statmechparams_.get<double>("Delta_t_search",0.0) )(for now, call for each time step)
 		//new search for neighbour nodes after average time specified in input file
 		RCP<Epetra_MultiVector> crosslinkerneighbours;
 		// in case of deactivated crosslink molecule diffusion (i.e. crosslinking is a purely geometric matter: node-to-node-distance of filaments)
@@ -1912,7 +1911,7 @@ void StatMechManager::StatMechUpdate(const double dt, Epetra_Vector& disrow,RCP<
 		// set crosslinkers the "new way", i.e. considering crosslink molecule diffusion
 		else
 		{
-			SearchAndSetCrosslinkers(dt, noderowmap, nodecolmap, currentpositions,currentrotations);
+			SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations);
 			// filled in because #DEBUG wanted it
 			discret_.CheckFilledGlobally();
 			discret_.FillComplete(true, false, false);
@@ -2317,8 +2316,12 @@ void StatMechManager::SearchNeighbours(const std::map<int, LINALG::Matrix<3, 1> 
 /*----------------------------------------------------------------------*
  | detect neighbour nodes to crosslink molecules (public) mueller (7/10)|
  *----------------------------------------------------------------------*/
-void StatMechManager::DetectNeighbourNodes(const std::map<int, LINALG::Matrix<3, 1> > currentpositions, std::vector<int>* neighboursLID, int index)
+void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions,
+																					 std::vector<int>* neighboursLID,
+																					 std::vector<int>* partition,
+																					 int index)
 {
+	double t = Teuchos::Time::wallTime();
 	// Calculate search radius depending on bonding status
 	double rmin, rmax;
 	if ((int)(*numbond_)[index]==0)
@@ -2331,17 +2334,61 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int, LINALG::Matrix<3,
 		rmin = statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0);
 		rmax = statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0);
 	}
-	// detect all neighbours of crosslink molecule 'index'
-	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posj = currentpositions.begin(); posj != currentpositions.end(); posj++)
+	//cout<<"i="<<index<<": det. search radius: "<< Teuchos::Time::wallTime()-t<<endl;
+	//t = Teuchos::Time::wallTime();
+	// search for neighbour nodes within the given and its neighbour volume partition layers
+	for(int i=0; i<(int)nodeinpartition_->size(); i++)
 	{
+		// for the first component, check all 3 relevant layers and fill up LID vector
+		if(i==0)
+		{
+			for(int j=partition->at(i)-1; j<partition->at(i)+2; j++)
+				// take into account the case of partition[0] being the outermost layer of the volume
+				if(j>-1 && j<statmechparams_.get<int>("SEARCHRES",1))
+				{
+					// append node LIDs to the temporary LIDs vector
+					std::vector<int>::iterator it = neighboursLID->end();
+					neighboursLID->insert(it,(*nodeinpartition_)[i][j].begin(), (*nodeinpartition_)[i][j].end());
+				}
+			//cout<<"size("<<i<<")="<<neighboursLID->size()<<endl;
+		}
+		// narrow down the choice, check for the intersection of the LIDs
+		else
+		{
+			std::vector<int> tmplids;
+			for(int j=0; j<(int)neighboursLID->size(); j++)
+				for(int k=partition->at(i)-1; k<partition->at(i)+2; k++)
+					if(k>-1 && k<statmechparams_.get<int>("SEARCHRES",1))
+						for(int l=0; l<(int)(*nodeinpartition_)[i][k].size(); l++)
+							if((*neighboursLID)[j]==(*nodeinpartition_)[i][k][l])
+								tmplids.push_back((*nodeinpartition_)[i][k][l]);
+			(*neighboursLID) = tmplids;
+			//cout<<"size("<<i<<")="<<neighboursLID->size()<<endl;
+		}
+	}
+	//cout<<"i="<<index<<": det. neighboursLID: "<< Teuchos::Time::wallTime()-t<<endl;
+	/*if(neighboursLID->size()>0)
+	{
+		for(int i=0; i<(int)neighboursLID->size(); i++)
+			cout<<neighboursLID->at(i)<<" ";
+		cout<<"\n"<<endl;
+	}*/
+	t = Teuchos::Time::wallTime();
+	// detect all neighbours of crosslink molecule 'index'
+	std::vector<int> lids;
+	for (int i=0; i<(int)neighboursLID->size(); i++)
+	{
+		//cout<<(*neighboursLID)[i]<<" ";
+		const map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.find((*neighboursLID)[i]);
 		// calculate distance crosslinker-node
 		LINALG::Matrix<3, 1> difference;
-		for (int k=0; k<(int)difference.M(); k++)
-			difference(k) = (*crosslinkerpositions_)[k][index]-(posj->second)(k);
-
-		if (difference.Norm2()<rmax && difference.Norm2()>rmin && (*numcrossnodes_)[posj->first]<statmechparams_.get<int>("N_CROSSMAX",0))
-			neighboursLID->push_back(posj->first);
+		for (int j=0; j<(int)difference.M(); j++)
+			difference(j) = (*crosslinkerpositions_)[j][index]-(posi->second)(j);
+		if(difference.Norm2()<rmax && difference.Norm2()>rmin && (*numcrossnodes_)[posi->first]<statmechparams_.get<int>("N_CROSSMAX",0))
+			lids.push_back((*neighboursLID)[i]);
 	}
+	(*neighboursLID) = lids;
+	//cout<<"i="<<index<<": det. neighbour nodes: "<< Teuchos::Time::wallTime()-t<<endl;
 }// StatMechManager::DetectNeighbourNodes
 
 /*----------------------------------------------------------------------*
@@ -2349,13 +2396,14 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int, LINALG::Matrix<3,
  | crosslinker elements once linking conditions are met.       					|
  | (public)                                               mueller (7/10)|
  *----------------------------------------------------------------------*/
-void StatMechManager::SearchAndSetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
+void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																							 const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
 																							 const std::map<int,LINALG::Matrix<3, 1> >& currentrotations)
 {
 #ifdef D_TRUSS3
 #ifdef D_BEAM3
-#ifdef D_BEAM3II
+//#ifdef D_BEAM3II
+
 	// update the number of times the function SearchNeighbours has already been called
 	nsearch_++;
 
@@ -2439,6 +2487,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const double& dt, const Epetra_Ma
 	 *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
 	if(discret_.Comm().MyPID()==0)
 	{
+		// map crosslink molecule and filament node positions to volume partitions every SEARCHRES timesteps
+		if(istep%statmechparams_.get<int>("SEARCHINTERVAL",1)==0 && statmechparams_.get<int>("SEARCHRES",1)>0)
+			PositionsToPartitions(currentpositions);
+
 		// obtain a random order in which the crosslinkers are addressed
 		std::vector<int> order = Permutation((int)statmechparams_.get<double>("N_crosslink", 0.0));
 
@@ -2449,24 +2501,34 @@ void StatMechManager::SearchAndSetCrosslinkers(const double& dt, const Epetra_Ma
 			// skip this crosslink molecule if it already bonded with two nodes, hence constituting a crosslinker element
 			if((*numbond_)[irandom]>1.9)
 				continue;
-
 			// search for neighbour nodes
+			std::vector<int> crosslinkerinpartition(3,0);
+			for(int j=0; j<(int)crosslinkerinpartition.size(); j++)
+			{
+				crosslinkerinpartition[j] = (int)(std::floor((*crosslinkerpositions_)[j][irandom]/statmechparams_.get<double>("PeriodLength",0.0)*statmechparams_.get<int>("SEARCHRES",1)));
+				// special case which would lead to an incorrect index
+				if((*crosslinkerpositions_)[j][irandom]==statmechparams_.get<double>("PeriodLength", 0.0))
+					crosslinkerinpartition[j]--;
+			}
+
 			// vector storing the LIDs of neighbour nodes
 			std::vector<int> neighboursLID;
-			DetectNeighbourNodes(currentpositions, &neighboursLID, irandom);
+			if(istep%statmechparams_.get<int>("SEARCHINTERVAL",1)==0 && statmechparams_.get<int>("SEARCHRES",1)>0)
+				DetectNeighbourNodes(currentpositions, &neighboursLID, &crosslinkerinpartition, irandom);
+
 			// PROBABILITY CHECK & PREPARATION OF VECTORS
 			// obtain a random order of neighboursLID indices
 			std::vector<int> neighbourorder = Permutation((int)neighboursLID.size());
 
 			// loop over neighbour nodes
-			if((int)neighboursLID.size()>0)
+			if((int)(int)neighboursLID.size()>0)
 			{
 				for(int j=0; j<(int)neighboursLID.size(); j++)
 				{
 					// random index
 					int index = neighbourorder[j];
 					// current neighbour LID
-					int nodeLID = neighboursLID.at(index);
+					int nodeLID = (int)neighboursLID.at(index);
 					// flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
 					bool bondestablished = false;
 
@@ -2726,10 +2788,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const double& dt, const Epetra_Ma
 		}
 	}
 	discret_.Comm().Barrier();
-
 #endif //#ifdef D_TRUSS3
 #endif //#ifdef D_BEAM3
-#endif //#ifdef D_BEAM3II
+//#endif //#ifdef D_BEAM3II
 }//void StatMechManager::SearchAndSetCrosslinkers
 
 /*----------------------------------------------------------------------*
@@ -3898,6 +3959,7 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, s
 	 cout<<"RotMat =\n"<<RotMat<<endl;
 	 cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
 	 cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
+	return;
 }// StatMechManager::GmshKinkedVisual
 
 /*----------------------------------------------------------------------*
@@ -3990,6 +4052,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 
 	// wait for processors
 	discret_.Comm().Barrier();
+	return;
 }// StatMechManager::CrosslinkerDiffusion
 
 /*----------------------------------------------------------------------*
@@ -4032,12 +4095,13 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int,
 		for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
 			(*crosslinkerpositions_)[i][crosslinkernumber] = (updatedpos->second)(i);
 	}
+	return;
 }// StatMechManager::CrosslinkerIntermediateUpdate
 
 /*----------------------------------------------------------------------*
  | Initialize crosslinker positions  			        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::CrosslinkerPosInit()
+void StatMechManager::CrosslinkerMoleculeInit()
 {
 	// create crosslinker map
 	std::vector<int> gids;
@@ -4081,6 +4145,13 @@ void StatMechManager::CrosslinkerPosInit()
 
 	// initialize vectors with zeros
 	numcrossnodes_ = rcp(new Epetra_Vector(*(discret_.NodeColMap()), true));
+
+	// initialize vector related to volume indexing
+	if(statmechparams_.get<int>("SEARCHRES",1)<1)
+		dserror("Please give a plausible value for SEARCHRES!");
+	nodeinpartition_ = new std::vector<std::vector<std::vector<int> > >(3, std::vector<std::vector<int> >(statmechparams_.get<int>("SEARCHRES",1), std::vector<int>()));
+
+	return;
 }//StatMechManager::CrosslinkerPosInit
 
 /*----------------------------------------------------------------------*
@@ -4097,6 +4168,51 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
 			if (crosslinkerpositions[j][i] < 0.0)
 				crosslinkerpositions[j][i] += statmechparams_.get<double> ("PeriodLength", 0.0);
 		}
+	return;
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
+
+/*----------------------------------------------------------------------*
+ | Assign crosslink molecules and nodes to volume partitions            |
+ |																								(public) mueller 08/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::PositionsToPartitions(const std::map<int,LINALG::Matrix<3,1> >& currentpositions)
+{
+	//crosslink molecules and filament nodes are indexed according to their positions within the boundary box volume
+
+	//clear the node vector
+	for(int i=0; i<(int)nodeinpartition_->size(); i++)
+		for(int j=0; j<(int)(*nodeinpartition_)[i].size(); j++)
+			(*nodeinpartition_)[i][j].clear();
+
+	double pl = statmechparams_.get<double>("PeriodLength",0.0);
+	int N = statmechparams_.get<int>("SEARCHRES", 1);
+
+	// loop over node positions to map their column map LIDs to partitions
+	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
+		for(int j=0; j<(int)nodeinpartition_->size(); j++)
+		{
+			int partition = (int)floor((posi->second)(j)/pl*(double)N);
+			if(partition==N)
+				partition--;
+			(*nodeinpartition_)[j][partition].push_back((int)(posi->first));
+		}
+
+	// test cout
+	/*/ loop over component
+	for(int i=0; i<(int)nodeinpartition_->size(); i++)
+	{
+		cout<<"spatial "<<i<<"-component"<<endl;
+		// loop over partitions
+		for(int j=0; j<(int)nodeinpartition_->at(i).size(); j++)
+		{
+			// loop over node LIDs
+			for(int k=0; k<(int)nodeinpartition_->at(i).at(j).size(); k++)
+				cout<<nodeinpartition_->at(i).at(j).at(k)<<" ";
+			cout<<endl;
+		}
+		cout<<"\n\n"<<endl;
+	}*/
+	return;
+}
 
 #endif  // #ifdef CCADISCRET

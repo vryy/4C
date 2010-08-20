@@ -60,7 +60,7 @@ public:
    *  \param stiff		(in)
    *  \param ndim			(in)
    */
-  void StatMechUpdate(const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
+  void StatMechUpdate(const int& istep, const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
@@ -94,11 +94,12 @@ public:
                        LINALG::Matrix<3,1> >& currentrotations, Epetra_MultiVector& crosslinkerneighbours);
 
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
-  void SearchAndSetCrosslinkers(const double& dt,
-															const Epetra_Map& noderowmap,
-															const Epetra_Map& nodecolmap,
-															const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-															const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
+  void SearchAndSetCrosslinkers(const int& istep,
+																const double& dt,
+																const Epetra_Map& noderowmap,
+																const Epetra_Map& nodecolmap,
+																const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+																const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
@@ -169,6 +170,10 @@ public:
   void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
 																		 int crosslinkernumber, bool coupledmovement=true);
 
+  /*! \brief map crosslink molecules and filament nodes to the according volume partition
+   * 	\param currentpositions			(in) column map node positions*/
+  void PositionsToPartitions(const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
@@ -194,14 +199,15 @@ protected:
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
    *  \param currentpositions (in) 		 column map node positions
    *  \param neighboursLID 		(in/out) vector holding LIDs of neighbour nodes
+   *  \param partition				(in)		 vector holding the information to which partial volume the currently observed crosslink molecule belongs
    *  \param numbond					(in)		 number of existing bonds between crosslink molecule and filament node*/
-  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions, std::vector<int>* neighboursLID, int index);
+  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions, std::vector<int>* neighboursLID,std::vector<int>* partition, int index);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
 
   //! \brief initializes vector with crosslinker positions
-  void CrosslinkerPosInit();
+  void CrosslinkerMoleculeInit();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
 	void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
@@ -284,8 +290,10 @@ protected:
 	RCP<Epetra_Vector>	numbond_;
 	// \brief a vector just for the sake of visual quality
 	RCP<Epetra_MultiVector> visualizepositions_;
-
-
+	// \brief a vector containing  for all nodes the volume partitions they belong to
+	std::vector<std::vector<std::vector<int> > >* nodeinpartition_;
+	// \brief a vector containing neighbour nodes to crosslink molecules
+	std::vector<std::vector<int> >* neighbourslid_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
