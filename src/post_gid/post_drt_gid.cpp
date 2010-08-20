@@ -487,6 +487,40 @@ int main(int argc, char** argv)
       {
         write_serialdensematrix_result("gauss_EA_strains_xyz", field, &result);
       }
+
+
+      if (map_has_map(result.group(), "temperature"))
+      {
+        write_vector_result("temperature", field, &result);
+      }
+      if (map_has_map(result.group(), "tempnp"))
+      {
+        write_vector_result("tempnp", field, &result);
+      }
+      if (map_has_map(result.group(), "rate"))
+      {
+        write_vector_result("rate", field, &result);
+      }
+      if (map_has_map(result.group(), "ratenp"))
+      {
+        write_vector_result("ratenp", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_current_heatfluxes_xyz"))
+      {
+        write_serialdensematrix_result("gauss_current_heatfluxes_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_initial_heatfluxes_xyz"))
+      {
+        write_serialdensematrix_result("gauss_initial_heatfluxes_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_initial_tempgrad_xyz"))
+      {
+        write_serialdensematrix_result("gauss_initial_tempgrad_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_current_tempgrad_xyz"))
+      {
+        write_serialdensematrix_result("gauss_current_tempgrad_xyz", field, &result);
+      }
     }
   }
 
