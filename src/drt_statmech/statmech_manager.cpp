@@ -1309,6 +1309,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 	double ronebond = statmechparams_.get<double> ("R_LINK", 0.0) / 2.0;
 
 	// column map displacement and displacement increment
+
 	Epetra_Vector discol(*(discret_.DofColMap()), true);
 	LINALG::Export(dis, discol);
 
@@ -1321,17 +1322,19 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 				// diffusion
 				case 0:
 				{
+					//cout<<"case 0:";
 					for (int j=0; j<visualizepositions_->NumVectors(); j++)
 						(*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
+					//cout<<"...!"<<endl;
 				}
 				break;
 				// one bonded crosslink molecule
 				case 1:
 				{
 					// determine position of nodeGID entry
-					int occupied = 0;
+					int occupied = -1;
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-						if ((*crosslinkerbond_)[j][i] > 0.9)
+						if ((*crosslinkerbond_)[j][i] > -0.9)
 						{
 							occupied = j;
 							break;
@@ -1347,15 +1350,16 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 						node1 = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID - 1));
 
 					//calculate unit tangent
-					LINALG::Matrix<3, 1> nodepos0;
-					LINALG::Matrix<3, 1> tangent;
+					LINALG::Matrix<3,1> nodepos0;
+					LINALG::Matrix<3,1> tangent;
+
 					for (int j=0; j<3; j++)
 					{
-						int dofgid0 = discret_.Dof(node0)[j];
-						int dofgid1 = discret_.Dof(node1)[j];
-						nodepos0(j, 0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
+						int dofgid0 = discret_.Dof(0,node0)[j];
+						int dofgid1 = discret_.Dof(0,node1)[j];
+						nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
 						double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
-						tangent(j) = nodeposj1 - nodepos0(j, 0);
+						tangent(j) = nodeposj1 - nodepos0(j,0);
 					}
 					tangent.Scale(1 / tangent.Norm2());
 
@@ -1389,7 +1393,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
 					// calculation of the visualized point lying in the direction of the rotated normal
 					for (int j=0; j<visualizepositions_->NumVectors(); j++)
-						(*visualizepositions_)[j][i] = nodepos0(j, 0) + ronebond*rotnormal(j, 0);
+						(*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*rotnormal(j,0);
 				}
 				break;
 				case 2:
@@ -1406,7 +1410,6 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 							int dofgid = discret_.Dof(node)[j];
 							dofnodepositions.at(k) = node->X()[j] + discol[dofgid];
 						}
-
 						/* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
 						 * It does not matter which value is shifted as long the shift occurs in a consistent way.*/
 						if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
@@ -1446,11 +1449,8 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 	Epetra_MultiVector visualizepositionstrans(*transfermap_, 3, true);
 	visualizepositionstrans.Export(*visualizepositions_, crosslinkexporter, Add);
 	visualizepositions_->Import(visualizepositionstrans, crosslinkimporter, Insert);
-
 	// debug couts
 	//cout<<*visualizepositions_<<endl;
-
-	discret_.Comm().Barrier();
 }//GmshPrepareVisualization
 
 /*----------------------------------------------------------------------*
@@ -1918,8 +1918,9 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 			SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
 			discret_.CheckFilledGlobally();
 			discret_.FillComplete(true, false, false);
-			if (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_gmsh)
-				GmshPrepareVisualization(disrow);
+			if (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_gmsh &&
+					istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)==0)
+					GmshPrepareVisualization(disrow);
 		}
 
 		/*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
@@ -2788,7 +2789,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	{
 		if(proc==discret_.Comm().MyPID())
 		{
-		cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<crosslinkerids.size()<<" crosslinker elements added  : ";
+		cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<crosslinkerids.size()<<" crosslinker elements added";
 		//for(int i=0; i<(int)crosslinkerids.size(); i++)
 			//cout<<crosslinkerids.at(i)<<" ";
 		cout<<endl;
@@ -3310,7 +3311,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	{
 		if(proc==discret_.Comm().MyPID())
 		{
-			cout << "Proc " << discret_.Comm().MyPID() << ": " << delelement.size()<< " crosslinker elements deleted: ";
+			cout << "Proc " << discret_.Comm().MyPID() << ": " << delelement.size()<< " crosslinker elements deleted";
 			//for(int i=0; i<(int)delelement.size(); i++)
 				//cout<<delelement.at(i)<<" ";
 			cout<<endl;
