@@ -27,6 +27,7 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D D_BEAM2:BOOL=ON \
     -D D_BEAM2R:BOOL=ON \
     -D D_BEAM3:BOOL=ON \
+    -D D_FLUID2:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
     -D D_SHELL8:BOOL=ON \
     -D D_SOH8:BOOL=ON \
