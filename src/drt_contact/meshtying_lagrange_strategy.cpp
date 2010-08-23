@@ -164,25 +164,28 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
 		constrmt->Add(*mmatrix_,true,-1.0,1.0);
 		constrmt->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-		// transform parallel distribution of constraint matrix
-		// (only necessary in the MESHTYINGPAR case)
-	#ifdef MESHTYINGPAR
-		RCP<LINALG::SparseMatrix> temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
-	#else
-		RCP<LINALG::SparseMatrix> temp = constrmt;
-	#endif // #ifdef MESHTYINGPAR
-
-		// transform parallel distribution / column GIDs of constraint matrix
+		// transform constraint matrix
 		if (systype==INPAR::CONTACT::system_condensed)
 		{
-	#ifdef MESHTYINGPAR
-			conmatrix_ = MORTAR::MatrixColTransform(temp,pgsdofrowmap_);
-  #else
-			conmatrix_ = temp;
-	#endif // #ifdef MESHTYINGPAR
+			// transform parallel row / column distribution
+		  // (only necessary in the MESHTYINGPAR case)
+#ifdef MESHTYINGPAR
+			conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,problemrowmap_,pgsdofrowmap_);
+#else
+			conmatrix_ = constrmt;
+#endif // #ifdef MESHTYINGPAR
 		}
 		else
 		{
+			// transform parallel row distribution
+		  // (only necessary in the MESHTYINGPAR case)
+#ifdef MESHTYINGPAR
+			RCP<LINALG::SparseMatrix> temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
+#else
+			RCP<LINALG::SparseMatrix> temp = constrmt;
+#endif // #ifdef MESHTYINGPAR
+
+			// always transform column GIDs of constraint matrix
 			conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
 		}
   }

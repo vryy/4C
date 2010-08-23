@@ -104,13 +104,13 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   dtm_ = LINALG::MLMultiply(*dmatrix_,true,*mmatrix_,false,false,false,true);
   dtd_ = LINALG::MLMultiply(*dmatrix_,true,*dmatrix_,false,false,false,true);
   
-  // transform mortar matrix products to parallel distribution
+  // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)
 #ifdef MESHTYINGPAR
-  mtm_ = MORTAR::MatrixRowColTransform(mtm_,pgmdofrowmap_,pgmdofrowmap_);
-  mtd_ = MORTAR::MatrixRowColTransform(mtd_,pgmdofrowmap_,pgsdofrowmap_);
-  dtm_ = MORTAR::MatrixRowColTransform(dtm_,pgsdofrowmap_,pgmdofrowmap_);
-  dtd_ = MORTAR::MatrixRowColTransform(dtd_,pgsdofrowmap_,pgsdofrowmap_);
+  mtm_ = MORTAR::MatrixRowTransform(mtm_,pgmdofrowmap_);
+	mtd_ = MORTAR::MatrixRowTransform(mtd_,pgmdofrowmap_);
+	dtm_ = MORTAR::MatrixRowTransform(dtm_,pgsdofrowmap_);
+	dtd_ = MORTAR::MatrixRowTransform(dtd_,pgsdofrowmap_);
 #endif // #ifdef MESHTYINGPAR
 
   // time measurement

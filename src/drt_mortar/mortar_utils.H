@@ -160,7 +160,8 @@ namespace MORTAR
 
   */
   RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
-                                     const Epetra_Map& permsrcmap);
+                                     const Epetra_Map& permrowmap,
+                                     const Epetra_Map& permdomainmap);
 
 } // namespace MORTAR
 

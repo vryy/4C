@@ -302,7 +302,7 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransform(RCP<LINALG::SparseMatrix> i
 		                                                 RCP<Epetra_Map> newrowmap)
 {
 	// redistribute input matrix
-	RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap);
+	RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,inmat->DomainMap());
 
 	// output matrix
 	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
@@ -334,14 +334,10 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(RCP<LINALG::SparseMatrix
 		                                                    RCP<Epetra_Map> newdomainmap)
 {
 	// redistribute input matrix
-  RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap);
+  RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,*newdomainmap);
 
   // output matrix
   RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
-
-  // complete output matrix
-  outmat->UnComplete();
-  outmat->Complete(*newdomainmap,*newrowmap);
 
 	return outmat;
 }
@@ -349,15 +345,16 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(RCP<LINALG::SparseMatrix
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> MORTAR::Redistribute(const LINALG::SparseMatrix& src,
-                                           const Epetra_Map& permsrcmap)
+                                           const Epetra_Map& permrowmap,
+                                           const Epetra_Map& permdomainmap)
 {
-  RCP<Epetra_Export> exporter = rcp(new Epetra_Export(permsrcmap,src.RowMap()));
+  RCP<Epetra_Export> exporter = rcp(new Epetra_Export(permrowmap,src.RowMap()));
 
-  RCP<Epetra_CrsMatrix> permsrc = rcp(new Epetra_CrsMatrix(Copy,permsrcmap,src.MaxNumEntries()));
+  RCP<Epetra_CrsMatrix> permsrc = rcp(new Epetra_CrsMatrix(Copy,permrowmap,src.MaxNumEntries()));
   int err = permsrc->Import(*src.EpetraMatrix(),*exporter,Insert);
   if (err) dserror("Import failed with err=%d",err);
 
-  permsrc->FillComplete(src.DomainMap(),permsrcmap);
+  permsrc->FillComplete(permdomainmap,permrowmap);
   return permsrc;
 }
 
