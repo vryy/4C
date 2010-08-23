@@ -13,7 +13,7 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 
 #ifndef FLUID3_BOUNDARY_IMPL_H

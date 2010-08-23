@@ -11,7 +11,7 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
  *----------------------------------------------------------------------*/
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 
 #include "fluid3_boundary_impl.H"

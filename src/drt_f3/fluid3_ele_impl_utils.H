@@ -10,6 +10,7 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#ifdef D_FLUID3
 #ifndef FLUID3_ELE_IMPL_UTILS_H
 #define FLUID3_ELE_IMPL_UTILS_H
 
@@ -201,4 +202,5 @@ namespace ELEMENTS
 } // namespace DRT
 
 #endif
+#endif  // #ifdef FLUID3
 #endif  // #ifdef CCADISCRET
