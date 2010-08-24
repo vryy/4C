@@ -44,6 +44,8 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
     act = Combust3::calc_fluid_beltrami_error;
+  else if (action == "calc_nitsche_error")
+    act = Combust3::calc_nitsche_error;
   else if (action == "calc_turbulence_statistics")
     act = Combust3::calc_turbulence_statistics;
   else if (action == "calc_fluid_box_filter")
@@ -150,27 +152,35 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
       if (ih_->FlameFront() == Teuchos::null)
       {
-        this->intersected_ = false;
+        this->bisected_      = false;
+        this->touched_plus_  = false;
+        this->touched_minus_ = false;
       }
       else // regular call
       {
-        // get vector of integration cells for this element
-        std::size_t numcells = ih_->GetNumDomainIntCells(this);
-        if (numcells > 1)
+        // more than one domain integration cell -> element bisected
+        if(ih_->ElementBisected(this))
+          this->bisected_ = true;
+        // one domain and one plus boundary integration cell -> element touched plus
+        else if(ih_->ElementTouchedPlus(this))
+          this->touched_plus_ = true;
+        // one domain and one minus boundary integration cell -> element touched minus
+        else if(ih_->ElementTouchedMinus(this))
+          this->touched_minus_ = true;
+        else // regular element (numdomaincells==1 and numboundarycells==0)
         {
-          // more than one domain boundary integration cell -> element intersected
-          this->intersected_ = true;
+// TODO @Florian uncomment DEBUG flag
+//#if DEBUG
+          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
+          if (numDomainCells<1) // 'numcells' is zero or negative number
+            // impossible, something went wrong!
+            dserror ("unknown number of DomainIntCells for element %d ", this->Id());
+          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
+          if(numBoundaryCells!=0)
+            // impossible, something went wrong!
+            dserror ("unknown number of BoundaryIntCells for element %d ", this->Id());
         }
-        else if (numcells == 1)
-        {
-          // one domain integration cell -> element not intersected
-          this->intersected_ = false;
-        }
-        else // e.g. 'numcells' is zero or negative number
-        {
-          // impossible, something went wrong!
-          dserror ("Unknown number of DomainIntCells for element %d ", this->Id());
-        }
+//#endif
       }
 
       //----------------------------------
@@ -213,7 +223,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // remark: this procedure is closely related to XFEM::createDofMapCombust()
       //         condensation for uncut elements is not possible and unneccessary
       //----------------------------------------------------------------------------
-      if (this->intersected_)
+      // TODO @Florian implement eleDofs for touched elements
+      // schott Aug 3, 2010
+      if (this->bisected_ || this->touched_plus_ || this->touched_minus_)
       {
         // create empty set of enrichment fields
         std::set<XFEM::FieldEnr> elementFieldEnrSet;
@@ -254,13 +266,18 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // instationary formulation
       const bool instationary = true;
+      // smoothed gradient of phi required (surface tension application)
+      const bool gradphi = false;
 
       // extract local (element level) vectors from global state vectors
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, this, ih_);
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
+      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype = params.get<INPAR::COMBUST::NormalTensionJumpType>("normaltensionjumptype");
+
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
@@ -286,10 +303,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
       // surface tension coefficient
       const double surftenscoeff = params.get<double>("surftenscoeff");
+      const bool connected_interface = params.get<bool>("connected_interface");
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not this->intersected_ or
+      if (not this->bisected_ or
           not params.get<bool>("DLM_condensation"))
       {
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -300,9 +318,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
-            this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, normaltensionjumptype);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -322,9 +341,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
-            this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, normaltensionjumptype);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -336,11 +356,13 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
           *eleDofManager_, NumNode(), NodeIds());
 
+      // schott Jun 16, 2010
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface,veljumptype,normaltensionjumptype);
 #endif
     }
     break;
@@ -353,16 +375,18 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // stationary formulation
       const bool instationary = false;
+      // smoothed gradient of phi required (surface tension application)
+      const bool gradphi = false;
 
       // extract local (element level) vectors from global state vectors
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, this, ih_);
-
-      // compute smoothed G-function gradient field
-      //TODO: call combust3 function; ExtractMyNodeBasedValues
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
+      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype = params.get<INPAR::COMBUST::NormalTensionJumpType>("normaltensionjumptype");
+      
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
@@ -372,6 +396,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
       // surface tension coefficient
       const double surftenscoeff = params.get<double>("surftenscoeff");
+      const bool connected_interface = params.get<bool>("connected_interface");
 
       // stabilization terms
       const bool pstab = true;
@@ -392,7 +417,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not this->intersected_ or
+      if (not this->bisected_ or
           not params.get<bool>("DLM_condensation"))
       {
         if (ih_->GetNumBoundaryIntCells(this) > 0)
@@ -403,9 +428,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
-            this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, normaltensionjumptype);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -417,9 +443,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-//cout << "element " <<  this->Id() << "number of node dofs " << eleDofManager_uncondensed_->NumNodeDof() << endl;
-//cout << "element " <<  this->Id() << "number of element dofs " << eleDofManager_uncondensed_->NumElemDof() << endl;
-//cout << "element " <<  this->Id() << "total number of dofs " << numdof_uncond << endl;
+        //cout << "element " <<  this->Id() << "number of node dofs " << eleDofManager_uncondensed_->NumNodeDof() << endl;
+        //cout << "element " <<  this->Id() << "number of element dofs " << eleDofManager_uncondensed_->NumElemDof() << endl;
+        //cout << "element " <<  this->Id() << "total number of dofs " << numdof_uncond << endl;
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
@@ -428,9 +454,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
-            this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-            material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-            combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, normaltensionjumptype);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -446,7 +473,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface,veljumptype,normaltensionjumptype);
 #endif
 
 #if 0
@@ -544,6 +572,31 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // integrate beltrami error
         f3_int_beltrami_err(myvelnp,myprenp,material,params);
+      }
+    }
+    break;
+    case calc_nitsche_error:
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc Nitsche errors");
+
+      // add error only for elements which are not ghosted
+      if(this->Owner() == discretization.Comm().MyPID())
+      {
+        // stationary formulation
+        const bool instationary = false;
+        // smoothed gradient of phi required (surface tension application)
+        const bool gradphi = false;
+        const INPAR::COMBUST::NitscheError NitscheErrorType = params.get<INPAR::COMBUST::NitscheError>("Nitsche_Compare_Analyt");
+
+        // extract local (element level) vectors from global state vectors
+        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
+
+        // get assembly type
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+            *eleDofManager_, NumNode(), NodeIds());
+
+        // calculate Nitsche norms
+        COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_, mystate, material);
       }
     }
     break;
