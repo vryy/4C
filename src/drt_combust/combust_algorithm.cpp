@@ -64,16 +64,29 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   reinitband_(Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
   combustdyn_(combustdyn),
-  interfacehandle_(Teuchos::null),
+  interfacehandleNP_(Teuchos::null),
+  interfacehandleN_(Teuchos::null),
   flamefront_(Teuchos::null)
   {
 
   if (Comm().MyPID()==0)
   {
-    if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
+    switch(combusttype_)
+    {
+    case INPAR::COMBUST::combusttype_premixedcombustion:
       std::cout << "COMBUST::Algorithm: this is a premixed combustion problem" << std::endl;
-    else if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+      break;
+    case INPAR::COMBUST::combusttype_twophaseflow:
       std::cout << "COMBUST::Algorithm: this is a two-phase flow problem" << std::endl;
+      break;
+    case INPAR::COMBUST::combusttype_twophaseflow_surf:
+      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem with kinks in vel and jumps in pres" << std::endl;
+      break;
+    case INPAR::COMBUST::combusttype_twophaseflowjump:
+      std::cout << "COMBUST::Algorithm: this is a two-phase flow problem with jumps in vel and pres" << std::endl;
+      break;
+    default: dserror("unknown type of combustion problem");
+    }
   }
 
   if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_gen_alpha)
@@ -102,10 +115,12 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
-  // construct interfacehandle using initial flame front
-  interfacehandle_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
+  // construct interfacehandles using initial flame front
+  interfacehandleNP_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
+  interfacehandleN_ = rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefront_));
   // get integration cells according to initial flame front
-  interfacehandle_->UpdateInterfaceHandle();
+  interfacehandleNP_->UpdateInterfaceHandle();
+  interfacehandleN_->UpdateInterfaceHandle();
 
 //  std::cout << "No initialization of LevelSet" << std::endl;
   if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
@@ -141,7 +156,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   }
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
-  FluidField().ImportInterface(interfacehandle_);
+  FluidField().ImportInterface(interfacehandleNP_,interfacehandleN_);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -159,6 +174,10 @@ void COMBUST::Algorithm::TimeLoop()
   // compute initial volume of minus domain
   const double volume_start = ComputeVolume();
 
+  // get initial field by solving stationary problem first
+  if(Teuchos::getIntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true)
+    SolveInitialStationaryProblem();
+
   // time loop
   while (NotFinished())
   {
@@ -171,11 +190,13 @@ void COMBUST::Algorithm::TimeLoop()
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
+      // TODO In the first iteration of the first time step the convection velocity for the
+      //      G-function is zero, if a zero initial fluid field is used.
+      //      -> Should the fluid be solved first?
       // solve linear G-function equation
       DoGfuncField();
 
-// TODO: was soll damit passieren?
-      // G-function is solved first
+      // TODO @Ursula check if needed for FGI iteration
       //phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
 
       // update interface geometry
@@ -185,6 +206,9 @@ void COMBUST::Algorithm::TimeLoop()
       DoFluidField();
 
     } // Fluid-G-function-Interaction loop
+
+    // write output to screen and files
+    Output();
 
     if (stepreinit_)
     {
@@ -205,13 +229,14 @@ void COMBUST::Algorithm::TimeLoop()
     // update all field solvers
     UpdateTimeStep();
 
-    // write output to screen and files
-    Output();
+    if (!stepreinit_)
+    {
+      // compute current volume of minus domain
+      const double volume_current = ComputeVolume();
+      // print mass conservation check on screen
+      printMassConservationCheck(volume_start, volume_current);
+    }
 
-    // compute current volume of minus domain
-    const double volume_current = ComputeVolume();
-    // print mass conservation check on screen
-    printMassConservationCheck(volume_start, volume_current);
   } // time loop
 
   // compute final volume of minus domain
@@ -333,8 +358,8 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 //  if (screen_out) std::cout << " done" << endl;
 
   // get my flame front (boundary integration cells)
-  // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
-  std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+  // remark: we generate a copy of the flame front here, which is not neccessary in the serial case
+  std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandleNP_->GetElementalBoundaryIntCells();
 
 #ifdef PARALLEL
   // export flame front (boundary integration cells) to all processors
@@ -370,7 +395,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
     flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
     // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
+    interfacehandleNP_->UpdateInterfaceHandle();
   }
 
 //  // create Gmsh postprocessing file
@@ -514,7 +539,6 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       Epetra_SerialDenseMatrix xyze(3,numnode);
       GEO::fillInitialPositionArray<Epetra_SerialDenseMatrix>(ele, xyze);
 
-      // TODO: function should be templated DISTYPE -> LINALG::Matrix<3,DISTYPE>
       Epetra_SerialDenseMatrix deriv(3,numnode);
 
 #ifdef DEBUG
@@ -642,7 +666,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     const double gfuncval = (*phinp)[lid];
 
     double speedfac = 0.0;
-    if (gfuncval > 0.0) // burnt domain -> burnt material
+    if (gfuncval >= 0.0) // burnt domain -> burnt material
       // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
       speedfac = sl * rhominus/rhoplus;
     else // interface or unburnt domain -> unburnt material
@@ -699,8 +723,10 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   //return (fgiter_ < fgitermax_ and true);
 
   bool notconverged = true;
-
-  //if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+  
+  // TODO fix this mess; implement a posteriori estimator
+  //if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
+  //    combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
   if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
   {
 //  if (fgiter_ < fgitermax_)
@@ -796,6 +822,80 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 }
 
 /*------------------------------------------------------------------------------------------------*
+ | protected: do a stationary first time step for combustion algorithm               schott 08/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::SolveInitialStationaryProblem()
+{
+  if (Comm().MyPID()==0)
+  {
+    printf("==============================================================================================\n");
+    printf("----------------Stationary timestep prepares instationary algorithm---------------------------\n");
+    printf("==============================================================================================\n");
+  }
+  //-----------------------------
+  // prepare stationary algorithm
+  //-----------------------------
+  fgiter_ = 0;
+  // fgnormgfunc = large value, determined in Input file
+  fgvelnormL2_ = 1.0;
+  // fgnormfluid = large value
+  fggfuncnormL2_ = 1.0;
+
+  // check if ScaTraField().initialvelset == true
+  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+   * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
+   * the one-step-theta scheme, are thus initialized correctly.
+   */
+
+  // modify time and timestep for stationary timestep
+  SetTimeStep(0.0,0); // algorithm timestep
+
+  if (Comm().MyPID()==0)
+  {
+    //cout<<"---------------------------------------  time step  ------------------------------------------\n";
+    printf("----------------------Combustion-------  time step %2d ----------------------------------------\n",Step());
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",Time(),MaxTime(),Dt(),Step(),NStep());
+  }
+
+  FluidField().PrepareTimeStep();
+  
+  // compute initial volume of minus domain
+  const double volume_start = ComputeVolume();
+
+  //-------------------------------------
+  // solve nonlinear Navier-Stokes system
+  //-------------------------------------
+  DoFluidField();
+
+  // update field vectors
+  UpdateInterface();
+
+  //-------
+  // output
+  //-------
+  // remark: if Output() was already called at initial state, another Output() call will cause an
+  //         error, because both times fields are written into the output control file at time and
+  //         time step 0.
+  //      -> the time and the time step have to be advanced even though this makes no physical sense
+  //         for a stationary computation
+  //IncrementTimeAndStep();
+  //FluidField().PrepareTimeStep();
+  //ScaTraField().PrepareTimeStep();
+
+  // write output to screen and files (and Gmsh)
+  Output();
+
+  // compute final volume of minus domain
+  const double volume_end = ComputeVolume();
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start, volume_end);
+  
+  return;
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
  | protected: prepare time step for combustion algorithm                              henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareTimeStep()
@@ -807,6 +907,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
   // fgnormfluid = large value
   fggfuncnormL2_ = 1.0;
 
+  // TODO @Florian clarify if this parameter is still needed
 //  stepbeforereinit_ = false;
 //  if (Step()>0 and Step() % reinitinterval_ == 0) stepbeforereinit_ = true;
   stepreinit_ = false;
@@ -820,6 +921,8 @@ void COMBUST::Algorithm::PrepareTimeStep()
   }
 
   FluidField().PrepareTimeStep();
+  // TODO @Martin: Kommentar einfuegen wofuer und warum
+  interfacehandleN_->UpdateInterfaceHandle();
 
   // prepare time step
   // remark: initial velocity field has been transferred to scalar transport field in constructor of
@@ -859,22 +962,16 @@ void COMBUST::Algorithm::DoFluidField()
     std:: cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------" << std::endl;
   }
 
-  // TODO: remove; preparation for Martin's work on XFEM time integration
-  if (true)
-  {
-    // export interface information to the fluid time integration
-    FluidField().ImportInterface(interfacehandle_);
-  }
-  // semi-Lagrangian XFEM time integration method
-  else
+  // TODO do we want an input parameter for this?
+  if (true) // INPAR::XFEM::timeintegration_semilagrangian
   {
     // show flame front to fluid time integration scheme
     FluidField().ImportFlameFront(flamefront_);
-    // export interface information to the fluid time integration
-    FluidField().ImportInterface(interfacehandle_);
-    // delete fluid's memory of flame front; it should never have seen it in the first place!
-    FluidField().ImportFlameFront(Teuchos::null);
   }
+  // export interface information to the fluid time integration
+  FluidField().ImportInterface(interfacehandleNP_,interfacehandleN_);
+  // delete fluid's memory of flame front; it should never have seen it in the first place!
+  FluidField().ImportFlameFront(Teuchos::null);
 
   // solve nonlinear Navier-Stokes equations
   FluidField().NonlinearSolve();
@@ -891,21 +988,18 @@ void COMBUST::Algorithm::DoGfuncField()
   {
     cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
   }
-
-  /* Physikalisch hat nur die Geschwindigkeit auf der Flame (G=0) eine Bedeutung für das Feld der
-   * G-Function. Tatsächlich kann aber das gesamte Navier-Stokes Fluid Feld als Input genommen werden.
-   * Die G-function fragt an jedem Knoten nach der Konvektionsgeschwindigkeit.
-   */
-  // assign the fluid velocity to the G-function field as convective velocity
+  // assign the fluid velocity field to the G-function as convective velocity field
   switch(combusttype_)
   {
   case INPAR::COMBUST::combusttype_twophaseflow:
+  case INPAR::COMBUST::combusttype_twophaseflow_surf:
+  case INPAR::COMBUST::combusttype_twophaseflowjump:
   {
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
 
     ScaTraField().SetVelocityField(
-//      OverwriteFluidVel(),
+      //OverwriteFluidVel(),
       FluidField().ExtractInterfaceVeln(),
       Teuchos::null,
       FluidField().DofSet(),
@@ -913,25 +1007,25 @@ void COMBUST::Algorithm::DoGfuncField()
     );
 
     // Transfer history vector only for subgrid-velocity
-//    ScaTraField().SetVelocityField(
-//      FluidField().ExtractInterfaceVeln(),
-//      FluidField().Hist(),
-//      FluidField().DofSet(),
-//      FluidField().Discretization()
-//    );
+    //ScaTraField().SetVelocityField(
+    //    FluidField().ExtractInterfaceVeln(),
+    //    FluidField().Hist(),
+    //    FluidField().DofSet(),
+    //    FluidField().Discretization()
+    //);
     break;
   }
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
+
+    // extract convection velocity from fluid solution
     const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
 
-    //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
-    //cout << "length of convection velocity vector: " << (*convel).MyLength() << endl;
 #if 0
-
+    //std::cout << "convective velocity is transferred to ScaTra" << std::endl;
     Epetra_Vector convelcopy = *convel;
-//    *copyconvel = *convel;
+    //    *copyconvel = *convel;
 
     const Teuchos::RCP<Epetra_Vector> xfemvel = ComputeFlameVel(convel,FluidField().DofSet());
     if((convelcopy).MyLength() != (*xfemvel).MyLength())
@@ -950,12 +1044,12 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-      //OverwriteFluidVel(),
-      //FluidField().ExtractInterfaceVeln(),
-      ComputeFlameVel(convel,FluidField().DofSet()),
-      Teuchos::null,
-      FluidField().DofSet(),
-      FluidField().Discretization()
+        //OverwriteFluidVel(),
+        //FluidField().ExtractInterfaceVeln(),
+        ComputeFlameVel(convel,FluidField().DofSet()),
+        Teuchos::null,
+        FluidField().DofSet(),
+        FluidField().Discretization()
     );
     break;
   }
@@ -963,10 +1057,11 @@ void COMBUST::Algorithm::DoGfuncField()
     dserror("unknown type of combustion problem");
   }
 
-  // solve nonlinear convection-diffusion equation
-  ScaTraField().NonlinearSolve();
-  // solve linear convection-diffusion equation
-//  ScaTraField().LinearSolve();
+  // TODO @Martin: Besprechung 18.8.2010, fuer mehr als eine FGI Iteration muss hier vielleicht ein
+  //               Vektor umgesetzt werden ( flamefront_->SetOldPhiVector(); )
+
+  //solve convection-diffusion equation
+  ScaTraField().Solve();
 
   return;
 }
@@ -980,7 +1075,7 @@ void COMBUST::Algorithm::UpdateInterface()
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
   // update interfacehandle (get integration cells) according to updated flame front
-  interfacehandle_->UpdateInterfaceHandle();
+  interfacehandleNP_->UpdateInterfaceHandle();
 
   // update the Fluid and the FGI vector at the end of the FGI loop
   return;
@@ -993,7 +1088,7 @@ void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
 
-//  //
+// TODO @Ursula clarify if this should be removed or kept
 //  if (stepreinit_)
 //  {
 //    // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
@@ -1041,7 +1136,8 @@ void COMBUST::Algorithm::Output()
   // delete fluid's memory of flame front; it should never have seen it in the first place!
   FluidField().ImportFlameFront(Teuchos::null);
 
-  FluidField().LiftDrag();
+  // causes error in DEBUG mode (trueresidual_ is null)
+  //FluidField().LiftDrag();
   ScaTraField().Output();
 
   return;
@@ -1056,7 +1152,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
     if (volume_start == 0.0)
       dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
     double massloss = -(volume_start - volume_end) / volume_start *100;
-    // TODO seems not to work reliably; error occurs in line above
+    // 'isnan' seems to work not reliably; error occurs in line above
     if (std::isnan(massloss))
       dserror("NaN detected in mass conservation check");
 
@@ -1077,7 +1173,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
 double COMBUST::Algorithm::ComputeVolume()
 {
   // compute negative volume of discretization on this processor
-  double myvolume = interfacehandle_->ComputeVolumeMinus();
+  double myvolume = interfacehandleNP_->ComputeVolumeMinus();
 
   double sumvolume = 0.0;
 
@@ -1150,23 +1246,36 @@ void COMBUST::Algorithm::Restart(int step)
 
   // reconstruct old flame front
   flamefrontOld->ProcessFlameFront(combustdyn_,phinmcol);
-  // construct interfacehandle using old flame front
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
+
+  // build interfacehandle using old flame front
+  // TODO @Martin Test + Kommentar
+  // remark: interfacehandleN = interfacehandleNP, weil noch aeltere Information nicht vorhanden
+
+  // TODO remove old code when new code tested
+  //Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
+  //  rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  //interfacehandleOld->UpdateInterfaceHandle();
+  //FluidField().ImportInterface(interfacehandleOld);
+
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldNP =
       rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
-  interfacehandleOld->UpdateInterfaceHandle();
-  FluidField().ImportInterface(interfacehandleOld);
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldN =
+        rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  interfacehandleOldNP->UpdateInterfaceHandle();
+  interfacehandleOldN->UpdateInterfaceHandle();
+  FluidField().ImportInterface(interfacehandleOldNP,interfacehandleOldN);
 
   // restart of fluid field
   FluidField().ReadRestart(step);
 
   //nur zum testen
-  //FluidField().ImportInterface(interfacehandle_);
+  //FluidField().ImportInterface(interfacehandleNP_,interfacehandleN_);
 
   // reset interface for restart
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
-  interfacehandle_->UpdateInterfaceHandle();
-
+  interfacehandleNP_->UpdateInterfaceHandle();
+  interfacehandleN_->UpdateInterfaceHandle();
   //-------------------
   // write fluid output
   //-------------------

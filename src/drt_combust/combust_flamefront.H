@@ -76,10 +76,6 @@ namespace COMBUST
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
     const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; }
 
-    /// remote access method to flame front patches
-    const std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > FlameFrontPatches() const
-        { return flamefrontpatches_; }
-
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
 
@@ -126,8 +122,15 @@ namespace COMBUST
         const Teuchos::RCP<const Epetra_Vector> phinp
     );
 
+    /// modify the fluid phinp_ vector but not the originally scatra phi vector
+    void ModifyPhiVector(const Teuchos::ParameterList& combustdyn);
+
+    /// call template of member function SmoothGradPhi() to compute smoothed gradient field of G-function
+    void CallSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
+
     /// compute smoothed gradient field of G-function
-    void SmoothGradPhi();
+    template<const size_t nsd_real>
+    void ComputeSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
 
     /// refine the region around flame front
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
@@ -163,7 +166,7 @@ namespace COMBUST
      */
     void FindIntersectionPoints(const Teuchos::RCP<COMBUST::RefinementCell> cell);
 
-    /// capture flame front and provide integration cells
+    /// generate flame front geometry
     void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
     /// not documented yet
@@ -200,14 +203,25 @@ namespace COMBUST
             GEO::BoundaryIntCells&         boundaryintcelllist
             );
 
-    /// not documented yet
-    void CreateIntegrationCells(
+    /// store a domain integration cell
+    void StoreDomainIntegrationCell(
+        const COMBUST::RefinementCell* cell,
+        GEO::DomainIntCells& domainintcelllist
+    );
+
+    /// store a (quad4) boundary integration cell
+    void StoreBoundaryIntegrationCell(
+        const COMBUST::RefinementCell* cell,
+        GEO::BoundaryIntCells& boundaryintcelllist
+    );
+
+    /// call external program TetGen to generate tetrahedral domain integration cells
+    void CallTetGen(
             const std::vector<std::vector<double> >&  pointlist,
             std::multimap<int,std::vector<int> >&     segmentlist,
             const std::vector<std::vector<int> >&     XFEMsurfacelist,
             const std::vector<std::vector<int> >&     trianglelist,
             GEO::DomainIntCells&                      domainintcelllist,
-            //GEO::BoundaryIntCells&                    boundaryintcelllist,
             const LINALG::SerialDenseMatrix           xyze,
             const std::vector<double>&                gfuncvalue
             );
@@ -217,24 +231,31 @@ namespace COMBUST
     void TransformIntegrationCells(
             tetgenio&                        out,
             GEO::DomainIntCells&             domainintcelllist,
-            //GEO::BoundaryIntCells&           boundaryintcelllist,
             const LINALG::SerialDenseMatrix  xyze,
             const std::vector<double>&       gfuncvalue
             );
 #endif
 
-    /// not documented yet
-    bool GetIntCellDomain(
+    /// decide which domain an integration cell belongs to (based on associated element)
+    bool GetIntCellDomainInElement(
             const LINALG::SerialDenseMatrix         IntCellCoord,
-            const std::vector<double>&              gfuncvalue,
+            const std::vector<double>&              gfuncvalues_ele,
             const DRT::Element::DiscretizationType  xfem_distype,
             const DRT::Element::DiscretizationType  cell_distype
             );
 
-    /// not documented yet
-    bool GetIntCellHexDomain(
+    /// decide which domain an integration cell belongs to
+    bool GetIntCellDomain(
+        const LINALG::SerialDenseMatrix        IntCellCoord,
+        const std::vector<double>&             gfuncvalues_cell,
+        const DRT::Element::DiscretizationType cell_distype
+    );
+
+    /// decide which domain an integration cell belongs to (based on associated element),
+    /// evaluation at center point
+    bool GetIntCellDomainInElementAtCenter(
             const LINALG::SerialDenseMatrix         IntCellCoord,
-            const std::vector<double>&              gfuncvalue,
+            const std::vector<double>&              gfuncvalues_ele,
             const DRT::Element::DiscretizationType  xfem_distype,
             const DRT::Element::DiscretizationType  cell_distype
             );
@@ -247,7 +268,7 @@ namespace COMBUST
     const std::vector<std::vector<int> >&       trianglelist
     );
 
-    /// Test for numerical integration of discontinous fuctions
+    /// test for numerical integration of discontinous fuctions
     void Evaluate(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
 
     /// pointer to fluid discretization
@@ -270,18 +291,12 @@ namespace COMBUST
     int maxRefinementLevel_;
 
     /// variable defining the type of the domain integration cells for intersected elements
-    INPAR::COMBUST::XFEMIntegration intcelltype_;
+    INPAR::COMBUST::XFEMIntegration xfeminttype_;
 
     // integration cells for each element
     std::map<int,GEO::DomainIntCells> myelementintcells_;
     // boundary integration cells
     std::map<int,GEO::BoundaryIntCells> myboundaryintcells_;
-
-    /// map containing, for each column fluid element on this processor, the flame front geometry to
-    /// be exported to the interfacehandle
-    // this is preliminary, just to have a "flame front" for now: it should hold the interface information
-    std::map< int,const Teuchos::RCP<const COMBUST::RefinementCell> > flamefrontpatches_;
-//    std::map< int, PLC_per_element > flamefrontpatches_;
 
   }; // class FlameFront
 } // namespace COMBUST

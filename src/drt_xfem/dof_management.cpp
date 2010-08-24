@@ -179,7 +179,7 @@ int XFEM::DofManager::NumNodalDof() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::DofManager::fillDofDistributionMaps(
+void XFEM::DofManager::fillDofRowDistributionMaps(
     std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>&  NodalDofDistributionMap,
     std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>&  ElementalDofDistributionMap
 ) const
@@ -223,7 +223,7 @@ void XFEM::DofManager::fillDofDistributionMaps(
     std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
     if (entry == elementalDofs_.end())
     {
-      // no dofs for this node... must be a hole or somethin'
+      // no dofs for this element... must be a hole or somethin'
       continue;
     }
     const std::vector<int> gdofs(ih_->xfemdis()->Dof(actele));
@@ -245,6 +245,44 @@ void XFEM::DofManager::fillDofDistributionMaps(
       dofcount++;
     }
   };
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::DofManager::fillNodalDofColDistributionMap(
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>&  NodalDofColDistributionMap
+) const
+{
+  NodalDofColDistributionMap.clear();
+  // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
+  for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
+  {
+    const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
+    const int gid = actnode->Id();
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+    if (entry == nodalDofSet_.end())
+    {
+      // no dofs for this node... must be a hole or somethin'
+      continue;
+    }
+    const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+    const std::set<FieldEnr> dofset = entry->second;
+    if (gdofs.size() != dofset.size())
+    {
+      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
+      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+      dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
+    }
+
+    int dofcount = 0;
+    std::set<FieldEnr>::const_iterator fieldenr;
+    for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+    {
+      NodalDofColDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
+      dofcount++;
+    }
+  }
 }
 
 

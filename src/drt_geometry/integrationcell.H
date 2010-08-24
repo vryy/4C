@@ -180,6 +180,16 @@ class BoundaryIntCell : public IntCell
       const LINALG::SerialDenseMatrix&            physDomainCoordinates       ///< coordinates of the integrationcell in physical domain
       );
 
+    //! constructor used for combustion problems
+    explicit BoundaryIntCell(
+      const DRT::Element::DiscretizationType&     distype,                    ///< shape of the integration cell
+      const int                                   surface_ele_gid,            ///< global id of the boundary element (cutter)
+      const LINALG::SerialDenseMatrix&            xfemEleDomainCoordinates,   ///< coordinates in element parameter space xsi
+      const LINALG::SerialDenseMatrix&            eleBoundaryCoordinates,     ///< coordinates in boundary parameter space eta
+      const LINALG::SerialDenseMatrix&            physDomainCoordinates,      ///< coordinates of the integrationcell in physical domain
+      const bool                                  indomainplus                ///< domain part of the integration cell
+    );
+
     //! Copy Constructor
     BoundaryIntCell( const BoundaryIntCell& old);
 
@@ -206,6 +216,9 @@ class BoundaryIntCell : public IntCell
 
     //! return string representation of the BoundaryIntCell
     virtual std::string toString() const;
+    
+    //! return boolean indicating plus domain
+    const bool getDomainPlus() const {return indomainplus_;}
 
 
   private:
@@ -227,6 +240,9 @@ class BoundaryIntCell : public IntCell
 
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1>                   phys_center_;
+    
+    // boolean indicating that cell belongs to "plus"-part of the domain
+    bool indomainplus_;
 
 };
 

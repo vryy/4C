@@ -139,7 +139,9 @@ DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 output_mode_(false),
-intersected_(false)
+bisected_(false),
+touched_plus_(false),
+touched_minus_(false)
 {
     return;
 }
@@ -152,7 +154,9 @@ DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
 output_mode_(old.output_mode_),
-intersected_(old.intersected_)
+bisected_(old.bisected_),
+touched_plus_(old.touched_plus_),
+touched_minus_(old.touched_minus_)
 {
     return;
 }
@@ -206,7 +210,9 @@ void DRT::ELEMENTS::Combust3::Pack(std::vector<char>& data) const
   AddtoPack(data,basedata);
 
   AddtoPack(data,output_mode_);
-  AddtoPack(data,intersected_);
+  AddtoPack(data,bisected_);
+  AddtoPack(data,touched_plus_);
+  AddtoPack(data,touched_minus_);
 
   return;
 }
@@ -229,7 +235,9 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   ExtractfromPack(position,data,output_mode_);
-  ExtractfromPack(position,data,intersected_);
+  ExtractfromPack(position,data,bisected_);
+  ExtractfromPack(position,data,touched_plus_);
+  ExtractfromPack(position,data,touched_minus_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -310,10 +318,12 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     const DRT::Discretization&                                 discretization,
     const std::vector<int>&                                    lm,
     const bool                                                 instationary,
+    const bool                                                 gradphi,
     const DRT::ELEMENTS::Combust3*                             ele,
     const Teuchos::RCP<const COMBUST::InterfaceHandleCombust>& ih
     ) :
-      instationary_(instationary)
+      instationary_(instationary),
+      gradphi_(gradphi)
 {
   DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
   if (instationary_)
@@ -323,27 +333,39 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,accn_ ,lm);
   }
 
-      // get pointer to vector holding G-function values at the fluid nodes
-      const Teuchos::RCP<Epetra_Vector> phinp = ih->FlameFront()->Phinp();
+  // get pointer to vector holding G-function values at the fluid nodes
+  const Teuchos::RCP<Epetra_Vector> phinp = ih->FlameFront()->Phinp();
 #ifdef DEBUG
-      // check if this element is the first element on this processor
-      // remark:
-      // The SameAs-operation requires MPI communication between processors. Therefore it can only
-      // be performed once (at the beginning) on each processor. Otherwise some processors would
-      // wait to receive MPI information, but would never get it, because some processores are
-      // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
-      if(ele->Id() == discretization.lRowElement(0)->Id())
-      {
-        // get map of this vector
-        const Epetra_BlockMap& phimap = phinp->Map();
-        // check, whether this map is still identical with the current node map in the discretization
-        if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
-      }
+  // check if this element is the first element on this processor
+  // remark:
+  // The SameAs-operation requires MPI communication between processors. Therefore it can only
+  // be performed once (at the beginning) on each processor. Otherwise some processors would
+  // wait to receive MPI information, but would never get it, because some processores are
+  // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
+  if(ele->Id() == discretization.lRowElement(0)->Id())
+  {
+    // get map of this vector
+    const Epetra_BlockMap& phimap = phinp->Map();
+    // check, whether this map is still identical with the current node map in the discretization
+    if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
+  }
 #endif
 
-      // extract local (element level) G-function values from global vector
-      DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_, *phinp);
+  // extract local (element level) G-function values from global vector
+  DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_, *phinp);
 
+  if(gradphi_)
+  {
+    // get pointer to vector holding SMOOTHED G-function values at the fluid nodes
+    const Teuchos::RCP<Epetra_MultiVector> gradphinp = ih->FlameFront()->GradPhi();
+
+    // extract local (element level) G-function values from global vector
+    // only if element is intersected, only adjacent nodal values are calculated
+    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
+    {
+      DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
+    }
+  }
 }
 
 

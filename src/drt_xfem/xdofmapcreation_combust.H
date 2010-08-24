@@ -32,9 +32,38 @@ namespace XFEM
       const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
+  
+  // schott Aug 3, 2010
+  //! apply nodal enrichments to touched element: used for combustion and Nitsche problem
+  bool ApplyJumpEnrichmentToTouched(
+      const COMBUST::InterfaceHandleCombust&    ih,
+      const DRT::Element*                       xfemele,
+      const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const double                              volumeRatioLimit,
+      std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
+      );
 
   //! apply nodal enrichments to intersected element: used for two phase problem only
   bool ApplyKinkEnrichment(
+      const DRT::Element*                       xfemele,
+      const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const double                              volumeRatioLimit,
+      std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
+      );
+  
+  // schott Jun 15, 2010
+  //! apply nodal enrichments to intersected element: used for two phase problem with surface tension only
+  bool ApplyKinkJumpEnrichment(
+      const DRT::Element*                       xfemele,
+      const std::set<XFEM::PHYSICS::Field>&     fieldset,
+      const double                              volumeRatioLimit,
+      std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
+      );
+  
+  // schott Aug 3, 2010
+  //! apply nodal enrichments to touched element: used for two phase problem with surface tension only
+  bool ApplyKinkJumpEnrichmentToTouched(
+      const COMBUST::InterfaceHandleCombust&    ih,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
       const double                              volumeRatioLimit,

@@ -625,7 +625,8 @@ void SysmatTwoPhaseFlow(
       //            static LINALG::Matrix<nsd,nsd> tau;
       //            const bool tauele_unknowns_present = false;
       //
-      //            COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
+                    // build stiffness matrix standard entries
+      //            COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
       //                assembler, shpvel, shp_tau, fac, timefac, timefacfac, densaf, dynvisc,
       //                gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
       //                enr_conv_c_, enr_viscs2,

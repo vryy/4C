@@ -762,7 +762,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   {
     const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
     const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
-    dofmanager_np_->fillDofDistributionMaps(
+    dofmanager_np_->fillDofRowDistributionMaps(
         state_.nodalDofDistributionMap_,
         state_.elementalDofDistributionMap_);
 
@@ -1973,7 +1973,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   // get old dofmap, compute new one and get the new one, too
   discret_->FillComplete();
 
-  dofmanager_np_->fillDofDistributionMaps(
+  dofmanager_np_->fillDofRowDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 

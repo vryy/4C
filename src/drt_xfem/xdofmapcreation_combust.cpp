@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_combust/combust_defines.H"
+#include "../drt_f3/fluid3_stabilization.H" //schott
 
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
@@ -42,7 +43,8 @@ bool XFEM::ApplyJumpEnrichment(
   const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
 
 //  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-//  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
+//  const bool almost_empty_element = ( (fabs(1.0-volumeratio) < volumeRatioLimit)
+//                                    || fabs(volumeratio) < volumeRatioLimit );
 
   bool skipped_element = false;
 
@@ -68,10 +70,10 @@ bool XFEM::ApplyJumpEnrichment(
 //      }
     };
 
-  //  }
-
-  /* almost_empty_element: diesen Fall schließen wir erstmal aus!   henke 03/09
-  else
+//  }
+//  else skipped_element = true;
+  // almost_empty_element: diesen Fall schließen wir erstmal aus!   henke 03/09
+/*  else
   { // void enrichments only in the fluid domain
     const int nen = xfemele->NumNode();
     const int* nodeidptrs = xfemele->NodeIds();
@@ -100,6 +102,80 @@ bool XFEM::ApplyJumpEnrichment(
 
   return skipped_element;
 }
+
+
+/*------------------------------------------------------------------------------------------------*
+ | original function: XFEM::ApplyNodalEnrichments                                    schott 08/10 |
+ | apply additional jump enrichments to touched elements                                          |
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::ApplyJumpEnrichmentToTouched(
+    const COMBUST::InterfaceHandleCombust&    ih,
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const double                              volumeRatioLimit,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
+  bool skipped_element = false;
+
+    // jump enrichments for all nodes with Gfunc = 0.0 of a touched element
+    // remark: jump enrichments are added to already existing standard enrichments
+    //         if jump enrichments already exist, nothing is added to set
+    const int numnodes = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+
+    
+    // get phi values for nodes
+    // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
+    
+    // get pointer to vector holding G-function values at the fluid nodes
+    const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
+    std::vector<double> phinp_;
+    
+    // extract local (element level) G-function values from global vector
+    DRT::UTILS::ExtractMyNodeBasedValues(xfemele, phinp_, *phinp);
+    
+    if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
+    
+//    const size_t nsd = 3;
+//    
+//    // distype_ not const!!!
+//    if(xfemele->Shape() != DRT::Element::hex8) dserror("calculate element diameter only for hex8 elements called");
+//    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+//    
+//    // get element diameter
+//    static LINALG::Matrix<nsd,numnode> xyze;
+//    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
+//    const double hk_eleDiam = FLD::UTILS::getEleDiameter<DRT::Element::hex8>(xyze);
+    
+    // get tolerance for refinement cell computation
+    // tolerance for which we change phi-values to zero and get touch points
+//    const double GfuncTOL = 1.0E-003;
+    
+    for (int inode = 0; inode<numnodes; ++inode)
+    {
+      const int nodeid = nodeidptrs[inode];
+      // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
+      // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
+     // if (fabs(phinp_[inode]) < (hk_eleDiam * GfuncTOL))
+      
+      // if phi-value is a numerical 0.0, maybe modified by FlameFront::ModifyPhiVector
+      // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
+      // the nodes with phi-value approximative 0.0
+      if (fabs(phinp_[inode]) < 1e-014)
+      {
+        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+        {
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+          //std::cout << "additional Jump Enrichment applied for node " << nodeid << std::endl;
+        }
+      }
+    };
+
+  return skipped_element;
+}
+
 
 bool XFEM::ApplyKinkEnrichment(
     const DRT::Element*                       xfemele,
@@ -179,6 +255,162 @@ bool XFEM::ApplyKinkEnrichment(
 }
 
 
+/*
+ * author schott
+ * Aug 3, 2010
+ * 
+ * applies additional jump enrichments to physical field Pres
+ * doesn't apply additional jump enrichments to physical field Velx,Vely,Velz -> standard FEM kinks across the interface automatically
+ * needed for two-phase-flow with surface tension -> discontinuos in pressure, continuous (with kinks) in velocity
+ */
+bool XFEM::ApplyKinkJumpEnrichmentToTouched(
+    const COMBUST::InterfaceHandleCombust&    ih,
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const double                              volumeRatioLimit,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  // kann ich für mehr als ein Interfacestück je Element diese mit label = 0 bis n-1
+  // durchnummerieren
+  const XFEM::Enrichment kinkenr(XFEM::Enrichment::typeKink, 0);
+  const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
+
+  bool skipped_element = false;
+
+    // remark: already existing standard enrichments are overwritten, this might be inefficient
+    const int numnodes = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    
+    
+    // get phi values for nodes
+    // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
+    
+    // get pointer to vector holding G-function values at the fluid nodes
+    const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
+    std::vector<double> phinp_;
+    
+    // extract local (element level) G-function values from global vector
+    DRT::UTILS::ExtractMyNodeBasedValues(xfemele, phinp_, *phinp);
+    
+    if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
+    
+//    const size_t nsd = 3;
+//    
+//    // TODO: template this calculation
+//    // distype_ not const!!!
+//    if(xfemele->Shape() != DRT::Element::hex8) dserror("calculate element diameter only for hex8 elements called");
+//    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+//    
+//    // get element diameter
+//    static LINALG::Matrix<nsd,numnode> xyze;
+//    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
+//    const double hk_eleDiam = FLD::UTILS::getEleDiameter<DRT::Element::hex8>(xyze);
+//    
+//    // get tolerance for refinement cell computation
+//    // TODO get via input parameter
+//    // tolerance for which we change phi-values to zero and get touch points
+//    const double GfuncTOL = 1.0E-003;
+//    
+//    
+    
+    for (int inode = 0; inode<numnodes; ++inode)
+    {
+      const int nodeid = nodeidptrs[inode];
+      // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
+      // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
+     // if (fabs(phinp_[inode]) < (hk_eleDiam * GfuncTOL))
+      
+      // if phi-value is a numerical 0.0, maybe modified by FlameFront::ModifyPhiVector
+      // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
+      // the nodes with phi-value approximative 0.0
+      
+      for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+      {
+          // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
+          // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
+          if (fabs(phinp_[inode]) < 1e-014)
+          {
+	          // pressure fields gets jump enrichment
+	          if (*field == XFEM::PHYSICS::Pres){
+	              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+	          }
+	          else if(*field == XFEM::PHYSICS::Velx ||
+	        		  *field == XFEM::PHYSICS::Vely ||
+	        		  *field == XFEM::PHYSICS::Velz){
+	              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+	          }
+	          else {
+	        	  dserror ("ApplyKinkJumpEnrichmentToTouched called for wrong XFEM::PHYSICS:: - Field");
+	          }
+          }
+      } // end for fields
+    }; // end for nodes
+
+  return skipped_element;
+}
+
+
+/*
+ * author schott
+ * May 14, 2010
+ *
+ * applies kink enrichments to physical fiels Velx,Vely,Velz and jump enrichments to physical field Pres
+ * needed for two-phase-flow with surface tension -> discontinuos in pressure
+ */
+bool XFEM::ApplyKinkJumpEnrichment(
+    const DRT::Element*                       xfemele,
+    const std::set<XFEM::PHYSICS::Field>&     fieldset,
+    const double                              volumeRatioLimit,
+    std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap)
+{
+  // type of enrichment determined by name of function; label (first argument) = 0
+  // kann ich für mehr als ein Interfacestück je Element diese mit label = 0 bis n-1
+  // durchnummerieren
+  const XFEM::Enrichment kinkenr(XFEM::Enrichment::typeKink, 0);
+  const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
+
+//  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+//  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
+
+  bool skipped_element = false;
+
+//  if ( not almost_empty_element)
+//  {
+
+    // kink enrichments for all nodes of intersected element for velcity fields
+    // remark: already existing standard enrichments are overwritten, this might be inefficient
+    const int numnodes = xfemele->NumNode();
+    const int* nodeidptrs = xfemele->NodeIds();
+    for (int inode = 0; inode<numnodes; ++inode)
+    {
+      const int nodeid = nodeidptrs[inode];
+//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+//      if (not anothervoidenrichment_in_set)
+//      {
+      // jedes Feld Velx,Vely,Velz bekommet ein KinkEnrichment
+      // das Druck-Feld bekommt jumps
+      // überschreibt das die alten Werte
+        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+        {
+          // pressure fields gets jump enrichment
+          if (*field == XFEM::PHYSICS::Pres){
+              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+          }
+          else if(*field == XFEM::PHYSICS::Velx ||
+        		  *field == XFEM::PHYSICS::Vely ||
+        		  *field == XFEM::PHYSICS::Velz){
+        	  nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+          }
+          else {
+        	  dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
+          }
+        }
+    };
+  return skipped_element;
+}
+
+
 /*------------------------------------------------------------------------------------------------*
  | create a DofMap: used for combustion problems only                                 henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
@@ -236,9 +468,17 @@ void XFEM::createDofMapCombust(
       //--------------------------------------------------------------------------------------------
       // find out whether an element is intersected or not by looking at number of integration cells
       //--------------------------------------------------------------------------------------------
-      // get vector of integration cells for this element
-      std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
-      if (numcells > 1) // element intersected
+      // get vector of integration cells for this element (domain integration cells!!! => for !intersected! status Benedikt Schott)
+//      std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
+//      if (numcells > 1) // element intersected
+      // schott Aug 2, 2010
+      // get vector of integration cells for this element (boundary integration cells!!! => for !touched! status Benedikt Schott)
+//      std::size_t numBoundaryIntCells= ih.GetNumBoundaryIntCells(xfemele);
+
+      // get vector of integration cells for this element (domain integration cells!!! => for !intersected! status Benedikt Schott)
+      //std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
+      //if (numcells > 1) // element intersected
+      if (ih.ElementBisected(xfemele))
       {
         //std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
         const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
@@ -262,6 +502,19 @@ void XFEM::createDofMapCombust(
             skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
           }
           break;
+          case INPAR::COMBUST::combusttype_twophaseflow_surf:
+          {
+            // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
+            skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+          }
+          break;
+          case INPAR::COMBUST::combusttype_twophaseflowjump:
+          {
+            // schott May 14, 2010
+            // apply jump enrichments to all nodes of an intersected element
+            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+          }
+          break;
           default:
             dserror("unknown type of combustion problem");
         }
@@ -280,16 +533,86 @@ void XFEM::createDofMapCombust(
         }
 */
       }
-      else if (numcells == 1) // element not intersected
+//      else if (numcells == 1) // element not intersected
+//      {
+//        // nothing to do
+//        //std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
+//      }
+//      else // numcells == 0 or negative number
+//      {
+//        // no integration cell -> impossible, something went wrong!
+//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+//      }
+
+//      else if (numBoundaryIntCells == 1 && numcells == 1) // element is touched // schott Aug 3, 2010
+      else if( ih.ElementTouchedPlus(xfemele) ||
+               ih.ElementTouchedMinus(xfemele)   )
       {
-        // nothing to do
-        //std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
+    	// REMARK:
+    	// only touched elements at plus side get boundary integration cells
+    	// but it is sufficient to marker and enrich the touched nodes (nodes with G=0.0, modified in ModifyPhiVector) only once, thus for the plus side
+    	
+        std::cout << "\n---  element "<< xfemele->Id() << " is touched and nodes with G=0.0 get additionally enriched";
+        const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+        // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
+        switch(combusttype)
+        {
+          case INPAR::COMBUST::combusttype_premixedcombustion:
+          {
+        	  // TODO: implementation of  additional degrees of freedom for touched elements for premixed combustion
+        	  
+            // apply jump enrichments to all nodes of an intersected element
+//            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        	  dserror(" apply enrichments for premixedcombustion with touched elements");
+#ifdef COMBUST_STRESS_BASED
+            // apply element stress enrichments to an intersected element
+            //skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
+#endif
+          }
+          break;
+          case INPAR::COMBUST::combusttype_twophaseflow:
+          {
+            // no additional enrichments for touched elements necessary, standard FEM kinks across element faces automatically
+          }
+          break;
+          case INPAR::COMBUST::combusttype_twophaseflow_surf:
+          {
+              // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
+        	  // schott May 14, 2010
+              // apply additional jump enrichments to all nodes with Gfunc = 0.0 of a touched element
+        	  skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+          }
+          break;
+          case INPAR::COMBUST::combusttype_twophaseflowjump:
+          {
+        	  // schott May 14, 2010
+              // apply additional jump enrichments for pressure to all nodes with Gfunc = 0.0 of a touched element
+        	  // additional kink enrichments for velocity not needed, standard FEM kinks across element faces automatically
+        	  skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+          }
+          break;
+          default:
+            dserror("unknown type of combustion problem");
+        }
       }
-      else // numcells == 0 or negative number
+//      else // numcells == 0 or negative number
+//      {
+//        // no integration cell -> impossible, something went wrong!
+//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+//      }
+      else
       {
-        // no integration cell -> impossible, something went wrong!
-        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+        // nothing to do, standard element
       }
+//      else if (numcells == 1 && numBoundaryIntCells == 0) // element not intersected and not touched
+//      {
+//        // nothing to do, standard element
+//      }
+//      else // numcells == 0 or negative number
+//      {
+//        // no integration cell -> impossible, something went wrong!
+//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+//      }
     }
   }
 
@@ -340,8 +663,8 @@ bool XFEM::ApplyElementEnrichmentCombust(
 )
 {
   // check, how much area for integration we have (from BoundaryIntcells)
-  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
-  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+//  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
+//  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
 
   bool skipped_element = false;
 
@@ -356,6 +679,7 @@ bool XFEM::ApplyElementEnrichmentCombust(
       {
         elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr1));
         elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr2));
+        cout << "added element enrichment on crearedofmapCombust" << endl;
       }
   //}
   //else
@@ -375,8 +699,8 @@ bool XFEM::ApplyElementEnrichmentCombust(
 )
 {
   // check, how much area for integration we have (from BoundaryIntcells)
-  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
-  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
+//  const double boundarysize = XFEM::BoundaryCoverageRatio(*xfemele,ih.GetBoundaryIntCells(xfemele->Id()),ih);
+//  const bool almost_zero_surface = (fabs(boundarysize) < boundaryRatioLimit);
 
   bool skipped_element = false;
 

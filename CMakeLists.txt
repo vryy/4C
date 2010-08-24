@@ -519,6 +519,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/interfacexfsi.cpp
   src/drt_xfem/physics.cpp
   src/drt_xfem/spacetime_boundary.cpp
+  src/drt_xfem/startvalues.cpp
   src/drt_xfem/xdofmapcreation.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_fsi.cpp

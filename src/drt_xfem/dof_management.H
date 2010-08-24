@@ -105,11 +105,16 @@ namespace XFEM
 //      ) const;
 
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
-      void fillDofDistributionMaps(
+      void fillDofRowDistributionMaps(
           map<DofKey<onNode>, DofGID>&  NodalDofDistributionMap,        ///< nodal dofs
           map<DofKey<onElem>, DofGID>&  ElementalDofDistributionMap     ///< element dofs
       ) const;
 
+      // TODO @Martin: change name (there are no nodal dofs)
+      // fill column map with nodal dof positions in EpetraVectors for all DofKeys on this proc
+      void fillNodalDofColDistributionMap(
+          map<XFEM::DofKey<XFEM::onNode>, DofGID>&  NodalDofColDistributionMap
+      ) const;
 
       //! for output XFEM is turned of and a uniform field is drawn. This method returns a vector with uniform number of unknowns per node
       Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(

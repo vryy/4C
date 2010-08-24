@@ -67,6 +67,15 @@ namespace XFEM
 
     //! tell me, whether the element is intersected or not
     bool ElementIntersected(const int element_gid) const;
+    
+    //! tell me, whether the element is bisected or not
+    bool ElementBisected(const DRT::Element* xfemElement) const;
+    
+    //! tell me, whether the element has a whole touched face and lies in the plus domain or not
+    bool ElementTouchedPlus(const DRT::Element* xfemElement) const;
+    
+    //! tell me, whether the element has a whole touched face and lies in the minus domain or not
+    bool ElementTouchedMinus(const DRT::Element* xfemElement) const;
 
     //! check, whether given element id has been intersected by the given interface (label)
     bool ElementHasLabel(

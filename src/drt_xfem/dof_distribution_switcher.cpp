@@ -138,7 +138,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
     //         element dofs on the element level (ElementDofManager), if a stress-based approach is
     //         chosen to handle the boundary terms.
     //         So, if there are element dofs, they are not known here, since 'elementalDofs_' in
-    //         fillDofDistributionMaps() only knows the different field enrichments for a specific
+    //         fillDofRowDistributionMaps() only knows the different field enrichments for a specific
     //         element, that is
     //
     //         e.g.
@@ -645,7 +645,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
     //         element dofs on the element level (ElementDofManager), if a stress-based approach is
     //         chosen to handle the boundary terms.
     //         So, if there are element dofs, they are not known here, since 'elementalDofs_' in
-    //         fillDofDistributionMaps() only knows the different field enrichments for a specific
+    //         fillDofRowDistributionMaps() only knows the different field enrichments for a specific
     //         element, that is
     //
     //         e.g.

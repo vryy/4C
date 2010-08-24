@@ -300,7 +300,9 @@ namespace ADAPTER {
 
     /// A fluid in multi field problems which involve an implicitly defined interface, e.g. via level set
     /// methods, might need to know the interface geometry
-    virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& importinterface)
+    virtual void ImportInterface(
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

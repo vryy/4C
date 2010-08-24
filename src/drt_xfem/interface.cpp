@@ -241,8 +241,9 @@ std::set<int> XFEM::InterfaceHandle::GetAvailableBoundaryLabels() const
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is intersected (touched elements are intersected)                       |
+ *------------------------------------------------------------------------------------------------*/
 bool XFEM::InterfaceHandle::ElementIntersected(
     const int element_gid) const
 {
@@ -250,6 +251,74 @@ bool XFEM::InterfaceHandle::ElementIntersected(
     return false;
   else
     return true;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is bisected (truely split into two parts, not intersected)              |
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::InterfaceHandle::ElementBisected(
+    const DRT::Element* xfemElement) const
+{
+  std::size_t numcells = this->GetNumDomainIntCells(xfemElement);
+  if (numcells > 1)
+    // more than one domain integration cell -> element bisected
+    return true;
+  else
+    return false;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is touched on a whole 2D face and lies in the plus domain               |
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::InterfaceHandle::ElementTouchedPlus(
+    const DRT::Element* xfemElement) const
+{
+  std::size_t numDomainCells = this->GetNumDomainIntCells(xfemElement);
+  std::size_t numBoundaryCells = this->GetNumBoundaryIntCells(xfemElement);
+  if (numDomainCells == 1 and numBoundaryCells == 1)
+  {
+    // TouchedPlus or TouchedMinus is possible
+    bool inDomainPlus = false;
+
+    // get the boundary integration cell (there is exactly one)
+    GEO::BoundaryIntCells boundarycells = elementalBoundaryIntCells_.find(xfemElement->Id())->second;
+    if(boundarycells.size() != 1) dserror("there must be exactly one boundary cell");
+
+    for(GEO::BoundaryIntCells::const_iterator iter=boundarycells.begin(); iter!=boundarycells.end(); iter++)
+      inDomainPlus = iter->getDomainPlus();
+
+    return inDomainPlus;
+  }
+  else
+    return false;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | decide if this element is touched on a whole 2D face and lies in the minus domain              |
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::InterfaceHandle::ElementTouchedMinus(
+    const DRT::Element* xfemElement) const
+{
+  std::size_t numDomainCells = this->GetNumDomainIntCells(xfemElement);
+  std::size_t numBoundaryCells = this->GetNumBoundaryIntCells(xfemElement);
+  if (numDomainCells == 1 and numBoundaryCells == 1)
+  {
+    // TouchedPlus or TouchedMinus is possible
+    bool inDomainPlus = false;
+
+    // get the boundary integration cell (there is exactly one)
+    GEO::BoundaryIntCells boundarycells = elementalBoundaryIntCells_.find(xfemElement->Id())->second;
+    if(boundarycells.size() != 1) dserror("there must be exactly one boundary cell");
+
+    for(GEO::BoundaryIntCells::const_iterator iter=boundarycells.begin(); iter!=boundarycells.end(); iter++)
+      inDomainPlus = iter->getDomainPlus();
+
+    return (not inDomainPlus);
+  }
+  else
+    return false;
 }
 
 

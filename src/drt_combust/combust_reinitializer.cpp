@@ -232,7 +232,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   } // end loop nodes
 
   if (comm.MyPID()==0)
-    std::cout << " done" << std::endl;;
+    std::cout << " done" << std::endl;
 
   return;
 }

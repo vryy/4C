@@ -226,6 +226,205 @@ namespace XFEM
       return;
     }
 
+    /*!
+     * \brief compute enrichment value for domain integration cell
+     *
+     * constructor called for two phase flow with jump enrichments in pressure and kink enr. in velocity
+     *
+     *  schott 05/17/10
+     */
+    template<class V1>
+    explicit ElementEnrichmentValues(
+        const DRT::Element&             ele,    ///< pointer to element
+        const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
+        const GEO::DomainIntCell&       cell,   ///< pointer to domain integration cell
+        const V1&                       phi,    ///< vector of level set values
+        const XFEM::PHYSICS::Field      field,  /// Pres or Velx,y,z
+        const V1&                       funct   ///< vector of funct values at node
+    ) :
+    ele_(ele),
+    dofman_(dofman)
+    {
+      enrvals_.clear();      //used for cellwise enrichment values (jump and standard enrichments)
+      enrvalnodes_.clear();  //used for nodal enrichment values
+      enrvalderxy_.clear();  // not used here
+      enrvalderxy2_.clear(); // not used here
+
+      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+      const int numnode = ele_.NumNode();
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+      //std::vector<double> enrvalderxy(3);
+      //enrvalderxy[0] = 0.0;
+      //enrvalderxy[1] = 0.0;
+      //enrvalderxy[2] = 0.0;
+      //std::vector<double> enrvalderxy2(6);
+      //for (int isd=0; isd<6; isd++)
+      //{
+      //  enrvalderxy2[isd] = 0.0;
+      //}
+
+      //------------------------------------------------------
+      // evaluate enrichment values (only jump and standard) for this integration cell
+      // constant enrichment values for this integration cell
+      //------------------------------------------------------
+      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+      {
+        double enrvalcell = 0.0;
+        if(enriter->Type() == XFEM::Enrichment::typeJump || enriter->Type() == XFEM::Enrichment::typeStandard){
+          enrvalcell = enriter->EnrValueIntCell(cell);
+          enrvals_[*enriter] = enrvalcell;
+        }
+        //enrvalderxy_[*enriter] = enrvalderxy;
+        //enrvalderxy2_[*enriter] = enrvalderxy2;
+      }
+
+      // calculate enrvalnodes_ for each node of this element -> loop over nodes
+      for(int inode=0; inode<numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalues;//map for the actual enrichment-type for next loop
+
+        //loop over enrichment types (jump,kink, standard)
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          double enrvalnode = 0.0;	//enrichment value for this node
+
+          // different actions for different enrichment-types
+          if(enriter->Type() == XFEM::Enrichment::typeKink){
+            double enrval = 0.0;
+            enrval = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct); // get for actual point (calculated via abs(phi*funct))
+            enrvalues[*enriter] = enrval;
+          }
+
+          // modified enrichment in the case of jump enrichment to maintain the interpolant properties
+          // Psi(xGauss)-Psi(xNode)
+          if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
+          {
+            enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+            // enrichment value for is stored in enrvals, cellwise constant -> constant for each node of this cell
+            enrvalues[*enriter] = enrvals_.find(*enriter)->second - enrvalnode;
+          }
+
+          if (enriter->Type() == XFEM::Enrichment::typeStandard){
+            enrvalues[*enriter] = enrvals_.find(*enriter)->second;
+          }
+
+        }
+        enrvalnodes_[inode] = enrvalues; //transfer the map of enrichment values calculates for this node to enrvalnodes_
+        enrvalues.clear();
+      }
+      return;
+    }
+
+
+    /*!
+     * \brief compute enrichment value at one side of an embedded interface
+     *
+     * constructor called for evaluation of boundary integrals in combustion problems (jump and kink !!!! enrichment)
+     * used for two phase flow with surface tension with kink enrichments in velocity and jump enrichments in pressure 
+     * schott May 12, 2010
+     */
+    template<class V1, class M1, class M2>
+    explicit ElementEnrichmentValues(
+        const DRT::Element&                   ele,               ///< pointer to element
+        const XFEM::ElementDofManager&        dofman,            ///< pointer to element dof manager
+        const XFEM::Enrichment::ApproachFrom  approachdirection, ///< side of embedded interface
+        const V1&                             phi,                ///< vector of level set values
+        const V1&                             funct,   ///< vector of shape functions evaluated at Gauss point
+        const M1&                             derxy,	/// Matrix of derivatives of shape functions evaluated at Gauss point
+        const M2&                             derxy2	// second derivatives
+    ) :
+    ele_(ele),
+    dofman_(dofman)
+    {
+      enrvals_.clear();		// tmp variable for enrvalnodes_
+      enrvalnodes_.clear();
+      enrvalderxy_.clear();  // 0 for jump enrichment, not 0 for kink enrichment
+      enrvalderxy2_.clear(); // 0 for jump enrichment, not 0 for kink enrichment
+
+      const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
+      const int numnode = ele_.NumNode();
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+
+      std::vector<double> enrvalderxy(3);
+      enrvalderxy[0] = 0.0;
+      enrvalderxy[1] = 0.0;
+      enrvalderxy[2] = 0.0;
+      std::vector<double> enrvalderxy2(6);
+      for (int isd=0; isd<6; isd++)
+      {
+        enrvalderxy2[isd] = 0.0;
+      }
+
+      //------------------------------------------------------
+      // evaluate enrichment values for this integration cell
+      //------------------------------------------------------
+      for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+      {
+        //const double enrvalside = enriter->EnrValueAtInterface(approachdirection);
+
+        // schott May 12, 2010
+        // get enrichment values for kink enrichment and all other types of enrichment
+        double enrvalside = 0.0;
+        if(enriter->Type() != XFEM::Enrichment::typeKink){
+          enrvalside = enriter->EnrValueAtInterface(approachdirection); //version Flo
+          //enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct); //version Ursula
+          // no derivatives needed for not kink enrichments
+        }
+        else{ // get kink enrichment
+          enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
+          enrvalderxy = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
+          enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
+        }
+
+        //const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
+        enrvals_[*enriter] = enrvalside;
+        enrvalderxy_[*enriter] = enrvalderxy;
+        enrvalderxy2_[*enriter] = enrvalderxy2;
+      }
+
+      //------------------------------------------------------------
+      // loop over nodes to evaluate enrichment values at the nodes
+      //------------------------------------------------------------
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          double enrvalnode = 0.0;
+          if (enriter->Type()==XFEM::Enrichment::typeJump || enriter->Type()==XFEM::Enrichment::typeVoid)
+          {
+            enrvalnode = enriter->EnrValueNodeLevelSet(inode,phi);
+          }
+          // enrvalnode = 0.0 for kink enrichment
+          enrvalstmp[*enriter] = enrvalnode;
+        }
+        enrvalnodes[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      //------------------------------------------------------------------------
+      // evaluate final enrichment values for each node H(G(cell)) - H(G(node))
+      //------------------------------------------------------------------------
+      // literature (p. 1006, penultimate line):
+      // Belytschko, T., Moës, N., Usui, S. and Parimi, C.
+      // Arbitrary discontinuities in finite elements:
+      // "International Journal for Numerical Methods in Engineering", 50:993--1013,2001.
+
+      for(int inode=0; inode < numnode; inode++)
+      {
+        std::map<XFEM::Enrichment, double> enrvalstmp;
+        for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
+        {
+          enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
+        }
+        enrvalnodes_[inode] = enrvalstmp;
+        enrvalstmp.clear();
+      }
+
+      return;
+    }
+
 
     /*!
     * \brief for each given Enrichment in enrset, compute the enrichment value at actpos
@@ -709,6 +908,23 @@ void InterpolateCellValuesFromElementValuesLevelSet(
  * remark: function used for modified kink enrichment strategy
  */
 void InterpolateCellValuesFromElementValuesLevelSetKink(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues
+  );
+
+/*! \brief for output, interpolate field to integration cells
+ * schott
+ * 
+ * interpolate field from element node values to cell node values based
+ * on a level-set field
+ * remark: function used for modified kink enrichment strategy with jumps in pressure and kinks in velocity
+ */
+void InterpolateCellValuesFromElementValuesLevelSetKinkJump(
   const DRT::Element&                   ele,
   const XFEM::ElementDofManager&        dofman,
   const GEO::DomainIntCell&             cell,

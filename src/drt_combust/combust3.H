@@ -83,16 +83,19 @@ private:
               const DRT::Discretization&                                 discretization,
               const std::vector<int>&                                    lm,
               const bool                                                 instationary,
+              const bool                                                 gradphi,
               const DRT::ELEMENTS::Combust3*                             ele,
               const Teuchos::RCP<const COMBUST::InterfaceHandleCombust>& ih
               );
 
           const bool instationary_;
+          const bool gradphi_;
           std::vector<double> velnp_; ///< velocity/pressure unknowns at n+1
           std::vector<double> veln_;  ///< velocity/pressure unknowns at n
           std::vector<double> velnm_; ///< velocity/pressure unknowns at n-1
           std::vector<double> accn_;  ///< time derivative of unknowns at n
           std::vector<double> phinp_; ///< G-function unknowns at n+1
+          std::vector<double> gradphinp_; ///< smoothed G-function gradient at n+1
         };
 
         //! @name Constructors and destructors and related methods
@@ -147,7 +150,11 @@ private:
 
         virtual void Unpack(const std::vector<char>& data);
 
-        virtual bool Intersected() const { return intersected_; };
+        virtual bool Intersected() const { return bisected_; };
+
+        virtual bool Touched_Plus() const { return touched_plus_; };
+
+        virtual bool Touched_Minus() const { return touched_minus_; };
 
         virtual Teuchos::RCP<COMBUST::InterfaceHandleCombust> InterfaceHandle() const { return ih_; };
 
@@ -247,6 +254,7 @@ private:
           calc_linear_fluid,
           calc_fluid_stationary_systemmat_and_residual,
           calc_fluid_beltrami_error,
+          calc_nitsche_error,
           calc_turbulence_statistics,
           calc_fluid_box_filter,
           calc_smagorinsky_const,
@@ -325,7 +333,13 @@ private:
         Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;
 
         //! boolean indicating whether element is intersected by the interface
-        bool intersected_;
+        bool bisected_;
+
+        //! boolean indicating whether element is touched by the interface at a whole 2D face
+        bool touched_plus_;
+
+        //! boolean indicating whether element is touched by the interface at a whole 2D face
+        bool touched_minus_;
 
         //! store element stress info and corresponding matrices used during condensation
         class DLMInfo

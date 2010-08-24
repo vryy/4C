@@ -75,7 +75,10 @@ namespace COMBUST
       const double                            nitschevel,
       const double                            nitschepres,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
-      const double                            surftenscoeff
+      const double                            surftenscoeff,
+      const bool                              connected_interface,
+      const INPAR::COMBUST::VelocityJumpType  veljumptype,
+      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype
   );
 
   /// get material parameters (constant within the integration cell)
@@ -323,6 +326,24 @@ namespace COMBUST
 
     return;
   }
+
+
+  /*!
+   * \brief entry point for callNitscheErrors
+   * at one point, one has to call specific template instantiations of Sysmat using the current Shape() of the element.
+   * This is the point.
+   *                                                                                 schott Jun 15, 2010
+   */
+  void callNitscheErrors(
+      ParameterList&                    eleparams,
+      const INPAR::COMBUST::NitscheError&  NitscheErrorType,
+      const XFEM::AssemblyType          assembly_type,
+      const DRT::ELEMENTS::Combust3*    ele,
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih,
+      const XFEM::ElementDofManager&    eleDofManager,
+      const DRT::ELEMENTS::Combust3::MyState& mystate,   ///< element state variables
+      Teuchos::RCP<const MAT::Material> material
+  );
 
 }
 

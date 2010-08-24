@@ -242,6 +242,82 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
 }
 
 /*----------------------------------------------------------------------*
+ | interpolate field from element node values to cell node values based |
+ | on a level-set field                                 schott 05/17/10 |
+ | remark: function used for 2-phase-flow                               |
+ | with jump enrichments in pressure and kink enrichment in velocity    |
+ *----------------------------------------------------------------------*/
+void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues)
+{
+  if (ele.Shape() != DRT::Element::hex8)
+    dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  const size_t numparam  = dofman.NumDofPerField(field);
+
+  // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
+//  LINALG::Matrix<numnode,1> phi;
+  LINALG::SerialDenseVector phi(numnode);
+  for (size_t inode=0; inode<numnode; ++inode)
+    phi(inode) = phivalues[inode];
+
+  // get coordinates of cell vertices
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
+
+  LINALG::SerialDenseVector funct(numnode);
+
+  cellvalues.Zero();
+  
+  for (int inode = 0; inode < cell.NumNode(); ++inode)
+  {
+    // evaluate shape functions
+    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
+    // first and second derivatives are dummy matrices needed to call XFEM::ElementEnrichmentValues for kink enrichment
+    const LINALG::Matrix<3,numnode> derxy(true);
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement> derxy2(true);
+
+    
+    const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi, field, funct);
+    LINALG::SerialDenseVector enr_funct(numparam);
+    enr_funct.Zero();
+    
+    enrvals.ComputeModifiedEnrichedNodalShapefunction(field, funct, enr_funct);
+    
+    switch (field)
+    {
+    // scalar fields
+    case XFEM::PHYSICS::Pres:
+    {
+    // interpolate value
+    for (size_t iparam = 0; iparam < numparam; ++iparam)
+    	cellvalues(0,inode) += elementvalues(0,iparam) * enr_funct(iparam);
+    break;
+    }
+    // vector fields
+    case XFEM::PHYSICS::Velx:
+    {
+      for (std::size_t iparam = 0; iparam < numparam; ++iparam)
+        for (std::size_t isd = 0; isd < 3; ++isd)
+            cellvalues(isd,inode) += elementvalues(isd,iparam) * enr_funct(iparam);
+      break;
+    }
+    default:
+      dserror("interpolation to cells not available for this field");
+    }
+  }
+  return;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   const DRT::Element&                 ele,
@@ -461,7 +537,16 @@ double DomainCoverageRatioT(
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
     const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
-    const int label = ih.PositionWithinConditionNP(cellcenter);
+    
+    //const int label = ih.PositionWithinConditionNP(cellcenter);
+    
+    // schott Jul 30, 2010
+    bool domPlus = true;
+    if(cell->getDomainPlus()) domPlus = true;
+    else domPlus = false;
+    
+    
+    
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
     {
@@ -517,7 +602,9 @@ double DomainCoverageRatioT(
 
       domain_ele += fac;
 
-      if(label != 0)
+//      if(label != 0)
+      // schott Jul 30, 2010
+      if(domPlus==true)
         domain_fict += fac;
 
     } // end loop over gauss points

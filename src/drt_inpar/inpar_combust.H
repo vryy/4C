@@ -26,8 +26,10 @@ namespace INPAR
     enum CombustionType
     {
       combusttype_premixedcombustion,
-      combusttype_twophaseflow
-    };
+      combusttype_twophaseflow,
+      combusttype_twophaseflow_surf,
+      combusttype_twophaseflowjump
+    }; //schott 04/27/2010
 
     /// type of reinitialization for level set function (G-function)
     enum ReInitialActionGfunc
@@ -40,6 +42,7 @@ namespace INPAR
     /// type of reinitialization for level set function (G-function)
     enum XFEMIntegration
     {
+      xfemintegration_tetgen,
       xfemintegration_tetrahedra,
       xfemintegration_hexahedra
     };
@@ -57,10 +60,55 @@ namespace INPAR
     /// type of surface tension approximation
     enum SurfaceTensionApprox
     {
+      surface_tension_approx_none,
+      surface_tension_approx_fixed_curvature,
       surface_tension_approx_divgrad,
       surface_tension_approx_laplacebeltrami,
       surface_tension_approx_laplacebeltrami_smoothed
-    };
+    }; //schott
+
+    /// type of surface tension approximation
+    enum SmoothGradPhi
+    {
+      smooth_grad_phi_none,
+      smooth_grad_phi_meanvalue,
+      smooth_grad_phi_leastsquares_3D,
+      smooth_grad_phi_leastsquares_2Dx,
+      smooth_grad_phi_leastsquares_2Dy,
+      smooth_grad_phi_leastsquares_2Dz
+    }; // schott
+
+    // TODO @Florian remove
+    /// type of velocity jump
+    enum VelocityJumpType
+    {
+      Vel_Jump_None,
+      Vel_Jump_Const,
+      Vel_Jump_PremixedCombustion
+    }; // schott
+
+    // TODO @Florian remove
+    /// type of velocity jump
+    enum NormalTensionJumpType
+    {
+      NormalTension_Jump_None,
+      NormalTension_Jump_Const,
+      NormalTension_Jump_PremixedCombustion,
+      NormalTension_Jump_SurfaceTension
+    }; // schott
+
+    /// analyical solution for Nitsche
+    enum NitscheError
+    {
+      nitsche_error_none,
+      nitsche_error_static_bubble_nxnx1,
+      nitsche_error_static_bubble_nxnxn,
+      nitsche_error_shear,
+      nitsche_error_couette_20x20x1,
+      nitsche_error_straight_bodyforce,
+      nitsche_error_ellipsoid_bubble_2D,
+      nitsche_error_ellipsoid_bubble_3D
+    }; // schott
   }  // namespace COMBUST
 
 }  // namespace INPAR

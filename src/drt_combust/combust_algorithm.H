@@ -60,6 +60,9 @@ namespace COMBUST
     /// algorithm for static combustion problem
     void SolveStationaryProblem();
 
+    /// get initial field by solving stationary problem first
+    void SolveInitialStationaryProblem();
+
     /// restart combustion problem
     void Restart(int step);
 
@@ -154,10 +157,12 @@ namespace COMBUST
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;
-//    const Teuchos::ParameterList& xparams_;
+    //const Teuchos::ParameterList& xparams_;
 
-    /// pointer to interfacehandle holding information about interface (3D integration cells)
-    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+    /// pointer to interfacehandle holding information about interface (3D integration cells) at n+1
+    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleNP_;
+    /// pointer to interfacehandle holding information about interface (3D integration cells) at n
+    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleN_;
 
     /// pointer to flame front holding information about interface (2D surface)
     Teuchos::RCP<COMBUST::FlameFront> flamefront_;

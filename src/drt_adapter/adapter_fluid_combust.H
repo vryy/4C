@@ -216,7 +216,9 @@ namespace ADAPTER
     virtual void ImportDiscretization(Teuchos::RCP<DRT::Discretization> importdis);
 
     /// combustion fluid imports geometrical interface information from combustion algorithm
-    virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
+    virtual void ImportInterface(
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen);
 
     ///
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);

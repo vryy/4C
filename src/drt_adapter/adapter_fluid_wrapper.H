@@ -119,7 +119,9 @@ namespace ADAPTER
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
-    virtual void ImportInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& importinterface)
+    virtual void ImportInterface(
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
+        const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };

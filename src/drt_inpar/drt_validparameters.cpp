@@ -1685,6 +1685,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTASTEPS",0,"Number of Steps for Starting Scheme",&fdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
+  IntParameter("INITSTATITEMAX",5,"max number of nonlinear iterations for initial stationary solution",&fdyn);
   IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
@@ -2560,12 +2561,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::combusttype_premixedcombustion,
               INPAR::COMBUST::combusttype_twophaseflow),
               &combustcontrolfluid);
-  setStringToIntegralParameter<INPAR::COMBUST::XFEMIntegration>("XFEMINTEGRATION","Tetrahedra",
+  setStringToIntegralParameter<INPAR::COMBUST::XFEMIntegration>("XFEMINTEGRATION","Tetgen",
       "Type of integration strategy for intersected elements",
       tuple<std::string>(
+          "Tetgen",
           "Tetrahedra",
           "Hexahedra"),
           tuple<INPAR::COMBUST::XFEMIntegration>(
+              INPAR::COMBUST::xfemintegration_tetgen,
               INPAR::COMBUST::xfemintegration_tetrahedra,
               INPAR::COMBUST::xfemintegration_hexahedra),
               &combustcontrolfluid);
@@ -2583,23 +2586,90 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::initfield_flame_vortex_interaction,
               INPAR::COMBUST::initfield_beltrami_flow),
               &combustcontrolfluid);
-  setStringToIntegralParameter<INPAR::COMBUST::SurfaceTensionApprox>("SURFTENSAPPROX","surface_tension_approx_laplacebeltrami_smoothed","Type of surface tension approximation",
+  setStringToIntegralParameter<INPAR::COMBUST::NitscheError>("NITSCHE_ERROR","nitsche_error_none","To which analyt. solution do we compare?",
       tuple<std::string>(
+          "nitsche_error_none",
+          "nitsche_error_static_bubble_nxnx1",
+          "nitsche_error_static_bubble_nxnxn",
+          "nitsche_error_shear",
+          "nitsche_error_couette_20x20x1",
+          "nitsche_error_straight_bodyforce",
+          "nitsche_error_ellipsoid_bubble_2D",
+          "nitsche_error_ellipsoid_bubble_3D"),
+          tuple<INPAR::COMBUST::NitscheError>(
+              INPAR::COMBUST::nitsche_error_none,
+              INPAR::COMBUST::nitsche_error_static_bubble_nxnx1,
+              INPAR::COMBUST::nitsche_error_static_bubble_nxnxn,
+              INPAR::COMBUST::nitsche_error_shear,
+              INPAR::COMBUST::nitsche_error_couette_20x20x1,
+              INPAR::COMBUST::nitsche_error_straight_bodyforce,
+              INPAR::COMBUST::nitsche_error_ellipsoid_bubble_2D,
+              INPAR::COMBUST::nitsche_error_ellipsoid_bubble_3D),
+              &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::SurfaceTensionApprox>("SURFTENSAPPROX","surface_tension_approx_none","Type of surface tension approximation",
+      tuple<std::string>(
+          "surface_tension_approx_none",
+          "surface_tension_approx_fixed_curvature",
           "surface_tension_approx_divgrad",
           "surface_tension_approx_laplacebeltrami",
           "surface_tension_approx_laplacebeltrami_smoothed"),
           tuple<INPAR::COMBUST::SurfaceTensionApprox>(
+              INPAR::COMBUST::surface_tension_approx_none,
+              INPAR::COMBUST::surface_tension_approx_fixed_curvature,
               INPAR::COMBUST::surface_tension_approx_divgrad,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::SmoothGradPhi>("SMOOTHGRADPHI","smooth_grad_phi_none","Type of smoothing for grad(phi)",
+      tuple<std::string>(
+          "smooth_grad_phi_none",
+          "smooth_grad_phi_meanvalue",
+          "smooth_grad_phi_leastsquares_3D",
+          "smooth_grad_phi_leastsquares_2Dx",
+          "smooth_grad_phi_leastsquares_2Dy",
+          "smooth_grad_phi_leastsquares_2Dz"),
+          tuple<INPAR::COMBUST::SmoothGradPhi>(
+              INPAR::COMBUST::smooth_grad_phi_none,
+              INPAR::COMBUST::smooth_grad_phi_meanvalue,
+              INPAR::COMBUST::smooth_grad_phi_leastsquares_3D,
+              INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx,
+              INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy,
+              INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz),
+              &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::VelocityJumpType>("VELOCITY_JUMP_TYPE","vel_jump_none","Type of velocity jump",
+      tuple<std::string>(
+          "vel_jump_none",
+          "vel_jump_const",
+          "vel_jump_premixed_combustion"),
+          tuple<INPAR::COMBUST::VelocityJumpType>(
+              INPAR::COMBUST::Vel_Jump_None,
+              INPAR::COMBUST::Vel_Jump_Const,
+              INPAR::COMBUST::Vel_Jump_PremixedCombustion),
+              &combustcontrolfluid);
+  setStringToIntegralParameter<INPAR::COMBUST::NormalTensionJumpType>("NORMAL_TENSION_JUMP_TYPE","normal_tension_jump_none","Type of velocity jump",
+      tuple<std::string>(
+          "normal_tension_jump_none",
+          "normal_tension_jump_const",
+          "normal_tension_jump_premixed_combustion",
+          "normal_tension_jump_surface_tension"),
+          tuple<INPAR::COMBUST::NormalTensionJumpType>(
+              INPAR::COMBUST::NormalTension_Jump_None,
+              INPAR::COMBUST::NormalTension_Jump_Const,
+              INPAR::COMBUST::NormalTension_Jump_PremixedCombustion,
+              INPAR::COMBUST::NormalTension_Jump_SurfaceTension),
+              &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
+  DoubleParameter("PHI_MODIFY_TOL",1.0E-3,"We modify GfuncValues near zero",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",0.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
   DoubleParameter("SURFTENSCOEFF",0.0,"Surface tension coefficient",&combustcontrolfluid);
-
+  setStringToIntegralParameter<int>("CONNECTED_INTERFACE","No","Turn refinement strategy for level set function on/off",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
       "control parameters for the G-function (level set) field of a combustion problem");

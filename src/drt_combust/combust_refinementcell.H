@@ -48,13 +48,16 @@ namespace COMBUST
     //! remote access method to root fluid element
     const DRT::Element* Ele() const { return ele_; }
 
+    //! remote access method to distype
+    const DRT::Element::DiscretizationType Shape() const { return distype_; }
+
     //! remote access method to refinement level
     const int RefinementLevel() const { return refinementlevel_; }
 
-    //! remote access method to intersection state
-    bool Intersected() const { return intersected_; }
+    //! remote access method to bisection state
+    bool Bisected() const { return bisected_; }
 
-    //! remote access method to intersection state
+    //! remote access method to touched state
     bool Touched() const { return touched_; }
 
     //! remote access method to G-function values; could be spared by declaring "gfuncvalues" protected/public
@@ -107,10 +110,11 @@ namespace COMBUST
     //! vector of G-function values at vertices of this refinementcell
     std::vector<double> gfuncvalues_;
 
-    //! boolean indicating whether a refinement cell is intersected by the interface
-    bool intersected_;
+    //! boolean indicating whether a refinement cell is bisected by the interface
+    bool bisected_;
 
-    //! boolean indicating whether a refinement cell is touched by the interface
+    //! boolean indicating whether a refinement cell is touched by the interface,
+    //! at least one G-function value = 0
     bool touched_;
 
     //! pointer to parent node
@@ -120,6 +124,7 @@ namespace COMBUST
     std::vector< Teuchos::RCP<COMBUST::RefinementCell> > children_;
 
   }; // class RefinementCell
+
 } // namespace COMBUST
 
 #endif // COMBUST_REFINEMENTCELL_H

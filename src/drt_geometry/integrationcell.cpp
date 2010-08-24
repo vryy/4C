@@ -277,9 +277,28 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(    xfemEleDomainCoordinates),
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
             nodalpos_xyz_domain_(   physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
+            indomainplus_(true)
 {}
 
+/*----------------------------------------------------------------------*
+ * constructor Boundary integration cells                               *
+ *----------------------------------------------------------------------*/
+GEO::BoundaryIntCell::BoundaryIntCell(
+        const DRT::Element::DiscretizationType&   distype,
+        const int                                 surface_ele_gid,
+        const LINALG::SerialDenseMatrix&          xfemEleDomainCoordinates,
+        const LINALG::SerialDenseMatrix&          eleBoundaryCoordinates,
+        const LINALG::SerialDenseMatrix&          physDomainCoordinates,
+        const bool                                indomainplus) :
+            IntCell(distype),
+            surface_ele_gid_(surface_ele_gid),
+            nodalpos_xi_domain_(    xfemEleDomainCoordinates),
+            nodalpos_xi_boundary_(  eleBoundaryCoordinates),
+            nodalpos_xyz_domain_(   physDomainCoordinates),
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
+            indomainplus_(indomainplus)
+{}
 
 
 /*----------------------------------------------------------------------*
@@ -291,7 +310,8 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             surface_ele_gid_(old.surface_ele_gid_),
             nodalpos_xi_domain_(    old.nodalpos_xi_domain_),
             nodalpos_xi_boundary_(  old.nodalpos_xi_boundary_),
-            nodalpos_xyz_domain_(   old.nodalpos_xyz_domain_)
+            nodalpos_xyz_domain_(   old.nodalpos_xyz_domain_),
+            indomainplus_( old.indomainplus_)
 {}
 
 
@@ -315,6 +335,7 @@ GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell
   nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
   nodalpos_xi_boundary_ = boundaryintcell.nodalpos_xi_boundary_;
   nodalpos_xyz_domain_ = boundaryintcell.nodalpos_xyz_domain_;
+  indomainplus_ = boundaryintcell.indomainplus_;
   return *this;
 }
 

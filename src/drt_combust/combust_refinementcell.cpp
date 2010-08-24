@@ -27,7 +27,7 @@ distype_(ele_->Shape()),
 refinementlevel_(0),
 vertexcoord_(DRT::UTILS::getNumberOfElementNodes(distype_),std::vector<double>(3,0.0)),
 gfuncvalues_(DRT::UTILS::getNumberOfElementNodes(distype_),1.0),
-intersected_(false),
+bisected_(false),
 touched_(false),
 parent_(NULL)
 {
@@ -69,7 +69,7 @@ distype_(ele_->Shape()),
 refinementlevel_(cell->RefinementLevel()+1),
 vertexcoord_(vertexcoord),
 gfuncvalues_(DRT::UTILS::getNumberOfElementNodes(distype_),1.0),
-intersected_(false),
+bisected_(false),
 touched_(false),
 parent_(cell)
 {
@@ -136,29 +136,29 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
 //  while ((gfuncvalues_[counter] == 0.0) and (counter < (gfuncvalues_.size()-1)))
 //  {
 //    counter++;
-//    intersected_ = true;
+//    bisected_ = true;
 //  }
 //
 //  // first non-zero G-function value is negative
 //  if (gfuncvalues_[counter] < 0.0)
 //  {
-//    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+//    while (counter < (gfuncvalues_.size()-1) and (bisected_ == false))
 //    {
 //      counter++;
 //      // if next G-function value is positive
 //      if(gfuncvalues_[counter] >= 0.0)
-//        intersected_ = true;
+//        bisected_ = true;
 //    }
 //  }
 //  // first non-zero G-function value is positive
 //  else if (gfuncvalues_[counter] > 0.0)
 //  {
-//    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+//    while (counter < (gfuncvalues_.size()-1) and (bisected_ == false))
 //   {
 //      counter++;
 //      // if next G-function value is negative
 //      if(gfuncvalues_[counter] <= 0.0)
-//        intersected_ = true;
+//        bisected_ = true;
 //    }
 //  }
 //  else
@@ -189,10 +189,23 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
    * ----------------------------------------------------------------------------------------------
    */
   //TEST
-//  std::cout << "G-Func" << std::endl;
-//  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
-//	  std::cout << gfuncvalues_[i] << std::endl;
+  //std::cout << "G-Func" << std::endl;
+  //for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
+  //  std::cout << gfuncvalues_[i] << std::endl;
 
+  // schott Aug 6, 2010
+
+  // REMARK:
+  // boolian variables:
+  // bisected_ : if we have at least one node with (+) and one node with (-)
+  // touched_: if at least one node is 0.0
+  //
+  // here in refinementcell:
+  // cell is touched, also if only touched at one node or edge
+  // => boundary integrations cells are build in COMBUST::FlameFront::buildPLC only
+  //    for really touched (touched at a whole face) cells
+
+  // TODO @Florian as soon as ModifyPhiVector() is activated, this function had to be commented out
   // tolerance for small G-function values
   for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
   {
@@ -203,24 +216,29 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
     }
   }
 
+  // reset booleans, just in case they have been modified by mistake
+  bisected_ = false;
+  touched_ = false;
 
   // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
   // sign changes among the G-function values at the vertices of the refinement cell.
   unsigned counter = 0;
   bool zeros = false;
 
-  // advance to first non-zero G-function value
+  // advance to first non-zero G-function value; stop one node before the last node
   while ((gfuncvalues_[counter] == 0.0) and (counter < (gfuncvalues_.size()-1)))
   {
     counter++;
-    zeros = true;
+    zeros = true; // if there are one or more zero values
   }
-
-  if (counter < (gfuncvalues_.size()-1)){
+  // if there are values which are maybe not zero and have maybe the other sign
+  if (counter < (gfuncvalues_.size()-1))
+  {
   // first non-zero G-function value is negative
   if (gfuncvalues_[counter] < 0.0)
   {
-    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+    while (counter < (gfuncvalues_.size()-1) and
+          (bisected_ == false)) // if we are bisected we can stop
     {
       counter++;
       // if next G-function value is positive
@@ -228,18 +246,19 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
       {
         if (gfuncvalues_[counter] > 0.0)
         {
-          intersected_ = true;
-          touched_ = true;
+          bisected_ = true;
         }
         else
           zeros = true;
       }
+      // else -> G-function value is also negative
     }
   }
   // first non-zero G-function value is positive
   else if (gfuncvalues_[counter] > 0.0)
   {
-    while (counter < (gfuncvalues_.size()-1) and (intersected_ == false))
+    while (counter < (gfuncvalues_.size()-1) and
+          (bisected_ == false)) // if we are bisected we can stop
    {
       counter++;
       // if next G-function value is negative
@@ -247,12 +266,12 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
       {
         if (gfuncvalues_[counter] < 0.0)
         {
-          intersected_ = true;
-          touched_ = true;
+          bisected_ = true;
         }
         else
           zeros = true;
       }
+      // else -> G-function value is also positive
     }
   }
   else
@@ -261,16 +280,16 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
     dserror("impossible!");
   }
   }
-  
-  // element is not intersected but interface touches the element
-  if((zeros == true) and (intersected_ == false))
+  // element is not bisected but interface touches the element
+  if((zeros == true) and (bisected_ == false))
   {
     touched_ = true;
-//    std::cout << "Interface berührt Element: " << ele_->Id() << std::endl;
+    //std::cout << "Interface berührt Element: " << ele_->Id() << std::endl;
   }
-//  if (intersected_ == true)
-//    std::cout << "Element ist geschnitten: " << ele_->Id() << std::endl;
-  
+  if (bisected_ and touched_) dserror("impossible!");
+
+  //std::cout << "Element " <<  ele_->Id() << " -- bisected status: " << bisected_ <<
+  //                                  "\t" << " -- touched_ status: " << touched_  << std::endl;
   return;
 }
 

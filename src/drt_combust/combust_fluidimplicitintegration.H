@@ -54,6 +54,26 @@ public:
   */
   virtual ~CombustFluidImplicitTimeInt();
 
+  /// return type of time integration scheme
+  const enum INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+
+  /// Provide title of time integration scheme
+  std::string TimIntTitle(){return MapTimIntEnumToString(TimIntScheme());}
+
+  /// Print information about current time step to screen
+  virtual void PrintTimeStepInfo()
+  {
+    if (myrank_==0)
+      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta){
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s (theta = %3f) STEP = %4d/%4d \n",
+            time_,maxtime_,dta_,TimIntTitle().c_str(), theta_, step_,stepmax_);
+      }
+      else{
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
+            time_,maxtime_,dta_,TimIntTitle().c_str(),step_,stepmax_);
+      }
+  }
+  
   /*!
   \brief solve stationary problem
          Even though it does not make much sense, this member function belongs to the implicit time
@@ -69,7 +89,9 @@ public:
   void PrepareNonlinearSolve();
 
   /// import geometrical information about the interface and incorporate it into the fluid field
-  void IncorporateInterface(const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle);
+  void IncorporateInterface(
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleNP,
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleN);
 
   /// import the flame front from the combustion algorithm
   void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
@@ -162,18 +184,16 @@ public:
          numerical solution of a test problems
   */
   void EvaluateErrorComparedToAnalyticalSol();
+  
+  /*!
+  \brief calculate error between an analytical solution and the numerical solution of a test problem
+  */
+  void EvaluateErrorComparedToAnalyticalSol_Nitsche(INPAR::COMBUST::NitscheError& );
 
   /*!
   \brief calculate stresses
   */
   Teuchos::RCP<Epetra_Vector> CalcStresses();
-
-
-
-// unused functions
-
-
-
 
   /*!
   \brief out of use
@@ -192,21 +212,16 @@ public:
   */
   void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
 
-
-
-
-// output functions
-
-
-
-
   /*!
   \brief output solution fields to Gmsh for debugging
 
   */
-  void OutputToGmsh(const int step,
-                    const double  time
-                   ) const;
+  void OutputToGmsh(
+      char* presName,
+      char* velName,
+      const int step,
+      const double  time
+  ) const;
 
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
@@ -256,7 +271,7 @@ public:
   double Dt()   const { return dta_; }
   double Time() const { return time_; }
   int Step()    const { return step_; }
-  int Itemax()  const { return params_.get<int>("max nonlin iter steps"); }
+  int Itemax()  const { return itemax_; }
 
   /// increment time and step value
   void IncrementTimeAndStep()
@@ -264,12 +279,6 @@ public:
     step_ += 1;
     time_ += dta_;
   }
-
-  /*!
-  \brief return type of time integration scheme
-
-  */
-  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /// introduce (robin) fsi surface extractor object
   /*!
@@ -323,6 +332,9 @@ protected:
   CombustFluidImplicitTimeInt (const CombustFluidImplicitTimeInt& old);
   CombustFluidImplicitTimeInt();
 
+  /// helper function to get algorithm title
+  std::string MapTimIntEnumToString(INPAR::FLUID::TimeIntegrationScheme term);
+
   /*!
   \brief give DOF information to elements
   */
@@ -337,7 +349,6 @@ protected:
   LINALG::Solver&                        solver_;
   const ParameterList&                   params_;
   const ParameterList&                   xparams_;
-//  IO::DiscretizationWriter&              output_;
   const Teuchos::RCP<IO::DiscretizationWriter> output_;
 
   //! the processor ID from the communicator
@@ -349,6 +360,8 @@ protected:
 
   /// switch for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
+  INPAR::COMBUST::VelocityJumpType veljumptype_;
+  INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype_;
 
   // laminar flame speed
   const double flamespeed_;
@@ -356,15 +369,15 @@ protected:
   const double nitschevel_;
   // Nitsche parameter pressure
   const double nitschepres_;
+  // boolean indicating condensation of element dofs on/off
+  const bool condensation_;
 
   // parameters for two-phase flow problems
   // type of surface tension approximation
   INPAR::COMBUST::SurfaceTensionApprox surftensapprox_;
   // surface tension coefficient
   const double surftenscoeff_;
-
-  // boolean indicating condensation of element dofs on/off
-  const bool condensation_;
+  const bool connected_interface_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep
@@ -381,12 +394,21 @@ protected:
   /// time algorithm flag
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
+  /// time algorithm flag for first time step
+  //INPAR::FLUID::TimeIntegrationScheme startalgo_;
+  
   //! @name time-integration-scheme factors
   double theta_;
 //  double alphaM_;
 //  double alphaF_;
 //  double gamma_;
   //@}
+
+  /// boolean indicating if stationary solution is computed as initial solution
+  const bool initstatsol_;
+
+  /// maximum number of nonlinear iterations
+  int itemax_;
 
   /// whether we do some extrapolation at the beginning of each time step
   bool extrapolationpredictor_;
@@ -408,7 +430,7 @@ protected:
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
-  /// TODO add comment
+  /// increment of old iteration step for condensation of element dofs
   Teuchos::RCP<Epetra_Vector> oldinc_;
 
   /// maps for extracting Dirichlet and free DOF sets

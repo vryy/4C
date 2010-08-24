@@ -27,14 +27,15 @@ Maintainer: Florian Henke
 
 #include <stdio.h>
 
+#include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
-
 #include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
+#include "../drt_xfem/startvalues.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
@@ -67,12 +68,15 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
+  veljumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
+  normaltensionjumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::NormalTensionJumpType>(params_.sublist("COMBUSTION FLUID"),"NORMAL_TENSION_JUMP_TYPE")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
+  condensation_(xparams_.get<bool>("DLM_condensation")),
   surftensapprox_(Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
   surftenscoeff_(params_.sublist("COMBUSTION FLUID").get<double>("SURFTENSCOEFF")),
-  condensation_(xparams_.get<bool>("DLM_condensation")),
+  connected_interface_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -80,7 +84,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   dta_     (params_.get<double> ("time step size")),
   dtp_     (params_.get<double> ("time step size")),
   timealgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
+  //startalgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("start time int algo")),
   theta_   (params_.get<double>("theta")),
+  initstatsol_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
+  itemax_(params_.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get("do explicit predictor",false)),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
@@ -91,7 +98,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // time measurement: initialization
   //------------------------------------------------------------------------------------------------
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
-
+  
+  //------------------------------------------------------------------------------------------------
+  // set time integration parameters for computation of initial field from stationary problem
+  //------------------------------------------------------------------------------------------------
+  if(initstatsol_) step_ = -1;
+  
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
@@ -192,7 +204,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
 
-  dofmanagerForOutput_->fillDofDistributionMaps(
+  dofmanagerForOutput_->fillDofRowDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
 
@@ -276,19 +288,60 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   //---------------------------- -------------------------------------------------------------------
   // set time dependent parameters
   // -----------------------------------------------------------------------------------------------
+  // reset time step size, 'theta' and time integration algorithm
+  dta_      = params_.get<double> ("time step size");
+  dtp_      = params_.get<double> ("time step size");
+  theta_    = params_.get<double>("theta");
+  timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+  itemax_   = params_.get<int>("max nonlin iter steps");
+
   step_ += 1;
   time_ += dta_;
 
-  if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_stationary)
+  switch(timealgo_)
+  {
+  case INPAR::FLUID::timeint_stationary:
   {
     // for stationary problems PrepareTimeStep() should only be called for output related reasons
-    cout << "Warning: 'time' and 'time step' are set to 1.0 and 1 for output control file" << endl;
-    timealgo_ = INPAR::FLUID::timeint_stationary;
+    cout0_ << "/!\\ warning: 'time' and 'time step' are set to 1.0 and 1.0 for output control file" << endl;
     step_ = 1;
     time_ = 1.0;
     theta_ = 1.0;
+    break;
   }
-  else if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_bdf2)
+  case INPAR::FLUID::timeint_one_step_theta:
+  {
+    // compute initial field from stationary problem
+    if ((step_==0) && initstatsol_)
+    {
+      cout0_ << "/!\\ warning: initial solution is computed by stationary algorithm" << endl;
+      cout0_ << "/!\\ warning: 'time' and 'time step' are set to 0.0 and 1.0 for output control file" << endl;
+      timealgo_ = INPAR::FLUID::timeint_stationary;
+      time_ =  0.0; // only needed for output
+      dta_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
+      dtp_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
+      theta_ = 1.0;
+      // set max iterations for initial stationary algorithm
+      itemax_ = params_.get<int>("max nonlin iter steps init stat sol");
+    }
+    // compute first (instationary) time step differently
+    // remark: usually backward Euler (theta=1.0) to damp inital pertubations
+    else if (step_==1)
+    {
+      // get starting 'theta' for first time step
+      theta_ = params_.get<double>("start theta");
+      cout0_ << "/!\\ warning: first timestep computed with theta =  " << theta_ << endl;
+    }
+    // regular time step
+    else if (step_ > 1)
+    {
+      theta_ = params_.get<double>("theta");
+    }
+    else
+      dserror("number of time step is wrong");
+    break;
+  }
+  case INPAR::FLUID::timeint_bdf2:
   {
     // do a backward Euler step for the first time step
     if (step_==1)
@@ -296,17 +349,16 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
       timealgo_ = INPAR::FLUID::timeint_one_step_theta;
       theta_ = params_.get<double>("start theta");
     }
+    // regular time step (step_>1)
     else
     {
-      timealgo_ = INPAR::FLUID::timeint_bdf2;
-      // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
+      // for BDF2, theta is set by the time-step sizes, 2/3 for const dt
       theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
+    break;
   }
-  else
-  {
-    timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
-    theta_ = params_.get<double>("theta");
+  default:
+    dserror("unknown time integration scheme");
   }
 }
 
@@ -319,6 +371,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
+  // TODO Do we need this?
 //  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 //      state_.veln_, state_.velnm_, state_.accn_,
 //          timealgo_, dta_, theta_,
@@ -393,7 +446,8 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
  | after this function, it's ok to do so.                                                    axel |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
-       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle)
+       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleNP,
+       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleN)
 {
   // information about interface is imported via ADAPTER::FluidCombust::ImportInterface()
   if (false) // flamefront_ == Teuchos::null)
@@ -404,26 +458,38 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   //cout << *(state_.veln_)<< endl;
   /* momentan gebe ich den ElementAnsatz (Lagrange Multiplier Zeug) nicht an den DofManager weiter,
    * vielleicht brauche ich es aber. Hängt das hier eigentlich nicht direkt von InputParametern ab? */
-//  const COMBUST::CombustElementAnsatz elementAnsatz;
+  //const COMBUST::CombustElementAnsatz elementAnsatz;
 
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
   // of enriched degrees of freedom change constantly.
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandle,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(interfacehandleNP,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
+
+  //if (true) // INPAR::XFEM::timeintegration_semilagrangian
+  //{
+  // temporarely save old dofmanager
+  const RCP<XFEM::DofManager> olddofmanager = dofmanagerForOutput_;
+  //}
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
   // tell elements about the dofs and the integration
-  TransferDofInformationToElements(interfacehandle, dofmanager);
+  TransferDofInformationToElements(interfacehandleNP, dofmanager);
 
   // print global and element dofmanager to Gmsh
   std::cout<< "Dofmanager and InterfaceHandle to Gmsh" << std::endl;
   dofmanager->toGmsh(step_);
-  interfacehandle->toGmsh(step_);
+  interfacehandleNP->toGmsh(step_);
 
-  // get old dofmap, compute new one and get the new one, too
+  // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
+  //if (true) // INPAR::XFEM::timeintegration_semilagrangian
+  //{
+  const Epetra_Map olddofcolmap = *discret_->DofColMap();
+  map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldNodalDofColDistrib;
+  olddofmanager->fillNodalDofColDistributionMap(oldNodalDofColDistrib);
+  //}
   // assign degrees of freedom
   // remark: - assign degrees of freedom (first slot)
   //         - build geometry for (Neumann) boundary conditions (third slot);
@@ -434,31 +500,222 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // remark: 'true' is needed to prevent iterative solver from crashing
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
-  const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
-  const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+  if (true) // INPAR::XFEM::timeintegration_semilagrangian
+  { // area for dofswitcher and startvalues
+    //const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
+    const std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID> oldElementalDofDistributionMap(state_.elementalDofDistributionMap_);
+    dofmanager->fillDofRowDistributionMaps(
+        state_.nodalDofDistributionMap_,
+        state_.elementalDofDistributionMap_);
 
-  dofmanager->fillDofDistributionMaps(state_.nodalDofDistributionMap_, state_.elementalDofDistributionMap_);
+    //    cout << "elemental dof set with size " <<
+    //        state_.elementalDofDistributionMap_.size() <<
+    //        state_.nodalDofDistributionMap_.size() << endl;
+    //    for (std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>::const_iterator i=oldElementalDofDistributionMap.begin();
+    //        i!=oldElementalDofDistributionMap.end();
+    //        i++)
+    //      cout << i->first << ", " << i->second << endl;
+    //    cout << "elemental dofset done " << endl;
+    //    discret_->Comm().Barrier();
 
-  // create switcher
-  const XFEM::DofDistributionSwitcher dofswitch(
-          interfacehandle, dofmanager,
-          olddofrowmap, newdofrowmap,
-          oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
-          oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
-          );
+    // create switcher
+    const XFEM::DofDistributionSwitcher dofswitch(
+        interfacehandleNP, dofmanager,
+        olddofrowmap, newdofrowmap,
+        oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
+        oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
+    );
 
-  // --------------------------------------------
-  // switch state vectors to new dof distribution
-  // --------------------------------------------
+    // ----------------------------------------------------------
+    // extract enrichment dofkeys and values before they are lost
+    // ----------------------------------------------------------
+    vector<RCP<Epetra_Vector> > oldColStateVectors;
 
-  cout0_ << " Initialize system vectors..." << endl;
-  // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
-  dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
-  // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_); // use old velocity as start value
-  dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
-  dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
+    RCP<Epetra_Vector> accnp = rcp(new Epetra_Vector(olddofcolmap,true));
+    LINALG::Export(*state_.accnp_,*accnp);
+    oldColStateVectors.push_back(accnp);
+
+    RCP<Epetra_Vector> accn = rcp(new Epetra_Vector(olddofcolmap,true));
+    LINALG::Export(*state_.accn_,*accn);
+    oldColStateVectors.push_back(accn);
+
+    RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(olddofcolmap,true));
+    LINALG::Export(*state_.velnp_,*velnp);
+    oldColStateVectors.push_back(velnp);
+
+    RCP<Epetra_Vector> veln = rcp(new Epetra_Vector(olddofcolmap,true));
+    LINALG::Export(*state_.veln_,*veln);
+    oldColStateVectors.push_back(veln);
+
+    //    discret_->Comm().Barrier();
+    //    cout << "acceleration is " << *state_.accn_;
+    //    cout << "velocity is " << *state_.veln_;
+    //
+    //    map<int,set<XFEM::DofKey<XFEM::onNode> > > oldEnrNodalDofSet;
+    //    map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldEnrNodalDofDistrib;
+    //    vector<map<int,double> > oldEnrValues(stateVector.size());
+    //
+    //    {
+    ////      cout << "here1" << endl;
+    ////      for (map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>::const_iterator i=oldNodalDofColDistrib.begin();
+    ////          i != oldNodalDofColDistrib.end();i++)
+    ////        cout << i->first << ", " << i->second << endl;
+    //      dofswitch.extractEnrMapCombust(
+    //          stateVector,
+    //          olddofcolmap,
+    //          oldNodalDofColDistrib,
+    //          oldEnrNodalDofSet,
+    //          oldEnrNodalDofDistrib,
+    //          oldEnrValues
+    //      );
+    //    }
+
+    //    cout << "here2" << endl;
+    //    cout << "enrsizes are: ";
+    //    for (size_t i=0;i<oldEnrValues.size();i++)
+    //      cout << oldEnrValues[i].size() << ", ";
+    //    for (map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>::const_iterator i=oldEnrNodalDofDistrib.begin();
+    //        i != oldEnrNodalDofDistrib.end();
+    //        i++)
+    //      cout << i->first << ", " << i->second << endl;
+    //    for (map<int,double>::const_iterator i=oldEnrValues[3].begin();
+    //        i!=oldEnrValues[3].end();
+    //        i++)
+    //      cout << i->first << ", " << i->second << endl;
+
+    // --------------------------------------------
+    // switch state vectors to new dof distribution
+    // --------------------------------------------
+    //cout << "old solution was " << *state_.velnp_;
+    cout0_ << " Initialize system vectors..." << endl;
+    // accelerations at time n and n-1
+
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
+
+    // velocities and pressures at time n+1, n and n-1
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_); // use old velocity as start value
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
+
+    //    // TODO for some examples where initial field is set without physical background
+    //    // the enrichment values must be set also somehow
+    //    // this can be done here!
+    //    if (step_ == 1)
+    //    {
+    //      // pointer to phivector at time n with rowmap
+    //      RCP<Epetra_Vector> phiOldRow_ = rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+    //      LINALG::Export(*flamefront_->Phin(),*phiOldRow_);
+    //
+    //      for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
+    //      {
+    //        DRT::Node* lnode = discret_->lRowNode(nodeid);
+    //        const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
+    //        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+    //            fieldenr != fieldenrset.end();++fieldenr)
+    //        {
+    //          const XFEM::DofKey<XFEM::onNode> newdofkey(lnode->Id(), *fieldenr);
+    //          const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
+    ////          cout << newdofkey << "     dofpos is " << newdofpos << endl;
+    //          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+    //          {
+    //            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+    //              /* nothing to do in flame_vortex example*/;
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+    //            {
+    //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.15;
+    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.15;
+    //            }
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+    //              /* nothing to do in flame_vortex example*/;
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+    //            {
+    //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.65;
+    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.65;
+    //            }
+    //          } // end if jump enrichment
+    //          else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+    //          {
+    //            if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+    //            {
+    //              if ((*phiOldRow_)[nodeid]<0)
+    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = -7.3;
+    //            }
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+    //            {
+    //              if ((*phiOldRow_)[nodeid]<0)
+    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 1.0;
+    //              else
+    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 7.3;
+    //            }
+    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
+    //          }
+    //        } // end loop over fieldenr
+    //      } // end loop over element nodes
+    //      OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
+    //    }
+#if 0
+    if (step_ > 1)
+    {
+      //      TODO input parameter for startvalue finding method
+      //      if (startvaluefinder == semilagrange)
+      {
+        const size_t oldsize = oldColStateVectors.size();
+        vector<RCP<Epetra_Vector> > newRowStateVectors;
+        newRowStateVectors.push_back(state_.accnp_);
+        newRowStateVectors.push_back(state_.accn_);
+        newRowStateVectors.push_back(state_.velnp_);
+        newRowStateVectors.push_back(state_.veln_);
+        const size_t newsize = newRowStateVectors.size();
+        if (oldsize != newsize)
+          dserror("stateVector sizes are different! Fix this!");
+
+        //        cout << "old phi is " << *flamefront_->Phin();
+        //        cout << "new phi is " << *flamefront_->Phinp();
+
+        //        cout << "vel before setting new startvalues " << *stateVector[2];
+
+        //        cout << "in algorithm old phi is " << *flamefront_->Phin();
+        //        cout << "in algorithm new phi is " << *flamefront_->Phinp();
+        bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
+        bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
+
+        //        if( (start_val_semilagrange == true) || (start_val_enrichment == true) )
+        //        {
+        XFEM::Startvalues startval(
+            discret_,
+            olddofmanager,
+            dofmanager,
+            oldColStateVectors,
+            newRowStateVectors,
+            veln,
+            flamefront_,
+            interfacehandleN,
+            olddofcolmap,
+            oldNodalDofColDistrib,
+            newdofrowmap,
+            state_.nodalDofDistributionMap_);
+        //        }
+
+        // initialize system vectors for nodes which changed interface side
+        if(start_val_semilagrange == true)
+          startval.semiLagrangeExtrapolation(flamefront_,dta_);
+
+        //        cout << "here before setting enrichment values" << endl;
+        if(start_val_enrichment == true)
+          startval.setEnrichmentValues();
+
+        //        cout << "vel after setting new startvalues " << *stateVector[2];
+
+        //        OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
+      }
+    }
+#endif
+  } // end area for dofswitcher and startvalues
 
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
@@ -473,7 +730,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichletXFEM(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
+        Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -582,8 +839,8 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
   if (hist->MyLength() != accn->MyLength())
     dserror("vectors must have the same length");
 
-  //TODO
-  //stationary case (timealgo_== timeint_stationary))
+  //TODO es ist sowas auch noch in PrepareNonlinearSolve(). Was brauchen wir?
+  //stationary case (timealgo_== INPAR::FLUID::timeint_stationary))
   if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
     FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
@@ -613,16 +870,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
   int               itnum = 0;
-  const int         itemax = params_.get<int>("max nonlin iter steps");
   bool              stopnonliniter = false;
 
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
+  // out to screen
+  PrintTimeStepInfo();
+  
   // action for elements
   if (timealgo_!=INPAR::FLUID::timeint_stationary and theta_ < 1.0)
   {
-    cout0_ << "* Warning! Works reliable only for Backward Euler time discretization! *" << endl;
+    cout0_ << "* Warning! Works reliably only for Backward Euler time discretization! *" << endl;
   }
 
 /*
@@ -684,6 +943,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // flag for type of combustion problem
       eleparams.set("combusttype",combusttype_);
+      eleparams.set("veljumptype",veljumptype_);
+      eleparams.set("normaltensionjumptype",normaltensionjumptype_);
       eleparams.set("flamespeed",flamespeed_);
       eleparams.set("nitschevel",nitschevel_);
       eleparams.set("nitschepres",nitschepres_);
@@ -692,6 +953,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // parameters for two-phase flow problems with surface tension
       eleparams.set("surftensapprox",surftensapprox_);
       eleparams.set("surftenscoeff",surftenscoeff_);
+      eleparams.set("connected_interface",connected_interface_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -725,7 +987,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-      if ((itnum != itemax)
+      if ((itnum != itemax_)
           ||
           (params_.get<string>("CONVCHECK")
            !=
@@ -817,7 +1079,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
+               itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E",dtele);
         printf(")\n");
       }
@@ -841,7 +1103,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
+                 itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
           printf(")\n");
@@ -851,7 +1113,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax,ittol,vresnorm,presnorm,
+                    itnum,itemax_,ittol,vresnorm,presnorm,
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
         }
@@ -861,7 +1123,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
+                 itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
           printf(")\n");
@@ -870,7 +1132,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum == itemax_) and (vresnorm > ittol or presnorm > ittol or
                              fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol or
@@ -887,7 +1149,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
+                  itnum,itemax_,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
       }
@@ -948,6 +1210,13 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     oldinc_->Update(1.0,*incvel_,0.0);
   }
 
+  //--------------------
+  // compute error norms // schott Aug 6, 2010
+  //--------------------
+  INPAR::COMBUST::NitscheError errortype = Teuchos::getIntegralValue<INPAR::COMBUST::NitscheError>(params_.sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
+  if(errortype != INPAR::COMBUST::nitsche_error_none)
+    FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nitsche(errortype);
+
   oldinc_ = Teuchos::null;
   incvel_ = Teuchos::null;
   residual_ = Teuchos::null;
@@ -979,7 +1248,7 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
 
-  // TODO copied from Axel, needed here?
+  // TODO @Florian: copied from Axel, needed here?
   oldinc_= Teuchos::null;
 
   return;
@@ -1092,7 +1361,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   //  if (discret_->Comm().NumProc() == 1)
   if (step_ % 1 == 0 or step_== 1) //write every 5th time step only
   {
-    OutputToGmsh(step_, time_);
+    OutputToGmsh("solution_field_pressure","solution_field_velocity",step_, time_);
   }
 
 //  if (step_%upres_ == 0)  //write solution
@@ -1196,22 +1465,22 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-//  std::cout << state_.velnp_->GlobalLength() << std::endl;
-//  std::cout << state_.veln_->GlobalLength() << std::endl;
-//  std::cout << state_.velnm_->GlobalLength() << std::endl;
+  //std::cout << state_.velnp_->GlobalLength() << std::endl;
+  //std::cout << state_.veln_->GlobalLength()  << std::endl;
+  //std::cout << state_.velnm_->GlobalLength() << std::endl;
 
   std::cout << "Read restart" << std::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");
-//  std::cout << state_.velnp_->GlobalLength() << std::endl;
+  //std::cout << state_.velnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.veln_, "veln");
-//  std::cout << state_.veln_->GlobalLength() << std::endl;
+  //std::cout << state_.veln_->GlobalLength() << std::endl;
   reader.ReadVector(state_.velnm_,"velnm");
-//  std::cout << state_.velnm_->GlobalLength() << std::endl;
+  //std::cout << state_.velnm_->GlobalLength() << std::endl;
   reader.ReadVector(state_.accnp_ ,"accnp");
-//  std::cout << state_.accnp_->GlobalLength() << std::endl;
+  //std::cout << state_.accnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.accn_ ,"accn");
-//  std::cout << state_.accn_->GlobalLength() << std::endl;
+  //std::cout << state_.accn_->GlobalLength() << std::endl;
 
 }
 
@@ -1219,6 +1488,8 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
  | write output to Gmsh postprocessing files                                          henke 10/09 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
+    char* presName,
+    char* velName,
     const int step,
     const double time
     ) const
@@ -1234,7 +1505,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 500, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 500, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1289,6 +1560,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           switch(combusttype_)
           {
           case INPAR::COMBUST::combusttype_premixedcombustion:
+          case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
@@ -1299,6 +1571,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          case INPAR::COMBUST::combusttype_twophaseflow_surf:
+          {
+            // schott May 17, 2010
+            // there is interpolation function for combined enrichments (jumps in pressure and kinks in velocity field)
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
@@ -1378,6 +1658,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           switch(combusttype_)
           {
           case INPAR::COMBUST::combusttype_premixedcombustion:
+          case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
@@ -1388,6 +1669,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          case INPAR::COMBUST::combusttype_twophaseflow_surf:
+          {
+            // schott May 17, 2010
+            // there is interpolation function for combined enrichments (jumps in pressure and kinks in velocity field)
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
@@ -1610,7 +1899,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
   {
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), "solution_field_velocity_np","Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), velName,"Velocity Solution (Physical) n+1",true, step, time);
     if (timealgo_ != INPAR::FLUID::timeint_stationary)
     {
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
@@ -1641,7 +1930,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 110, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 500, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -1706,6 +1995,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           switch(combusttype_)
           {
           case INPAR::COMBUST::combusttype_premixedcombustion:
+          case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
@@ -1716,6 +2006,13 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           {
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+              elementvalues, cellvalues);
+            break;
+          }
+          case INPAR::COMBUST::combusttype_twophaseflow_surf:
+          {
+            // plots for Velx, Vely, Velz ... (Kink enrichment)
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
@@ -2002,6 +2299,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
     // define vectors for velocity field, node coordinates and coordinates of left and right vortices
     LINALG::Matrix<nsd,1> vel(true);
+    double pres = 0.0;
     LINALG::Matrix<nsd,1> xyz(true);
     LINALG::Matrix<nsd,1> xyz0_left(true);
     LINALG::Matrix<nsd,1> xyz0_right(true);
@@ -2090,10 +2388,16 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       // set density with respect to flame front
       //----------------------------------------
       if (gfuncval > 0.0) // plus/burnt domain -> burnt material
+      {
         dens = dens_b;
+        pres = 0.0;
+      }
       else // minus/unburnt domain -> unburnt material
+      {
         dens = dens_u;
-
+        // TODO @Florian check
+        pres = -flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_b - 1.0/dens_u);
+      }
       //----------------------------------------------
       // compute components of initial velocity vector
       //----------------------------------------------
@@ -2124,7 +2428,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       //-----------------------------------------
       // set components of initial velocity field
       //-----------------------------------------
-      for(int idim=0;idim<nsd;idim++)
+      for(int idim=0;idim<nsd+1;idim++)
       {
         const int gid = nodedofs[idim];
         //local node id
@@ -2132,6 +2436,12 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         err += state_.velnp_->ReplaceMyValues(1,&vel(idim),&lid);
         err += state_.veln_ ->ReplaceMyValues(1,&vel(idim),&lid);
         err += state_.velnm_->ReplaceMyValues(1,&vel(idim),&lid);
+        if(idim==3)
+        {
+          err += state_.velnp_->ReplaceMyValues(1,&pres,&lid);
+          err += state_.veln_ ->ReplaceMyValues(1,&pres,&lid);
+          err += state_.velnm_->ReplaceMyValues(1,&pres,&lid);
+        }
       }
     } // end loop nodes lnodeid
 
@@ -2145,6 +2455,114 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
   return;
 }
+
+
+/*------------------------------------------------------------------------------------------------*
+ | compute mesh dependent error norms for Nitsche's method                           schott 05/10 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nitsche(INPAR::COMBUST::NitscheError& NitscheErrorType)
+{
+  // schott Jun 9, 2010
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",state_.velnp_);
+  discret_->SetState("veln" ,state_.veln_);
+  discret_->SetState("velnm",state_.velnm_);
+  discret_->SetState("accn" ,state_.accn_);
+  discret_->SetState("nodal increment",oldinc_);
+
+  // create parameters for discretization
+  ParameterList eleparams;
+
+  // schott May 26, 2010
+  // a new ActionType in combust3.H:	"calc_nitsche_error"
+  eleparams.set("action", "calc_nitsche_error");
+  eleparams.set("Nitsche_Compare_Analyt", NitscheErrorType);
+  // switch different test cases -> set "flowproblem" for elements
+
+
+  // set parameters for parts of the whole Nitsche-error (mesh-dependent norms), here norms not square rooted
+  eleparams.set<double>("L2 integrated velocity domain error", 0.0);
+  eleparams.set<double>("L2 integrated grad_velocity domain error", 0.0);
+  eleparams.set<double>("H-1/2 integrated viscosity interface error", 0.0);
+  eleparams.set<double>("H1/2 integrated velocity jump interface error", 0.0);
+  eleparams.set<double>("L2 integrated pressure domain error", 0.0);
+  eleparams.set<double>("L2 integrated grad_pressure domain error", 0.0);
+  eleparams.set<double>("L2 integrated weighted pressure domain error", 0.0);
+  eleparams.set<double>("Nitsche integrated error", 0.0); // the whole Nitsche error
+
+  // TODO @Benedikt: check wether H1 pressure norm is needed ????
+
+  // TODO @Benedikt: relative error norms!!!
+
+  // call loop over elements (but do not assemble anything)
+  // discret_->Evaluate calls combust3_evaluate for each element
+  discret_->Evaluate(eleparams,null,null,null,null,null); // only actele->Evaluate is called (see combust3_evaluate.cpp)
+
+  discret_->ClearState();
+
+  double locVelDomErr 		= eleparams.get<double>("L2 integrated velocity domain error");
+  double locGradVelDomErr 	= eleparams.get<double>("L2 integrated grad_velocity domain error");
+  double locViscInterfErr 	= eleparams.get<double>("H-1/2 integrated viscosity interface error");
+  double locVelJumpInterfErr 	= eleparams.get<double>("H1/2 integrated velocity jump interface error");
+  double locPresDomErr		= eleparams.get<double>("L2 integrated pressure domain error");
+  double locGradPresDomErr    = eleparams.get<double>("L2 integrated grad_pressure domain error");
+  double locWeightPresDomErr	= eleparams.get<double>("L2 integrated weighted pressure domain error");
+  double locNitscheErr		= eleparams.get<double>("Nitsche integrated error");
+
+  // initialize global errors
+  double VelDomErr 			= 0.0;
+  double GradVelDomErr 		= 0.0;
+  double ViscInterfErr	 	= 0.0;
+  double VelJumpInterfErr 	= 0.0;
+  double PresDomErr			= 0.0;
+  double GradPresDomErr		= 0.0;
+  double WeightPresDomErr		= 0.0;
+  double NitscheErr			= 0.0;
+
+  // TODO @Benedikt: check wether Comm() works also for interface integrals ?
+  discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1);			// sum over processors, each list (list of a processor) has length 1
+  discret_->Comm().SumAll(&locGradVelDomErr,&GradVelDomErr,1);
+  discret_->Comm().SumAll(&locViscInterfErr,&ViscInterfErr,1);
+  discret_->Comm().SumAll(&locVelJumpInterfErr,&VelJumpInterfErr,1);
+  discret_->Comm().SumAll(&locPresDomErr,&PresDomErr,1);
+  discret_->Comm().SumAll(&locGradPresDomErr, &GradPresDomErr,1);
+  discret_->Comm().SumAll(&locWeightPresDomErr,&WeightPresDomErr,1);
+  discret_->Comm().SumAll(&locNitscheErr,&NitscheErr,1);
+
+
+  // for the norms, we need the square roots
+  VelDomErr 			= sqrt(VelDomErr);
+  GradVelDomErr 		= sqrt(GradVelDomErr);
+  ViscInterfErr 		= sqrt(ViscInterfErr);
+  VelJumpInterfErr 	= sqrt(VelJumpInterfErr);
+  PresDomErr 			= sqrt(PresDomErr);
+  GradPresDomErr		= sqrt(GradPresDomErr);
+  WeightPresDomErr 	= sqrt(WeightPresDomErr);
+  NitscheErr 			= sqrt(NitscheErr);
+
+  //TODO: check if this output is after the right processor
+  if (myrank_ == 0)
+  {
+    printf("\n======================================================================="
+        "\n======================= absolute Nitsche errors ======================="
+        "\n======= compare analytical solution with approximated solution=========");
+    printf("\n  || u-u_h ||_L2(Omega)\t\t\t\t\t%15.8e", 						VelDomErr);
+    printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega1 U Omega2) \t%15.8e", 		GradVelDomErr);
+    printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Interface) \t\t%15.8e",			ViscInterfErr);
+    printf("\n  || |[u-u_h]| ||_H1/2(Interface)\t\t\t%15.8e", 				VelJumpInterfErr);
+    printf("\n  || p-p_h ||_L2(Omega)\t\t\t\t\t%15.8e",						PresDomErr);
+    printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",			GradPresDomErr);
+    printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",			WeightPresDomErr);
+    printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",			NitscheErr);
+    printf("\n======================================================================="
+        "\n=======================================================================\n");
+  }
+
+  return;
+}
+
+
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -2207,7 +2625,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     dserror("Cannot calculate error. Unknown type of analytical test problem");
   }
   return;
-} // end EvaluateErrorComparedToAnalyticalSol
+}
 
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
@@ -2351,5 +2769,33 @@ void FLD::CombustFluidImplicitTimeInt::UseBlockMatrix(
     //shapederivatives_ = mat;
   }
 }
+
+/*------------------------------------------------------------------------------------------------*
+| returns matching string for each time integration scheme                              gjb 08/08 |
+*-------------------------------------------------------------------------------------------------*/
+std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum INPAR::FLUID::TimeIntegrationScheme term)
+{
+  // length of return string is 14 due to usage in formated screen output
+  switch (term)
+  {
+  case INPAR::FLUID::timeint_one_step_theta:
+    return "One-Step-Theta";
+    break;
+  case INPAR::FLUID::timeint_bdf2 :
+    return "    BDF2      ";
+    break;
+  case INPAR::FLUID::timeint_stationary :
+    return "  Stationary  ";
+    break;
+  case INPAR::FLUID::timeint_gen_alpha :
+    return "  Gen. Alpha  ";
+    break;
+  default :
+    dserror("Cannot cope with name %d", term);
+    return "";
+    break;
+  }
+}
+
 
 #endif // CCADISCRET
