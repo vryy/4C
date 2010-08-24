@@ -923,15 +923,11 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // get system type
   INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   
-  // some pointers and variables
-  RCP<LINALG::SparseMatrix> stiffmt   = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
-  RCP<Epetra_Map>           dispmap   = problemrowmap_;
-  RCP<Epetra_Map>           slavemap  = gsdofrowmap_;
-  RCP<Epetra_Map>           mastermap = gmdofrowmap_;
-  RCP<Epetra_Map>           lmmap     = glmdofrowmap_;
-      
+  // the standard stiffness matrix
+  RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
+
   // initialize merged system (matrix, rhs, sol)
-  RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(dispmap,lmmap,false); 
+  RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(problemrowmap_,glmdofrowmap_,false);
   RCP<LINALG::SparseMatrix> mergedmt    = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
   RCP<Epetra_Vector>        mergedrhs   = LINALG::CreateVector(*mergedmap);
   RCP<Epetra_Vector>        mergedsol   = LINALG::CreateVector(*mergedmap);
@@ -958,7 +954,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   fd->Update(-(1.0-alphaf_),*fmexp,1.0);
   
   // build constraint rhs (=empty)
-  RCP<Epetra_Vector> constrrhs = rcp(new Epetra_Vector(*lmmap));
+  RCP<Epetra_Vector> constrrhs = rcp(new Epetra_Vector(*glmdofrowmap_));
 #ifndef MESHTYINGUCONSTR
   dserror("ERROR: Meshtying saddle point system only implemented for MESHTYINGUCONSTR");
 #endif // #ifndef MESHTYINGUCONSTR
@@ -999,19 +995,19 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   else if (systype==INPAR::CONTACT::system_spsimpler)
   {
     // build transposed constraint matrix
-    RCP<LINALG::SparseMatrix> trconstrmt = rcp(new LINALG::SparseMatrix(*lmmap,100,false,true));
+    RCP<LINALG::SparseMatrix> trconstrmt = rcp(new LINALG::SparseMatrix(*glmdofrowmap_,100,false,true));
     trconstrmt->Add(*constrmt,true,1.0,0.0);
-    trconstrmt->Complete(*dispmap,*lmmap);
+    trconstrmt->Complete(*problemrowmap_,*glmdofrowmap_);
     
     // apply Dirichlet conditions to (0,1) block
-    RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
+    RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*problemrowmap_,true));
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
     LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
     constrmt->ApplyDirichlet(dirichtoggle,false);
     
     // row map (equals domain map) extractor
-    LINALG::MapExtractor rowmapext(*mergedmap,lmmap,dispmap);
-    LINALG::MapExtractor dommapext(*mergedmap,lmmap,dispmap);
+    LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,problemrowmap_);
+    LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,problemrowmap_);
 
     // make solver SIMPLER-ready
     solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
@@ -1053,11 +1049,11 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
-  RCP<Epetra_Vector> sollm = rcp(new Epetra_Vector(*lmmap));
-  LINALG::MapExtractor mapext(*mergedmap,dispmap,lmmap);
+  RCP<Epetra_Vector> sollm = rcp(new Epetra_Vector(*glmdofrowmap_));
+  LINALG::MapExtractor mapext(*mergedmap,problemrowmap_,glmdofrowmap_);
   mapext.ExtractCondVector(mergedsol,sold);
   mapext.ExtractOtherVector(mergedsol,sollm);
-  sollm->ReplaceMap(*slavemap);
+  sollm->ReplaceMap(*gsdofrowmap_);
   z_->Update(1.0,*sollm,0.0);
   
   return;
