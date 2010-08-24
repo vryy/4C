@@ -121,11 +121,6 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // print message
   if(Comm().MyPID()==0) cout << "done!" << endl;
 
-  /**********************************************************************/
-  /* Mesh initialization (for rotational invariance)                    */
-  /**********************************************************************/
-  MeshInitialization();
-
   return;
 }
 

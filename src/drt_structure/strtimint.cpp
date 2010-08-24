@@ -347,12 +347,13 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     cmtman_->GetStrategy().VisualizeGmsh(0,0);
 #endif // #ifdef MORTARGMSH3
 
-    // initialization of contact or meshting
+    // initialization of contact or meshtying
     {
       // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
       // (1) Do mortar coupling in reference configuration and
-      // perform mesh intialization for rotational invariance
+      // perform mesh initialization for rotational invariance
       cmtman_->GetStrategy().MortarCoupling(zeros_);
+      cmtman_->GetStrategy().MeshInitialization();
 
       // FOR FRICTIONAL CONTACT AND STORAGE OF MORTAR MATRICES
       // (1) Mortar coupling in reference configuration

@@ -73,8 +73,9 @@ dualquadslave3d_(false)
   // redistribution of slave and master sides)
 #ifdef MESHTYINGPAR
   pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-  pgsdofrowmap_ = rcp(new Epetra_Map(*gsdofrowmap_));
-  pgmdofrowmap_ = rcp(new Epetra_Map(*gmdofrowmap_));
+  pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+  pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+  pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
 #endif // #ifdef MESHTYINGPAR
 
 	return;
@@ -102,6 +103,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 	// (do NOT remove map of non-interface dofs after redistribution)
 	gsdofrowmap_  = Teuchos::null;
 	gmdofrowmap_  = Teuchos::null;
+	gsmdofrowmap_ = Teuchos::null;
 	glmdofrowmap_ = Teuchos::null;
 	gdisprowmap_  = Teuchos::null;
 	if (!redistributed) gndofrowmap_  = Teuchos::null;
@@ -134,9 +136,10 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }
   
+  // setup combined global slave and master dof map
   // setup global displacement dof map
-  gdisprowmap_ = LINALG::MergeMap(*gsdofrowmap_,*gmdofrowmap_,false);
-  gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_,*gdisprowmap_,false);
+  gsmdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_,*gmdofrowmap_,false);
+  gdisprowmap_  = LINALG::MergeMap(*gndofrowmap_,*gsmdofrowmap_,false);
 
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices

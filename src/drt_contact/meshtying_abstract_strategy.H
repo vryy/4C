@@ -433,11 +433,13 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
     RCP<Epetra_Map> gmdofrowmap_;          // global master dof row map (of all interfaces)
     RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map (of all interfaces)
+    RCP<Epetra_Map> gsmdofrowmap_;         // global slave and master dof row map (s+m map)
     RCP<Epetra_Map> gdisprowmap_;          // global displacement dof row map (s+m+n map)
 
     RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
     RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
     RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
+    RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
 
     RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
     RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
