@@ -1240,7 +1240,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of partitions along the edge length of the volume determining the resolution of the search grid
   IntParameter("SEARCHRES",1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
   //search interval
-  IntParameter("SEARCHINTERVAL",1,"search for nieghbours every SEARCHINTERVAL steps",&statmech);
+  IntParameter("SEARCHINTERVAL",1,"search for neighbours every SEARCHINTERVAL steps",&statmech);
+  //search probability
+  DoubleParameter("SEARCHPROBABILITY",1.0,"value determining the probability of whether to conduct a search for neighbours",&statmech);
   //Reading whether DBCs shall be applied to broken elements
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);

@@ -65,28 +65,17 @@ public:
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
 
-  //! \brief write output for Gmsh postprocessing
-  void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+	//! \brief write output for Gmsh postprocessing
+	void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
 
-  /*! \brief gmsh output in case of periodic boundary conditions
-   *  \param coord 						(in)
-   *  \param color 						(in)
-   *  \param gmshfilecontent  (in)
-   *  \param eleid 						(in)
-   *  \param crosslinkdiff		(in) determines the visualization mode (actual elements vs. crosslink molecule representations)
-   */
-  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
-
-  //! \brief gmsh output of periodic boundary box
-  void GmshOutputBoundaryBox(double color, const std::ostringstream *filename);
-
-  //! \brief gmsh output for crosslink molecule diffusion
-  void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
-
-  /*! \brief prepare visualization vectors
-   * 	\param dis        (in) discplacement
-   */
-  void GmshPrepareVisualization(const Epetra_Vector& dis);
+	/*! \brief gmsh output in case of periodic boundary conditions
+		 *  \param coord 						(in)
+		 *  \param color 						(in)
+		 *  \param gmshfilecontent  (in)
+		 *  \param eleid 						(in)
+		 *  \param crosslinkdiff		(in) determines the visualization mode (actual elements vs. crosslink molecule representations)
+		 */
+		void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
 
   //! \brief set crosslinker if two nodes are close enough and probability check is passed
   void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
@@ -135,44 +124,8 @@ public:
    */
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
-  /*! \brief writes element orientation and coordinates of fiber elements to an output file
-      \param disrow     (in) displacement in row format
-      \param filename1  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
-      \param filename2  (in) filename for the second output file (matrix containing crosslinker numbers between filaments)
-   */
-  void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2);
-
-  //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
-  bool CheckForKinkedVisual(const double& color, int eleid);
-
-  //! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
-  void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid);
-
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
-
-  /*! \brief Handles Crosslinker diffusion
-   *  \param dis             (in) latest displacement
-   *  \param disi						 (in) latest displacement increment in row map format
-   *  \param mean						 (in) mean of the normal distribution
-   *  \param standarddev     (in) standard deviation of the normal distribution
-   *  \param init						 (in) switch between methods
-   */
-  void CrosslinkerDiffusion(const Epetra_Vector& dis,
-														double mean,
-														double standarddev,
-														const double &dt);
-
-  /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
-   *  \param currentpositions			(in) column map node positions
-   *  \param LID									(in) column map node LIDs
-   *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
-  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
-																		 int crosslinkernumber, bool coupledmovement=true);
-
-  /*! \brief map crosslink molecules and filament nodes to the according volume partition
-   * 	\param currentpositions			(in) column map node positions*/
-  void PositionsToPartitions(const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -214,6 +167,58 @@ protected:
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
+
+  /*! \brief writes element orientation and coordinates of fiber elements to an output file
+			\param disrow     (in) displacement in row format
+			\param filename1  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
+			\param filename2  (in) filename for the second output file (matrix containing crosslinker numbers between filaments)
+	 */
+	void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2);
+
+	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
+	bool CheckForKinkedVisual(const double& color, int eleid);
+
+	//! \brief gmsh output of periodic boundary box
+	void GmshOutputBoundaryBox(double color, const std::ostringstream *filename);
+
+	//! \brief gmsh output for crosslink molecule diffusion
+	void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
+
+	/*! \brief prepare visualization vectors
+	 * 	\param dis        (in) discplacement
+	 */
+	void GmshPrepareVisualization(const Epetra_Vector& dis);
+
+	//! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
+	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid);
+
+	/*! \brief Handles Crosslinker diffusion
+	 *  \param dis             (in) latest displacement
+	 *  \param disi						 (in) latest displacement increment in row map format
+	 *  \param mean						 (in) mean of the normal distribution
+	 *  \param standarddev     (in) standard deviation of the normal distribution
+	 *  \param init						 (in) switch between methods
+	 */
+	void CrosslinkerDiffusion(const Epetra_Vector& dis,
+														double mean,
+														double standarddev,
+														const double &dt);
+
+	/*! \brief update positions of crosslink molecules if they constitute a crosslinker element
+	 *  \param currentpositions			(in) column map node positions
+	 *  \param LID									(in) column map node LIDs
+	 *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
+	void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
+																		 int crosslinkernumber, bool coupledmovement=true);
+
+	/*! \brief determines individually whether or not a search for neighbours of each crosslink molecule is conducted
+	 *  \param dt		(in) time step size (for seeding)
+	 */
+	void ShallWeSearch(const double& dt);
+
+	/*! \brief map crosslink molecules and filament nodes to the according volume partition
+	 * 	\param currentpositions			(in) column map node positions*/
+	void PositionsToPartitions(const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   //! \brief switch between different on and off-rates
   bool konswitch_;
@@ -290,6 +295,8 @@ protected:
 	RCP<Epetra_Vector>	numbond_;
 	// \brief a vector just for the sake of visual quality
 	RCP<Epetra_MultiVector> visualizepositions_;
+	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
+	RCP<Epetra_Vector> searchforneighbours_;
 	// \brief a vector containing  for all nodes the volume partitions they belong to
 	std::vector<std::vector<std::vector<int> > >* nodeinpartition_;
 	// \brief a vector containing neighbour nodes to crosslink molecules

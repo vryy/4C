@@ -1070,8 +1070,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 												<< coord(0, i + 1) + lambda1 * dir(0)<< "," << coord(1, i + 1) + lambda1 * dir(1) << "," << coord(2, i + 1) + lambda1 * dir(2);
 				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
 				 * interpolating these two colors between the nodes*/
-				gmshfilecontent << ")" << "{" << scientific << color << "," << color
-						<< "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
 
 				// crosslink molecules with one bond
 				if (ignoreeleid)
@@ -1249,7 +1248,6 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 
 						DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
 						LINALG::SerialDenseMatrix coord(3, 2, true);
-						//double length=0.0;
 						for (int j=0; j<coord.M(); j++)
 						{
 							int dofgid = discret_.Dof(node)[j];
@@ -1258,12 +1256,15 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 							//length += (coord(j,1)-coord(j,0))*(coord(j,1)-coord(j,0));
 						}
 
-						//cout<<"cl.length = "<<sqrt(length)<<endl;
 						double beadcolor = color;
 						// in case of periodic boundary conditions
 						if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
 						{
-							GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
+							// if a one-bonded molecule is looking for bonding partners, the color is blue, else red
+							if((*searchforneighbours_)[i]>0.9)
+								GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
+							else
+								GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, 0, true);
 							// visualization of "real" crosslink molecule positions
 							//beadcolor = 0.0; //black
 							//gmshfilebonds << "SP(" << scientific;
@@ -1272,9 +1273,14 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 						}
 						else
 						{
+							double color2;
+							if((*searchforneighbours_)[i]>0.9)
+								color2 = color;
+							else
+								color2 = 2*color;
 							gmshfilebonds << "SL(" << scientific;
 							gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-							gmshfilebonds << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+							gmshfilebonds << ")" << "{" << scientific << color2 << ","<< color2 << "};" << endl;
 							gmshfilebonds << "SP(" << scientific;
 							gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
 							gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
@@ -2215,7 +2221,7 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 }
 /*----------------------------------------------------------------------*
  | Searches and saves in variable  crosslinkerneighbours neighbours for|
- | each col node                                              cyron 07/09|
+ | each col node (OLD)                                      cyron 07/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SearchNeighbours(const std::map<int, LINALG::Matrix<3, 1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours)
 {
@@ -2495,9 +2501,13 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	 *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
 	if(discret_.Comm().MyPID()==0)
 	{
-		// map crosslink molecule and filament node positions to volume partitions every SEARCHRES timesteps
+		/* map crosslink molecule and filament node positions to volume partitions every SEARCHRES timesteps
+		 * after having individually determined whether or not a search is to be conducted for each molecule.*/
 		if(istep%statmechparams_.get<int>("SEARCHINTERVAL",1)==0 && statmechparams_.get<int>("SEARCHRES",1)>0)
+		{
+			ShallWeSearch(dt);
 			PositionsToPartitions(currentpositions);
+		}
 
 		// obtain a random order in which the crosslinkers are addressed
 		std::vector<int> order = Permutation((int)statmechparams_.get<double>("N_crosslink", 0.0));
@@ -2506,9 +2516,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		{
 			int irandom = order[i];
 
-			// skip this crosslink molecule if it already bonded with two nodes, hence constituting a crosslinker element
-			if((*numbond_)[irandom]>1.9)
+			// skip this crosslink molecule if it already bonded with two nodes or did not pass the search probability test
+			if((*searchforneighbours_)[irandom]<0.9)
 				continue;
+
 			// search for neighbour nodes
 			std::vector<int> crosslinkerinpartition(3,0);
 			for(int j=0; j<(int)crosslinkerinpartition.size(); j++)
@@ -2803,7 +2814,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 /*----------------------------------------------------------------------*
  | set crosslinkers between neighbouring nodes after probability check  |
- | (public)                                                  cyron 02/09|
+ | (OLD)   (public)                                          cyron 02/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																			const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
@@ -3324,7 +3335,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
  | delete crosslinkers listed in crosslinkerpartner_ after random check;|
  | the random check is conducted by the owner processor of the          |
  | crosslinker, respectively, and the result of that check is           |
- | communicated subsequently to all the other processors                |
+ | communicated subsequently to all the other processors   (OLD)        |
  | (private)                                                 cyron 11/09|
  *----------------------------------------------------------------------*/
 void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap)
@@ -4151,7 +4162,11 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		for (int j=0; j<visualizepositions_->NumVectors(); j++)
 			(*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
 
-	// initialize vectors with zeros
+	// initialize search flag vector with 1
+	searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
+	searchforneighbours_->PutScalar(1.0);
+
+	// initialize number of crosslink molecules per filament node with zeros
 	numcrossnodes_ = rcp(new Epetra_Vector(*(discret_.NodeColMap()), true));
 
 	// initialize vector related to volume indexing
@@ -4178,6 +4193,42 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
 		}
 	return;
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
+/*----------------------------------------------------------------------*
+ | Determines individually wether or not a search for neighbours of     |
+ | each crosslink molecule is conducted           (public) mueller 08/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::ShallWeSearch(const double& dt)
+{
+	ranlib::UniformClosed<double> UniformGen;
+
+	if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+		UniformGen.seed((unsigned int)(time_/dt));
+
+	for(int i=0; i<numbond_->MyLength(); i++)
+	{
+		switch((int)(*numbond_)[i])
+		{
+			case 0:
+				(*searchforneighbours_)[i] = 1.0;
+			break;
+			case 1:
+			{
+				if(UniformGen.random() < statmechparams_.get<double>("SEARCHPROBABILITY", 1.0))
+					(*searchforneighbours_)[i] = 1.0;
+				else
+					(*searchforneighbours_)[i] = 0.0;
+			}
+			break;
+			case 2:
+				(*searchforneighbours_)[i] = 0.0;
+			break;
+			default: continue;
+		}
+	}
+	//test cout
+	//cout<<*searchforneighbours_<<endl;
+	return;
+}
 
 /*----------------------------------------------------------------------*
  | Assign crosslink molecules and nodes to volume partitions            |
@@ -4195,15 +4246,18 @@ void StatMechManager::PositionsToPartitions(const std::map<int,LINALG::Matrix<3,
 	double pl = statmechparams_.get<double>("PeriodLength",0.0);
 	int N = statmechparams_.get<int>("SEARCHRES", 1);
 
-	// loop over node positions to map their column map LIDs to partitions
+	// loop over node positions to map their column map LIDs to partitions (if a search is to be conducted for the current LID)
 	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
-		for(int j=0; j<(int)nodeinpartition_->size(); j++)
-		{
-			int partition = (int)floor((posi->second)(j)/pl*(double)N);
-			if(partition==N)
-				partition--;
-			(*nodeinpartition_)[j][partition].push_back((int)(posi->first));
-		}
+	{
+		if((*searchforneighbours_)[(int)(posi->first)]>0.9)
+			for(int j=0; j<(int)nodeinpartition_->size(); j++)
+			{
+				int partition = (int)floor((posi->second)(j)/pl*(double)N);
+				if(partition==N)
+					partition--;
+				(*nodeinpartition_)[j][partition].push_back((int)(posi->first));
+			}
+	}
 
 	// test cout
 	/*/ loop over component
