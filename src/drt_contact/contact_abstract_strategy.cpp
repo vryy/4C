@@ -72,6 +72,16 @@ dualquadslave3d_(false)
 	// call setup method to do all the work
 	Setup();
 
+  // store interface maps with parallel distribution of underlying
+  // problem discretization (i.e. interface maps before parallel
+  // redistribution of slave and master sides)
+#ifdef CONTACTPAR
+  pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+  pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+  pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+  pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+#endif // #ifdef CONTACTPAR
+
 	return;
 }
 
@@ -106,6 +116,27 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
   
+  // make sure to remove all existing maps
+	// (do NOT remove map of non-interface dofs after redistribution)
+	gsdofrowmap_  = Teuchos::null;
+	gmdofrowmap_  = Teuchos::null;
+	gsmdofrowmap_ = Teuchos::null;
+	glmdofrowmap_ = Teuchos::null;
+	gdisprowmap_  = Teuchos::null;
+	gsnoderowmap_ = Teuchos::null;
+	gactivenodes_ = Teuchos::null;
+	gactivedofs_  = Teuchos::null;
+	gactiven_     = Teuchos::null;
+	gactivet_     = Teuchos::null;
+	if (!redistributed) gndofrowmap_= Teuchos::null;
+
+  if (friction_)
+  {
+  	gslipnodes_ = Teuchos::null;
+  	gslipdofs_  = Teuchos::null;
+  	gslipt_     = Teuchos::null;
+  }
+
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------
@@ -147,8 +178,17 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
 
   // setup global non-slave-or-master dof map
   // (this is done by splitting from the dicretization dof map)
-  gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
-  gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
+  // (no need to rebuild this map after redistribution)
+  if (!redistributed)
+  {
+    gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
+  }
+
+  // setup combined global slave and master dof map
+  // setup global displacement dof map
+  gsmdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_,*gmdofrowmap_,false);
+  gdisprowmap_  = LINALG::MergeMap(*gndofrowmap_,*gsmdofrowmap_,false);
 
   // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())

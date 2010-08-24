@@ -135,10 +135,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   /* and global matrix linstick with derivatives of stick nodes         */
   /* and global matrix linslip with derivatives of slip nodes           */
   /**********************************************************************/
-  // here and for the splitting later, we need the combined sm-rowmap
-  // (this map is NOT allowed to have an overlap !!!)
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
-
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
@@ -153,23 +149,23 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
   // FillComplete() global matrix S
-  smatrix_->Complete(*gsmdofs,*gactiven_);
+  smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
 
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
-  lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
-  linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
+  lindmatrix_->Complete(*gsmdofrowmap_,*gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_,*gmdofrowmap_);
   
   // FillComplete global Matrix linstickLM_, linstickDIS_
   RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
   RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
   linstickLM_->Complete(*gstickdofs,*gstickt);
-  linstickDIS_->Complete(*gsmdofs,*gstickt);
+  linstickDIS_->Complete(*gsmdofrowmap_,*gstickt);
 
   // FillComplete global Matrix linslipLM_ and linslipDIS_
   linslipLM_->Complete(*gslipdofs_,*gslipt_);
-  linslipDIS_->Complete(*gsmdofs,*gslipt_);
+  linslipDIS_->Complete(*gsmdofrowmap_,*gslipt_);
   
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -230,6 +226,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 
     if (fulllin)
     {
+      // transform if necessary
+#ifdef CONTACTPAR
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
       kteff->UnComplete();
       kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
       kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
@@ -255,7 +257,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#ifdef CONTACTPAR
+    // split and transform to redistributed maps
+    LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+    ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+    ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+    knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+#else
+    // only split, no need to transform
+    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#endif // #ifdef CONTACTPAR
 
     // further splits into slave part + master part
     LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -273,7 +284,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
+#ifdef CONTACTPAR
+    // split and transform to redistributed maps
+    LINALG::SplitVector(*problemrowmap_,*feff,pgsmdofrowmap_,fsm,gndofrowmap_,fn);
+    RCP<Epetra_Vector> fsmtemp = rcp(new Epetra_Vector(*gsmdofrowmap_));
+		LINALG::Export(*fsm,*fsmtemp);
+		fsm = fsmtemp;
+#else
+		// only split, no need to transform
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofrowmap_,fsm,gndofrowmap_,fn);
+#endif // #ifdef CONTACTPAR
 
     // abbreviations for slave  and master set
     int sset = gsdofrowmap_->NumGlobalElements();
@@ -283,7 +303,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+    LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
     // store some stuff for static condensation of LM
     fs_   = fs;
@@ -651,7 +671,66 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     }
 
     /********************************************************************/
-    /* (9) Global setup of kteffnew (including contact)                 */
+    /* (9) Transform the final K blocks                                 */
+    /********************************************************************/
+    // The row maps of all individual matrix blocks are transformed to
+    // the parallel layout of the underlying problem discretization.
+    // Of course, this is only necessary in the CONTACTPAR case, where
+    // the contact interfaces have been redistributed independently of
+    // the underlying problem discretization.
+
+#ifdef CONTACTPAR
+    //----------------------------------------------------------- FIRST LINE
+    // nothing to do (ndof-map independent of redistribution)
+
+    //---------------------------------------------------------- SECOND LINE
+    kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+    kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+    if (iset) kmimod = MORTAR::MatrixRowTransform(kmimod,pgmdofrowmap_);
+    if (aset) kmamod = MORTAR::MatrixRowTransform(kmamod,pgmdofrowmap_);
+
+    //----------------------------------------------------------- THIRD LINE
+    if (iset)
+    {
+    	kinmod = MORTAR::MatrixRowTransform(kinmod,pgsdofrowmap_);
+    	kimmod = MORTAR::MatrixRowTransform(kimmod,pgsdofrowmap_);
+    	kiimod = MORTAR::MatrixRowTransform(kiimod,pgsdofrowmap_);
+      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod,pgsdofrowmap_);
+    }
+
+    //---------------------------------------------------------- FOURTH LINE
+    if (aset)
+    {
+    	if (!fulllin) nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
+    	if (!fulllin) nmhata   = MORTAR::MatrixRowTransform(nmhata,pgsdofrowmap_);
+    	if (fulllin)  smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
+    }
+
+    //----------------------------------------------------------- FIFTH LINE
+    if (stickset)
+    {
+    	kstnmod = MORTAR::MatrixRowTransform(kstnmod,pgsdofrowmap_);
+    	kstmmod = MORTAR::MatrixRowTransform(kstmmod,pgsdofrowmap_);
+    	if (iset) kstimod = MORTAR::MatrixRowTransform(kstimod,pgsdofrowmap_);
+    	if (slipset) kstslmod = MORTAR::MatrixRowTransform(kstslmod,pgsdofrowmap_);
+    	kststmod = MORTAR::MatrixRowTransform(kststmod,pgsdofrowmap_);
+    	linstickDIS_ = MORTAR::MatrixRowTransform(linstickDIS_,pgsdofrowmap_);
+    }
+
+    //----------------------------------------------------------- SIXTH LINE
+    if (slipset)
+    {
+    	kslnmod = MORTAR::MatrixRowTransform(kslnmod,pgsdofrowmap_);
+    	kslmmod = MORTAR::MatrixRowTransform(kslmmod,pgsdofrowmap_);
+    	if (iset) kslimod = MORTAR::MatrixRowTransform(kslimod,pgsdofrowmap_);
+    	if (stickset) kslstmod = MORTAR::MatrixRowTransform(kslstmod,pgsdofrowmap_);
+    	kslslmod = MORTAR::MatrixRowTransform(kslslmod,pgsdofrowmap_);
+    	linslipDIS_ = MORTAR::MatrixRowTransform(linslipDIS_,pgsdofrowmap_);
+    }
+#endif // #ifdef CONTACTPAR
+
+    /********************************************************************/
+    /* (10) Global setup of kteffnew (including contact)                */
     /********************************************************************/
 
     RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
@@ -680,17 +759,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     //-------------------------------------------------------- FOURTH LINE
     // add matrices n and nmhata to kteffnew
     // this is only done for the "NO full linearization" case
-    if (!fulllin)
-    {
-      if (aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-      if (aset) kteffnew->Add(*nmhata,false,1.0,1.0);
-    }
+    if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
+    if (!fulllin && aset) kteffnew->Add(*nmhata,false,1.0,1.0);
 
     // add full linearization terms to kteffnew
-    if (fulllin)
-    {
-     if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
-    }
+    if (fulllin && aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
 
     //--------------------------------------------------------- FIFTH LINE
     // add st submatrices to kteffnew
@@ -718,7 +791,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     kteffnew->Complete();
 
     /********************************************************************/
-    /* (10) Global setup of feffnew (including contact)                 */
+    /* (11) Global setup of feffnew (including contact)                 */
     /********************************************************************/
 
     //--------------------------------------------------------- FIRST LINE
@@ -814,6 +887,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       dmatrix_    = temp2;
     }
 
+    // transform if necessary
+#ifdef CONTACTPAR
+    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
     // add contact stiffness
     kteff->UnComplete();
     kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
@@ -859,10 +938,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
 
       deriv1->Add(*linstickLM_,false,1.0,1.0);
-      deriv1->Complete(*gsmdofs,*gactivet_);
+      deriv1->Complete(*gsmdofrowmap_,*gactivet_);
 
       deriv2->Add(*linstickDIS_,false,1.0,1.0);
-      deriv2->Complete(*gsmdofs,*gactivet_);
+      deriv2->Complete(*gsmdofrowmap_,*gactivet_);
 
       cout << *deriv1 << endl;
       cout << *deriv2 << endl;
@@ -883,10 +962,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       RCP<LINALG::SparseMatrix> deriv2 = rcp(new LINALG::SparseMatrix(*gactivet_,81));
   
       deriv1->Add(*linslipLM_,false,1.0,1.0);
-      deriv1->Complete(*gsmdofs,*gslipt_);
+      deriv1->Complete(*gsmdofrowmap_,*gslipt_);
   
       deriv2->Add(*linslipDIS_,false,1.0,1.0);
-      deriv2->Complete(*gsmdofs,*gslipt_);
+      deriv2->Complete(*gsmdofrowmap_,*gslipt_);
   
       cout << *deriv1 << endl;
       cout << *deriv2 << endl;
@@ -932,10 +1011,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix p with tangent derivatives of active nodes       */
   /**********************************************************************/
-  // here and for the splitting later, we need the combined sm-rowmap
-  // (this map is NOT allowed to have an overlap !!!)
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
-
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
@@ -949,18 +1024,18 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
   // FillComplete() global matrix S
-  smatrix_->Complete(*gsmdofs,*gactiven_);
+  smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
 
   // FillComplete() global matrix P
   // (actually gsdofrowmap_ is in general sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
-  pmatrix_->Complete(*gsmdofs,*gactivet_);
+  pmatrix_->Complete(*gsmdofrowmap_,*gactivet_);
 
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
   // but in the edge node modification case, master entries occur!)
-  lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
-  linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
+  lindmatrix_->Complete(*gsmdofrowmap_,*gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_,*gmdofrowmap_);
 
   //----------------------------------------------------------------------
 	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -1024,6 +1099,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
 		if (fulllin)
 		{
+      // transform if necessary
+#ifdef CONTACTPAR
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
 			kteff->UnComplete();
 			kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
 			kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
@@ -1049,7 +1130,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
 		// split into slave/master part + structure part
 		RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-		LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#ifdef CONTACTPAR
+		// split and transform to redistributed maps
+    LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+    ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+    ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+    knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+#else
+    // only split, no need to transform
+    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#endif // #ifdef CONTACTPAR
 
 		// further splits into slave part + master part
 		LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -1067,7 +1157,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		RCP<Epetra_Vector> fsm;
 
 		// do the vector splitting smn -> sm+n
-		LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
+#ifdef CONTACTPAR
+		// split and transform to redistributed maps
+    LINALG::SplitVector(*problemrowmap_,*feff,pgsmdofrowmap_,fsm,gndofrowmap_,fn);
+    RCP<Epetra_Vector> fsmtemp = rcp(new Epetra_Vector(*gsmdofrowmap_));
+		LINALG::Export(*fsm,*fsmtemp);
+		fsm = fsmtemp;
+#else
+		// only split, no need to transform
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofrowmap_,fsm,gndofrowmap_,fn);
+#endif // #ifdef CONTACTPAR
 
 		// abbreviations for slave  and master set
 		int sset = gsdofrowmap_->NumGlobalElements();
@@ -1078,7 +1177,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
 		// do the vector splitting sm -> s+m
-		LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+		LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
 		// store some stuff for static condensation of LM
 		fs_   = fs;
@@ -1173,13 +1272,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		// scaling of invd and dai
 		invda->Scale(1/(1-alphaf_));
 		dai->Scale(1-alphaf_);
-
-		// we want to split smatrix and pmatrix
-		RCP<LINALG::SparseMatrix> smatrixm, smatrixs, pmatrixm, pmatrixs;
-
-		// do the splitting
-		LINALG::SplitMatrix2x2(smatrix_,gactiven_,tempmap,gmdofrowmap_,gsdofrowmap_,smatrixm,smatrixs,tempmtx1,tempmtx2);
-		LINALG::SplitMatrix2x2(pmatrix_,gactivet_,tempmap,gmdofrowmap_,gsdofrowmap_,pmatrixm,pmatrixs,tempmtx1,tempmtx2);
 
 		/**********************************************************************/
 		/* (7) Build the final K blocks                                       */
@@ -1278,13 +1370,18 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		}
 
 		//---------------------------------------------------------- FOURTH LINE
-		// n*mhata: do the multiplication
-		RCP<LINALG::SparseMatrix> nmhata;
-		if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
-
 		// nmatrix: nothing to do
 
-		// smatrix: nothing to do
+		// smatrix: split into slave and master parts
+		RCP<LINALG::SparseMatrix> smatrixm, smatrixs, pmatrixm, pmatrixs;
+		LINALG::SplitMatrix2x2(smatrix_,gactiven_,tempmap,gmdofrowmap_,gsdofrowmap_,smatrixm,smatrixs,tempmtx1,tempmtx2);
+		LINALG::SplitMatrix2x2(pmatrix_,gactivet_,tempmap,gmdofrowmap_,gsdofrowmap_,pmatrixm,pmatrixs,tempmtx1,tempmtx2);
+		RCP<LINALG::SparseMatrix> smatrixmadd, pmatrixmadd;
+		if (fulllin && aset)
+		{
+		  smatrixmadd	= LINALG::MLMultiply(*smatrixs,false,*mhatmatrix_,false,false,false,true);
+		  pmatrixmadd = LINALG::MLMultiply(*pmatrixs,false,*mhatmatrix_,false,false,false,true);
+		}
 
 		//----------------------------------------------------------- FIFTH LINE
 		// kan: multiply tmatrix with invda and kan
@@ -1412,8 +1509,64 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			tinvda->Multiply(false,*fa,*famod);
 		}
 
+    /********************************************************************/
+    /* (9) Transform the final K blocks                                 */
+    /********************************************************************/
+    // The row maps of all individual matrix blocks are transformed to
+    // the parallel layout of the underlying problem discretization.
+    // Of course, this is only necessary in the CONTACTPAR case, where
+    // the contact interfaces have been redistributed independently of
+    // the underlying problem discretization.
+
+#ifdef CONTACTPAR
+    //----------------------------------------------------------- FIRST LINE
+		// nothing to do (ndof-map independent of redistribution)
+
+    //---------------------------------------------------------- SECOND LINE
+    kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+    kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+    kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
+
+    //----------------------------------------------------------- THIRD LINE
+    if (iset)
+    {
+    	kinmod = MORTAR::MatrixRowTransform(kinmod,pgsdofrowmap_);
+    	kimmod = MORTAR::MatrixRowTransform(kimmod,pgsdofrowmap_);
+    	kiimod = MORTAR::MatrixRowTransform(kiimod,pgsdofrowmap_);
+      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod,pgsdofrowmap_);
+    }
+
+    //---------------------------------------------------------- FOURTH LINE
+		if (!fulllin && aset)
+			nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
+
+		if (fulllin && aset)
+		{
+			smatrixs    = MORTAR::MatrixRowTransform(smatrixs,pgsdofrowmap_);
+			smatrixm    = MORTAR::MatrixRowTransform(smatrixm,pgsdofrowmap_);
+			smatrixmadd = MORTAR::MatrixRowTransform(smatrixmadd,pgsdofrowmap_);
+		}
+
+    //----------------------------------------------------------- FIFTH LINE
+    if (aset)
+    {
+    	kanmod = MORTAR::MatrixRowTransform(kanmod,pgsdofrowmap_);
+			kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
+			kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
+			if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
+    }
+
+		if (fulllin && aset)
+		{
+			pmatrixs    = MORTAR::MatrixRowTransform(pmatrixs,pgsdofrowmap_);
+			pmatrixm    = MORTAR::MatrixRowTransform(pmatrixm,pgsdofrowmap_);
+			pmatrixmadd = MORTAR::MatrixRowTransform(pmatrixmadd,pgsdofrowmap_);
+		}
+
+#endif // #ifdef CONTACTPAR
+
 		/**********************************************************************/
-		/* (9) Global setup of kteffnew (including contact)                   */
+		/* (10) Global setup of kteffnew (including contact)                  */
 		/**********************************************************************/
 
 		RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
@@ -1439,26 +1592,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		if (iset && aset) kteffnew->Add(*kiamod,false,1.0,1.0);
 
     //---------------------------------------------------------- FOURTH LINE
-		// add matrices n and nmhata to kteffnew
+		// add nmatrix to kteffnew
 		// this is only done for the "NO full linearization" case
-		if (!fulllin)
-		{
-			if (aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-			if (aset) kteffnew->Add(*nmhata,false,1.0,1.0);
-		}
+		if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
 
 		// add full linearization terms to kteffnew
 		if (fulllin && aset)
 		{
 			kteffnew->Add(*smatrixm,false,1.0,1.0);
-			RCP<LINALG::SparseMatrix> smatrixmadd = LINALG::MLMultiply(*smatrixs,false,*mhatmatrix_,false,false,false,true);
 			kteffnew->Add(*smatrixmadd,false,1.0,1.0);
 			kteffnew->Add(*smatrixs,false,1.0,1.0);
-
-			kteffnew->Add(*pmatrixm,false,-1.0,1.0);
-			RCP<LINALG::SparseMatrix> pmatrixmadd = LINALG::MLMultiply(*pmatrixs,false,*mhatmatrix_,false,false,false,true);
-			kteffnew->Add(*pmatrixmadd,false,-1.0,1.0);
-			kteffnew->Add(*pmatrixs,false,-1.0,1.0);
 		}
 
 		//----------------------------------------------------------- FIFTH LINE
@@ -1468,11 +1611,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 		if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
 		if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
 
+		// add full linearization terms to kteffnew
+		if (fulllin && aset)
+		{
+			kteffnew->Add(*pmatrixm,false,-1.0,1.0);
+			kteffnew->Add(*pmatrixmadd,false,-1.0,1.0);
+			kteffnew->Add(*pmatrixs,false,-1.0,1.0);
+		}
+
 		// FillComplete kteffnew (square)
 		kteffnew->Complete();
 
 		/**********************************************************************/
-		/* (10) Global setup of kteffnew (including contact)                  */
+		/* (11) Global setup of feffnew (including contact)                   */
 		/**********************************************************************/
 
 		//----------------------------------------------------------- FIRST LINE
@@ -1551,6 +1702,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     if (fulllin)
     {
+      // transform if necessary
+#ifdef CONTACTPAR
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
       kteff->UnComplete();
       kteff->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
       kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
@@ -1576,7 +1733,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#ifdef CONTACTPAR
+    // split and transform to redistributed maps
+    LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+    ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+    ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+    knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+#else
+    // only split, no need to transform
+    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+#endif // #ifdef CONTACTPAR
 
     // further splits into slave part + master part
     LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -1594,7 +1760,16 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     RCP<Epetra_Vector> fsm;
 
     // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofs,fsm,gndofrowmap_,fn);
+#ifdef CONTACTPAR
+    // split and transform to redistributed maps
+    LINALG::SplitVector(*problemrowmap_,*feff,pgsmdofrowmap_,fsm,gndofrowmap_,fn);
+    RCP<Epetra_Vector> fsmtemp = rcp(new Epetra_Vector(*gsmdofrowmap_));
+		LINALG::Export(*fsm,*fsmtemp);
+		fsm = fsmtemp;
+#else
+		// only split, no need to transform
+    LINALG::SplitVector(*problemrowmap_,*feff,gsmdofrowmap_,fsm,gndofrowmap_,fn);
+#endif // #ifdef CONTACTPAR
 
     // abbreviations for slave  and master set
     int sset = gsdofrowmap_->NumGlobalElements();
@@ -1605,7 +1780,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
     // do the vector splitting sm -> s+m
-    LINALG::SplitVector(*gsmdofs,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+    LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
     // store some stuff for static condensation of LM
     fs_   = fs;
@@ -1915,8 +2090,55 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 			tinvda->Multiply(false,*fa,*famod);
 		}
 
+    /********************************************************************/
+    /* (9) Transform the final K blocks                                 */
+    /********************************************************************/
+    // The row maps of all individual matrix blocks are transformed to
+    // the parallel layout of the underlying problem discretization.
+    // Of course, this is only necessary in the CONTACTPAR case, where
+    // the contact interfaces have been redistributed independently of
+    // the underlying problem discretization.
+
+#ifdef CONTACTPAR
+    //----------------------------------------------------------- FIRST LINE
+    // nothing to do (ndof-map independent of redistribution)
+
+    //---------------------------------------------------------- SECOND LINE
+    kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+    kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+    if (iset) kmimod = MORTAR::MatrixRowTransform(kmimod,pgmdofrowmap_);
+    if (aset) kmamod = MORTAR::MatrixRowTransform(kmamod,pgmdofrowmap_);
+
+    //----------------------------------------------------------- THIRD LINE
+    if (iset)
+    {
+    	kinmod = MORTAR::MatrixRowTransform(kinmod,pgsdofrowmap_);
+    	kimmod = MORTAR::MatrixRowTransform(kimmod,pgsdofrowmap_);
+    	kiimod = MORTAR::MatrixRowTransform(kiimod,pgsdofrowmap_);
+      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod,pgsdofrowmap_);
+    }
+
+    //---------------------------------------------------------- FOURTH LINE
+    if (aset)
+    {
+    	if (!fulllin) nmatrix_ = MORTAR::MatrixRowTransform(nmatrix_,pgsdofrowmap_);
+    	if (!fulllin) nmhata   = MORTAR::MatrixRowTransform(nmhata,pgsdofrowmap_);
+    	if (fulllin)  smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
+    }
+
+    //----------------------------------------------------------- FIFTH LINE
+    if (aset)
+    {
+    	kanmod = MORTAR::MatrixRowTransform(kanmod,pgsdofrowmap_);
+			kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
+			kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
+			if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
+			if (fulllin) pmatrix_ = MORTAR::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
+    }
+#endif // #ifdef CONTACTPAR
+
     /**********************************************************************/
-    /* (9) Global setup of kteffnew (including contact)                   */
+    /* (10) Global setup of kteffnew (including contact)                  */
     /**********************************************************************/
 
     RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
@@ -1945,18 +2167,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     //---------------------------------------------------------- FOURTH LINE
     // add matrices n and nmhata to kteffnew
     // this is only done for the "NO full linearization" case
-    if (!fulllin)
-    {
-      if (aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
-      if (aset) kteffnew->Add(*nmhata,false,1.0,1.0);
-    }
+    if (!fulllin && aset) kteffnew->Add(*nmatrix_,false,-1.0,1.0);
+    if (!fulllin && aset) kteffnew->Add(*nmhata,false,1.0,1.0);
 
     // add full linearization terms to kteffnew
-    if (fulllin)
-    {
-     if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
-     if (aset) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
-    }
+    if (fulllin && aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
 
     //----------------------------------------------------------- FIFTH LINE
     // add a submatrices to kteffnew
@@ -1965,11 +2180,14 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
     if (aset && iset) kteffnew->Add(*kaimod,false,1.0,1.0);
     if (aset) kteffnew->Add(*kaamod,false,1.0,1.0);
 
+    // add full linearization terms to kteffnew
+    if (fulllin && aset) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
+
     // FillComplete kteffnew (square)
     kteffnew->Complete();
 
     /**********************************************************************/
-    /* (10) Global setup of feffnew (including contact)                   */
+    /* (11) Global setup of feffnew (including contact)                   */
     /**********************************************************************/
 
     //----------------------------------------------------------- FIRST LINE
@@ -2040,6 +2258,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
   		dmatrix_    = temp2;
   	}
+
+    // transform if necessary
+#ifdef CONTACTPAR
+    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
 
     // add contact stiffness
     kteff->UnComplete();
@@ -2156,22 +2380,18 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // get system type
   INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
     
-  // some pointers and variables
-  RCP<LINALG::SparseMatrix> stiffmt   = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
-  RCP<Epetra_Map>           dispmap   = problemrowmap_;
-  RCP<Epetra_Map>           slavemap  = gsdofrowmap_;
-  RCP<Epetra_Map>           mastermap = gmdofrowmap_;
-  RCP<Epetra_Map>           lmmap     = glmdofrowmap_;
+  // the standard stiffness matrix
+  RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
       
   // initialize merged system (matrix, rhs, sol)
-  RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(dispmap,lmmap,false); 
+  RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(problemrowmap_,glmdofrowmap_,false);
   RCP<LINALG::SparseMatrix> mergedmt    = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
   RCP<Epetra_Vector>        mergedrhs   = LINALG::CreateVector(*mergedmap);
   RCP<Epetra_Vector>        mergedsol   = LINALG::CreateVector(*mergedmap);
   RCP<Epetra_Vector>        mergedzeros = LINALG::CreateVector(*mergedmap);
   
-  // initialite constraint r.h.s. (stll with wrong map)
-  RCP<Epetra_Vector> constrrhs = rcp(new Epetra_Vector(*slavemap));
+  // initialize constraint r.h.s. (still with wrong map)
+  RCP<Epetra_Vector> constrrhs = rcp(new Epetra_Vector(*gsdofrowmap_));
   
   // initialize transformed constraint matrices
   RCP<LINALG::SparseMatrix> trkdz, trkzd, trkzz;
@@ -2183,38 +2403,50 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   if (!friction_)
   {
     // build constraint matrix kdz
-    RCP<LINALG::SparseMatrix> kdz = rcp(new LINALG::SparseMatrix(*dispmap,100,false,true));
+    RCP<LINALG::SparseMatrix> kdz = rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
     kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
-    kdz->Complete(*slavemap,*dispmap);
+    kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
    
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(kdz,lmmap);
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
+
+		// transform parallel row distribution of constraint matrix kdz
+		// (only necessary in the CONTACTPAR case)
+#ifdef CONTACTPAR
+    trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
+#endif // #ifdef CONTACTPAR
 
     // build constraint matrix kzd
-    RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
+    RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
     if (gactivet_->NumGlobalElements()) kzd->Add(*pmatrix_,false,1.0,1.0);
-    kzd->Complete(*dispmap,*slavemap);
+    kzd->Complete(*gdisprowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,lmmap);
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,glmdofrowmap_);
+
+		// transform parallel column distribution of constraint matrix kzd
+		// (only necessary in the CONTACTPAR case)
+#ifdef CONTACTPAR
+    trkzd = MORTAR::MatrixColTransform(trkzd,problemrowmap_);
+#endif // #ifdef CONTACTPAR
 
     // build unity matrix for inactive dofs
-    RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
+    RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
     RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gidofs));
     ones->PutScalar(1.0);
     RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
     
     // build constraint matrix kzz
-    RCP<LINALG::SparseMatrix> kzz = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
+    RCP<LINALG::SparseMatrix> kzz = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
     if (gactivet_->NumGlobalElements()) kzz->Add(*tmatrix_,false,1.0,1.0);
-    kzz->Complete(*slavemap,*slavemap);
+    kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,lmmap,lmmap);
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
     
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
@@ -2260,12 +2492,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
       LINALG::Export(*g_,*gact);
       gact->ReplaceMap(*gactiven_);
     }
-    RCP<Epetra_Vector> gactexp = rcp(new Epetra_Vector(*slavemap));
+    RCP<Epetra_Vector> gactexp = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*gact,*gactexp);
     
     // build constraint rhs
     constrrhs->Update(-1.0,*gactexp,1.0);
-    constrrhs->ReplaceMap(*lmmap);
+    constrrhs->ReplaceMap(*glmdofrowmap_);
   }
   
   //**********************************************************************
@@ -2278,40 +2510,52 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
     
     // build constraint matrix kdz
-    RCP<LINALG::SparseMatrix> kdz = rcp(new LINALG::SparseMatrix(*dispmap,100,false,true));
+    RCP<LINALG::SparseMatrix> kdz = rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
     kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
-    kdz->Complete(*slavemap,*dispmap);
+    kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(kdz,lmmap);
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
    
+		// transform parallel row distribution of constraint matrix kdz
+		// (only necessary in the CONTACTPAR case)
+#ifdef CONTACTPAR
+    trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
+#endif // #ifdef CONTACTPAR
+
     // build constraint matrix kzd
-    RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
+    RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
     if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_,false,1.0,1.0);
     if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
-    kzd->Complete(*dispmap,*slavemap);
+    kzd->Complete(*gdisprowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,lmmap);
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,glmdofrowmap_);
+
+		// transform parallel column distribution of constraint matrix kzd
+		// (only necessary in the CONTACTPAR case)
+#ifdef CONTACTPAR
+    trkzd = MORTAR::MatrixColTransform(trkzd,problemrowmap_);
+#endif // #ifdef CONTACTPAR
 
     // build unity matrix for inactive dofs
-    RCP<Epetra_Map> gidofs = LINALG::SplitMap(*slavemap,*gactivedofs_);
+    RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
     RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gidofs));
     ones->PutScalar(1.0);
     RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
     
     // build constraint matrix kzz
-    RCP<LINALG::SparseMatrix> kzz = rcp(new LINALG::SparseMatrix(*slavemap,100,false,true));
+    RCP<LINALG::SparseMatrix> kzz = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
     if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
     if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
-    kzz->Complete(*slavemap,*slavemap);
+    kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,lmmap,lmmap);
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
 
     // remove contact force terms again
     // (solve directly for z_ and not for increment of z_)
@@ -2357,20 +2601,20 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
       LINALG::Export(*g_,*gact);
       gact->ReplaceMap(*gactiven_);
     }
-    RCP<Epetra_Vector> gactexp = rcp(new Epetra_Vector(*slavemap));
+    RCP<Epetra_Vector> gactexp = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*gact,*gactexp);
     
     // export stick and slip r.h.s.
-    RCP<Epetra_Vector> stickexp = rcp(new Epetra_Vector(*slavemap));
+    RCP<Epetra_Vector> stickexp = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*linstickRHS_,*stickexp);
-    RCP<Epetra_Vector> slipexp = rcp(new Epetra_Vector(*slavemap));
+    RCP<Epetra_Vector> slipexp = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*linslipRHS_,*slipexp);
     
     // build constraint rhs
     constrrhs->Update(-1.0,*gactexp,1.0);
     constrrhs->Update(1.0,*stickexp,1.0);
     constrrhs->Update(1.0,*slipexp,1.0);
-    constrrhs->ReplaceMap(*lmmap);
+    constrrhs->ReplaceMap(*glmdofrowmap_);
   }
 
   //**********************************************************************
@@ -2412,14 +2656,14 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   	dserror("ERROR: Simple(r) not yet tested for mortar contact!");
 
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
-    RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*dispmap,true));
+    RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*problemrowmap_,true));
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
     LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
     trkdz->ApplyDirichlet(dirichtoggle,false);
     
     // row map (equals domain map) extractor
-    LINALG::MapExtractor rowmapext(*mergedmap,lmmap,dispmap);
-    LINALG::MapExtractor dommapext(*mergedmap,lmmap,dispmap);
+    LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,problemrowmap_);
+    LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,problemrowmap_);
 
     // make solver SIMPLER-ready
     solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
@@ -2462,11 +2706,11 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
-  RCP<Epetra_Vector> sollm = rcp(new Epetra_Vector(*lmmap));
-  LINALG::MapExtractor mapext(*mergedmap,dispmap,lmmap);
+  RCP<Epetra_Vector> sollm = rcp(new Epetra_Vector(*glmdofrowmap_));
+  LINALG::MapExtractor mapext(*mergedmap,problemrowmap_,glmdofrowmap_);
   mapext.ExtractCondVector(mergedsol,sold);
   mapext.ExtractOtherVector(mergedsol,sollm);
-  sollm->ReplaceMap(*slavemap);
+  sollm->ReplaceMap(*gsdofrowmap_);
 
   // for self contact, slave and master sets may have changed,
 	// thus we have to reinitialize the LM vector map

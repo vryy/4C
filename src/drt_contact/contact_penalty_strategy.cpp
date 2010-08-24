@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -229,10 +230,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // meshtyong stiffness entries, we have to uncomplete it
   kteff->UnComplete();
 
-  // we need the combined sm rowmap
-  // (this map is NOT allowed to have an overlap !!!)
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_, gmdofrowmap_, false);
-
+  // assemble contact quantities on all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // assemble global lagrangian multiplier vector
@@ -244,9 +242,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   }
 
   // FillComplete() global matrices LinD, LinM, LinZ
-  lindmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
-  linmmatrix_->Complete(*gsmdofs, *gmdofrowmap_);
-  linzmatrix_->Complete(*gsmdofs, *gsdofrowmap_);
+  lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
+  linzmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -296,7 +294,13 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // involving contributions of derivatives of D and M:
   //  Kc,1 = delta[ 0 -M(transpose) D] * LM
 
-  // these calculations are readily done and incorporated into linD and linM !
+  // transform if necessary
+#ifdef CONTACTPAR
+  lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+  linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
+  // add to kteff
   kteff->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
   kteff->Add(*linmmatrix_, false, 1.0-alphaf_, 1.0);
 
@@ -309,6 +313,12 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // multiply Mortar matrices D and M with LinZ
   RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
   RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
+
+  // transform if necessary
+#ifdef CONTACTPAR
+  dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+  mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
 
   // add to kteff
   kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
@@ -432,11 +442,21 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // meshtying stiffness entries, we have to uncomplete it
   kteff->UnComplete();
 
+  // remove contact stiffness #1 from kteff
   kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
 
+  // multiply Mortar matrices D and M with LinZ
   RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false,false,false,true);
   RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
+
+  // transform if necessary
+#ifdef CONTACTPAR
+  dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+  mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+#endif // #ifdef CONTACTPAR
+
+  // remove contact stiffness #2 from kteff
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
   kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
 

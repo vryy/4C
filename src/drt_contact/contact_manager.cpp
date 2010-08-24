@@ -364,37 +364,81 @@ discret_(discret)
     //-------------------- finalize the contact interface construction
     interface->FillComplete(maxdof);
 
-    //---------------------------------------- create binary search tree
-    interface->CreateSearchTree();
-
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if(Comm().MyPID()==0) cout << "done!" << endl;
 
-  // create the solver strategy object
-  // and pass all necessary data to it
-  if(Comm().MyPID()==0)
-  {
-    cout << "Building contact strategy object............";
-    fflush(stdout);
-  }
-  INPAR::CONTACT::SolvingStrategy stype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
-  if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
-  else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
-  else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
-  else
-    dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) cout << "done!" << endl;
-  // **** initialization of row/column maps moved to AbstractStrategy **** //
-  // since the manager does not operate over nodes, elements, dofs anymore
-  // ********************************************************************* //
+  //**********************************************************************
+	// create the solver strategy object
+	// and pass all necessary data to it
+	if(Comm().MyPID()==0)
+	{
+		cout << "Building contact strategy object............";
+		fflush(stdout);
+	}
+	INPAR::CONTACT::SolvingStrategy stype =
+			Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
+	if (stype == INPAR::CONTACT::solution_lagmult)
+		strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
+	else if (stype == INPAR::CONTACT::solution_penalty)
+		strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
+	else if (stype == INPAR::CONTACT::solution_auglag)
+		strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf));
+	else
+		dserror("Unrecognized strategy");
+	if(Comm().MyPID()==0) cout << "done!" << endl;
+	//**********************************************************************
 
-  // print parallel distribution of interface discretization
-  for (int i=0; i<(int)interfaces.size();++i)
-  	interfaces[i]->PrintParallelDistribution(i+1);
+	// time measurement
+	vector<double> times((int)interfaces.size());
+
+	// do some more stuff with interfaces
+	for (int i=0; i<(int)interfaces.size();++i)
+	{
+		// print parallel distribution
+		interfaces[i]->PrintParallelDistribution(i+1);
+
+		//---------------------------------------
+		// PARALLEL REDISTRIBUTION OF INTERFACES
+		//---------------------------------------
+#ifdef CONTACTPAR
+		// time measurement
+		Comm().Barrier();
+		const double t_start = Teuchos::Time::wallTime();
+
+		// redistribute optimally among all procs
+		interfaces[i]->Redistribute();
+
+		// call fill complete again
+		interfaces[i]->FillComplete(maxdof);
+
+		// print parallel distribution again
+		interfaces[i]->PrintParallelDistribution(i+1);
+
+		// time measurement
+		Comm().Barrier();
+		times[i] = Teuchos::Time::wallTime()-t_start;
+#endif // #ifdef CONTACTPAR
+		//---------------------------------------
+
+		// create binary search tree
+		interfaces[i]->CreateSearchTree();
+	}
+
+	// re-setup strategy object (with flag redistributed=TRUE)
+#ifdef CONTACTPAR
+	// time measurement
+	Comm().Barrier();
+	const double t_start = Teuchos::Time::wallTime();
+
+	// re-setup strategy object
+	strategy_->Setup(true);
+
+	// time measurement
+	Comm().Barrier();
+	double t_sum = Teuchos::Time::wallTime()-t_start;
+	for (int i=0; i<(int)interfaces.size();++i) t_sum += times[i];
+	if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+#endif // #ifdef CONTACTPAR
 
 	// print parameter list to screen
 	if (Comm().MyPID()==0)
