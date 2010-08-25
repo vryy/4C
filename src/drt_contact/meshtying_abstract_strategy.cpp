@@ -71,12 +71,13 @@ dualquadslave3d_(false)
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
   // redistribution of slave and master sides)
-#ifdef MESHTYINGPAR
-  pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-  pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
-  pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
-  pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
-#endif // #ifdef MESHTYINGPAR
+  if (ParRedist())
+  {
+		pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+		pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+		pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+		pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+  }
 
 	return;
 }
@@ -287,45 +288,46 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // Step 4: re-setup slave dof row map with parallel distribution of
   // underlying problem discretization (i.e. slave dof row maps before
   // parallel redistribution) -> introduce restriction!
-#ifdef MESHTYINGPAR
-  // map data to be filled
-  vector<int> data;
-
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  if (ParRedist())
   {
-  	// loop over all slave nodes on the current interface
-  	for (int j=0; j<interface_[i]->SlaveFullNodes()->NumMyElements(); ++j)
-  	{
-  		// get global ID of current node and node itself
-			int gid = interface_[i]->SlaveFullNodes()->GID(j);
-			DRT::Node* node = interface_[i]->Discret().gNode(gid);
-			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-			MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-			int numdof = mtnode->NumDof();
+		// map data to be filled
+		vector<int> data;
 
-			// get out of here if not tied
-			// (this is so simple here because of fully overlapping map and
-			// the fact that tying info is fully overlapping, too)
-			if (!mtnode->IsTiedSlave()) continue;
+		// loop over all interfaces
+		for (int i=0; i<(int)interface_.size(); ++i)
+		{
+			// loop over all slave nodes on the current interface
+			for (int j=0; j<interface_[i]->SlaveFullNodes()->NumMyElements(); ++j)
+			{
+				// get global ID of current node and node itself
+				int gid = interface_[i]->SlaveFullNodes()->GID(j);
+				DRT::Node* node = interface_[i]->Discret().gNode(gid);
+				if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+				MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+				int numdof = mtnode->NumDof();
 
-			// get all procs except owner out of here
-			vector<int> found(numdof);
-			for (int k=0;k<numdof;++k) found[k] = pgsdofrowmap_->LID(mtnode->Dofs()[k]);
-			if (found[0]<0) continue;
+				// get out of here if not tied
+				// (this is so simple here because of fully overlapping map and
+				// the fact that tying info is fully overlapping, too)
+				if (!mtnode->IsTiedSlave()) continue;
 
-			// check consistency
-			for (int k=0;k<numdof;++k)
-				if (found[k]<0) dserror("ERROR: Ownership inconsistency");
+				// get all procs except owner out of here
+				vector<int> found(numdof);
+				for (int k=0;k<numdof;++k) found[k] = pgsdofrowmap_->LID(mtnode->Dofs()[k]);
+				if (found[0]<0) continue;
 
-			// add dof ids to data
-			for (int k=0;k<numdof;++k) data.push_back(mtnode->Dofs()[k]);
-  	}
+				// check consistency
+				for (int k=0;k<numdof;++k)
+					if (found[k]<0) dserror("ERROR: Ownership inconsistency");
+
+				// add dof ids to data
+				for (int k=0;k<numdof;++k) data.push_back(mtnode->Dofs()[k]);
+			}
+		}
+
+		// re-setup old slave dof row map (with restriction now)
+		pgsdofrowmap_ = rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
   }
-
-  // re-setup old slave dof row map (with restriction now)
-  pgsdofrowmap_ = rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
-#endif // #ifdef MESHTYINGPAR
 
 	return;
 }

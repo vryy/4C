@@ -106,12 +106,13 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   
   // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)
-#ifdef MESHTYINGPAR
-  mtm_ = MORTAR::MatrixRowTransform(mtm_,pgmdofrowmap_);
-	mtd_ = MORTAR::MatrixRowTransform(mtd_,pgmdofrowmap_);
-	dtm_ = MORTAR::MatrixRowTransform(dtm_,pgsdofrowmap_);
-	dtd_ = MORTAR::MatrixRowTransform(dtd_,pgsdofrowmap_);
-#endif // #ifdef MESHTYINGPAR
+  if (ParRedist())
+  {
+		mtm_ = MORTAR::MatrixRowTransform(mtm_,pgmdofrowmap_);
+		mtd_ = MORTAR::MatrixRowTransform(mtd_,pgmdofrowmap_);
+		dtm_ = MORTAR::MatrixRowTransform(dtm_,pgsdofrowmap_);
+		dtd_ = MORTAR::MatrixRowTransform(dtd_,pgsdofrowmap_);
+  }
 
   // time measurement
   Comm().Barrier();

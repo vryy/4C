@@ -309,7 +309,10 @@ discret_(discret)
   if(Comm().MyPID()==0) cout << "done!" << endl;
   //**********************************************************************
 
-  // time measurement
+  // check if we want to apply parallel redistribution
+  bool parredist = GetStrategy().ParRedist();
+
+  // initialize time measurement
   vector<double> times((int)interfaces.size());
 
   // do some more stuff with interfaces
@@ -321,45 +324,47 @@ discret_(discret)
   	//---------------------------------------
   	// PARALLEL REDISTRIBUTION OF INTERFACES
   	//---------------------------------------
-#ifdef MESHTYINGPAR
-  	// time measurement
-  	Comm().Barrier();
-  	const double t_start = Teuchos::Time::wallTime();
+    if (parredist)
+    {
+			// time measurement
+			Comm().Barrier();
+			const double t_start = Teuchos::Time::wallTime();
 
-  	// redistribute optimally among all procs
-  	interfaces[i]->Redistribute();
+			// redistribute optimally among all procs
+			interfaces[i]->Redistribute();
 
-  	// call fill complete again
-  	interfaces[i]->FillComplete(maxdof);
+			// call fill complete again
+			interfaces[i]->FillComplete(maxdof);
 
-  	// print parallel distribution again
-  	interfaces[i]->PrintParallelDistribution(i+1);
+			// print parallel distribution again
+			interfaces[i]->PrintParallelDistribution(i+1);
 
-  	// time measurement
-		Comm().Barrier();
-		times[i] = Teuchos::Time::wallTime()-t_start;
-#endif // #ifdef MESHTYINGPAR
+			// time measurement
+			Comm().Barrier();
+			times[i] = Teuchos::Time::wallTime()-t_start;
+    }
   	//---------------------------------------
 
   	// create binary search tree
   	interfaces[i]->CreateSearchTree();
   }
 
-  // re-setup strategy object (with flag redistributed=TRUE)
-#ifdef MESHTYINGPAR
-  // time measurement
-  Comm().Barrier();
-  const double t_start = Teuchos::Time::wallTime();
+  // only for parallel redistribution case
+  if (parredist)
+  {
+		// time measurement
+		Comm().Barrier();
+		const double t_start = Teuchos::Time::wallTime();
 
-  // re-setup strategy object
-  strategy_->Setup(true);
+		// re-setup strategy object (with flag redistributed=TRUE)
+		strategy_->Setup(true);
 
-  // time measurement
-  Comm().Barrier();
-  double t_sum = Teuchos::Time::wallTime()-t_start;
-  for (int i=0; i<(int)interfaces.size();++i) t_sum += times[i];
-  if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
-#endif // #ifdef MESHTYINGPAR
+		// time measurement
+		Comm().Barrier();
+		double t_sum = Teuchos::Time::wallTime()-t_start;
+		for (int i=0; i<(int)interfaces.size();++i) t_sum += times[i];
+		if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+  }
 
   // print parameter list to screen
   if (Comm().MyPID()==0)
@@ -425,6 +430,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
+
+  if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true &&
+  		Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST") == true)
+    dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)

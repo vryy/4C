@@ -37,6 +37,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialComm.h"
 #include "mortar_strategy_base.H"
@@ -63,7 +64,8 @@ problemrowmap_(problemrowmap),
 comm_(comm),
 scontact_(params),
 dim_(dim),
-alphaf_(alphaf)
+alphaf_(alphaf),
+parredist_(Teuchos::getIntegralValue<int>(params,"PARALLEL_REDIST"))
 
 {
   // empty constructor

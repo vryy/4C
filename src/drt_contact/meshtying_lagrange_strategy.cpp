@@ -160,22 +160,17 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
 		if (systype==INPAR::CONTACT::system_condensed)
 		{
 			// transform parallel row / column distribution
-		  // (only necessary in the MESHTYINGPAR case)
-#ifdef MESHTYINGPAR
-			conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,problemrowmap_,pgsdofrowmap_);
-#else
-			conmatrix_ = constrmt;
-#endif // #ifdef MESHTYINGPAR
+		  // (only necessary in the parallel redistribution case)
+			if (ParRedist()) conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,problemrowmap_,pgsdofrowmap_);
+			else             conmatrix_ = constrmt;
 		}
 		else
 		{
 			// transform parallel row distribution
-		  // (only necessary in the MESHTYINGPAR case)
-#ifdef MESHTYINGPAR
-			RCP<LINALG::SparseMatrix> temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
-#else
-			RCP<LINALG::SparseMatrix> temp = constrmt;
-#endif // #ifdef MESHTYINGPAR
+		  // (only necessary in the parallel redistribution case)
+			RCP<LINALG::SparseMatrix> temp;
+			if (ParRedist()) temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
+			else             temp = constrmt;
 
 			// always transform column GIDs of constraint matrix
 			conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
@@ -327,14 +322,19 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-#ifdef MESHTYINGPAR
-    LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-    ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
-    knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
-#else
-    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-#endif // #ifdef MESHTYINGPAR
+    if (ParRedist())
+    {
+    	// split and transform to redistributed maps
+			LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+			ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+			ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+			knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+    }
+    else
+    {
+    	// only split, no need to transform
+    	LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+    }
 
     // further splits into slave part + master part
     LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -547,17 +547,27 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
     
+    /********************************************************************/
+    /* Transform the final K blocks                                     */
+    /********************************************************************/
+    // The row maps of all individual matrix blocks are transformed to
+    // the parallel layout of the underlying problem discretization.
+    // Of course, this is only necessary in the parallel redistribution
+    // case, where the meshtying interfaces have been redistributed
+    // independently of the underlying problem discretization.
+
+    if (ParRedist())
+    {
+ 		 kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+ 		 kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+ 		 onesdiag = MORTAR::MatrixRowTransform(onesdiag,pgsdofrowmap_);
+    }
+
     /**********************************************************************/
     /* Global setup of kteffnew, feffnew (including meshtying)            */
     /**********************************************************************/
     RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
     RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
-
-#ifdef MESHTYINGPAR
-   kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-   kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-   onesdiag = MORTAR::MatrixRowTransform(onesdiag,pgsdofrowmap_);
-#endif // #ifdef MESHTYINGPAR
 
     // add n submatrices to kteffnew
     kteffnew->Add(*knn,false,1.0,1.0);
@@ -622,14 +632,19 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-#ifdef MESHTYINGPAR
-    LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-    ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
-    knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
-#else
-    LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-#endif // #ifdef MESHTYINGPAR
+    if (ParRedist())
+    {
+    	// split and transform to redistributed maps
+			LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+			ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+			ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+			knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+    }
+    else
+    {
+    	// only split, no need to transform
+    	LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+    }
 
     // further splits into slave part + master part
     LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
@@ -708,17 +723,27 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     mhatmatrix_->Multiply(true,*tempvecs,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
 
+    /********************************************************************/
+    /* Transform the final K blocks                                     */
+    /********************************************************************/
+    // The row maps of all individual matrix blocks are transformed to
+    // the parallel layout of the underlying problem discretization.
+    // Of course, this is only necessary in the parallel redistribution
+    // case, where the meshtying interfaces have been redistributed
+    // independently of the underlying problem discretization.
+
+    if (ParRedist())
+    {
+			kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+			kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+			kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
+    }
+
     /**********************************************************************/
     /* Global setup of kteffnew, feffnew (including meshtying)            */
     /**********************************************************************/
     RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
     RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap_);
-
-#ifdef MESHTYINGPAR
-    kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-    kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-    kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
-#endif // #ifdef MESHTYINGPAR
 
     // add n submatrices to kteffnew
     kteffnew->Add(*knn,false,1.0,1.0);

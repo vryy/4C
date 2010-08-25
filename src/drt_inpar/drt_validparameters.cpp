@@ -1065,6 +1065,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::CONTACT::output_both, INPAR::CONTACT::output_both),
       &scontact);
 
+  setStringToIntegralParameter<int>("PARALLEL_REDIST","Yes","If chosen parallel rebalancing is applied",
+                               yesnotuple,yesnovalue,&scontact);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

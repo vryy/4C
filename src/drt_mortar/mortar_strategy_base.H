@@ -127,6 +127,12 @@ class StrategyBase
     const int& Dim() { return dim_; }
 
     /*!
+    \brief Get parallel redistribution status (yes or no)
+
+    */
+    const bool& ParRedist() { return parredist_; }
+
+    /*!
     \brief Get Epetra communicator
 
     */
@@ -202,6 +208,7 @@ class StrategyBase
     Teuchos::ParameterList scontact_;       // containing contact input parameters
     int                    dim_;            // dimension of problem (2D or 3D)
     double                 alphaf_;         // Generalized-alpha parameter (0.0 for statics)
+    bool                   parredist_;      // flag indicating parallel redistribution status
 
 }; // class StrategyBase
 } // namespace MORTAR

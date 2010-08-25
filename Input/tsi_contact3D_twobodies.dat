@@ -92,6 +92,7 @@ SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.3
 COUPLING_AUXPLANE    Yes
 HEATTRANSFERCOEFF    100
+PARALLEL_REDIST      No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

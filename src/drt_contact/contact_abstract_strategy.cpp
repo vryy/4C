@@ -75,12 +75,13 @@ dualquadslave3d_(false)
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
   // redistribution of slave and master sides)
-#ifdef CONTACTPAR
-  pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-  pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
-  pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
-  pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
-#endif // #ifdef CONTACTPAR
+  if (ParRedist())
+  {
+		pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+		pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+		pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+		pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+  }
 
 	return;
 }

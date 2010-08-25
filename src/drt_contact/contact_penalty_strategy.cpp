@@ -295,10 +295,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   //  Kc,1 = delta[ 0 -M(transpose) D] * LM
 
   // transform if necessary
-#ifdef CONTACTPAR
-  lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-  linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
-#endif // #ifdef CONTACTPAR
+  if (ParRedist())
+  {
+		lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+		linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+  }
 
   // add to kteff
   kteff->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
@@ -315,10 +316,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
 
   // transform if necessary
-#ifdef CONTACTPAR
-  dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-  mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
-#endif // #ifdef CONTACTPAR
+  if (ParRedist())
+  {
+		dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+		mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+  }
 
   // add to kteff
   kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
@@ -451,10 +453,11 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
 
   // transform if necessary
-#ifdef CONTACTPAR
-  dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-  mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
-#endif // #ifdef CONTACTPAR
+  if (ParRedist())
+  {
+		dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+		mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+  }
 
   // remove contact stiffness #2 from kteff
   kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);

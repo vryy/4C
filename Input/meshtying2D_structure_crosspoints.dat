@@ -67,6 +67,7 @@ MAXITER      50
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarMeshtying
 CROSSPOINTS          Yes
+PARALLEL_REDIST      No
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
