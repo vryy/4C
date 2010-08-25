@@ -163,6 +163,10 @@ namespace TSI
                     LINALG::SparseMatrix& mmatrix,
                     RCP<MORTAR::ManagerBase> cmtman);
 
+    // apply mortar matrices for nodes in contact
+    void AssembleMechDiss(Epetra_Vector& mechdiss,
+                          RCP<MORTAR::ManagerBase> cmtman);
+    
     // assemble thermal contact condition
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,

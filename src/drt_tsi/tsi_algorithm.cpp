@@ -804,25 +804,36 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   amdofs = LINALG::MergeMap(adofs,mdofs,false);
   idofs =  LINALG::SplitMap(*sdofs,*adofs);
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
-
+  
   // row map of thermal problem
   RCP<const Epetra_Map> problemrowmap = ThermoField().DofRowMap();
 
   // split problemrowmap in n+am
-  ndofs = LINALG::SplitMap(*problemrowmap,*amdofs);
+  ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
 
   // modifications only for active nodes
   if (adofs->NumGlobalElements()==0)
     return;
 
   // assemble Mortar Matrices D and M in thermo dofs for active nodes
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*adofs,10));
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*adofs,100));
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
+  
   AssembleDM(*dmatrix,*mmatrix,cmtman);
 
   // FillComplete() global Mortar matrices
   dmatrix->Complete();
-  mmatrix->Complete(*mdofs,*adofs);
+  mmatrix->Complete(*mdofs,*sdofs);
+  
+  // active part of dmatrix and mmatrix
+  RCP<Epetra_Map> tmp;
+  RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+  LINALG::SplitMatrix2x2(dmatrix,adofs,idofs,adofs,idofs,dmatrixa,tmp1,tmp2,tmp3);
+  LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
+  
+  // assemble mechanical dissipation
+  RCP<Epetra_Vector> mechdiss = LINALG::CreateVector(*mdofs,true);
+  AssembleMechDiss(*mechdiss,cmtman);
 
   // matrices from linearized thermal contact condition
   RCP<LINALG::SparseMatrix>  thermcontLM = rcp(new LINALG::SparseMatrix(*adofs,3));
@@ -830,11 +841,11 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true);
 
   // assemble thermal contact contition
-  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrix,*mmatrix,adofs,cmtman);
+  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrixa,*mmatrixa,adofs,cmtman);
 
   // complete the matrices
   thermcontLM->Complete(*adofs,*adofs);
-  thermcontTEMP->Complete(*amdofs,*adofs);
+  thermcontTEMP->Complete(*smdofs,*adofs);
 
   /**********************************************************************/
   /* Modification of the stiff matrix and rhs towards thermo contact    */
@@ -844,7 +855,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   /* Create inv(D)                                                      */
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix));
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*adofs,true);
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*sdofs,true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -865,8 +876,8 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
 
   // do the multiplication M^ = inv(D) * M
   RCP<LINALG::SparseMatrix> mhatmatrix;
-  mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false);
-
+  mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false,true);
+  
   /**********************************************************************/
   /* Split kteff into 3x3 block matrix                                  */
   /**********************************************************************/
@@ -885,7 +896,6 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
 
   // split into slave/master part + structure part
   RCP<LINALG::SparseMatrix> kteffmatrix = rcp(new LINALG::SparseMatrix(*kteff));
-
   LINALG::SplitMatrix2x2(kteffmatrix,smdofs,ndofs,smdofs,ndofs,ksmsm,ksmn,knsm,knn);
 
   // further splits into slave part + master part
@@ -931,7 +941,13 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // abbreviations for active and inactive set
   int aset = adofs->NumGlobalElements();
   int iset = idofs->NumGlobalElements();
-
+  
+  // active part of invd and mhatmatrix
+  RCP<Epetra_Map> tmpmap;
+  RCP<LINALG::SparseMatrix> invda,mhata;
+  LINALG::SplitMatrix2x2(invd,adofs,idofs,adofs,idofs,invda,tmp1,tmp2,tmp3);
+  LINALG::SplitMatrix2x2(mhatmatrix,adofs,idofs,mdofs,tmpmap,mhata,tmp1,tmp2,tmp3);
+  
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
   /**********************************************************************/
@@ -944,14 +960,14 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // kmn: add T(mbaractive)*kan
   RCP<LINALG::SparseMatrix> kmnmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
   kmnmod->Add(*kmn,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix,true,*kan,false,false,false,true);
+  RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhata,true,*kan,false,false,false,true);
   kmnmod->Add(*kmnadd,false,1.0,1.0);
   kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
 
   // kmm: add T(mbaractive)*kam
   RCP<LINALG::SparseMatrix> kmmmod = rcp(new LINALG::SparseMatrix(*mdofs,100));
   kmmmod->Add(*kmm,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix,true,*kam,false,false,false,true);
+  RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
   kmmmod->Add(*kmmadd,false,1.0,1.0);
   kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
@@ -961,7 +977,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   {
     kmimod = rcp(new LINALG::SparseMatrix(*mdofs,100));
     kmimod->Add(*kmi,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhatmatrix,true,*kai,false,false,false,true);
+    RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhata,true,*kai,false,false,false,true);
     kmimod->Add(*kmiadd,false,1.0,1.0);
     kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
   }
@@ -972,7 +988,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   {
     kmamod = rcp(new LINALG::SparseMatrix(*mdofs,100));
     kmamod->Add(*kma,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhatmatrix,true,*kaa,false,false,false,true);
+    RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhata,true,*kaa,false,false,false,true);
     kmamod->Add(*kmaadd,false,1.0,1.0);
     kmamod->Complete(kma->DomainMap(),kma->RowMap());
   }
@@ -981,7 +997,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<LINALG::SparseMatrix> kanmod;
   if (aset)
   {
-    kanmod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kanmod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
     kanmod = LINALG::MLMultiply(*kanmod,false,*kan,false,false,false,true);
     kanmod->Complete(kan->DomainMap(),kan->RowMap());
   }
@@ -990,7 +1006,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<LINALG::SparseMatrix> kammod;
   if (aset)
   {
-    kammod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kammod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
     kammod = LINALG::MLMultiply(*kammod,false,*kam,false,false,false,true);
     kammod->Complete(kam->DomainMap(),kam->RowMap());
   }
@@ -999,7 +1015,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<LINALG::SparseMatrix> kaimod;
   if (aset && iset)
   {
-    kaimod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kaimod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
     kaimod = LINALG::MLMultiply(*kaimod,false,*kai,false,false,false,true);
     kaimod->Complete(kai->DomainMap(),kai->RowMap());
   }
@@ -1008,7 +1024,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<LINALG::SparseMatrix> kaamod;
   if (aset)
   {
-    kaamod = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    kaamod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
     kaamod = LINALG::MLMultiply(*kaamod,false,*kaa,false,false,false,true);
     kaamod->Complete(kaa->DomainMap(),kaa->RowMap());
   }
@@ -1017,14 +1033,14 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // FIXGIT: pay attention to genalpha
   // fm: add T(mbaractive)*fa
   RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*mdofs));
-  mhatmatrix->Multiply(true,*fa,*fmmod);
+  mhata->Multiply(true,*fa,*fmmod);
   fmmod->Update(1.0,*fm,1.0);
 
   // fa: mutliply with thermcontlm
   RCP<Epetra_Vector> famod;
   {
     famod = rcp(new Epetra_Vector(*adofs));
-    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*thermcontLM,false,*invd,false,false,false,true);
+    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
     temp->Multiply(false,*fa,*famod);
   }
 
@@ -1042,7 +1058,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // add m submatrices to kteffnew
   kteffnew->Add(*kmnmod,false,1.0,1.0);
   kteffnew->Add(*kmmmod,false,1.0,1.0);
-  if (iset) kteffnew->Add(*kmamod,false,1.0,1.0);
+  if (iset) kteffnew->Add(*kmimod,false,1.0,1.0);
   if (aset) kteffnew->Add(*kmamod,false,1.0,1.0);
 
   // add i submatrices to kteffnew
@@ -1067,6 +1083,11 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   LINALG::Export(*fmmod,*fmmodexp);
   feffnew->Update(1.0,*fmmodexp,1.0);
 
+  // add mechanical dissipation to feffnew
+  RCP<Epetra_Vector> mechdissexp = rcp(new Epetra_Vector(*problemrowmap));
+  LINALG::Export(*mechdiss,*mechdissexp);
+  feffnew->Update(1.0,*mechdissexp,1.0);
+  
   // add i subvector to feffnew
   RCP<Epetra_Vector> fiexp;
   if (iset)
@@ -1088,10 +1109,10 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // add linearized thermo contact condition
   kteffnew->Add(*thermcontTEMP,false,-1.0,+1.0);
 
-  // rhs zero till now
-  //RCP<Epetra_Vector> linslipRHSexp = rcp(new Epetra_Vector(*problemrowmap_));
-  //LINALG::Export(*linslipRHS_,*linslipRHSexp);
-  //feffnew->Update(-1.0,*linslipRHSexp,1.0);
+  // add rhs of thermal contact condition to feffnew
+  RCP<Epetra_Vector> thermcontRHSexp = rcp(new Epetra_Vector(*problemrowmap));
+  LINALG::Export(*thermcontRHS,*thermcontRHSexp);
+  feffnew->Update(-1.0,*thermcontRHSexp,1.0);
 
   // FillComplete kteffnew (square)
   kteffnew->Complete();
@@ -1145,7 +1166,7 @@ void TSI::Algorithm::ConvertMaps(RCP<Epetra_Map>& slavedofs,
       CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
 
       myslavegids[slavecountnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
       ++slavecountnodes;
@@ -1177,7 +1198,7 @@ void TSI::Algorithm::ConvertMaps(RCP<Epetra_Map>& slavedofs,
       CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
 
       mynodegids[countnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
       ++countnodes;
@@ -1209,7 +1230,7 @@ void TSI::Algorithm::ConvertMaps(RCP<Epetra_Map>& slavedofs,
       CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
 
       mymastergids[mastercountnodes] = ((StructureField().Discretization())->Dof(1,node))[0];
       ++mastercountnodes;
@@ -1277,7 +1298,7 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
       /************************************************** D-matrix ******/
       if (Comm().MyPID()==cnode->Owner())
       {
-        if ((cnode->MoData().GetD()).size()>0 && cnode->Active()==true)
+        if ((cnode->MoData().GetD()).size()>0)
         {
           vector<map<int,double> > dmap = cnode->MoData().GetD();
           int rowdisp = cnode->Dofs()[0];
@@ -1331,7 +1352,7 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
         Comm().Broadcast(&coldis,1,mnode->Owner());
 
         // do the assembly
-        if (Comm().MyPID()==cnode->Owner()&& cnode->Active())
+        if (Comm().MyPID()==cnode->Owner())
         {
           double val = mmap[0][coldis];
           if (abs(val)>1e-12) mmatrix.Assemble(val, rowtemp, coltemp);
@@ -1342,6 +1363,64 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | assemble mechanical dissipation                             mgit 08/10|
+ *----------------------------------------------------------------------*/
+
+void TSI::Algorithm::AssembleMechDiss(Epetra_Vector& mechdiss,
+                                      RCP<MORTAR::ManagerBase> cmtman)
+{
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // slave nodes (full map)
+    const RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
+
+    // loop over all slave nodes of the interface
+    for (int i=0;i<masternodes->NumMyElements();++i)
+    {
+      int gid = masternodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
+
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+
+      // row dof of temperature
+      int rowtemp = 0;
+      if(Comm().MyPID()==cnode->Owner())
+        rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+      
+      Epetra_SerialDenseVector mechdissip(1);
+      vector<int> dof(1);
+      vector<int> owner(1);
+      
+      mechdissip(0) = cnode->Data().MechDiss();
+      dof[0] = rowtemp;
+      owner[0] = cnode->Owner();
+      
+      // do assembly
+      if(abs(mechdissip(0))>1e-12)
+        LINALG::Assemble(mechdiss, mechdissip, dof, owner);
+    }
+  }
+  return;
+}
+
+
+
 
 /*----------------------------------------------------------------------*
  | assemble the thermal contact conditions                    mgit 04/10 |
@@ -1369,16 +1448,59 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
   if (interface.size()>1)
     dserror("Error in TSI::Algorithm::AssembleThermContCondition: Only for one interface yet.");
 
-  double heattrancoeff = interface[0]->IParams().get<double>("HEATTRANSFERCOEFF");
-  if (heattrancoeff <= 0)
-    dserror("Error: Choose realistic heat transfer coefficient");
-
+  double heattranss = interface[0]->IParams().get<double>("HEATTRANSSLAVE");
+  double heattransm = interface[0]->IParams().get<double>("HEATTRANSMASTER");
+  
+   if (heattranss <= 0 or heattransm <= 0)
+    dserror("Error: Choose realistic heat transfer parameter");
+  
+  double beta = heattranss*heattransm/(heattranss+heattransm);
+  double delta = heattranss/(heattranss+heattransm);
+  
   // with respect to Lagrange multipliers
   thermcontLM.Add(dmatrix,false,1.0,1.0);
 
   // with respect to temperature
-  thermcontTEMP.Add(dmatrix,false,-heattrancoeff,1.0);
-  thermcontTEMP.Add(mmatrix,false,+heattrancoeff,1.0);
+  thermcontTEMP.Add(dmatrix,false,-beta,1.0);
+  thermcontTEMP.Add(mmatrix,false,+beta,1.0);
+  
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // slave nodes (full map)
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
+    {
+      int gid = slavenodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = (StructureField().Discretization())->gNode(gid);
+
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+
+      // row dof of temperature
+      int rowtemp = 0;
+      if(Comm().MyPID()==cnode->Owner())
+        rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
+      
+      Epetra_SerialDenseVector mechdissip(1);
+      vector<int> dof(1);
+      vector<int> owner(1);
+      
+      mechdissip(0) = delta*cnode->Data().MechDiss();
+      dof[0] = rowtemp;
+      owner[0] = cnode->Owner();
+      
+      // do assembly
+      if(abs(mechdissip(0)>1e-12 and cnode->Active()))
+        LINALG::Assemble(thermcontRHS, mechdissip, dof, owner);
+    }
+  }
+  return;
+
+  
 
   return;
 }
