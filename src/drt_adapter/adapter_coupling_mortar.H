@@ -73,7 +73,7 @@ namespace ADAPTER
     		           RCP<Epetra_Map> masterdofrowmap,
     		           RCP<Epetra_Map> slavedofrowmap,
     		           Epetra_Comm& comm,
-    		           bool structslave = false);
+    		           bool structslave);
 
     ///filling matrices
     void Evaluate(RCP<Epetra_Vector> idisp);
@@ -101,28 +101,27 @@ namespace ADAPTER
         RefCountPtr<const Epetra_Vector> sv   ///< fluid interface loads
     ) const;
 
+    /// the mortar interface
+    RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
+
     /// the interface dof map of the master side
     RefCountPtr<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
 
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
-
-    /// the interface dof map of the slave side
-    RefCountPtr<Epetra_Map> SlaveDofColMap()  const { return slavedofcolmap_; }
-
-    RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
-
-    RCP<LINALG::SparseMatrix> GetMortarTrafo();
-
+    
+    /// the mortar projection operator
+    RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
 
 
   private:
 
-    RCP<MORTAR::MortarInterface>  interface_;       ///< interface
-    RefCountPtr<Epetra_Map>       masterdofrowmap_; ///< map of master row dofs
-    RefCountPtr<Epetra_Map>       slavedofrowmap_;  ///< map of slave row dofs without pressure
-    RefCountPtr<Epetra_Map>       slavedofcolmap_;  ///< map of slave col dofs without pressure
-
+    RCP<MORTAR::MortarInterface>  interface_;          ///< interface
+    RefCountPtr<Epetra_Map>       masterdofrowmap_;    ///< map of master row dofs
+    RefCountPtr<Epetra_Map>       slavedofrowmap_;     ///< map of slave row dofs
+    RefCountPtr<Epetra_Map>       oldmasterdofrowmap_; ///< map of master row dofs (before redistribution)
+    RefCountPtr<Epetra_Map>       oldslavedofrowmap_;  ///< map of slave row dofs (before redistribution)
+    
     RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
     RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
     RefCountPtr<LINALG::SparseMatrix> M_;            ///< mortar matrix

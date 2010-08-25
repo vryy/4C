@@ -18,6 +18,7 @@
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -64,9 +65,12 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // get structural dynamics parameter
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
-  // check for invalid paramater values
+  // check for invalid parameter values
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
+
+  // check for parallel redistribution
+  bool parredist = Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
@@ -75,7 +79,6 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input));
 
   // feeding master nodes to the interface including ghosted nodes
-  vector<int> masterdofs;
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
@@ -87,90 +90,73 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
     interface->AddMortarNode(mrtrnode);
   }
 
-  // build master dof row map
-  for (nodeiter = masternodes.begin(); nodeiter != masternodes.end(); ++nodeiter)
-  {
-    DRT::Node* node = nodeiter->second;
-    vector<int> dofs = masterdis.Dof(node);
-
-    dofs.resize(dim);
-    masterdofs.insert(masterdofs.end(), dofs.begin(), dofs.end());
-
-  }
-
-  //build Epetra_Map of master row dofs
-  masterdofrowmap_ = rcp(new Epetra_Map(-1, masterdofs.size(), &masterdofs[0], 0, comm));
-
-  //feeding slave nodes to the interface including ghosted nodes
-  vector<int> slaverowdofs;
-  vector<int> slavecoldofs;
-
+  // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
                     dim, slavedis.Dof(node), true));
 
     interface->AddMortarNode(mrtrnode);
-
-    vector<int> dofs = slavedis.Dof(node);
-    dofs.resize(dim);
-    slavecoldofs.insert(slavecoldofs.end(), dofs.begin(), dofs.end());
   }
-
-  // build slave dof row map
-  for (nodeiter = slavenodes.begin(); nodeiter != slavenodes.end(); ++nodeiter)
-  {
-    DRT::Node* node = nodeiter->second;
-    vector<int> dofs = slavedis.Dof(node);
-    dofs.resize(dim);
-    slaverowdofs.insert(slaverowdofs.end(), dofs.begin(), dofs.end());
-
-  }
-  slavenodes.clear();
-
-  //build map of slave dofs and slave mortar dofs without pressure
-  slavedofrowmap_ = rcp(
-      new Epetra_Map(-1, slaverowdofs.size(), &slaverowdofs[0], 0, comm));
-  slavedofcolmap_ = rcp(
-      new Epetra_Map(-1, slavecoldofs.size(), &slavecoldofs[0], 0, comm));
-
-  //feeding master elements to the interface
-  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
 
   // max master element ID needed for unique eleIDs in interface discretization
   // will be used as offset for slave elements
   int EleOffset = masterdis.ElementRowMap()->MaxAllGID()+1;
 
+  // feeding master elements to the interface
+  map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     RefCountPtr<DRT::Element> ele = elemiter->second;
-
-    RCP<MORTAR::MortarElement>
-        mrtrele =
-            rcp(
-                new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false));
+    RCP<MORTAR::MortarElement> mrtrele = rcp(
+                new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
+                		ele->NumNode(), ele->NodeIds(), false));
 
     interface->AddMortarElement(mrtrele);
-
   }
 
-  //feeding slave elements to the interface
+  // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
     RefCountPtr<DRT::Element> ele = elemiter->second;
-    RCP<MORTAR::MortarElement>
-        mrtrele =
-            rcp(
-                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true));
+    RCP<MORTAR::MortarElement> mrtrele = rcp(
+                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
+                		ele->NumNode(), ele->NodeIds(), true));
 
     interface->AddMortarElement(mrtrele);
   }
 
   // finalize the contact interface construction
   interface->FillComplete();
+
+  // store old row maps (before parallel redistribution)
+  // only for parallel redistribution case
+  if (parredist)
+  {
+		oldslavedofrowmap_  = rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+		oldmasterdofrowmap_ = rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  }
+
+  // print parallel distribution
+	interface->PrintParallelDistribution(1);
+
+	//**********************************************************************
+	// PARALLEL REDISTRIBUTION OF INTERFACE
+	//**********************************************************************
+	if (parredist)
+	{
+		// redistribute optimally among all procs
+		interface->Redistribute();
+
+		// call fill complete again
+		interface->FillComplete();
+
+		// print parallel distribution again
+		interface->PrintParallelDistribution(1);
+	}
+	//**********************************************************************
 
   // create binary search tree
   interface->CreateSearchTree();
@@ -179,40 +165,44 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // in order to get initial D_ and M_
 
   // interface displacement (=0) has to be merged from slave and master discretization
-  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, true);
+  slavedofrowmap_ = interface->SlaveRowDofs();
+  masterdofrowmap_ = interface->MasterRowDofs();
+  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
   RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
+  // set displacement state in mortar interface
   interface->SetState("displacement", dispn);
+
+  // print message
+  if(comm.MyPID()==0)
+  {
+    cout << "\nPerforming mortar coupling...............";
+    fflush(stdout);
+  }
+
   //in the following two steps MORTAR does all the work
   interface->Initialize();
   interface->Evaluate();
 
+	// print message
+	if(comm.MyPID()==0) cout << "done!" << endl;
+
   // preparation for AssembleDM
-  RCP<Epetra_Map> slavedofrowmap = interface->SlaveRowDofs();
-  RCP<Epetra_Map> masterdofrowmap = interface->MasterRowDofs();
-
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(
-      new LINALG::SparseMatrix(*slavedofrowmap, 10));
-
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(
-      new LINALG::SparseMatrix(*slavedofrowmap, 100));
-
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 100));
   interface->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();
-  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
-
+  mmatrix->Complete(*masterdofrowmap_, *slavedofrowmap_);
   D_ = dmatrix;
-
   M_ = mmatrix;
 
-  //Build Dinv
+  // Build Dinv
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
 
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
-
   // extract diagonal of invd into diag
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap_,true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -222,16 +212,28 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
   Dinv_->ReplaceDiagonalValues(*diag);
-
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
-
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
 
   // store interface
   interface_ = interface;
 
   // mesh initialization (for rotational invariance)
-  MeshInit(masterdis,slavedis,aledis,masterdofrowmap,slavedofrowmap,comm,structslave);
+  MeshInit(masterdis,slavedis,aledis,masterdofrowmap_,slavedofrowmap_,comm,structslave);
+
+  // only for parallel redistribution case
+  if (parredist)
+  {
+		// transform everything back to old distribution
+		D_     = MORTAR::MatrixRowColTransform(D_,oldslavedofrowmap_,oldslavedofrowmap_);
+		M_     = MORTAR::MatrixRowColTransform(M_,oldslavedofrowmap_,oldmasterdofrowmap_);
+		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,oldslavedofrowmap_,oldslavedofrowmap_);
+		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,oldslavedofrowmap_,oldmasterdofrowmap_);
+
+		// store old maps
+		slavedofrowmap_ = oldslavedofrowmap_;
+		masterdofrowmap_ = oldmasterdofrowmap_;
+  }
 
   // check for overlap of slave and Dirichlet boundaries
   // (this is not allowed in order to avoid over-constraint)
@@ -268,7 +270,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
 	// print warning message to screen
   if (overlap && comm.MyPID()==0)
   {
-  	cout << RED << "WARNING: Slave boundary and Dirichlet boundary conditions overlap!" << endl;
+  	cout << RED << "\nWARNING: Slave boundary and Dirichlet boundary conditions overlap!" << endl;
   	cout << "This leads to over-constraint, so you might encounter some problems!" << END_COLOR << endl;
   }
 
@@ -339,27 +341,44 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 	//**********************************************************************
 	// (3) perform mesh initialization node by node
 	//**********************************************************************
-	// export Xslavemod to standard column map overlap for current interface
-	Epetra_Vector Xslavemodcol(*(interface_->SlaveColDofs()),false);
+	// export Xslavemod to fully overlapping column map for current interface
+	Epetra_Vector Xslavemodcol(*(interface_->SlaveFullDofs()),false);
 	LINALG::Export(*Xslavemod,Xslavemodcol);
 
-	// loop over all slave column nodes on the current interface
-	for (int j=0; j<interface_->SlaveColNodes()->NumMyElements(); ++j)
+	// loop over all slave nodes on the current interface
+	for (int j=0; j<interface_->SlaveFullNodes()->NumMyElements(); ++j)
 	{
-		int gid = interface_->SlaveColNodes()->GID(j);
+		// get global ID of current node
+		int gid = interface_->SlaveFullNodes()->GID(j);
 
 		// be careful to modify BOTH mtnode in interface discret ...
 		DRT::Node* node = interface_->Discret().gNode(gid);
 		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-		// ... AND standard node in underlying slave discret
-		DRT::Node* pnode = slavedis.gNode(gid);
-		if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+	  // ... AND standard node in underlying slave discret
+		// (check if the node is available on this processor)
+		bool isinproblemcolmap = false;
+		int lid = slavedis.NodeColMap()->LID(gid);
+		if (lid>=0) isinproblemcolmap = true;
+		DRT::Node* pnode = NULL;
+		if (isinproblemcolmap)
+		{
+			pnode = slavedis.gNode(gid);
+			if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+		}
 
-		//... AND standard node in ALE discret if fluid=slave
-		DRT::Node* alenode = aledis.gNode(gid);
-		if (!structslave && !alenode) dserror("ERROR: Cannot find node with gid %",gid);
+	  // ... AND standard node in ALE discret if fluid=slave
+		// (check if the node is available on this processor)
+		bool isinproblemcolmap2 = false;
+		int lid2 = aledis.NodeColMap()->LID(gid);
+		if (lid2>=0) isinproblemcolmap2 = true;
+		DRT::Node* alenode = NULL;
+		if (isinproblemcolmap2)
+		{
+			alenode = aledis.gNode(gid);
+			if (!structslave && !alenode) dserror("ERROR: Cannot find node with gid %",gid);
+		}
 
 		// new nodal position
 		double Xnew[3] = {0.0, 0.0, 0.0};
@@ -405,10 +424,12 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 		// (remark: this is REALLY BAD coding)
 		for (int k=0;k<dim;++k)
 		{
-			const_cast<double&>(mtnode->X()[k])                    = Xnew[k];
-			const_cast<double&>(mtnode->xspatial()[k])             = Xnew[k];
-			const_cast<double&>(pnode->X()[k])                     = Xnew[k];
-			if (!structslave) const_cast<double&>(alenode->X()[k]) = Xnew[k];
+			const_cast<double&>(mtnode->X()[k])        = Xnew[k];
+			const_cast<double&>(mtnode->xspatial()[k]) = Xnew[k];
+			if (isinproblemcolmap)
+				const_cast<double&>(pnode->X()[k])       = Xnew[k];
+			if (isinproblemcolmap2 && !structslave)
+				const_cast<double&>(alenode->X()[k])     = Xnew[k];
 		}
 	}
 
@@ -431,7 +452,7 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 	if (structslave) DRT::ParObjectFactory::Instance().InitializeElements(slavedis);
 
   // print message
-  if (comm.MyPID()==0) cout << "done!\n" << endl;
+  if (comm.MyPID()==0) cout << "done!" << endl;
 
   return;
 
@@ -441,37 +462,35 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
+  // check for parallel redistribution
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  bool parredist = Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST");
+
+  // set new displacement state in mortar interface
   interface_->SetState("displacement", idisp);
-  //in the following two steps MORTAR does all the work for new interface displacements
+
+  // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();
   interface_->Evaluate();
 
-  //Preparation for AssembleDMG
+  // preparation for AssembleDM
   RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
   RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
-
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(
-      new LINALG::SparseMatrix(*slavedofrowmap, 10));
-
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(
-      new LINALG::SparseMatrix(*slavedofrowmap, 100));
-
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap, 10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();
   mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
-
   D_ = dmatrix;
-
   M_ = mmatrix;
 
-  //Build Dinv
+  // Build Dinv
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
 
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
-
   // extract diagonal of invd into diag
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -481,10 +500,18 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
   Dinv_->ReplaceDiagonalValues(*diag);
-
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
-
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
+
+  // only for parallel redistribution case
+  if (parredist)
+  {
+		// transform everything back to old distribution
+		D_     = MORTAR::MatrixRowColTransform(D_,oldslavedofrowmap_,oldslavedofrowmap_);
+		M_     = MORTAR::MatrixRowColTransform(M_,oldslavedofrowmap_,oldmasterdofrowmap_);
+		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,oldslavedofrowmap_,oldslavedofrowmap_);
+		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,oldslavedofrowmap_,oldmasterdofrowmap_);
+  }
 
   return;
 }
@@ -567,11 +594,6 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
     dserror( "M^{T}*sv multiplication failed" );
 
   return mv;
-}
-
-RCP<LINALG::SparseMatrix> ADAPTER::CouplingMortar::GetMortarTrafo()
-{
-  return DinvM_;
 }
 
 #endif // CCADISCRET
