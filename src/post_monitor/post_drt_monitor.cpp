@@ -1573,8 +1573,8 @@ int main(int argc, char** argv)
       {
         TsiThermoMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
-//        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
-//        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
+        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
       }
       else
       {
