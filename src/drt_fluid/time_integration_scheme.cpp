@@ -82,28 +82,46 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
+    const string                               predictor,
     const Teuchos::RCP<const Epetra_Vector>    veln,
     const Teuchos::RCP<const Epetra_Vector>    velnm,
     const Teuchos::RCP<const Epetra_Vector>    accn,
+    const LINALG::MapExtractor&                velpressplitter,
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,
+    const double                               timealgo_constant,
     const double                               dta,
     const double                               dtp,
-    const Teuchos::RCP<Epetra_Vector>          velnp
+    const Teuchos::RCP<Epetra_Vector>          velnp,
+    const Epetra_Comm&                         comm
 )
 {
-  switch (timealgo)
+
+  if(comm.MyPID()==0)
   {
+    printf("fluid: using explicit predictor %s",predictor.c_str());
+  }
+
+  if(predictor=="default")
+  {
+    string message;
+
+    switch (timealgo)
+    {
     case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
+      message="do nothing";
       // do nothing
       break;
     case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
     {
+      message="do nothing";
       // do nothing for the time being, that is, steady-state predictor
       break;
     }
     case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
     case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
     {
+      message="midpoint-like";
+
       const double fact1 = dta*(1.0+dta/dtp);
       const double fact2 = DSQR(dta/dtp);
 
@@ -114,6 +132,135 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     }
     default:
       dserror("Time integration scheme unknown!");
+    }
+
+    if(comm.MyPID()==0)
+    {
+      printf(" (i.e. %s for this timealgo)",message.c_str());
+    }
+  }
+  else
+  {
+
+    if(predictor=="steady_state_predictor")
+    {
+      // steady state predictor
+      //
+      //       n+1    n
+      //      u    = u
+      //       (0)
+      //
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+
+      // there is nothing more to do
+      velnp->Update(1.0,*veln,0.0);
+    }
+    else if(predictor=="zero_acceleration_predictor")
+    {
+      // zero acceleration predictor (one-step theta, genalpha)
+      //
+      //       n+1    n                   n
+      //      u    = u  + (1-gamma)*dt*acc
+      //       (0)
+      //
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+      //
+      velnp->Update(1.0,*veln,0.0);
+
+      // split between acceleration and pressure
+      Teuchos::RCP<Epetra_Vector> inc = velpressplitter.ExtractOtherVector(accn);
+      inc->Scale((1.0-timealgo_constant)*dta);
+
+      velpressplitter.AddOtherVector(inc,velnp);
+    }
+    else if(predictor=="constant_acceleration_predictor")
+    {
+      // constant acceleration predictor
+      //
+      //       n+1    n         n
+      //      u    = u  + dt*acc
+      //       (0)
+      //
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+      //
+      velnp->Update(1.0,*veln,0.0);
+
+      Teuchos::RCP<Epetra_Vector> inc = velpressplitter.ExtractOtherVector(accn);
+      inc->Scale(dta);
+
+      velpressplitter.AddOtherVector(inc,velnp);
+    }
+    else if(predictor=="constant_increment_predictor")
+    {
+      // constant increment predictor
+      //
+      //       n+1      n    n-1
+      //      u    = 2*u  - u
+      //       (0)
+      //
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+      //
+      velnp->Update(1.0,*veln,0.0);
+
+      Teuchos::RCP<Epetra_Vector> un  = velpressplitter.ExtractOtherVector(veln );
+      Teuchos::RCP<Epetra_Vector> unm = velpressplitter.ExtractOtherVector(velnm);
+      unm->Scale(-1.0);
+
+      velpressplitter.AddOtherVector(un ,velnp);
+      velpressplitter.AddOtherVector(unm,velnp);
+    }
+    else if(predictor=="explicit_second_order_midpoint")
+    {
+      // the conventional explicit second order predictor (assuming constant dt)
+      /*
+      //                        /          n    n-1 \
+      //       n+1    n        |      n   u  - u     |
+      //      u    = u  + dt * | 2*acc  - ---------  |
+      //       (0)             |             dt      |
+      //                        \                   /
+      // respectively
+      //                       
+      //       n+1    n-1               n
+      //      u    = u    + 2 * dt * acc 
+      //       (0)             
+      //                       
+      //  and
+      //
+      //       n+1    n
+      //      p    = p
+      //       (0)
+      */
+      velnp->Update(1.0,*veln,0.0);
+
+      // split between acceleration and pressure
+      Teuchos::RCP<Epetra_Vector> unm = velpressplitter.ExtractOtherVector(velnm);
+      Teuchos::RCP<Epetra_Vector> an  = velpressplitter.ExtractOtherVector(accn );
+
+      unm->Update(2.0*dta,*an,1.0);
+
+      velpressplitter.InsertOtherVector(unm,velnp);
+    }
+  }
+
+  if(comm.MyPID()==0)
+  {
+    printf("\n");
   }
 
   return;

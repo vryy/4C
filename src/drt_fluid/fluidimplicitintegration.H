@@ -459,10 +459,10 @@ protected:
   //! use (or not) linearisation of reactive terms on the element
   INPAR::FLUID::LinearisationAction newton_;
 
-  /// whether we do some extrapolation at the begin of each time step
+  /// whether we do some extrapolation at the begin of each time step (additional switch)
   bool extrapolationpredictor_;
 
-  //! predictor used in nonlinear iteration
+  //! kind of predictor used in nonlinear iteration
   string  predictor_;
 
   //! @name restart variables

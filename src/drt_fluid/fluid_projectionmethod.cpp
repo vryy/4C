@@ -374,10 +374,18 @@ void FLD::FluidProjectionMethod::PrepareTimeStep()
     {
         if (step_>1)
         {
-            TIMEINT_THETA_BDF2::ExplicitPredictor(
-                    veln_, velnm_, accn_,
-                    timealgo_, dta_, dtp_,
-                    velnp_);
+          TIMEINT_THETA_BDF2::ExplicitPredictor(
+            "default",
+            veln_,
+            velnm_,
+            accn_,
+            velpressplitter_,
+            timealgo_,
+            theta_,
+            dta_,
+            dtp_,
+            velnp_,
+            discret_->Comm());
         }
     }
 

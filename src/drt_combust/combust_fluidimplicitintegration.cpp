@@ -387,10 +387,20 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   {
     if (step_>1)
     {
+      double timealgo_constant=theta_;
+
       TIMEINT_THETA_BDF2::ExplicitPredictor(
-          state_.veln_, state_.velnm_, state_.accn_,
-              timealgo_, dta_, dtp_,
-              state_.velnp_);
+        "default",
+        state_.veln_, 
+        state_.velnm_, 
+        state_.accn_,
+        velpressplitter_,
+        timealgo_, 
+        timealgo_constant,
+        dta_, 
+        dtp_,
+        state_.velnp_,
+        discret_->Comm());
     }
   }
 

@@ -26,9 +26,17 @@ Maintainer: Axel Gerstenberger
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "fluid_utils_mapextractor.H" // should go away
 
+//forward declarations
+
+namespace LINALG
+{
+  class MapExtractor;
+}
 
 namespace FLD
 {
@@ -80,13 +88,17 @@ namespace TIMEINT_THETA_BDF2
                         +-                                      -+
   */
   void ExplicitPredictor(
-      const Teuchos::RCP<const Epetra_Vector>   veln,
-      const Teuchos::RCP<const Epetra_Vector>   velnm,
-      const Teuchos::RCP<const Epetra_Vector>   accn,
-      const INPAR::FLUID::TimeIntegrationScheme timealgo,
-      const double                              dta,
-      const double                              dtp,
-      const Teuchos::RCP<Epetra_Vector>         velnp
+      const string                               predictor,
+      const Teuchos::RCP<const Epetra_Vector>    veln,
+      const Teuchos::RCP<const Epetra_Vector>    velnm,
+      const Teuchos::RCP<const Epetra_Vector>    accn,
+      const LINALG::MapExtractor&                velpressplitter,
+      const INPAR::FLUID::TimeIntegrationScheme  timealgo,
+      const double                               timealgo_constant,
+      const double                               dta,
+      const double                               dtp,
+      const Teuchos::RCP<Epetra_Vector>          velnp,
+      const Epetra_Comm&                         comm
   );
 
   /*!

@@ -130,9 +130,19 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // parameter for linearization scheme (fixed-point-like or Newton)
   newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
 
-  // use of predictor
+  // use of specific predictor
   // (might be used for af-generalized-alpha, but not yet activated)
-  //predictor_ = params_.get<string>("predictor","steady_state_predictor");
+
+  if(params_.get<string>("predictor","disabled") == "disabled")
+  {
+    if(myrank_==0)
+    {
+      printf("disabled extrapolation predictor\n\n");
+    }
+    extrapolationpredictor_=false;
+  }
+
+  predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // form of convective term
   convform_ = params_.get<string>("form of convective term","convective");
@@ -746,6 +756,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
+  // 
+  // for example
+  //
   //
   //                      +-                                      -+
   //                      | /     dta \          dta  veln_-velnm_ |
@@ -757,14 +770,23 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
   // be a way to turn this off.
-  if (extrapolationpredictor_)
+
+  if(extrapolationpredictor_)
   {
     if (step_>1)
     {
       TIMEINT_THETA_BDF2::ExplicitPredictor(
-          veln_, velnm_, accn_,
-          timealgo_, dta_, dtp_,
-          velnp_);
+        predictor_,
+        veln_,
+        velnm_,
+        accn_,
+        velpressplitter_,
+        timealgo_,
+        theta_,
+        dta_,
+        dtp_,
+        velnp_,
+        discret_->Comm());
     }
   }
 
@@ -2616,7 +2638,23 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     eleparams.set("action","time update for subscales");
 
     // update time paramters
-    eleparams.set("gamma"  ,gamma_ );
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      eleparams.set("gamma"  ,gamma_);
+    }
+    else if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
+    {
+      eleparams.set("gamma"  ,theta_);
+    }
+    else if((timealgo_==INPAR::FLUID::timeint_bdf2))
+    {
+      eleparams.set("gamma"  ,1.0);
+    }
+    else
+    {
+
+    }
+
     eleparams.set("dt"     ,dta_    );
 
     // call loop over elements to update subgrid scales
@@ -2629,8 +2667,27 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   }
 
   // compute accelerations
-  TIMEINT_THETA_BDF2::CalculateAcceleration(velnp_, veln_, velnm_, accn_,
-                            timealgo_, step_, theta_, dta_, dtp_, accnp_);
+  {
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
+    Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+
+    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp, 
+                                              onlyveln , 
+                                              onlyvelnm, 
+                                              onlyaccn ,
+                                              timealgo_, 
+                                              step_    , 
+                                              theta_   , 
+                                              dta_     , 
+                                              dtp_     , 
+                                              onlyaccnp);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccnp,*accnp_);
+  }
 
   // update old acceleration
   accn_->Update(1.0,*accnp_,0.0);
