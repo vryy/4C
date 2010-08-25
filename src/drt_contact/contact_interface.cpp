@@ -260,6 +260,9 @@ void CONTACT::CoInterface::Initialize()
       // reset SNodes and Mnodes
       frinode->Data().GetSNodes().clear();
       frinode->Data().GetMNodes().clear();
+
+      // reset nodal mechanical dissipation
+      frinode->Data().MechDiss() = 0.0;
     }
   }
 
@@ -2635,7 +2638,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
      // check for dimensions
      if(Dim()==2 and (jumpteta != 0.0))
-      dserror ("ERROR: AssembleLinSlip: jumpteta must be zero in 2D");
+      dserror ("ERROR: AssembleLinStick: jumpteta must be zero in 2D");
 
     // Entries on right hand side
     /************************************************ (-utxi, -uteta) ***/

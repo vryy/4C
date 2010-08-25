@@ -156,7 +156,9 @@ public:
      RCP<MORTAR::IntCell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg);
+     RCP<Epetra_SerialDenseVector> gseg,
+     RCP<Epetra_SerialDenseVector> mdisssegs,
+     RCP<Epetra_SerialDenseVector> mdisssegm);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -288,6 +290,16 @@ public:
   bool AssembleG(const Epetra_Comm& comm,
                  MORTAR::IntElement& sintele,
                  Epetra_SerialDenseVector& g_seg);
+  
+  /*!
+  \brief Assemble mechanical dissipation contribution of current overlap 
+  into slave or master nodes (special version for 3D quadratic mortar with piecewise
+  linear LM interpolation)
+
+  */
+  bool AssembleMechDiss(const Epetra_Comm& comm,
+                        MORTAR::MortarElement& sele,
+                        Epetra_SerialDenseVector& mdissseg);
 
   //@}
    

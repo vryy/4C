@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
@@ -1862,8 +1863,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      RCP<MORTAR::IntCell> cell, double* auxn,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     RCP<Epetra_SerialDenseVector> gseg,
+     RCP<Epetra_SerialDenseVector> mdisssegs,
+     RCP<Epetra_SerialDenseVector> mdisssegm)
 {
+  
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
@@ -1880,6 +1884,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell==null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+  
+  // flag for thermo-structure-interaction with contact
+  bool tsi = false;
+    if (DRT::Problem::Instance()->ProblemType()=="tsi") tsi=true;
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -1902,6 +1910,22 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   sele.GetNodalCoords(scoord);
   LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
   mele.GetNodalCoords(mcoord);
+  
+  // nodal coords from previous time step and lagrange mulitplier
+  RCP<LINALG::SerialDenseMatrix> scoordold;
+  RCP<LINALG::SerialDenseMatrix> mcoordold;
+  RCP<LINALG::SerialDenseMatrix> lagmult;
+  
+  // get them in the case of tsi
+  if (tsi)
+  {
+    scoordold = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    sele.GetNodalCoordsOld(*scoordold);
+    mcoordold = rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
+    mele.GetNodalCoordsOld(*mcoordold);
+    lagmult = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    sele.GetNodalLagMult(*lagmult);
+  }
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
@@ -1919,7 +1943,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     duallin = true;
     sele.DerivShapeDual(dualmap);
   }
-
+  
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -1943,7 +1967,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     MORTAR::MortarProjector projector(3);
     projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi,sprojalpha);
     projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi,mprojalpha);
-
+    
     // check GP projection (SLAVE)
     double tol = 0.01;
     if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
@@ -1991,7 +2015,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
-
+    
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
@@ -2115,6 +2139,73 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     double gap = 0.0;
     for (int i=0;i<3;++i)
       gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+    
+    // evaluate mechanical dissipation in the case of thermo-structure-
+    // -interaction with contact
+
+    // mechanical dissipation
+    double mechdiss = 0;
+    
+    if(tsi)
+    {
+      // tangent plane  
+      Epetra_SerialDenseMatrix tanplane(3,3);
+      tanplane(0,0)= 1-(gpn[0]*gpn[0]);
+      tanplane(0,1)=  -(gpn[0]*gpn[1]);
+      tanplane(0,2)=  -(gpn[0]*gpn[2]);
+      tanplane(1,0)=  -(gpn[1]*gpn[0]);
+      tanplane(1,1)= 1-(gpn[1]*gpn[1]);
+      tanplane(1,2)=  -(gpn[1]*gpn[2]);
+      tanplane(2,0)=  -(gpn[2]*gpn[0]);
+      tanplane(2,1)=  -(gpn[2]*gpn[1]);
+      tanplane(2,2)= 1-(gpn[2]*gpn[2]);
+      
+      // interpolation of slave GP jumps (relative displacement increment)
+      double sgpjump[3] = {0.0, 0.0, 0.0};
+      for (int i=0;i<nrow;++i)
+      {
+        sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
+        sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
+        sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+      }
+      
+      // interpolation of master GP jumps (relative displacement increment)
+      double mgpjump[3] = {0.0, 0.0, 0.0};
+      for (int i=0;i<ncol;++i)
+      {
+        mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
+        mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
+        mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+      }
+   
+      // build jump (relative displacement increment) at current GP
+      Epetra_SerialDenseMatrix jump (3,1);
+      jump(0,0)=(sgpjump[0]-mgpjump[0]); 
+      jump(1,0)=(sgpjump[1]-mgpjump[1]); 
+      jump(2,0)=(sgpjump[2]-mgpjump[2]); 
+      
+      // build lagrange multiplier at current GP
+      Epetra_SerialDenseMatrix lm (3,1);
+      for (int i=0;i<nrow;++i)
+      {
+        lm(0,0)+=lmval[i]*(*lagmult)(0,i);
+        lm(1,0)+=lmval[i]*(*lagmult)(0,i);
+        lm(2,0)+=lmval[i]*(*lagmult)(0,i);
+      }
+       
+      // build tangential jump
+      Epetra_SerialDenseMatrix jumptan(3,1);
+      jumptan.Multiply('N','N',1,tanplane,jump,0.0);
+  
+      // build tangential lm
+      Epetra_SerialDenseMatrix lmtan(3,1);
+      lmtan.Multiply('N','N',1,tanplane,lm,0.0);
+       
+      // build mechanical dissipation
+      for (int i=0;i<3;i++)
+        mechdiss += lmtan(i,0)*jumptan(i,0);
+    }  
 
     // evaluate linearizations *******************************************
     // evaluate the intcell Jacobian derivative
@@ -2293,7 +2384,35 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       (*gseg)(j) += prod*jac*wgt;
     }
     // compute cell gap vector *******************************************
+    
+    // tsi with contact
+    if(tsi)
+    {
+      // compute cell mechanical dissipation / slave *********************
+      // loop over all mdisssegs vector entries
+      // nrow represents the slave side dofs !!!
+      for (int j=0;j<nrow;++j)
+      {
+        double prod = lmval[j]*mechdiss;
+      
+        // add current Gauss point's contribution to mdisssegs
+        (*mdisssegs)(j) += prod*jac*wgt;
+      }
+      // compute cell mechanical dissipation vector / slave **************
 
+      // compute cell jump vector / master *******************************
+      // loop over all mdisssegm vector entries
+      // ncol represents the master side dofs !!!
+      for (int j=0;j<ncol;++j)
+      {
+        double prod = mval[j]*mechdiss;
+      
+        // add current Gauss point's contribution to mdisssegm
+        (*mdisssegm)(j) += prod*jac*wgt;
+      }
+      // compute cell mechanical dissipation vector / master *************
+    } // tsi with contact
+      
     // compute cell D/M linearization ************************************
     // loop over slave nodes
     for (int j=0; j<nrow; ++j)
@@ -4871,6 +4990,38 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
     double val = gseg(slave);
     snode->AddgValue(val);
   }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble  mechanical dissipation                      gitterle 08/10|
+ |  This method assembles the contribution of a 1D/2D slave and master  |
+ |  overlap pair to the mechanical dissipation of adjacent nodes        |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleMechDiss(const Epetra_Comm& comm,
+                                             MORTAR::MortarElement& sele,
+                                             Epetra_SerialDenseVector& mdissseg)
+{
+  // get adjacent slave or master nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID()) continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound()) continue;
+
+    double val = mdissseg(slave);
+    snode->AddMechDissValue(val);
+   }
 
   return true;
 }

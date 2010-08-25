@@ -192,6 +192,11 @@ public:
   \brief Return old penalty traction (length 3)
   */
   virtual inline double* tractionold() { return tractionold_; }
+  
+  /*!
+  \brief Return mechanical dissipation per node  (length 1)
+  */
+  virtual double& MechDiss() { return mechdiss_; }
 
   //@}
 
@@ -212,6 +217,9 @@ protected:
   // penalty related quantities
   double                        traction_[3];     // traction vector of current time step
   double                        tractionold_[3];  // traction vector of previous time step
+  
+  // thermo contact related quantities
+  double                        mechdiss_;      // mechanical dissipation 
 
 }; // class FriNodeDataContainer
 
@@ -344,6 +352,30 @@ public:
 
   */
   void AddDerivJumpValue(int& row, const int& col, double val);
+  
+  /*!
+  \brief Add value to mechanical dissipation
+
+  */
+  void AddMechDissValue(double& val);
+
+  /*!
+  \brief Add a value to the 'F' map of this node
+
+  Note that frows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddFValue(int& row, int& col, double& val);
+  
+  /*!
+  \brief Add a value to the FNode set of this node
+
+  */
+  void AddFNode (int node);
 
   /*!
   \brief Write nodal entries of D and M to Dold and Mold

@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -170,14 +171,17 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     if (!Quad())
     {
       // prepare integration and linearization of M, g (and possibly D) on intcells
+      // prepare integration of mechanical dissipation in the case of tsi with contact
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  
+      RCP<Epetra_SerialDenseVector> mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
+      RCP<Epetra_SerialDenseVector> mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
+      
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
   
@@ -185,6 +189,17 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+      
+      // assemble of mechanical dissipation to slave and master nodes
+      if (DRT::Problem::Instance()->ProblemType()=="tsi")
+      {  
+        integrator.AssembleMechDiss(Comm(),SlaveElement(),*mdisssegs);
+        integrator.AssembleMechDiss(Comm(),MasterElement(),*mdisssegm);
+      
+        // dserror 
+        if (!CouplingInAuxPlane()) 
+          dserror("Tsi with contact only implemented for CouplingInAuxPlane");        
+      }
     }
     
     // *******************************************************************

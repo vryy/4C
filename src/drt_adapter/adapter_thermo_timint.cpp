@@ -283,24 +283,19 @@ void ADAPTER::ThermoTimInt::UpdateNewton(Teuchos::RCP<Epetra_Vector> temp)
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  if (temp != Teuchos::null)
-  {
-    // residual temperatures (or iteration increments or iteratively
-    // incremental temperatures)
-    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
-    tempi->Update(-1.0, *tempinc_, 1.0);
 
-    // update incremental temperature member to provided step increments
-    // shortly: tempinc_^<i> := temp^<i+1>
-    tempinc_->Update(1.0, *temp, 0.0);
+  // residual temperatures (or iteration increments or iteratively
+  // incremental temperatures)
+  Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
+  tempi->Update(-1.0, *tempinc_, 1.0);
 
-    // do thermal update with provided residual temperatures
-    thermo_->UpdateIterIncrementally(tempi);
-  }
-  else
-  {
-    thermo_->UpdateIterIncrementally(Teuchos::null);
-  }
+  // update incremental temperature member to provided step increments
+  // shortly: tempinc_^<i> := temp^<i+1>
+  tempinc_->Update(1.0, *temp, 0.0);
+
+  // do thermal update with provided residual temperatures
+  thermo_->UpdateIterIncrementally(tempi);
+
   return;
 }
 
