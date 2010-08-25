@@ -132,12 +132,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   interface->FillComplete();
 
   // store old row maps (before parallel redistribution)
-  // only for parallel redistribution case
-  if (parredist)
-  {
-		oldslavedofrowmap_  = rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-		oldmasterdofrowmap_ = rcp(new Epetra_Map(*interface->MasterRowDofs()));
-  }
+	slavedofrowmap_  = rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+  masterdofrowmap_ = rcp(new Epetra_Map(*interface->MasterRowDofs()));
 
   // print parallel distribution
 	interface->PrintParallelDistribution(1);
@@ -165,8 +161,6 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // in order to get initial D_ and M_
 
   // interface displacement (=0) has to be merged from slave and master discretization
-  slavedofrowmap_ = interface->SlaveRowDofs();
-  masterdofrowmap_ = interface->MasterRowDofs();
   RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
   RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
@@ -188,13 +182,18 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
 	if(comm.MyPID()==0) cout << "done!" << endl;
 
   // preparation for AssembleDM
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 10));
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 100));
+	// (Note that redistslave and redistmaster are the slave and master row maps
+	// after parallel redistribution. If no redistribution was performed, they
+	// are of course identical to slavedofrowmap_/masterdofrowmap_!)
+  RCP<Epetra_Map> redistslave  = interface->SlaveRowDofs();
+  RCP<Epetra_Map> redistmaster = interface->MasterRowDofs();
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*redistslave, 10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*redistslave, 100));
   interface->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();
-  mmatrix->Complete(*masterdofrowmap_, *slavedofrowmap_);
+  mmatrix->Complete(*redistmaster, *redistslave);
   D_ = dmatrix;
   M_ = mmatrix;
 
@@ -202,7 +201,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
 
   // extract diagonal of invd into diag
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap_,true);
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*redistslave,true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -219,20 +218,16 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   interface_ = interface;
 
   // mesh initialization (for rotational invariance)
-  MeshInit(masterdis,slavedis,aledis,masterdofrowmap_,slavedofrowmap_,comm,structslave);
+  MeshInit(masterdis,slavedis,aledis,redistmaster,redistslave,comm,structslave);
 
   // only for parallel redistribution case
   if (parredist)
   {
 		// transform everything back to old distribution
-		D_     = MORTAR::MatrixRowColTransform(D_,oldslavedofrowmap_,oldslavedofrowmap_);
-		M_     = MORTAR::MatrixRowColTransform(M_,oldslavedofrowmap_,oldmasterdofrowmap_);
-		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,oldslavedofrowmap_,oldslavedofrowmap_);
-		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,oldslavedofrowmap_,oldmasterdofrowmap_);
-
-		// store old maps
-		slavedofrowmap_ = oldslavedofrowmap_;
-		masterdofrowmap_ = oldmasterdofrowmap_;
+		D_     = MORTAR::MatrixRowColTransform(D_,slavedofrowmap_,slavedofrowmap_);
+		M_     = MORTAR::MatrixRowColTransform(M_,slavedofrowmap_,masterdofrowmap_);
+		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,slavedofrowmap_,slavedofrowmap_);
+		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,slavedofrowmap_,masterdofrowmap_);
   }
 
   // check for overlap of slave and Dirichlet boundaries
@@ -474,15 +469,18 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   interface_->Evaluate();
 
   // preparation for AssembleDM
-  RCP<Epetra_Map> slavedofrowmap = interface_->SlaveRowDofs();
-  RCP<Epetra_Map> masterdofrowmap = interface_->MasterRowDofs();
-  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap, 10));
-  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*slavedofrowmap, 100));
+	// (Note that redistslave and redistmaster are the slave and master row maps
+	// after parallel redistribution. If no redistribution was performed, they
+	// are of course identical to slavedofrowmap_/masterdofrowmap_!)
+  RCP<Epetra_Map> redistslave  = interface_->SlaveRowDofs();
+  RCP<Epetra_Map> redistmaster = interface_->MasterRowDofs();
+  RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*redistslave, 10));
+  RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*redistslave, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();
-  mmatrix->Complete(*masterdofrowmap, *slavedofrowmap);
+  mmatrix->Complete(*redistmaster, *redistslave);
   D_ = dmatrix;
   M_ = mmatrix;
 
@@ -490,7 +488,7 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   Dinv_ = rcp(new LINALG::SparseMatrix(*D_));
 
   // extract diagonal of invd into diag
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*redistslave,true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -507,10 +505,10 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
   if (parredist)
   {
 		// transform everything back to old distribution
-		D_     = MORTAR::MatrixRowColTransform(D_,oldslavedofrowmap_,oldslavedofrowmap_);
-		M_     = MORTAR::MatrixRowColTransform(M_,oldslavedofrowmap_,oldmasterdofrowmap_);
-		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,oldslavedofrowmap_,oldslavedofrowmap_);
-		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,oldslavedofrowmap_,oldmasterdofrowmap_);
+		D_     = MORTAR::MatrixRowColTransform(D_,slavedofrowmap_,slavedofrowmap_);
+		M_     = MORTAR::MatrixRowColTransform(M_,slavedofrowmap_,masterdofrowmap_);
+		Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,slavedofrowmap_,slavedofrowmap_);
+		DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,slavedofrowmap_,masterdofrowmap_);
   }
 
   return;

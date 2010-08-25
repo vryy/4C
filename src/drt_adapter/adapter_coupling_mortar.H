@@ -116,11 +116,9 @@ namespace ADAPTER
 
   private:
 
-    RCP<MORTAR::MortarInterface>  interface_;          ///< interface
-    RefCountPtr<Epetra_Map>       masterdofrowmap_;    ///< map of master row dofs
-    RefCountPtr<Epetra_Map>       slavedofrowmap_;     ///< map of slave row dofs
-    RefCountPtr<Epetra_Map>       oldmasterdofrowmap_; ///< map of master row dofs (before redistribution)
-    RefCountPtr<Epetra_Map>       oldslavedofrowmap_;  ///< map of slave row dofs (before redistribution)
+    RCP<MORTAR::MortarInterface>  interface_;        ///< interface
+    RefCountPtr<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
+    RefCountPtr<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
     
     RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
     RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
