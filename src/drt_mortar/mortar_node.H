@@ -470,6 +470,7 @@ public:
   // are defined as empty here in the gerenal mortar node. They can be called whenever you like.
 
   virtual void AddgValue(double& val) {}
+  virtual void AddMechDissValue(double& val) {}
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
 

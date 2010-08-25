@@ -432,6 +432,22 @@ public:
                               bool isinit = false);
 
   /*!
+  \brief Get nodal spatial coords from previous time step of current element
+
+  \param isinit (in): true if called for reference coords
+  */
+  virtual void GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
+                                 bool isinit = false);
+
+  /*!
+  \brief Get nodal spatial coords from previous time step of current element
+
+  \param isinit (in): true if called for reference coords
+  */
+  virtual void GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
+                               bool isinit = false);
+
+  /*!
   \brief Evaluate element metrics (local basis vectors)
   */
   virtual void Metrics(double* xi, vector<double>& gxi, vector<double>& geta);

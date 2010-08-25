@@ -574,6 +574,54 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
 }
 
 /*----------------------------------------------------------------------*
+ |  Get old nodal coordinates of the element               gitterle 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
+                                              bool isinit)
+{
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
+  if (coord.M()!=3 || coord.N()!=nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
+
+  for (int i=0;i<nnodes;++i)
+  {
+    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+    
+    coord(0,i) = mymrtrnode->X()[0] + mymrtrnode->uold()[0];
+    coord(1,i) = mymrtrnode->X()[1] + mymrtrnode->uold()[1];
+    coord(2,i) = mymrtrnode->X()[2] + mymrtrnode->uold()[2];
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get lagrange multipliers of the element                gitterle 08/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
+                                       bool isinit)
+{
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
+  if (lagmult.M()!=3 || lagmult.N()!=nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
+
+  for (int i=0;i<nnodes;++i)
+  {
+    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+    
+    lagmult(0,i) = mymrtrnode->MoData().lm()[0];
+    lagmult(1,i) = mymrtrnode->MoData().lm()[1];
+    lagmult(2,i) = mymrtrnode->MoData().lm()[2];
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::Metrics(double* xi, vector<double>& gxi,
