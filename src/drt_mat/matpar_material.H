@@ -145,7 +145,7 @@ private:
         MAT::PAR::Parameter* matparam  ///< the pointer
         )
       {
-        params_ = matparam;
+        params_ = Teuchos::rcp(matparam);
       }
 
       //@}
@@ -172,7 +172,7 @@ private:
       ///
       /// These quick access parameters are stored in separate member #params_;
       /// whereas the originally read ones are stored in DRT::Container base
-      inline MAT::PAR::Parameter* Parameter() const { return params_; }
+      inline MAT::PAR::Parameter* Parameter() const { return params_.get();}
 
       //@}
 
@@ -194,7 +194,7 @@ private:
       Teuchos::RCP<Epetra_Comm> comm_;
 
       /// Unwrapped material data for 'quick' access
-      MAT::PAR::Parameter* params_;
+      Teuchos::RCP<MAT::PAR::Parameter> params_;
 
     };  // class Material
 

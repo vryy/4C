@@ -65,7 +65,7 @@ MAT::PAR::Material::Material(
   type_(type),
   name_(name),
   comm_(Teuchos::null),
-  params_(NULL)
+  params_(Teuchos::null)
 {
   return;
 }
@@ -79,7 +79,7 @@ MAT::PAR::Material::Material()
   type_(INPAR::MAT::m_none),
   name_(""),
   comm_(Teuchos::null),
-  params_(NULL)
+  params_(Teuchos::null)
 {
   return;
 }
