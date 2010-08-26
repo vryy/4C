@@ -231,12 +231,12 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
       for (int i = 0; i < 6; ++i)
         ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
     
-      for (int dof=0; dof < 3; ++dof)
+      for (int dof=0; dof < 2; ++dof)
       {
         //computing entries for first node
         elevec1[dof] += funct[0] *ar[dof];
         //computing entries for first node
-        elevec1[3 + dof] += funct[1] *ar[dof];
+        elevec1[2 + dof] += funct[1] *ar[dof];
       }
         
     } // for (int ip=0; ip<intpoints.nquad; ++ip)
