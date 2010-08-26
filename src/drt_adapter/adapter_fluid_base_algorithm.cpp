@@ -225,6 +225,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
   // flag for writing stresses
   fluidtimeparams->set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  // flag for writing wall shear stress
+  fluidtimeparams->set ("write wall shear stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
 
   // ---------------------------------------------------- lift and drag
   fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));

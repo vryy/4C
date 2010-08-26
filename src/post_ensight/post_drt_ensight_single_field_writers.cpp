@@ -82,6 +82,8 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("normal", "node_normal", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
 
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());

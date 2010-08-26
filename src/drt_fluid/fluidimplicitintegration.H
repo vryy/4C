@@ -235,6 +235,12 @@ public:
   Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /*!
+  \brief calculate wall shear stresses
+
+  */
+  Teuchos::RCP<Epetra_Vector> CalcWallShearStresses();
+
+  /*!
    * \brief calculate fluid volume (2d case: calculate fluid "surface")
    */
   double CalcFluidVolume();
@@ -469,6 +475,7 @@ protected:
   int uprestart_;
   int upres_;
   int writestresses_;
+  int write_wall_shear_stresses_;
   //@}
 
   //! @name time step sizes
