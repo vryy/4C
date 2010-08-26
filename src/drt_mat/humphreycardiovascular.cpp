@@ -674,7 +674,7 @@ void MAT::HumphreyCardio::Evaluate
         (*cmat)(i,j) += 2*third*incJ*facisoc* I1 * Psl(i,j)
              - 2*third * Cinv(i) * Sisoc_j         // -2/3 Cinv x Siso
              - 2*third * Cinv(j) * Sisoc_i         // -2/3 Siso x Cinv
-             + delta7isoc * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
+             + delta7isoc * Aiso_i * Aiso_j       // part with 4 d^2W/dC^2
              + 2*third*incJ*facisom* I1 * Psl(i,j)
              - 2*third * Cinv(i) * Sisom_j         // -2/3 Cinv x Siso
              - 2*third * Cinv(j) * Sisom_i         // -2/3 Siso x Cinv
