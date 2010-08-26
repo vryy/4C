@@ -614,7 +614,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 				for(int i=0; i<forcesensor_->MyLength(); i++)//changed
 
 				{
-					if((*forcesensor_)[i]==1.0)
+					if((*forcesensor_)[i]>0.9)
 					{
 						count++;
 						f += fint[i];
@@ -760,7 +760,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 				if (statmechparams_.get<double> ("PeriodLength", 0.0) == 0)
 				{
 					// check whether the kinked visualization is to be applied
-					bool kinked = CheckForKinkedVisual(color, element->Id());
+					bool kinked = CheckForKinkedVisual(element->Id());
 
 					const DRT::ElementType & eot = element->ElementType();
 #ifdef D_BEAM3
@@ -781,25 +781,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 							}
 						}
 						else
-						{
-							color = 0.25;
-							for (int j=0; j<element->NumNode() - 1; j++)
-							{
-								// calculate third point of the
-								std::vector<double> p3(3, 0.0);
-								GmshKinkedVisual(coord, p3, element->Id());
-
-								//visualization
-								// (1/2)
-								gmshfilecontent << "SL(" << scientific << coord(0, j) << ","<< coord(1, j) << "," << coord(2, j) << ","
-															  << p3.at(0)<< "," << p3.at(1) << "," << p3.at(2) << ")" << "{"
-															  << scientific << color << "," << color << "};" << endl;
-								//(2/2)
-								gmshfilecontent << "SL(" << scientific << p3.at(0) << ","<< p3.at(1) << "," << p3.at(2) << ","
-															  << coord(0, j + 1)<< "," << coord(1, j + 1) << "," << coord(2, j + 1) << ")"
-															  << "{" << scientific << color << "," << color << "};"<< endl;
-							}
-						}
+							GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
 					}
 					else
 #endif
@@ -817,22 +799,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 							}
 						}
 						else
-						{
-							color = 0.25;
-							for(int j=0; j<element->NumNode()-1; j++)
-							{
-								std::vector<double> p3(3,0.0);
-								GmshKinkedVisual(coord, p3, element->Id());
-
-								gmshfilecontent << "SL(" << scientific
-															  << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-															  << p3.at(0) << "," << p3.at(1) << "," << p3.at(2)
-															  << ")" << "{" << scientific << color << "," << color << "};" << endl;
-								gmshfilecontent << "SL(" << scientific<< p3.at(0) << "," << p3.at(1) << "," << p3.at(2)<<","
-															  << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1)
-															  << ")" << "{" << scientific << color << "," << color << "};" << endl;
-							}
-						}
+							GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
 					}
 					else
 #endif
@@ -850,21 +817,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 							}
 						}
 						else
-						{
-							color = 0.25;
-							for (int j=0; j<element->NumNode()-1; j++)
-							{
-								std::vector<double> p3(3, 0.0);
-								GmshKinkedVisual(coord, p3, element->Id());
-
-								gmshfilecontent << "SL(" << scientific << coord(0, j) << ","<< coord(1, j) << "," << coord(2, j) << ","
-															  << p3.at(0)<< "," << p3.at(1) << "," << p3.at(2) << ")" << "{"
-															  << scientific << color << "," << color << "};" << endl;
-								gmshfilecontent << "SL(" << scientific << p3.at(0) << ","<< p3.at(1) << "," << p3.at(2) << ","
-															  << coord(0, j + 1)<< "," << coord(1, j + 1) << "," << coord(2, j + 1) << ")"
-															  << "{" << scientific << color << "," << color << "};"<< endl;
-							}
-						}
+							GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
 					}
 					else
 #endif
@@ -897,7 +850,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 	// plot the periodic boundary box
 	GmshOutputBoundaryBox(0.0, &filename);
 	// plot crosslink molecule diffusion and (partial) bonding
-	GmshOutputCrosslinkDiffusion(0.25, &filename, disrow);
+	GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
 	// finish data section of this view by closing curly brackets
 	if (discret_.Comm().MyPID() == 0)
 	{
@@ -963,7 +916,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 #endif
 		/* determine whether crosslink connects two filaments or occupies two binding spots on the same filament;
 		 * variable triggers different visualizations.*/
-		kinked = CheckForKinkedVisual(color, element->Id());
+		kinked = CheckForKinkedVisual(element->Id());
 	}
 
 	if (dotline)
@@ -1103,18 +1056,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					}
 				}
 				else
-				{
-					double changedcolor = 0.25;
-					std::vector<double> p3(3, 0.0);
-					GmshKinkedVisual(coord, p3, element->Id());
-
-					gmshfilecontent << "SL(" << scientific << coord(0, i) << ","<< coord(1, i) << "," << coord(2, i) << ","
-													<< p3.at(0) << ","<< p3.at(1) << "," << p3.at(2) << ")"
-													<< "{" << scientific<< changedcolor << "," << changedcolor << "};" << endl;
-					gmshfilecontent << "SL(" << scientific << p3.at(0) << "," << p3.at(1)<< "," << p3.at(2) << ","
-													<< coord(0, i + 1) << "," << coord(1, i + 1) << "," << coord(2, i + 1) << ")"
-													<< "{" << scientific<< changedcolor << "," << changedcolor << "};" << endl;
-				}
+					GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
 			}
 		}
 	}
@@ -1209,7 +1151,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 			 std::stringstream gmshfilecross;
 			 for(int i=0; i<visualizepositions_->MyLength(); i++)
 			 {
-			 if((*numbond_)[i]==0.0)
+			 if((*numbond_)[i]<0.1)
 			 {
 			 double beadcolor = color;
 			 //writing element by nodal coordinates as a sphere
@@ -1229,8 +1171,6 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 			// first, just update positions: redundant information on all procs
 			for (int i=0; i<numbond_->MyLength(); i++)
 			{
-				std::vector<std::vector<double> > visualizedpos(1, std::vector<double>(3, 0.0));
-
 				switch ((int) (*numbond_)[i])
 				{
 					// crosslink molecule - filament node pair
@@ -1256,15 +1196,11 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 							//length += (coord(j,1)-coord(j,0))*(coord(j,1)-coord(j,0));
 						}
 
-						double beadcolor = color;
+						double beadcolor = 2*color;
 						// in case of periodic boundary conditions
 						if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
 						{
-							// if a one-bonded molecule is looking for bonding partners, the color is blue, else red
-							if((*searchforneighbours_)[i]>0.9)
-								GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
-							else
-								GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, 0, true);
+							GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, 0, true);
 							// visualization of "real" crosslink molecule positions
 							//beadcolor = 0.0; //black
 							//gmshfilebonds << "SP(" << scientific;
@@ -1273,14 +1209,9 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 						}
 						else
 						{
-							double color2;
-							if((*searchforneighbours_)[i]>0.9)
-								color2 = color;
-							else
-								color2 = 2*color;
 							gmshfilebonds << "SL(" << scientific;
 							gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-							gmshfilebonds << ")" << "{" << scientific << color2 << ","<< color2 << "};" << endl;
+							gmshfilebonds << ")" << "{" << scientific << 2*color << ","<< 2*color << "};" << endl;
 							gmshfilebonds << "SP(" << scientific;
 							gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
 							gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
@@ -1290,10 +1221,59 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 						// crosslinker element: crosslink molecule (representation) position (Proc 0 only)
 					case 2:
 					{
-						double beadcolor = 2* color ; //red
-						gmshfilebonds << "SP(" << scientific;
-						gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
-						gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+						// actual crosslinker element (not kinked)
+						if((*searchforneighbours_)[i] > 0.9)
+						{
+							if((*crosslinkonsamefilament_)[i] < 0.1)
+							{
+								double beadcolor = 4* color ; //red
+								gmshfilebonds << "SP(" << scientific;
+								gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
+								gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+							}
+						}
+						else	// passive crosslink molecule
+						{
+							// determine position of nodeGID entry
+							int occupied = 0;
+							for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
+								if ((int) (*crosslinkerbond_)[j][i] != -1)
+								{
+									occupied = j;
+									break;
+								}
+							int nodeGID = (int) (*crosslinkerbond_)[occupied][i];
+
+							DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+							LINALG::SerialDenseMatrix coord(3, 2, true);
+							for (int j=0; j<coord.M(); j++)
+							{
+								int dofgid = discret_.Dof(node)[j];
+								coord(j, 0) = node->X()[j] + discol[dofgid];
+								coord(j, 1) = (*visualizepositions_)[j][i];
+							}
+
+							double beadcolor = color;
+							// in case of periodic boundary conditions
+							if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+							{
+								GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
+								// visualization of "real" crosslink molecule positions
+								//beadcolor = 0.0; //black
+								//gmshfilebonds << "SP(" << scientific;
+								//gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
+								//gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+							}
+							else
+							{
+								gmshfilebonds << "SL(" << scientific;
+								gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
+								gmshfilebonds << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+								gmshfilebonds << "SP(" << scientific;
+								gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
+								gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+							}
+						}
 					}
 						break;
 					default:
@@ -1306,6 +1286,96 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 	}
 	discret_.Comm().Barrier();
 }// GmshOutputCrosslinkDiffusion
+
+/*----------------------------------------------------------------------*
+ | Special Gmsh output for crosslinkers occupying two binding spots on  |
+ | the same filament											        (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent)
+{
+	/* We need a third point in order to visualize the crosslinker.
+	 * It marks the location of the kink.
+	 */
+	std::vector<double> thirdpoint(3,0.0);
+	// get the element
+	DRT::Element* element = discret_.gElement(eleid);
+
+	// calculate tangent
+	double ltan = 0.0;
+	for (int j=0; j<coord.M(); j++)
+		ltan += (coord(j, coord.N() - 1) - coord(j, 0)) * (coord(j, coord.N() - 1) - coord(j, 0));
+	ltan = sqrt(ltan);
+
+	std::vector<double> t(3, 0.0);
+	for (int j=0; j<coord.M(); j++)
+		t.at(j) = ((coord(j, coord.N() - 1) - coord(j, 0)) / ltan);
+
+	// calculate normal via cross product: [0 0 1]x[tx ty tz]
+	std::vector<double> n(3, 0.0);
+	n.at(0) = -t.at(1);
+	n.at(1) = t.at(0);
+	// norm it since the cross product does not keep the length
+	double lnorm = 0.0;
+	for (int j=0; j<(int)n.size(); j++)
+		lnorm += n.at(j) * n.at(j);
+	lnorm = sqrt(lnorm);
+	for (int j=0; j<(int) n.size(); j++)
+		n.at(j) /= lnorm;
+
+	// obtain angle
+	// random angle
+	//ranlib::UniformClosed<double> UniformGen;
+	//double alpha = 2*M_PI*UniformGen.random();
+	// by modulo operation involving the node IDs
+	double alpha = fmod((double) (element->Nodes()[element->NumNode() - 1]->Id() + element->Nodes()[0]->Id()), 2*M_PI);
+
+	// rotate the normal by alpha
+	LINALG::SerialDenseMatrix RotMat(3, 3);
+	// build the matrix of rotation
+	for (int j=0; j<3; j++)
+		RotMat(j, j) = cos(alpha) + t.at(j) * t.at(j) * (1 - cos(alpha));
+	RotMat(0, 1) = t.at(0) * t.at(1) * (1 - cos(alpha)) - t.at(2) * sin(alpha);
+	RotMat(0, 2) = t.at(0) * t.at(2) * (1 - cos(alpha)) + t.at(1) * sin(alpha);
+	RotMat(1, 0) = t.at(1) * t.at(0) * (1 - cos(alpha)) + t.at(2) * sin(alpha);
+	RotMat(1, 2) = t.at(1) * t.at(2) * (1 - cos(alpha)) - t.at(0) * sin(alpha);
+	RotMat(2, 0) = t.at(2) * t.at(0) * (1 - cos(alpha)) - t.at(1) * sin(alpha);
+	RotMat(2, 1) = t.at(2) * t.at(1) * (1 - cos(alpha)) + t.at(0) * sin(alpha);
+
+	// rotation
+	std::vector<double> nrot(3, 0.0);
+	for (int j=0; j<3; j++)
+		for (int k=0; k<3; k++)
+			nrot.at(j) += RotMat(j, k) * n.at(k);
+
+	// calculation of the third point lying in the direction of the rotated normal
+	// height of the third point above the filament
+	double h = 0.33 * (statmechparams_.get<double> ("R_LINK", 0.0) + statmechparams_.get<double> ("DeltaR_LINK", 0.0));
+	for (int j=0; j<3; j++)
+		thirdpoint.at(j) = (coord(j, 0) + coord(j, element->NumNode() - 1)) / 2.0	+ h * nrot.at(j);
+
+	gmshfilecontent << "SL(" << scientific << coord(0,0) << ","<< coord(1,0) << "," << coord(2,0) << ","
+									<< thirdpoint.at(0) << ","<< thirdpoint.at(1) << "," << thirdpoint.at(2) << ")"
+									<< "{" << scientific<< color << "," << color << "};" << endl;
+	gmshfilecontent << "SL(" << scientific << thirdpoint.at(0) << "," << thirdpoint.at(1)<< "," << thirdpoint.at(2) << ","
+									<< coord(0, 1) << "," << coord(1,1) << "," << coord(2,1) << ")"
+									<< "{" << scientific<< color << "," << color << "};" << endl;
+	gmshfilecontent << "SP(" << scientific
+								<< thirdpoint.at(0) << "," << thirdpoint.at(1) << ","<< thirdpoint.at(2)
+								<< ")" << "{" << scientific << color << ","<< color << "};" << endl;
+
+
+	/*/ cout block
+	 cout<<"coord  = \n"<<coord<<endl;
+	 cout<<"ltan   = "<<ltan<<endl;
+	 cout<<"t      = [ "<<t.at(0)<<" "<<t.at(1)<<" "<<t.at(2)<<" ]"<<endl;
+	 cout<<"lnorm  = "<<lnorm<<endl;
+	 cout<<"n      = [ "<<n.at(0)<<" "<<n.at(1)<<" "<<n.at(2)<<" ]"<<endl;
+	 cout<<"alpha  = "<<alpha<<endl;
+	 cout<<"RotMat =\n"<<RotMat<<endl;
+	 cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
+	 cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
+	return;
+}// StatMechManager::GmshKinkedVisual
 
 /*----------------------------------------------------------------------*
  | prepare visualization vector for Gmsh Output  (private) mueller 08/10|
@@ -1323,15 +1393,13 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 	{
 		for (int i=0; i<numbond_->MyLength(); i++)
 		{
-			switch ((int)(*numbond_)[i])
+			switch((int)(*numbond_)[i])
 			{
 				// diffusion
 				case 0:
 				{
-					//cout<<"case 0:";
 					for (int j=0; j<visualizepositions_->NumVectors(); j++)
 						(*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
-					//cout<<"...!"<<endl;
 				}
 				break;
 				// one bonded crosslink molecule
@@ -1346,14 +1414,19 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 							break;
 						}
 
-					int nodeGID = (int) (*crosslinkerbond_)[occupied][i];
-					const DRT::Node *node0 = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+					int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
+					int currfilament = (int)(*filamentnumber_)[nodeLID];
+					const DRT::Node *node0 = discret_.lColNode(nodeLID);
 					// choose a second (neighbour) node
-					const DRT::Node *node1;
-					if (nodeGID < basisnodes_ - 1)
-						node1 = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID + 1));
-					else
-						node1 = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID - 1));
+					const DRT::Node *node1 = NULL;
+					if(nodeLID < basisnodes_-1)
+						if((*filamentnumber_)[nodeLID+1]==currfilament)
+							node1 = discret_.lColNode(nodeLID+1);
+						else
+							node1 = discret_.lColNode(nodeLID-1);
+					if(nodeLID == basisnodes_-1)
+						if((*filamentnumber_)[nodeLID-1]==currfilament)
+							node1 = discret_.lColNode(nodeLID-1);
 
 					//calculate unit tangent
 					LINALG::Matrix<3,1> nodepos0;
@@ -1361,8 +1434,8 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
 					for (int j=0; j<3; j++)
 					{
-						int dofgid0 = discret_.Dof(0,node0)[j];
-						int dofgid1 = discret_.Dof(0,node1)[j];
+						int dofgid0 = discret_.Dof(node0)[j];
+						int dofgid1 = discret_.Dof(node1)[j];
 						nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
 						double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
 						tangent(j) = nodeposj1 - nodepos0(j,0);
@@ -1404,42 +1477,116 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 				break;
 				case 2:
 				{
-					// loop over filament node components
-					for (int j=0; j<visualizepositions_->NumVectors(); j++)
+					// actual crosslinker element (not kinked)
+					if((*searchforneighbours_)[i]>0.9)
 					{
-						std::vector<double> dofnodepositions(crosslinkerbond_->NumVectors(), 0.0);
-						// loop over filament node GIDs
-						for (int k=0; k<crosslinkerbond_->NumVectors(); k++)
+						// loop over filament node components
+						for (int j=0; j<visualizepositions_->NumVectors(); j++)
 						{
-							int nodeGID = (int) (*crosslinkerbond_)[k][i];
-							DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
-							int dofgid = discret_.Dof(node)[j];
-							dofnodepositions.at(k) = node->X()[j] + discol[dofgid];
-						}
-						/* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
-						 * It does not matter which value is shifted as long the shift occurs in a consistent way.*/
-						if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
-						{
-							(*visualizepositions_)[j][i] = dofnodepositions.at(0);
-							for (int k=0; k<1; k++)
+							std::vector<double> dofnodepositions(crosslinkerbond_->NumVectors(), 0.0);
+							// loop over filament node GIDs
+							for (int k=0; k<crosslinkerbond_->NumVectors(); k++)
 							{
-								// shift position if it is found to be outside the boundary box
-								if (fabs(dofnodepositions.at(k+1) - statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
-									dofnodepositions.at(k+1) -= statmechparams_.get<double> ("PeriodLength", 0.0);
-								if (fabs(dofnodepositions.at(k+1) + statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
-									dofnodepositions.at(k+1) += statmechparams_.get<double> ("PeriodLength", 0.0);
-
-								(*visualizepositions_)[j][i] += dofnodepositions.at(k+1);
+								int nodeGID = (int) (*crosslinkerbond_)[k][i];
+								DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodeGID));
+								int dofgid = discret_.Dof(node)[j];
+								dofnodepositions.at(k) = node->X()[j] + discol[dofgid];
 							}
-							// new crosslink molecule position
-							(*visualizepositions_)[j][i] /= 2.0;
+							/* Check if the crosslinker element is broken/discontinuous; if so, reposition the second nodal value.
+							 * It does not matter which value is shifted as long the shift occurs in a consistent way.*/
+							if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+							{
+								(*visualizepositions_)[j][i] = dofnodepositions.at(0);
+								for (int k=0; k<1; k++)
+								{
+									// shift position if it is found to be outside the boundary box
+									if (fabs(dofnodepositions.at(k+1) - statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
+										dofnodepositions.at(k+1) -= statmechparams_.get<double> ("PeriodLength", 0.0);
+									if (fabs(dofnodepositions.at(k+1) + statmechparams_.get<double> ("PeriodLength", 0.0) - dofnodepositions.at(k))< fabs(dofnodepositions.at(k+1) - dofnodepositions.at(k)))
+										dofnodepositions.at(k+1) += statmechparams_.get<double> ("PeriodLength", 0.0);
+
+									(*visualizepositions_)[j][i] += dofnodepositions.at(k+1);
+								}
+								// new crosslink molecule position
+								(*visualizepositions_)[j][i] /= 2.0;
+							}
+							else
+								(*visualizepositions_)[j][i] /= 2.0;
 						}
-						else
-							(*visualizepositions_)[j][i] /= 2.0;
+					}
+					else	// passive crosslink molecule
+					{
+						// determine position of nodeGID entry
+						int occupied = -1;
+						for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
+							if ((*crosslinkerbond_)[j][i] > -0.9)
+							{
+								occupied = j;
+								break;
+							}
+
+						int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
+						int currfilament = (int)(*filamentnumber_)[nodeLID];
+						const DRT::Node *node0 = discret_.lColNode(nodeLID);
+						// choose a second (neighbour) node
+						const DRT::Node *node1 = NULL;
+						if(nodeLID < basisnodes_-1)
+							if((*filamentnumber_)[nodeLID+1]==currfilament)
+								node1 = discret_.lColNode(nodeLID+1);
+							else
+								node1 = discret_.lColNode(nodeLID-1);
+						if(nodeLID == basisnodes_-1)
+							if((*filamentnumber_)[nodeLID-1]==currfilament)
+								node1 = discret_.lColNode(nodeLID-1);
+
+						//calculate unit tangent
+						LINALG::Matrix<3,1> nodepos0;
+						LINALG::Matrix<3,1> tangent;
+
+						for (int j=0; j<3; j++)
+						{
+							int dofgid0 = discret_.Dof(node0)[j];
+							int dofgid1 = discret_.Dof(node1)[j];
+							nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
+							double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
+							tangent(j) = nodeposj1 - nodepos0(j,0);
+						}
+						tangent.Scale(1 / tangent.Norm2());
+
+						// calculate normal via cross product: [0 0 1]x[tx ty tz]
+						LINALG::Matrix<3, 1> normal;
+						normal(0) = -tangent(1);
+						normal(1) = tangent(0);
+						// norm it since the cross product does not keep the length
+						normal.Scale(1 / normal.Norm2());
+
+						// obtain angle
+						// random angle
+						// by modulo operation involving the crosslink molecule number
+						double alpha = fmod((double) i, 2*M_PI);
+
+						// rotate the normal by alpha
+						LINALG::Matrix<3, 3> RotMat;
+						// build the matrix of rotation
+						for (int j=0; j<3; j++)
+							RotMat(j, j) = cos(alpha) + tangent(j) * tangent(j) * (1 - cos(alpha));
+						RotMat(0, 1) = tangent(0) * tangent(1) * (1 - cos(alpha)) - tangent(2) * sin(alpha);
+						RotMat(0, 2) = tangent(0) * tangent(2) * (1 - cos(alpha)) + tangent(1) * sin(alpha);
+						RotMat(1, 0) = tangent(1) * tangent(0) * (1 - cos(alpha)) + tangent(2) * sin(alpha);
+						RotMat(1, 2) = tangent(1) * tangent(2) * (1 - cos(alpha)) - tangent(0) * sin(alpha);
+						RotMat(2, 0) = tangent(2) * tangent(0) * (1 - cos(alpha)) - tangent(1) * sin(alpha);
+						RotMat(2, 1) = tangent(2) * tangent(1) * (1 - cos(alpha)) + tangent(0) * sin(alpha);
+
+						// rotation
+						LINALG::Matrix<3, 1> rotnormal;
+						rotnormal.Multiply(RotMat, normal);
+
+						// calculation of the visualized point lying in the direction of the rotated normal
+						for (int j=0; j<visualizepositions_->NumVectors(); j++)
+							(*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*rotnormal(j,0);
 					}
 				}
 				break;
-				default: continue;
 			}
 		}
 		if (statmechparams_.get<double>("PeriodLength", 0.0) > 0.0)
@@ -2400,6 +2547,10 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 								break;
 							}
 			}
+
+	// "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
+	if((int)(*numbond_)[index]==1)
+		neighboursLID->push_back(-1);
 	//if(neighboursLID->size()>0)
 		//cout<<" p="<<partition->at(0)<<","<<partition->at(1)<<","<<partition->at(2)<<endl;
 	//cout<<"i="<<index<<": det. neighbour nodes: "<< Teuchos::Time::wallTime()-t<<endl;
@@ -2504,10 +2655,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		/* map crosslink molecule and filament node positions to volume partitions every SEARCHRES timesteps
 		 * after having individually determined whether or not a search is to be conducted for each molecule.*/
 		if(istep%statmechparams_.get<int>("SEARCHINTERVAL",1)==0 && statmechparams_.get<int>("SEARCHRES",1)>0)
-		{
-			ShallWeSearch(dt);
 			PositionsToPartitions(currentpositions);
-		}
 
 		// obtain a random order in which the crosslinkers are addressed
 		std::vector<int> order = Permutation((int)statmechparams_.get<double>("N_crosslink", 0.0));
@@ -2516,8 +2664,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		{
 			int irandom = order[i];
 
-			// skip this crosslink molecule if it already bonded with two nodes or did not pass the search probability test
-			if((*searchforneighbours_)[irandom]<0.9)
+			// skip this crosslink molecule if it already bonded with two nodes or if it is passive
+			if((*numbond_)[irandom]>1.9)
 				continue;
 
 			// search for neighbour nodes
@@ -2586,14 +2734,27 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 								bondestablished = true;
 							}
 							break;
-							// one bond already exists -> establish a second bond
+							// one bond already exists -> establish a second bond/passive crosslink molecule
 							// Potentially, add an element (later)
 							case 1:
 							{
 								//Col map LIDs of nodes to be crosslinked
 								LINALG::Matrix<2,1> LID;
 								LID(0) = nodecolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
-								LID(1) = nodeLID;
+								if(nodeLID>=0)
+									LID(1) = nodeLID;
+								else
+								{
+									int currfilament = (int)(*filamentnumber_)[(int)LID(0)];
+									if((int)LID(0)<basisnodes_-1)
+										if((int)(*filamentnumber_)[(int)LID(0)+1]==currfilament)
+											LID(1) = LID(0) + 1.0;
+										else
+											LID(1) = LID(0) - 1.0;
+									if((int)LID(0)==basisnodes_-1)
+										if((int)(*filamentnumber_)[(int)LID(0)-1]==currfilament)
+											LID(1) = LID(0) - 1.0;
+								}
 
 								//unit direction vector between currently considered two nodes
 								LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0)))->second);
@@ -2608,13 +2769,28 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 									lid(0,0) = LID(0);
 									lid(1,0) = LID(1);
 
-									(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
-									((*numcrossnodes_)[nodeLID]) += 1.0;
 									((*numbond_)[irandom]) = 2.0;
-									// insert node GID in order to check the correct setup
-									doublebond[irandom] = 1.0;
-									// update molecule positions
-									CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
+									// actually existing two bonds
+									if(nodeLID>=0)
+									{
+										(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
+										((*numcrossnodes_)[nodeLID]) += 1.0;
+										// insert node GID in order to check the correct setup
+										doublebond[irandom] = 1.0;
+										// update molecule positions
+										CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
+
+										// consider crosslinkers covering two binding spots of one filament
+										if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[nodeLID])
+											(*crosslinkonsamefilament_)[irandom] = 1.0;
+									}
+									else // passive crosslink molecule
+									{
+										(*searchforneighbours_)[irandom] = 0.0;
+										LINALG::SerialDenseMatrix oneLID(1,1,true);
+										oneLID(0,0) = LID(0);
+										CrosslinkerIntermediateUpdate(currentpositions, oneLID, irandom);
+									}
 									bondestablished = true;
 								}
 							}
@@ -3232,13 +3408,14 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 				case 2:
 				{
 					// currently, if an element is deleted, a one-bonded crosslink molecule remains (no simultaneous cut of both bonds)
-					bool deleteelement = false;
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-						if (!deleteelement)
-							if (UniformGen.random() < punlink)
-							{
-								deleteelement = true;
+						if (UniformGen.random() < punlink)
+						{
+							(*numbond_)[i] = 1.0;
 
+							// an actual crosslinker element exists
+							if((*searchforneighbours_)[i]>0.9)
+							{
 								// get the nodal LID and then reset the entry
 								int nodeLID = nodecolmap.LID((int)(*crosslinkerbond_)[j][i]);
 								// get the crosslinker element GID and store it for later deletion:
@@ -3251,19 +3428,23 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 											delcrosslinkers[nodeLID] = crosslinkergids[k-1][nodeLID];
 
 								((*numcrossnodes_)[nodeLID]) -= 1.0;
-								(*numbond_)[i] = 1.0;
 								(*crosslinkerbond_)[j][i] = -1.0;
+								if((*crosslinkonsamefilament_)[i] > 0.9)
+									(*crosslinkonsamefilament_)[i] = 0.0;
 							}
+							else	// passive crosslink molecule
+								(*searchforneighbours_)[i] = 1.0;
 
-					// get the other non-"-1" entry and update crosslink molecule position
-					if (deleteelement)
-						for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-							if ((*crosslinkerbond_)[j][i]>-0.9)
-							{
-								LINALG::SerialDenseMatrix LID(1, 1, true);
-								LID(0,0) = nodecolmap.LID((int)(*crosslinkerbond_)[j][i]);
-								CrosslinkerIntermediateUpdate(currentpositions, LID, i);
-							}
+							for (int k=0; k<crosslinkerbond_->NumVectors(); k++)
+								if ((*crosslinkerbond_)[k][i]>-0.9)
+								{
+									LINALG::SerialDenseMatrix LID(1, 1, true);
+									LID(0,0) = nodecolmap.LID((int)(*crosslinkerbond_)[k][i]);
+									CrosslinkerIntermediateUpdate(currentpositions, LID, i);
+									break;
+								}
+							break;
+						}
 				}
 				break;
 			}// switch ((int)(*numbond_)[i])
@@ -3666,12 +3847,10 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 		LARGEROTATIONS::quaterniontotriad(qnode, Tfil);
 
 		//auxiliary variable
-		double scalarproduct = (direction(0) * Tfil(0, 0) + direction(1) * Tfil(1,
-				0) + direction(2) * Tfil(2, 0));
+		double scalarproduct = (direction(0) * Tfil(0, 0) + direction(1) * Tfil(1,0) + direction(2) * Tfil(2, 0));
 
 		//computing Deltaphi and Delta at binding site i
-		Deltaphi[i] = acos(scalarproduct) - statmechparams_.get<double> ("PHI0",
-				0.0);
+		Deltaphi[i] = acos(scalarproduct) - statmechparams_.get<double> ("PHI0",0.0);
 
 		//substract from filament direction vector the component parallel to the crosslinker axis and normalize the result
 		(filprojected[i])(0) = Tfil(0, 0) - scalarproduct * direction(0);
@@ -3868,118 +4047,23 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 /*----------------------------------------------------------------------*
  | check the binding mode of a crosslinker        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-bool StatMechManager::CheckForKinkedVisual(const double& color, int eleid)
+bool StatMechManager::CheckForKinkedVisual(int eleid)
 {
-	// if element is of a filament
-	if (color != 0.5)
-		return false;
-	// else, if element is a crosslinker
-	else
+	bool kinked = true;
+	// if element is a crosslinker
+	if(eleid>basisnodes_)
 	{
 		DRT::Element *element = discret_.gElement(eleid);
-
-		std::vector<int> filamentids;
-		std::vector<DRT::Condition*> filaments(0);
-		discret_.GetCondition("FilamentNumber", filaments);
-
-		// determine filament IDs of the nodes belonging to the crosslinker
-		for (int i=0; i<(int) filaments.size(); i++)
-		{
-			// exit loop if a match was found for all crosslinker element nodes
-			if ((int) filamentids.size() == element->NumNode())
-				break;
-			else
-				for (int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
-					for (int k=0; k<element->NumNode(); k++)
-						if (element->Nodes()[k]->Id() == filaments[i]->Nodes()->at(j))
-							filamentids.push_back(filaments[i]->Id());
-		}
-
-		// check affiliation of (first and last) crosslinker nodes to filament(s)
-		if (filamentids.at(0) == filamentids.at(element->NumNode() - 1))
-			return true;
-		else
-			return false;
+		int lid = discret_.NodeColMap()->LID(element->NodeIds()[0]);
+		for(int i=0; i<element->NumNode(); i++)
+			if((*filamentnumber_)[lid]!=(*filamentnumber_)[element->NodeIds()[i]])
+				kinked = false;
+		return kinked;
 	}
+	else
+		kinked = false;
+	return kinked;
 }//StatMechManager::CheckForKinkedVisual
-
-/*----------------------------------------------------------------------*
- | Special Gmsh output for crosslinkers occupying two binding spots on  |
- | the same filament											        (public) mueller 07/10|
- *----------------------------------------------------------------------*/
-void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid)
-{
-	/* We need a third point in order to visualize the crosslinker.
-	 * It marks the location of the kink.
-	 */
-	// get the element
-	DRT::Element* element = discret_.gElement(eleid);
-
-	// calculate tangent
-	double ltan = 0.0;
-	for (int j=0; j<coord.M(); j++)
-		ltan += (coord(j, coord.N() - 1) - coord(j, 0)) * (coord(j, coord.N() - 1) - coord(j, 0));
-	ltan = sqrt(ltan);
-
-	std::vector<double> t(3, 0.0);
-	for (int j=0; j<coord.M(); j++)
-		t.at(j) = ((coord(j, coord.N() - 1) - coord(j, 0)) / ltan);
-
-	// calculate normal via cross product: [0 0 1]x[tx ty tz]
-	std::vector<double> n(3, 0.0);
-	n.at(0) = -t.at(1);
-	n.at(1) = t.at(0);
-	// norm it since the cross product does not keep the length
-	double lnorm = 0.0;
-	for (int j=0; j<(int)n.size(); j++)
-		lnorm += n.at(j) * n.at(j);
-	lnorm = sqrt(lnorm);
-	for (int j=0; j<(int) n.size(); j++)
-		n.at(j) /= lnorm;
-
-	// obtain angle
-	// random angle
-	//ranlib::UniformClosed<double> UniformGen;
-	//double alpha = 2*M_PI*UniformGen.random();
-	// by modulo operation involving the node IDs
-	double alpha = fmod((double) (element->Nodes()[element->NumNode() - 1]->Id() + element->Nodes()[0]->Id()), 2*M_PI);
-
-	// rotate the normal by alpha
-	LINALG::SerialDenseMatrix RotMat(3, 3);
-	// build the matrix of rotation
-	for (int j=0; j<3; j++)
-		RotMat(j, j) = cos(alpha) + t.at(j) * t.at(j) * (1 - cos(alpha));
-	RotMat(0, 1) = t.at(0) * t.at(1) * (1 - cos(alpha)) - t.at(2) * sin(alpha);
-	RotMat(0, 2) = t.at(0) * t.at(2) * (1 - cos(alpha)) + t.at(1) * sin(alpha);
-	RotMat(1, 0) = t.at(1) * t.at(0) * (1 - cos(alpha)) + t.at(2) * sin(alpha);
-	RotMat(1, 2) = t.at(1) * t.at(2) * (1 - cos(alpha)) - t.at(0) * sin(alpha);
-	RotMat(2, 0) = t.at(2) * t.at(0) * (1 - cos(alpha)) - t.at(1) * sin(alpha);
-	RotMat(2, 1) = t.at(2) * t.at(1) * (1 - cos(alpha)) + t.at(0) * sin(alpha);
-
-	// rotation
-	std::vector<double> nrot(3, 0.0);
-	for (int j=0; j<3; j++)
-		for (int k=0; k<3; k++)
-			nrot.at(j) += RotMat(j, k) * n.at(k);
-
-	// calculation of the third point lying in the direction of the rotated normal
-	// height of the third point above the filament
-	double h = 0.33 * (statmechparams_.get<double> ("R_LINK", 0.0) + statmechparams_.get<double> ("DeltaR_LINK", 0.0));
-	for (int j=0; j<3; j++)
-		thirdpoint.at(j) = (coord(j, 0) + coord(j, element->NumNode() - 1)) / 2.0	+ h * nrot.at(j);
-
-	/*/ cout block
-	 cout<<"coord  = \n"<<coord<<endl;
-	 cout<<"ltan   = "<<ltan<<endl;
-	 cout<<"t      = [ "<<t.at(0)<<" "<<t.at(1)<<" "<<t.at(2)<<" ]"<<endl;
-	 cout<<"lnorm  = "<<lnorm<<endl;
-	 cout<<"n      = [ "<<n.at(0)<<" "<<n.at(1)<<" "<<n.at(2)<<" ]"<<endl;
-	 cout<<"alpha  = "<<alpha<<endl;
-	 cout<<"RotMat =\n"<<RotMat<<endl;
-	 cout<<"nrot   = [ "<<nrot.at(0)<<" "<<nrot.at(1)<<" "<<nrot.at(2)<<" ]"<<endl;
-	 cout<<"thirdp = [ "<<thirdpoint.at(0)<<" "<<thirdpoint.at(1)<<" "<<thirdpoint.at(2)<<" ]\n\n\n"<<endl;*/
-	return;
-}// StatMechManager::GmshKinkedVisual
 
 /*----------------------------------------------------------------------*
  | simulation of crosslinker diffusion		        (public) mueller 07/10|
@@ -4142,7 +4226,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	else
 		upperbound = statmechparams_.get<double> ("MaxRandValue", 0.0);
 
-	// random positions vector
 	crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
 
 	for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
@@ -4153,8 +4236,9 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
 	crosslinkerbond_->PutScalar(-1.0);
 
-	// bond count vector is initialized
 	numbond_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
+
+	crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
 
 	// initialize the beautiful visuals vector (aka beevee-vector)
 	visualizepositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
@@ -4162,11 +4246,9 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		for (int j=0; j<visualizepositions_->NumVectors(); j++)
 			(*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
 
-	// initialize search flag vector with 1
 	searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
 	searchforneighbours_->PutScalar(1.0);
 
-	// initialize number of crosslink molecules per filament node with zeros
 	numcrossnodes_ = rcp(new Epetra_Vector(*(discret_.NodeColMap()), true));
 
 	// initialize vector related to volume indexing
@@ -4193,42 +4275,6 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
 		}
 	return;
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
-/*----------------------------------------------------------------------*
- | Determines individually wether or not a search for neighbours of     |
- | each crosslink molecule is conducted           (public) mueller 08/10|
- *----------------------------------------------------------------------*/
-void StatMechManager::ShallWeSearch(const double& dt)
-{
-	ranlib::UniformClosed<double> UniformGen;
-
-	if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
-		UniformGen.seed((unsigned int)(time_/dt));
-
-	for(int i=0; i<numbond_->MyLength(); i++)
-	{
-		switch((int)(*numbond_)[i])
-		{
-			case 0:
-				(*searchforneighbours_)[i] = 1.0;
-			break;
-			case 1:
-			{
-				if(UniformGen.random() < statmechparams_.get<double>("SEARCHPROBABILITY", 1.0))
-					(*searchforneighbours_)[i] = 1.0;
-				else
-					(*searchforneighbours_)[i] = 0.0;
-			}
-			break;
-			case 2:
-				(*searchforneighbours_)[i] = 0.0;
-			break;
-			default: continue;
-		}
-	}
-	//test cout
-	//cout<<*searchforneighbours_<<endl;
-	return;
-}
 
 /*----------------------------------------------------------------------*
  | Assign crosslink molecules and nodes to volume partitions            |

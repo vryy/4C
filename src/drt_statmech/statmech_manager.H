@@ -176,7 +176,7 @@ protected:
 	void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
-	bool CheckForKinkedVisual(const double& color, int eleid);
+	bool CheckForKinkedVisual(int eleid);
 
 	//! \brief gmsh output of periodic boundary box
 	void GmshOutputBoundaryBox(double color, const std::ostringstream *filename);
@@ -190,7 +190,7 @@ protected:
 	void GmshPrepareVisualization(const Epetra_Vector& dis);
 
 	//! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
-	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, std::vector<double>& thirdpoint, int eleid);
+	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent);
 
 	/*! \brief Handles Crosslinker diffusion
 	 *  \param dis             (in) latest displacement
@@ -210,11 +210,6 @@ protected:
 	 *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
 	void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
 																		 int crosslinkernumber, bool coupledmovement=true);
-
-	/*! \brief determines individually whether or not a search for neighbours of each crosslink molecule is conducted
-	 *  \param dt		(in) time step size (for seeding)
-	 */
-	void ShallWeSearch(const double& dt);
 
 	/*! \brief map crosslink molecules and filament nodes to the according volume partition
 	 * 	\param currentpositions			(in) column map node positions*/
@@ -293,6 +288,8 @@ protected:
 	RCP<Epetra_Vector>	numcrossnodes_;
 	// \brief a vector indicating the number of attached nodes to a crosslinker
 	RCP<Epetra_Vector>	numbond_;
+	// \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
+	RCP<Epetra_Vector>	crosslinkonsamefilament_;
 	// \brief a vector just for the sake of visual quality
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
