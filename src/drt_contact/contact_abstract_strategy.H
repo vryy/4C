@@ -626,6 +626,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Map> gndofrowmap_;   // global internal dof row map
     RCP<Epetra_Map> gsmdofrowmap_;  // global slave and master dof row map (s+m map)
     RCP<Epetra_Map> gdisprowmap_;   // global displacement dof row map (s+m+n map)
+    RCP<Epetra_Map> gsdoffullmap_;  // global slave dof col map with full overlap (of all interfaces)
 
     RCP<Epetra_Map> gactivenodes_;  // global active slave node row map (of all interfaces)
     RCP<Epetra_Map> gactivedofs_;   // global active slave dof row map (of all interfaces)
