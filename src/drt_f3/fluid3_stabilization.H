@@ -224,44 +224,6 @@ namespace UTILS
       double& tau_stab_C
       );
 
-  //! compute largest element diameter for Nitsche stabilization parameter
-  template<DRT::Element::DiscretizationType DISTYPE, class M1>
-  double getEleDiameter(const M1& xyze)
-  {
-    double elediam = 0.0;
-
-    // number of nodes of this element
-    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-    // check all possible connections between nodes of an element
-    // node 1 to 2
-    //    :
-    // node 1 to 8 = numnode
-    // node 2 to 3
-    //    :
-    // node 2 to 8
-    //    :
-    //    :
-    //    :
-    // node 7 to 8
-    for(size_t i_start=0; i_start< numnode-2; ++i_start)
-    {
-      for(size_t i_end= i_start+1; i_end < numnode-1; ++i_end)
-      {
-        LINALG::Matrix<3,1> direction;
-        direction.Clear();
-        direction(0) = xyze(0, i_start) - xyze(0, i_end);
-        direction(1) = xyze(1, i_start) - xyze(1, i_end);
-        direction(2) = xyze(2, i_start) - xyze(2, i_end);
-
-        // update elediam
-        if (direction.Norm2() > elediam) elediam=direction.Norm2();
-      }
-    }
-
-    return elediam;
-  }
-
 } // namespace UTILS
 } // namespace FLD
 

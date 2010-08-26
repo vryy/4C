@@ -1623,6 +1623,23 @@ void Nitsche_SysmatBoundaryCell(
     assembler.template Vector<Pres>(shp_jump.d0, alphap*timefacfac*jp);
 #endif
 
+#ifdef TPF_NITSCHE_LPS
+    //------------------------------------------    |                                                           |
+    // LPS-stabilization at interface (pressure)  + |  \alpha_p (|| q ||-||Proj(q)||), (|| Dp ||-||Proj(Dp)||)  |
+    //------------------------------------------    |                                                           |
+
+    assembler.template Matrix<Pres,Pres>(shp_presstab.d0, alphap*timefacfac  , shp_presstab.d0);
+
+    //    |                                                             |
+    //  - |  \alpha_p (|| q ||-||Proj(q)||), (|| p_i ||-||Proj(p_i)||)  |
+    //    |                                                             |
+
+    //cout << pstab << endl;
+
+    assembler.template Vector<Pres>(shp_presstab.d0, - alphap*timefacfac*pstab);
+
+    // TODO: implement RHS for old time step
+#endif
   } // loop Gaussian points
 
   return;
@@ -1743,7 +1760,7 @@ void SysmatBoundaryNitsche(
   // compute Nitsche stabilization patameter
   //----------------------------------------
   // calculate element diameter
-  const double hk_eleDiam = FLD::UTILS::getEleDiameter<DISTYPE>(xyze);
+  const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
 
   // get maximum of the viscosities of all fluid materials
   const double dynvisc_max = max(visc_plus,visc_minus);

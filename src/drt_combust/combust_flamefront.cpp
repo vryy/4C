@@ -18,7 +18,7 @@ Maintainer: Florian Henke
 
 #include "combust_flamefront.H"
 #include "../drt_combust/combust3.H"
-#include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_combust/combust3_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
@@ -378,7 +378,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         //cout << xyze_adj << endl;
 
         // calculate element diameter
-        const double hk_current = FLD::UTILS::getEleDiameter<DISTYPE>(xyze_adj);
+        const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
         //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
 
@@ -535,7 +535,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       //cout << xyze_adj << endl;
 
       // calculate element diameter
-      const double hk_current = FLD::UTILS::getEleDiameter<DISTYPE>(xyze_adj);
+      const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
       //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
 
