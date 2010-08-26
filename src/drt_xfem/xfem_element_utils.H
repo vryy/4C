@@ -17,6 +17,8 @@ Maintainer: Florian Henke
 #ifndef XFEM_ELEMENT_UTILS_H
 #define XFEM_ELEMENT_UTILS_H
 
+#include "../drt_geometry/intersection_service.H"
+
 namespace XFEM
 {
 
