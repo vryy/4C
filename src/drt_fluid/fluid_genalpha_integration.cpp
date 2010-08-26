@@ -286,7 +286,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   // flag for potential Neumann-type outflow stabilization
-  outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
+  outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","yes_outstab");
 
   // the vector containing potential Neumann-type outflow stabilization
   if(outflow_stab_ == "yes_outstab")
@@ -1277,26 +1277,34 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // start time measurement for element call
   tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
 
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
   // add stabilization term at Neumann outflow boundary if required
   if(outflow_stab_ == "yes_outstab")
   {
+    // create the parameters for the discretization
+    ParameterList condparams;
+    
     discret_->ClearState();
-    discret_->SetState("velnp",velaf_);
-    discret_->SetState("scanp",scanp_);
-    eleparams.set("thsl",1.);
-    eleparams.set("outflow stabilization",outflow_stab_);
-    eleparams.set("Physical Type",physicaltype_);
+    discret_->SetState("velaf",velaf_);
+    discret_->SetState("scaaf",scanp_);
+    condparams.set("thsl",alphaF_*gamma_*dt_);
+    condparams.set("action","calc_Neumann_inflow");
+    condparams.set("Physical Type",physicaltype_);
+    condparams.set("using generalized-alpha time integration",true);
 
-    outflow_stabil_->PutScalar(0.0);
-    discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
+    std::string condstring("FluidNeumannInflow");
+    discret_->EvaluateCondition(condparams,
+                                sysmat_,
+                                Teuchos::null,
+                                residual_,
+                                Teuchos::null,
+                                Teuchos::null,
+                                condstring);
+    
     discret_->ClearState();
-
-    // add Neumann-type stabilization term to residual vector
-    residual_->Update(1.0,*outflow_stabil_,1.0);
   }
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
 
   // action for elements
   eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");

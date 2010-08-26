@@ -435,7 +435,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   // Now do the nurbs specific stuff
   // --------------------------------------------------
 
-  // In the case of nurbs the normal vector is miultiplied with normalfac
+  // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
   std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
@@ -807,20 +807,22 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // (density-weighted) shape functions and first derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<iel,1> densfunct(true);
+  LINALG::Matrix<iel,1>        funct(true);
+  LINALG::Matrix<iel,1>        densfunct(true);
   LINALG::Matrix<bdrynsd_,iel> deriv(true);
 
   // node coordinate
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,iel>     xyze(true);
 
   // coordinates of current integration point in reference coordinates
-  LINALG::Matrix<bdrynsd_,1> xsi(true);
+  LINALG::Matrix<bdrynsd_,1>   xsi(true);
 
   // the element's normal vector
-  LINALG::Matrix<nsd_,1> unitnormal(true);
+  LINALG::Matrix<nsd_,1>       unitnormal(true);
 
-  LINALG::Matrix<nsd_,1> momint(true);
+  // velocity and momentum at gausspoint
+  LINALG::Matrix<nsd_,1>       momint(true);
+  LINALG::Matrix<nsd_,1>       velint(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
@@ -852,6 +854,27 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
     escaaf(inode) = myscaaf[(nsd_)+(inode*numdofpernode_)];
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  // --------------------------------------------------
+
+  // In the case of nurbs the normal vector is miultiplied with normalfac
+  double normalfac = 0.0;
+  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
+  std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
+  Epetra_SerialDenseVector weights(iel);
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(IsNurbs<distype>::isnurbs)
+  {
+     bool zero_size = GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+     if(zero_size)
+     {
+       return;
+     }
+  }
+
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
@@ -861,13 +884,18 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     double drs = 0.0;
-    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+
+    EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv, drs, &unitnormal);
+
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      unitnormal.Scale(normalfac);
+
     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     // compute velocity and normal velocity
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     // velocity at gausspoint
-    LINALG::Matrix<nsd_,1> velint(true);
 
     double normvel = 0.0;
     velint.Multiply(evelaf,funct);
@@ -2267,7 +2295,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
-    const int                                        gpid,
+    const int                                         gpid,
     const LINALG::Matrix<nsd_,iel>&                   xyze,
     const std::vector<Epetra_SerialDenseVector>*      myknots,
     const Epetra_SerialDenseVector*                   weights,
