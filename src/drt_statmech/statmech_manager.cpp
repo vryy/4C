@@ -1221,7 +1221,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
 						// crosslinker element: crosslink molecule (representation) position (Proc 0 only)
 					case 2:
 					{
-						// actual crosslinker element (not kinked)
+						// actual crosslinker element connecting two filaments (self-binding kinked crosslinkers are visualized in GmshKinkedVisual())
 						if((*searchforneighbours_)[i] > 0.9)
 						{
 							if((*crosslinkonsamefilament_)[i] < 0.1)
@@ -1322,10 +1322,6 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, c
 	for (int j=0; j<(int) n.size(); j++)
 		n.at(j) /= lnorm;
 
-	// obtain angle
-	// random angle
-	//ranlib::UniformClosed<double> UniformGen;
-	//double alpha = 2*M_PI*UniformGen.random();
 	// by modulo operation involving the node IDs
 	double alpha = fmod((double) (element->Nodes()[element->NumNode() - 1]->Id() + element->Nodes()[0]->Id()), 2*M_PI);
 
@@ -1360,9 +1356,8 @@ void StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, c
 									<< coord(0, 1) << "," << coord(1,1) << "," << coord(2,1) << ")"
 									<< "{" << scientific<< color << "," << color << "};" << endl;
 	gmshfilecontent << "SP(" << scientific
-								<< thirdpoint.at(0) << "," << thirdpoint.at(1) << ","<< thirdpoint.at(2)
-								<< ")" << "{" << scientific << color << ","<< color << "};" << endl;
-
+									<< thirdpoint.at(0) << "," << thirdpoint.at(1) << ","<< thirdpoint.at(2)
+									<< ")" << "{" << scientific << color << ","<< color << "};" << endl;
 
 	/*/ cout block
 	 cout<<"coord  = \n"<<coord<<endl;
