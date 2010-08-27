@@ -125,20 +125,28 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 
 		vector<int> my_n_nodes     (numproc,0);
 		vector<int>    n_nodes     (numproc,0);
-		vector<int> my_s_nodes     (numproc,0);
-		vector<int>    s_nodes     (numproc,0);
-		vector<int> my_m_nodes     (numproc,0);
-		vector<int>    m_nodes     (numproc,0);
 		vector<int> my_n_ghostnodes(numproc,0);
 		vector<int>    n_ghostnodes(numproc,0);
 		vector<int> my_n_elements  (numproc,0);
 		vector<int>    n_elements  (numproc,0);
-		vector<int> my_s_elements  (numproc,0);
-		vector<int>    s_elements  (numproc,0);
-		vector<int> my_m_elements  (numproc,0);
-		vector<int>    m_elements  (numproc,0);
 		vector<int> my_n_ghostele  (numproc,0);
 		vector<int>    n_ghostele  (numproc,0);
+		vector<int> my_s_nodes     (numproc,0);
+		vector<int>    s_nodes     (numproc,0);
+		vector<int> my_s_ghostnodes(numproc,0);
+		vector<int>    s_ghostnodes(numproc,0);
+		vector<int> my_s_elements  (numproc,0);
+		vector<int>    s_elements  (numproc,0);
+		vector<int> my_s_ghostele  (numproc,0);
+		vector<int>    s_ghostele  (numproc,0);
+		vector<int> my_m_nodes     (numproc,0);
+		vector<int>    m_nodes     (numproc,0);
+		vector<int> my_m_elements  (numproc,0);
+		vector<int>    m_elements  (numproc,0);
+		vector<int> my_m_ghostnodes(numproc,0);
+		vector<int>    m_ghostnodes(numproc,0);
+		vector<int> my_m_ghostele  (numproc,0);
+		vector<int>    m_ghostele  (numproc,0);
 
 		my_n_nodes     [myrank]=Discret().NumMyRowNodes();
 		my_n_ghostnodes[myrank]=Discret().NumMyColNodes()-my_n_nodes[myrank];
@@ -146,9 +154,14 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 		my_n_ghostele  [myrank]=Discret().NumMyColElements()-my_n_elements[myrank];
 
 		my_s_nodes     [myrank]=snoderowmap_->NumMyElements();
-		my_m_nodes     [myrank]=mnoderowmap_->NumMyElements();
+		my_s_ghostnodes[myrank]=snodefullmap_->NumMyElements()-my_s_nodes[myrank];
 		my_s_elements  [myrank]=selerowmap_->NumMyElements();
+		my_s_ghostele  [myrank]=selefullmap_->NumMyElements()-my_s_elements[myrank];
+
+		my_m_nodes     [myrank]=mnoderowmap_->NumMyElements();
+		my_m_ghostnodes[myrank]=mnodefullmap_->NumMyElements()-my_m_nodes[myrank];
 		my_m_elements  [myrank]=melerowmap_->NumMyElements();
+		my_m_ghostele  [myrank]=melefullmap_->NumMyElements()-my_m_elements[myrank];
 
 		Discret().Comm().SumAll(&my_n_nodes     [0],&n_nodes     [0],numproc);
 		Discret().Comm().SumAll(&my_n_ghostnodes[0],&n_ghostnodes[0],numproc);
@@ -156,9 +169,14 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 		Discret().Comm().SumAll(&my_n_ghostele  [0],&n_ghostele  [0],numproc);
 
 		Discret().Comm().SumAll(&my_s_nodes     [0],&s_nodes     [0],numproc);
-		Discret().Comm().SumAll(&my_m_nodes     [0],&m_nodes     [0],numproc);
+		Discret().Comm().SumAll(&my_s_ghostnodes[0],&s_ghostnodes[0],numproc);
 		Discret().Comm().SumAll(&my_s_elements  [0],&s_elements  [0],numproc);
+		Discret().Comm().SumAll(&my_s_ghostele  [0],&s_ghostele  [0],numproc);
+
+		Discret().Comm().SumAll(&my_m_nodes     [0],&m_nodes     [0],numproc);
+		Discret().Comm().SumAll(&my_m_ghostnodes[0],&m_ghostnodes[0],numproc);
 		Discret().Comm().SumAll(&my_m_elements  [0],&m_elements  [0],numproc);
+		Discret().Comm().SumAll(&my_m_ghostele  [0],&m_ghostele  [0],numproc);
 
 		if (myrank==0)
 		{
@@ -170,8 +188,8 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index) const
 			for(int npid=0;npid<numproc;++npid)
 			{
 				printf("   | %3d | Total %9d | %12d | Total %9d | %12d |\n",npid,n_nodes[npid],n_ghostnodes[npid],n_elements[npid],n_ghostele[npid]);
-				printf("   |     | Slave %9d |              | Slave %9d |              |\n",s_nodes[npid],s_elements[npid]);
-				printf("   |     | Master %8d |              | Master %8d |              |\n",m_nodes[npid],m_elements[npid]);
+				printf("   |     | Slave %9d | %12d | Slave %9d | %12d |\n",s_nodes[npid],s_ghostnodes[npid],s_elements[npid],s_ghostele[npid]);
+				printf("   |     | Master %8d | %12d | Master %8d | %12d |\n",m_nodes[npid],m_ghostnodes[npid],m_elements[npid],m_ghostele[npid]);
 				printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
 			}
 		}
