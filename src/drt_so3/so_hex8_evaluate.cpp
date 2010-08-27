@@ -535,7 +535,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       // check material law and strains
       RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_stvenant || mat->MaterialType() == INPAR::MAT::m_neohooke)
+      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
       {
         // declaration of variables
         double intenergy = 0.0;

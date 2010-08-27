@@ -649,7 +649,6 @@ double DRT::ELEMENTS::Wall1:: EnergyInternal(
   switch (material->MaterialType())
   {
   case INPAR::MAT::m_stvenant :  // linear elastic
-  case INPAR::MAT::m_neohooke :  // neo Hooke
   {
     Epetra_SerialDenseMatrix Cm(Wall1::numnstr_,Wall1::numnstr_);  // elasticity matrix
     Epetra_SerialDenseMatrix Sm(Wall1::numnstr_,Wall1::numnstr_);  // 2nd PK stress matrix
