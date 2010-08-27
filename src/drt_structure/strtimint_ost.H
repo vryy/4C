@@ -214,7 +214,7 @@ namespace STR
     void PredictConstDisConsistVelAcc();
 
     //! Create force residual #fres_ and ist stiffness #stiff_
-    void EvaluateForceStiffResidual();
+    void EvaluateForceStiffResidual(bool predict = false);
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear

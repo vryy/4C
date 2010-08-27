@@ -204,7 +204,9 @@ void STR::TimIntImpl::Predict()
   //  }
 
   // compute residual forces fres_ and stiffness stiff_
-  EvaluateForceStiffResidual();
+  // (hand in boolean flag indicating that this a predictor)
+  bool predict = true;
+  EvaluateForceStiffResidual(predict);
 
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
@@ -295,7 +297,9 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
-  EvaluateForceStiffResidual();
+  // (hand in boolean flag indicating that this a predictor)
+  bool predict = true;
+  EvaluateForceStiffResidual(predict);
 
   // add linear reaction forces to residual
   {
@@ -500,7 +504,8 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 (
   Teuchos::RCP<LINALG::SparseOperator>& stiff,
   Teuchos::RCP<Epetra_Vector>& fresm,
-  Teuchos::RCP<Epetra_Vector>& dis
+  Teuchos::RCP<Epetra_Vector>& dis,
+  bool predict
 )
 {
   if (cmtman_ != Teuchos::null)
@@ -509,8 +514,8 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     fresm->Scale(-1.0);
 
     // make contact / meshtying modifications to lhs and rhs
-    bool predictor = (iter_==0);
-    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,predictor);
+    // (depending on whether this is a predictor step or not)
+    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,predict);
 
     // scaling back
     fresm->Scale(-1.0);

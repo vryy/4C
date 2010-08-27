@@ -136,7 +136,7 @@ void STR::TimIntGEMM::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntGEMM::EvaluateForceStiffResidual()
+void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
 {
   // build by last converged state and predicted target state
   // the predicted mid-state
@@ -208,7 +208,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual()
   }
 
   // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
   stiff_->Complete();

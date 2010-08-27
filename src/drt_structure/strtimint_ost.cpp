@@ -146,7 +146,7 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
+void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
 {
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -216,7 +216,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual()
   }
 
   // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
   stiff_->Complete();

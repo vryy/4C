@@ -118,7 +118,12 @@ namespace STR
     //! The residual #fres_ is expected to follow the <i>same</i> sign
     //! convention like its tangent #stiff_, i.e. to use
     //! Newton--Raphson's method the residual will be scaled by -1.
-    virtual void EvaluateForceStiffResidual() = 0;
+    //!
+    //! For structural contact simulations, it is of importance
+    //! whether this method is called from a predictor step or
+    //! from a regular Newton step. Thus we hand in a boolean flag
+    //! which reflects the respective situation.
+    virtual void EvaluateForceStiffResidual(bool predict = false) = 0;
 
     //! Evaluate forces due to constraints
     void ApplyForceStiffConstraint
@@ -176,7 +181,8 @@ namespace STR
     (
       Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
       Teuchos::RCP<Epetra_Vector>& fres,  //!< residual forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis   //!< current displacement state
+      Teuchos::RCP<Epetra_Vector>& dis,   //!< current displacement state
+      bool predict                        //!< flag indicating predictor step
     );
 
     //@}

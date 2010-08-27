@@ -97,7 +97,7 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntStatics::EvaluateForceStiffResidual()
+void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
 {
   // build new external forces
   fextn_->PutScalar(0.0);
@@ -137,7 +137,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual()
   // i.e. do nothing here
 
   // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_);
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
   stiff_->Complete();
