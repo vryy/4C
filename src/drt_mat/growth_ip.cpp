@@ -47,6 +47,13 @@ MAT::PAR::Growth::Growth(
 {
 }
 
+
+Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::Growth(this));
+}
+
+
 MAT::GrowthType MAT::GrowthType::instance_;
 
 DRT::ParObject* MAT::GrowthType::Create( const std::vector<char> & data )
@@ -88,7 +95,7 @@ void MAT::Growth::Pack(vector<char>& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
-  
+
   int numgp;
   if (!isinit_)
   {
@@ -139,7 +146,7 @@ void MAT::Growth::Unpack(const vector<char>& data)
   {
     params_ = NULL;
   }
-  
+
   int numgp;
   ExtractfromPack(position,data,numgp);
   if (numgp == 0){ // no history data to unpack
@@ -152,7 +159,7 @@ void MAT::Growth::Unpack(const vector<char>& data)
   theta_ = rcp(new vector<double> (numgp));
   thetaold_ = rcp(new vector<double> (numgp));
   mandel_ = rcp(new vector<double> (numgp));
-  
+
   for (int gp = 0; gp < numgp; ++gp) {
     double a;
     ExtractfromPack(position,data,a);
@@ -235,12 +242,12 @@ void MAT::Growth::Evaluate
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
-    
+
     // right Cauchy-Green Tensor  C = 2 * E + I
     LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
     C.Scale(2.0);
     C += Id;
-    
+
     // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
     LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
     Cdach.Scale(1.0/theta/theta);
@@ -250,12 +257,12 @@ void MAT::Growth::Evaluate
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
     EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
-    
+
     // trace of elastic Mandel stress Mdach = Cdach Sdach
     double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
                     Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
     if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
-    
+
     // Evaluate growth law
     double ktheta = 0.0;
     double dktheta = 0.0;
@@ -290,7 +297,7 @@ void MAT::Growth::Evaluate
         // update of theta
         omega = omega/2.0;
         thetatemp = theta + omega*residual/thetaquer;
-        
+
         // update elastic variables
         Cdach = C;
         Cdach.Scale(1.0/thetatemp/thetatemp);
@@ -300,12 +307,12 @@ void MAT::Growth::Evaluate
         cmatelastic.Scale(0.0);
         Sdach.Scale(0.0);
         EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
-        
+
         // trace of mandel stress
         mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
                  Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
         if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
-        
+
         ktheta = 0.0;
         dktheta = 0.0;
         EvaluateGrowthLaw(&ktheta, &dktheta, mandel, thetatemp, mandelcrit);
@@ -318,10 +325,10 @@ void MAT::Growth::Evaluate
         cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << endl;
         //dserror("no damping coefficient found");
       }
-      
+
     } // end of local Newton iteration
     if (localistep == maxstep && abs(residual) > reltol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
-    
+
     double temp = 0.0;
     for (int i=0; i<6; i++)
     {
@@ -346,7 +353,7 @@ void MAT::Growth::Evaluate
         (*cmat)(i,j) = cmatelastic(i,j) - 2.0/theta/thetaquer*ktheta*dt* (2.0*S(i)+cmatelasCi) *(S(j)+0.5*Ccmatelasj);
       }
     }
-    
+
     // store theta
     theta_->at(gp) = theta;
     mandel_->at(gp) = mandel;
@@ -384,7 +391,7 @@ void MAT::Growth::EvaluateElastic
     MAT::LogNeoHooke* log = static_cast <MAT::LogNeoHooke*>(mat.get());
     log->Evaluate(*glstrain, *cmat, *stress);
   } else dserror("material not implemented for growth");
-  
+
 }
 
 /*----------------------------------------------------------------------*
@@ -416,7 +423,7 @@ void MAT::Growth::EvaluateGrowthLaw
     *ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
     *dktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
   }
-  
+
 }
 
 #endif // CCADISCRET

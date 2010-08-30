@@ -289,7 +289,7 @@ void LINALG::MultiMapExtractor::AddVector(const Epetra_MultiVector& partial, int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::MultiMapExtractor::PutScalar( Epetra_Vector& full, int block, double scalar )
+void LINALG::MultiMapExtractor::PutScalar( Epetra_Vector& full, int block, double scalar ) const
 {
   const Epetra_Map& bm = *Map( block );
   const Epetra_Map& fm = *FullMap();
@@ -309,7 +309,7 @@ void LINALG::MultiMapExtractor::PutScalar( Epetra_Vector& full, int block, doubl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double LINALG::MultiMapExtractor::Norm2( const Epetra_Vector& full, int block )
+double LINALG::MultiMapExtractor::Norm2( const Epetra_Vector& full, int block ) const
 {
   const Epetra_Map& bm = *Map( block );
   const Epetra_Map& fm = *FullMap();

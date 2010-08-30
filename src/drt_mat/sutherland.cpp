@@ -35,6 +35,11 @@ MAT::PAR::Sutherland::Sutherland(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::Sutherland::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::Sutherland(this));
+}
+
 
 MAT::SutherlandType MAT::SutherlandType::instance_;
 

@@ -73,6 +73,9 @@ namespace MAT
 
       double gamma_;
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
    private:
 
       /// map to materials/potential summands
@@ -210,6 +213,9 @@ private:
 
     /// return a2s
     LINALG::Matrix<3,1> Geta2() const {return a2_;}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

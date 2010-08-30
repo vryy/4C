@@ -34,6 +34,13 @@ MAT::ELASTIC::PAR::VolOgden::VolOgden(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VolOgden::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VolOgden( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::VolOgden::VolOgden()

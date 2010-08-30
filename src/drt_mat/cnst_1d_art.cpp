@@ -36,6 +36,11 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::Cnst_1d_art(this));
+}
+
 
 MAT::Cnst_1d_artType MAT::Cnst_1d_artType::instance_;
 

@@ -35,6 +35,13 @@ MAT::ELASTIC::PAR::VarIsoCub::VarIsoCub(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VarIsoCub::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VarIsoCub( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

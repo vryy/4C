@@ -22,7 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_interface.H"
 
 #include "../drt_f3/fluid3_ele_impl_utils.H"
-#include "../drt_f3_impl/fluid3_impl_parameter.cpp"
+#include "../drt_f3_impl/fluid3_impl_parameter.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_lib/drt_utils.H"

@@ -58,6 +58,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class AnisotropicBalzani
 
   }  // namespace PAR
@@ -173,6 +176,9 @@ private:
 
     /// return a2
     vector<double> Geta2() const {return a2_;}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

@@ -37,6 +37,13 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwo::CoupAnisoExpoTwo(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoExpoTwo::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoExpoTwo( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

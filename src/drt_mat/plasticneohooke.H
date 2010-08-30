@@ -73,6 +73,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class PlasticNeoHooke
 
   }  // namespace PAR
@@ -169,6 +172,9 @@ private:
 
     /// Check if history variables are already initialized
     bool Initialized() const { return (isinit_ && (histplasticrcgcurr_!=Teuchos::null)); }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

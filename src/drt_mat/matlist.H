@@ -59,6 +59,9 @@ namespace MAT
       /// the list of material IDs
       const std::vector<int>* matids_;
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     private:
 
       /// map to materials
@@ -160,6 +163,9 @@ private:
 
     /// provide access to material by its ID
     Teuchos::RCP<const MAT::Material> MaterialById(const int id) const { return params_->MaterialById(id); }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

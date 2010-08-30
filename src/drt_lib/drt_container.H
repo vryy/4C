@@ -443,6 +443,36 @@ public:
 
   //@}
 
+  //! @name deep copy access methods
+  /// to extract all data
+
+  std::pair<std::map<std::string,Teuchos::RCP<std::vector<int> > >::const_iterator,
+            std::map<std::string,Teuchos::RCP<std::vector<int> > >::const_iterator>
+  IntRange()
+  { return std::make_pair( intdata_.begin(), intdata_.end() ); }
+
+  std::pair<std::map<std::string,Teuchos::RCP<std::vector<double> > >::const_iterator,
+            std::map<std::string,Teuchos::RCP<std::vector<double> > >::const_iterator>
+  DoubleRange()
+  { return std::make_pair( doubledata_.begin(), doubledata_.end() ); }
+
+  std::pair<std::map<std::string,std::string>::const_iterator,
+            std::map<std::string,std::string>::const_iterator>
+  StringRange()
+  { return std::make_pair( stringdata_.begin(), stringdata_.end() ); }
+
+  std::pair<std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator,
+            std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator>
+  MatRange()
+  { return std::make_pair( matdata_.begin(), matdata_.end() ); }
+
+  std::pair<std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator,
+            std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator>
+  EvecRange()
+  { return std::make_pair( evecdata_.begin(), evecdata_.end() ); }
+
+  //@
+
 private:  // these methods are for PURE internal use
 
   // don't want = operator

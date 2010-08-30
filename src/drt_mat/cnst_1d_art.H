@@ -61,6 +61,9 @@ namespace MAT
       const double pext2_;
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class NewtonianFluid
 
   }  // namespace PAR
@@ -165,6 +168,10 @@ private:
             else dserror("There is no pressure with id %d",i);
               return 0.0;
            }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
   private:
 
     /// my material parameters

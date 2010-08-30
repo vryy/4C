@@ -39,6 +39,11 @@ MAT::PAR::ArrheniusTemp::ArrheniusTemp(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusTemp::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ArrheniusTemp(this));
+}
+
 
 MAT::ArrheniusTempType MAT::ArrheniusTempType::instance_;
 

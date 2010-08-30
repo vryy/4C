@@ -31,6 +31,12 @@ MAT::PAR::ModPowerLaw::ModPowerLaw(
 {
 }
 
+
+Teuchos::RCP<MAT::Material> MAT::PAR::ModPowerLaw::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ModPowerLaw(this));
+}
+
 MAT::ModPowerLawType MAT::ModPowerLawType::instance_;
 
 

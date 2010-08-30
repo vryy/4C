@@ -79,7 +79,7 @@ public:
 
   Teuchos::RCP<FLD::UTILS::VelPressExtractor> velpressplitter_;
 
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
+//   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<DRT::DirichletExtractor> dbcmaps_;
@@ -95,7 +95,7 @@ class Fluid : public Adaptive
 
 public:
 
-  explicit Fluid( DRT::Discretization & dis, Teuchos::RCP<LINALG::Solver> solver );
+  Fluid( DRT::Discretization & dis, Teuchos::RCP<LINALG::Solver> solver );
 
   virtual void SetupDRTMesh();
 

@@ -49,6 +49,9 @@ namespace MAT
       const double density_;
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class Yeoh
 
   }  // namespace PAR
@@ -146,6 +149,9 @@ private:
 
     /// Return shear modulus
     double ShearMod() const {return params_->c1_/2.0;};
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

@@ -54,6 +54,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class MixFrac
 
   } // namespace PAR
@@ -146,6 +149,9 @@ private:
     double EosFacA() const { return params_->eosfaca_; }
     /// equation-of-state factor b
     double EosFacB() const { return params_->eosfacb_; }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

@@ -39,6 +39,11 @@ MAT::PAR::NeoHooke::NeoHooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::NeoHooke::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::NeoHooke(this));
+}
+
 MAT::NeoHookeType MAT::NeoHookeType::instance_;
 
 

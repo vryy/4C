@@ -29,6 +29,11 @@ MAT::PAR::MixFrac::MixFrac(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::MixFrac::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::MixFrac(this));
+}
+
 
 MAT::MixFracType MAT::MixFracType::instance_;
 

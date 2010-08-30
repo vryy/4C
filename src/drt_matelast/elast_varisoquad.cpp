@@ -35,6 +35,13 @@ MAT::ELASTIC::PAR::VarIsoQuad::VarIsoQuad(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VarIsoQuad::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VarIsoQuad( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

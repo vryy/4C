@@ -34,6 +34,12 @@ MAT::PAR::Yeoh::Yeoh(
 {
 }
 
+
+Teuchos::RCP<MAT::Material> MAT::PAR::Yeoh::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::Yeoh(this));
+}
+
 MAT::YeohType MAT::YeohType::instance_;
 
 

@@ -59,6 +59,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class Sutherland
 
   }  // namespace PAR
@@ -163,6 +166,9 @@ private:
     double GasConst() const { return params_->gasconst_; }
 
     //@}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

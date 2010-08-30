@@ -38,6 +38,11 @@ MAT::PAR::AAAneohooke::AAAneohooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::AAAneohooke(this));
+}
+
 MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
 
 

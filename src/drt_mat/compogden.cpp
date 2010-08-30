@@ -50,6 +50,11 @@ MAT::PAR::CompOgden::CompOgden(
   l_[2] = 0;
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::CompOgden::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::CompOgden(this));
+}
+
 
 MAT::CompOgdenType MAT::CompOgdenType::instance_;
 

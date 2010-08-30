@@ -41,6 +41,11 @@ MAT::PAR::AAAgasser::AAAgasser(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::AAAgasser::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::AAAgasser(this));
+}
+
 MAT::AAAgasserType MAT::AAAgasserType::instance_;
 
 

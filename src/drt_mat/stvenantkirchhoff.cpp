@@ -30,6 +30,10 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::StVenantKirchhoff(this));
+}
 
 MAT::StVenantKirchhoffType MAT::StVenantKirchhoffType::instance_;
 

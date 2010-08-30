@@ -35,6 +35,13 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo::CoupAnisoNeoHookeTwo(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoNeoHookeTwo::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoNeoHookeTwo( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

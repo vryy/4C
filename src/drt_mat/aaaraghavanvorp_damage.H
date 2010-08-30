@@ -71,6 +71,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class AAAraghavanvorp_damage
 
   }  // namespace PAR
@@ -198,6 +201,9 @@ private:
 		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
 		  LINALG::Matrix<NUM_STRESS_3D,1>* stress          ///< 2nd PK-stress
                  );
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
    private:
 

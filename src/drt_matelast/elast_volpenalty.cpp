@@ -34,6 +34,13 @@ MAT::ELASTIC::PAR::VolPenalty::VolPenalty(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VolPenalty::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VolPenalty( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::VolPenalty::VolPenalty()

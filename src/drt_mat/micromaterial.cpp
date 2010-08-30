@@ -47,6 +47,12 @@ MAT::PAR::MicroMaterial::MicroMaterial(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::MicroMaterial::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::MicroMaterial(this));
+}
+
+
 MAT::MicroMaterialType MAT::MicroMaterialType::instance_;
 
 

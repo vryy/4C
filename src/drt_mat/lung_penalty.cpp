@@ -37,6 +37,12 @@ MAT::PAR::LungPenalty::LungPenalty(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::LungPenalty::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::LungPenalty(this));
+}
+
+
 MAT::LungPenaltyType MAT::LungPenaltyType::instance_;
 
 
@@ -306,3 +312,4 @@ void MAT::LungPenalty::Evaluate(const LINALG::Matrix<6,1>* glstrain,
 }
 
 #endif
+

@@ -62,6 +62,9 @@ namespace MAT
       const int init_;
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class HolzapfelCardio
 
   }  // namespace PAR
@@ -177,6 +180,9 @@ private:
     /// evaluate fiber directions from locsys and alignment angle, pull back
     void EvaluateFiberVecs
     (const int gp, const double gamma, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

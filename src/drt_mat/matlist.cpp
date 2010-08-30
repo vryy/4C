@@ -38,6 +38,11 @@ MAT::PAR::MatList::MatList(
   }
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::MatList::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::MatList(this));
+}
+
 
 MAT::MatListType MAT::MatListType::instance_;
 

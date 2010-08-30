@@ -49,6 +49,11 @@ MAT::PAR::AnisotropicBalzani::AnisotropicBalzani(
   a2_[2] = matdata->GetDouble("A2Z");
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::AnisotropicBalzani::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::AnisotropicBalzani(this));
+}
+
 MAT::AnisotropicBalzaniType MAT::AnisotropicBalzaniType::instance_;
 
 
@@ -499,3 +504,4 @@ void MAT::AnisotropicBalzani::Evaluate(
 
 
 #endif
+

@@ -37,6 +37,12 @@ MAT::PAR::LungOgden::LungOgden(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::LungOgden::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::LungOgden(this));
+}
+
+
 MAT::LungOgdenType MAT::LungOgdenType::instance_;
 
 
@@ -316,3 +322,4 @@ void MAT::LungOgden::Evaluate(LINALG::Matrix<6,1>* glstrain,
 
 
 #endif
+

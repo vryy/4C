@@ -47,6 +47,9 @@ namespace MAT
      const double density_;     	/* density */
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class ModPowerLaw
 
   }  // namespace PAR
@@ -133,6 +136,9 @@ private:
     double AExp() const { return params_->a_exp_; }
     /// density
     double Density() const { return params_->density_; }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

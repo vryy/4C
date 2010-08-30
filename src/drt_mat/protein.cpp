@@ -23,6 +23,12 @@ density_(matdata->GetDouble("DENS")) {
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::PROTEIN::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::PROTEIN(this));
+}
+
+
 MAT::ProteinType MAT::ProteinType::instance_;
 
 
@@ -110,4 +116,3 @@ void MAT::PROTEIN::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 
 
 #endif
-

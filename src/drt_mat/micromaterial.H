@@ -76,6 +76,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class MicroMaterial
 
   }  // namespace PAR
@@ -170,6 +173,9 @@ private:
     int MicroDisNum() const { return params_->microdisnum_; }
     double InitVol() const { return params_->initvol_; }
     //@}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

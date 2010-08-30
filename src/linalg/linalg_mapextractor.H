@@ -311,10 +311,10 @@ namespace LINALG
     //@}
 
     /// PutScalar to one block only
-    void PutScalar( Epetra_Vector& full, int block, double scalar );
+    void PutScalar( Epetra_Vector& full, int block, double scalar ) const;
 
     /// L2-norm of one block only
-    double Norm2( const Epetra_Vector& full, int block );
+    double Norm2( const Epetra_Vector& full, int block ) const;
 
   private:
 
@@ -356,10 +356,10 @@ namespace LINALG
                                                                         \
   bool name ## Relevant() const { return name ## Map()->NumGlobalElements()!=0; } \
                                                                         \
-  void name ## PutScalar( Epetra_Vector& full, double scalar )          \
+  void name ## PutScalar( Epetra_Vector& full, double scalar ) const    \
   { PutScalar( full,pos,scalar ); }                                     \
                                                                         \
-  double name ## Norm2( const Epetra_Vector& full )                     \
+  double name ## Norm2( const Epetra_Vector& full ) const               \
   { return Norm2( full, pos ); }
 
 

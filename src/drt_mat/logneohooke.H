@@ -62,6 +62,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class LogNeoHooke
 
   }  // namespace PAR
@@ -293,6 +296,9 @@ private:
       LINALG::Matrix<6,6>& cmat,  ///< constitutive matrix
       LINALG::Matrix<6,1>& stress  ///< 2nd PK stress
       );
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

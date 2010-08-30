@@ -41,6 +41,11 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ArrheniusPV(this));
+}
+
 
 MAT::ArrheniusPVType MAT::ArrheniusPVType::instance_;
 

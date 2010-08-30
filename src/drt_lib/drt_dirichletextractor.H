@@ -21,10 +21,12 @@ namespace DRT
       cond_dirichlet = 1
     };
 
+    using LINALG::MultiMapExtractor::Setup;
+
     /// setup the whole thing
     void Setup(const DRT::Discretization& dis);
 
-    void ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual );
+    void ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual ) const;
 
     MAP_EXTRACTOR_VECTOR_METHODS( NonDirichlet, cond_nondirichlet )
     MAP_EXTRACTOR_VECTOR_METHODS( Dirichlet   , cond_dirichlet )

@@ -59,6 +59,9 @@ namespace ELASTIC
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class IsoVarga
 
   }  // namespace PAR
@@ -79,7 +82,7 @@ namespace ELASTIC
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for 
+  /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
   ///          finitely deformed incompressible elastic materials",
   ///          IMA J Appl Math, 54:109-123, 1995.
   /// </ul>

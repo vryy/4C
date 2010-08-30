@@ -49,6 +49,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class BioCell
 
   }  // namespace PAR
@@ -131,6 +134,8 @@ private:
 
     inline double Density() const { return params_->density_; }
 
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

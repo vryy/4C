@@ -59,6 +59,9 @@ namespace ELASTIC
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class CoupVarga
 
   }  // namespace PAR
@@ -76,13 +79,13 @@ namespace ELASTIC
   ///\f]
   /// which was taken from [1] Eq (6.129) and [2] Eq (1.3).
   ///
-  /// The material is stress-free in the \f$\lambda_1=\lambda_2=\lambda_3=1\f$ configuration 
+  /// The material is stress-free in the \f$\lambda_1=\lambda_2=\lambda_3=1\f$ configuration
   /// if \f$\beta=\alpha=\mu\f$.
   ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for 
+  /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
   ///          finitely deformed incompressible elastic materials",
   ///          IMA J Appl Math, 54:109-123, 1995.
   /// </ul>

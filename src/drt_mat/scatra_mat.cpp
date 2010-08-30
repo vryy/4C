@@ -27,6 +27,11 @@ MAT::PAR::ScatraMat::ScatraMat(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ScatraMat(this));
+}
+
 
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 

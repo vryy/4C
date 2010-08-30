@@ -19,7 +19,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RCP.hpp>
 #include "../drt_lib/standardtypes_cpp.H"
 #include "matpar_material.H"
 
@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 /* forward declarations */
 namespace MAT
 {
+  class Material;
   namespace PAR
   {
     class Material;
@@ -75,6 +76,9 @@ namespace MAT
 
       /// material name
       std::string Name() const { return name_; }
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
 
     private:
 

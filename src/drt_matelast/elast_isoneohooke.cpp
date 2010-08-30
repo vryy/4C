@@ -34,6 +34,13 @@ MAT::ELASTIC::PAR::IsoNeoHooke::IsoNeoHooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoNeoHooke::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::IsoNeoHooke( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
@@ -93,10 +100,10 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 //   )
 // {
 //   // NOTE
-//   // This implementation was verified to deliver identical results as 
+//   // This implementation was verified to deliver identical results as
 //   // the description in terms of modified principal invariants
 //   // of the right Cauchy-Green tensor (see above).
-//  
+//
 //   // energy density
 //   //   Psi = mu/2 [ \bar{lam}_1^2 + \bar{lam}_2^2 + \bar{lam}_3^2 - 3 ]
 //   //       = mu/2 [ (J^{-1/3} lam_1)^2 + (J^{-1/3} lam_2)^2 + (J^{-1/3} lam_3)^2 - 3 ]
@@ -119,7 +126,7 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 //   const double jac83 = std::pow(jac,-8.0/3.0);
 //   // 1st invariant of right Cauchy-Green tensor
 //   const double fst = prstr(0)*prstr(0) + prstr(1)*prstr(1) + prstr(2)*prstr(2);
-//  
+//
 //   // first derivatives \frac{\partial Psi}{\partial\lambda_alpha}
 //   gamma(0)  // ,0
 //     += mue*jac23*prstr(0)
@@ -133,17 +140,17 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 //
 //   // second derivatives \frac{\partial^2 Psi}{\partial\lambda_alpha \partial\lambda_\beta}
 //   delta(0)  // ,00
-//     += mue*jac23 
+//     += mue*jac23
 //     + (-2.0/3.0)*mue*prstr(0)*jac53*prstr(1)*prstr(2)
 //     + (-2.0/3.0)*mue*prstr(0)*jac53*prstr(1)*prstr(2)
 //     + (5.0/9.0)*mue*fst*jac83*prstr(1)*prstr(2)*prstr(1)*prstr(2);
 //   delta(1)  // ,11
-//     += mue*jac23 
+//     += mue*jac23
 //     + (-2.0/3.0)*mue*prstr(1)*jac53*prstr(0)*prstr(2)
 //     + (-2.0/3.0)*mue*prstr(1)*jac53*prstr(0)*prstr(2)
 //     + (5.0/9.0)*mue*fst*jac83*prstr(0)*prstr(2)*prstr(0)*prstr(2);
 //   delta(2)  // ,22
-//     += mue*jac23 
+//     += mue*jac23
 //     + (-2.0/3.0)*mue*prstr(2)*jac53*prstr(0)*prstr(1)
 //     + (-2.0/3.0)*mue*prstr(2)*jac53*prstr(0)*prstr(1)
 //     + (5.0/9.0)*mue*fst*jac83*prstr(0)*prstr(1)*prstr(0)*prstr(1);
@@ -176,10 +183,10 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 //   )
 // {
 //   // NOTE
-//   // This implementation was verified to deliver identical results as 
+//   // This implementation was verified to deliver identical results as
 //   // the description in terms of modified principal invariants
 //   // of the right Cauchy-Green tensor (see above).
-//  
+//
 //   // energy density
 //   //   Psi = mu/2 [ \bar{lam}_1^2 + \bar{lam}_2^2 + \bar{lam}_3^2 - 3 ]
 //   //       = mu/2 [ (J^{-1/3} lam_1)^2 + (J^{-1/3} lam_2)^2 + (J^{-1/3} lam_3)^2 - 3 ]
@@ -194,7 +201,7 @@ void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
 //
 //   // shear modulus
 //   const double mue = params_->mue_;
-//  
+//
 //   // first derivatives
 //   gamma(0)  // ,0
 //     += mue*modstr(0);

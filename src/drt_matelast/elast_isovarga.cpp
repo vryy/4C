@@ -36,6 +36,13 @@ MAT::ELASTIC::PAR::IsoVarga::IsoVarga(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoVarga::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::IsoVarga( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
@@ -79,9 +86,9 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
   )
 {
 #if 0
-  // here, the isochoric neo-Hooke material in principal stretches is 
+  // here, the isochoric neo-Hooke material in principal stretches is
   // implemented to verify implementation
-  
+
   // energy density
   //   Psi = mu/2 [ \bar{lam}_1^2 + \bar{lam}_2^2 + \bar{lam}_3^2 - 3 ]
   //       = mu/2 [ (J^{-1/3} lam_1)^2 + (J^{-1/3} lam_2)^2 + (J^{-1/3} lam_3)^2 - 3 ]
@@ -96,7 +103,7 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
 
   // shear modulus
   const double mue = params_->mue_;
-  
+
   // first derivatives
   gamma(0)  // ,0
     += mue*modstr(0);

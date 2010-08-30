@@ -33,6 +33,13 @@ MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VolSussmanBathe::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VolSussmanBathe( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe()

@@ -65,6 +65,9 @@ namespace PAR
 
     //@}
 
+    /// create material instance of matching type with my parameters
+    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
   };  // class ThermoStVenantKirchhoff
 
 }  // namespace PAR
@@ -209,6 +212,9 @@ private:
     {
       return 0.5*params_->youngs_/(1.0+params_->poissonratio_);
     }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

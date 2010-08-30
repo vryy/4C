@@ -59,6 +59,9 @@ namespace ELASTIC
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class CoupAnisoNeoHookeTwo
 
   }  // namespace PAR

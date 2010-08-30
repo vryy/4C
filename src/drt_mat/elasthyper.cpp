@@ -52,6 +52,14 @@ MAT::PAR::ElastHyper::ElastHyper(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ElastHyper(this));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::PAR::ElastHyper::MaterialById(const int id) const
 {
   std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::const_iterator m = potsum_.find(id);

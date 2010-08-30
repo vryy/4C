@@ -35,6 +35,13 @@ MAT::ELASTIC::PAR::VarIsoNeoHooke::VarIsoNeoHooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VarIsoNeoHooke::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VarIsoNeoHooke( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

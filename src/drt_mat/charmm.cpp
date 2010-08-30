@@ -61,6 +61,12 @@ density_(matdata->GetDouble("DENS"))
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::CHARMM::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::CHARMM(this));
+}
+
+
 MAT::CHARMMType MAT::CHARMMType::instance_;
 
 
@@ -952,4 +958,3 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
 
 
 #endif
-

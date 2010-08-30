@@ -29,6 +29,11 @@ MAT::PAR::BioCell::BioCell(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::BioCell::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::BioCell(this));
+}
+
 
 MAT::BioCellType MAT::BioCellType::instance_;
 

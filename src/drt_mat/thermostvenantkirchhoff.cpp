@@ -42,6 +42,11 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::ThermoStVenantKirchhoff::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ThermoStVenantKirchhoff(this));
+}
+
 MAT::ThermoStVenantKirchhoffType MAT::ThermoStVenantKirchhoffType::instance_;
 
 
@@ -411,3 +416,4 @@ void MAT::ThermoStVenantKirchhoff::Stempconst(
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
+

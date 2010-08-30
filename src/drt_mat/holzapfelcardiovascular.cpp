@@ -39,6 +39,12 @@ MAT::PAR::HolzapfelCardio::HolzapfelCardio(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::HolzapfelCardio::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::HolzapfelCardio(this));
+}
+
+
 
 MAT::HolzapfelCardioType MAT::HolzapfelCardioType::instance_;
 
@@ -544,4 +550,3 @@ void MAT::HolzapfelCardio::EvaluateFiberVecs
 }
 
 #endif // CCADISCRET
-

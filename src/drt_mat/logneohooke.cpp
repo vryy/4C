@@ -40,6 +40,12 @@ MAT::PAR::LogNeoHooke::LogNeoHooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::LogNeoHooke::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::LogNeoHooke(this));
+}
+
+
 MAT::LogNeoHookeType MAT::LogNeoHookeType::instance_;
 
 

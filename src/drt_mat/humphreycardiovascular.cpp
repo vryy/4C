@@ -46,6 +46,11 @@ MAT::PAR::HumphreyCardio::HumphreyCardio(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::HumphreyCardio::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::HumphreyCardio(this));
+}
+
 
 MAT::HumphreyCardioType MAT::HumphreyCardioType::instance_;
 

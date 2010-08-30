@@ -59,6 +59,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class NeoHooke
 
   }  // namespace PAR
@@ -154,8 +157,10 @@ private:
     /// shear modulus
     double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
 
-  private:
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+  private:
 
     /// my material parameters
     MAT::PAR::NeoHooke* params_;

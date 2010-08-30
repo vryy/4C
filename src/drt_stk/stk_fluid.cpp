@@ -63,9 +63,9 @@ STK::FluidDRT::FluidDRT( int counter, STK::Fluid & fluid )
   velpressplitter_ = Teuchos::rcp( new FLD::UTILS::VelPressExtractor() );
   velpressplitter_->Setup( dis );
 
-  output_ = Teuchos::rcp( new IO::DiscretizationWriter( Teuchos::rcp( &dis, false ),
-                                                        DRT::Problem::Instance()->OutputControlFile() ) );
-  output_->WriteMesh( fluid.step_, fluid.time_ );
+//   output_ = Teuchos::rcp( new IO::DiscretizationWriter( Teuchos::rcp( &dis, false ),
+//                                                         DRT::Problem::Instance()->OutputControlFile() ) );
+//   output_->WriteMesh( fluid.step_, fluid.time_ );
 }
 
 
@@ -90,21 +90,21 @@ void STK::FluidDRT::Output( STK::Fluid & fluid )
 
   m_exo->write( fluid.step_, fluid.time_ );
 
-  output_->NewStep( fluid.step_, fluid.time_ );
+//   output_->NewStep( fluid.step_, fluid.time_ );
 
-  std::vector<stk::mesh::FieldBase*> v;
-  v.push_back( fluid.velnp_ );
-  v.push_back( fluid.pressure_ );
+//   std::vector<stk::mesh::FieldBase*> v;
+//   v.push_back( fluid.velnp_ );
+//   v.push_back( fluid.pressure_ );
 
-  Teuchos::RCP<Epetra_Vector> velnp = fluid.GatherFieldData( v );
+//   Teuchos::RCP<Epetra_Vector> velnp = fluid.GatherFieldData( v );
 
-  // velocity/pressure vector
-  output_->WriteVector("velnp",velnp);
+//   // velocity/pressure vector
+//   output_->WriteVector("velnp",velnp);
 
-  // (hydrodynamic) pressure
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractPressureVector(velnp);
-  //pressure->Scale(density_);
-  output_->WriteVector("pressure", pressure);
+//   // (hydrodynamic) pressure
+//   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractPressureVector(velnp);
+//   //pressure->Scale(density_);
+//   output_->WriteVector("pressure", pressure);
 }
 
 

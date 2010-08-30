@@ -55,6 +55,9 @@ namespace MAT
       const int elethick_;
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class ViscoAnisotropic
 
   }  // namespace PAR
@@ -190,6 +193,9 @@ private:
     /// return a2s
     RCP<vector<vector<double> > > Geta2() const {return ca2_;}
 
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

@@ -36,6 +36,13 @@ MAT::ELASTIC::PAR::CoupVarga::CoupVarga(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupVarga::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::CoupVarga( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
@@ -79,9 +86,9 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
   )
 {
 #if 0
-  // here, the isochoric neo-Hooke material in principal stretches is 
+  // here, the isochoric neo-Hooke material in principal stretches is
   // implemented to verify implementation
-  
+
   // energy density
   //   Psi = mu [ \bar{lam}_1^2 + \bar{lam}_2^2 + \bar{lam}_3^2 - 3 ]
   //       = mu [ (J^{-1/3} lam_1)^2 + (J^{-1/3} lam_2)^2 + (J^{-1/3} lam_3)^2 - 3 ]
@@ -103,7 +110,7 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
   const double jac83 = std::pow(jac,-8.0/3.0);
   // 1st invariant of right Cauchy-Green tensor
   const double fst = prstr(0)*prstr(0) + prstr(1)*prstr(1) + prstr(2)*prstr(2);
-  
+
   // first derivatives
   gamma(0)  // ,0
     += mue*jac23*prstr(0)
@@ -117,17 +124,17 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
 
   // second derivatives
   delta(0)  // ,00
-    += mue*jac23 
+    += mue*jac23
     + (-2.0/3.0)*mue*prstr(0)*jac53*prstr(1)*prstr(2)
     + (-2.0/3.0)*mue*prstr(0)*jac53*prstr(1)*prstr(2)
     + (5.0/9.0)*mue*fst*jac83*prstr(1)*prstr(2)*prstr(1)*prstr(2);
   delta(1)  // ,11
-    += mue*jac23 
+    += mue*jac23
     + (-2.0/3.0)*mue*prstr(1)*jac53*prstr(0)*prstr(2)
     + (-2.0/3.0)*mue*prstr(1)*jac53*prstr(0)*prstr(2)
     + (5.0/9.0)*mue*fst*jac83*prstr(0)*prstr(2)*prstr(0)*prstr(2);
   delta(2)  // ,22
-    += mue*jac23 
+    += mue*jac23
     + (-2.0/3.0)*mue*prstr(2)*jac53*prstr(0)*prstr(1)
     + (-2.0/3.0)*mue*prstr(2)*jac53*prstr(0)*prstr(1)
     + (5.0/9.0)*mue*fst*jac83*prstr(0)*prstr(1)*prstr(0)*prstr(1);

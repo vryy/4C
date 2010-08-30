@@ -36,6 +36,11 @@ MAT::PAR::MooneyRivlin::MooneyRivlin(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::MooneyRivlin::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::MooneyRivlin(this));
+}
+
 
 MAT::MooneyRivlinType MAT::MooneyRivlinType::instance_;
 

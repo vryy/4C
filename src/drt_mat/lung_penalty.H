@@ -51,6 +51,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class LungPenalty
 
   }  // namespace PAR
@@ -151,6 +154,9 @@ private:
     void SetK1(const double k1) { params_->k1_ = k1; }
     void SetK2(const double k2) { params_->k2_ = k2; }
     //@}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

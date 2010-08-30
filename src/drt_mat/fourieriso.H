@@ -63,6 +63,9 @@ namespace PAR
 
     //@}
 
+    /// create material instance of matching type with my parameters
+    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
   };  // class FourierIso
 
 }  // namespace PAR
@@ -175,6 +178,9 @@ private:
       LINALG::Matrix<3,3>& cmat,  ///< constitutive matrix
       LINALG::Matrix<3,1>& heatflux  ///< 3D heatflux (2nd PK stress)
       ) const;
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

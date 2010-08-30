@@ -39,6 +39,12 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupLogNeoHooke::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::CoupLogNeoHooke( this ) );
+}
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

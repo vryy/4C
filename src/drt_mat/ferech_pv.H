@@ -73,6 +73,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class FerEchPV
 
   }  // namespace PAR
@@ -204,6 +207,9 @@ private:
     double Mod() const { return params_->mod_; }
 
     //@}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

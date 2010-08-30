@@ -34,7 +34,6 @@ namespace STK
 {
   class MetaMesh;
   class Mesh;
-  class FixedSparseMatrix;
 
 class Adaptive
 {

@@ -57,6 +57,12 @@ MAT::PAR::PlasticNeoHooke::PlasticNeoHooke(
 {
 }
 
+
+Teuchos::RCP<MAT::Material> MAT::PAR::PlasticNeoHooke::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::PlasticNeoHooke(this));
+}
+
 MAT::PlasticNeoHookeType MAT::PlasticNeoHookeType::instance_;
 
 

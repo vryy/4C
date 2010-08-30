@@ -29,6 +29,14 @@ MAT::PAR::NewtonianFluid::NewtonianFluid(
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::NewtonianFluid::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::NewtonianFluid(this));
+}
+
+
 MAT::NewtonianFluidType MAT::NewtonianFluidType::instance_;
 
 

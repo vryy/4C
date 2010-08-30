@@ -49,6 +49,13 @@ MAT::PAR::ContChainNetw::ContChainNetw(
 {
 }
 
+
+Teuchos::RCP<MAT::Material> MAT::PAR::ContChainNetw::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ContChainNetw(this));
+}
+
+
 MAT::ContChainNetwType MAT::ContChainNetwType::instance_;
 
 
@@ -957,4 +964,3 @@ const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector
 
 
 #endif
-

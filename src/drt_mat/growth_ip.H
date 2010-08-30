@@ -67,6 +67,9 @@ namespace MAT
       const double mthetaminus_;
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class Growth
 
   }  // namespace PAR
@@ -85,7 +88,7 @@ namespace MAT
 
     static GrowthType instance_;
   };
-  
+
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
   class Growth : public Material
@@ -149,7 +152,7 @@ namespace MAT
     (
       const int numgp  ///< number of Gauss points
     );
-    
+
     /// Update
     void Update();
 
@@ -163,15 +166,18 @@ namespace MAT
       const double dt, ///< delta time
       const double time ///< time
     );
-    
+
     /// Return density
     double Density() const {return params_->density_;};
-    
+
     /// return theta
     RCP<vector<double> > Gettheta() const {return theta_;};
-    
+
     /// return mandel stress
     RCP<vector<double> > Getmandel() const {return mandel_;};
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

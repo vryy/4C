@@ -53,6 +53,11 @@ MAT::PAR::Itskov::Itskov( Teuchos::RCP<MAT::PAR::Material> matdata )
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::Itskov::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::Itskov(this));
+}
+
 MAT::ItskovType MAT::ItskovType::instance_;
 
 

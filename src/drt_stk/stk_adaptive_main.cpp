@@ -7,6 +7,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../stk_lib/stk_discret.H"
+#include "../stk_fluid/fluid_implicit.H"
+
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_io/io_control.H"
@@ -62,11 +65,20 @@ void adaptive_main()
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
+#if 1
+
+      STK::Discretization dis( actdis->Comm() );
+      STK::FLD::Fluid fluid( dis, solver );
+
+      dis.Setup( *actdis, fluid );
+
+#else
       STK::Fluid fluid( *actdis, solver );
       fluid.SetupSTKMesh();
 
       // full refinement
-      //fluid.RefineAll();
+      fluid.RefineAll();
+      fluid.RefineAll();
 
       //fluid.RefineHalf();
 
@@ -78,6 +90,7 @@ void adaptive_main()
 
       DRT::Problem::Instance()->AddFieldTest(fluid.CreateFieldTest());
       DRT::Problem::Instance()->TestAll(actdis->Comm());
+#endif
 
       break;
     }

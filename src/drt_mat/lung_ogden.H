@@ -57,6 +57,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class LungOgden
 
   }  // namespace PAR
@@ -154,6 +157,9 @@ private:
     void Evaluate(LINALG::Matrix<6,1>* glstrain,
 		  LINALG::Matrix<6,6>* cmat,
 		  LINALG::Matrix<6,1>* stress);
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

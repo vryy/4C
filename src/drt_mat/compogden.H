@@ -55,6 +55,9 @@ namespace MAT
       double l_[3];
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class CompOgden
 
   }  // namespace PAR
@@ -141,6 +144,8 @@ private:
     double Kappa() const { return params_->kappa_; }
     double L(const unsigned i) const { return params_->l_[i]; }
 
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

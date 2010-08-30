@@ -50,6 +50,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class NewtonianFluid
 
   }  // namespace PAR
@@ -135,6 +138,9 @@ private:
 
     /// return surface tension coefficient
     double Gamma() const { return params_->gamma_; } //matdata_->m.fluid->gamma; }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

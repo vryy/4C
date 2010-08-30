@@ -30,6 +30,11 @@ Maintainer: Lena Wiechert
 namespace MAT
 {
 
+  namespace PAR
+  {
+    class Parameter;
+  }
+
   const unsigned int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
 
   /// Interface class for materials in elements
@@ -65,6 +70,9 @@ namespace MAT
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const = 0;
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const = 0;
 
     /// create element material object given the number of a material definition
     static Teuchos::RefCountPtr<Material> Factory(

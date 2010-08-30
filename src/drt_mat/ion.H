@@ -49,6 +49,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class Ion
 
   } // namespace PAR
@@ -130,6 +133,9 @@ private:
     double Diffusivity() const { return params_->diffusivity_; }
     /// densification coefficient
     double Densification() const { return params_->densification_; }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

@@ -59,6 +59,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class ArrheniusSpec
 
   }  // namespace PAR
@@ -160,6 +163,9 @@ private:
     double AcTemp() const { return params_->actemp_; }
 
     //@}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

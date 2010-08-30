@@ -33,6 +33,11 @@ MAT::PAR::CarreauYasuda::CarreauYasuda(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::CarreauYasuda::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::CarreauYasuda(this));
+}
+
 
 MAT::CarreauYasudaType MAT::CarreauYasudaType::instance_;
 

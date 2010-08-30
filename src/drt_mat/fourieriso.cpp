@@ -39,6 +39,11 @@ MAT::PAR::FourierIso::FourierIso(
 {
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::FourierIso::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::FourierIso(this));
+}
+
 
 MAT::FourierIsoType MAT::FourierIsoType::instance_;
 

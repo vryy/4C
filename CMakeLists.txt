@@ -915,6 +915,7 @@ set(OBJS_BACI_MAIN
   src/global_full/global_cal_control.c
   src/global_full/global_control.c
   src/global_full/main_ccarat.c
+  src/drt_stk/stk_adaptive_main.cpp
 )
 set(OBJS_DRT_B3II_LIB
   src/drt_beam3ii/beam3ii.cpp
@@ -1150,10 +1151,15 @@ set(OBJS_STK_LIB
   src/stk_lib/stk_topology.cpp
   src/stk_lib/stk_unrefine.cpp
   src/stk_lib/stk_utils.cpp
+  src/stk_lib/stk_discret.cpp
+  src/stk_lib/stk_linearsystem.cpp
+  src/stk_lib/stk_fei.cpp
+)
+set(OBJS_STK_FLUID
+  src/stk_fluid/fluid_implicit.cpp
 )
 set(OBJS_DRT_STK
   src/drt_stk/stk_adaptive.cpp
-  src/drt_stk/stk_adaptive_main.cpp
   src/drt_stk/stk_assemblestrategy.cpp
   src/drt_stk/stk_errorestimate.cpp
   #src/drt_stk/stk_fixedsparsematrix.cpp
@@ -1294,6 +1300,8 @@ add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 
+add_library(alg_stk_fluid ${OBJS_STK_FLUID})
+
 set(SINGLEFIELD_LIBRARIES
   alg_ale
   alg_artnet
@@ -1306,6 +1314,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_structure
   alg_invanalysis
   alg_thermo
+  alg_stk_fluid
   )
 
 # general framework

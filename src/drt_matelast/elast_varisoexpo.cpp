@@ -36,6 +36,13 @@ MAT::ELASTIC::PAR::VarIsoExpo::VarIsoExpo(
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::VarIsoExpo::CreateMaterial()
+{
+  return Teuchos::null;
+  //return Teuchos::rcp( new MAT::ELASTIC::VarIsoExpo( this ) );
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/

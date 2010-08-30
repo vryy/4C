@@ -47,6 +47,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class Scatra
 
   } // namespace PAR
@@ -126,6 +129,9 @@ private:
     double Diffusivity() const { return params_->diffusivity_; }
     /// reaction coefficient
     double ReaCoeff() const { return params_->reacoeff_; }
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 

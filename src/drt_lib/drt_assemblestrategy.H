@@ -19,10 +19,12 @@ namespace DRT
 {
   class Discretization;
 
+  /// General assembly strategy
   class AssembleStrategy
   {
   public:
 
+    /// Construct
     AssembleStrategy( Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                       Teuchos::RCP<Epetra_Vector>          systemvector1,
@@ -31,27 +33,37 @@ namespace DRT
 
     virtual ~AssembleStrategy();
 
+    /// Create matrix graph to create a filled matrix
     virtual Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( DRT::Discretization & dis, Teuchos::RCP<const Epetra_Map> dbcmap );
 
+    //! @name Assembly Flags
     bool Assemblemat1() { return systemmatrix1_!=Teuchos::null; }
     bool Assemblemat2() { return systemmatrix2_!=Teuchos::null; }
     bool Assemblevec1() { return systemvector1_!=Teuchos::null; }
     bool Assemblevec2() { return systemvector2_!=Teuchos::null; }
     bool Assemblevec3() { return systemvector3_!=Teuchos::null; }
+    //@}
 
+    //! @name Access Methods to Global Object
     Teuchos::RCP<LINALG::SparseOperator> Systemmatrix1() { return systemmatrix1_; }
     Teuchos::RCP<LINALG::SparseOperator> Systemmatrix2() { return systemmatrix2_; }
     Teuchos::RCP<Epetra_Vector>          Systemvector1() { return systemvector1_; }
     Teuchos::RCP<Epetra_Vector>          Systemvector2() { return systemvector2_; }
     Teuchos::RCP<Epetra_Vector>          Systemvector3() { return systemvector3_; }
+    //@}
 
+    //! @name Access Methods to Element Local Object
     Epetra_SerialDenseMatrix & Elematrix1() { return elematrix1_; }
     Epetra_SerialDenseMatrix & Elematrix2() { return elematrix2_; }
     Epetra_SerialDenseVector & Elevector1() { return elevector1_; }
     Epetra_SerialDenseVector & Elevector2() { return elevector2_; }
     Epetra_SerialDenseVector & Elevector3() { return elevector3_; }
+    //@}
 
+    /// zero element memory
     void ClearElementStorage( int eledim );
+
+    //! @name Assembly Methods
 
     void AssembleMatrix1(int eid,
                          const std::vector<int>& lm,
@@ -97,6 +109,10 @@ namespace DRT
       }
     }
 
+    //@}
+
+    //! @name Assembly Methods
+
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
                           const Epetra_SerialDenseMatrix& Aele,
@@ -118,7 +134,11 @@ namespace DRT
     virtual void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
                           const std::vector<int>& lm, const std::vector<int>& lmowner);
 
+    //@}
+
   private:
+
+    //! @name Global Objects
 
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix1_;
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2_;
@@ -126,12 +146,17 @@ namespace DRT
     Teuchos::RCP<Epetra_Vector>          systemvector2_;
     Teuchos::RCP<Epetra_Vector>          systemvector3_;
 
+    //@}
+
+    //! @name Element Local Objects
     /// define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1_;
     Epetra_SerialDenseMatrix elematrix2_;
     Epetra_SerialDenseVector elevector1_;
     Epetra_SerialDenseVector elevector2_;
     Epetra_SerialDenseVector elevector3_;
+
+    //@}
   };
 
 }

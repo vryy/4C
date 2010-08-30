@@ -47,6 +47,11 @@ MAT::PAR::ArtWallRemod::ArtWallRemod(Teuchos::RCP<MAT::PAR::Material> matdata)
 }
 
 
+Teuchos::RCP<MAT::Material> MAT::PAR::ArtWallRemod::CreateMaterial()
+{
+  return Teuchos::rcp(new MAT::ArtWallRemod(this));
+}
+
 MAT::ArtWallRemodType MAT::ArtWallRemodType::instance_;
 
 

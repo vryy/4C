@@ -17,7 +17,7 @@ void DRT::DirichletExtractor::Setup(const DRT::Discretization& dis)
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
-void DRT::DirichletExtractor::ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual )
+void DRT::DirichletExtractor::ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual ) const
 {
   DirichletPutScalar( *residual, 0.0 );
 }

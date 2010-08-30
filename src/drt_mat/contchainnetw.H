@@ -64,6 +64,9 @@ namespace MAT
 
       //@}
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
     };  // class ContChainNetw
 
   }  // namespace PAR
@@ -228,6 +231,9 @@ private:
         const double stressfree);
     /// print vector to string
     std::string PrintVec(const vector<double> actvec);
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 
