@@ -416,6 +416,8 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
         if(matchingIDfound)
           break;
       }
+      if (matchingIDfound == false) // this indicates that ANGLE != 0.0 for slave plane
+         continue; // in this case do not proceed, but leave here!!
       
       // read tolerance
       size_t start_tol = slave_con.desc.find("ABSTREETOL");
@@ -553,7 +555,9 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
         if(matchingIDfound)
           break;
       }
-      
+      if (matchingIDfound == false) // this indicates that ANGLE != 0.0 for slave plane
+         continue; // in this case do not proceed, but leave here!!
+
       // read tolerance
       size_t start_tol = slave_con.desc.find("ABSTREETOL");
       size_t tol_length = std::string("ABSTREETOL").length();
@@ -668,10 +672,10 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        // find matching slave pbc node set
        EXODUS::cond_def slave_con;
        int slave_conditionID = -1;
+       bool matchingIDfound = false;
        for(unsigned int i_slave=0; i_slave<condefs.size(); i_slave++)
        {
          slave_con = condefs[i_slave];
-         bool matchingIDfound = false;
          if( slave_con.sec.find("PERIODIC BOUNDARY CONDITIONS") != std::string::npos &&
              slave_con.desc.find("Slave PLANE xy") != std::string::npos &&
              ( slave_con.desc.find("ANGLE 0.0") != std::string::npos ||
@@ -689,6 +693,8 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
          if(matchingIDfound)
            break;
        }
+       if (matchingIDfound == false) // this indicates that ANGLE != 0.0 for slave plane
+          continue; // in this case do not proceed, but leave here!!
        
        // read tolerance
        size_t start_tol = slave_con.desc.find("ABSTREETOL");
