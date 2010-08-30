@@ -294,10 +294,10 @@ int main(
 
     // check for positive Element-Center-Jacobians and otherwise rewind them
     {
+      cout << "...Ensure positive element jacobians";
       timer->start();
       ValidateMeshElementJacobians(mymesh);
       timer->stop();
-      cout << "...Ensure positive element jacobians";
       cout << "        in...." << timer->totalElapsedTime() <<" secs" << endl;
       timer->reset();
     }
@@ -310,10 +310,10 @@ int main(
     {
       if(PeriodicBoundaryConditionsFound(condefs))
       {
+        cout << "...Ensure high quality p.b.c.";
         timer->start();
         CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh,condefs);
         timer->stop();
-        cout << "...Ensure high quality p.b.c.";
         cout << "               in...." << timer->totalElapsedTime() <<" secs" << endl;
         timer->reset();
       }
@@ -322,12 +322,11 @@ int main(
     // write the BACI input file
     {
       if (twodim)
-    	  mymesh.SetNsd(2);
-
+      mymesh.SetNsd(2);
+      cout << "...Writing dat-file";
       timer->start();
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
       timer->stop();
-      cout << "...Writing dat-file";
       cout << "                         in...." << timer->totalElapsedTime() << " secs" << endl;
       timer->reset();
     }
