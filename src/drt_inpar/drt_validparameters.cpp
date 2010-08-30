@@ -1219,6 +1219,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
   //equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to
   DoubleParameter("TAU0",0.0,"/equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to",&statmech);
+  //only angles in the range PHI0 +/- PHIODEV are admitted at all; the default value for this parameter is 2*pi so that by default any value is admitted
+  DoubleParameter("PHIODEV",6.28,"only angles in the range PHI0 +/- PHIODEV",&statmech);
+  //only angles in the range TAU0 +/- TAUODEV are admitted at all; the default value for this parameter is 2*pi so that by default any value is admitted
+  DoubleParameter("TAUODEV",6.28,"only angles in the range TAU0 +/- TAUODEV",&statmech);
   //Young's modulus of crosslinkers
   DoubleParameter("ELINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
   //Moment of inertia of area of crosslinkers

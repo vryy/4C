@@ -3864,6 +3864,20 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 	double p1 = exp(-0.5 * EI * Deltaphi[1] * Deltaphi[1] / statmechparams_.get<double> ("KT", 0.0));
 	double p2 = exp(-0.5 * GJ * Deltatau * Deltatau / statmechparams_.get<double> ("KT", 0.0));
 
+	//p0 = 0.0 if Deltaphi[0] is outside allowed range
+	if(Deltaphi[0] < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
+	   Deltaphi[0] > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+	   p0 = 0.0;
+	//p1 = 0.0 if Deltaphi[0] is outside allowed range
+  if(Deltaphi[1] < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
+     Deltaphi[1] > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+      p1 = 0.0;
+  //p2 = 0.0 if Deltatau is outside allowed range
+  if(Deltatau < statmechparams_.get<double>("TAU0",0.0) - statmechparams_.get<double>("TAUODEV",6.28) ||
+     Deltatau > statmechparams_.get<double>("TAU0",0.0) + statmechparams_.get<double>("TAUODEV",6.28))
+     p2 = 0.0;
+
+
 	//crosslinker has to pass three probability checks with respect to orientation
 	return (UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
 
