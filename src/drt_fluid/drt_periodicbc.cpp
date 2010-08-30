@@ -506,9 +506,31 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       {
         if(masternodeids.size()!=midtosid.size())
         {
+          // before throwing dserror, print helpful information to screen
+          for (size_t i = 0 ;i< masternodeids.size();i++)
+          {
+            int mid = masternodeids[i];
+            bool found = false;
+            map<int, vector<int> >::iterator curr;
+            for (curr=midtosid.begin(); curr!=midtosid.end(); ++curr)
+            {
+              if (curr->first == mid)
+              {
+                found = true;
+                break;
+              }
+            }
+            if (not found)
+            {
+              const double* x = discret_->gNode(mid)->X();
+              cout<<"\nmaster node not found in midtosid list: "<<mid
+                  <<"  coord: x="<<x[0]<<" y="<<x[1]<<" z="<<x[2];
+            }
+          }
+          // now it is time for the dserror
           dserror("have %d masters in midtosid list, %d expected\n",
-                  midtosid.size(),
-                  masternodeids.size());
+              midtosid.size(),
+              masternodeids.size());
         }
       }
 
