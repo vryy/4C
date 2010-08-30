@@ -605,14 +605,15 @@ void MORTAR::MortarInterface::Redistribute()
   if (numproc==1) return;
 
   // print message
-  if (!myrank) cout << "\nRedistributing interface using PARMETIS.......";
+  if (!myrank) cout << "\nRedistributing interface using 2-PARMETIS.......";
+
+  // we need an arbitrary preliminary element row map
+  RCP<Epetra_Map> sroweles = rcp(new Epetra_Map(*SlaveRowElements()));
+	RCP<Epetra_Map> mroweles = rcp(new Epetra_Map(*MasterRowElements()));
 
 	//**********************************************************************
 	// (1) SLAVE redistribution
 	//**********************************************************************
-	// we need an arbitrary preliminary element row map
-  RCP<Epetra_Map> sroweles  = rcp(new Epetra_Map(*SlaveRowElements()));
-  RCP<Epetra_Map> scoleles  = Teuchos::null;
 	RCP<Epetra_Map> srownodes = Teuchos::null;
 	RCP<Epetra_Map> scolnodes = Teuchos::null;
 
@@ -634,9 +635,6 @@ void MORTAR::MortarInterface::Redistribute()
 	//**********************************************************************
 	// (2) MASTER redistribution
 	//**********************************************************************
-	// we need an arbitrary preliminary element row map
-	RCP<Epetra_Map> mroweles  = rcp(new Epetra_Map(*MasterRowElements()));
-	RCP<Epetra_Map> mcoleles  = Teuchos::null;
 	RCP<Epetra_Map> mrownodes = Teuchos::null;
 	RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
@@ -655,10 +653,16 @@ void MORTAR::MortarInterface::Redistribute()
 #endif
 	//**********************************************************************
 
+	//**********************************************************************
+	// (3) Merge global interface node row and column map
+	//**********************************************************************
 	// merge node maps from slave and master parts
 	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
   RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
+	//**********************************************************************
+	// (4) Get partitioning information into discretization
+	//**********************************************************************
 	// build reasonable element maps from the already valid and final node maps
 	// (note that nothing is actually redistributed in here)
 	RCP<Epetra_Map> roweles  = Teuchos::null;

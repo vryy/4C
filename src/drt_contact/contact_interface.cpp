@@ -121,6 +121,277 @@ void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
 }
 
 /*----------------------------------------------------------------------*
+ |  redistribute contact interface (public)                   popp 08/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::Redistribute()
+{
+	// OLD VERSION: ball base class method
+	//MORTAR::MortarInterface::Redistribute();
+	//return;
+
+	// we need PARALLEL and PARMETIS defined for this
+#if !defined(PARALLEL) || !defined(PARMETIS)
+	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
+#endif
+
+	// some local variables
+  RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+	const int myrank  = comm->MyPID();
+	const int numproc = comm->NumProc();
+	Epetra_Time time(*comm);
+	set<int>::const_iterator iter;
+
+	// vector containing all proc ids
+  vector<int> allproc(numproc);
+  for (int i=0; i<numproc; ++i) allproc[i] = i;
+
+	// redistribution useless if only one processor
+  if (numproc==1) return;
+
+  // print message
+  if (!myrank) cout << "\nRedistributing interface using 3-PARMETIS.......";
+
+	//**********************************************************************
+	// (1) SLAVE splitting in close / non-close parts
+	//**********************************************************************
+  // perform contact search (unfortunately this has to be done ONCE here
+  // with a still non-optimal parallel distribution of the interface)
+  CreateSearchTree();
+  RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(*idiscret_->DofRowMap(),false));
+  zeros->PutScalar(0.0);
+  SetState("displacement",zeros);
+  Initialize();
+
+  // call search algorithm
+  if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
+  else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
+  else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
+  else                                                    dserror("ERROR: Invalid search algorithm");
+
+  // split slave element row map and build redundant vector of
+  // all close / non-close slave node ids on all procs
+  vector<int> closeele, noncloseele;
+  vector<int> localcns, localfns;
+
+  // loop over all row elements to gather the local information
+  for (int i=0; i<SlaveRowElements()->NumMyElements(); ++i)
+  {
+  	// get element
+    int gid = SlaveRowElements()->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
+    MORTAR::MortarElement* cele = static_cast<MORTAR::MortarElement*>(ele);
+
+    // store element id and adjacent node ids
+    int close = cele->NumSearchElements();
+    if (close > 0)
+    {
+    	closeele.push_back(gid);
+    	for (int k=0;k<cele->NumNode();++k) localcns.push_back(cele->NodeIds()[k]);
+    }
+    else
+    {
+    	noncloseele.push_back(gid);
+    	for (int k=0;k<cele->NumNode();++k) localfns.push_back(cele->NodeIds()[k]);
+    }
+  }
+
+  // loop over all elements to reset candidates / search lists
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+    element->SearchElements().resize(0);
+  }
+
+  // we need an arbitrary preliminary element row map
+  RCP<Epetra_Map> scroweles  = rcp(new Epetra_Map(-1,(int)closeele.size(),&closeele[0],0,Comm()));
+  RCP<Epetra_Map> sncroweles = rcp(new Epetra_Map(-1,(int)noncloseele.size(),&noncloseele[0],0,Comm()));
+  RCP<Epetra_Map> mroweles   = rcp(new Epetra_Map(*MasterRowElements()));
+
+  // check for consistency
+  if (scroweles->NumGlobalElements()==0 && sncroweles->NumGlobalElements()==0)
+    dserror("ERROR: Redistribute: Both slave sets (close/non-close) are empty");
+
+  // use simple base class method if slave surface consists of
+  // either ONLY close elements or ONLY non-close elements
+  if (scroweles->NumGlobalElements()==0 || sncroweles->NumGlobalElements()==0)
+  {
+  	MORTAR::MortarInterface::Redistribute();
+  	return;
+  }
+
+	//**********************************************************************
+	// (2) CLOSE SLAVE redistribution
+	//**********************************************************************
+	RCP<Epetra_Map> scrownodes = Teuchos::null;
+	RCP<Epetra_Map> sccolnodes = Teuchos::null;
+
+	// build redundant vector of all close slave node ids on all procs
+	// (there must not be any double entries in the node lists, thus
+	// transform to sets and then back to vectors)
+	vector<int> globalcns;
+	set<int> setglobalcns;
+	vector<int> scnids;
+	LINALG::Gather<int>(localcns,globalcns,numproc,&allproc[0],Comm());
+	for (int i=0;i<(int)globalcns.size();++i) setglobalcns.insert(globalcns[i]);
+	for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter) scnids.push_back(*iter);
+
+	//**********************************************************************
+	// call PARMETIS (again with #ifdef to be on the safe side)
+	// (close slave set might also be empty!)
+#if defined(PARALLEL) && defined(PARMETIS)
+	if ((int)scnids.size())
+		DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,comm,time,false);
+#endif
+	//**********************************************************************
+
+	//**********************************************************************
+	// (3) NON-CLOSE SLAVE redistribution
+	//**********************************************************************
+	RCP<Epetra_Map> sncrownodes = Teuchos::null;
+	RCP<Epetra_Map> snccolnodes = Teuchos::null;
+
+	// build redundant vector of all non-close slave node ids on all procs
+	// (there must not be any double entries in the node lists, thus
+	// transform to sets and then back to vectors)
+	vector<int> globalfns;
+	set<int> setglobalfns;
+	vector<int> sncnids;
+	LINALG::Gather<int>(localfns,globalfns,numproc,&allproc[0],Comm());
+	for (int i=0;i<(int)globalfns.size();++i) setglobalfns.insert(globalfns[i]);
+	for (iter=setglobalfns.begin();iter!=setglobalfns.end();++iter) sncnids.push_back(*iter);
+
+	//**********************************************************************
+	// call PARMETIS (again with #ifdef to be on the safe side)
+	// (non-close slave set might also be empty!)
+#if defined(PARALLEL) && defined(PARMETIS)
+	if ((int)sncnids.size())
+		DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,comm,time,false);
+#endif
+	//**********************************************************************
+
+	//**********************************************************************
+	// (4) MASTER redistribution
+	//**********************************************************************
+	RCP<Epetra_Map> mrownodes = Teuchos::null;
+	RCP<Epetra_Map> mcolnodes = Teuchos::null;
+
+	// build redundant vector of all master node ids on all procs
+	// (do not include crosspoints / boundary nodes if there are any)
+	vector<int> mnids;
+	vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
+	for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
+		mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
+	LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
+
+	//**********************************************************************
+	// call PARMETIS (again with #ifdef to be on the safe side)
+#if defined(PARALLEL) && defined(PARMETIS)
+	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,comm,time,false);
+#endif
+	//**********************************************************************
+
+	//**********************************************************************
+	// (5) Merge global interface node row and column map
+	//**********************************************************************
+	// merge slave node row map from close and non-close parts
+  RCP<Epetra_Map> srownodes = Teuchos::null;
+
+  //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
+  if (scrownodes==Teuchos::null || sncrownodes==Teuchos::null)
+  {
+     dserror("ERROR: Redistribute: You should not be here");
+  }
+  //-------------------------------------CASE 4: BOTH SLAVE SETS NON-EMPTY
+  else
+  {
+    // find intersection set of close and non-close nodes
+    set<int> intersec;
+    for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter)
+    {
+    	set<int>::const_iterator found = setglobalfns.find(*iter);
+    	if (found!=setglobalfns.end()) intersec.insert(*found);
+    }
+
+  	vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
+  	int count = scrownodes->NumMyElements();
+
+  	// first get GIDs of input scrownodes
+		for (int i=0;i<count;++i) mygids[i] = scrownodes->GID(i);
+
+		// then add GIDs of input sncrownodes (only new ones)
+		for (int i=0;i<sncrownodes->NumMyElements();++i)
+		{
+			// check for intersection gid
+			// don't do anything for intersection gids (scrownodes dominates!!!)
+			set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
+			if (found!=intersec.end()) continue;
+
+			// check for overlap
+			if (scrownodes->MyGID(sncrownodes->GID(i)))
+				dserror("LINALG::MergeMap: Result map is overlapping");
+
+			// add new GIDs to mygids
+			mygids[count]=sncrownodes->GID(i);
+			++count;
+		}
+		mygids.resize(count);
+		sort(mygids.begin(),mygids.end());
+		srownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,scrownodes->Comm()));
+  }
+
+	// merge interface node row map from slave and master parts
+	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
+
+	// IMPORTANT NOTE:
+	// While merging from the three different parts of the discretization
+	// (close slave, non-close slave, master) is feasible for the node row
+	// map, this is not possible for the node column map. Some necessary
+	// information on ghosting at the transition between close and non-close
+	// slave region would always be missed! Thus, to be on the safe side,
+	// we simply use a fully overlapping node column map here.
+	// Thinking of FillComplete() to be called later on, this is absolutely
+	// OK, because there we export the contact interface to full overlap
+	// anyway as this is needed for contact search.
+
+	// create fully overlapping node column map
+	// fill my own row node ids
+	vector<int> sdata(srownodes->NumMyElements()+mrownodes->NumMyElements());
+	for (int i=0; i<srownodes->NumMyElements(); ++i)
+		sdata[i] = srownodes->GID(i);
+	for (int i=0; i<mrownodes->NumMyElements(); ++i)
+		sdata[srownodes->NumMyElements()+i] = mrownodes->GID(i);
+
+	// gather all gids of nodes redundantly
+	vector<int> rdata;
+	LINALG::Gather<int>(sdata,rdata,numproc,&allproc[0],Comm());
+	RCP<Epetra_Map> colnodes = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+
+	//**********************************************************************
+	// (6) Get partitioning information into discretization
+	//**********************************************************************
+	// build reasonable element maps from the already valid and final node maps
+	// (note that nothing is actually redistributed in here)
+	RCP<Epetra_Map> roweles  = Teuchos::null;
+	RCP<Epetra_Map> coleles  = Teuchos::null;
+	Discret().BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+
+	// export nodes and elements to the row map
+	Discret().ExportRowNodes(*rownodes);
+	Discret().ExportRowElements(*roweles);
+
+	// export nodes and elements to the column map (create ghosting)
+	Discret().ExportColumnNodes(*colnodes);
+	Discret().ExportColumnElements(*coleles);
+
+	// print message
+	if (!myrank) cout << "done!" << endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  create search tree (public)                               popp 01/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::CreateSearchTree()
