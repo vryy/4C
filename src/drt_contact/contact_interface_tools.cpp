@@ -158,8 +158,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         int nnodes = element->NumNode();
         LINALG::SerialDenseMatrix coord(3,nnodes);
         element->GetNodalCoords(coord);
-        double color = (double)element->Owner()+1.0;
-        if (element->NumSearchElements()<=0) color=0.0;
+        double color = (double)element->Owner();
 
         //local center
         double xi[2] = {0.0, 0.0};
@@ -513,7 +512,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         // plot element number in element center
-        /*double elec[3];
+        double elec[3];
         element->LocalToGlobal(xi,elec,0);
         
         if (element->IsSlave())
@@ -548,9 +547,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             gmshfilecontentmaster << "T3(" << scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
             gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
           }
-        }*/
+        }
       }
-/*
+
       //******************************************************************
       // plot normal vector, tangent vectors and contact status
       //******************************************************************
@@ -621,7 +620,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           }
         }
       }
-*/
+
       // end GMSH output section in all files
       if (proc==lComm()->NumProc()-1)
       {

@@ -204,6 +204,38 @@ public:
   virtual void AddCoElement(RCP<CONTACT::CoElement> cele);
 
   /*!
+  \brief Redistribute contact interface among all procs
+
+  Derived version!
+
+  When first creating a contact interface, its parallel distribution
+  is simply copied from the underlying problem discretization. This,
+  of course, is not the optimal parallel distribution for evaluating
+  the contact coupling terms, as the interface ownership might be
+  restricted to only very few processors. Moreover, no parallel
+  scalability can be achieved with this procedure, because adding
+  processors to the problem discretization does not automatically
+  mean adding processors to the interface discretization.
+
+  Thus, an independent parallel distribution of the interface is
+  desirable, which divides the interface among all available
+  processors. Redistribute() is the method to achieve this.
+  Moreover, for contact problems we have to account for the fact
+  that only parts of the slave surface actually need to evaluate
+  contact terms (those parts that are "close" to the master side).
+
+  Internally, we call ParMetis to re-partition the contact interfacs
+  in three independent parts: (1) close slave part, (2) non-close
+  slave part, (3) master part. This results in new "optimal" node/element
+  maps of the interface discretization. Note that after Redistribute(),
+  we must call FillComplete() again. Note also that for contact
+  simulations Redistribute() might be called dynamically again and
+  again to account for changes of the contact zone.
+
+  */
+  void Redistribute();
+
+  /*!
   \brief Create binary search tree
 
   The methods creates a binary tree object for efficient search. This is
