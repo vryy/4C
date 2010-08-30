@@ -954,6 +954,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // time measurement --- start TimeMonitor tm6
     tm6_ref_        = rcp(new TimeMonitor(*timepbcmakeghostmap_ ));
 
+    // make sure we have a filled discretisation at this place
+    // dofs are not required yet, they are assigned after redistribution
+    // accessing the noderowmap requires a 'completed' discretization
+    if(!discret_->Filled())
+    {
+      discret_->FillComplete(false,false,false);
+    }
+
     // a list of all nodes on this proc
     vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
 
@@ -1038,14 +1046,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
                                        &nodesonthisproc[0],
                                        0,
                                        discret_->Comm()));
-
-    // make sure we have a filled discretisation at this place
-    // dofs are not required yet, they are assigned after 
-    // redistribution
-    if(!discret_->Filled())
-    {
-      discret_->FillComplete(false,false,false);
-    }
 
     // create nodal graph of problem, according to old RowNodeMap
     RefCountPtr<Epetra_CrsGraph> oldnodegraph = discret_->BuildNodeGraph();
