@@ -242,6 +242,8 @@ namespace ELEMENTS
       const double&                                         Cs_delta_sq,
       const double&                                         l_tau);
 
+    LINALG::Matrix<nsd_,nen_> & xyz() { return xyze_; }
+
   private:
 
 //     /*!

@@ -74,16 +74,17 @@ STK::FLD::FluidState::FluidState( int counter, Fluid & fluid )
 {
   STK::Discretization & dis = fluid.Discretization();
   const DRT::DirichletExtractor & extractor = dis.DirichletExtractor();
+  const Teuchos::RCP<const Epetra_Map> & dirichletmap = extractor.DirichletMap();
 
-  sysmat_ = Teuchos::rcp( new LINALG::FixedSparseMatrix( extractor.DirichletMap() ) );
+  sysmat_ = Teuchos::rcp( new LINALG::FixedSparseMatrix( dirichletmap ) );
 
   residual_ = Teuchos::rcp( new Epetra_Vector( dis.DofRowMap() ) );
 
-  assemblestrategy_ = Teuchos::rcp( new STK::FEI::AssembleStrategy( dis, extractor.DirichletMap(),
+  assemblestrategy_ = Teuchos::rcp( new STK::FEI::AssembleStrategy( dis, dirichletmap,
                                                                     sysmat_, Teuchos::null,
                                                                     residual_, Teuchos::null, Teuchos::null ) );
 
-  sysmat_->SetMatrix( assemblestrategy_->MatrixGraph( dis, extractor.DirichletMap() ) );
+  sysmat_->SetMatrix( assemblestrategy_->MatrixGraph( dis, dirichletmap ) );
 }
 
 
@@ -130,7 +131,7 @@ STK::FLD::Fluid::Fluid( STK::Discretization & dis, Teuchos::RCP<LINALG::Solver> 
   dtp_          = dta_;
   theta_        = fdyn.get<double>("THETA");
   alefluid_     = false;
-  newton_       = fdyn.get<string>("NONLINITER");
+  newton_       = Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER");
   convform_     = fdyn.get<string>("CONVFORM");
 
   refinestep_   = 1;
@@ -465,14 +466,11 @@ namespace STK
       const int nsd = FluidElementType::nsd_;
       const int dim = (nsd+1)*nen;
 
-      Epetra_SerialDenseMatrix elemat1_epetra( dim, dim );
-      //Epetra_SerialDenseMatrix elemat2_epetra( dim, dim );
-      Epetra_SerialDenseMatrix elemat2_epetra;
-      Epetra_SerialDenseVector elevec1_epetra( dim );
+      assemblestrategy.ClearElementStorage( dim );
 
-      LINALG::Matrix<dim,dim> elemat1( elemat1_epetra, true );
-      LINALG::Matrix<dim,dim> elemat2( elemat2_epetra, true );
-      LINALG::Matrix<dim,  1> elevec1( elevec1_epetra, true );
+      LINALG::Matrix<dim,dim> elemat1( assemblestrategy.Elematrix1(), true );
+      LINALG::Matrix<dim,dim> elemat2( assemblestrategy.Elematrix2(), true );
+      LINALG::Matrix<dim,  1> elevec1( assemblestrategy.Elevector1(), true );
 
       LINALG::Matrix<nsd,nen> edeadaf; // body force
 
@@ -502,10 +500,12 @@ namespace STK
         dis.LocationVector( e, lm, lmowner );
 
         elemat1.PutScalar( 0. );
-        elemat2.PutScalar( 0. );
+        //elemat2.PutScalar( 0. );
         elevec1.PutScalar( 0. );
 
         // We need just a few element matrices for normal fluid
+
+        ExtractValues<nsd,nen>( e, & dis.GetMesh().Coordinates(), f3->xyz() );
 
         ExtractValues<nsd,nen>( e, velnp, evelaf );
         ExtractValues<nen>( e, pressure, epreaf );
@@ -626,6 +626,32 @@ void STK::FLD::Fluid::NonlinearSolve()
     eleparams.set("thermpress at n+alpha_F/n+1",0.0);
     eleparams.set("thermpress at n+alpha_M/n",0.0);
     eleparams.set("thermpressderiv at n+alpha_M/n+1",0.0);
+
+    // set scheme-specific element parameters and vector values
+    if (timealgo_==INPAR::FLUID::timeint_stationary)
+    {
+      eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+      eleparams.set("using generalized-alpha time integration",false);
+      eleparams.set("total time",time_);
+      eleparams.set("is stationary", true);
+    }
+    else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+//       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
+//       eleparams.set("using generalized-alpha time integration",true);
+//       eleparams.set("total time",time_-(1-alphaF_)*dta_);
+//       eleparams.set("is stationary", false);
+//       eleparams.set("alphaF",alphaF_);
+//       eleparams.set("alphaM",alphaM_);
+//       eleparams.set("gamma",gamma_);
+    }
+    else
+    {
+      eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set("using generalized-alpha time integration",false);
+      eleparams.set("total time",time_);
+      eleparams.set("is stationary", false);
+    }
 
     // no need to call preevaluate here
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();

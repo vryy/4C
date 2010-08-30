@@ -72,6 +72,8 @@ void adaptive_main()
 
       dis.Setup( *actdis, fluid );
 
+      fluid.Integrate();
+
 #else
       STK::Fluid fluid( *actdis, solver );
       fluid.SetupSTKMesh();

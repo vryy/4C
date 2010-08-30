@@ -157,7 +157,7 @@ namespace STK
       bool alefluid_;
 
       //! use (or not) linearisation of reactive terms on the element
-      std::string newton_;
+      INPAR::FLUID::LinearisationAction newton_;
 
       /// form of convective term
       std::string convform_;

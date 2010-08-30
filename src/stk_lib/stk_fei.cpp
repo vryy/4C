@@ -377,13 +377,14 @@ Teuchos::RCP<Epetra_CrsGraph> STK::FEI::AssembleStrategy::MatrixGraph( STK::Disc
 
   // setup graph with row length and column indices per row
 
-  std::vector<int> sizes;
-  sizes.reserve( graph.size() );
+  std::vector<int> sizes( graph.size() );
   for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
   {
+    int gid = i->first;
+    int lid = dofrowmap.LID( gid );
     std::set<int> & rowset = i->second;
     unsigned s = rowset.size();
-    sizes.push_back( s );
+    sizes[lid] = s;
   }
 
   Teuchos::RCP<Epetra_CrsGraph> crsgraph =
@@ -654,9 +655,10 @@ STK::FEI::DiscretizationState::DiscretizationState( STK::Discretization& dis )
 void STK::FEI::DiscretizationState::Setup( const std::vector<stk::mesh::FieldBase*>& fields )
 {
   dofset_.Setup( dis_, fields );
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
 
   // build dirichlet map
+
+  Teuchos::RCP<const Epetra_Map> dirichletmap;
 
   const std::map<int, Teuchos::ParameterList> * dirichlet = dis_.Condition( "Dirichlet" );
   if ( dirichlet!=NULL )
@@ -740,14 +742,17 @@ void STK::FEI::DiscretizationState::Setup( const std::vector<stk::mesh::FieldBas
       }
     }
 
-    maps.push_back( Teuchos::rcp( new Epetra_Map( -1, dbc.size(), &dbc[0], 0, dis_.Comm() ) ) );
+    dirichletmap = Teuchos::rcp( new Epetra_Map( -1, dbc.size(), &dbc[0], 0, dis_.Comm() ) );
   }
   else
   {
     // no Dirichlet conditions whatsoever
-    maps.push_back( Teuchos::rcp( new Epetra_Map( -1, 0, NULL, 0, dis_.Comm() ) ) );
+    dirichletmap = Teuchos::rcp( new Epetra_Map( -1, 0, NULL, 0, dis_.Comm() ) );
   }
 
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  maps.push_back( Teuchos::null ); // non-dirichlet map is not needed?!
+  maps.push_back( dirichletmap );
   dirichlet_.Setup( DofRowMap(), maps );
 }
 
@@ -1065,6 +1070,9 @@ void STK::FEI::DiscretizationState::LocationVector( stk::mesh::Entity & e,
   //stk::mesh::Bucket & bucket = e.bucket();
   //std::vector<stk::mesh::FieldBase*> fields;
   //algo.collect_unknowns( fields );
+
+  lm.clear();
+  lmowner.clear();
 
   for ( stk::mesh::PairIterRelation nodes = e.relations( stk::mesh::Node );
         not nodes.empty();

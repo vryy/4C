@@ -412,16 +412,13 @@ void STK::Discretization::Unrefine( const std::vector<stk::mesh::EntityKey> & ei
 /*----------------------------------------------------------------------*/
 void STK::Discretization::CreateState()
 {
-  Teuchos::RCP<STK::FEI::DiscretizationState> state =
-    Teuchos::rcp( new STK::FEI::DiscretizationState( *this ) );
+  state_ = Teuchos::rcp( new STK::FEI::DiscretizationState( *this ) );
 
   std::vector<stk::mesh::FieldBase*> fields;
 
   algo_->collect_unknowns( fields );
 
-  state->Setup( fields );
-
-  state_ = state;
+  state_->Setup( fields );
 
   algo_->notify_state_changed();
 }
