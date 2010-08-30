@@ -236,99 +236,95 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt,
                             RCP<Epetra_Vector>& f, bool predictor = false)
     {
-      // mortar initialization and evaluation
 #ifdef CONTACTTIME
+      // mortar initialization and evaluation
       Comm().Barrier();
       const double t_start1 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       SetState("displacement",dis);
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end1 = Teuchos::Time::wallTime()-t_start1;
       if (Comm().MyPID()==0) cout << "    -->SetState:\t" << t_end1 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start2 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       InitEvalInterface();
-#ifdef CONTACTTIME
+      double t_end2_local = Teuchos::Time::wallTime()-t_start2;
       Comm().Barrier();
       const double t_end2 = Teuchos::Time::wallTime()-t_start2;
+      double maxall = 0.0;
+      double minall = 0.0;
+      double sumall = 0.0;
+      Comm().MaxAll(&t_end2_local,&maxall,1);
+      Comm().MinAll(&t_end2_local,&minall,1);
+      Comm().SumAll(&t_end2_local,&sumall,1);
+      double unbalance =  ((maxall/sumall)-(1.0/Comm().NumProc()))*Comm().NumProc()*100;
       if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds\n";
-#endif // #ifdef CONTACTTIME
+      if (Comm().MyPID()==0) cout << "                \t(BALANCE: " << maxall/minall << " / UNBALANCE: " << unbalance << "\%)\n";
 
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start3 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       InitEvalMortar();
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end3 = Teuchos::Time::wallTime()-t_start3;
       if (Comm().MyPID()==0) cout << "    -->Mortar  :\t" << t_end3 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
       // evaluate relative movement for friction
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start4 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       if (predictor) EvaluateRelMovPredict();
       else           EvaluateRelMov();
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end4 = Teuchos::Time::wallTime()-t_start4;
       if (Comm().MyPID()==0) cout << "    -->RelMov  :\t" << t_end4 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
       // update active set
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start5 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       if (!predictor) UpdateActiveSetSemiSmooth();
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end5 = Teuchos::Time::wallTime()-t_start5;
       if (Comm().MyPID()==0) cout << "    -->ActivSet:\t" << t_end5 << " seconds\n";
-#endif // #ifdef CONTACTTIME
       
       // apply contact forces and stiffness
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start6 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       Initialize();
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end6 = Teuchos::Time::wallTime()-t_start6;
       if (Comm().MyPID()==0) cout << "    -->Initial :\t" << t_end6 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start7 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       Evaluate(kt,f,dis);
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end7 = Teuchos::Time::wallTime()-t_start7;
       if (Comm().MyPID()==0) cout << "    -->Evaluate:\t" << t_end7 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_start8 = Teuchos::Time::wallTime();
-#endif // #ifdef CONTACTTIME
       InterfaceForces();
-#ifdef CONTACTTIME
       Comm().Barrier();
       const double t_end8 = Teuchos::Time::wallTime()-t_start8;
       if (Comm().MyPID()==0) cout << "    -->IfForces:\t" << t_end8 << " seconds\n";
-#endif // #ifdef CONTACTTIME
 
+#else
+      // mortar initialization and evaluation
+			SetState("displacement",dis);
+			InitEvalInterface();
+			InitEvalMortar();
+
+			// evaluate relative movement for friction
+			if (predictor) EvaluateRelMovPredict();
+			else           EvaluateRelMov();
+
+			// update active set
+			if (!predictor) UpdateActiveSetSemiSmooth();
+
+			// apply contact forces and stiffness
+			Initialize();
+			Evaluate(kt,f,dis);
+			InterfaceForces();
+#endif // #ifdef CONTACTTIME
       return;
     }
     
