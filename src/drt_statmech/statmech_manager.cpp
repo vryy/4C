@@ -2090,7 +2090,8 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 	cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 
-	for(int i=0; i<discret_.NumMyColNodes(); i++)
+	// test cout
+	/*for(int i=0; i<discret_.NumMyColNodes(); i++)
 	{
 		for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
 		{
@@ -2107,7 +2108,7 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 			}
 			discret_.Comm().Barrier();
 		}
-	}
+	}*/
 	return;
 } // StatMechManager::StatMechUpdate()
 
@@ -2521,7 +2522,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 								{
 									if(klayer>-1 && klayer<N)
 										for(int k=0; k<(int)(*nodeinpartition_)[2][klayer].size(); k++)
-											if((*nodeinpartition_)[2][klayer][k]==tmplid)
+											if((*nodeinpartition_)[2][klayer][k]==tmplid && (*numcrossnodes_)[tmplid]<statmechparams_.get<int>("N_CROSSMAX",0))
 											{
 												// get the current node position for the node with LID==tmplid
 												const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
@@ -2530,12 +2531,12 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 												for (int l=0; l<(int)difference.M(); l++)
 													difference(l) = (*crosslinkerpositions_)[l][index]-(nodepos->second)(l);
 												// only nodes within the search volume are stored
-												if(difference.Norm2()<rmax && difference.Norm2()>rmin && (*numcrossnodes_)[tmplid]<statmechparams_.get<int>("N_CROSSMAX",0))
+												if(difference.Norm2()<rmax && difference.Norm2()>rmin)
 												{
 													//cout<<tmplid<<", rmax="<<rmax<<", dist="<<difference.Norm2()<<" ";
 													neighboursLID->push_back(tmplid);
 												}
-												// exit loop imediately
+												// exit loop immediately
 												break;
 											}
 								}
@@ -2977,7 +2978,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		cout<<endl;
 		}
 	}
-	discret_.Comm().Barrier();
 #endif //#ifdef D_TRUSS3
 #endif //#ifdef D_BEAM3
 //#endif //#ifdef D_BEAM3II
@@ -3313,7 +3313,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	crosslinkergidsrow.PutScalar(-1.0);
 	crosslinkernodeidsrow.PutScalar(-1.0);
 
-	for(int i=0; i<crosslinkergidsrow.MyLength(); i++)
+	for(int i=0; i<discret_.NumMyRowNodes(); i++)
 	{
 		// insert crosslinker element GIDs
 		int gidposition = 0;
@@ -3326,17 +3326,11 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			{
 				crosslinkergidsrow[gidposition][i] = node->Elements()[j]->Id();
 				for(int k=0; k<element->NumNode(); k++)
-				{
 					for(int l=0; l<crosslinkernodeidsrow.NumVectors(); l++)
-					{
-						if(element->Nodes()[k]->Id()==crosslinkernodeidsrow[l][i])
-							break;
+						if(element->NodeIds()[k]!=crosslinkernodeidsrow[l][i]) // entry already exists
+							crosslinkernodeidsrow[gidposition*element->NumNode()+k][i] = element->NodeIds()[k];
 						else
-						{
-							crosslinkernodeidsrow[gidposition*element->NumNode()+k][i] = element->Nodes()[k]->Id();
-						}
-					}
-				}
+							break;
 				gidposition++;
 			}
 		}
@@ -3418,9 +3412,9 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 								for(int k=0; k<crosslinkernodeids.NumVectors(); k++)
 									if(crosslinkernodeids[k][nodeLID]==(int)(*crosslinkerbond_)[j][i])
 										if(k<2)
-											delcrosslinkers[nodeLID] = crosslinkergids[0][nodeLID];
+											delcrosslinkers[i] = crosslinkergids[0][nodeLID];
 										else
-											delcrosslinkers[nodeLID] = crosslinkergids[k-1][nodeLID];
+											delcrosslinkers[i] = crosslinkergids[k-1][nodeLID];
 
 								((*numcrossnodes_)[nodeLID]) -= 1.0;
 								(*crosslinkerbond_)[j][i] = -1.0;
@@ -3485,12 +3479,12 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	//cout<<delcrosslinkers<<endl;
 
 	// DELETION OF ELEMENTS
-	std::vector<int> delelement;
+	int delelement = 0;
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
 		{
-			delelement.push_back((int)delcrosslinkers[i]);
-			discret_.DeleteElement((int) delcrosslinkers[i]);
+			delelement++;
+			discret_.DeleteElement( (int)delcrosslinkers[i]);
 		}
 
 	// couts
@@ -3498,12 +3492,11 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	{
 		if(proc==discret_.Comm().MyPID())
 		{
-			cout << "Proc " << discret_.Comm().MyPID() << ": " << delelement.size()<< " crosslinker elements deleted";
+			cout << "Proc " << discret_.Comm().MyPID() << ": " << delelement<< " crosslinker elements deleted";
 			//for(int i=0; i<(int)delelement.size(); i++)
 				//cout<<delelement.at(i)<<" ";
 			cout<<endl;
 		}
-		discret_.Comm().Barrier();
 	}
 } //StatMechManager::SearchAndDeleteCrosslinkers()
 
@@ -4303,16 +4296,13 @@ void StatMechManager::PositionsToPartitions(const std::map<int,LINALG::Matrix<3,
 
 	// loop over node positions to map their column map LIDs to partitions (if a search is to be conducted for the current LID)
 	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
-	{
-		if((*searchforneighbours_)[(int)(posi->first)]>0.9)
-			for(int j=0; j<(int)nodeinpartition_->size(); j++)
-			{
-				int partition = (int)floor((posi->second)(j)/pl*(double)N);
-				if(partition==N)
-					partition--;
-				(*nodeinpartition_)[j][partition].push_back((int)(posi->first));
-			}
-	}
+		for(int j=0; j<(int)nodeinpartition_->size(); j++)
+		{
+			int partition = (int)floor((posi->second)(j)/pl*(double)N);
+			if(partition==N)
+				partition--;
+			(*nodeinpartition_)[j][partition].push_back((int)(posi->first));
+		}
 
 	// test cout
 	/*/ loop over component
