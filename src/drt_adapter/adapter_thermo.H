@@ -200,8 +200,8 @@ namespace ADAPTER
     //@{
     /// apply current displacements and velocities to thermo field
     virtual void ApplyStructVariables(
-      Teuchos::RCP<Epetra_Vector> idisp,
-      Teuchos::RCP<Epetra_Vector> ivel
+      Teuchos::RCP<Epetra_Vector> disp,
+      Teuchos::RCP<Epetra_Vector> vel
       ) = 0;
     //@}
 

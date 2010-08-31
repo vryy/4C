@@ -160,7 +160,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     //@}
-    
+
     //! @name Extract current temperature values needed for TSI
     //@{
     /// extract temperatures for inserting in structure field
@@ -168,15 +168,15 @@ namespace ADAPTER
 
     /// extract current temperatures for inserting in structure field
     virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp();
-    
+
     //@}
 
     //! @name Apply current displacements and velocities (for TSI)
     //@{
     /// apply current displacements and velocities thermo field
     void ApplyStructVariables(
-      Teuchos::RCP<Epetra_Vector> idisp,
-      Teuchos::RCP<Epetra_Vector> ivel
+      Teuchos::RCP<Epetra_Vector> disp,
+      Teuchos::RCP<Epetra_Vector> vel
       );
     //@}
 

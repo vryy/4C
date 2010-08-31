@@ -275,7 +275,11 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() = 0;
 
     /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln() = 0;
+
+    /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp() = 0;
+
 
     //@}
 
@@ -288,7 +292,7 @@ namespace ADAPTER {
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp) = 0;
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp) = 0;
 
     //@}
 

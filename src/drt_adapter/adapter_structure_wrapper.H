@@ -100,12 +100,14 @@ namespace ADAPTER
                                           Teuchos::RCP<Epetra_Vector> ifluidvel)
     {  structure_->ApplyInterfaceRobinValue(iforce,ifluidvel); }
 
-    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp)
-    { structure_->ApplyTemperatures(itemp); }
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp)
+    { structure_->ApplyTemperatures(temp); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp()
     { return structure_->ExtractDispnp(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn()
     { return structure_->ExtractDispn(); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln()
+    { return structure_->ExtractVeln(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp()
     { return structure_->ExtractVelnp(); }
 

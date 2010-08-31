@@ -189,6 +189,9 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp();
 
     /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln();
+
+    /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
 
     //@}
@@ -201,7 +204,7 @@ namespace ADAPTER {
     /// step. The middle values are newly created. (like in FSI)
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> itemp);
+    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp);
 
      //@}
 

@@ -255,6 +255,9 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
 
     /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln();
+
+    /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
 
     //@}
@@ -268,7 +271,7 @@ namespace ADAPTER {
     ///
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(
-      Teuchos::RCP<Epetra_Vector> itemp
+      Teuchos::RCP<Epetra_Vector> temp
       );
     //@}
 

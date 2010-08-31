@@ -361,7 +361,7 @@ void ADAPTER::StructureTimIntAda::Integrate()
 /*----------------------------------------------------------------------*/
 /* apply the current temperatures (FSI like)                 dano 03/10 */
 void ADAPTER::StructureTimIntAda::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> itemp
+  Teuchos::RCP<Epetra_Vector> temp
 )
 {
   dserror("not implemented");
@@ -380,6 +380,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractDispn()
 /*----------------------------------------------------------------------*/
 /* extract displacements D_{n+1} needed for coupling in TSI*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractDispnp()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* extract velocities V_{n} needed for coupling in TSI*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractVeln()
 {
   dserror("not implemented");
   return Teuchos::null;

@@ -395,11 +395,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTempnp()
  | apply current displacements and velocities needed in TSI  dano 05/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::ApplyStructVariables(
-  Teuchos::RCP<Epetra_Vector> idisp,
-  Teuchos::RCP<Epetra_Vector> ivel
+  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::RCP<Epetra_Vector> vel
   )
 {
-  thermo_->ApplyStructVariables(idisp,ivel);
+  thermo_->ApplyStructVariables(disp,vel);
 }
 
 

@@ -614,7 +614,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
  | Apply current temperature  (for TSI)                      dano 03/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::StructureGenAlpha::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> itemp
+  Teuchos::RCP<Epetra_Vector> temp
   )
 {
   // Play it save. In the first iteration everything is already set up
@@ -648,7 +648,17 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispnp()
 
 
 /*----------------------------------------------------------------------*
- | Extract current velocities needed for TSI              dano 06/10 |
+ | Extract velocities needed for TSI                         dano 08/10 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVeln()
+{
+  dserror("no application here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Extract current velocities needed for TSI                 dano 06/10 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVelnp()
 {
