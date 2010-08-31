@@ -343,14 +343,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
         }
       } // if ((*onoff)[dof])
     }
-
-//    // 19.08.10
-//    if (iquad==0)
-//    {
-//    cout << "*fac_ thermo_ele_boundary\n" << fac_ << endl;
-//    cout << "*functfac thermo_ele_boundary\n" << functfac << endl;
-//    }
-
   } //end of loop over integration points
 
   return 0;
