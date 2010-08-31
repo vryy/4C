@@ -130,7 +130,7 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
                 0.0);
   veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
                 1.0);
-                
+
   // new end-point accelerations
   accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
                 -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
@@ -199,9 +199,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
     fres_->Update(1.0, *fvisct_, 1.0);
   }
   fres_->Update(1.0, *finertt_, 1.0);
-
-  // 12.04.10
-//  cout << "fres_\n" << fres_ << "\n"<<  *fres_ << endl;
 
   //cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << endl;
 

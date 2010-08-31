@@ -865,7 +865,6 @@ void STR::TimInt::OutputStressStrain
   // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0,"residual displacement", zeros_);
   discret_->SetState(0,"displacement", (*dis_)(0));
-  // 29.04.10
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
   {
@@ -1136,10 +1135,10 @@ void STR::TimInt::Integrate()
 /*----------------------------------------------------------------------*/
 /* get the temperature from the temperature discretization   dano 03/10 */
 void STR::TimInt::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> itemp  ///< the current temperature
+  Teuchos::RCP<Epetra_Vector> temp  ///< the current temperature
   )
 {
-  tempn_ = itemp;
+  tempn_ = temp;
   // where the fun starts
   return;
 }

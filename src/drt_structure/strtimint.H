@@ -347,7 +347,7 @@ namespace STR
     //! Apply the current temperatures to the structure problem
     void ApplyTemperatures
     (
-      Teuchos::RCP<Epetra_Vector> itemp  //!< current temperatures
+      Teuchos::RCP<Epetra_Vector> temp  //!< current temperatures
     );
     //@}
 
