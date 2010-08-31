@@ -3247,7 +3247,6 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
 
       // store Lagrange multipliers for next Uzawa step
       cmtmanager_->GetStrategy().UpdateAugmentedLagrange();
-      cmtmanager_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
     } while (cmtmanager_->GetStrategy().ConstraintNorm() >= eps);
           

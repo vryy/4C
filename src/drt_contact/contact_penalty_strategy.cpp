@@ -644,7 +644,11 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
 {
   // store current LM into Uzawa LM
+	// (note that this is also done after the last Uzawa step of one
+	// time step and thus also gives the guess for the initial
+	// Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = rcp(new Epetra_Vector(*z_));
+  StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
   return;
 }
