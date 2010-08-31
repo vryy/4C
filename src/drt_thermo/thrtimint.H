@@ -296,8 +296,8 @@ namespace THR
     //! Apply current displacements and velocities to the thermo problem
     void ApplyStructVariables
     (
-      Teuchos::RCP<Epetra_Vector> idisp,  //!< current displacements
-      Teuchos::RCP<Epetra_Vector> ivel  //!< current velocities
+      Teuchos::RCP<Epetra_Vector> disp,  //!< current displacements
+      Teuchos::RCP<Epetra_Vector> vel  //!< current velocities
     );
     //@}
 

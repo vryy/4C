@@ -190,8 +190,11 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     discret_->SetState(0, "residual temperature", zeros_);
     discret_->SetState(0, "temperature", (*temp_)(0));
     // set displacements for the coupled TSI problem
-    if(disn_!=Teuchos::null) discret_->SetState(1,"displacement",disn_);
-    if(veln_!=Teuchos::null) discret_->SetState(1,"velocity",veln_);
+    if(disn_!=Teuchos::null)
+    {
+      discret_->SetState(1,"displacement",disn_);
+      discret_->SetState(1,"velocity",veln_);
+    }
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -859,12 +862,12 @@ void THR::TimInt::ApplyForceInternal(
  |  structure discretization                                            |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyStructVariables(
-  Teuchos::RCP<Epetra_Vector> idisp,  ///< the current velocities
-  Teuchos::RCP<Epetra_Vector> ivel  ///< the current velocities
+  Teuchos::RCP<Epetra_Vector> disp,  ///< the current velocities
+  Teuchos::RCP<Epetra_Vector> vel  ///< the current velocities
   )
 {
-  disn_ = idisp;
-  veln_ = ivel;
+  disn_ = disp;
+  veln_ = vel;
   // where the fun starts
   return;
 }
