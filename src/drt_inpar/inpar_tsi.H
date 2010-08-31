@@ -43,7 +43,8 @@ namespace TSI
   enum PartitionedCouplingMethod
   {
     OneWay,
-    Iterstagg
+    SequStagg,
+    IterStagg
   };
 
 

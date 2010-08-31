@@ -1431,11 +1431,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 "Coupling strategies for partitioned TSI solvers",
                                 tuple<std::string>(
                                   "tsi_oneway",
+                                  "tsi_sequstagg",
                                   "tsi_iterstagg"
                                   ),
                                 tuple<INPAR::TSI::PartitionedCouplingMethod>(
                                   INPAR::TSI::OneWay,
-                                  INPAR::TSI::Iterstagg
+                                  INPAR::TSI::SequStagg,
+                                  INPAR::TSI::IterStagg
                                   ),
                                 &tsidyn);
 
@@ -2681,7 +2683,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
       "control parameters for the G-function (level set) field of a combustion problem");
