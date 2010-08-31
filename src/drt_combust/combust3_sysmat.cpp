@@ -187,7 +187,7 @@ void fillElementGradPhi(
 
 
 /*------------------------------------------------------------------------------------------------*
- | get material parameters (constant within the integration cell)                     henke 06/10 |
+ | get material parameters (constant within the domain integration cell)              henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::GetMaterialParams(
     Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
@@ -245,6 +245,89 @@ void COMBUST::GetMaterialParams(
   // security check
   if (dens < 0 or dynvisc < 0)
     dserror("material parameters could not be determined");
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | get material parameters for both domains                                           henke 08/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::GetMaterialParams(
+    Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
+    double&    dens_plus,    // density in "plus domain"
+    double&    dynvisc_plus, // dynamic viscosity in "plus domain"
+    double&    dens_minus,   // density in "minus domain"
+    double&    dynvisc_minus // dynamic viscosity in "minus domain"
+)
+{
+  //----------------------
+  // get the material type
+  //----------------------
+#ifdef DEBUG
+  // check if we really got a list of materials
+  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+  // get material list for this element
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+  // set default id in list of materials
+  int matid = -1;
+
+  // get material for both sides of the interface ("plus" and "minus" domain)
+  for (int matcount=0;matcount<2;matcount++)
+  {
+    // get ID of material
+    // matcount==0: material in burnt domain   (first material in material list)
+    // matcount==1: material in unburnt domain (second material in material list)
+    matid = matlist->MatID(matcount);
+
+    // get material from list of materials
+    Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+    INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+
+    // choose from different materials
+    switch(mattype)
+    {
+    //--------------------------------------------------------
+    // Newtonian fluid for incompressible flow (standard case)
+    //--------------------------------------------------------
+    case INPAR::MAT::m_fluid:
+    {
+      const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+      //--------------
+      // plus material
+      //--------------
+      if (matcount==0)
+      {
+        // get the dynamic viscosity \nu
+        dynvisc_plus = mat->Viscosity();
+        // get the density \rho^{n+1}
+        dens_plus = mat->Density();
+      }
+      //--------------
+      // minus material
+      //--------------
+      if (matcount==1)
+      {
+        // get the dynamic viscosity \nu
+        dynvisc_minus = mat->Viscosity();
+        // get the density \rho^{n+1}
+        dens_minus = mat->Density();
+      }
+      break;
+    }
+    //------------------------------------------------
+    // different types of materials (to be added here)
+    //------------------------------------------------
+    default:
+      dserror("material type not supported");
+    }
+  }
+
+  // security check
+  if ((dens_plus < 0  or dynvisc_plus < 0) and
+      (dens_minus < 0 or dynvisc_minus < 0))
+    dserror("material parameters could not be determined");
+
   return;
 }
 
@@ -382,7 +465,7 @@ void Sysmat(
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
-    TWOPHASEFLOWJUMP_NEW::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
+    COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
         ele_meas_plus, ele_meas_minus);
@@ -395,7 +478,7 @@ void Sysmat(
       LINALG::Matrix<3,numnode> egradphi;
       fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
-      TWOPHASEFLOWJUMP_NEW::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
+      COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed,nitschevel,nitschepres, ele_meas_plus, ele_meas_minus,surftensapprox,surftenscoeff,connected_interface, veljumptype, normaltensionjumptype);
     }
@@ -404,7 +487,7 @@ void Sysmat(
 #ifdef TWOPHASEFLOW_NITSCHE
     // schott Jun 16, 2010
 
-    TWOPHASEFLOWJUMP_NEW::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
+    COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
         ele_meas_plus, ele_meas_minus);
@@ -416,7 +499,7 @@ void Sysmat(
       LINALG::Matrix<3,numnode> egradphi;
       fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
-      TWOPHASEFLOWJUMP_NEW::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
+      COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype);
@@ -639,12 +722,12 @@ void NitscheErrors(
 //  double ele_meas_plus = 0.0;	// we need measure of element in plus domain and minus domain
 //  double ele_meas_minus = 0.0;	// for different averages <> and {}
 //
-//	  TWOPHASEFLOWJUMP_NEW::BuildDomainNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
+//	  COMBUST::BuildDomainNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
 //	      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
 //
 //	  if (ele->Intersected() == true || ele->Touched_Plus() == true)
 //	  {
-//		  TWOPHASEFLOWJUMP_NEW::BuildBoundaryNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
+//		  COMBUST::BuildBoundaryNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
 //	        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
 //	  }
 }

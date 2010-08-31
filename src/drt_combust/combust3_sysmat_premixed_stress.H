@@ -855,42 +855,18 @@ void SysmatBoundaryStress(
   //---------------------------------------------------------------------------
   // get material parameters for all boundary integration cells of this element
   //---------------------------------------------------------------------------
-#ifdef DEBUG
-  // check if we really got a list of materials
-  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
-#endif
-
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-  // index plus == burnt material
-  const int matid_plus = 3;
-  // get material from list of materials
-  Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid_plus);
-  // check if we really have a fluid material
-  dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-  const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the kinematic viscosity \nu
-  const double kinvisc_plus = mat->Viscosity();
-  // get the density \rho
-  const double dens_plus = mat->Density();
+  // density \rho
+  double dens_plus = -1.0;
   //cout << "plus density: " << dens_plus << endl;
-  // compute dynamic viscosity \mu
-  const double visc_plus = kinvisc_plus * dens_plus;
-
-  // index minus = unburnt material
-  const int matid_minus = 4;
-  // get material from list of materials
-  matptr = matlist->MaterialById(matid_minus);
-  // check if we really have a fluid material
-  dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-  mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the kinematic viscosity \nu
-  const double kinvisc_minus = mat->Viscosity();
-  // get the density \rho
-  const double dens_minus = mat->Density();
+  // dynamic viscosity \mu
+  double dynvisc_plus = -1.0;
+  // density \rho
+  double dens_minus = -1.0;
   //cout << "minus density: " << dens_minus << endl;
-  // compute dynamic viscosity \mu
-  const double visc_minus = kinvisc_minus * dens_minus;
+  // dynamic viscosity \mu
+  double dynvisc_minus = -1.0;
+  // set density and dynamic viscosity
+  COMBUST::GetMaterialParams(material, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
 
   //-----------------------------
   // prepare interface conditions
@@ -900,7 +876,7 @@ void SysmatBoundaryStress(
 #if 0
   // jump velocity vector ju_{n,t1,t2}
   LINALG::Matrix<nsd,1> ju_nt(true);
-  ju_nt(0,0) = -flamespeed*dens_minus*(1.0/dens_minus - 1.0/dens_plus);
+  ju_nt(0,0) = -mflux*(1.0/dens_minus - 1.0/dens_plus);
   ju_nt(1,0) = 0.0;
   ju_nt(2,0) = 0.0;
 #else
@@ -996,6 +972,24 @@ void SysmatBoundaryStress(
       static LINALG::Matrix<nsd,1> normal(true);
       normal.Clear();
       GEO::computeNormalToSurfaceElement(cell->Shape(), cellXYZDomain, posEtaBoundary, normal);
+
+      // shape functions for fields with dofs at nodes
+      static LINALG::Matrix<numnode,1> functele;
+      functele.Clear();
+      DRT::UTILS::shape_function_3D(functele,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      // TODO normal vector modified for collapsing flame ball
+      normal.Clear();
+      for (unsigned i=0;i<numnode;i++)
+      {
+        normal(0) += functele(i)*xyze(0,i);
+        normal(1) += functele(i)*xyze(1,i);
+      }
+      normal(2) = 0.0;
+      double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+      if (norm == 0.0) dserror("norm of normal vector is zero!");
+      normal.Scale(1.0/norm);
+      normal.Scale(-1.0);
 
       // jump in velocity
       LINALG::Matrix<nsd,1> ju(true);
@@ -1224,33 +1218,33 @@ void SysmatBoundaryStress(
         //cout << "shp_jump.d0: " << shp_jump.d0(iparam) << endl;
         shp_mean.d0(iparam) = 0.5*(enrfunct_plus(iparam) + enrfunct_minus(iparam));
         //cout << "shp_mean.d0: " << shp_mean.d0(iparam) << endl;
-        shp_mean_visc.d0(iparam) = 0.5*(visc_plus*enrfunct_plus(iparam) + visc_minus*enrfunct_minus(iparam));
-        shp_mean_visc.dx(iparam) = 0.5*(visc_plus*enrderxy_plus(0,iparam) + visc_minus*enrderxy_minus(0,iparam));
-        shp_mean_visc.dy(iparam) = 0.5*(visc_plus*enrderxy_plus(1,iparam) + visc_minus*enrderxy_minus(1,iparam));
-        shp_mean_visc.dz(iparam) = 0.5*(visc_plus*enrderxy_plus(2,iparam) + visc_minus*enrderxy_minus(2,iparam));
-        shp_mean_visc.dxdx(iparam) = 0.5*(visc_plus*enrderxy2_plus(0,iparam) + visc_minus*enrderxy2_minus(0,iparam));
-        shp_mean_visc.dxdy(iparam) = 0.5*(visc_plus*enrderxy2_plus(3,iparam) + visc_minus*enrderxy2_minus(3,iparam));
-        shp_mean_visc.dxdz(iparam) = 0.5*(visc_plus*enrderxy2_plus(4,iparam) + visc_minus*enrderxy2_minus(4,iparam));
+        shp_mean_visc.d0(iparam) = 0.5*(dynvisc_plus*enrfunct_plus(iparam) + dynvisc_minus*enrfunct_minus(iparam));
+        shp_mean_visc.dx(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(0,iparam) + dynvisc_minus*enrderxy_minus(0,iparam));
+        shp_mean_visc.dy(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(1,iparam) + dynvisc_minus*enrderxy_minus(1,iparam));
+        shp_mean_visc.dz(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(2,iparam) + dynvisc_minus*enrderxy_minus(2,iparam));
+        shp_mean_visc.dxdx(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(0,iparam) + dynvisc_minus*enrderxy2_minus(0,iparam));
+        shp_mean_visc.dxdy(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(3,iparam) + dynvisc_minus*enrderxy2_minus(3,iparam));
+        shp_mean_visc.dxdz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(4,iparam) + dynvisc_minus*enrderxy2_minus(4,iparam));
         shp_mean_visc.dydx(iparam) = shp_mean_visc.dxdy(iparam);
-        shp_mean_visc.dydy(iparam) = 0.5*(visc_plus*enrderxy2_plus(1,iparam) + visc_minus*enrderxy2_minus(1,iparam));
-        shp_mean_visc.dydz(iparam) = 0.5*(visc_plus*enrderxy2_plus(5,iparam) + visc_minus*enrderxy2_minus(5,iparam));
+        shp_mean_visc.dydy(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(1,iparam) + dynvisc_minus*enrderxy2_minus(1,iparam));
+        shp_mean_visc.dydz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(5,iparam) + dynvisc_minus*enrderxy2_minus(5,iparam));
         shp_mean_visc.dzdx(iparam) = shp_mean_visc.dxdz(iparam);
         shp_mean_visc.dzdy(iparam) = shp_mean_visc.dydz(iparam);
-        shp_mean_visc.dzdz(iparam) = 0.5*(visc_plus*enrderxy2_plus(2,iparam) + visc_minus*enrderxy2_minus(2,iparam));
+        shp_mean_visc.dzdz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(2,iparam) + dynvisc_minus*enrderxy2_minus(2,iparam));
 
-        shp_jump_visc.d0(iparam) = visc_minus*enrfunct_minus(iparam) - visc_plus*enrfunct_plus(iparam);
-        shp_jump_visc.dx(iparam) = visc_minus*enrderxy_minus(0,iparam) - visc_plus*enrderxy_plus(0,iparam);
-        shp_jump_visc.dy(iparam) = visc_minus*enrderxy_minus(1,iparam) - visc_plus*enrderxy_plus(1,iparam);
-        shp_jump_visc.dz(iparam) = visc_minus*enrderxy_minus(2,iparam) - visc_plus*enrderxy_plus(2,iparam);
-        shp_jump_visc.dxdx(iparam) = visc_minus*enrderxy2_minus(0,iparam) - visc_plus*enrderxy2_plus(0,iparam);
-        shp_jump_visc.dxdy(iparam) = visc_minus*enrderxy2_minus(3,iparam) - visc_plus*enrderxy2_plus(3,iparam);
-        shp_jump_visc.dxdz(iparam) = visc_minus*enrderxy2_minus(4,iparam) - visc_plus*enrderxy2_plus(4,iparam);
+        shp_jump_visc.d0(iparam) = dynvisc_minus*enrfunct_minus(iparam) - dynvisc_plus*enrfunct_plus(iparam);
+        shp_jump_visc.dx(iparam) = dynvisc_minus*enrderxy_minus(0,iparam) - dynvisc_plus*enrderxy_plus(0,iparam);
+        shp_jump_visc.dy(iparam) = dynvisc_minus*enrderxy_minus(1,iparam) - dynvisc_plus*enrderxy_plus(1,iparam);
+        shp_jump_visc.dz(iparam) = dynvisc_minus*enrderxy_minus(2,iparam) - dynvisc_plus*enrderxy_plus(2,iparam);
+        shp_jump_visc.dxdx(iparam) = dynvisc_minus*enrderxy2_minus(0,iparam) - dynvisc_plus*enrderxy2_plus(0,iparam);
+        shp_jump_visc.dxdy(iparam) = dynvisc_minus*enrderxy2_minus(3,iparam) - dynvisc_plus*enrderxy2_plus(3,iparam);
+        shp_jump_visc.dxdz(iparam) = dynvisc_minus*enrderxy2_minus(4,iparam) - dynvisc_plus*enrderxy2_plus(4,iparam);
         shp_jump_visc.dydx(iparam) = shp_jump_visc.dxdy(iparam);
-        shp_jump_visc.dydy(iparam) = visc_minus*enrderxy2_minus(1,iparam) - visc_plus*enrderxy2_plus(1,iparam);
-        shp_jump_visc.dydz(iparam) = visc_minus*enrderxy2_minus(5,iparam) - visc_plus*enrderxy2_plus(5,iparam);
+        shp_jump_visc.dydy(iparam) = dynvisc_minus*enrderxy2_minus(1,iparam) - dynvisc_plus*enrderxy2_plus(1,iparam);
+        shp_jump_visc.dydz(iparam) = dynvisc_minus*enrderxy2_minus(5,iparam) - dynvisc_plus*enrderxy2_plus(5,iparam);
         shp_jump_visc.dzdx(iparam) = shp_jump_visc.dxdz(iparam);
         shp_jump_visc.dzdy(iparam) = shp_jump_visc.dydz(iparam);
-        shp_jump_visc.dzdz(iparam) = visc_minus*enrderxy2_minus(2,iparam) - visc_plus*enrderxy2_plus(2,iparam);
+        shp_jump_visc.dzdz(iparam) = dynvisc_minus*enrderxy2_minus(2,iparam) - dynvisc_plus*enrderxy2_plus(2,iparam);
       }
 
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_tau_jump;

@@ -2570,11 +2570,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Type of combustion problem",
       tuple<std::string>(
           "Premixed_Combustion",
-          "Two_Phase_Flow"),
+          "Two_Phase_Flow",
+          "Two_Phase_Flow_Surf",
+          "Two_Phase_Flow_Jumps"),
           tuple<INPAR::COMBUST::CombustionType>(
               INPAR::COMBUST::combusttype_premixedcombustion,
-              INPAR::COMBUST::combusttype_twophaseflow),
+              INPAR::COMBUST::combusttype_twophaseflow,
+              INPAR::COMBUST::combusttype_twophaseflow_surf,
+              INPAR::COMBUST::combusttype_twophaseflowjump),
               &combustcontrolfluid);
+
   setStringToIntegralParameter<INPAR::COMBUST::XFEMIntegration>("XFEMINTEGRATION","Tetgen",
       "Type of integration strategy for intersected elements",
       tuple<std::string>(

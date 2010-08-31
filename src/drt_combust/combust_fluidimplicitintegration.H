@@ -180,6 +180,13 @@ public:
   void SetInitialFlowField(const INPAR::COMBUST::InitialField initfield, const int initfuncno);
 
   /*!
+  \brief set initial enrichment field for analytical test problems
+  */
+  void SetEnrichmentField(
+      const Teuchos::RCP<XFEM::DofManager> dofmanager,
+      const Epetra_Map newdofrowmap);
+
+  /*!
   \brief calculate error between a analytical solution and the
          numerical solution of a test problems
   */

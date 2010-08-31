@@ -109,20 +109,20 @@ Maintainer: Florian Henke
 //#define COMBUST_GMSH_SMOOTHED_NORMALFIELD
 
 
+//----------------
+// Benedikts flags
+//----------------
 //---------------------------------
 // TwoPhaseFlow jump-conditions
 //---------------------------------
 //#define TPF_COMPARE_to_ANALYT_Sol_Nitsche
-
 //---------------------------velocity jump ------------------------
 //#define TPF_NORMAL_VEL_JUMP_CONST 	                   // else zero jump in velocity
 //#define TPF_NORMAL_VEL_JUMP_PREMIXED_COMBUSTION          // else zero jump in velocity
-
 //---------------------------normal tension jump ------------------
 //#define TPF_NORMAL_TENSION_JUMP_CONST                    // else zero jump in normal tension
 //#define TPF_NORMAL_TENSION_JUMP_PREMIXED_COMBUSTION      // else zero jump in normal tension
 //#define TPF_SURFACETENSION // else zero jump in normal tension
-
 
 //---------------------------surface tension options---------------
 // => -----choose surface tension approximation type -----------------
@@ -136,62 +136,10 @@ Maintainer: Florian Henke
 //#define TPF_PHI_RECONSTRUCT
 
 
-
-//---------------------------------
-// TwoPhaseFlow domain integral terms
-//---------------------------------
-
-#define TPF_DOM_INERTIA    // turn on/off inertia term
-#define TPF_DOM_CONVECTION // turn on/off concevtion term
-#define TPF_DOM_DIFFUSION  // turn on/off diffusion term
-#define TPF_DOM_PRESSURE   // turn on/off pressure term
-#define TPF_DOM_CONTINUITY // turn on/off continuity term
-#define TPF_DOM_RHS        // turn on/off RHS term
-
-#define TPF_SUPG_INERTIA    // turn on/off SUPG inertia term
-#define TPF_SUPG_CONVECTION // turn on/off SUPG concevtion term
-#define TPF_SUPG_DIFFUSION  // turn on/off SUPG diffusion term
-#define TPF_SUPG_PRESSURE   // turn on/off SUPG pressure term
-#define TPF_SUPG_BODYFORCE
-#define TPF_SUPG_RHS
-//
-#define TPF_PSPG_INERTIA    // turn on/off PSPG inertia term
-#define TPF_PSPG_CONVECTION // turn on/off PSPG concevtion term
-#define TPF_PSPG_DIFFUSION  // turn on/off PSPG diffusion term
-#define TPF_PSPG_PRESSURE   // turn on/off PSPG pressure term
-#define TPF_PSPG_RHS        // turn on/off PSPG RHS term
-
-#define TPF_CSTAB // turn on/off CSTAB inertia term
-
-//-----------------------------------
-// TwoPhaseFlow boundary integral terms
-//-----------------------------------
-#define TPF_VISCCONSISTMEAN    // turn on/off
-//#define TPF_VISCCONSISTJUMP    // turn on/off
-#define TPF_VISCADJCONSIST     // turn on/off
-#define TPF_PRESCONSISTMEAN    // turn on/off
-//#define TPF_PRESCONSISTJUMP    // turn on/off
-#define TPF_PRESADJCONSIST     // turn on/off pressure adjoint consistency term
-//#define TPF_PRESJUMPRHS        // turn on/off pressure/flux jump RHS term
-#define TPF_NITSCHEVEL         // turn on/off Nitsche velocity terms
-//#define TPF_NITSCHEPRES      // turn on/off Nitsche pressure terms
-
-// #define TPF_NITSCHE_LPS			// turn on/off Nitsche pressure_LPS_stabilization at the interface
+//#define TPF_NITSCHE_LPS          // turn on/off Nitsche pressure_LPS_stabilization at the interface
 //#define TPF_NITSCHE_LPS_DOMAIN
-//-----------------------------
-// TwoPhaseFlow test case options
-//-----------------------------
-//#define COMBUST_TESTCOUETTEFLOW// modify Dirichlet boundary conditions manually for Couette flow test case
-//#define COMBUST_XVELFREE      // free Dirichlet boundary conditions manually for Couette flow test case
-
-//----------------------
-// TwoPhaseFlow tolerances
-//----------------------
-//#define COMBUSTCONVTOL 1.0e-12 // just an example
-
-#define TRAFO_OWN
-
-
+//#define BENEDIKT
+//#define TWOPHASEFLOW_NITSCHE
 
 
 

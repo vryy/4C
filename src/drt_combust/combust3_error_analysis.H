@@ -1061,7 +1061,7 @@ void Nitsche_BuildDomainIntegratedErrors(
     //------------------------------------------------------------------------------------------
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-#ifdef TRAFO_OWN
+#ifdef BENEDIKT
       const LINALG::Matrix<3,1> pos_eta_domain(intpoints.qxg[iquad]);
       /*
        * author schott
@@ -1309,7 +1309,7 @@ void Nitsche_BuildDomainIntegratedErrors(
           shp.dzdz(iparam) = derxy2(2,iparam);
         }
       }
-#endif //TRAFO_OWN
+#endif
 
       if(matid==3){ele_meas_plus += fac;}
       else if(matid==4){ele_meas_minus += fac;}

@@ -427,9 +427,13 @@ void SysmatDomainNitsche(
       //        shp_presproj_plus, shp_presproj_minus,
       //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
       //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
-      TWOPHASEFLOWJUMP_NEW::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
+      COMBUST::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(
+          meas_ele_plus, meas_ele_minus,
           shp_presproj_plus, shp_presproj_minus,
-          ele, ih, dofman,ephi,
+          ele,
+          ih,
+          dofman,
+          ephi,
           material);
       //  cout << "meas_ele_plus:\t" << meas_ele_plus << endl;
       //  cout << "meas_ele_minus:\t" << meas_ele_minus << endl << endl;
@@ -452,6 +456,13 @@ void SysmatDomainNitsche(
       //  static LINALG::Matrix<shpPresProjVecSize,1>  shp_presproj_mean;
       //  shp_presproj_mean.Clear();
 
+      // TODO this is not as secure as the material access is treated elsewhere
+      // get material list for this element
+      const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+      // set default id in list of materials
+      int matid = -1;
+      // check on which side of the interface the cell is located
+      matid = matlist->MatID(0); // burnt material (first material in material list)
 
       for (int iparam = 0; iparam < (int)shpPresProjVecSize; iparam++)
       {
@@ -555,7 +566,7 @@ void SysmatDomainNitsche(
        * take BAZILEVS stabilization!!!!
        */
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji_ele_XiToXYZ,
-          instationary, dynvisc, densnp, vel_norm, strle, hk, mk, timefac, dt,
+          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
           INPAR::FLUID::tautype_bazilevs,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
       //     FLD::UTILS::computeStabilizationParams(gpvelnp, xji_ele_XiToXYZ,
@@ -697,8 +708,8 @@ void SysmatDomainNitsche(
       //--------------------------------------------------------------------------------------
       // build single stiffness matrix entries
       //--------------------------------------------------------------------------------------
-      TWOPHASEFLOWJUMP_NEW::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress,shpPresProjVecSize>(
-          assembler, shp,shp_presproj_jump, fac, timefac, timefacfac, densnp, dynvisc,
+      COMBUST::BuildDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress,shpPresProjVecSize>(
+          assembler, shp,shp_presproj_jump, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
@@ -801,7 +812,7 @@ void Nitsche_SysmatBoundaryCell(
   //--------------------------------------
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-#if BENEDIKT
+#ifdef BENEDIKT
     // 1. cell coordinates are stored in cellXYZDomain <nsd,numvertices>
     // 2. 2D-shape functions -> evaluate at each integration point
 
@@ -997,7 +1008,7 @@ void Nitsche_SysmatBoundaryCell(
     //jflux(1) = 0.0;
     //jflux(2) = 0.0;
 
-#if BENEDIKT
+#ifdef BENEDIKT
     //--------------------------------------------------------------------------------------------
     // evaluate jump conditions at this Gaussian point
     //--------------------------------------------------------------------------------------------
@@ -1013,9 +1024,11 @@ void Nitsche_SysmatBoundaryCell(
       //          jump_vel(1,0) = normal(1)*ju;
       //          jump_vel(2,0) = normal(2)*ju;
       //
-      jump_vel(0,0) = ju*1.0;
-      jump_vel(1,0) = 0.0;
-      jump_vel(2,0) = 0.0;
+// TODO @Benedikt hier ist das 'ju' wohl anders definiert als bei mir  Flo 31/08/10
+cout << "/!\\ hier ist was auskommentiert" << endl;
+//      jump_vel(0,0) = ju*1.0;
+//      jump_vel(1,0) = 0.0;
+//      jump_vel(2,0) = 0.0;
     }
 
     if(veljumptype == INPAR::COMBUST::Vel_Jump_PremixedCombustion)
@@ -1036,9 +1049,11 @@ void Nitsche_SysmatBoundaryCell(
     if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_Const)
     {
       // normal tension jump is set to jt
-      jump_tension(0,0) = jt * normal(0);
-      jump_tension(1,0) = jt * normal(1);
-      jump_tension(2,0) = jt * normal(2);
+//TODO @Benedikt compiler problem, weil ich 'jt' rausgeschmissen habe    Flo 31/08/10
+cout << "/!\\ hier ist was auskommentiert" << endl;
+//      jump_tension(0,0) = jt * normal(0);
+//      jump_tension(1,0) = jt * normal(1);
+//      jump_tension(2,0) = jt * normal(2);
     }
 
     if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_PremixedCombustion)
@@ -1831,7 +1846,7 @@ void SysmatBoundaryNitsche(
   //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
   //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 
-  TWOPHASEFLOWJUMP_NEW::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
+  COMBUST::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
       shp_presproj_plus, shp_presproj_minus,
       ele, ih, dofman,ephi,
       material);
@@ -2146,7 +2161,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           size_t SHPVECSIZE,
           int NUMDOF,
-          class V2 >
+          class V >
 void Nitsche_BuildPresProjShapefunction(
     double &                meas_ele_plus,  // reference to measure of element in plus domain
     double &                meas_ele_minus, // reference to measure of element in minus domain
@@ -2155,7 +2170,7 @@ void Nitsche_BuildPresProjShapefunction(
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
-    const V2&                      ephi,         ///< nodal G-function values for this element
+    const V&                      ephi,         ///< nodal G-function values for this element
     Teuchos::RCP<const MAT::Material> material  ///< fluid material
 )
 {

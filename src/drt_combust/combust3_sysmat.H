@@ -81,12 +81,21 @@ namespace COMBUST
       const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype
   );
 
-  /// get material parameters (constant within the integration cell)
+  /// get material parameters (constant within the domain integration cell)
   void GetMaterialParams(
       Teuchos::RCP<const MAT::Material> material, ///< pointer to material (list)
       const bool indomplus,                       ///< pointer to domain integration cell
       double&    dens,                            ///< density
       double&    dynvisc                          ///< dynamic viscosity
+  );
+
+  /// get material parameters for both domains
+  void GetMaterialParams(
+      Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
+      double&    dens_plus,    // density in "plus domain"
+      double&    dynvisc_plus, // dynamic viscosity in "plus domain"
+      double&    dens_minus,   // density in "minus domain"
+      double&    dynvisc_minus // dynamic viscosity in "minus domain"
   );
 
   /*!

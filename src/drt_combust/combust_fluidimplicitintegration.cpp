@@ -510,7 +510,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // remark: 'true' is needed to prevent iterative solver from crashing
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
-  if (true) // INPAR::XFEM::timeintegration_semilagrangian
   { // area for dofswitcher and startvalues
     //const std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
     std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID> oldNodalDofDistributionMap(state_.nodalDofDistributionMap_);
@@ -609,122 +608,66 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
     dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
 
-    //    // TODO for some examples where initial field is set without physical background
-    //    // the enrichment values must be set also somehow
-    //    // this can be done here!
-    //    if (step_ == 1)
-    //    {
-    //      // pointer to phivector at time n with rowmap
-    //      RCP<Epetra_Vector> phiOldRow_ = rcp(new Epetra_Vector(*discret_->NodeRowMap()));
-    //      LINALG::Export(*flamefront_->Phin(),*phiOldRow_);
-    //
-    //      for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
-    //      {
-    //        DRT::Node* lnode = discret_->lRowNode(nodeid);
-    //        const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
-    //        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-    //            fieldenr != fieldenrset.end();++fieldenr)
-    //        {
-    //          const XFEM::DofKey<XFEM::onNode> newdofkey(lnode->Id(), *fieldenr);
-    //          const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
-    ////          cout << newdofkey << "     dofpos is " << newdofpos << endl;
-    //          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
-    //          {
-    //            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-    //              /* nothing to do in flame_vortex example*/;
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-    //            {
-    //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.15;
-    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.15;
-    //            }
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-    //              /* nothing to do in flame_vortex example*/;
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-    //            {
-    //              (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.65;
-    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.65;
-    //            }
-    //          } // end if jump enrichment
-    //          else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-    //          {
-    //            if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-    //            {
-    //              if ((*phiOldRow_)[nodeid]<0)
-    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = -7.3;
-    //            }
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-    //            {
-    //              if ((*phiOldRow_)[nodeid]<0)
-    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 1.0;
-    //              else
-    //                (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 7.3;
-    //            }
-    //            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-    //              (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
-    //          }
-    //        } // end loop over fieldenr
-    //      } // end loop over element nodes
-    //      OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
-    //    }
-#if 0
+if (false) // INPAR::XFEM::timeintegration_semilagrangian
+{
+    // here the interface is known for the first time and so
+    // all initial values can be set including enrichment values
+    if (step_ == 1)
+      SetEnrichmentField(dofmanager,newdofrowmap);
+
     if (step_ > 1)
     {
-      //      TODO input parameter for startvalue finding method
-      //      if (startvaluefinder == semilagrange)
-      {
-        const size_t oldsize = oldColStateVectors.size();
-        vector<RCP<Epetra_Vector> > newRowStateVectors;
-        newRowStateVectors.push_back(state_.accnp_);
-        newRowStateVectors.push_back(state_.accn_);
-        newRowStateVectors.push_back(state_.velnp_);
-        newRowStateVectors.push_back(state_.veln_);
-        const size_t newsize = newRowStateVectors.size();
-        if (oldsize != newsize)
-          dserror("stateVector sizes are different! Fix this!");
+      const size_t oldsize = oldColStateVectors.size();
+      vector<RCP<Epetra_Vector> > newRowStateVectors;
+      newRowStateVectors.push_back(state_.accnp_);
+      newRowStateVectors.push_back(state_.accn_);
+      newRowStateVectors.push_back(state_.velnp_);
+      newRowStateVectors.push_back(state_.veln_);
+      const size_t newsize = newRowStateVectors.size();
+      if (oldsize != newsize)
+        dserror("stateVector sizes are different! Fix this!");
 
-        //        cout << "old phi is " << *flamefront_->Phin();
-        //        cout << "new phi is " << *flamefront_->Phinp();
+      //        cout << "old phi is " << *flamefront_->Phin();
+      //        cout << "new phi is " << *flamefront_->Phinp();
 
-        //        cout << "vel before setting new startvalues " << *stateVector[2];
+      //        cout << "vel before setting new startvalues " << *stateVector[2];
 
-        //        cout << "in algorithm old phi is " << *flamefront_->Phin();
-        //        cout << "in algorithm new phi is " << *flamefront_->Phinp();
-        bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
-        bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
+      //        cout << "in algorithm old phi is " << *flamefront_->Phin();
+      //        cout << "in algorithm new phi is " << *flamefront_->Phinp();
+//TODO activate new input parameter
+//      bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
+//      bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
 
-        //        if( (start_val_semilagrange == true) || (start_val_enrichment == true) )
-        //        {
-        XFEM::Startvalues startval(
-            discret_,
-            olddofmanager,
-            dofmanager,
-            oldColStateVectors,
-            newRowStateVectors,
-            veln,
-            flamefront_,
-            interfacehandleN,
-            olddofcolmap,
-            oldNodalDofColDistrib,
-            newdofrowmap,
-            state_.nodalDofDistributionMap_);
-        //        }
+      //        if( (start_val_semilagrange == true) || (start_val_enrichment == true) )
+      //        {
+      XFEM::Startvalues startval(
+          discret_,
+          olddofmanager,
+          dofmanager,
+          oldColStateVectors,
+          newRowStateVectors,
+          veln,
+          flamefront_,
+          interfacehandleN,
+          olddofcolmap,
+          oldNodalDofColDistrib,
+          newdofrowmap,
+          state_.nodalDofDistributionMap_);
+      //        }
 
-        // initialize system vectors for nodes which changed interface side
-        if(start_val_semilagrange == true)
-          startval.semiLagrangeExtrapolation(flamefront_,dta_);
+      // initialize system vectors for nodes which changed interface side
+//      if(start_val_semilagrange == true)
+//        startval.semiLagrangeExtrapolation(flamefront_,dta_);
 
-        //        cout << "here before setting enrichment values" << endl;
-        if(start_val_enrichment == true)
-          startval.setEnrichmentValues();
+      //        cout << "here before setting enrichment values" << endl;
+//      if(start_val_enrichment == true)
+        startval.setEnrichmentValues();
 
-        //        cout << "vel after setting new startvalues " << *stateVector[2];
+      //        cout << "vel after setting new startvalues " << *stateVector[2];
 
-        //        OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
-      }
+      OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
     }
-#endif
+}
   } // end area for dofswitcher and startvalues
 
   // --------------------------------------------------
@@ -2464,6 +2407,145 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   }
 
   return;
+}
+
+
+void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
+    const Teuchos::RCP<XFEM::DofManager> dofmanager,
+    const Epetra_Map newdofrowmap)
+{
+  // get G-function value vector on fluid NodeColMap
+  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+  
+  
+  // initial field modification for flame_vortex_interaction
+//  for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
+//  {
+//    DRT::Node* lnode = discret_->lRowNode(nodeid);
+//    const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
+//    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+//        fieldenr != fieldenrset.end();++fieldenr)
+//    {
+//      const XFEM::DofKey<XFEM::onNode> newdofkey(lnode->Id(), *fieldenr);
+//      const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
+//      if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+//      {
+//        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+//          /* nothing to do in flame_vortex example*/;
+//        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+//        {
+//          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.19745;
+//          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.19745;
+//        }
+//        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+//          /* nothing to do in flame_vortex example*/;
+//        else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+//        {
+//          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 3.712242;
+//          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 3.712242;
+//        }
+//      } // end if jump enrichment
+//    } // end loop over fieldenr
+//  } // end loop over element nodes
+  
+  
+  // initial field modification for collapse_flame
+  const int nsd = 3;
+  for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
+  {
+    DRT::Node* lnode = discret_->lRowNode(nodeid);
+    
+    LINALG::Matrix<nsd,1> coords(lnode->X());
+//    coords(1) -= 0.5;
+    double coordsnorm = sqrt(coords(0)*coords(0)+coords(1)*coords(1));
+    
+    const int lid = phinp->Map().LID(lnode->Id());
+    const double gfuncval = (*phinp)[lid];
+    
+    const std::set<XFEM::FieldEnr>& fieldenrset(dofmanager->getNodeDofSet(lnode->Id()));
+    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+        fieldenr != fieldenrset.end();++fieldenr)
+    {
+      const XFEM::DofKey<XFEM::onNode> newdofkey(lnode->Id(), *fieldenr);
+      const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
+      if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+      {
+        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+        {
+          // halbe Sprunghoehe von 1.0
+          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = coords(0)/(2*coordsnorm);
+          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = coords(0)/(2*coordsnorm);
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+        {
+          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = coords(1)/(2*coordsnorm);
+          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = coords(1)/(2*coordsnorm);
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+        {
+          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0;//coords(2)/(2*coordsnorm);
+          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0;//coords(2)/(2*coordsnorm);
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+        {
+          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = -2.25;
+          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = -2.25;
+        }
+      } // end if jump enrichment
+      else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+      {
+        if (gfuncval>=0)
+        {
+          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = sqrt(0.1)*coords(0)/(coordsnorm*coordsnorm);
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = sqrt(0.1)*coords(0)/(coordsnorm*coordsnorm);
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = sqrt(0.1)*coords(1)/(coordsnorm*coordsnorm);
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = sqrt(0.1)*coords(1)/(coordsnorm*coordsnorm);
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0;//sqrt(0.1)*coords(2)/(coordsnorm*coordsnorm);
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0;//sqrt(0.1)*coords(2)/(coordsnorm*coordsnorm);
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = -2.7*sqrt(0.1)*sqrt(0.1)/(coordsnorm*coordsnorm);
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = -2.7*sqrt(0.1)*sqrt(0.1)/(coordsnorm*coordsnorm);
+          }
+        }
+        else
+        {
+          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
+          }
+          if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.0;
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.0;
+          }
+          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+          {
+            (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 1.8;
+            (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 1.8;
+          }
+        }
+      }
+    } // end loop over fieldenr
+  } // end loop over element nodes
+  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+  
+  
 }
 
 
