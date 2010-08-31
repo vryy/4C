@@ -903,10 +903,13 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     potnorm_L2 = 1.0;
   }
 
+  // absolute tolerance for deciding if residual is (already) zero
+  const double abstol = EPS14;
+
   //-------------------------------------------------- output to screen
   /* special case of very first iteration step:
       - solution increment is not yet available
-      - do not do a solver call when the initial residuals are < EPS15*/
+      - do not perform a solver call when the initial residuals are < EPS14*/
   if (itnum == 1)
   {
     if (myrank_ == 0)
@@ -917,7 +920,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       printf(")\n");
     }
     // abort iteration, when there's nothing more to do
-    if ((conresnorm < EPS15) && (potresnorm < EPS15))
+    if ((conresnorm < abstol) && (potresnorm < abstol))
     {
       // print 'finish line'
       if (myrank_ == 0)
@@ -964,7 +967,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     }
 
     // abort iteration, when there's nothing more to do! -> more robustness
-    if ((conresnorm < EPS15) && (potresnorm < EPS15))
+    if ((conresnorm < abstol) && (potresnorm < abstol))
     {
       // print 'finish line'
       if (myrank_ == 0)
