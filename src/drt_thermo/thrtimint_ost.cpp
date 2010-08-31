@@ -78,8 +78,8 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
-                         fcap_, fint_, tang_);
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0),zeros_,fcap_,
+                         fint_, tang_);
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
@@ -135,15 +135,17 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   tang_->Zero();
 
   // ordinary internal force and tangent
-  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_, tang_);
+  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
+                         tang_);
 
   // build residual  Res = C . R_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
   // with R_{n+theta}     = ( T_{n+1} - T_n ) / dt
-  //      F_{int;n+theta} = theta * F_{int;n} - (1 - theta) * F_{int;n+1}
-  //      F_{ext;n+theta} = theta * F_{ext;n} - (1 - theta) * F_{ext;n+1}
+  //      F_{int;n+theta} = theta * F_{int;n+1} - (1 - theta) * F_{int;n}
+  //      F_{ext;n+theta} = theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
   fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);
+  // here the time derivative is introduced needed for fcap depending on T'!
   fres_->Scale(1.0/(*dt_)[0]);
   fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
   fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 1.0);

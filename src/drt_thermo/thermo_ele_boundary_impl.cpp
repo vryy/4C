@@ -298,6 +298,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     // multiply integration factor with the timecurve factor
+    // fac_ = fac_ * curvefac
     fac_ *= curvefac;
 
     // factor given by spatial function
@@ -336,10 +337,20 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
         for (int node=0;node<nen_;++node)
         {
+          //                        _
+          // fext  = fext +  N^T  * q * detJ * w(gp) * spatial_fac * timecurve_fac
           elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
         }
       } // if ((*onoff)[dof])
     }
+
+//    // 19.08.10
+//    if (iquad==0)
+//    {
+//    cout << "*fac_ thermo_ele_boundary\n" << fac_ << endl;
+//    cout << "*functfac thermo_ele_boundary\n" << functfac << endl;
+//    }
+
   } //end of loop over integration points
 
   return 0;
