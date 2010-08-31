@@ -63,26 +63,7 @@ TSI::Algorithm::Algorithm(
   INPAR::TSI::PartitionedCouplingMethod method =
     Teuchos::getIntegralValue<INPAR::TSI::PartitionedCouplingMethod>(tsidyn,"PARTITIONED");
 
-  if (method == INPAR::TSI::Iterstagg)
-  {
-    // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = StructureField().Discretization()->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> thermodofset
-      = ThermoField().Discretization()->GetDofSetProxy();
-
-    // check if ThermoField has 2 discretizations, so that coupling is possible
-    if (ThermoField().Discretization()->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in thermo field");
-    if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
-      dserror("unexpected dof sets in structure field");
-
-    // now build the matrices again and consider dependencies to 2nd field
-    ThermoField().TSIMatrix();
-    StructureField().TSIMatrix();
-  }
-  else if (method == INPAR::TSI::OneWay)
+  if (method == INPAR::TSI::OneWay)
   {
     // what kind of one-way coupling should be applied
     displacementcoupling_
@@ -114,18 +95,37 @@ TSI::Algorithm::Algorithm(
       StructureField().TSIMatrix();
     }
   }
+  // 30.07.10
+  else if (method == INPAR::TSI::SequStagg || method == INPAR::TSI::IterStagg)
+  {
+    // build a proxy of the structure discretization for the temperature field
+    Teuchos::RCP<DRT::DofSet> structdofset
+      = StructureField().Discretization()->GetDofSetProxy();
+    // build a proxy of the temperature discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> thermodofset
+      = ThermoField().Discretization()->GetDofSetProxy();
 
+    // check if ThermoField has 2 discretizations, so that coupling is possible
+    if (ThermoField().Discretization()->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in thermo field");
+    if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
+      dserror("unexpected dof sets in structure field");
 
-  //  // now check if the two dofmaps are available and then bye bye
-  //  cout << "structure dofmap" << endl;
-  //  cout << *StructureField().DofRowMap(0) << endl;
-  //  cout << "thermo dofmap" << endl;
-  //  cout << *StructureField().DofRowMap(1) << endl;
-  //  cout << "thermo dofmap" << endl;
-  //  cout << *ThermoField().DofRowMap(0) << endl;
-  //  cout << "structure dofmap" << endl;
-  //  cout << *ThermoField().DofRowMap(1) << endl;
-  //  exit(0);
+    // now build the matrices again and consider dependencies to 2nd field
+    ThermoField().TSIMatrix();
+    StructureField().TSIMatrix();
+  }
+
+//    // now check if the two dofmaps are available and then bye bye
+//    cout << "structure dofmap" << endl;
+//    cout << *StructureField().DofRowMap(0) << endl;
+//    cout << "thermo dofmap" << endl;
+//    cout << *StructureField().DofRowMap(1) << endl;
+//    cout << "thermo dofmap" << endl;
+//    cout << *ThermoField().DofRowMap(0) << endl;
+//    cout << "structure dofmap" << endl;
+//    cout << *ThermoField().DofRowMap(1) << endl;
+//    exit(0);
 
 }
 
@@ -143,9 +143,9 @@ TSI::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ReadRestart(int step)
 {
-  ThermoField().ReadRestart(step);
-  StructureField().ReadRestart(step);
-  SetTimeStep(ThermoField().GetTime(),step);
+//  ThermoField().ReadRestart(step);
+//  StructureField().ReadRestart(step);
+//  SetTimeStep(ThermoField().GetTime(),step);
 
   return;
 }
@@ -157,8 +157,8 @@ void TSI::Algorithm::ReadRestart(int step)
 void TSI::Algorithm::TimeLoop()
 {
   // get an idea of the temperatures (like in partitioned FSI)
-  itempn_ = ThermoField().ExtractTempn();
-  idispn_ = StructureField().ExtractDispn();
+  tempn_ = ThermoField().ExtractTempn();
+  dispn_ = StructureField().ExtractDispn();
 
   // ==================================================================
 
@@ -180,11 +180,17 @@ void TSI::Algorithm::TimeLoop()
       INPAR::TSI::PartitionedCouplingMethod method =
         Teuchos::getIntegralValue<INPAR::TSI::PartitionedCouplingMethod>(tsidyn,"PARTITIONED");
 
-      // switch TSI algorithm
-      if (method == INPAR::TSI::Iterstagg)
-        TimeLoopFull();
-      else
+      // switch TSI algorithm (synchronous)
+      // only the coupling field knows the 2nd (coupling) field
+      if (method == INPAR::TSI::OneWay)
         TimeLoopOneWay();
+      // complete volume coupling system
+      // sequential staggered scheme
+//      else if (method == INPAR::TSI::SequStagg)
+//        TimeLoopSequStagg();
+      // iterative staggered scheme
+      else if (method == INPAR::TSI::IterStagg)
+        TimeLoopFull();
 
     } // tsi
 
@@ -263,7 +269,7 @@ void TSI::Algorithm::TimeLoop()
 
 
 /*----------------------------------------------------------------------*
- | One-way coupling between the fields                       dano 06/10 |
+ | One-way coupling (only one field knows his counterpart)   dano 06/10 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoopOneWay()
 {
@@ -302,16 +308,19 @@ void TSI::Algorithm::TimeLoopOneWay()
         tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
 
         // get current displacement due to Solve Structure Step
-        const Teuchos::RCP<Epetra_Vector> idisp = DoStructureStep();
+        const Teuchos::RCP<Epetra_Vector> dispnp = DoStructureStep();
+        // 04.08.10 comment ExtractVelnp() to exclude oszillation
         // extract the velocities of the current solution
-        const Teuchos::RCP<Epetra_Vector> ivel = StructureField().ExtractVelnp();
+        const Teuchos::RCP<Epetra_Vector> velnp = StructureField().ExtractVelnp();
+        // the displacement -> velocity conversion
+//        const Teuchos::RCP<Epetra_Vector> velnp = CalcVelocity(dispnp);
 
         // solve thermo system
         // and therefore use the u-solution calculated in DoStructureStep
         // including: - ApplyDisplacements()
         //            - PrepareTimeStep()
         //            - Solve()
-        DoThermoStep(idisp, ivel);
+        DoThermoStep(dispnp, velnp);
 
         // check convergence of temperature field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -325,7 +334,7 @@ void TSI::Algorithm::TimeLoopOneWay()
 
       // extract final displacements,
       // since we did update, this is very easy to extract
-      idispn_ = StructureField().ExtractDispnp();
+      dispn_ = StructureField().ExtractDispn();
 
     } // displacement coupling
 
@@ -360,15 +369,15 @@ void TSI::Algorithm::TimeLoopOneWay()
         tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
 
         // get current temperatures due to Solve ThermoStep
-        const Teuchos::RCP<Epetra_Vector> itemp = DoThermoStep();
+        const Teuchos::RCP<Epetra_Vector> tempnp = DoThermoStep();
 
         // solve structure system
         // and therefore use the temperature solution calculated in DoThermoStep
         // including: - ApplyTemperatures()
         //            - PrepareTimeStep()
         //            - Solve()
-        DoStructureStep(itemp);
-
+        DoStructureStep(tempnp);
+        
         // check convergence of temperature field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
 
@@ -381,22 +390,20 @@ void TSI::Algorithm::TimeLoopOneWay()
 
       // extract final temperatures,
       // since we did update, this is very easy to extract
-      itempn_ = ThermoField().ExtractTempn();
+      tempn_ = ThermoField().ExtractTempn();
 
     }  // temperature coupling////
 
       // write output to screen and files
       Output();
-
 }
 
 
 /*----------------------------------------------------------------------*
- | Full coupling between the fields                          dano 06/10 |
+ | Full coupling (iterative staggered scheme)                dano 06/10 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoopFull()
 {
-
   // counter and print header
   IncrementTimeAndStep();
   PrintHeader();
@@ -409,8 +416,8 @@ void TSI::Algorithm::TimeLoopFull()
 
   // extract final displacement and velocity
   // since we did update, this is very easy to extract
-  idispn_ = StructureField().ExtractDispn();
-  itempn_ = ThermoField().ExtractTempn();
+  dispn_ = StructureField().ExtractDispn();
+  tempn_ = ThermoField().ExtractTempn();
 
   // write output to screen and files
   Output();
@@ -448,24 +455,29 @@ void TSI::Algorithm::OuterIterationLoop()
     // store temperature from first solution for convergence check
     tempincnp_->Update(1.0,*ThermoField().Tempn(),0.0);
 
-    // get current temperatures due to Solve ThermoStep
-    const Teuchos::RCP<Epetra_Vector> itemp = ThermoField().ExtractTempn();
+    // get current temperatures due to Solve ThermoStep, like predictor in FSI
+    if (itnum == 1)
+    {
+      tempn_ = ThermoField().ExtractTempn();
+    }
+    else
+      tempn_ = ThermoField().ExtractTempnp();
 
     // solve structure system and extract current displacements
     // and therefore use the temperature solution calculated in DoThermoStep
     // including: - ApplyTemperatures()
     //            - PrepareTimeStep()
     //            - Solve()
-    const Teuchos::RCP<Epetra_Vector> idisp = DoFullStructureStep(itemp);
+    const Teuchos::RCP<Epetra_Vector> dispnp = DoFullStructureStep(tempn_);
     // extract the velocities of the current solution
-    const Teuchos::RCP<Epetra_Vector> ivel = StructureField().ExtractVelnp();
+    const Teuchos::RCP<Epetra_Vector> velnp = StructureField().ExtractVelnp();
 
     // solve thermo system
     // and therefore use the u-solution calculated in DoStructureStep
     // including: - ApplyDisplacements()
     //            - PrepareTimeStep()
     //            - Solve()
-    const Teuchos::RCP<Epetra_Vector> itempn_ = DoFullThermoStep(idisp, ivel);
+    const Teuchos::RCP<Epetra_Vector> tempn_ = DoFullThermoStep(dispnp, velnp);
 
     // check convergence of temperature field for "partitioned scheme"
     stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -481,7 +493,7 @@ void TSI::Algorithm::OuterIterationLoop()
  | Solve the structure system (protected)                    dano 03/10 |
  | apply temperatures, coupling variable in structure field             |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
+void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> temp)
 {
   if (Comm().MyPID()==0)
   {
@@ -491,7 +503,7 @@ void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp)
     cout<<"************************\n";
   }
   // call the current temperatures
-  StructureField().ApplyTemperatures(itemp);
+  StructureField().ApplyTemperatures(temp);
 
   // call the predictor here, because the temperature is considered too
   StructureField().PrepareTimeStep();
@@ -554,8 +566,8 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoStructureStep()
  | coupling of displacements to thermo field                            |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::DoThermoStep(
-  Teuchos::RCP<Epetra_Vector> idisp,
-  Teuchos::RCP<Epetra_Vector> ivel
+  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::RCP<Epetra_Vector> vel
   )
 {
   if (Comm().MyPID()==0)
@@ -567,7 +579,7 @@ void TSI::Algorithm::DoThermoStep(
   }
 
   // call the current displacements and velocities
-  ThermoField().ApplyStructVariables(idisp,ivel);
+  ThermoField().ApplyStructVariables(disp,vel);
 
   // call the predictor here, because displacement field is considered, too
   ThermoField().PrepareTimeStep();
@@ -585,7 +597,7 @@ void TSI::Algorithm::DoThermoStep(
  | extract current displacements needed for coupling to thermo field    |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullStructureStep(
-  Teuchos::RCP<Epetra_Vector> itemp
+  Teuchos::RCP<Epetra_Vector> temp
   )
 {
   if (Comm().MyPID()==0)
@@ -596,7 +608,7 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullStructureStep(
     cout<<"************************\n";
   }
   // call the current temperatures
-  StructureField().ApplyTemperatures(itemp);
+  StructureField().ApplyTemperatures(temp);
 
   // call the predictor here, because the temperature is considered too
   StructureField().PrepareTimeStep();
@@ -604,8 +616,10 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullStructureStep(
   /// Do the nonlinear solve for the time step. All boundary conditions have
   /// been set.
   StructureField().Solve();
+
   // now extract the current temperatures and pass it to the structure
   return StructureField().ExtractDispnp();
+
 }
 
 
@@ -615,8 +629,8 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullStructureStep(
  | displacements needed for coupling to thermo field                    |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullThermoStep(
-  Teuchos::RCP<Epetra_Vector> idisp,
-  Teuchos::RCP<Epetra_Vector> ivel
+  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::RCP<Epetra_Vector> vel
   )
 {
   if (Comm().MyPID()==0)
@@ -628,7 +642,7 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullThermoStep(
   }
 
   // call the current displacements and velocities
-  ThermoField().ApplyStructVariables(idisp,ivel);
+  ThermoField().ApplyStructVariables(disp,vel);
 
   // call the predictor here, because displacement field is considered, too
   ThermoField().PrepareTimeStep();
@@ -762,24 +776,24 @@ bool TSI::Algorithm::ConvergenceCheck(
 }  // TSI::Algorithm::ConvergenceCheck
 
 
-///*----------------------------------------------------------------------*
-// | calculate velocities                                      dano 05/10 |
-// | like InterfaceVelocity(idisp) in FSI::DirichletNeumann               |
-// *----------------------------------------------------------------------*/
-//Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
-//  Teuchos::RCP<const Epetra_Vector> idispnp
-//  ) const
-//{
-//  Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
-//  // copy D_n onto V_n+1
-//  ivel = rcp(new Epetra_Vector(*idispn_));
-//
-//  // calculate velocity with timestep Dt()
-//  //  V_n+1 = (D_n+1 - D_n) / Dt
-//  ivel->Update(1./Dt(), *idispnp, -1./Dt());
-//
-//  return ivel;
-//}
+/*----------------------------------------------------------------------*
+ | calculate velocities                                      dano 05/10 |
+ | like InterfaceVelocity(disp) in FSI::DirichletNeumann               |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
+  Teuchos::RCP<const Epetra_Vector> dispnp
+  ) const
+{
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  // copy D_n onto V_n+1
+  vel = rcp(new Epetra_Vector(*dispn_));
+
+  // calculate velocity with timestep Dt()
+  //  V_n+1 = (D_n+1 - D_n) / Dt
+  vel->Update(1./Dt(), *dispnp, -1./Dt());
+
+  return vel;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -804,7 +818,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   amdofs = LINALG::MergeMap(adofs,mdofs,false);
   idofs =  LINALG::SplitMap(*sdofs,*adofs);
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
-  
+
   // row map of thermal problem
   RCP<const Epetra_Map> problemrowmap = ThermoField().DofRowMap();
 
@@ -818,19 +832,19 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // assemble Mortar Matrices D and M in thermo dofs for active nodes
   RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
   RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
-  
+
   AssembleDM(*dmatrix,*mmatrix,cmtman);
 
   // FillComplete() global Mortar matrices
   dmatrix->Complete();
   mmatrix->Complete(*mdofs,*sdofs);
-  
+
   // active part of dmatrix and mmatrix
   RCP<Epetra_Map> tmp;
   RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
   LINALG::SplitMatrix2x2(dmatrix,adofs,idofs,adofs,idofs,dmatrixa,tmp1,tmp2,tmp3);
   LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
-  
+
   // assemble mechanical dissipation
   RCP<Epetra_Vector> mechdiss = LINALG::CreateVector(*mdofs,true);
   AssembleMechDiss(*mechdiss,cmtman);
@@ -877,7 +891,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // do the multiplication M^ = inv(D) * M
   RCP<LINALG::SparseMatrix> mhatmatrix;
   mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false,true);
-  
+
   /**********************************************************************/
   /* Split kteff into 3x3 block matrix                                  */
   /**********************************************************************/
@@ -915,7 +929,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // do the vector splitting smn -> sm+n -> s+m+n
   LINALG::SplitVector(*problemrowmap,*feff,smdofs,fsm,ndofs,fn);
   LINALG::SplitVector(*smdofs,*fsm,sdofs,fs,mdofs,fm);
-  
+
   /**********************************************************************/
   /* Split slave quantities into active / inactive                      */
   /**********************************************************************/
@@ -941,13 +955,13 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   // abbreviations for active and inactive set
   int aset = adofs->NumGlobalElements();
   int iset = idofs->NumGlobalElements();
-  
+
   // active part of invd and mhatmatrix
   RCP<Epetra_Map> tmpmap;
   RCP<LINALG::SparseMatrix> invda,mhata;
   LINALG::SplitMatrix2x2(invd,adofs,idofs,adofs,idofs,invda,tmp1,tmp2,tmp3);
   LINALG::SplitMatrix2x2(mhatmatrix,adofs,idofs,mdofs,tmpmap,mhata,tmp1,tmp2,tmp3);
-  
+
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
   /**********************************************************************/
@@ -1087,7 +1101,7 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   RCP<Epetra_Vector> mechdissexp = rcp(new Epetra_Vector(*problemrowmap));
   LINALG::Export(*mechdiss,*mechdissexp);
   feffnew->Update(1.0,*mechdissexp,1.0);
-  
+
   // add i subvector to feffnew
   RCP<Epetra_Vector> fiexp;
   if (iset)
@@ -1402,15 +1416,15 @@ void TSI::Algorithm::AssembleMechDiss(Epetra_Vector& mechdiss,
       int rowtemp = 0;
       if(Comm().MyPID()==cnode->Owner())
         rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
-      
+
       Epetra_SerialDenseVector mechdissip(1);
       vector<int> dof(1);
       vector<int> owner(1);
-      
+
       mechdissip(0) = cnode->Data().MechDiss();
       dof[0] = rowtemp;
       owner[0] = cnode->Owner();
-      
+
       // do assembly
       if(abs(mechdissip(0))>1e-12)
         LINALG::Assemble(mechdiss, mechdissip, dof, owner);
@@ -1450,20 +1464,20 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
 
   double heattranss = interface[0]->IParams().get<double>("HEATTRANSSLAVE");
   double heattransm = interface[0]->IParams().get<double>("HEATTRANSMASTER");
-  
+
    if (heattranss <= 0 or heattransm <= 0)
     dserror("Error: Choose realistic heat transfer parameter");
-  
+
   double beta = heattranss*heattransm/(heattranss+heattransm);
   double delta = heattranss/(heattranss+heattransm);
-  
+
   // with respect to Lagrange multipliers
   thermcontLM.Add(dmatrix,false,1.0,1.0);
 
   // with respect to temperature
   thermcontTEMP.Add(dmatrix,false,-beta,1.0);
   thermcontTEMP.Add(mmatrix,false,+beta,1.0);
-  
+
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
@@ -1484,15 +1498,15 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
       int rowtemp = 0;
       if(Comm().MyPID()==cnode->Owner())
         rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
-      
+
       Epetra_SerialDenseVector mechdissip(1);
       vector<int> dof(1);
       vector<int> owner(1);
-      
+
       mechdissip(0) = delta*cnode->Data().MechDiss();
       dof[0] = rowtemp;
       owner[0] = cnode->Owner();
-      
+
       // do assembly
       if(abs(mechdissip(0)>1e-12 and cnode->Active()))
         LINALG::Assemble(thermcontRHS, mechdissip, dof, owner);
@@ -1500,7 +1514,7 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
   }
   return;
 
-  
+
 
   return;
 }

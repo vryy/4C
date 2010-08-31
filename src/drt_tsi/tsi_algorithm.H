@@ -35,8 +35,9 @@ Maintainer: Caroline Danowski
 //#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*
- | headers                                                   dano 12/09 |
+ |                                                           dano 12/09 |
  *----------------------------------------------------------------------*/
+/// TSI: Thermo-Structure Interaction
 namespace TSI
 {
   /// TSI algorithm base
@@ -93,7 +94,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> DoThermoStep();
 
     /// solve structure equations for current time step
-    void DoStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
+    void DoStructureStep(Teuchos::RCP<Epetra_Vector> temp);
 
     /// solve structure equation and return displacements
     /// (coupling towards thermo field)
@@ -102,8 +103,8 @@ namespace TSI
     /// solve tempterature equations for current time step with respect to
     /// current velocities
     void DoThermoStep(
-      Teuchos::RCP<Epetra_Vector> idisp,
-      Teuchos::RCP<Epetra_Vector> ivel
+      Teuchos::RCP<Epetra_Vector> disp,
+      Teuchos::RCP<Epetra_Vector> vel
       );
 
     // iterative (two-way) coupling
@@ -112,13 +113,13 @@ namespace TSI
     void OuterIterationLoop();
 
     /// solve structure equations for current time step
-    Teuchos::RCP<Epetra_Vector> DoFullStructureStep(Teuchos::RCP<Epetra_Vector> itemp);
+    Teuchos::RCP<Epetra_Vector> DoFullStructureStep(Teuchos::RCP<Epetra_Vector> temp);
 
     /// solve tempterature equations for current time step with respect to
     /// current velocities
     Teuchos::RCP<Epetra_Vector> DoFullThermoStep(
-      Teuchos::RCP<Epetra_Vector> idisp,
-      Teuchos::RCP<Epetra_Vector> ivel
+      Teuchos::RCP<Epetra_Vector> disp,
+      Teuchos::RCP<Epetra_Vector> vel
       );
 
 //    /// solve tempterature equations for current time step
@@ -129,14 +130,14 @@ namespace TSI
 
     //@}
 
-//    //! @name Access methods
-//
-//    /// velocity calculation given the displacements (like in FSI)
-//   Teuchos::RCP<Epetra_Vector> CalcVelocity(
-//    Teuchos::RCP<const Epetra_Vector> idispnp
-//    ) const;
-//
-//    //@}
+    //! @name Access methods
+
+    /// velocity calculation given the displacements (like in FSI)
+   Teuchos::RCP<Epetra_Vector> CalcVelocity(
+    Teuchos::RCP<const Epetra_Vector> idispnp
+    ) const;
+
+    //@}
 
     /// take current results for converged and save for next time step
     virtual void Update();
@@ -166,7 +167,7 @@ namespace TSI
     // apply mortar matrices for nodes in contact
     void AssembleMechDiss(Epetra_Vector& mechdiss,
                           RCP<MORTAR::ManagerBase> cmtman);
-    
+
     // assemble thermal contact condition
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,
@@ -205,10 +206,16 @@ namespace TSI
   private:
 
     /// displacements from time step begin (t_n)
-    Teuchos::RCP<Epetra_Vector> idispn_;
+    Teuchos::RCP<Epetra_Vector> dispn_;
+    /// velocities from time step begin (t_n)
+    Teuchos::RCP<Epetra_Vector> veln_;
+    /// velocities from time step begin (t_n+1)
+    Teuchos::RCP<Epetra_Vector> velnp_;
 
     /// temperature from time step begin (t_n)
-    Teuchos::RCP<Epetra_Vector> itempn_;
+    Teuchos::RCP<Epetra_Vector> tempn_;
+//    /// temperature from time step begin (t_n+1)
+//    Teuchos::RCP<Epetra_Vector> tempnp_;
 
     //! we couple based on displacements
     bool displacementcoupling_;
