@@ -161,7 +161,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
 }
 
 /*----------------------------------------------------------------------*
- |                                                          bborn 08/09 |
+ | Integrate                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
 void ADAPTER::Thermo::Integrate()
 {

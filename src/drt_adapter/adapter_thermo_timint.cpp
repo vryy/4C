@@ -108,6 +108,8 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
     // Generalized alpha time integration
     case INPAR::THR::dyna_genalpha :
     {
+
+      dserror("Sorry, GenAlpha not yet available");
       tti = Teuchos::rcp(new THR::TimIntGenAlpha(ioflags, tdyn, xparams,
                                                  actdis, solver, output));
       break;
