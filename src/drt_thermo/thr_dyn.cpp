@@ -44,76 +44,40 @@ extern struct _GENPROB     genprob;
 void thr_dyn_drt()
 {
   // access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numtf, 0);
+  Teuchos::RCP<DRT::Discretization> thermodis = Teuchos::null;
+  thermodis = DRT::Problem::Instance()->Dis(genprob.numtf, 0);
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (not thermodis->Filled()) thermodis->FillComplete();
 
-  // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-
-  // get input parameter lists
-  //const Teuchos::ParameterList& probtype
-  //  = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags
-    = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
 
-  // show default parameters
-  if (actdis->Comm().MyPID() == 0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, tdyn);
+  // the adapter expects a couple of variables that do not exist in the
+  // ThermalDynamicParams() list so rename them here to the expected name
+  // (like in stru_dyn_nln_drt.cpp)
+  int upres = DRT::Problem::Instance()->ThermalDynamicParams().get<int>("RESEVRYGLOB");
+  const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->ThermalDynamicParams()).set<int>("UPRES",upres);
 
-  // add extra parameters (a kind of work-around)
-  Teuchos::ParameterList xparams;
-  xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
-
-  // create a solver
-  Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->ThermalSolverParams(),
-                                      actdis->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
-
-  // create marching time integrator
-  Teuchos::RCP<ADAPTER::Thermo> atti
-    = Teuchos::rcp(
-        new ADAPTER::ThermoTimInt(
-          Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
-          Teuchos::rcp(new Teuchos::ParameterList(tdyn)),
-          Teuchos::rcp(new Teuchos::ParameterList(xparams)),
-          actdis, solver, output
-          )
-        );
-
-  if (atti == Teuchos::null) dserror("Failed in creating integrator.");
+  // create instance of thermo basis algorithm (no structure discretization)
+  Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermoonly
+    = rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn));
 
   // do restart if demanded from input file
-  if (genprob.restart)
-  {
-    atti->ReadRestart(genprob.restart);
-  }
+  if (genprob.restart){thermoonly->ThermoField().ReadRestart(genprob.restart);}
 
-  // write mesh always at beginning of calc or restart
-  {
-    int step = atti->GetTimeStep();
-    double time = atti->GetTime();
-    output->WriteMesh(step, time);
-  }
+  // enter time loop to solve problem
+  (thermoonly->ThermoField()).Integrate();
 
-  // integrate in time
-  atti->Integrate();
-
-  // test results
-  DRT::Problem::Instance()->AddFieldTest(atti->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(actdis->Comm());
+  // perform the result test if required
+  DRT::Problem::Instance()->AddFieldTest(thermoonly->ThermoField().CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(thermodis->Comm());
 
   // done
   return;
 
 } // end of thr_dyn_drt()
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
