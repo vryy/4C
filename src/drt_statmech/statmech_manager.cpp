@@ -2994,7 +2994,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 {
 #ifdef D_TRUSS3
 #ifdef D_BEAM3
-#ifdef D_BEAM3II
+//#ifdef D_BEAM3II
 
 	//first get triads at all row nodes
 	Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()),4);
@@ -3006,19 +3006,20 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
 		//lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
 		int lowestid( ( (discret_.lRowNode(i)->Elements())[0] )->Id() );
-		int lowestidele(0);
+		// position of the element with the lowest GID within the list of all elements adjacent to row node i
+		int lowestconnectedele(0);
 		for(int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
 			if( ( (discret_.lRowNode(i)->Elements())[j] )->Id() < lowestid )
 			{
 				lowestid = ( (discret_.lRowNode(i)->Elements())[j] )->Id();
-				lowestidele = j;
+				lowestconnectedele = j;
 			}
 
 		//check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
 		DRT::ELEMENTS::Beam3ii* filele = NULL;
-		DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+		DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestconnectedele])->ElementType();
 		if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-			filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_.lRowNode(i)->Elements()[lowestidele]);
+			filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_.lRowNode(i)->Elements()[lowestconnectedele]);
 		else
 			dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
 
@@ -3104,7 +3105,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
 					//Col map LIDs of nodes to be crosslinked
 					LINALG::Matrix<2,1> LID;
-					LID(0) = i;
+					LID(0) = nodenumber;
 					LID(1) = neighbourLID;
 
 					//a crosslinker can be set only if constraints wsith respect to its orientation are satisfied and also second node does not exceed it maximal number of crosslinkers
@@ -3291,7 +3292,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
 #endif  // #ifdef D_TRUSS3
 #endif  // #ifdef D_BEAM3
-#endif  // #ifdef D_BEAM3II
+//#endif  // #ifdef D_BEAM3II
 }//void SetCrosslinkers(const Epetra_Vector& setcrosslinkercol)
 
 /*----------------------------------------------------------------------*
