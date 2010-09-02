@@ -3805,10 +3805,6 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 	if (!Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
 		return true;
 
-	cout<<"PHI0 = "<<statmechparams_.get<double> ("PHI0",0.0)<<endl;
-	cout<<"TAU0 = "<<statmechparams_.get<double> ("TAU0",0.0)<<endl;
-	cout<<"PHI0DEV = "<<statmechparams_.get<double> ("PHI0DEV",0.0)<<endl;
-	cout<<"TAU0DEV = "<<statmechparams_.get<double> ("TAU0DEV",0.0)<<endl;
 	//triad of node on filament which is affected by the new crosslinker
 	LINALG::Matrix<3, 3> Tfil;
 
@@ -3835,21 +3831,13 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 			qnode(j) = nodaltriadscol[j][(int) LID(i)];
 
 		//compute triads from quaterions and unit direction vector of crosslinker
-		cout<<"Tfil "<<i<<":"<<endl;
 		LARGEROTATIONS::quaterniontotriad(qnode, Tfil);
-		for(int j=0; j<3; j++)
-		{
-			for(int k=0; k<3; k++)
-				cout<<Tfil(j,k)<<" ";
-			cout<<endl;
-		}
+
 		//auxiliary variable
 		double scalarproduct = Tfil(0, 0)*direction(0) + Tfil(1,0)*direction(1) + Tfil(2, 0)*direction(2);
 
 		//computing Deltaphi and Delta at binding site i
 		Deltaphi[i] = acos(scalarproduct) - statmechparams_.get<double> ("PHI0",0.0);
-		cout<<"Deltaphi["<<i<<"] = "<<Deltaphi[i]<<endl;
-		cout<<"Phi     ["<<i<<"] = "<<Deltaphi[i] + statmechparams_.get<double> ("PHI0",0.0)<<endl;
 
 		//substract from filament direction vector the component parallel to the crosslinker axis and normalize the result
 		(filprojected[i])(0) = Tfil(0, 0) - scalarproduct * direction(0);
@@ -3859,46 +3847,30 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 	}
 
 	//tau is the angle between the projections of the two filament direction vectors into the plane perpendicular to the crosslinker axis
-	double scalarproduct = (filprojected[0])(0) * (filprojected[1])(0) +
-												 (filprojected[0])(1) * (filprojected[1])(1) +
-												 (filprojected[0])(2) * (filprojected[1])(2);
-	Deltatau = acos(scalarproduct) - statmechparams_.get<double> ("TAU0", 0.0);
-	cout<<"Deltatau = "<<Deltatau<<endl;
-	cout<<"Tau      = "<<Deltatau + statmechparams_.get<double> ("TAU0",0.0)<<endl;
+	Deltatau = acos((filprojected[0])(0) * (filprojected[1])(0) +
+									(filprojected[0])(1) * (filprojected[1])(1) +
+									(filprojected[0])(2) * (filprojected[1])(2)) - statmechparams_.get<double> ("TAU0", 0.0);
+
 	//assuming bending and torsion potentials 0.5*EI*Deltaphi^2, 0.5*GJ*Deltatau^2 and a Boltzmann distribution for the different states of the crosslinker we get
 	double p0 = exp(-0.5 * EI * Deltaphi[0] * Deltaphi[0] / statmechparams_.get<double> ("KT", 0.0));
 	double p1 = exp(-0.5 * EI * Deltaphi[1] * Deltaphi[1] / statmechparams_.get<double> ("KT", 0.0));
 	double p2 = exp(-0.5 * GJ * Deltatau * Deltatau / statmechparams_.get<double> ("KT", 0.0));
 
-	cout<<"p0 = "<<p0<<", p1 = "<<p1<<", p2 = "<<p2<<endl;
-	cout<<"phi_upper = ";
-
 	//p0 = 0.0 if Deltaphi[0] is outside allowed range
-	if(Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0) < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
-	   Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+	if(Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0) < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
+	   Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
 	   p0 = 0.0;
 	//p1 = 0.0 if Deltaphi[0] is outside allowed range
-  if(Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)< statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
-     Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+  if(Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)< statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
+     Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
       p1 = 0.0;
   //p2 = 0.0 if Deltatau is outside allowed range
-  if(Deltatau + statmechparams_.get<double> ("TAU0",0.0)< statmechparams_.get<double>("TAU0",0.0) - statmechparams_.get<double>("TAUODEV",6.28) ||
-     Deltatau + statmechparams_.get<double> ("TAU0",0.0)> statmechparams_.get<double>("TAU0",0.0) + statmechparams_.get<double>("TAUODEV",6.28))
+  if(Deltatau + statmechparams_.get<double> ("TAU0",0.0)< statmechparams_.get<double>("TAU0",0.0) - statmechparams_.get<double>("TAU0DEV",6.28) ||
+     Deltatau + statmechparams_.get<double> ("TAU0",0.0)> statmechparams_.get<double>("TAU0",0.0) + statmechparams_.get<double>("TAU0DEV",6.28))
      p2 = 0.0;
 
-
 	//crosslinker has to pass three probability checks with respect to orientation
-  if(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2)
-  {
-  	cout<<"test passed\n"<<endl;
-  	return true;
-  }
-  else
-  {
-  	cout<<"test failed\n"<<endl;
-  	return false;
-  }
-
+  return(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
 } // StatMechManager::Permutation
 
 
