@@ -1743,13 +1743,6 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     xcurr(i,0) = x[0] + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = x[1] + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = x[2] + disp[i*NODDOF_SOH8+2];
-
-//    if (pstype_==INPAR::STR::prestress_mulf)
-//    {
-//      xdisp(i,0) = disp[i*NODDOF_SOH8+0];
-//      xdisp(i,1) = disp[i*NODDOF_SOH8+1];
-//      xdisp(i,2) = disp[i*NODDOF_SOH8+2];
-//    }
   }
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
