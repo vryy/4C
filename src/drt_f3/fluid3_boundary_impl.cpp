@@ -2476,9 +2476,9 @@ template <DRT::Element::DiscretizationType bndydistype,
 {
   //--------------------------------------------------
   // time integration related parameters
-  double pressuretimefac=1.0;
-  double velocitytimefac=1.0;
-  double stresstimefac  =1.0;
+  const double pressuretimefac=1.0;
+  const double velocitytimefac=1.0;
+  const double stresstimefac  =1.0;
 
   //--------------------------------------------------
   // get my parent element
@@ -2593,11 +2593,11 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   // for volume integrals
 
-  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_p;
-  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_epsu;
+  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_p(true);
+  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_epsu(true);
 
   // for boundary integrals
-  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_o_n_u_minus_g;
+  LINALG::Matrix<numstressdof_*piel,                 1> vec_r_o_n_u_minus_g(true);
 
   //--------------------------------------------------
   // get parent elements location vector and ownerships
@@ -2613,13 +2613,24 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   parent->LocationVector(discretization,*plm,*plmowner);
 
-  std::map<int,int> convert_lm;
-
-  convert_lm.clear();
-
-  for(unsigned rr=0;rr<plm->size();++rr)
+  // extract local velocities and pressure from the global vectors
+  LINALG::Matrix<nsd ,piel>    pevel (true);
+  LINALG::Matrix<piel,   1>    pepres(true);
+  
+  RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
+  if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
+  
+  // extract local node values for pressure and velocities from global vectors
+  vector<double> mypvel((*plm).size());
+  DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
+  
+  for (int inode=0;inode<piel;++inode)
   {
-    convert_lm.insert(std::pair<int,int>((*plm)[rr],rr));
+    for (int idim=0; idim<nsd ; ++idim)
+    {
+      pevel(idim,inode) = mypvel[(nsd +1)*inode+idim];
+    }
+    pepres(inode) = mypvel[(nsd +1)*inode+nsd ];
   }
 
 
@@ -2634,26 +2645,6 @@ template <DRT::Element::DiscretizationType bndydistype,
     // get local node coordinates
     LINALG::Matrix<nsd ,piel>    pxyze(true);
     GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
-
-    // extract local velocities and pressure from the global vectors
-    LINALG::Matrix<nsd ,piel>    pevel (true);
-    LINALG::Matrix<piel,   1>    pepres(true);
-  
-    RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
-    if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
-
-    // extract local node values for pressure and velocities from global vectors
-    vector<double> mypvel((*plm).size());
-    DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
-
-    for (int inode=0;inode<piel;++inode)
-    {
-      for (int idim=0; idim<nsd ; ++idim)
-      {
-        pevel(idim,inode) = mypvel[(nsd +1)*inode+idim];
-      }
-      pepres(inode) = mypvel[(nsd +1)*inode+nsd ];
-    }
 
     //--------------------------------------------------
     // Gaussian integration points
@@ -2729,6 +2720,9 @@ template <DRT::Element::DiscretizationType bndydistype,
       // get velocity derivatives at integration point
       pvderxy.MultiplyNT(pevel,pderxy);
 
+      printf("pvderxy %12.5e %12.5e\n"  ,pvderxy(0,0),pvderxy(0,1));
+      printf("pvderxy %12.5e %12.5e\n\n",pvderxy(1,0),pvderxy(1,1));
+
       // interpolate pressure to gausspoint
       ppressure = pfunct.Dot(pepres);
 
@@ -2745,15 +2739,11 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)
-              -=
-              fac*stresstimefac*
-              pfunct(A)*
-              pfunct(B);
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*stresstimefac*pfunct(A)*pfunct(B)/(2.0*viscosity);
           }
           for(int i=nsd;i<numstressdof_;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*stresstimefac*pfunct(A)*pfunct(B)*2.0;
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*stresstimefac*pfunct(A)*pfunct(B)*2.0/(2.0*viscosity);
           }
         }
       }
@@ -2771,7 +2761,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_p(A*numstressdof_+i,B)-=fac*pfunct(A)*pfunct(B)*pressuretimefac;
+            mat_r_p(A*numstressdof_+i,B)-=fac*pfunct(A)*pfunct(B)*pressuretimefac/(2.0*viscosity);
           }
         }
       }
@@ -2780,7 +2770,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int i=0;i<nsd ;++i)
         {
-          vec_r_p(A*numstressdof_+i)-=fac*pressure*pfunct(A);
+          vec_r_p(A*numstressdof_+i)-=fac*pressure*pfunct(A)/(2.0*viscosity);
         }
       }
 
@@ -2792,7 +2782,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                              |          \  /  |
                               \              / Omega
       */
-      const double viscfac=fac*velocitytimefac*2.0*viscosity;
+      const double viscfac=fac*velocitytimefac;
       if(nsd ==2)
       {
         for(int A=0;A<piel;++A)
@@ -2806,6 +2796,14 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_epsu(A*numstressdof_+2,B*nsd +1)+=viscfac*pfunct(A)*pderxy(0,B);
           }
         }
+
+//        for(int A=0;A<piel;++A)
+//        {
+//          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
+//          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
+//          
+//          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+//        }
       }
       else if(nsd ==3)
       {
@@ -2833,23 +2831,23 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_epsu(A*numstressdof_  )+=fac*2.0*viscosity*pfunct(A)*pvderxy(0,0);
-          vec_r_epsu(A*numstressdof_+1)+=fac*2.0*viscosity*pfunct(A)*pvderxy(1,1);
+          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
+          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
           
-          vec_r_epsu(A*numstressdof_+2)+=fac*2.0*viscosity*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
         }
       }
       else if(nsd ==3)
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_epsu(A*numstressdof_  )+=fac*2.0*viscosity*pfunct(A)*pvderxy(0,0);
-          vec_r_epsu(A*numstressdof_+1)+=fac*2.0*viscosity*pfunct(A)*pvderxy(1,1);
-          vec_r_epsu(A*numstressdof_+2)+=fac*2.0*viscosity*pfunct(A)*pvderxy(2,2);
+          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
+          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
+          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2);
           
-          vec_r_epsu(A*numstressdof_+3)+=fac*2.0*viscosity*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
-          vec_r_epsu(A*numstressdof_+4)+=fac*2.0*viscosity*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
-          vec_r_epsu(A*numstressdof_+5)+=fac*2.0*viscosity*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
+          vec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+          vec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
+          vec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
         }
       }
     }
@@ -2875,23 +2873,6 @@ template <DRT::Element::DiscretizationType bndydistype,
     // get local node coordinates
     LINALG::Matrix<nsd ,piel>    pxyze(true);
     GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
-
-    // extract local velocities from global vectors
-    LINALG::Matrix<nsd ,siel> evel (true);
-  
-    RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
-    if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
-
-    vector<double> myvel(lm.size());
-    DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
-    for (int inode=0;inode<siel;++inode)
-    {
-      for (int idim=0; idim<nsd ; ++idim)
-      {
-        evel(idim,inode) = myvel[(nsd +1)*inode+idim];
-      }
-    }
 
     //--------------------------------------------------
     // Gaussian integration points
@@ -2962,7 +2943,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       const double fac = intpoints.IP().qwgt[iquad]*drs;
 
       // interpolate to gausspoint
-      velint.Multiply(evel,funct);
+      velint.Multiply(pevel,pfunct);
     
       /*
                               /              \
@@ -2978,9 +2959,9 @@ template <DRT::Element::DiscretizationType bndydistype,
           for(int B=0;B<piel;++B)
           {
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_  )-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
+
+            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
           }
         }
@@ -3051,18 +3032,15 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       // ------------------------------------------------
       // factor given by spatial function
-      LINALG::Matrix<nsd,1> functionfac;
+      LINALG::Matrix<nsd,1> functionfac(true);
       for(int i=0;i<nsd;++i)
       {
         functionfac(i)= 1.0;
       }
-#if 0  
+
       // determine coordinates of current Gauss point
-      LINALG::Matrix<nsd,1> coordgp;
-      for(int i=0;i<nsd;++i)
-      {
-        coordgp(i)= 0.0;
-      }
+      LINALG::Matrix<3,1> coordgp(true);
+
       for (int A=0;A<siel;++A)
       {
         for(int j=0;j<nsd;++j)
@@ -3073,29 +3051,25 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       int functnum = -1;
 
-      for (int node=0;node<siel;++node)
+      for(int dim=0;dim<nsd;++dim)
       {
-        for(int dim=0;dim<nsd;++dim)
+        // factor given by spatial function
+        if (functions)
         {
-          // factor given by spatial function
-          if (functions)
+          functnum = (*functions)[dim];
+          if (functnum>0)
           {
-            functnum = (*functions)[dim];
-            if (functnum>0)
-            {
-              // evaluate function at current gauss point
-              functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
-            }
-            else
-            {
-              functionfac(dim) = 1.0;
-            }
+            // evaluate function at current gauss point
+            functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
+          }
+          else
+          {
+            functionfac(dim) = 1.0;
           }
         }
       }
-#endif
 
-      LINALG::Matrix<nsd,1> delta_vel;
+      LINALG::Matrix<nsd,1> delta_vel(true);
       
       for(int rr=0;rr<nsd;++rr)
       {
@@ -3188,6 +3162,379 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
     }
   }
+
+#if 1
+  // --------------------------------------------------
+  //
+  //                       FDCHECK
+  //
+  // --------------------------------------------------
+  // Extra vectors 
+
+  // for volume integrals
+
+  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_p(true);
+  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_epsu(true);
+
+  // for boundary integrals
+  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_o_n_u_minus_g(true);
+
+  for(int fd=0;fd<nsd+1;fd++)
+  {
+
+    for (int inode=0;inode<piel;++inode)
+    {
+      for (int idim=0; idim<nsd ; ++idim)
+      {
+        pevel(idim,inode) = mypvel[(nsd +1)*inode+idim];
+      }
+      pepres(inode) = mypvel[(nsd +1)*inode+nsd ];
+    }
+
+    if(fd==nsd)
+    {
+      pepres(0)+=1;
+    }
+    else
+    {
+      pevel(fd,0)+=1;
+    }
+    
+
+    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+         PART 1: Gaussloop for volume integrals of parent element
+      <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+    {
+      // allocate vector for shape functions and matrix for derivatives
+      LINALG::Matrix<piel,1>       pfunct(true);
+      LINALG::Matrix<nsd ,piel>    pderiv(true);
+
+      // get local node coordinates
+      LINALG::Matrix<nsd ,piel>    pxyze(true);
+      GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
+
+      //--------------------------------------------------
+      // Gaussian integration points
+      const DRT::UTILS::IntPointsAndWeights<nsd> 
+        pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+
+      //--------------------------------------------------
+      // vectors/scalars for Gausspoint values
+
+      // velocity at gausspoint
+      LINALG::Matrix<nsd ,1>       pvelint(true);
+      // velocity derivatives at gausspoint
+      LINALG::Matrix<nsd ,nsd >    pvderxy(true);
+      // pressure at gausspoint
+      double                       ppressure=0.0;
+
+      // global derivatives of shape functions w.r.t x,y,z
+      LINALG::Matrix<nsd ,piel>    pderxy(true);
+      // transposed jacobian "dx/ds"
+      LINALG::Matrix<nsd ,nsd >    pxjm(true);
+      // inverse of transposed jacobian "ds/dx"
+      LINALG::Matrix<nsd ,nsd >    pxji(true);
+
+      LINALG::Matrix<nsd ,   1>    pxsi(true);
+    
+      //--------------------------------------------------
+      // the actual loop
+      for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
+      {
+        // coordinates of the current integration point
+        const double* gpcoord = (pintpoints.IP().qxg)[iquad];
+        for (int idim=0;idim<nsd ;idim++)
+        {
+          pxsi(idim) = gpcoord[idim];
+        }
+      
+        // get parent elements shape functions
+        DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+        DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+        // get Jacobian matrix and determinant
+        // actually compute its transpose....
+        /*
+        +-            -+ T      +-            -+
+        | dx   dx   dx |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dr   dr   dr |
+        |              |        |              |
+        | dy   dy   dy |        | dx   dy   dz |
+        | --   --   -- |   =    | --   --   -- |
+        | dr   ds   dt |        | ds   ds   ds |
+        |              |        |              |
+        | dz   dz   dz |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dt   dt   dt |
+        +-            -+        +-            -+
+        */
+        pxjm.MultiplyNT(pderiv,pxyze);
+        const double det = pxji.Invert(pxjm);
+
+        if (det < 1E-16)
+        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
+
+        // compute integration factor
+        const double fac = pintpoints.IP().qwgt[iquad]*det;
+
+        // compute global first derivates
+        pderxy.Multiply(pxji,pderiv);
+
+        // interpolate to gausspoint
+        pvelint.Multiply(pevel,pfunct);
+
+        // get velocity derivatives at integration point
+        pvderxy.MultiplyNT(pevel,pderxy);
+
+        printf("FDpvderxy %12.5e %12.5e\n"  ,pvderxy(0,0),pvderxy(0,1));
+        printf("FDpvderxy %12.5e %12.5e\n\n",pvderxy(1,0),pvderxy(1,1));
+
+        // interpolate pressure to gausspoint
+        ppressure = pfunct.Dot(pepres);
+
+        /*
+                     /         \
+                    |  h   h    |
+                  - | r : p * I |
+                    |           |
+                     \         / Omega
+        */
+
+        for(int A=0;A<piel;++A)
+        {
+          for(int i=0;i<nsd ;++i)
+          {
+            FDvec_r_p(A*numstressdof_+i)-=fac*pressure*pfunct(A)/(2.0*viscosity);
+          }
+        }
+
+
+        /*
+                              /              \
+                             |  h       / h\  |
+                  + 2 * nu * | r : eps | u  | |
+                             |          \  /  |
+                              \              / Omega
+        */
+
+        if(nsd ==2)
+        {
+          for(int A=0;A<piel;++A)
+          {
+            FDvec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
+            FDvec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
+          
+            FDvec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+          }
+        }
+        else if(nsd ==3)
+        {
+          for(int A=0;A<piel;++A)
+          {
+            FDvec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
+            FDvec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
+            FDvec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2);
+          
+            FDvec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+            FDvec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
+            FDvec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
+          }
+        }
+      }
+    }
+
+    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+      PART 2: Gaussloop for line integrals of boundary element
+      <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+    {
+      // allocate vector/matrix for shape functions and derivatives
+      LINALG::Matrix<siel   ,1>     funct(true);
+      LINALG::Matrix<bndynsd,siel>  deriv(true);
+
+      // allocate vector for parents shape functions and matrix for derivatives
+      LINALG::Matrix<piel,1>        pfunct(true);
+      LINALG::Matrix<nsd ,piel>     pderiv(true);
+
+
+      // get local node coordinates
+      LINALG::Matrix<nsd ,siel> xyze(true);
+      GEO::fillInitialPositionArray<bndydistype,nsd ,LINALG::Matrix<nsd ,siel> >(surfele,xyze);
+
+      // get local node coordinates
+      LINALG::Matrix<nsd ,piel>    pxyze(true);
+      GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
+
+      //--------------------------------------------------
+      // Gaussian integration points
+      const DRT::UTILS::IntPointsAndWeights<bndynsd> 
+        intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bndydistype>::rule);
+
+      const DRT::UTILS::IntPointsAndWeights<nsd> 
+        pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+
+
+
+      // coordinates of current integration point in reference coordinates
+      LINALG::Matrix<bndynsd,1>   xsi(true);
+      LINALG::Matrix<nsd    ,1>   pxsi(true);
+
+      Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
+
+      BoundaryGPToParentGP(pqxg     ,
+                           intpoints,
+                           pdistype   ,
+                           bndydistype,
+                           surfele->SurfaceNumber());
+
+      //--------------------------------------------------
+      // vectors/scalars for Gausspoint values
+
+      // the element's normal vector
+      LINALG::Matrix<nsd ,1>       unitnormal(true);
+      // velocity at gausspoint
+      LINALG::Matrix<nsd ,1>       velint(true);
+
+      // transposed jacobian "dx/ds"
+      LINALG::Matrix<nsd ,nsd >    xjm(true);
+      // inverse of transposed jacobian "ds/dx"
+      LINALG::Matrix<nsd ,nsd >    xji(true);
+
+      //--------------------------------------------------
+      // the actual loop
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+
+        // coordinates of the current integration point
+        const double* gpcoord = (intpoints.IP().qxg)[iquad];
+        for (int idim=0;idim<bndynsd ;idim++)
+        {
+          xsi(idim) = gpcoord[idim];
+        }
+      
+        DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
+        DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
+
+        for (int idim=0;idim<nsd ;idim++)
+        {
+          pxsi(idim) = pqxg(iquad,idim);
+        }
+      
+        DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+
+        double drs=0.0;
+
+        // compute measure tensor for surface element and the infinitesimal
+        // area element drs for the integration
+        LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
+      
+        DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
+
+        // compute integration factor
+        const double fac = intpoints.IP().qwgt[iquad]*drs;
+
+        // interpolate to gausspoint
+        velint.Multiply(pevel,pfunct);
+  
+        /*
+                     /          \
+                    |  h       h |
+                  - | r o n , u  |
+                    |            |
+                     \          / Gamma
+        */
+  
+        // ------------------------------------------------
+        // factor given by spatial function
+        LINALG::Matrix<nsd,1> functionfac(true);
+        for(int i=0;i<nsd;++i)
+        {
+          functionfac(i)= 1.0;
+        }
+
+        // determine coordinates of current Gauss point
+        LINALG::Matrix<3,1> coordgp(true);
+
+        for (int A=0;A<siel;++A)
+        {
+          for(int j=0;j<nsd;++j)
+          {
+            coordgp(j)+=xyze(j,A)*funct(A);
+          }
+        }
+
+        int functnum = -1;
+
+        for(int dim=0;dim<nsd;++dim)
+        {
+          // factor given by spatial function
+          if (functions)
+          {
+            functnum = (*functions)[dim];
+            if (functnum>0)
+            {
+              // evaluate function at current gauss point
+              functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),0.0,NULL);
+            }
+            else
+            {
+              functionfac(dim) = 1.0;
+            }
+          }
+        }
+
+        LINALG::Matrix<nsd,1> delta_vel(true);
+      
+        for(int rr=0;rr<nsd;++rr)
+        {
+          delta_vel(rr)=velint(rr)-u_dirich(rr)*functionfac(rr);
+        }
+      
+        if(nsd==2)
+        {
+          for(int A=0;A<piel;++A)
+          {
+            FDvec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*pfunct(A)*unitnormal(0)*delta_vel(0);
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*pfunct(A)*unitnormal(1)*delta_vel(1);
+
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+          }
+        }
+        else if(nsd==3)
+        {
+          for(int A=0;A<piel;++A)
+          {
+            FDvec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*pfunct(A)*unitnormal(0)*delta_vel(0);
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*pfunct(A)*unitnormal(1)*delta_vel(1);
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*pfunct(A)*unitnormal(2)*delta_vel(2);
+
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+3)-=fac*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+4)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(0)+unitnormal(0)*delta_vel(2));
+            FDvec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
+          }
+        }
+      }
+    }
+
+    if(fd==nsd)
+    {
+      for(int rr=0;rr<numstressdof_;++rr)
+      {
+        printf("FDvec_r_p(%2d,%2d)             %12.5e  %12.5e %12.5e  %12.5e\n",rr,0,mat_r_p(rr,0)  ,FDvec_r_p(rr)-vec_r_p(rr),FDvec_r_p(rr),vec_r_p(rr));
+      }
+    }
+    else
+    { 
+      for(int rr=0;rr<numstressdof_;++rr)
+      {
+        printf("FDvec_r_epsu(%2d,%2d)          %12.5e  %12.5e %12.5e  %12.5e\n",rr,fd,mat_r_epsu (rr,fd),FDvec_r_epsu(rr)-vec_r_epsu(rr),FDvec_r_epsu(rr),vec_r_epsu(rr));
+        printf("FDvec_r_o_n_u_minus_g(%2d,%2d) %12.5e  %12.5e %12.5e  %12.5e\n",rr,fd,mat_r_o_n_u(rr,fd),FDvec_r_o_n_u_minus_g(rr)-vec_r_o_n_u_minus_g(rr),FDvec_r_o_n_u_minus_g(rr),vec_r_o_n_u_minus_g(rr));
+      }
+    }
+  }
+
+  dserror("bla\n");
+#endif
   return;
 }
 
