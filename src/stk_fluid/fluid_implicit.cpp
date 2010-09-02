@@ -38,7 +38,8 @@
                       typename LINALG::Matrix<nsd,nen> & ev )
   {
     stk::mesh::PairIterRelation nodes = e.relations( stk::mesh::Node );
-    for ( unsigned i=0; i<nodes.size(); ++i )
+    unsigned size = nodes.size();
+    for ( unsigned i=0; i<size; ++i )
     {
       stk::mesh::Entity & n = * nodes[i].entity();
       double * data = field_data( *v, n );
@@ -58,7 +59,8 @@
                       typename LINALG::Matrix<nen, 1> & es )
   {
     stk::mesh::PairIterRelation nodes = e.relations( stk::mesh::Node );
-    for ( unsigned i=0; i<nodes.size(); ++i )
+    unsigned size = nodes.size();
+    for ( unsigned i=0; i<size; ++i )
     {
       stk::mesh::Entity & n = * nodes[i].entity();
       double * data = field_data( *s, n );
@@ -472,19 +474,19 @@ namespace STK
       LINALG::Matrix<dim,dim> elemat2( assemblestrategy.Elematrix2(), true );
       LINALG::Matrix<dim,  1> elevec1( assemblestrategy.Elevector1(), true );
 
-      LINALG::Matrix<nsd,nen> edeadaf; // body force
+      LINALG::Matrix<nsd,nen> edeadaf( true ); // body force
 
-      LINALG::Matrix<nsd,nen> evelaf;
-      LINALG::Matrix<nen,1>   epreaf;
-      LINALG::Matrix<nen,1>   escaaf;
-      LINALG::Matrix<nsd,nen> emhist;
-      LINALG::Matrix<nsd,nen> eaccam;
-      LINALG::Matrix<nen,1>   escadtam;
-      LINALG::Matrix<nsd,nen> eveln;
-      LINALG::Matrix<nen,1>   escaam;
-      LINALG::Matrix<nsd,nen> edispnp;
-      LINALG::Matrix<nsd,nen> egridv;
-      LINALG::Matrix<nsd,nen> fsevelaf;
+      LINALG::Matrix<nsd,nen> evelaf( true );
+      LINALG::Matrix<nen,1>   epreaf( true );
+      LINALG::Matrix<nen,1>   escaaf( true );
+      LINALG::Matrix<nsd,nen> emhist( true );
+      LINALG::Matrix<nsd,nen> eaccam( true );
+      LINALG::Matrix<nen,1>   escadtam( true );
+      LINALG::Matrix<nsd,nen> eveln( true );
+      LINALG::Matrix<nen,1>   escaam( true );
+      LINALG::Matrix<nsd,nen> edispnp( true );
+      LINALG::Matrix<nsd,nen> egridv( true );
+      LINALG::Matrix<nsd,nen> fsevelaf( true );
 
       std::vector<int> lm( dim );
       std::vector<int> lmowner( dim );
@@ -584,12 +586,27 @@ void STK::FLD::Fluid::NonlinearSolve()
   }
 
   Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp( new Epetra_Vector( dis_.DofRowMap() ) );
+  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp( new Epetra_Vector( dis_.DofRowMap() ) );
 
-  //algebra::PutScalar( bulk, *incvel_ , 0.0 );
-  //algebra::PutScalar( bulk, *incpres_, 0.0 );
+//   algebra::Update( bulk, *incvel_,  0.0, *velnp_,    1. );
+//   algebra::Update( bulk, *incpres_, 0.0, *pressure_, 1. );
 
-  algebra::Update( bulk, *incvel_,  0.0, *velnp_,    1. );
-  algebra::Update( bulk, *incpres_, 0.0, *pressure_, 1. );
+#ifdef WRITEDEBUG
+
+  std::vector< const stk::mesh::FieldBase * > out_fields ;
+  out_fields.push_back( velnp_ );
+  out_fields.push_back( pressure_ );
+  out_fields.push_back( incvel_ );
+  out_fields.push_back( incpres_ );
+  out_fields.push_back( resvel_ );
+  out_fields.push_back( respres_ );
+
+  std::stringstream s;
+  s << "fluid_" << step_ << ".exo";
+
+  Teuchos::RCP<phdmesh::exodus::FileOutput> exo = dis_.GetMesh().OutputContext( s.str(), "Navier-Stokes Problem", out_fields );
+
+#endif
 
   while (stopnonliniter==false)
   {
@@ -687,96 +704,31 @@ void STK::FLD::Fluid::NonlinearSolve()
       }
     }
 
-#if 0
-
-    // set general element parameters
-    eleparams.set("dt",dta_);
-    eleparams.set("theta",theta_);
-//     eleparams.set("omtheta",omtheta_);
-    eleparams.set("form of convective term",convform_);
-//     eleparams.set("fs subgrid viscosity",fssgv_);
-    eleparams.set("Linearisation", newton_);
-    eleparams.set("Physical Type", physicaltype_);
-//     eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
-
-    // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = fdyn.sublist("STABILIZATION");
-
-    // parameters for stabilization
-    eleparams.sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
-
-    eleparams.set("thermpress at n+alpha_F/n+1",0.0);
-    eleparams.set("thermpress at n+alpha_M/n",0.0);
-    eleparams.set("thermpressderiv at n+alpha_M/n+1",0.0);
-
-    // set general vector values needed by elements
-    discret.ClearState();
-    discret.SetState("hist" ,hist );
-    discret.SetState("accam",accnp);
-    discret.SetState("scaaf",zeros);
-    discret.SetState("scaam",zeros);
-    if (alefluid_)
-    {
-//       discret_->SetState("dispnp", dispnp_);
-//       discret_->SetState("gridv", gridv_);
-    }
-
-    // set scheme-specific element parameters and vector values
-    if (timealgo_==INPAR::FLUID::timeint_stationary)
-    {
-      eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-      eleparams.set("using generalized-alpha time integration",false);
-      eleparams.set("total time",time_);
-      eleparams.set("is stationary", true);
-
-      discret.SetState("velaf",velnp);
-    }
-    else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    {
-//       eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-//       eleparams.set("using generalized-alpha time integration",true);
-//       eleparams.set("total time",time_-(1-alphaF_)*dta_);
-//       eleparams.set("is stationary", false);
-//       eleparams.set("alphaF",alphaF_);
-//       eleparams.set("alphaM",alphaM_);
-//       eleparams.set("gamma",gamma_);
-
-      //discret_->SetState("velaf",velaf_);
-    }
-    else
-    {
-      eleparams.set("action","calc_fluid_systemmat_and_residual");
-      eleparams.set("using generalized-alpha time integration",false);
-      eleparams.set("total time",time_);
-      eleparams.set("is stationary", false);
-
-      discret.SetState("velaf",velnp);
-    }
-
-    // call standard loop over elements
-    discret.Evaluate(eleparams,*state_->assemblestrategy_);
-
-    discret.ClearState();
-#endif
-
     // finalize the complete matrix
     state_->sysmat_->Complete();
+
+#if 0
+    {
+      std::stringstream str;
+      str << "new" << Discretization().GetMesh().parallel_rank() << ".mat";
+      //std::ofstream rhs( str.str() + ".rhs" );
+      //state_->residual_->Print( rhs );
+      std::ofstream mat( str.str().c_str() );
+      state_->sysmat_->EpetraMatrix()->Print( mat );
+      //state_->sysmat_->Dump( "new" );
+      exit( 0 );
+    }
+#endif
 
     // end time measurement for element
     dtele = Teuchos::Time::wallTime()-tcpu;
 
     dis_.DirichletExtractor().ZeroDirichlets( state_->residual_ );
 
-    ScatterFieldData( state_->residual_, resvel_, respres_ );
+    ScatterFieldData( *state_->residual_, resvel_, respres_ );
 
-    double incvelnorm_L2 = 0;
-    double incprenorm_L2 = 0;
-
-    if (itnum > 1)
-    {
-      incvelnorm_L2 = algebra::Norm2( bulk, *incvel_ );
-      incprenorm_L2 = algebra::Norm2( bulk, *incpres_ );
-    }
+    double incvelnorm_L2 = algebra::Norm2( bulk, *incvel_ );
+    double incprenorm_L2 = algebra::Norm2( bulk, *incpres_ );
 
     double velnorm_L2 = algebra::Norm2( bulk, *velnp_ );
     double prenorm_L2 = algebra::Norm2( bulk, *pressure_ );
@@ -862,6 +814,7 @@ void STK::FLD::Fluid::NonlinearSolve()
     if ( itnum==1 )
     {
       //incvel->Update( 1.0, *velnp, 0.0 );
+      GatherFieldData( velnp_, pressure_, *incvel );
       LINALG::ApplyDirichlettoSystem( state_->sysmat_, incvel, state_->residual_, incvel,
                                       *dis_.DirichletExtractor().DirichletMap() );
     }
@@ -877,7 +830,17 @@ void STK::FLD::Fluid::NonlinearSolve()
     solver_->Solve( state_->sysmat_->EpetraOperator(), incvel, state_->residual_, true, itnum==1 );
     //solver_->ResetTolerance();
 
-    ScatterFieldData( incvel, incvel_, incpres_ );
+    ScatterFieldData( *incvel, incvel_, incpres_ );
+
+#if 0
+    {
+      state_->sysmat_->Multiply( false, *incvel, *tmpvec );
+      tmpvec->Update( -1, *state_->residual_, 1 );
+      double norm;
+      tmpvec->Norm2( &norm );
+      std::cout << "solve test: " << norm << "\n";
+    }
+#endif
 
     // end time measurement for solver
     dtsolve = Teuchos::Time::wallTime()-tcpusolve;
@@ -901,6 +864,10 @@ void STK::FLD::Fluid::NonlinearSolve()
       algebra::Update( bulk, *velnp_,    1., *incvel_,  1. );
       algebra::Update( bulk, *pressure_, 1., *incpres_, 1. );
     }
+
+#ifdef WRITEDEBUG
+    exo->write( itnum, itnum );
+#endif
   }
 }
 
@@ -1178,7 +1145,7 @@ void STK::FLD::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STK::FLD::Fluid::ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & v,
+void STK::FLD::Fluid::ScatterFieldData( const Epetra_Vector & v,
                                         stk::mesh::VectorField * vel,
                                         stk::mesh::ScalarField * pres )
 {
@@ -1188,6 +1155,18 @@ void STK::FLD::Fluid::ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & v,
   dis_.ScatterFieldData( v, fields );
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STK::FLD::Fluid::GatherFieldData( stk::mesh::VectorField * vel,
+                                       stk::mesh::ScalarField * pres,
+                                       Epetra_Vector & v )
+{
+  std::vector<stk::mesh::FieldBase*> fields( 2 );
+  fields[0] = vel;
+  fields[1] = pres;
+  dis_.GatherFieldData( fields, v );
+}
+
+
 #endif
-
-

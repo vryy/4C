@@ -79,8 +79,8 @@ void adaptive_main()
       fluid.SetupSTKMesh();
 
       // full refinement
-      fluid.RefineAll();
-      fluid.RefineAll();
+      //fluid.RefineAll();
+      //fluid.RefineAll();
 
       //fluid.RefineHalf();
 

@@ -17,6 +17,8 @@
 
 #include "stk_fei.H"
 
+#include "../drt_lib/drt_condition.H"
+
 namespace MAT
 {
   namespace PAR
@@ -66,12 +68,14 @@ namespace STK
 
     Mesh & GetMesh() { return *mesh_; }
 
-    const std::map<int, Teuchos::ParameterList> * Condition( const std::string & name ) const;
+    const std::map<int, Teuchos::ParameterList> * Condition( DRT::Condition::ConditionType gtype ) const;
 
     void AdaptMesh( const std::vector<stk::mesh::EntityKey> & refine,
                     const std::vector<stk::mesh::EntityKey> & unrefine );
 
-    void ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & v, const std::vector<stk::mesh::FieldBase*> & fields );
+    void ScatterFieldData( const Epetra_Vector & v, const std::vector<stk::mesh::FieldBase*> & fields );
+
+    void GatherFieldData( const std::vector<stk::mesh::FieldBase*> & fields, Epetra_Vector & v );
 
     const DRT::DirichletExtractor & DirichletExtractor() const { return state_->DirichletExtractor(); }
 
@@ -123,8 +127,7 @@ namespace STK
     Teuchos::RCP<Mesh> mesh_;
     Teuchos::RCP<STK::FEI::DiscretizationState> state_;
 
-    //Teuchos::ParameterList conditions_;
-    std::map<std::string, std::map<int, Teuchos::ParameterList> > conditions_;
+    std::map<DRT::Condition::ConditionType, std::map<int, Teuchos::ParameterList> > conditions_;
 
     Teuchos::RCP<MAT::PAR::Bundle> materials_;
 

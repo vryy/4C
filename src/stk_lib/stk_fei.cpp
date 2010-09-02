@@ -7,6 +7,8 @@
 
 #include <Isorropia_EpetraOrderer.hpp>
 #include <Epetra_CrsMatrix.h>
+#include <EpetraExt_Permutation.h>
+#include <Epetra_Import.h>
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
@@ -19,25 +21,47 @@
 /*----------------------------------------------------------------------*/
 void STK::FEI::DofSet::Setup( STK::Discretization& dis, const std::vector<stk::mesh::FieldBase*>& fields )
 {
-  Teuchos::RCP<const Epetra_CrsGraph> graph = dis.NodeGraph();
+  stk::mesh::BulkData & bulk = dis.GetMesh().BulkData();
+
+  const std::vector<stk::mesh::Bucket*>& buckets = bulk.buckets( stk::mesh::Node );
+
+  stk::mesh::Selector activeselector = dis.GetMesh().ActivePart();
+  stk::mesh::Selector ownedselector = dis.GetMesh().OwnedPart() & dis.GetMesh().ActivePart();
+
+  Teuchos::RCP<Epetra_CrsGraph> graph = dis.NodeGraph();
 
   Epetra_BlockMap noderowmap = graph->RowMap();
   Epetra_BlockMap nodecolmap = graph->ColMap();
 
-  numdfcolnodes_ = Teuchos::rcp( new Epetra_IntVector( nodecolmap ) );
-  idxcolnodes_   = Teuchos::rcp( new Epetra_IntVector( nodecolmap ) );
-
-  stk::mesh::BulkData & bulk = dis.GetMesh().BulkData();
-
-  //stk::mesh::Selector ownedselector = dis.GetMesh().OwnedPart() & dis.GetMesh().ActivePart();
-  stk::mesh::Selector ownedselector = dis.GetMesh().ActivePart();
-
-  const std::vector<stk::mesh::Bucket*>& buckets = bulk.buckets( stk::mesh::Node );
+  std::vector<int> stknodecolvector;
 
   for ( std::size_t i=0; i<buckets.size(); ++i )
   {
     stk::mesh::Bucket & bucket = *buckets[i];
-    if ( ownedselector( bucket ) )
+    if ( activeselector( bucket ) )
+    {
+      for (stk::mesh::Bucket::iterator ib=bucket.begin();
+           ib!=bucket.end();
+           ++ib)
+      {
+        stk::mesh::Entity & n = *ib;
+
+        int gid = static_cast<int>( n.identifier() );
+        stknodecolvector.push_back( gid );
+      }
+    }
+  }
+
+  // the stk ghost distribution might be different from the graph column map
+  Epetra_Map stknodecolmap( -1, stknodecolvector.size(), &stknodecolvector[0], 0, graph->Comm() );
+
+  numdfcolnodes_ = Teuchos::rcp( new Epetra_IntVector( stknodecolmap ) );
+  idxcolnodes_   = Teuchos::rcp( new Epetra_IntVector( stknodecolmap ) );
+
+  for ( std::size_t i=0; i<buckets.size(); ++i )
+  {
+    stk::mesh::Bucket & bucket = *buckets[i];
+    if ( activeselector( bucket ) )
     {
       for ( std::vector<stk::mesh::FieldBase*>::const_iterator j=fields.begin();
             j!=fields.end();
@@ -45,7 +69,7 @@ void STK::FEI::DofSet::Setup( STK::Discretization& dis, const std::vector<stk::m
       {
         stk::mesh::FieldBase & field = **j;
 
-        int field_data_size = stk::mesh::field_data_size( field, bucket );
+        int field_data_size = stk::mesh::field_data_size( field, bucket ) / sizeof( double );
         if ( field_data_size == 0 ) continue;
 
         for (stk::mesh::Bucket::iterator ib=bucket.begin();
@@ -55,11 +79,11 @@ void STK::FEI::DofSet::Setup( STK::Discretization& dis, const std::vector<stk::m
           stk::mesh::Entity & n = *ib;
 
           int gid = static_cast<int>( n.identifier() );
-          int lid = nodecolmap.LID( gid );
+          int lid = stknodecolmap.LID( gid );
           if ( lid<0 )
             dserror( "map failure" );
 
-          ( *numdfcolnodes_ )[lid] += field_data_size / sizeof( double );
+          ( *numdfcolnodes_ )[lid] += field_data_size;
         }
       }
     }
@@ -67,41 +91,106 @@ void STK::FEI::DofSet::Setup( STK::Discretization& dis, const std::vector<stk::m
 
   int max_count = numdfcolnodes_->MaxValue();
 
+  Epetra_IntVector colpermutation( stknodecolmap );
+
+#if 1
+
   Teuchos::ParameterList params;
-  Teuchos::ParameterList& sublist = params.sublist("Zoltan");
+  Teuchos::ParameterList& sublist = params.sublist("ZOLTAN");
 
-  params.set("PARTITIONING METHOD", "GRAPH");
-  sublist.set("LB_APPROACH", "PARTITION");
-  sublist.set("GRAPH_PACKAGE", "PARMETIS");
+  //params.set("PARTITIONING METHOD", "GRAPH");
+  //sublist.set("LB_APPROACH", "ORDER");
+  //sublist.set("GRAPH_PACKAGE", "PARMETIS");
+  //
+  // metis does not work too well for reordering ... use scotch instead
+  //sublist.set( "ORDER_METHOD", "PARMETIS" );
+  //sublist.set( "ORDER_METHOD", "METIS" );
+  sublist.set( "ORDER_METHOD", "PTSCOTCH" );
+  //sublist.set( "ORDER_METHOD", "SCOTCH" );
+  //sublist.set( "USE_ORDER_INFO", "1" );
+  //sublist.set( "DEBUG_LEVEL", "11" );
 
-  Isorropia::Epetra::Orderer orderer( graph, params );
+  Isorropia::Epetra::Orderer orderer( Teuchos::rcp_implicit_cast<const Epetra_CrsGraph>( graph ), params );
 
   int size;
   const int *array;
   orderer.extractPermutationView( size, array );
 
-  std::vector<int> permutation( size );
-  std::copy( array, array+size, &permutation[0] );
+  if ( size != noderowmap.NumMyElements() )
+    dserror( "confusion!" );
 
-  // scale new permutation to get independent dof vales
+  Epetra_IntVector rowpermutation( noderowmap );
+  std::copy( array, array+size, &rowpermutation[0] );
 
-  for ( std::vector<int>::iterator i=permutation.begin();
-        i!=permutation.end();
-        ++i )
+  Epetra_Import nodemapimporter( stknodecolmap, noderowmap );
+
+  int err = colpermutation.Import( rowpermutation, nodemapimporter, Insert );
+  if ( err )
+    dserror( "Import failed: err=%d", err );
+
+#else
+
+  // No reordering. For debugging.
+
+  for ( int i=0; i<stknodecolmap.NumMyElements(); ++i )
   {
-    *i *= max_count;
+    int gid = stknodecolmap.GID( i );
+    colpermutation[i] = gid;
   }
 
-  std::vector<int> dofrowmap;
-  std::vector<int> dofcolmap;
+#endif
 
-  dofrowmap.reserve( permutation.size()*max_count );
-  dofcolmap.reserve( permutation.size()*max_count );
+#if 0
+  {
+    std::stringstream fs;
+    fs << "orig" << dis.GetMesh().parallel_rank() << ".graph";
+    std::ofstream f( fs.str().c_str() );
+
+    for ( int i=0; i<noderowmap.NumMyElements(); ++i )
+    {
+      int rgid = noderowmap.GID( i );
+      int NumIndices;
+      int *Indices;
+      int err = graph->ExtractMyRowView(i, NumIndices, Indices);
+      if ( err!=0 )
+        dserror( "nope! err=%d", err );
+      for ( int j=0; j<NumIndices; ++j )
+      {
+        int cgid = nodecolmap.GID( Indices[j] );
+        f << cgid << " " << rgid << "\n";
+      }
+    }
+
+    std::stringstream ns;
+    ns << "new" << dis.GetMesh().parallel_rank() << ".graph";
+    std::ofstream n( ns.str().c_str() );
+    for ( int i=0; i<noderowmap.NumMyElements(); ++i )
+    {
+      int rgid = noderowmap.GID( i );
+      int NumIndices;
+      int *Indices;
+      int err = graph->ExtractMyRowView(i, NumIndices, Indices);
+      if ( err!=0 )
+        dserror( "nope! err=%d", err );
+
+      int stk_rlid = stknodecolmap.LID( rgid );
+
+      for ( int j=0; j<NumIndices; ++j )
+      {
+        int cgid = nodecolmap.GID( Indices[j] );
+        int stk_clid = stknodecolmap.LID( cgid );
+        n << colpermutation[stk_clid] << " " << colpermutation[stk_rlid] << "\n";
+      }
+    }
+  }
+#endif
+
+  std::map<int, stk::mesh::Entity *> nodes;
 
   for ( std::size_t i=0; i<buckets.size(); ++i )
   {
     stk::mesh::Bucket & bucket = *buckets[i];
-    if ( ownedselector( bucket ) )
+    if ( activeselector( bucket ) )
     {
       for (stk::mesh::Bucket::iterator ib=bucket.begin();
            ib!=bucket.end();
@@ -110,46 +199,68 @@ void STK::FEI::DofSet::Setup( STK::Discretization& dis, const std::vector<stk::m
         stk::mesh::Entity & n = *ib;
 
         int gid = static_cast<int>( n.identifier() );
-        int lid = nodecolmap.LID( gid );
+        int lid = stknodecolmap.LID( gid );
         if ( lid<0 )
           dserror( "map failure" );
 
-        bool isowned = noderowmap.MyGID( gid );
-
-        ( *idxcolnodes_ )[lid] = dofcolmap.size();
-
-        int dofbase = permutation[lid];
-        int base = 0;
-
-        for ( std::vector<stk::mesh::FieldBase*>::const_iterator j=fields.begin();
-              j!=fields.end();
-              ++j )
-        {
-          stk::mesh::FieldBase & field = **j;
-
-          int field_data_size = stk::mesh::field_data_size( field, bucket );
-          field_data_size /= sizeof( double );
-
-          for ( int k=0; k<field_data_size; ++k )
-          {
-            // Datenstrukturen um zwischen beiden zu vermitteln
-
-            int dofgid = dofbase + base + k;
-
-            DofName & dn = reverse_[dofgid];
-            dn.key = n.key();
-            dn.field = &field;
-            dn.pos = k;
-
-            if ( isowned )
-            {
-              dofrowmap.push_back( dofgid );
-            }
-            dofcolmap.push_back( dofgid );
-          }
-          base += field_data_size;
-        }
+        int permid = colpermutation[lid];
+        nodes[permid] = &n;
       }
+    }
+  }
+
+  std::vector<int> dofrowmap;
+  std::vector<int> dofcolmap;
+
+  dofrowmap.reserve( noderowmap.NumMyElements()*max_count );
+  dofcolmap.reserve( stknodecolmap.NumMyElements()*max_count );
+
+  for ( std::map<int, stk::mesh::Entity *>::iterator i=nodes.begin();
+        i!=nodes.end();
+        ++i )
+  {
+    int permid = i->first;
+    stk::mesh::Entity & n = * i->second;
+    int gid = static_cast<int>( n.identifier() );
+    int lid = stknodecolmap.LID( gid );
+    if ( lid<0 )
+      dserror( "map failure" );
+
+    ( *idxcolnodes_ )[lid] = dofcolmap.size();
+
+    bool isown = noderowmap.MyGID( gid );
+
+    // scale new permutation to get independent dof vales
+    int dofbase = permid*max_count;
+    int base = 0;
+
+    for ( std::vector<stk::mesh::FieldBase*>::const_iterator j=fields.begin();
+          j!=fields.end();
+          ++j )
+    {
+      stk::mesh::FieldBase & field = **j;
+
+      int field_data_size = stk::mesh::field_data_size( field, n.bucket() );
+      field_data_size /= sizeof( double );
+
+      for ( int k=0; k<field_data_size; ++k )
+      {
+        // Datenstrukturen um zwischen beiden zu vermitteln
+
+        int dofgid = dofbase + base + k;
+
+        DofName & dn = reverse_[dofgid];
+        dn.key = n.key();
+        dn.field = &field;
+        dn.pos = k;
+
+        if ( isown )
+        {
+          dofrowmap.push_back( dofgid );
+        }
+        dofcolmap.push_back( dofgid );
+      }
+      base += field_data_size;
     }
   }
 
@@ -244,14 +355,15 @@ Teuchos::RCP<Epetra_CrsGraph> STK::FEI::AssembleStrategy::MatrixGraph( DRT::Disc
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> STK::FEI::AssembleStrategy::MatrixGraph( STK::Discretization & dis, Teuchos::RCP<const Epetra_Map> dbcmap )
 {
+  STK::Mesh & mesh = dis.GetMesh();
   const Epetra_Map & dofrowmap = dis.DofRowMap();
 
   // build graph
 
   std::map<int, std::set<int> > graph;
 
-  stk::mesh::Selector selector = dis.GetMesh().ActivePart();
-  const std::vector<stk::mesh::Bucket*> & buckets = dis.GetMesh().BulkData().buckets( stk::mesh::Node );
+  stk::mesh::Selector selector = mesh.OwnedPart() & mesh.ActivePart();
+  const std::vector<stk::mesh::Bucket*> & buckets = mesh.BulkData().buckets( stk::mesh::Node );
 
   // loop buckets and entries
   for (std::vector<stk::mesh::Bucket*>::const_iterator i=buckets.begin();
@@ -660,30 +772,30 @@ void STK::FEI::DiscretizationState::Setup( const std::vector<stk::mesh::FieldBas
 
   Teuchos::RCP<const Epetra_Map> dirichletmap;
 
-  const std::map<int, Teuchos::ParameterList> * dirichlet = dis_.Condition( "Dirichlet" );
-  if ( dirichlet!=NULL )
+  STK::Mesh & mesh = dis_.GetMesh();
+  stk::mesh::MetaData & meta = mesh.MetaData();
+  stk::mesh::BulkData & bulk = mesh.BulkData();
+
+  const Epetra_Map & dofrowmap = DofRowMap();
+  Epetra_IntVector flag( dofrowmap );
+
+  // Loop dirichlet conditions from higher to lower dimension since the
+  // lower dimensions overwrite higher ones.
+
+  static DRT::Condition::ConditionType dirichlet_types[] = {
+    DRT::Condition::VolumeDirichlet,
+    DRT::Condition::SurfaceDirichlet,
+    DRT::Condition::LineDirichlet,
+    DRT::Condition::PointDirichlet,
+    DRT::Condition::none
+  };
+
+  for ( DRT::Condition::ConditionType * condtype = dirichlet_types;
+        *condtype!=DRT::Condition::none;
+        ++condtype )
   {
-    STK::Mesh & mesh = dis_.GetMesh();
-    stk::mesh::MetaData & meta = mesh.MetaData();
-    stk::mesh::BulkData & bulk = mesh.BulkData();
-
-    const Epetra_Map & dofrowmap = DofRowMap();
-    Epetra_IntVector flag( dofrowmap );
-
-    // Loop dirichlet conditions from higher to lower dimension since the
-    // lower dimensions overwrite higher ones.
-
-    static DRT::Condition::ConditionType dirichlet_types[] = {
-      DRT::Condition::VolumeDirichlet,
-      DRT::Condition::SurfaceDirichlet,
-      DRT::Condition::LineDirichlet,
-      DRT::Condition::PointDirichlet,
-      DRT::Condition::none
-    };
-
-    for ( DRT::Condition::ConditionType * condtype = dirichlet_types;
-          *condtype!=DRT::Condition::none;
-          ++condtype )
+    const std::map<int, Teuchos::ParameterList> * dirichlet = dis_.Condition( *condtype );
+    if ( dirichlet!=NULL )
     {
       for ( std::map<int, Teuchos::ParameterList>::const_iterator i=dirichlet->begin();
             i!=dirichlet->end();
@@ -692,63 +804,64 @@ void STK::FEI::DiscretizationState::Setup( const std::vector<stk::mesh::FieldBas
         //int id = i->first;
         const Teuchos::ParameterList & condflags = i->second;
 
-        if ( condflags.get<DRT::Condition::ConditionType>( "Type" )==*condtype )
+        std::string name = condflags.get<std::string>( "Name" );
+        const std::vector<int> & onoff = * condflags.get<Teuchos::RCP<std::vector<int> > >( "onoff" );
+
+        stk::mesh::Part * condpart = meta.get_part( name );
+        if ( condpart==NULL )
+          dserror( "No condition part '%s'", name.c_str() );
+
+        stk::mesh::Selector selector = *condpart & mesh.OwnedPart();
+
+        const std::vector<stk::mesh::Bucket*> & nodes = bulk.buckets( stk::mesh::Node );
+        for ( std::vector<stk::mesh::Bucket*>::const_iterator j=nodes.begin();
+              j!=nodes.end();
+              ++j )
         {
-          // find the part, find which node is covered by which part
-
-          std::string name = condflags.get<std::string>( "Name" );
-          const std::vector<int> & onoff = * condflags.get<Teuchos::RCP<std::vector<int> > >( "onoff" );
-
-          stk::mesh::Part * condpart = meta.get_part( name );
-          if ( condpart==NULL )
-            dserror( "No condition part '%s'", name.c_str() );
-
-          stk::mesh::Selector selector = *condpart;
-
-          const std::vector<stk::mesh::Bucket*> & nodes = bulk.buckets( stk::mesh::Node );
-          for ( std::vector<stk::mesh::Bucket*>::const_iterator j=nodes.begin();
-                j!=nodes.end();
-                ++j )
+          stk::mesh::Bucket & bucket = **j;
+          if ( selector( bucket ) )
           {
-            stk::mesh::Bucket & bucket = **j;
-            if ( selector( bucket ) )
+            for ( stk::mesh::Bucket::iterator k=bucket.begin(); k!=bucket.end(); ++k )
             {
-              for ( stk::mesh::Bucket::iterator k=bucket.begin(); k!=bucket.end(); ++k )
+              stk::mesh::Entity & n = *k;
+              std::vector<int> dofids;
+              Dof( n.key(), dofids );
+              if ( dofids.size() > onoff.size() )
+                dserror( "too few Dirichlet flags" );
+#if 0
+              if ( condflags.get<DRT::Condition::ConditionType>( "Type" )==DRT::Condition::PointDirichlet )
               {
-                stk::mesh::Entity & n = *k;
-                std::vector<int> dofids;
-                Dof( n.key(), dofids );
-                if ( dofids.size() > onoff.size() )
-                  dserror( "too few Dirichlet flags" );
-                for ( unsigned k=0; k<dofids.size(); ++k )
-                {
-                  int lid = dofrowmap.LID( dofids[k] );
-                  flag[lid] = onoff[k];
-                }
+                std::copy( dofids.begin(), dofids.end(), std::ostream_iterator<int>( std::cout, " " ) );
+                std::cout << " - ";
+                std::copy( onoff.begin(), onoff.end(), std::ostream_iterator<int>( std::cout, " " ) );
+                std::cout << "\n";
+              }
+#endif
+              for ( unsigned k=0; k<dofids.size(); ++k )
+              {
+                int lid = dofrowmap.LID( dofids[k] );
+                if ( lid < 0 )
+                  dserror( "illegal lid" );
+                flag[lid] = onoff[k];
               }
             }
           }
         }
       }
     }
-
-    std::vector<int> dbc;
-    int num = dofrowmap.NumMyElements();
-    for ( int i=0; i<num; ++i )
-    {
-      if ( flag[i]!=0 )
-      {
-        dbc.push_back( dofrowmap.GID( i ) );
-      }
-    }
-
-    dirichletmap = Teuchos::rcp( new Epetra_Map( -1, dbc.size(), &dbc[0], 0, dis_.Comm() ) );
   }
-  else
+
+  std::vector<int> dbc;
+  int num = dofrowmap.NumMyElements();
+  for ( int i=0; i<num; ++i )
   {
-    // no Dirichlet conditions whatsoever
-    dirichletmap = Teuchos::rcp( new Epetra_Map( -1, 0, NULL, 0, dis_.Comm() ) );
+    if ( flag[i]!=0 )
+    {
+      dbc.push_back( dofrowmap.GID( i ) );
+    }
   }
+
+  dirichletmap = Teuchos::rcp( new Epetra_Map( -1, dbc.size(), &dbc[0], 0, dis_.Comm() ) );
 
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back( Teuchos::null ); // non-dirichlet map is not needed?!
@@ -764,45 +877,45 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
                                                        const std::vector<stk::mesh::FieldBase*> * dv,
                                                        const std::vector<stk::mesh::FieldBase*> * ddv )
 {
-  const std::map<int, Teuchos::ParameterList> * dirichlet = dis_.Condition( "Dirichlet" );
-  if ( dirichlet!=NULL )
+  STK::Mesh & mesh = dis_.GetMesh();
+  stk::mesh::MetaData & meta = mesh.MetaData();
+  stk::mesh::BulkData & bulk = mesh.BulkData();
+
+  //const Epetra_Map & dofrowmap = DofRowMap();
+
+  unsigned deg = 0;  // highest degree of requested time derivative
+  if ( dv!=NULL )
   {
-    STK::Mesh & mesh = dis_.GetMesh();
-    stk::mesh::MetaData & meta = mesh.MetaData();
-    stk::mesh::BulkData & bulk = mesh.BulkData();
-
-    //const Epetra_Map & dofrowmap = DofRowMap();
-
-    unsigned deg = 0;  // highest degree of requested time derivative
-    if ( dv!=NULL )
+    if ( v->size()!=dv->size() )
+      dserror( "existing fields must match" );
+    if ( ddv!=NULL )
     {
-      if ( v->size()!=dv->size() )
+      if ( v->size()!=ddv->size() )
         dserror( "existing fields must match" );
-      if ( ddv!=NULL )
-      {
-        if ( v->size()!=ddv->size() )
-          dserror( "existing fields must match" );
-        deg = 2;
-      }
-      else
-      {
-        deg = 1;
-      }
+      deg = 2;
     }
+    else
+    {
+      deg = 1;
+    }
+  }
 
-    static DRT::Condition::ConditionType dirichlet_types[] = {
-      DRT::Condition::PointDirichlet,
-      DRT::Condition::LineDirichlet,
-      DRT::Condition::SurfaceDirichlet,
-      DRT::Condition::VolumeDirichlet,
-      DRT::Condition::none
-    };
+  static DRT::Condition::ConditionType dirichlet_types[] = {
+    DRT::Condition::PointDirichlet,
+    DRT::Condition::LineDirichlet,
+    DRT::Condition::SurfaceDirichlet,
+    DRT::Condition::VolumeDirichlet,
+    DRT::Condition::none
+  };
 
-    stk::mesh::PartVector done;
+  stk::mesh::PartVector done;
 
-    for ( DRT::Condition::ConditionType * condtype = dirichlet_types;
-          *condtype!=DRT::Condition::none;
-          ++condtype )
+  for ( DRT::Condition::ConditionType * condtype = dirichlet_types;
+        *condtype!=DRT::Condition::none;
+        ++condtype )
+  {
+    const std::map<int, Teuchos::ParameterList> * dirichlet = dis_.Condition( *condtype );
+    if ( dirichlet!=NULL )
     {
       for ( std::map<int, Teuchos::ParameterList>::const_iterator i=dirichlet->begin();
             i!=dirichlet->end();
@@ -825,7 +938,7 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
           if ( condpart==NULL )
             dserror( "No condition part '%s'", name.c_str() );
 
-          stk::mesh::Selector selector = *condpart;
+          stk::mesh::Selector selector = *condpart & mesh.OwnedPart();
 
           const std::vector<stk::mesh::Bucket*> & nodes = bulk.buckets( stk::mesh::Node );
           for ( std::vector<stk::mesh::Bucket*>::const_iterator j=nodes.begin();
@@ -855,7 +968,7 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
                   int field_base = 0;
 
                   int vfield_data_size = stk::mesh::field_data_size( *( *v )[ifield], bucket ) / sizeof( double );
-                  double * vdata = reinterpret_cast<double*>( bucket.field_data_location( *( *v )[ifield] ) );
+                  double * vdata = reinterpret_cast<double*>( field_data( *( *v )[ifield], n ) );
 
                   // apply Dirichlet condition to node dofs
 
@@ -871,7 +984,7 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
                       if ( ifield >= v->size() )
                         dserror( "to few fields for Dirichlet evaluation" );
                       vfield_data_size = stk::mesh::field_data_size( *( *v )[ifield], bucket ) / sizeof( double );
-                      vdata = reinterpret_cast<double*>( bucket.field_data_location( *( *v )[ifield] ) );
+                      vdata = reinterpret_cast<double*>( field_data( *( *v )[ifield], n ) );
                     }
 
                     if ( onoff[j]!=0 )
@@ -911,11 +1024,11 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
                       vdata[j - field_base] = value[0];
                       if ( deg > 0 )
                       {
-                        double * dvdata = reinterpret_cast<double*>( bucket.field_data_location( *( *dv )[ifield] ) );
+                        double * dvdata = reinterpret_cast<double*>( field_data( *( *v )[ifield], n ) );
                         dvdata[j - field_base] = value[1];
                         if ( deg > 1 )
                         {
-                          double * ddvdata = reinterpret_cast<double*>( bucket.field_data_location( *( *ddv )[ifield] ) );
+                          double * ddvdata = reinterpret_cast<double*>( field_data( *( *v )[ifield], n ) );
                           ddvdata[j - field_base] = value[2];
                         }
                       }
@@ -938,11 +1051,12 @@ void STK::FEI::DiscretizationState::EvaluateDirichlet( double time,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> STK::FEI::DiscretizationState::NodeGraph()
 {
+  STK::Mesh & mesh = dis_.GetMesh();
   std::map<int,std::set<int> > graph;
 
   // Get all owned nodes
-  stk::mesh::Selector ownedselector = dis_.GetMesh().OwnedPart() & dis_.GetMesh().ActivePart();
-  const std::vector<stk::mesh::Bucket*> & buckets = dis_.GetMesh().BulkData().buckets( stk::mesh::Node );
+  stk::mesh::Selector ownedselector = mesh.OwnedPart() & mesh.ActivePart();
+  const std::vector<stk::mesh::Bucket*> & buckets = mesh.BulkData().buckets( stk::mesh::Node );
 
   // loop buckets and entries
   for (std::vector<stk::mesh::Bucket*>::const_iterator i=buckets.begin();

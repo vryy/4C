@@ -127,7 +127,7 @@ STK::Fluid::Fluid( DRT::Discretization & dis,
   dtp_          = dta_;
   theta_        = fdyn.get<double>("THETA");
   alefluid_     = false;
-  newton_       = fdyn.get<string>("NONLINITER");
+  newton_       = Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER");
   convform_     = fdyn.get<string>("CONVFORM");
 
   refinestep_   = 1;
@@ -644,6 +644,17 @@ void STK::Fluid::NonlinearSolve()
 
     // finalize the complete matrix
     drt_->sysmat_->Complete();
+
+#if 0
+    {
+      std::ofstream rhs( "orig.rhs" );
+      drt_->residual_->Print( rhs );
+      std::ofstream mat( "orig.mat" );
+      drt_->sysmat_->EpetraMatrix()->Print( mat );
+      //drt_->sysmat_->Dump( "orig" );
+      exit( 0 );
+    }
+#endif
 
     // end time measurement for element
     dtele = Teuchos::Time::wallTime()-tcpu;

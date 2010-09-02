@@ -10,7 +10,6 @@
 #include "stk_unrefine.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_dirichletextractor.H"
@@ -107,16 +106,18 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
       }
 
       std::stringstream condname;
-      condname << name << " " << cond.Id();
+      condname << name << "-" << cond.Type() << "-" << cond.Id();
       std::string cname = condname.str();
       meta_data.declare_part( cname, condition_rank );
 
-      Teuchos::ParameterList & condflags = conditions_[name][cond.Id()];
+      Teuchos::ParameterList & condflags = conditions_[cond.Type()][cond.Id()];
       condflags.set( "Id", cond.Id() );
       condflags.set( "Name", cname );
       condflags.set( "GeometryType", cond.GType() );
       condflags.set( "GeometryDescription", cond.GeometryDescription() );
       condflags.set( "Type", cond.Type() );
+
+      //std::cout << "Dirichlet condition:\n" << condflags << "\n";
 
       STK::CopyCondition<Teuchos::RCP<std::vector<int> > >       ( cond.IntRange(),    condflags );
       STK::CopyCondition<Teuchos::RCP<std::vector<double> > >    ( cond.DoubleRange(), condflags );
@@ -260,7 +261,7 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
       DRT::Condition & cond = **j;
 
       std::stringstream condname;
-      condname << name << " " << cond.Id();
+      condname << name << "-" << cond.Type() << "-" << cond.Id();
       stk::mesh::Part * condition_part = meta_data.get_part( condname.str() );
       if ( condition_part==NULL )
       {
@@ -340,12 +341,12 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const std::map<int, Teuchos::ParameterList> * STK::Discretization::Condition( const std::string & name ) const
+const std::map<int, Teuchos::ParameterList> * STK::Discretization::Condition( DRT::Condition::ConditionType condtype ) const
 {
-  std::map<std::string, std::map<int, Teuchos::ParameterList> >::const_iterator i=conditions_.find( name );
-  if ( i!=conditions_.end() )
+  std::map< DRT::Condition::ConditionType, std::map<int, Teuchos::ParameterList> >::const_iterator j = conditions_.find( condtype );
+  if ( j!=conditions_.end() )
   {
-    return & i->second;
+    return & j->second;
   }
   return NULL;
 }
@@ -426,7 +427,7 @@ void STK::Discretization::CreateState()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STK::Discretization::ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & v, const std::vector<stk::mesh::FieldBase*> & fields )
+void STK::Discretization::ScatterFieldData( const Epetra_Vector & v, const std::vector<stk::mesh::FieldBase*> & fields )
 {
   const Epetra_Map & rowmap = DofRowMap();
 
@@ -473,7 +474,9 @@ void STK::Discretization::ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & 
           for ( unsigned l=0; l<field_data_size; ++l )
           {
             int lid = rowmap.LID( dofs[dofcount+l] );
-            data[l] = ( *v )[lid];
+            if ( lid < 0 )
+              dserror( "illegal lid" );
+            data[l] = v[lid];
           }
           dofcount += field_data_size;
         }
@@ -484,6 +487,67 @@ void STK::Discretization::ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & 
   // communicate field data from owner to ghosts
 
   CommunicateFieldGhosting( bulk, fields );
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::Discretization::GatherFieldData( const std::vector<stk::mesh::FieldBase*> & fields, Epetra_Vector & v )
+{
+  const Epetra_Map & rowmap = DofRowMap();
+
+  stk::mesh::BulkData & bulk = GetMesh().BulkData();
+  stk::mesh::Part & owned    = GetMesh().OwnedPart();
+
+  // loop all owned nodes and copy dof values from Epetra_Vector to given fields
+
+  const std::vector<stk::mesh::Bucket*> & nodes = bulk.buckets( stk::mesh::Node );
+  for ( std::vector<stk::mesh::Bucket*>::const_iterator i=nodes.begin();
+        i!=nodes.end();
+        ++i )
+  {
+    stk::mesh::Bucket & bucket = **i;
+    if ( has_superset( bucket, owned ) )
+    {
+      for ( stk::mesh::Bucket::iterator j=bucket.begin();
+            j!=bucket.end();
+            ++j )
+      {
+        stk::mesh::Entity & n = *j;
+
+        std::vector<int> dofs;
+        Dof( n.key(), dofs );
+
+        unsigned dofcount = 0;
+        for ( std::vector<stk::mesh::FieldBase*>::const_iterator k=fields.begin();
+              k!=fields.end();
+              ++k )
+        {
+          const stk::mesh::FieldBase & f = **k;
+          unsigned field_data_size = stk::mesh::field_data_size( f, n.bucket() ) / sizeof( double );
+          if ( field_data_size == 0 )
+          {
+            dserror( "no field data on node %d", n.key().id() );
+          }
+
+          if ( dofcount+field_data_size > dofs.size() )
+          {
+            dserror( "buffer overflow" );
+          }
+
+          double * data = reinterpret_cast<double*>( stk::mesh::field_data( f , n ) );
+          for ( unsigned l=0; l<field_data_size; ++l )
+          {
+            int lid = rowmap.LID( dofs[dofcount+l] );
+            if ( lid < 0 )
+              dserror( "illegal lid" );
+            v[lid] = data[l];
+          }
+          dofcount += field_data_size;
+        }
+      }
+    }
+  }
 }
 
 

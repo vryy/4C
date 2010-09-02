@@ -100,9 +100,13 @@ namespace STK
       void ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
                           std::vector<stk::mesh::EntityKey> & unrefine );
 
-      void ScatterFieldData( const Teuchos::RCP<Epetra_Vector> & v,
+      void ScatterFieldData( const Epetra_Vector & v,
                              stk::mesh::VectorField * vel,
                              stk::mesh::ScalarField * pres );
+
+      void GatherFieldData( stk::mesh::VectorField * vel,
+                            stk::mesh::ScalarField * pres,
+                            Epetra_Vector & v );
 
       STK::Discretization & dis_;
 

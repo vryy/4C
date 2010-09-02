@@ -42,7 +42,7 @@ UPOUT                           1
 UPRES                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
-NUMSTEP                         2000
+NUMSTEP                         20
 TIMESTEP                        0.1
 THETA                           0.60
 NONLINITER                      fixed_point_like
@@ -89,14 +89,14 @@ ICHMAX                          0
 ITECHAPP                        20
 ----------------------------------------------------------------FLUID SOLVER
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
+AZOUTPUT                        1                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         8                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-4                          // tolerance in unscaled residual
+IFPACKGFILL                     10                               // graph fill for ILU
+AZTOL                           1.0E-6                          // tolerance in unscaled residual
 AZITER                          600                             // max iterations
 AZSUB                           25                              // size of krylov space for gmres
 AZOMEGA                         1.0                             // unused

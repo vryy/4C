@@ -670,6 +670,8 @@ void LINALG::Solver::Solve_aztec(
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
 
+  // This hurts! It supresses error messages. This needs to be fixed.
+#if 1
   // create an aztec convergence test as combination of
   // L2-norm and Inf-Norm to be both satisfied where we demand
   // L2 < tol and Linf < 10*tol
@@ -702,6 +704,7 @@ void LINALG::Solver::Solve_aztec(
     // set status test
     aztec_->SetStatusTest(aztest_combo2_.get());
   }
+#endif
 
   // if you want to get some information on eigenvalues of the Hessenberg matrix/the
   // estimated condition number of the preconditioned system, uncomment the following
@@ -1728,13 +1731,13 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix
   Epetra_CrsMatrix* Btrans = NULL;
   if (transA)
     Atrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposera(*A.EpetraMatrix())));
-  else 
+  else
     Atrans = A.EpetraMatrix().get();
   if (transB)
     Btrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposerb(*B.EpetraMatrix())));
-  else 
+  else
     Btrans = B.EpetraMatrix().get();
-  
+
   Teuchos::RCP<LINALG::SparseMatrix> C;
   C = LINALG::MLMultiply(*Atrans,*Btrans,explicitdirichlet,savegraph,completeoutput);
 
@@ -1878,7 +1881,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
     EpetraExt::CrsMatrix_SolverMap ABtransform;
     const Epetra_CrsMatrix& tmp = ABtransform(*result);
     RCP<Epetra_CrsMatrix> finalresult = rcp(new Epetra_CrsMatrix(*result));
-    if (!finalresult->Filled()) 
+    if (!finalresult->Filled())
     {
       finalresult->FillComplete(B.DomainMap(),A.RangeMap());
       finalresult->OptimizeStorage();
