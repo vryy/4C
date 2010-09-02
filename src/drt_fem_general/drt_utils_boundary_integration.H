@@ -198,6 +198,605 @@ void ComputeMetricTensorForBoundaryEle(
   return;
 }
 
+/*-----------------------------------------------------------------
+
+\brief Transform Gausspoints on boundary element to space of
+       parent element (required for integrations of parent-element
+       shape functions over boundary elements, for example
+       in weak dirichlet boundary conditions).
+
+  -----------------------------------------------------------------*/
+template <const int NSD>
+void BoundaryGPToParentGP(
+  Epetra_SerialDenseMatrix                   & pqxg     ,
+  const DRT::UTILS::IntPointsAndWeights<NSD> & intpoints,
+  const DRT::Element::DiscretizationType       pdistype ,
+  const DRT::Element::DiscretizationType       distype  ,
+  const int                                    beleid   )
+{
+
+  if(NSD==2)
+  {
+    // resize output array
+    pqxg.Shape(intpoints.IP().nquad,2);
+
+    if(distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+       /*                s|
+                          |
+
+                          3                   2
+                          +-----------------+
+                          |                 |
+                          |                 |
+                          |                 |
+                          |        |        |             r
+                          |        +--      |         -----
+                          |                 |
+                          |                 |
+                          |                 |
+                          |                 |
+                          +-----------*-----+
+                          0                   1
+                                -->|gp|<--               */
+
+
+        // s=-1
+        /*
+
+        parent                line
+
+        r                     r
+        +---+---+  -----      +---+---+ ------
+        0   1   2             0   1   2
+
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)=-1.0;
+        }
+        break;
+      }
+      case 1:
+      {
+       /*                s|
+                          |
+
+                          3                   2
+                          +-----------------+
+                          |                 | |
+                          |                 | v
+                          |                 *---
+                          |        |        | gp          r
+                          |        +--      |---      -----
+                          |                 | ^
+                          |                 | |
+                          |                 |
+                          |                 |
+                          +-----------------+
+                          0                   1
+        */
+
+        // r=+1
+        /*
+          parent               surface
+
+         s|                        r|
+          |                         |
+          +                     +
+         8|                    2|
+          +                     +
+         5|                    1|
+          +                     +
+         2                     0
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= 1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+        }
+        break;
+      }
+      case 2:
+      {
+       /*                s|
+                          |
+
+                         3   -->|gp|<--
+                          +-----*-----------+
+                          |                 |
+                          |                 |
+                          |                 |
+                          |        |        |             r
+                          |        +--      |         -----
+                          |                 |
+                          |                 |
+                          |                 |
+                          |                 |
+                          +-----------------+
+                         0                   1
+       */
+
+        // s=+1
+        /*
+
+        parent                line
+
+        r                           r
+        +---+---+  -----             +---+---+ -----
+        6   7   8                    0   1   2
+
+        */
+
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= 1.0;
+        }
+        break;
+      }
+      case 3:
+      {
+       /*                s|
+                          |
+
+                          3
+                          +-----*-----------+
+                          |                 |
+                          |                 |
+                        | |                 |
+                        v |        |        |             r
+                       ---|        +--      |         -----
+                        gp|                 |
+                       ---*                 |
+                        ^ |                 |
+                        | |                 |
+                          +-----------------+
+                         0                   1
+        */
+
+        // r=-1
+        /*
+          parent               surface
+
+         s|                           r|
+          |                            |
+          +                            +
+         6|                           2|
+          +                            +
+         3|                           1|
+          +                            +
+         0                            0
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-1.0;
+          pqxg(iquad,1)=-intpoints.IP().qxg[iquad][0];
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of lines, unable to determine intpoint in parent");
+      }
+
+    }
+    else if(distype==DRT::Element::nurbs3 && pdistype==DRT::Element::nurbs9)
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        // s=-1
+        /*
+
+        parent                line
+
+        r                     r
+        +---+---+  -----      +---+---+ ------
+        0   1   2             0   1   2
+
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)=-1.0;
+        }
+        break;
+      }
+      case 1:
+      {
+        // r=+1
+        /*
+          parent               surface
+
+          s|                    r|
+           |                     |
+           +                     +
+          8|                    2|
+           +                     +
+          5|                    1|
+           +                     +
+          2                     0
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= 1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+        }
+        break;
+      }
+      case 2:
+      {
+        // s=+1
+        /*
+
+        parent                line
+
+        r                           r
+        +---+---+  -----             +---+---+ -----
+        6   7   8                    0   1   2
+
+        */
+
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= 1.0;
+        }
+        break;
+      }
+      case 3:
+      {
+        // r=-1
+        /*
+          parent               surface
+
+         s|                           r|
+          |                            |
+          +                            +
+         6|                           2|
+          +                            +
+         3|                           1|
+          +                            +
+         0                            0
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of lines, unable to determine intpoint in parent");
+      }
+    }
+    else
+    {
+      dserror("only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
+    }
+
+  }
+  else if(NSD==3)
+  {
+    // resize output array
+    pqxg.Shape(intpoints.IP().nquad,3);
+
+    if(distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        // t=-1
+        /*
+                parent               surface
+
+                 r|                    s|
+                  |                     |
+             1         2           3         2
+              +-------+             +-------+
+	      |   |   |      s      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         3           0         1
+        */
+
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,2)=-1.0;
+        }
+        break;
+      }
+      case 1:
+      {
+        // s=-1
+        /*
+                parent               surface
+                 t|                    s|
+                  |                     |
+             4         5           3         2
+              +-------+             +-------+
+	      |   |   |      r      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         1           0         1
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)=-1.0;
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 2:
+      {
+        // r= 1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+             5         6           3         2
+              +-------+             +-------+
+	      |   |   |      s      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             1         2           0         1
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= 1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 3:
+      {
+        // s= 1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+             6         7           3         2
+              +-------+             +-------+
+	r     |   |   |             |   |   |      r
+        ----  |   +-- |             |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             2         3           0         1
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= 1.0;
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 4:
+      {
+        // r=-1
+        /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+             3         7           3         2
+              +-------+             +-------+
+	      |   |   |      t      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         4           0         1
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][0];
+        }
+        break;
+      }
+      case 5:
+      {
+        // t=1
+        /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+             7         6           3         2
+              +-------+             +-------+
+	      |   |   |      r      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             4         5           0         1
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= 1.0;
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      }
+    }
+    else if(distype==DRT::Element::nurbs9 && pdistype==DRT::Element::nurbs27)
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        // t=-1
+        /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	     6|  7|  8|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             3|  4   5|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)=-1.0;
+        }
+        break;
+      }
+      case 1:
+      {
+        // t=+1
+        /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    24| 25| 26|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            21| 22  23|            3|  4   5|
+              +---+---+             +---+---+
+            18  19  20             0   1   2
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= 1.0;
+        }
+        break;
+      }
+      case 2:
+      {
+        // s=-1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    18| 19| 20|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 10  11|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
+        */
+
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)=-1.0;
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 3:
+      {
+        // s=+1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+ 	    24| 25| 26|    r       6|  7|  8|      r
+              +   +-- + ----        +   +-- +  -----
+            15| 16  17|            3|  4   5|
+              +---+---+             +---+---+
+             6   7   8             0   1   2
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= 1.0;
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 4:
+      {
+        // r=+1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    20| 23| 26|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            11| 14  17|            3|  4   5|
+              +---+---+             +---+---+
+             2   5   8             0   1   2
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)= 1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      case 5:
+      {
+        // r=-1
+        /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+	    18| 21| 24|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 12  15|            3|  4   5|
+              +---+---+             +---+---+
+             0   3   6             0   1   2
+        */
+        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        {
+          pqxg(iquad,0)=-1.0;
+          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      }
+    }
+    else
+    {
+      dserror("only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
+    }
+  }
+
+  return;
+}
+
+
+
 } // namespace UTILS
 } // namespace DRT
 
