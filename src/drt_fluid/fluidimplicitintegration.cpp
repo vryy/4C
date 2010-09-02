@@ -1129,6 +1129,47 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         }
         //---------------------------end of surface tension update
 
+
+        //----------------------------------------------------------------------
+        // apply mixed/hybrid Dirichlet boundary conditions
+        //----------------------------------------------------------------------
+        {
+          ParameterList mhdbcparams;
+
+          // set action for elements
+          mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+          mhdbcparams.set("timefac"   ,theta_*dta_           );
+          mhdbcparams.set("total time",time_                 );
+
+          // set the only required state vectors
+          discret_->SetState("u and p (trial)",velnp_);
+
+          // evaluate all mixed hybrid Dirichlet boundary conditions
+          discret_->EvaluateConditionUsingParentData
+            (mhdbcparams          ,
+             sysmat_              ,
+             Teuchos::null        ,
+             residual_            ,
+             Teuchos::null        ,
+             Teuchos::null        ,
+             "LineMixHybDirichlet");
+
+          discret_->EvaluateConditionUsingParentData
+            (mhdbcparams          ,
+             sysmat_              ,
+             Teuchos::null        ,
+             residual_            ,
+             Teuchos::null        ,
+             Teuchos::null        ,
+             "SurfaceMixHybDirichlet");
+
+          // clear state
+          discret_->ClearState();
+
+        }
+
+
+
         // account for potential Neumann inflow terms
         if (neumanninflow_)
         {
