@@ -372,6 +372,27 @@ private:
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
 
+    /*!
+    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element.
+    \param elevec1 (out)      : vector to be filled by element.
+
+    */
+  template <DRT::Element::DiscretizationType bndydistype,
+            DRT::Element::DiscretizationType pdistype>
+  void MixHybDirichlet(
+      DRT::ELEMENTS::Fluid3Boundary*  ele,
+      ParameterList&                  params,
+      DRT::Discretization&            discretization,
+      vector<int>&                    lm,
+      Epetra_SerialDenseMatrix&       elemat,
+      Epetra_SerialDenseVector&       elevec);
+
+
     enum ActionType
     {
       none,
@@ -385,6 +406,7 @@ private:
       calc_node_curvature,
       calc_surface_tension,
       enforce_weak_dbc,
+      mixed_hybrid_dbc,
       conservative_outflow_bc,
       calc_Neumann_inflow,
       integ_pressure_calc
