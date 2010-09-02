@@ -131,6 +131,8 @@ public:
     TransferTurbulentInflow,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
+    LineMixHybDirichlet,
+    SurfaceMixHybDirichlet,
     SurfaceConservativeOutflowConsistency,
     FSICoupling,
     FSICouplingNoSlide,

@@ -645,6 +645,50 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(lineweakdirichlet);
   condlist.push_back(surfweakdirichlet);
 
+  /*--------------------------------------------------------------------*/
+  // mixed/hybrid Dirichlet formulation
+
+  std::vector<Teuchos::RCP<ConditionComponent> > mixhybDirichletcomponents;
+
+  // we provide a vector of 3 values for velocities
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
+
+  // values for curves
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",3,true,true)));
+
+  // and optional spatial functions
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
+
+
+  Teuchos::RCP<ConditionDefinition> linemixhybDirichlet
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS",
+                                         "LineMixHybDirichlet",
+                                         "LineMixHybDirichlet",
+                                         DRT::Condition::LineMixHybDirichlet,
+                                         true,
+                                         DRT::Condition::Line));
+
+
+  Teuchos::RCP<ConditionDefinition> surfmixhybDirichlet
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS",
+                                         "SurfaceMixHybDirichlet",
+                                         "SurfaceMixHybDirichlet",
+                                         DRT::Condition::SurfaceMixHybDirichlet,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  // we attach all the components of this condition to this condition
+  for (unsigned i=0; i<mixhybDirichletcomponents.size(); ++i)
+  {
+    linemixhybDirichlet->AddComponent(mixhybDirichletcomponents[i]);
+    surfmixhybDirichlet->AddComponent(mixhybDirichletcomponents[i]);
+  }
+
+  // and append it to the list of all conditions
+  condlist.push_back(linemixhybDirichlet);
+  condlist.push_back(surfmixhybDirichlet);
 
   /*--------------------------------------------------------------------*/
   // consistent outflow bcs for conservative element formulations
