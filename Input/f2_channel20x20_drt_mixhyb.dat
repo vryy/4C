@@ -30,14 +30,14 @@ UPOUT        1
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
-NUMSTEP      100
-TIMESTEP     1.
+NUMSTEP      1000
+TIMESTEP     0.05
 NONLINITER   Newton
 ITEMAX       100
 ALPHA_F	     0.6666
 ALPHA_M      0.8333
 GAMMA        0.6666
-THETA        1.0
+THETA        0.66
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-6
 INITIALFIELD zero_field
@@ -63,7 +63,8 @@ DLINE 0
 //E 3 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0  1  none none none none none 1 0 0 0 0 0  
 ---------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
 DLINE 4
-E 1 - 1.0 0.0 0.0   1  none none 0 0 0
+//E 1 - 1.0 0.0 0.0   1  none none 0 0 0
+E 1 - 1.0 0.0 0.0   1  none none 2 0 0
 E 4 - 0.0 0.0 0.0 none none none 0 0 0
 E 3 - 0.0 0.0 0.0 none none none 0 0 0
 E 2 - 0.0 0.0 0.0 none none none 0 0 0
@@ -1446,7 +1447,7 @@ NODE          441     COORD 0.000000000000000e+000     1.000000000000000e+000   
     400 FLUID2 QUAD4       3      1      2      4 MAT       1 NA Euler
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0
+MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
@@ -1458,6 +1459,7 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 ------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION 1-4*(y-1/2)^2
 ------------------------------------------------------------FUNCT2
+FUNCT2 EXPR 0 0 0 FUNCTION 1-4*(x-1/2)^2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5

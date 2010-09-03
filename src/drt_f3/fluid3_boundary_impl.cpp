@@ -2476,9 +2476,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 {
   //--------------------------------------------------
   // time integration related parameters
-  const double pressuretimefac=1.0;
-  const double velocitytimefac=1.0;
-  const double stresstimefac  =1.0;
+  const double timefac= params.get<double>("timefac");
 
   //--------------------------------------------------
   // get my parent element
@@ -2526,6 +2524,14 @@ template <DRT::Element::DiscretizationType bndydistype,
   
   LINALG::Matrix<peledim,peledim> elemat(elemat_epetra.A(),true);
   LINALG::Matrix<peledim,      1> elevec(elevec_epetra.A(),true);
+
+  //--------------------------------------------------
+  // scaling for constitutive law
+  const double scaling=1.0/(2.0*viscosity);
+  double rhsscaling=1./(2.0*viscosity);
+  
+  //  const double scaling=1.0;
+  //  const double rhsscaling=1.0;
 
   //--------------------------------------------------
   // get the condition information
@@ -2709,7 +2715,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
 
       // compute integration factor
-      const double fac = pintpoints.IP().qwgt[iquad]*det;
+      const double fac = pintpoints.IP().qwgt[iquad]*det*timefac;
 
       // compute global first derivates
       pderxy.Multiply(pxji,pderiv);
@@ -2736,11 +2742,11 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*stresstimefac*pfunct(A)*pfunct(B)/(2.0*viscosity);
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*pfunct(A)*pfunct(B)*scaling;
           }
           for(int i=nsd;i<numstressdof_;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*stresstimefac*pfunct(A)*pfunct(B)*2.0/(2.0*viscosity);
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*pfunct(A)*pfunct(B)*2.0*scaling;
           }
         }
       }
@@ -2758,7 +2764,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_p(A*numstressdof_+i,B)-=fac*pfunct(A)*pfunct(B)*pressuretimefac/(2.0*viscosity);
+            mat_r_p(A*numstressdof_+i,B)-=fac*pfunct(A)*pfunct(B)*scaling;
           }
         }
       }
@@ -2767,7 +2773,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int i=0;i<nsd ;++i)
         {
-          vec_r_p(A*numstressdof_+i)-=fac*ppressure*pfunct(A)/(2.0*viscosity);
+          vec_r_p(A*numstressdof_+i)-=fac*ppressure*pfunct(A)*scaling;
         }
       }
 
@@ -2779,7 +2785,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                              |          \  /  |
                               \              / Omega
       */
-      const double viscfac=fac*velocitytimefac;
+      const double viscfac=fac*2.0*viscosity*scaling;
       if(nsd ==2)
       {
         for(int A=0;A<piel;++A)
@@ -2793,14 +2799,6 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_epsu(A*numstressdof_+2,B*nsd +1)+=viscfac*pfunct(A)*pderxy(0,B);
           }
         }
-
-//        for(int A=0;A<piel;++A)
-//        {
-//          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
-//          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
-//          
-//          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
-//        }
       }
       else if(nsd ==3)
       {
@@ -2828,23 +2826,23 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
-          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
+          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0)*2.0*viscosity*scaling;
+          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1)*2.0*viscosity*scaling;
           
-          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
+          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0))*2.0*viscosity*scaling;
         }
       }
       else if(nsd ==3)
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
-          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
-          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2);
+          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0)*2.0*viscosity*scaling;
+          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1)*2.0*viscosity*scaling;
+          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2)*2.0*viscosity*scaling;
           
-          vec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
-          vec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
-          vec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
+          vec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0))*2.0*viscosity*scaling;
+          vec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0))*2.0*viscosity*scaling;
+          vec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1))*2.0*viscosity*scaling;
         }
       }
     }
@@ -2864,7 +2862,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
     // get local node coordinates
-    LINALG::Matrix<nsd ,siel> xyze(true);
+    LINALG::Matrix<nsd ,siel>    xyze(true);
     GEO::fillInitialPositionArray<bndydistype,nsd ,LINALG::Matrix<nsd ,siel> >(surfele,xyze);
 
     // get local node coordinates
@@ -2882,8 +2880,8 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
     // coordinates of current integration point in reference coordinates
-    LINALG::Matrix<bndynsd,1>   xsi(true);
-    LINALG::Matrix<nsd    ,1>   pxsi(true);
+    LINALG::Matrix<bndynsd,1>    xsi(true);
+    LINALG::Matrix<nsd    ,1>    pxsi(true);
 
     Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
 
@@ -2906,6 +2904,12 @@ template <DRT::Element::DiscretizationType bndydistype,
     // inverse of transposed jacobian "ds/dx"
     LINALG::Matrix<nsd ,nsd >    xji(true);
 
+    // transposed jacobian "dx/ds" for parent
+    LINALG::Matrix<nsd ,nsd >    pxjm(true);
+    // inverse of transposed jacobian "ds/dx" for parent
+    LINALG::Matrix<nsd ,nsd >    pxji(true);
+
+
     //--------------------------------------------------
     // the actual loop
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -2927,6 +2931,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       
       DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
 
       double drs=0.0;
 
@@ -2937,7 +2942,75 @@ template <DRT::Element::DiscretizationType bndydistype,
       DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
       // compute integration factor
-      const double fac = intpoints.IP().qwgt[iquad]*drs;
+      const double fac = intpoints.IP().qwgt[iquad]*drs*timefac;
+
+      // get Jacobian matrix and determinant
+      // actually compute its transpose....
+      /*
+        +-            -+ T      +-            -+
+        | dx   dx   dx |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dr   dr   dr |
+        |              |        |              |
+        | dy   dy   dy |        | dx   dy   dz |
+        | --   --   -- |   =    | --   --   -- |
+        | dr   ds   dt |        | ds   ds   ds |
+        |              |        |              |
+        | dz   dz   dz |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dt   dt   dt |
+        +-            -+        +-            -+
+      */
+      pxjm.MultiplyNT(pderiv,pxyze);
+      const double det = pxji.Invert(pxjm);
+
+      if (det < 1E-16)
+        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
+
+
+      //-----------------------------------------------------
+      /*          +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+      */
+      LINALG::Matrix<nsd,nsd> G;
+      
+      for (int nn=0;nn<nsd;++nn)
+      {
+        for (int rr=0;rr<nsd;++rr)
+        {
+          G(nn,rr) = pxji(nn,0)*pxji(rr,0);
+          for (int mm=1;mm<nsd;++mm)
+          {
+            G(nn,rr) += pxji(nn,mm)*pxji(rr,mm);
+          }
+        }
+      }
+
+      //
+      //                           2.0
+      //             h  = ---------------------
+      //              b        +-------------+
+      //                      / /  T       \ |
+      //                   \ / |  n * G * n |
+      //                    +   \          /
+      //
+      
+      double nGn=0;
+      for (int nn=0;nn<nsd;++nn)
+      {
+        for (int rr=0;rr<nsd;++rr)
+        {
+          nGn+=unitnormal(rr)*G(rr,nn)*unitnormal(nn);
+        }
+      }
+      const double h =2.0/sqrt(nGn);
+      
+      rhsscaling=1./h;
 
       // interpolate to gausspoint
       velint.Multiply(pevel,pfunct);
@@ -2997,11 +3070,11 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int B=0;B<piel;++B)
           {
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
 
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
           }
         }
       }
@@ -3011,18 +3084,18 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int B=0;B<piel;++B)
           {
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(2);
 
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
 
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(2);
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
 
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(2);
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
           }
         }
       }
@@ -3077,23 +3150,23 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*pfunct(A)*unitnormal(0)*delta_vel(0);
-          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*pfunct(A)*unitnormal(1)*delta_vel(1);
+          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*rhsscaling*pfunct(A)*unitnormal(0)*delta_vel(0);
+          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*rhsscaling*pfunct(A)*unitnormal(1)*delta_vel(1);
 
-          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*rhsscaling*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
         }
       }
       else if(nsd==3)
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*pfunct(A)*unitnormal(0)*delta_vel(0);
-          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*pfunct(A)*unitnormal(1)*delta_vel(1);
-          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*pfunct(A)*unitnormal(2)*delta_vel(2);
+          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*rhsscaling*pfunct(A)*unitnormal(0)*delta_vel(0);
+          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*rhsscaling*pfunct(A)*unitnormal(1)*delta_vel(1);
+          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*rhsscaling*pfunct(A)*unitnormal(2)*delta_vel(2);
 
-          vec_r_o_n_u_minus_g(A*numstressdof_+3)-=fac*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
-          vec_r_o_n_u_minus_g(A*numstressdof_+4)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(0)+unitnormal(0)*delta_vel(2));
-          vec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
+          vec_r_o_n_u_minus_g(A*numstressdof_+3)-=fac*rhsscaling*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+          vec_r_o_n_u_minus_g(A*numstressdof_+4)-=fac*rhsscaling*pfunct(A)*(unitnormal(2)*delta_vel(0)+unitnormal(0)*delta_vel(2));
+          vec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*rhsscaling*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
         }
       }
     }
@@ -3119,6 +3192,7 @@ template <DRT::Element::DiscretizationType bndydistype,
     }
   }
 
+  // matrix inversion of stress-stress block
   inv_r_sigma=mat_r_sigma;
 
   LINALG::FixedSizeSerialDenseSolver<numstressdof_*piel,numstressdof_*piel> solver;
@@ -3126,6 +3200,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   solver.SetMatrix(inv_r_sigma);
   solver.Invert();
 
+  // computation of matrix-matrix and matrix vector products, local assembly
   for(int A=0;A<piel;++A)
   {
     for(int i=0;i<nsd;++i)
@@ -3272,7 +3347,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
 
         // compute integration factor
-        const double fac = pintpoints.IP().qwgt[iquad]*det;
+        const double fac = pintpoints.IP().qwgt[iquad]*det*timefac;
 
         // compute global first derivates
         pderxy.Multiply(pxji,pderiv);
@@ -3424,7 +3499,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
         // compute integration factor
-        const double fac = intpoints.IP().qwgt[iquad]*drs;
+        const double fac = intpoints.IP().qwgt[iquad]*drs*timefac;
 
         // interpolate to gausspoint
         velint.Multiply(pevel,pfunct);
