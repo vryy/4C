@@ -2720,9 +2720,6 @@ template <DRT::Element::DiscretizationType bndydistype,
       // get velocity derivatives at integration point
       pvderxy.MultiplyNT(pevel,pderxy);
 
-      printf("pvderxy %12.5e %12.5e\n"  ,pvderxy(0,0),pvderxy(0,1));
-      printf("pvderxy %12.5e %12.5e\n\n",pvderxy(1,0),pvderxy(1,1));
-
       // interpolate pressure to gausspoint
       ppressure = pfunct.Dot(pepres);
 
@@ -2770,7 +2767,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int i=0;i<nsd ;++i)
         {
-          vec_r_p(A*numstressdof_+i)-=fac*pressure*pfunct(A)/(2.0*viscosity);
+          vec_r_p(A*numstressdof_+i)-=fac*ppressure*pfunct(A)/(2.0*viscosity);
         }
       }
 
@@ -3163,25 +3160,24 @@ template <DRT::Element::DiscretizationType bndydistype,
     }
   }
 
-#if 1
+#if 0
   // --------------------------------------------------
   //
   //                       FDCHECK
   //
   // --------------------------------------------------
-  // Extra vectors 
-
-  // for volume integrals
-
-  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_p(true);
-  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_epsu(true);
-
-  // for boundary integrals
-  LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_o_n_u_minus_g(true);
-
   for(int fd=0;fd<nsd+1;fd++)
   {
+    // Extra vectors 
 
+    // for volume integrals
+    
+    LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_p(true);
+    LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_epsu(true);
+    
+    // for boundary integrals
+    LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_o_n_u_minus_g(true);
+        
     for (int inode=0;inode<piel;++inode)
     {
       for (int idim=0; idim<nsd ; ++idim)
@@ -3287,9 +3283,6 @@ template <DRT::Element::DiscretizationType bndydistype,
         // get velocity derivatives at integration point
         pvderxy.MultiplyNT(pevel,pderxy);
 
-        printf("FDpvderxy %12.5e %12.5e\n"  ,pvderxy(0,0),pvderxy(0,1));
-        printf("FDpvderxy %12.5e %12.5e\n\n",pvderxy(1,0),pvderxy(1,1));
-
         // interpolate pressure to gausspoint
         ppressure = pfunct.Dot(pepres);
 
@@ -3305,7 +3298,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           for(int i=0;i<nsd ;++i)
           {
-            FDvec_r_p(A*numstressdof_+i)-=fac*pressure*pfunct(A)/(2.0*viscosity);
+            FDvec_r_p(A*numstressdof_+i)-=fac*ppressure*pfunct(A)/(2.0*viscosity);
           }
         }
 
@@ -3532,8 +3525,6 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
     }
   }
-
-  dserror("bla\n");
 #endif
   return;
 }
