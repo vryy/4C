@@ -1755,6 +1755,70 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::PrintMapInMatlabFormat(std::string fname,
+    const Epetra_Map& map,
+    const bool newfile)
+{
+  // The following source code has been adapted from the Print() method
+  // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
+
+  int MyPID = map.Comm().MyPID();
+  int NumProc = map.Comm().NumProc();
+
+  std::ofstream os;
+
+  for (int iproc=0; iproc <NumProc; iproc++)    // loop over all processors
+  {
+    if(MyPID==iproc)
+    {
+      // open file for writing
+      if ((iproc == 0) && (newfile))
+        os.open(fname.c_str(),std::fstream::trunc);
+      else
+        os.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      int NumMyElements1 = map.NumMyElements();
+      int MaxElementSize1 = map.MaxElementSize();
+      int* MyGlobalElements1 = map.MyGlobalElements();
+      int* FirstPointInElementList1(NULL);
+      if (MaxElementSize1!=1) FirstPointInElementList1 = map.FirstPointInElementList();
+
+      for (int i=0; i<NumMyElements1; i++)
+      {
+        for(int ii=0; ii< map.ElementSize(i); ii++)
+        {
+          int iii;
+          if(MaxElementSize1==1)
+          {
+            os << std::setw(10)<< MyGlobalElements1[i]+1 ;
+            iii = i;
+          }
+          else
+          {
+            os << std::setw(10) << MyGlobalElements1[i]+1<< "/" << std::setw(10) << ii;
+            iii = FirstPointInElementList1[i]+ii;
+          }
+          os << endl;
+        }
+      }
+      os << flush;
+    }
+    // close file
+    os.close();
+
+    // Do a few global ops to give I/O a chance to complete
+    map.Comm().Barrier();
+    map.Comm().Barrier();
+    map.Comm().Barrier();
+  }
+
+  // just to be sure
+  if (os.is_open()) os.close();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

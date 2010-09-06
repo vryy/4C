@@ -896,6 +896,18 @@ namespace LINALG
       );
 
   /*!
+  \brief Print content of a map in Matlab format
+
+  The map is printed in Matlab numbering (+1) to
+  a file with specified file name.
+
+   */
+  void PrintMapInMatlabFormat(std::string fname,
+      const Epetra_Map& map,
+      const bool newfile = true
+      );
+
+  /*!
   \brief Gather information of type vector<T> on a subset of processors
 
   This template gathers information provided in sdata on a subset of
