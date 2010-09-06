@@ -846,8 +846,8 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
 
   // assemble mechanical dissipation
-  RCP<Epetra_Vector> mechdiss = LINALG::CreateVector(*mdofs,true);
-  AssembleMechDiss(*mechdiss,cmtman);
+  RCP<Epetra_Vector> mechdissrate = LINALG::CreateVector(*mdofs,true);
+  AssembleMechDissRate(*mechdissrate,cmtman);
 
   // matrices from linearized thermal contact condition
   RCP<LINALG::SparseMatrix>  thermcontLM = rcp(new LINALG::SparseMatrix(*adofs,3));
@@ -1098,9 +1098,9 @@ void TSI::Algorithm::ApplyThermoContact(RCP<LINALG::SparseMatrix>& kteff,
   feffnew->Update(1.0,*fmmodexp,1.0);
 
   // add mechanical dissipation to feffnew
-  RCP<Epetra_Vector> mechdissexp = rcp(new Epetra_Vector(*problemrowmap));
-  LINALG::Export(*mechdiss,*mechdissexp);
-  feffnew->Update(1.0,*mechdissexp,1.0);
+  RCP<Epetra_Vector> mechdissrateexp = rcp(new Epetra_Vector(*problemrowmap));
+  LINALG::Export(*mechdissrate,*mechdissrateexp);
+  feffnew->Update(1.0,*mechdissrateexp,1.0);
 
   // add i subvector to feffnew
   RCP<Epetra_Vector> fiexp;
@@ -1382,8 +1382,8 @@ void TSI::Algorithm::AssembleDM(LINALG::SparseMatrix& dmatrix,
  | assemble mechanical dissipation                             mgit 08/10|
  *----------------------------------------------------------------------*/
 
-void TSI::Algorithm::AssembleMechDiss(Epetra_Vector& mechdiss,
-                                      RCP<MORTAR::ManagerBase> cmtman)
+void TSI::Algorithm::AssembleMechDissRate(Epetra_Vector& mechdissrate,
+                                          RCP<MORTAR::ManagerBase> cmtman)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman->GetStrategy();
@@ -1396,6 +1396,9 @@ void TSI::Algorithm::AssembleMechDiss(Epetra_Vector& mechdiss,
   if (interface.size()>1)
     dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
 
+  // time step size
+  double dt = StructureField().GetTimeStepSize();
+  
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
@@ -1417,17 +1420,17 @@ void TSI::Algorithm::AssembleMechDiss(Epetra_Vector& mechdiss,
       if(Comm().MyPID()==cnode->Owner())
         rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
 
-      Epetra_SerialDenseVector mechdissip(1);
+      Epetra_SerialDenseVector mechdissiprate(1);
       vector<int> dof(1);
       vector<int> owner(1);
 
-      mechdissip(0) = cnode->Data().MechDiss();
+      mechdissiprate(0) = 1/dt*cnode->Data().MechDiss();
       dof[0] = rowtemp;
       owner[0] = cnode->Owner();
 
       // do assembly
-      if(abs(mechdissip(0))>1e-12)
-        LINALG::Assemble(mechdiss, mechdissip, dof, owner);
+      if(abs(mechdissiprate(0))>1e-12)
+        LINALG::Assemble(mechdissrate, mechdissiprate, dof, owner);
     }
   }
   return;
@@ -1462,11 +1465,15 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
   if (interface.size()>1)
     dserror("Error in TSI::Algorithm::AssembleThermContCondition: Only for one interface yet.");
 
+  // heat transfer coefficient for slave and master surface
   double heattranss = interface[0]->IParams().get<double>("HEATTRANSSLAVE");
   double heattransm = interface[0]->IParams().get<double>("HEATTRANSMASTER");
 
-   if (heattranss <= 0 or heattransm <= 0)
-    dserror("Error: Choose realistic heat transfer parameter");
+  if (heattranss <= 0 or heattransm <= 0)
+   dserror("Error: Choose realistic heat transfer parameter");
+
+  // time step size
+  double dt = StructureField().GetTimeStepSize();
 
   double beta = heattranss*heattransm/(heattranss+heattransm);
   double delta = heattranss/(heattranss+heattransm);
@@ -1499,17 +1506,17 @@ void TSI::Algorithm::AssembleThermContCondition(LINALG::SparseMatrix& thermcontL
       if(Comm().MyPID()==cnode->Owner())
         rowtemp = (StructureField().Discretization())->Dof(1,nodeges)[0];
 
-      Epetra_SerialDenseVector mechdissip(1);
+      Epetra_SerialDenseVector mechdissiprate(1);
       vector<int> dof(1);
       vector<int> owner(1);
 
-      mechdissip(0) = delta*cnode->Data().MechDiss();
+      mechdissiprate(0) = delta/dt*cnode->Data().MechDiss();
       dof[0] = rowtemp;
       owner[0] = cnode->Owner();
 
       // do assembly
-      if(abs(mechdissip(0)>1e-12 and cnode->Active()))
-        LINALG::Assemble(thermcontRHS, mechdissip, dof, owner);
+      if(abs(mechdissiprate(0)>1e-12 and cnode->Active()))
+        LINALG::Assemble(thermcontRHS, mechdissiprate, dof, owner);
     }
   }
   return;

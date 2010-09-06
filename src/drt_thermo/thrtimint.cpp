@@ -72,7 +72,7 @@ THR::TimInt::TimInt(
   writeelemevery_(tdynparams.get<int>("RESEVRYELEM")),
   writeheatflux_(Teuchos::getIntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
   writetempgrad_(Teuchos::getIntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
-  writeenergyevery_(0),//(tdynparams.get<int>("RESEVRYERGY")),
+  writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
   time_(Teuchos::null),
   timen_(0.0),
@@ -659,8 +659,8 @@ void THR::TimInt::OutputEnergy()
     intergy = (*energies)(0);
   }
 
-  // global calculation of kinetic energy
-  double kinergy = 0.0;  // total kinetic energy
+//  // global calculation of kinetic energy
+//  double kinergy = 0.0;  // total kinetic energy
 //  {
 //    Teuchos::RCP<Epetra_Vector> linmom
 //      = LINALG::CreateVector(*dofrowmap_, true);
@@ -669,16 +669,16 @@ void THR::TimInt::OutputEnergy()
 //    kinergy *= 0.5;
 //  }
 
-  // external energy
-  double extergy = 0.0;  // total external energy
-  {
-    // WARNING: This will only work with dead loads!!!
-    Teuchos::RCP<Epetra_Vector> fext = Fext();
-    fext->Dot((*temp_)[0], &extergy);
-  }
+//  // external energy
+//  //double extergy = 0.0;  // total external energy
+//  {
+//    // WARNING: This will only work with dead loads!!!
+//    Teuchos::RCP<Epetra_Vector> fext = Fext();
+//    fext->Dot((*temp_)[0], &extergy);
+//  }
 
   // total energy
-  double totergy = kinergy + intergy - extergy;
+  //double totergy = kinergy + intergy - extergy;
 
   // the output
   if (myrank_ == 0)
@@ -686,10 +686,7 @@ void THR::TimInt::OutputEnergy()
     *energyfile_ << " " << std::setw(9) << step_
                  << std::scientific  << std::setprecision(16)
                  << " " << (*time_)[0]
-                 << " " << totergy
-                 << " " << kinergy
                  << " " << intergy
-                 << " " << extergy
                  << std::endl;
   }
 

@@ -1320,17 +1320,16 @@ void DRT::Discretization::EvaluateScalars(
     // pointer to current element
     DRT::Element* actele = lRowElement(i);
 
-    // get element location vector, dirichlet flags and ownerships
-    std::vector<int> lm;  // location vector
-    std::vector<int> lmowner;  // processor which owns DOFs
-    actele->LocationVector(*this,lm,lmowner);
-
+    // get element location vector 
+    Element::LocationArray la(dofsets_.size());
+    actele->LocationVector(*this,la,false);
+        
     // define element vector
     Epetra_SerialDenseVector elescalars(numscalars);
 
     // call the element evaluate method
     {
-      int err = actele->Evaluate(params,*this,lm,
+      int err = actele->Evaluate(params,*this,la,
                                  elematrix1,elematrix2,elescalars,elevector2,elevector3);
       if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
     }

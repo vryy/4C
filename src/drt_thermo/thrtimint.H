@@ -219,10 +219,9 @@ namespace THR
       {
         std::string energyname
           = DRT::Problem::Instance()->OutputControlFile()->FileName()
-          + ".energy";
+          + ".thermo.energy";
         energyfile_ = new std::ofstream(energyname.c_str());
-        *energyfile_ << "# timestep time total_energy"
-                     << " kinetic_energy internal_energy external_energy"
+        *energyfile_ << "# timestep time internal_energy"
                      << std::endl;
       }
     }

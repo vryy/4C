@@ -1520,10 +1520,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
      else
        dserror("Error in AssembleTangentForces: Unknown dimension.");
 
-    // Lagrange multiplier in tangential direction
-    Epetra_SerialDenseMatrix lmuzawatan(dim,1);
-    lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
-
     // evaluate traction
     Epetra_SerialDenseMatrix jumpvec(dim,1);
 
@@ -1538,6 +1534,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     vector<double> tractionold(dim);
     for (int i=0;i<dim;i++)
       tractionold[i] = cnode->Data().tractionold()[i];
+
+    for (int i=0;i<dim;i++)
+      cout << "GiD " << gid << "Tractionold " << tractionold[i] << endl;  
+    
 
     // Evaluate trailtraction (tractionold+temptrac in penalty case)
     vector<double> trailtraction(dim);

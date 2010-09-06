@@ -213,11 +213,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   if (la[0].Size() != nen_*numdofpernode_)
     dserror("Location vector length does not match!");
   // set views
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra,true);  // view only!
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> ecapa(elemat2_epetra,true);  // view only!
-  LINALG::Matrix<nen_*numdofpernode_,1> efint(elevec1_epetra,true);  // view only!
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra.A(),true);  // view only!
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> ecapa(elemat2_epetra.A(),true);  // view only!
+  LINALG::Matrix<nen_*numdofpernode_,1> efint(elevec1_epetra.A(),true);  // view only!
   //LINALG::Matrix<nen_*numdofpernode_,1> efext(elevec2_epetra,true);  // view only!
-  LINALG::Matrix<nen_*numdofpernode_,1> efcap(elevec3_epetra,true);  // view only!
+  LINALG::Matrix<nen_*numdofpernode_,1> efcap(elevec3_epetra.A(),true);  // view only!
   // disassemble temperature
   if (discretization.HasState(0, "temperature"))
   {
@@ -235,9 +235,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   ecapa_.Clear();
   // check for the action parameter
   const std::string action = params.get<std::string>("action","none");
-  // extract time
-  const double time = params.get<double>("total time");
-
+  
+  double time = 0.0;
+  
+  if(action!="calc_thermo_energy")
+  {
+    // extract time
+    time = params.get<double>("total time");
+  }
+    
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
@@ -663,6 +669,64 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   {
     ;  // do nothing
   }
+  //============================================================================
+  // evaluation of internal thermal energy  
+  else if (action == "calc_thermo_energy")
+  {
+    // check length of elevec1
+    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+   
+    // get the material capacity
+    double kappa = 0.0;
+    
+    // material
+    Teuchos::RCP<MAT::Material> material = ele->Material();
+
+    // get Fourier´s law (for "ordinary" thermal problem)
+    if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    {
+      const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+      kappa = actmat->Capacity();
+    }
+    else
+      dserror("Material type is not supported");
+    
+    // get node coordinates
+    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+    
+    // declaration of internal variables   
+    double intenergy = 0.0;
+    
+    //----------------------------------------------------------------------
+    // integration loop for one element
+    //----------------------------------------------------------------------
+    // integrations points and weights
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+    if (intpoints.IP().nquad != nquad_)
+      dserror("Trouble with number of Gauss points");
+
+    // integration loop
+    /* =========================================================================*/
+    /* ================================================= Loop over Gauss Points */
+    /* =========================================================================*/
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+      
+      // call material law => cmat_,heatflux_
+      Materialize(ele);
+      
+      LINALG::Matrix<1,1> temp;
+      temp.MultiplyTN(1.0,funct_,etemp_,0.0);
+      
+      // internal energy
+      intenergy +=kappa*fac_*temp(0,0); 
+            
+      /* =======================================================================*/
+    }/* ================================================== end of Loop over GP */
+
+    elevec1_epetra(0) = intenergy; 
+  } // evaluation of internal energy
 
   //============================================================================
   else
