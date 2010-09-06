@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
 
@@ -70,13 +69,12 @@ void DRT::ELEMENTS::NStetType::SetupElementDefinition( std::map<std::string,std:
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
-    .AddNamedString("STAB")
     ;
 }
 
 
 /*-----------------------------------------------------------------------
- |  ctor (public)                                              gee 12/09|
+ |  ctor (public)                                              gee 05/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet::NStet(int id, int owner) :
 DRT::Element(id,owner),
@@ -90,7 +88,7 @@ F_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         gee 12/09|
+ |  copy-ctor (public)                                         gee 05/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet::NStet(const DRT::ELEMENTS::NStet& old) :
 DRT::Element(old),
@@ -104,7 +102,7 @@ F_(old.F_)
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                              gee 12/09|
+ |  dtor (public)                                              gee 05/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NStet::~NStet()
 {
@@ -113,7 +111,7 @@ DRT::ELEMENTS::NStet::~NStet()
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                             gee 12/09|
+ |                                                             gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::Pack(vector<char>& data) const
 {
@@ -130,8 +128,6 @@ void DRT::ELEMENTS::NStet::Pack(vector<char>& data) const
   AddtoPack(data,material_);
   // stresstype_
   AddtoPack(data,stresstype_);
-  // stabtype_
-  AddtoPack(data,stabtype_);
   // V_
   AddtoPack(data,V_);
 
@@ -141,7 +137,7 @@ void DRT::ELEMENTS::NStet::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                             gee 12/09|
+ |                                                             gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
 {
@@ -158,8 +154,6 @@ void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,material_);
   // stresstype_
   ExtractfromPack(position,data,stresstype_);
-  // stabtype_
-  ExtractfromPack(position,data,stabtype_);
   // V_
   ExtractfromPack(position,data,V_);
 
@@ -172,10 +166,10 @@ void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::so_nstet_expol(LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NSTET>& stresses,
-                                        LINALG::Matrix<NUMNOD_NSTET,NUMSTR_NSTET>& nodalstresses)
+void DRT::ELEMENTS::NStet::so_nstet_expol(LINALG::Matrix<1,6>& stresses,
+                                        LINALG::Matrix<4,6>& nodalstresses)
 {
-  LINALG::Matrix<NUMNOD_NSTET, NUMGPT_NSTET> expol;
+  LINALG::Matrix<4,1> expol;
   expol(0,0)=1.0;
   expol(1,0)=1.0;
   expol(2,0)=1.0;
@@ -186,7 +180,7 @@ void DRT::ELEMENTS::NStet::so_nstet_expol(LINALG::Matrix<NUMGPT_NSTET,NUMSTR_NST
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                                gee 12/09|
+ |  print this element (public)                                gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::Print(ostream& os) const
 {
@@ -224,7 +218,7 @@ void DRT::ELEMENTS::NStet::Print(ostream& os) const
   /*====================================================================*/
 
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                  gee 12/09|
+ |  get vector of volumes (length 1) (public)                  gee 05/08|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
 {
@@ -236,7 +230,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
 
 
  /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                             gee 12/09|
+ |  get vector of surfaces (public)                             gee 05/08|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Surfaces()
 {
@@ -251,7 +245,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Surfaces()
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                               gee 12/09|
+ |  get vector of lines (public)                               gee 05/08|
  *----------------------------------------------------------------------*/
 vector<RCP<DRT::Element> > DRT::ELEMENTS::NStet::Lines()
 {

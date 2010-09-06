@@ -33,6 +33,7 @@ Maintainer: Michael Gee
 
 using namespace std;
 
+#if 0
 /*----------------------------------------------------------------------*
  |  vol stabilization (protected)                              gee 05/10|
  *----------------------------------------------------------------------*/
@@ -351,7 +352,7 @@ void DRT::ELEMENTS::NStet::DevStab(
 
 
 
-
+#endif
 
 
 #endif  // #ifdef CCADISCRET

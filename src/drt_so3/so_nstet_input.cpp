@@ -22,21 +22,10 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
                                       const std::string& distype,
                                       DRT::INPUT::LineDefinition* linedef)
 {
-  string buffer;
-  
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-
-  linedef->ExtractString("STAB",buffer);
-  if (buffer=="none")         stabtype_ = DRT::ELEMENTS::so_nstet4_stab_none;
-  else if (buffer=="voldev" || buffer=="devvol")  
-                              stabtype_ = DRT::ELEMENTS::so_nstet4_voldev;
-  else if (buffer=="vol")     stabtype_ = DRT::ELEMENTS::so_nstet4_vol;
-  else if (buffer=="dev")     stabtype_ = DRT::ELEMENTS::so_nstet4_dev;
-  else if (buffer=="puso")    stabtype_ = DRT::ELEMENTS::so_nstet4_puso;
-  else dserror("Unknown type of stabilization for NStet: {VolDev,Vol,Dev,Puso}");
 
   return true;
 }
