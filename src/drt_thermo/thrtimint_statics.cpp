@@ -113,6 +113,10 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! build tangent matrix : effective dynamic tangent matrix
   //!    K_{Teffdyn} = K_{T}
   //! i.e. do nothing here
+  
+  // apply modifications due to thermal contact  
+  ApplyThermoContact(tang_,fres_,tempn_);
+  
   tang_->Complete();  // close tangent matrix
 
   //! hallelujah

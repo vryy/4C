@@ -269,6 +269,11 @@ namespace THR
 
     //! recalculate the thermal matrices for tsi simulations
     void TSIMatrix();
+    
+    //! Apply thermal contact
+    void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
+                            Teuchos::RCP<Epetra_Vector>& fres,
+                            Teuchos::RCP<Epetra_Vector>& temp);
 
     //@}
 

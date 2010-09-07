@@ -171,6 +171,9 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
+    /// set contact manager
+    virtual void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman) = 0;
+
     //@}
 
     //! @name Solver calls

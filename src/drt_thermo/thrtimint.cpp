@@ -259,6 +259,15 @@ void THR::TimInt::ApplyDirichletBC(
 }
 
 /*----------------------------------------------------------------------*
+ |  Set contact manager                                       mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt:: SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman)
+{
+  cmtman_=cmtman;
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Update time and step counter                            bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::UpdateStepTime()

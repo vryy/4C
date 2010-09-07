@@ -352,6 +352,13 @@ void ADAPTER::ThermoTimInt::ReadRestart(const int step)
   thermo_->ReadRestart(step);
 }
 
+/*----------------------------------------------------------------------*
+ | Set contact manager                                       mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt:: SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman)
+{
+  thermo_->SetContactManager(cmtman);
+}
 
 /*----------------------------------------------------------------------*
  | find iteratively solution                                bborn 08/09 |

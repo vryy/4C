@@ -839,6 +839,20 @@ void THR::TimIntImpl::TSIMatrix()
   tang_->Reset();
 } // TSIMatrix
 
+/*----------------------------------------------------------------------*
+ |  Modify thermal system of equation towards thermal contact mgit 09/10|
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang, 
+                                         Teuchos::RCP<Epetra_Vector>& fres, 
+                                         Teuchos::RCP<Epetra_Vector>& temp)
+{
+  // only in the case of contact
+  if(cmtman_==Teuchos::null)
+    return;
+
+  // leave this place
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

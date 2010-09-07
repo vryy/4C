@@ -127,6 +127,9 @@ namespace ADAPTER
     void Evaluate(
       Teuchos::RCP<const Epetra_Vector> temp  ///< current state
       );
+    
+    /// Set contact manager
+    void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman);
 
     /// update after one Newton step (tsi with contact)
     void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp);

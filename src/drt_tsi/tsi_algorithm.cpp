@@ -224,6 +224,9 @@ void TSI::Algorithm::TimeLoop()
       // predict ans solve structural system
       StructureField().PrepareTimeStep();
       StructureField().Solve();
+      
+//      // initialize contact manager of thermo field
+//      ThermoField().SetContactManager(cmtman);
 
       // predict and evaluate the thermal field without influence of structure
       // evaluate assembles the stiffness matrix and the rhs of

@@ -38,6 +38,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_io/io.H"
+#include "../drt_mortar/mortar_manager_base.H"
 
 #include "thrtimint_mstep.H"
 
@@ -135,6 +136,9 @@ namespace THR
                         //!< This needs to be true if the bounded DOFs
                         //!< have been changed.
       );
+    
+    //! Set contact manager
+    void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman);
 
     //! Do time integration of multiple steps
     void Integrate();
@@ -488,6 +492,15 @@ namespace THR
                                         //!< at \f$t_{n+1}\f$
 
     //@}
+    
+    //! @name Managed stuff
+    //@{
+    
+    //! contact / meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase>   cmtman_;
+    
+    //@}
+
 
     //! @name System matrices
     //@{
