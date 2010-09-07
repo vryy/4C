@@ -603,7 +603,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_nstet_evaluate.cpp
   src/drt_so3/so_nstet_input.cpp
   src/drt_so3/so_nstet_nodalstrain.cpp
-  src/drt_so3/so_nstet_stabilization.cpp
   src/drt_so3/so_nurbs27.cpp
   src/drt_so3/so_nurbs27_evaluate.cpp
   src/drt_so3/so_nurbs27_input.cpp
