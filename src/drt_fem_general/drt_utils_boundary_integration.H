@@ -209,7 +209,7 @@ void ComputeMetricTensorForBoundaryEle(
 template <const int NSD>
 void BoundaryGPToParentGP(
   Epetra_SerialDenseMatrix                   & pqxg     ,
-  const DRT::UTILS::IntPointsAndWeights<NSD> & intpoints,
+  const Epetra_SerialDenseMatrix               intpoints,
   const DRT::Element::DiscretizationType       pdistype ,
   const DRT::Element::DiscretizationType       distype  ,
   const int                                    beleid   )
@@ -218,7 +218,7 @@ void BoundaryGPToParentGP(
   if(NSD==2)
   {
     // resize output array
-    pqxg.Shape(intpoints.IP().nquad,2);
+    pqxg.Shape(intpoints.M(),2);
 
     if(distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
     {
@@ -255,9 +255,9 @@ void BoundaryGPToParentGP(
         0   1   2             0   1   2
 
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)=-1.0;
         }
         break;
@@ -295,10 +295,10 @@ void BoundaryGPToParentGP(
           +                     +
          2                     0
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints(iquad,0);
         }
         break;
       }
@@ -333,9 +333,9 @@ void BoundaryGPToParentGP(
 
         */
 
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)=-intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)=-intpoints(iquad,0);
           pqxg(iquad,1)= 1.0;
         }
         break;
@@ -373,10 +373,10 @@ void BoundaryGPToParentGP(
           +                            +
          0                            0
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)=-1.0;
-          pqxg(iquad,1)=-intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)=-intpoints(iquad,0);
         }
         break;
       }
@@ -387,6 +387,7 @@ void BoundaryGPToParentGP(
     }
     else if(distype==DRT::Element::nurbs3 && pdistype==DRT::Element::nurbs9)
     {
+#if 0
       switch(beleid)
       {
       case 0:
@@ -475,6 +476,7 @@ void BoundaryGPToParentGP(
       default:
         dserror("invalid number of lines, unable to determine intpoint in parent");
       }
+#endif
     }
     else
     {
@@ -484,6 +486,8 @@ void BoundaryGPToParentGP(
   }
   else if(NSD==3)
   {
+#if 0
+
     // resize output array
     pqxg.Shape(intpoints.IP().nquad,3);
 
@@ -790,6 +794,7 @@ void BoundaryGPToParentGP(
     {
       dserror("only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
     }
+#endif
   }
 
   return;

@@ -2528,10 +2528,10 @@ template <DRT::Element::DiscretizationType bndydistype,
   //--------------------------------------------------
   // scaling for constitutive law
   const double scaling=1.0/(2.0*viscosity);
-  double rhsscaling=1./(2.0*viscosity);
+  //  double rhsscaling=1./(2.0*viscosity);
   
   //  const double scaling=1.0;
-  //  const double rhsscaling=1.0;
+  const double rhsscaling=1.0;
 
   //--------------------------------------------------
   // get the condition information
@@ -2877,19 +2877,34 @@ template <DRT::Element::DiscretizationType bndydistype,
     const DRT::UTILS::IntPointsAndWeights<nsd> 
       pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
-
-
     // coordinates of current integration point in reference coordinates
     LINALG::Matrix<bndynsd,1>    xsi(true);
     LINALG::Matrix<nsd    ,1>    pxsi(true);
 
+
     Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
 
-    BoundaryGPToParentGP(pqxg     ,
-                         intpoints,
-                         pdistype   ,
-                         bndydistype,
-                         surfele->SurfaceNumber());
+    {
+      Epetra_SerialDenseMatrix gps(intpoints.IP().nquad,bndynsd);
+
+
+      // coordinates of the current integration point
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        const double* gpcoord = (intpoints.IP().qxg)[iquad];
+      
+        for (int idim=0;idim<bndynsd ;idim++)
+        {
+          gps(iquad,idim) = gpcoord[idim];
+        }
+      }
+      BoundaryGPToParentGP<nsd>(pqxg     ,
+                                gps,
+                                pdistype   ,
+                                bndydistype,
+                                surfele->SurfaceNumber());
+    }
+
 
     //--------------------------------------------------
     // vectors/scalars for Gausspoint values
@@ -2929,7 +2944,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         pxsi(idim) = pqxg(iquad,idim);
       }
-      
+
       DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
       DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
 
@@ -2943,6 +2958,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       // compute integration factor
       const double fac = intpoints.IP().qwgt[iquad]*drs*timefac;
+#if 0
 
       // get Jacobian matrix and determinant
       // actually compute its transpose....
@@ -2966,7 +2982,6 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       if (det < 1E-16)
         dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
-
 
       //-----------------------------------------------------
       /*          +-           -+   +-           -+   +-           -+
@@ -3010,7 +3025,8 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       const double h =2.0/sqrt(nGn);
       
-      rhsscaling=1./h;
+      //      rhsscaling=1./h;
+#endif
 
       // interpolate to gausspoint
       velint.Multiply(pevel,pfunct);
@@ -3064,17 +3080,19 @@ template <DRT::Element::DiscretizationType bndydistype,
                     |            |
                      \          / Gamma
       */
+      const double invert=1.;
+
       if(nsd==2)
       {
         for(int A=0;A<piel;++A)
         {
           for(int B=0;B<piel;++B)
           {
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=invert*fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=invert*fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
 
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=invert*fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=invert*fac*rhsscaling*pfunct(A)*pfunct(B)*unitnormal(0);
           }
         }
       }
@@ -3119,6 +3137,38 @@ template <DRT::Element::DiscretizationType bndydistype,
         }
       }
 
+
+#if 0
+
+      // determine coordinates of current Gauss point
+      LINALG::Matrix<3,1> check(true);
+      LINALG::Matrix<3,1> diff(true);
+
+      for (int A=0;A<piel;++A)
+      {
+        for(int j=0;j<nsd;++j)
+        {
+          check(j)+=pxyze(j,A)*pfunct(A);
+        }
+      }
+
+      diff=check;
+      diff-=coordgp;
+
+      const double norm=diff.Norm2();
+
+      if(norm>1e-9)
+      {
+        for(int j=0;j<nsd;++j)
+        {
+          printf("%12.5e %12.5e\n",check(j),coordgp(j));
+        }
+
+        dserror("Gausspoint matching error %12.5e\n",norm);
+      }
+
+#endif
+
       int functnum = -1;
 
       for(int dim=0;dim<nsd;++dim)
@@ -3150,10 +3200,10 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int A=0;A<piel;++A)
         {
-          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*rhsscaling*pfunct(A)*unitnormal(0)*delta_vel(0);
-          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*rhsscaling*pfunct(A)*unitnormal(1)*delta_vel(1);
+          vec_r_o_n_u_minus_g(A*numstressdof_  )-=invert*fac*rhsscaling*pfunct(A)*unitnormal(0)*delta_vel(0);
+          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=invert*fac*rhsscaling*pfunct(A)*unitnormal(1)*delta_vel(1);
 
-          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*rhsscaling*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=invert*fac*rhsscaling*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
         }
       }
       else if(nsd==3)
@@ -3169,6 +3219,92 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*rhsscaling*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
         }
       }
+
+
+
+#if 1
+
+      //--------------------------------------------------
+      // adjoint consistency term, pressure/continuity part
+      /*
+      //
+      //
+      //             /              \
+      //            |                |
+      //          - |  q , Dacc * n  |
+      //            |                |
+      //             \              / boundaryele
+      //
+      */
+      for (int ui=0; ui<piel; ++ui)
+      {
+        for (int vi=0; vi<piel; ++vi)
+        {
+          for(int i=0;i<nsd;++i)
+          {
+            elemat(vi*(nsd+1)+nsd,ui*(nsd+1)+i) -= fac*timefac*pfunct(vi)*pfunct(ui)*unitnormal(i);
+          }
+        }
+      }
+      
+      /*
+      // factor: 1.0
+      //
+      //             /                       \
+      //            |       / n+1     \       |
+      //          + |  q , | u   - u   | * n  |
+      //            |       \ (i)   B /       |
+      //             \                       / boundaryele
+      //
+      */
+      for (int vi=0; vi<piel; ++vi)
+      {
+        for(int i=0;i<nsd;++i)
+        {
+          elevec(vi*(nsd+1)+nsd) += fac*timefac*pfunct(vi)*delta_vel(i)*unitnormal(i);
+        }
+      }
+#endif
+
+
+
+
+
+#if 0
+      const double penalty=4*1000*viscosity/h;
+
+      for (int ui=0; ui<piel; ++ui)
+      {
+        for (int vi=0; vi<piel; ++vi)
+        {
+          const double temp=fac*penalty*timefac*pfunct(ui)*pfunct(vi);
+          for(int i=0;i<nsd;++i)
+          {
+            elemat(vi*(nsd+1) + i,ui*(nsd+1) + i) +=temp;
+          }
+        }
+      }
+
+      /*
+      // factor: nu*Cb/h
+      //
+      //    /                \
+      //   |        n+af      |
+      // + |   w , u    - u   |
+      //   |               b  |
+      //    \                / boundaryele
+      //
+      */
+
+      for (int vi=0; vi<piel; ++vi)
+      {
+        for(int i=0;i<nsd;++i)
+        {
+          elevec(vi*(nsd+1) + i) -= fac*penalty*timefac*pfunct(vi)*delta_vel(i);
+        }
+      }
+#endif
+
     }
   }
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
