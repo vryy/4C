@@ -714,6 +714,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
   const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
+  const double abstolres = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
   double       actresidual(0.0);
 
   int   itnum = 0;
@@ -769,7 +770,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
     // abort nonlinear iteration if desired
-    if (AbortNonlinIter(itnum,itemax,ittol,actresidual))
+    if (AbortNonlinIter(itnum,itemax,ittol,abstolres,actresidual))
        break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
@@ -853,6 +854,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     const int itnum,
     const int itemax,
     const double ittol,
+    const double abstolres,
     double& actresidual)
 {
   //----------------------------------------------------- compute norms
@@ -904,7 +906,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   }
 
   // absolute tolerance for deciding if residual is (already) zero
-  const double abstol = EPS14;
+  // prevents additional solver calls that will not improve the residual anymore
 
   //-------------------------------------------------- output to screen
   /* special case of very first iteration step:
@@ -920,7 +922,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       printf(")\n");
     }
     // abort iteration, when there's nothing more to do
-    if ((conresnorm < abstol) && (potresnorm < abstol))
+    if ((conresnorm < abstolres) && (potresnorm < abstolres))
     {
       // print 'finish line'
       if (myrank_ == 0)
@@ -967,7 +969,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     }
 
     // abort iteration, when there's nothing more to do! -> more robustness
-    if ((conresnorm < abstol) && (potresnorm < abstol))
+    if ((conresnorm < abstolres) && (potresnorm < abstolres))
     {
       // print 'finish line'
       if (myrank_ == 0)

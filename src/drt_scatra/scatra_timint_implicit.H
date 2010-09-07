@@ -108,7 +108,12 @@ public:
   virtual void ExplicitPredictor() = 0;
 
   /// check convergence (or divergence) of nonlinear iteration
-  bool AbortNonlinIter(const int itnum, const int itmax, const double ittol, double& actresidual);
+  bool AbortNonlinIter(
+      const int itnum,
+      const int itmax,
+      const double ittol,
+      const double abstolres,
+      double& actresidual);
 
   /// prepare Krylov space projection
   void PrepareKrylovSpaceProjection();
