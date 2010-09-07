@@ -71,7 +71,7 @@ namespace ELASTIC
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = \frac{k_1}{2k_2} (e^{(\overline{I}_{\boldsymbol{C}}-3)^2}-1).
+  ///   \Psi = \frac{k_1}{2k_2} (k_2e^{(\overline{I}_{\boldsymbol{C}}-3)^2}-1).
   ///\f]
   ///
   ///

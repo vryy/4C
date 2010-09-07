@@ -73,7 +73,7 @@ void MAT::ELASTIC::IsoExpo::AddCoefficientsModified(
   const double k1 = params_ -> k1_;
   const double k2 = params_ -> k2_;
 
-  gamma(0) += (2.*modinv(0)*k1-6.*k2)*exp(k2*(9.-6*modinv(0)+pow(modinv(0), 2)));
+  gamma(0) += (2.*modinv(0)*k1-6.*k1)*exp(k2*(9.-6*modinv(0)+pow(modinv(0), 2)));
 
   delta(0) += 4.*k1*(1.+18.*k2+2.*k2*pow(modinv(0), 2)-12.*k2*modinv(0))* exp(k2*(9.-6*modinv(0)+pow(modinv(0), 2)));
 
