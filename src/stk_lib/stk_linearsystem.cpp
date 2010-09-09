@@ -2,207 +2,153 @@
 #ifdef STKADAPTIVE
 
 #include "stk_linearsystem.H"
+#include "stk_discret.H"
+#include "../stk_refine/stk_mesh.H"
 
-namespace stk {
-namespace linsys {
+#include "../drt_lib/drt_dserror.H"
 
-void add_connectivities(stk::linsys::LinearSystemInterface& ls,
-                        stk::mesh::EntityRank entity_rank,
-                        stk::mesh::EntityRank connected_entity_rank,
-                        const std::vector<stk::mesh::FieldBase*>& fields,
-                        const stk::mesh::Selector& selector,
-                        const stk::mesh::BulkData& mesh_bulk)
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+STK::LinearSystem::LinearSystem( STK::Discretization & dis )
+  : rowdbcmap_( dis.DofRowDirichletMap() ),
+    coldbcmap_( dis.DofColDirichletMap() ),
+    importer_( dis.DofColMap(), dis.DofRowMap() )
 {
-  const std::vector<mesh::Bucket*>& mesh_buckets = mesh_bulk.buckets(entity_rank);
-  std::vector<mesh::Bucket*> part_buckets;
-  stk::mesh::get_buckets(selector, mesh_buckets, part_buckets);
+  // hanging node dof maps
+  // extract dof information to be able to assemble later on
 
-  if (part_buckets.empty()) return;
+  Mesh & mesh = dis.GetMesh();
+  stk::mesh::BulkData & bulk_data = mesh.BulkData();
+  //stk::mesh::Part & owned = mesh.OwnedPart();
 
-  stk::mesh::Entity& first_entity = *(part_buckets[0]->begin());
-  stk::mesh::PairIterRelation rel = first_entity.relations(connected_entity_rank);
-  int num_connected = rel.second - rel.first;
-
-  DofMapper& dof_mapper = ls.get_DofMapper();
-
-  for ( unsigned j=0; j<fields.size(); ++j )
+  const std::vector<stk::mesh::Bucket*> & constraints = bulk_data.buckets( stk::mesh::Constraint );
+  for ( std::vector<stk::mesh::Bucket*>::const_iterator i=constraints.begin();
+        i!=constraints.end();
+        ++i )
   {
-    dof_mapper.add_dof_mappings(mesh_bulk, selector, connected_entity_rank, *fields[j]);
-  }
+    stk::mesh::Bucket & bucket = **i;
 
-  // assume dense coupling of fields
+    // All hanging nodes are active. Shared and ghosted nodes need to be
+    // handled as well.
 
-  std::vector<int> numFieldsPerID;
-  std::vector<int> fieldIDs;
-
-  numFieldsPerID.reserve( num_connected );
-  fieldIDs.reserve( num_connected*fields.size() );
-
-  for ( int i=0; i<num_connected; ++i )
-  {
-    numFieldsPerID.push_back( fields.size() );
-    for ( unsigned j=0; j<fields.size(); ++j )
     {
-      fieldIDs.push_back( dof_mapper.get_field_id( *fields[j] ) );
-    }
-  }
-
-  //int field_id = dof_mapper.get_field_id(field);
-
-  fei::SharedPtr<fei::MatrixGraph> matgraph = ls.get_fei_MatrixGraph();
-
-  int pattern_id = matgraph->definePattern(num_connected, connected_entity_rank, &numFieldsPerID[0], &fieldIDs[0]);
-
-  int num_entities = 0;
-  for(size_t i=0; i<part_buckets.size(); ++i) {
-    num_entities += part_buckets[i]->size();
-  }
-
-  int block_id = matgraph->initConnectivityBlock(num_entities, pattern_id);
-
-  std::vector<int> connected_ids(num_connected);
-
-  for(size_t i=0; i<part_buckets.size(); ++i) {
-    stk::mesh::Bucket::iterator
-      b_iter = part_buckets[i]->begin(),
-      b_end  = part_buckets[i]->end();
-    for(; b_iter != b_end; ++b_iter) {
-      stk::mesh::Entity& entity = *b_iter;
-      rel = entity.relations(connected_entity_rank);
-      for(int j=0; rel.first != rel.second; ++rel.first, ++j) {
-        connected_ids[j] = rel.first->entity()->identifier();
-      }
-      int conn_id = entity.identifier();
-      matgraph->initConnectivity(block_id, conn_id, &connected_ids[0]);
-    }
-  }
-}
-
-}
-}
-
-STK::LinearSystem::LinearSystem( Mesh & mesh, stk::mesh::FieldBase * field )
-  : m_mesh( mesh ),
-    m_factory( new Factory_Trilinos( mesh.parallel() ) ),
-    m_ls( mesh.parallel(), m_factory )
-{
-  m_fields.push_back( field );
-  Setup();
-}
-
-
-STK::LinearSystem::LinearSystem( Mesh & mesh, stk::mesh::FieldBase * field1, stk::mesh::FieldBase * field2 )
-  : m_mesh( mesh ),
-    m_factory( new Factory_Trilinos( mesh.parallel() ) ),
-    m_ls( mesh.parallel(), m_factory )
-{
-  m_fields.push_back( field1 );
-  m_fields.push_back( field2 );
-  Setup();
-}
-
-
-void STK::LinearSystem::Setup()
-{
-  stk::mesh::Selector sel = m_mesh.OwnedPart() & m_mesh.ActivePart();
-
-  // Create the graph in advance.
-  // do this for all fields and all combinations of element type parts
-
-  stk::linsys::add_connectivities( m_ls, stk::mesh::Element, stk::mesh::Node,
-                                   m_fields, sel, m_mesh.BulkData() );
-
-  m_ls.synchronize_mappings_and_structure();
-  m_ls.create_fei_LinearSystem();
-
-  m_dof_mapper = & m_ls.get_DofMapper();
-  m_fei_ls     = m_ls.get_fei_LinearSystem();
-  m_fei_matrix = m_fei_ls->getMatrix();
-  m_fei_rhs    = m_fei_ls->getRHS();
-  m_fei_x      = m_fei_ls->getSolutionVector();
-}
-
-
-void STK::LinearSystem::Commit()
-{
-  //m_fei_matrix->putScalar( 1. );
-
-  m_ls.finalize_assembly();
-
-  m_fei_matrix->writeToFile("matrix.dump");
-  //m_fei_rhs->writeToFile("rhs.dump");
-}
-
-int STK::LinearSystem::Solve( int & status, Teuchos::ParameterList & params )
-{
-  return m_ls.solve( status, params );
-}
-
-void STK::LinearSystem::Done()
-{
-  stk::linsys::copy_vector_to_mesh( *m_fei_x, *m_dof_mapper, m_mesh.BulkData() );
-}
-
-void STK::LinearSystem::Assemble( stk::mesh::Bucket & bucket,
-                             Intrepid::FieldContainer<double> & localStiffMatrix,
-                             stk::mesh::Selector & sel,
-                             stk::mesh::Part & active,
-                             stk::mesh::Part & dbc )
-{
-  int k=0;
-  for (stk::mesh::Bucket::iterator j=bucket.begin();
-       j!=bucket.end();
-       ++j, ++k)
-  {
-    int row = 0;
-    for (stk::mesh::PairIterRelation r=j->relations(stk::mesh::Node);
-         not r.empty();
-         ++r, ++row)
-    {
-      stk::mesh::Entity * rn = r->entity();
-      if ( sel( rn->bucket() ) )
+      for ( stk::mesh::Bucket::iterator j=bucket.begin();
+            j!=bucket.end();
+            ++j )
       {
-        for ( unsigned rf = 0; rf < m_fields.size(); ++rf )
+        stk::mesh::Entity & c = *j;
+
+        stk::mesh::PairIterRelation rel = c.relations( stk::mesh::Node );
+        if ( not rel.empty() )
         {
-          stk::mesh::FieldBase & rfield = *m_fields[rf];
+          stk::mesh::Entity & hn = *rel[0].entity();
+          ++rel;
 
-          // This is a scalar or vector field. Take the number of
-          // entries. Assume double values. Ignore any stride.
-          int r_field_data_size = stk::mesh::field_data_size( rfield, rn->bucket() ) / sizeof( double );
-          for ( int r=0; r<r_field_data_size; ++r )
+          int numrealnodes = rel.size();
+          double fact = 1.0/numrealnodes;
+
+          std::vector<int> hndofs;
+          dis.Dof( hn.key(), hndofs );
+          for ( unsigned k=0; k!=hndofs.size(); ++k )
           {
-            int rowIndex = m_dof_mapper->get_global_index( rn->entity_rank(),
-                                                           rn->identifier(),
-                                                           rfield,
-                                                           r );
-            if ( not has_superset( rn->bucket(), dbc ) )
+            int d = hndofs[k];
+            DofData & dd = hndofmap_[d];
+            dd.fact = fact;
+            std::set<int> & realdofmap = dd.realdofmap;
+            for ( stk::mesh::PairIterRelation::iterator r=rel.begin(); r!=rel.end(); ++r )
             {
-              int col = 0;
-              for (stk::mesh::PairIterRelation c=j->relations(stk::mesh::Node);
-                   not c.empty();
-                   ++c, ++col)
-              {
-                stk::mesh::Entity * cn = c->entity();
-                if ( has_superset( cn->bucket(), active ) )
-                {
-                  for ( unsigned cf = 0; cf < m_fields.size(); ++cf )
-                  {
-                    stk::mesh::FieldBase & cfield = *m_fields[cf];
+              stk::mesh::Entity & n = *r->entity();
 
-                    // This is a scalar or vector field. Take the number of
-                    // entries. Assume double values. Ignore any stride.
-                    int c_field_data_size = stk::mesh::field_data_size( cfield, cn->bucket() ) / sizeof( double );
-                    for ( int c=0; c<c_field_data_size; ++c )
+              std::vector<int> dofs;
+              dis.Dof( n.key(), dofs );
+              if ( dofs.size() <= k )
+                dserror( "too few dofs in supporting node. expected %d but got %d", k+1, dofs.size() );
+              realdofmap.insert( dofs[k] );
+            }
+          }
+        }
+        else
+        {
+          dserror( "no nodes in constraint" );
+        }
+      }
+    }
+  }
+
+  sysmat_ = Teuchos::rcp( new Epetra_FECrsMatrix( Copy, *MatrixGraph( dis ) ) );
+  rowrhs_ = Teuchos::rcp( new Epetra_Vector( dis.DofRowMap() ) );
+  rhs_    = Teuchos::rcp( new Epetra_Vector( dis.DofColMap() ) );
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> STK::LinearSystem::MatrixGraph( STK::Discretization & dis )
+{
+  STK::Mesh & mesh = dis.GetMesh();
+  const Epetra_Map & dofrowmap = dis.DofRowMap();
+
+  // build graph
+
+  std::map<int, std::set<int> > graph;
+
+  stk::mesh::Selector selector = mesh.OwnedPart() & mesh.ActivePart();
+  const std::vector<stk::mesh::Bucket*> & buckets = mesh.BulkData().buckets( stk::mesh::Node );
+
+  // loop buckets and entries
+  for (std::vector<stk::mesh::Bucket*>::const_iterator i=buckets.begin();
+       i!=buckets.end();
+       ++i)
+  {
+    stk::mesh::Bucket & bucket = **i;
+    if ( selector( bucket ) )
+    {
+      for ( stk::mesh::Bucket::iterator ib=bucket.begin();
+            ib!=bucket.end();
+            ++ib )
+      {
+        stk::mesh::Entity & rn = *ib;
+
+        std::vector<int> rdofs;
+        dis.Dof( rn.key(), rdofs );
+        for ( unsigned rj=0; rj<rdofs.size(); ++rj )
+        {
+          std::set<int> & rowset = graph[rdofs[rj]];
+          if ( not rowdbcmap_.MyGID( rdofs[rj] ) )
+          {
+            // non-Dirichlet row
+
+            std::map<int, DofData>::iterator rhndofmap = hndofmap_.find( rdofs[rj] );
+            if ( rhndofmap==hndofmap_.end() )
+            {
+              for ( stk::mesh::PairIterRelation k=rn.relations( stk::mesh::Element );
+                    not k.empty();
+                    ++k )
+              {
+                stk::mesh::Entity & e = *k->entity();
+                for ( stk::mesh::PairIterRelation l=e.relations( stk::mesh::Node );
+                      not l.empty();
+                      ++l )
+                {
+                  stk::mesh::Entity & cn = *l->entity();
+
+                  std::vector<int> cdofs;
+                  dis.Dof( cn.key(), cdofs );
+                  //rowset.insert( cdofs.begin(), cdofs.end() );
+                  for ( unsigned cj=0; cj<cdofs.size(); ++cj )
+                  {
+                    std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cdofs[cj] );
+                    if ( chndofmap==hndofmap_.end() )
                     {
-                      int colIndex = m_dof_mapper->get_global_index( cn->entity_rank(),
-                                                                     cn->identifier(),
-                                                                     cfield,
-                                                                     c );
-                      double* val = &localStiffMatrix(k,row,col);
-                      if ( m_fei_matrix->sumIn(1,&rowIndex,1,&colIndex,&val)!=0)
-                      {
-                        throw std::runtime_error("matrix assemble failed");
-                      }
+                      rowset.insert( cdofs[cj] );
+                    }
+                    else
+                    {
+                      // Instead of the hanging node dof we are connected with all
+                      // those real node dofs.
+                      DofData & cdd = chndofmap->second;
+                      rowset.insert( cdd.realdofmap.begin(), cdd.realdofmap.end() );
                     }
                   }
                 }
@@ -210,63 +156,342 @@ void STK::LinearSystem::Assemble( stk::mesh::Bucket & bucket,
             }
             else
             {
-              double val = 1;
-              double * pval = &val;
-              if ( m_fei_matrix->sumIn( 1, &rowIndex, 1, &rowIndex, &pval )!=0 )
+              // have an innocent (unconnected) diagonal entry in a hanging node row
+              rowset.insert( rdofs[rj] );
+
+              DofData & rdd = rhndofmap->second;
+              std::set<int> & realdofmap = rdd.realdofmap;
+
+              rowset.insert( realdofmap.begin(), realdofmap.end() );
+
+              // Add my line to all those connected lines, if those lines are no
+              // Dirichlet lines. Here we do not have to watch for hanging nodes
+              // any more.
+              for ( std::set<int>::iterator r=realdofmap.begin(); r!=realdofmap.end(); ++r )
               {
-                throw std::runtime_error( "matrix assemble failed" );
+                int rd = *r;
+                if ( not rowdbcmap_.MyGID( rd ) and dofrowmap.MyGID( rd ) )
+                {
+                  std::set<int> & hnrowset = graph[rd];
+
+                  for ( stk::mesh::PairIterRelation k=rn.relations( stk::mesh::Element );
+                        not k.empty();
+                        ++k )
+                  {
+                    stk::mesh::Entity & e = *k->entity();
+                    for ( stk::mesh::PairIterRelation l=e.relations( stk::mesh::Node );
+                          not l.empty();
+                          ++l )
+                    {
+                      stk::mesh::Entity & cn = *l->entity();
+
+                      std::vector<int> cdofs;
+                      dis.Dof( cn.key(), cdofs );
+                      for ( unsigned cj=0; cj<cdofs.size(); ++cj )
+                      {
+                        std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cdofs[cj] );
+                        if ( chndofmap==hndofmap_.end() )
+                        {
+                          hnrowset.insert( cdofs[cj] );
+                        }
+                        else
+                        {
+                          // Instead of the hanging node dof we are connected with all
+                          // those real node dofs.
+                          DofData & cdd = chndofmap->second;
+                          hnrowset.insert( cdd.realdofmap.begin(), cdd.realdofmap.end() );
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
+          else
+          {
+            // just diagonal entry on Dirichlet rows and hanging node rows
+            rowset.insert( rdofs[rj] );
+          }
         }
       }
     }
   }
+
+  // setup graph with row length and column indices per row
+
+  std::vector<int> sizes( graph.size() );
+  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
+  {
+    int gid = i->first;
+    int lid = dofrowmap.LID( gid );
+    std::set<int> & rowset = i->second;
+    unsigned s = rowset.size();
+    sizes[lid] = s;
+  }
+
+  Teuchos::RCP<Epetra_CrsGraph> crsgraph =
+    Teuchos::rcp( new Epetra_CrsGraph( Copy, dofrowmap, &sizes[0], true ) );
+
+  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
+  {
+    int gid = i->first;
+    std::set<int> & rowset = i->second;
+    unsigned s = rowset.size();
+    std::vector<int> row;
+    row.reserve( s );
+    row.assign( rowset.begin(), rowset.end() );
+
+    int err = crsgraph->InsertGlobalIndices( gid, row.size(), &row[0] );
+    if ( err )
+      dserror( "InsertGlobalIndices failed: %d", err );
+  }
+
+  crsgraph->FillComplete();
+
+  return crsgraph;
 }
 
-void STK::LinearSystem::Assemble( stk::mesh::Bucket & bucket,
-                             Intrepid::FieldContainer<double> & localRHS,
-                             stk::mesh::Selector & sel,
-                             stk::mesh::Part & dbc )
-{
-  int k=0;
-  for ( stk::mesh::Bucket::iterator j=bucket.begin();
-        j!=bucket.end();
-        ++j, ++k )
-  {
-    int row = 0;
-    for ( stk::mesh::PairIterRelation r=j->relations(stk::mesh::Node);
-          not r.empty();
-          ++r, ++row )
-    {
-      stk::mesh::Entity * rn = r->entity();
-      if ( sel( rn->bucket() ) )
-      {
-        for ( unsigned rf = 0; rf < m_fields.size(); ++rf )
-        {
-          stk::mesh::FieldBase & rfield = *m_fields[rf];
 
-          // This is a scalar or vector field. Take the number of
-          // entries. Assume double values. Ignore any stride.
-          int r_field_data_size = stk::mesh::field_data_size( rfield, rn->bucket() ) / sizeof( double );
-          for ( int r=0; r<r_field_data_size; ++r )
-          {
-            int rowIndex = m_dof_mapper->get_global_index( rn->entity_rank(),
-                                                           rn->identifier(),
-                                                           rfield,
-                                                           r );
-            if ( not has_superset( rn->bucket(), dbc ) )
-            {
-              double val = -localRHS( k, row );
-              m_fei_rhs->sumIn( 1, &rowIndex, &val );
-            }
-            else
-            {
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::LinearSystem::Assemble(int eid,
+                                 const Epetra_SerialDenseMatrix& Aele,
+                                 const std::vector<int>& lmrow,
+                                 const std::vector<int>& lmrowowner,
+                                 const std::vector<int>& lmcol)
+{
+  Epetra_FECrsMatrix * mat = &*sysmat_;
+
+  if (not mat->Filled())
+    dserror( "not filled" );
+
 #if 0
-              double val = 0;
-              m_fei_rhs->sumIn( 1, &rowIndex, &val );
+  if ( eid==382 or eid==438 or eid==383 )
+  {
+    std::cout << "P" << dbcmap_->Comm().MyPID() << ": assemble element " << eid << "\n";
+  }
 #endif
+
+  const unsigned lrowdim = lmrow.size();
+  const unsigned lcoldim = lmcol.size();
+
+  const int myrank = mat->Comm().MyPID();
+  const Epetra_Map& rowmap = mat->RowMap();
+  const Epetra_Map& colmap = mat->ColMap();
+
+  // loop rows of local matrix
+  for (unsigned lrow=0; lrow<lrowdim; ++lrow)
+  {
+    const int rgid = lmrow[lrow];
+
+    // check if this row is a Dirichlet row
+    if ( coldbcmap_.MyGID( rgid ) ) continue;
+
+    // check for hanging node row
+    std::map<int, DofData>::iterator rhndofmap = hndofmap_.find( rgid );
+
+    if ( rhndofmap==hndofmap_.end() )
+    {
+      // check ownership of row
+      if (lmrowowner[lrow] == myrank)
+      {
+        const int rlid = rowmap.LID(rgid);
+
+        for (unsigned lcol=0; lcol<lcoldim; ++lcol)
+        {
+          double value = Aele(lrow,lcol);
+          int cgid = lmcol[lcol];
+
+          // check for hanging node row
+          std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cgid );
+
+          if ( chndofmap==hndofmap_.end() )
+          {
+            int idx = colmap.LID( cgid );
+            const int errone = mat->SumIntoMyValues(rlid,1,&value,&idx);
+            if (errone)
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+          }
+          else
+          {
+            DofData & cdd = chndofmap->second;
+            double fvalue = value*cdd.fact; // linear elements only for now
+            for ( std::set<int>::iterator dof=cdd.realdofmap.begin();
+                  dof!=cdd.realdofmap.end();
+                  ++dof )
+            {
+              int gid = *dof;
+              int idx = colmap.LID( gid );
+              const int errone = mat->SumIntoMyValues(rlid,1,&fvalue,&idx);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
             }
+          }
+        }
+      }
+      else
+      {
+        // off-row assemble
+        // here we use the global id versions of the code above
+#if 1
+        for (unsigned lcol=0; lcol<lcoldim; ++lcol)
+        {
+          double value = Aele(lrow,lcol);
+          int cgid = lmcol[lcol];
+
+          // check for hanging node row
+          std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cgid );
+
+          if ( chndofmap==hndofmap_.end() )
+          {
+            const int errone = mat->SumIntoGlobalValues(rgid,1,&value,&cgid);
+            if (errone)
+              dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+          }
+          else
+          {
+            DofData & cdd = chndofmap->second;
+            double fvalue = value*cdd.fact; // linear elements only for now
+            for ( std::set<int>::iterator dof=cdd.realdofmap.begin();
+                  dof!=cdd.realdofmap.end();
+                  ++dof )
+            {
+              int gid = *dof;
+              const int errone = mat->SumIntoGlobalValues(rgid,1,&fvalue,&gid);
+              if (errone)
+                dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+            }
+          }
+        }
+#endif
+      }
+    }
+    else
+    {
+      // put hanging node row to real node rows
+
+      DofData & rdd = rhndofmap->second;
+      std::set<int> & realdofmap = rdd.realdofmap;
+
+      double fvalue = -rdd.fact;
+
+      // check ownership of row
+      if (lmrowowner[lrow] == myrank)
+      {
+        // do innocent decoupled value first
+
+        int rlid = rowmap.LID(rgid);
+        double value = 1;
+
+        const int errone = mat->ReplaceMyValues(rlid,1,&value,&rlid);
+        if (errone)
+          dserror("Epetra_CrsMatrix::ReplaceMyValues returned error code %d",errone);
+
+        for ( std::set<int>::iterator c=realdofmap.begin(); c!=realdofmap.end(); ++c )
+        {
+          int cgid = *c;
+          int clid = colmap.LID(cgid);
+          const int errone = mat->ReplaceMyValues(rlid,1,&fvalue,&clid);
+          if (errone)
+            dserror("Epetra_CrsMatrix::ReplaceMyValues(%d,1,%f,%d) returned error code %d",rlid,fvalue,clid,errone);
+        }
+      }
+      else
+      {
+        // off-row assemble
+#if 1
+        double value = 1;
+
+        const int errone = mat->ReplaceGlobalValues(rgid,1,&value,&rgid);
+        if (errone)
+          dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned error code %d",errone);
+
+        for ( std::set<int>::iterator c=realdofmap.begin(); c!=realdofmap.end(); ++c )
+        {
+          int cgid = *c;
+          const int errone = mat->ReplaceGlobalValues(rgid,1,&fvalue,&cgid);
+          if (errone)
+            dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned error code %d",errone);
+        }
+#endif
+      }
+
+      for ( std::set<int>::iterator r=realdofmap.begin(); r!=realdofmap.end(); ++r )
+      {
+        int rgid = *r;
+        if ( not coldbcmap_.MyGID( rgid ) )
+        {
+          if ( rowmap.MyGID( rgid ) )
+          {
+            const int rlid = rowmap.LID(rgid);
+
+            for (unsigned lcol=0; lcol<lcoldim; ++lcol)
+            {
+              double value = Aele(lrow,lcol)*rdd.fact;
+              int cgid = lmcol[lcol];
+
+              // check for hanging node row
+              std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cgid );
+
+              if ( chndofmap==hndofmap_.end() )
+              {
+                int idx = colmap.LID( cgid );
+                const int errone = mat->SumIntoMyValues(rlid,1,&value,&idx);
+                if (errone)
+                  dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+              }
+              else
+              {
+                DofData & cdd = chndofmap->second;
+                double fvalue = value*cdd.fact; // linear elements only for now
+                for ( std::set<int>::iterator dof=cdd.realdofmap.begin();
+                      dof!=cdd.realdofmap.end();
+                      ++dof )
+                {
+                  int gid = *dof;
+                  int idx = colmap.LID( gid );
+                  const int errone = mat->SumIntoMyValues(rlid,1,&fvalue,&idx);
+                  if (errone)
+                    dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+                }
+              }
+            }
+          }
+          else
+          {
+            // off-row assemble
+#if 1
+            for (unsigned lcol=0; lcol<lcoldim; ++lcol)
+            {
+              double value = Aele(lrow,lcol)*rdd.fact;
+              int cgid = lmcol[lcol];
+
+              // check for hanging node row
+              std::map<int, DofData>::iterator chndofmap = hndofmap_.find( cgid );
+
+              if ( chndofmap==hndofmap_.end() )
+              {
+                const int errone = mat->SumIntoGlobalValues(rgid,1,&value,&cgid);
+                if (errone)
+                  dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+              }
+              else
+              {
+                DofData & cdd = chndofmap->second;
+                double fvalue = value*cdd.fact; // linear elements only for now
+                for ( std::set<int>::iterator dof=cdd.realdofmap.begin();
+                      dof!=cdd.realdofmap.end();
+                      ++dof )
+                {
+                  int gid = *dof;
+                  const int errone = mat->SumIntoGlobalValues(rgid,1,&fvalue,&gid);
+                  if (errone)
+                    dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+                }
+              }
+            }
+#endif
           }
         }
       }
@@ -274,4 +499,111 @@ void STK::LinearSystem::Assemble( stk::mesh::Bucket & bucket,
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::LinearSystem::Assemble(int eid,
+                                 const Epetra_SerialDenseVector& Vele,
+                                 const std::vector<int>& lm)
+{
+  Epetra_Vector & V = *rhs_;
+
+  const unsigned ldim = lm.size();
+  if ( ldim!=static_cast<unsigned>( Vele.Length() ) )
+    dserror("Mismatch in dimensions");
+
+  const Epetra_BlockMap& colmap = V.Map();
+
+  for (unsigned lrow=0; lrow<ldim; ++lrow)
+  {
+    int rgid = lm[lrow];
+
+    int rlid = colmap.LID( rgid );
+    if ( rlid < 0 )
+      dserror("Sparse vector V does not have global row %d", rgid);
+
+    // check for hanging node row
+    std::map<int, DofData>::iterator rhndofmap = hndofmap_.find( rgid );
+
+    if ( rhndofmap==hndofmap_.end() )
+    {
+      V[rlid] += Vele[lrow];
+    }
+    else
+    {
+      V[rlid] = 0.;
+
+      DofData & rdd = rhndofmap->second;
+      std::set<int> & realdofmap = rdd.realdofmap;
+      double fvalue = Vele[lrow] * rdd.fact;
+
+      for ( std::set<int>::iterator r=realdofmap.begin(); r!=realdofmap.end(); ++r )
+      {
+        int rgid = *r;
+        int rlid = colmap.LID( rgid );
+        if ( rlid < 0 )
+          dserror("Sparse vector V does not have global row %d", rgid);
+        V[rlid] += fvalue;
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::LinearSystem::Complete()
+{
+  int err = sysmat_->GlobalAssemble();
+  if ( err )
+    dserror( "Epetra_FECrsMatrix::GlobalAssemble failed: err=%d", err );
+
+  err = rowrhs_->Export( *rhs_, importer_, Add );
+  if (err)
+    dserror("Export using importer returned err=%d", err);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::LinearSystem::Zero()
+{
+  sysmat_->PutScalar( 0.0 );
+  rowrhs_->PutScalar( 0.0 );    // just to make sure nobody gets confused
+  rhs_   ->PutScalar( 0.0 );
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::LinearSystem::ApplyDirichlet( Epetra_Vector & dirichlet )
+{
+  Epetra_Vector & rhs = *rowrhs_;
+  Epetra_FECrsMatrix & mat = *sysmat_;
+
+  const Epetra_BlockMap & rowmap = rhs.Map();
+
+  if ( not rowmap.PointSameAs( dirichlet.Map() ) )
+    dserror( "expect same maps here" );
+
+  int length = rowdbcmap_.NumMyElements();
+  int * gids = rowdbcmap_.MyGlobalElements();
+
+  double v = 1.0;
+
+  for (int i=0; i<length; ++i)
+  {
+    int gid = gids[i];
+    int lid = rowmap.LID( gid );
+    if ( lid<0 )
+      dserror( "illegal dirichlet map" );
+    rhs[lid] = dirichlet[lid];
+
+    int err = mat.ReplaceMyValues(lid,1,&v,&lid);
+    if (err<0)
+      dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d",err);
+  }
+}
+
 #endif
+

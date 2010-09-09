@@ -3,7 +3,6 @@
 #include "../drt_lib/drt_dserror.H"
 
 
-
 LINALG::FixedSparseMatrix::FixedSparseMatrix( Teuchos::RCP<const Epetra_Map> dbcmap )
   : dbcmap_( dbcmap )
 {
@@ -11,6 +10,10 @@ LINALG::FixedSparseMatrix::FixedSparseMatrix( Teuchos::RCP<const Epetra_Map> dbc
 
 void LINALG::FixedSparseMatrix::SetMatrix( Teuchos::RCP<Epetra_CrsGraph> graph )
 {
+#if 0
+  // Always create a FE matrix here. It does not hurt and allows better assembly.
+  sysmat_ = Teuchos::rcp( new Epetra_FECrsMatrix( Copy, *graph ) );
+#endif
   sysmat_ = Teuchos::rcp( new Epetra_CrsMatrix( Copy, *graph ) );
 }
 
@@ -85,6 +88,15 @@ void LINALG::FixedSparseMatrix::Assemble(double val, int rgid, int cgid)
 void LINALG::FixedSparseMatrix::Complete()
 {
   if (sysmat_->Filled()) return;
+#if 0
+  Epetra_FECrsMatrix * mat = dynamic_cast<Epetra_FECrsMatrix*>( &*sysmat_ );
+  if ( mat!=NULL )
+  {
+    int err = mat->GlobalAssemble( false );
+    if ( err )
+      dserror( "Epetra_FECrsMatrix::GlobalAssemble failed: err=%d", err );
+  }
+#endif
   int err = sysmat_->FillComplete(true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
 }
@@ -92,6 +104,15 @@ void LINALG::FixedSparseMatrix::Complete()
 void LINALG::FixedSparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap)
 {
   if (sysmat_->Filled()) return;
+#if 0
+  Epetra_FECrsMatrix * mat = dynamic_cast<Epetra_FECrsMatrix*>( &*sysmat_ );
+  if ( mat!=NULL )
+  {
+    int err = mat->GlobalAssemble( false );
+    if ( err )
+      dserror( "Epetra_FECrsMatrix::GlobalAssemble failed: err=%d", err );
+  }
+#endif
   int err = sysmat_->FillComplete(domainmap,rangemap,true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
 }

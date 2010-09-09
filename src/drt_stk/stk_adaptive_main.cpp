@@ -13,6 +13,7 @@
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 
 void adaptive_main()
 {
@@ -65,6 +66,13 @@ void adaptive_main()
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
+#if 0
+      Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+      output->WriteMesh(0,0.0);
+      output->NewStep(0,0.0);
+      output->WriteElementData();
+#endif
+
 #if 1
 
       STK::Discretization dis( actdis->Comm() );
@@ -72,8 +80,13 @@ void adaptive_main()
 
       dis.Setup( *actdis, fluid );
 
+      dis.AdaptMesh( std::vector<stk::mesh::EntityKey>(),
+                     std::vector<stk::mesh::EntityKey>() );
+
       fluid.Integrate();
 
+      DRT::Problem::Instance()->AddFieldTest(fluid.CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(actdis->Comm());
 #else
       STK::Fluid fluid( *actdis, solver );
       fluid.SetupSTKMesh();

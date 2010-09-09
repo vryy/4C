@@ -3,7 +3,7 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "stk_assemblestrategy.H"
-#include "../stk_lib/stk_mesh.H"
+#include "../stk_refine/stk_mesh.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"

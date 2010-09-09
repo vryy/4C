@@ -1,13 +1,17 @@
 
 #ifdef STKADAPTIVE
 
+#include <Isorropia_Epetra.hpp>
+#include <Isorropia_EpetraCostDescriber.hpp>
+#include <Isorropia_EpetraRedistributor.hpp>
+#include <Isorropia_EpetraPartitioner.hpp>
+
 #include "stk_algorithm.H"
 #include "stk_discret.H"
-#include "stk_fei.H"
 #include "stk_field_comm.H"
-#include "stk_mesh.H"
-#include "stk_refine.H"
-#include "stk_unrefine.H"
+#include "../stk_refine/stk_mesh.H"
+#include "../stk_refine/stk_refine.H"
+#include "../stk_refine/stk_unrefine.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -47,6 +51,11 @@ STK::Discretization::Discretization( const Epetra_Comm & comm )
   : comm_( comm ),
     algo_( NULL )
 {
+#if 0
+  std::stringstream str;
+  str << "refine-" << comm.MyPID() << ".log";
+  refine_log_.open( str.str().c_str() );
+#endif
 }
 
 
@@ -334,6 +343,36 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
 
   bulk_data.modification_end();
 
+#if 0
+
+  bulk_data.modification_begin();
+
+  std::vector<stk::mesh::EntityProc> ep;
+
+  if ( bulk_data.parallel_rank()==0 )
+  {
+    ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 271 ), 1 ) );
+
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 382 ), 1 ) );
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 383 ), 1 ) );
+  }
+  if ( bulk_data.parallel_rank()==3 )
+  {
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 281 ), 1 ) );
+    ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 314 ), 1 ) );
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 342 ), 1 ) );
+
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 321 ), 1 ) );
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 322 ), 1 ) );
+//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 323 ), 1 ) );
+  }
+
+  bulk_data.change_entity_owner(ep);
+
+  bulk_data.modification_end();
+
+#endif
+
   // create new state and propagate information
   CreateState();
 }
@@ -357,8 +396,12 @@ const std::map<int, Teuchos::ParameterList> * STK::Discretization::Condition( DR
 void STK::Discretization::AdaptMesh( const std::vector<stk::mesh::EntityKey> & refine,
                                      const std::vector<stk::mesh::EntityKey> & unrefine )
 {
+  //GetMesh().Dump( "refine" );
   Refine( refine );
+  //GetMesh().Dump( "unrefine" );
   Unrefine( unrefine );
+  //GetMesh().Dump( "done" );
+  Rebalance();
   CreateState();
 }
 
@@ -411,9 +454,145 @@ void STK::Discretization::Unrefine( const std::vector<stk::mesh::EntityKey> & ei
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void STK::Discretization::Rebalance()
+{
+  // get current graph
+  Teuchos::RCP<Epetra_CrsGraph> graph = ElementGraph();
+  const Epetra_BlockMap& src_map = graph->Map();
+
+  Teuchos::ParameterList params;
+  Teuchos::ParameterList& sublist = params.sublist("Zoltan");
+
+  params.set("PARTITIONING METHOD", "GRAPH");
+  sublist.set("LB_APPROACH", "PARTITION");
+  sublist.set("GRAPH_PACKAGE", "PARMETIS");
+  //params.set("PARTITIONING METHOD", "HYPERGRAPH");
+
+  //sublist.set("DEBUG_LEVEL", "1"); // Zoltan will print out parameters
+  //sublist.set("DEBUG_LEVEL", "5");   // proc 0 will trace Zoltan calls
+  //sublist.set("DEBUG_MEMORY", "2");  // Zoltan will trace alloc & free
+
+  // do partitioning
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner =
+    Teuchos::rcp(new Isorropia::Epetra::Partitioner( Teuchos::rcp_implicit_cast<const Epetra_CrsGraph>( graph ), params ) );
+
+  // get epetra communication pattern
+  Teuchos::RCP<Epetra_Map> target_map = partitioner->createNewMap();
+  Teuchos::RCP<Epetra_Import> importer = Teuchos::rcp(new Epetra_Import(*target_map, src_map));
+
+  // extract communication information
+  std::vector<stk::mesh::EntityProc> ep;
+
+  int numsend = importer->NumSend();
+  int* exportlids = importer->ExportLIDs();
+  int* exportpids = importer->ExportPIDs();
+
+  ep.reserve(numsend);
+
+  Epetra_Map nodemap = NodeRowMap();
+  Epetra_IntVector nodeproc(nodemap);
+  nodeproc.PutValue(-1);
+
+  STK::Mesh & mesh = GetMesh();
+  stk::mesh::BulkData & bulk = mesh.BulkData();
+  unsigned rank = bulk.parallel_rank();
+
+  for (int i=0; i<numsend; ++i)
+  {
+    int lid = exportlids[i];
+    int pid = exportpids[i];
+    int gid = src_map.GID(lid);
+
+    //std::cout << lid << " " << pid << " " << gid << "\n";
+
+    stk::mesh::Entity * e = bulk.get_entity( stk::mesh::Element , gid );
+    if ( has_superset( e->bucket(), mesh.OwnedPart() ) )
+    {
+      ep.push_back(stk::mesh::EntityProc(e,pid));
+
+      // send edge/face elements along with the main element
+
+      for ( stk::mesh::PairIterRelation rel = e->relations( stk::mesh::Edge );
+            not rel.empty();
+            ++rel )
+      {
+        ep.push_back( stk::mesh::EntityProc( rel->entity(), pid ) );
+      }
+
+      for ( stk::mesh::PairIterRelation rel = e->relations( stk::mesh::Face );
+            not rel.empty();
+            ++rel )
+      {
+        ep.push_back( stk::mesh::EntityProc( rel->entity(), pid ) );
+      }
+    }
+
+    // look at the nodes of this element
+    stk::mesh::PairIterRelation nrel = e->relations( stk::mesh::Node );
+    for (stk::mesh::PairIterRelation::iterator inr=nrel.begin(); inr!=nrel.end(); ++inr)
+    {
+      stk::mesh::Entity * n = inr->entity();
+      if (rank==n->owner_rank())
+      {
+        int id = static_cast<int>( n->identifier() );
+        int nlid = nodemap.LID( id );
+        if (nlid<0)
+          throw std::logic_error("not a lid");
+        nodeproc[nlid] = std::max(nodeproc[nlid],pid);
+      }
+    }
+  }
+
+  // add node communications
+  for (int i=0; i<nodeproc.MyLength(); ++i)
+  {
+    int pid = nodeproc[i];
+    if (pid>-1)
+    {
+      int gid = nodemap.GID(i);
+
+      stk::mesh::Entity * n = bulk.get_entity( stk::mesh::Node , gid );
+      if ( stk::mesh::has_superset( n->bucket(), mesh.OwnedPart() ) )
+      {
+        ep.push_back( stk::mesh::EntityProc( n, pid ) );
+
+        // move hanging node constraints along with the node
+        stk::mesh::PairIterRelation pi = n->relations( stk::mesh::Constraint );
+        for ( ; not pi.empty(); ++pi )
+        {
+          // a hanging node always is the first node in its constraint
+          if ( pi->entity()->relations( stk::mesh::Node )->entity() == n )
+          {
+            ep.push_back( stk::mesh::EntityProc( pi->entity(), pid ) );
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  //stk::mesh::sort_unique(ep);
+
+  std::sort( ep.begin() , ep.end() , stk::mesh::EntityLess() );
+  std::vector<stk::mesh::EntityProc>::iterator i = std::unique( ep.begin() , ep.end() );
+  ep.erase( i , ep.end() );
+
+  // do communication
+  mesh.Modify();
+
+  bulk.change_entity_owner(ep);
+
+  mesh.Dump( "rebalance" );
+
+  mesh.Commit();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void STK::Discretization::CreateState()
 {
-  state_ = Teuchos::rcp( new STK::FEI::DiscretizationState( *this ) );
+  state_ = Teuchos::rcp( new STK::DiscretizationState( *this ) );
 
   std::vector<stk::mesh::FieldBase*> fields;
 
@@ -422,6 +601,171 @@ void STK::Discretization::CreateState()
   state_->Setup( fields );
 
   algo_->notify_state_changed();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> STK::Discretization::NodeGraph()
+{
+  STK::Mesh & mesh = GetMesh();
+  std::map<int,std::set<int> > graph;
+
+  // Get all owned nodes
+  stk::mesh::Selector ownedselector = mesh.OwnedPart() & mesh.ActivePart();
+  const std::vector<stk::mesh::Bucket*> & buckets = mesh.BulkData().buckets( stk::mesh::Node );
+
+  // loop buckets and entries
+  for (std::vector<stk::mesh::Bucket*>::const_iterator i=buckets.begin();
+       i!=buckets.end();
+       ++i)
+  {
+    stk::mesh::Bucket & bucket = **i;
+    if ( ownedselector( bucket ) )
+    {
+      for (stk::mesh::Bucket::iterator ib=bucket.begin();
+           ib!=bucket.end();
+           ++ib)
+      {
+        stk::mesh::Entity & e = *ib;
+        int id = static_cast<int>( e.identifier() );
+        std::set<int> & row = graph[id];
+
+        // all elements connected
+        // we expect proper ghosting here!
+        stk::mesh::PairIterRelation erel = e.relations( stk::mesh::Element );
+        for (stk::mesh::PairIterRelation::iterator ier=erel.begin(); ier!=erel.end(); ++ier)
+        {
+          // all nodes connected to the element
+          stk::mesh::PairIterRelation nrel = ier->entity()->relations( stk::mesh::Node );
+          for (stk::mesh::PairIterRelation::iterator inr=nrel.begin(); inr!=nrel.end(); ++inr)
+          {
+            row.insert( static_cast<int>( inr->entity()->identifier() ) );
+          }
+        }
+      }
+    }
+  }
+
+  const Epetra_Map & nodemap = NodeRowMap();
+  std::vector<int> numIndicesPerRow( graph.size() );
+  for (std::map<int,std::set<int> >::iterator i=graph.begin();
+       i!=graph.end();
+       ++i)
+  {
+    int gid = i->first;
+    int lid = nodemap.LID(gid);
+    if (lid<0)
+      dserror( "illegal lid" );
+    numIndicesPerRow[lid] = i->second.size();
+  }
+
+  Teuchos::RCP<Epetra_CrsGraph> g = Teuchos::rcp(new Epetra_CrsGraph(Copy,nodemap,&numIndicesPerRow[0],true));
+  for (std::map<int,std::set<int> >::iterator i=graph.begin();
+       i!=graph.end();
+       ++i)
+  {
+    int gid = i->first;
+    int lid = nodemap.LID(gid);
+    if (lid<0)
+      dserror( "illegal lid" );
+    std::vector<int> row;
+    row.reserve(i->second.size());
+    row.assign(i->second.begin(),i->second.end());
+    g->InsertGlobalIndices(gid,row.size(),&row[0]);
+  }
+  g->FillComplete();
+  return g;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> STK::Discretization::ElementGraph()
+{
+  STK::Mesh & mesh = GetMesh();
+  std::map<int,std::set<int> > graph;
+
+  std::set<int> eids;
+
+  stk::mesh::Part & active = mesh.ActivePart();
+
+  // Get all owned nodes
+  stk::mesh::Selector ownedselector = mesh.OwnedPart() & mesh.ActivePart();
+  const std::vector<stk::mesh::Bucket*> & buckets = mesh.BulkData().buckets( stk::mesh::Element );
+
+  // loop buckets and entries
+  for (std::vector<stk::mesh::Bucket*>::const_iterator i=buckets.begin();
+       i!=buckets.end();
+       ++i)
+  {
+    stk::mesh::Bucket & bucket = **i;
+    if ( ownedselector( bucket ) )
+    {
+      for (stk::mesh::Bucket::iterator ib=bucket.begin();
+           ib!=bucket.end();
+           ++ib)
+      {
+        stk::mesh::Entity & e = *ib;
+        int id = static_cast<int>( e.identifier() );
+        std::set<int> & row = graph[id];
+
+        eids.insert( id );
+
+        // all elements connected
+        // we expect proper ghosting here!
+        stk::mesh::PairIterRelation erel = e.relations( stk::mesh::Node );
+        for (stk::mesh::PairIterRelation::iterator ier=erel.begin(); ier!=erel.end(); ++ier)
+        {
+          // all nodes connected to the element
+          stk::mesh::PairIterRelation nrel = ier->entity()->relations( stk::mesh::Element );
+          for (stk::mesh::PairIterRelation::iterator inr=nrel.begin(); inr!=nrel.end(); ++inr)
+          {
+            stk::mesh::Entity & e = *inr->entity();
+            if ( has_superset( e.bucket(), active ) )
+            {
+              row.insert( static_cast<int>( e.identifier() ) );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  std::vector<int> veids;
+  veids.reserve( eids.size() );
+  veids.assign( eids.begin(), eids.end() );
+
+  Epetra_Map elementmap( -1,veids.size(),&veids[0],0,Comm() );
+
+  std::vector<int> numIndicesPerRow( graph.size() );
+  for (std::map<int,std::set<int> >::iterator i=graph.begin();
+       i!=graph.end();
+       ++i)
+  {
+    int gid = i->first;
+    int lid = elementmap.LID(gid);
+    if (lid<0)
+      dserror( "illegal lid" );
+    numIndicesPerRow[lid] = i->second.size();
+  }
+
+  Teuchos::RCP<Epetra_CrsGraph> g = Teuchos::rcp(new Epetra_CrsGraph(Copy,elementmap,&numIndicesPerRow[0],true));
+  for (std::map<int,std::set<int> >::iterator i=graph.begin();
+       i!=graph.end();
+       ++i)
+  {
+    int gid = i->first;
+    int lid = elementmap.LID(gid);
+    if (lid<0)
+      dserror( "illegal lid" );
+    std::vector<int> row;
+    row.reserve(i->second.size());
+    row.assign(i->second.begin(),i->second.end());
+    g->InsertGlobalIndices(gid,row.size(),&row[0]);
+  }
+  g->FillComplete();
+  return g;
 }
 
 
@@ -553,7 +897,51 @@ void STK::Discretization::GatherFieldData( const std::vector<stk::mesh::FieldBas
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Parameter* STK::Discretization::MaterialParameter( stk::mesh::Bucket & bucket )
+stk::mesh::Selector STK::Discretization::DirichletSelector()
+{
+  STK::Mesh & mesh = GetMesh();
+  stk::mesh::MetaData & meta = mesh.MetaData();
+
+  stk::mesh::Selector select;
+
+  static DRT::Condition::ConditionType dirichlet_types[] = {
+    DRT::Condition::PointDirichlet,
+    DRT::Condition::LineDirichlet,
+    DRT::Condition::SurfaceDirichlet,
+    DRT::Condition::VolumeDirichlet,
+    DRT::Condition::none
+  };
+
+  for ( DRT::Condition::ConditionType * condtype = dirichlet_types;
+        *condtype!=DRT::Condition::none;
+        ++condtype )
+  {
+    const std::map<int, Teuchos::ParameterList> * dirichlet = Condition( *condtype );
+    if ( dirichlet!=NULL )
+    {
+      for ( std::map<int, Teuchos::ParameterList>::const_iterator i=dirichlet->begin();
+            i!=dirichlet->end();
+            ++i )
+      {
+        const Teuchos::ParameterList & condflags = i->second;
+        std::string name = condflags.get<std::string>( "Name" );
+
+        stk::mesh::Part * condpart = meta.get_part( name );
+        if ( condpart==NULL )
+          dserror( "No condition part '%s'", name.c_str() );
+
+        select |= *condpart;
+      }
+    }
+  }
+
+  return select;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAT::PAR::Parameter* STK::Discretization::MaterialParameter( const stk::mesh::Bucket & bucket )
 {
   for ( std::map<stk::mesh::Part*, MAT::PAR::Parameter*>::iterator i=matpar_.begin();
         i!=matpar_.end();

@@ -26,7 +26,8 @@
 #include <Epetra_Vector.h>
 
 #include "../stk_lib/stk_algorithm.H"
-#include "../stk_lib/stk_io.H"
+#include "../stk_refine/stk_io.H"
+#include "../stk_lib/stk_linearsystem.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 
@@ -36,14 +37,14 @@ namespace LINALG
   class Solver;
 }
 
+namespace DRT
+{
+  class ResultTest;
+}
+
 namespace STK
 {
   class Discretization;
-
-  namespace FEI
-  {
-    class AssembleStrategy;
-  }
 
   /// stk based fluid algorithms
   namespace FLD
@@ -60,12 +61,14 @@ namespace STK
 
       const int counter_;
 
+      STK::LinearSystem system_;
+
       /// (standard) system matrix
-      Teuchos::RCP<LINALG::FixedSparseMatrix> sysmat_;
+//       Teuchos::RCP<LINALG::FixedSparseMatrix> sysmat_;
 
-      Teuchos::RCP<Epetra_Vector> residual_;
+//       Teuchos::RCP<Epetra_Vector> residual_;
 
-      Teuchos::RCP<STK::FEI::AssembleStrategy> assemblestrategy_;
+//       Teuchos::RCP<STK::FEI::AssembleStrategy> assemblestrategy_;
 
       Teuchos::RCP<phdmesh::exodus::FileOutput> m_exo;
     };
@@ -81,6 +84,8 @@ namespace STK
       STK::Discretization & Discretization() const { return dis_; }
 
       void Integrate();
+
+      Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
       virtual void declare_fields( stk::mesh::MetaData & meta );
 

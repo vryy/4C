@@ -15,7 +15,11 @@
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Comm.h>
 
-#include "stk_fei.H"
+#include <fstream>
+
+#include "../drt_lib/drt_condition.H"
+
+#include "stk_discret_state.H"
 
 #include "../drt_lib/drt_condition.H"
 
@@ -38,15 +42,11 @@ namespace DRT
 
 namespace STK
 {
-  class MetaMesh;
-  class Mesh;
   class Algorithm;
-
-  namespace FEI
-  {
-    class AssembleStrategy;
-    class DofSet;
-  }
+  class AssembleStrategy;
+  class DofSet;
+  class Mesh;
+  class MetaMesh;
 
   /// STK based discretization
   /*!
@@ -68,6 +68,10 @@ namespace STK
 
     Mesh & GetMesh() { return *mesh_; }
 
+    Teuchos::RCP<Epetra_CrsGraph> NodeGraph();
+
+    Teuchos::RCP<Epetra_CrsGraph> ElementGraph();
+
     const std::map<int, Teuchos::ParameterList> * Condition( DRT::Condition::ConditionType gtype ) const;
 
     void AdaptMesh( const std::vector<stk::mesh::EntityKey> & refine,
@@ -77,15 +81,14 @@ namespace STK
 
     void GatherFieldData( const std::vector<stk::mesh::FieldBase*> & fields, Epetra_Vector & v );
 
-    const DRT::DirichletExtractor & DirichletExtractor() const { return state_->DirichletExtractor(); }
+    /// Create a selector that selects all dirichlet parts
+    stk::mesh::Selector DirichletSelector();
 
     void EvaluateDirichlet( double time,
                             const std::vector<stk::mesh::FieldBase*> * v,
                             const std::vector<stk::mesh::FieldBase*> * dv=NULL,
                             const std::vector<stk::mesh::FieldBase*> * ddv=NULL )
     { state_->EvaluateDirichlet( time, v, dv, ddv ); }
-
-    Teuchos::RCP<Epetra_CrsGraph> NodeGraph() { return state_->NodeGraph(); }
 
     /// Get number of dofs for given node
     int NumDof( stk::mesh::EntityKey key ) const
@@ -105,18 +108,40 @@ namespace STK
     /// Get degree of freedom column map
     const Epetra_Map & DofColMap() const { return state_->DofColMap(); }
 
+    /// Get dof row dirichlet map
+    const Epetra_Map & DofRowDirichletMap() const { return state_->DofRowDirichletMap(); }
+
+    /// Get dof column dirichlet map
+    const Epetra_Map & DofColDirichletMap() const { return state_->DofColDirichletMap(); }
+
+    /// Get node row map
+    const Epetra_Map & NodeRowMap() const { return state_->NodeRowMap(); }
+
+    /// Get node column map
+    const Epetra_Map & NodeColMap() const { return state_->NodeColMap(); }
+
+#if 0
+    /// Get element row map
+    const Epetra_Map & ElementRowMap() const { return state_->ElementRowMap(); }
+
+    /// Get element column map
+    const Epetra_Map & ElementColMap() const { return state_->ElementColMap(); }
+#endif
+
     void LocationVector( stk::mesh::Entity & e,
                          std::vector<int> & lm,
                          std::vector<int> & lmowner )
     { state_->LocationVector( e, lm, lmowner ); }
 
-    MAT::PAR::Parameter* MaterialParameter( stk::mesh::Bucket & bucket );
+    MAT::PAR::Parameter* MaterialParameter( const stk::mesh::Bucket & bucket );
 
   private:
 
     void Refine( const std::vector<stk::mesh::EntityKey> & eids );
 
     void Unrefine( const std::vector<stk::mesh::EntityKey> & eids );
+
+    void Rebalance();
 
     void CreateState();
 
@@ -125,13 +150,17 @@ namespace STK
 
     Teuchos::RCP<MetaMesh> meta_;
     Teuchos::RCP<Mesh> mesh_;
-    Teuchos::RCP<STK::FEI::DiscretizationState> state_;
+    Teuchos::RCP<STK::DiscretizationState> state_;
 
     std::map<DRT::Condition::ConditionType, std::map<int, Teuchos::ParameterList> > conditions_;
 
     Teuchos::RCP<MAT::PAR::Bundle> materials_;
 
     std::map<stk::mesh::Part*, MAT::PAR::Parameter*> matpar_;
+
+#if 0
+    std::ofstream refine_log_;
+#endif
   };
 }
 

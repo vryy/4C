@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "stk_gnuplot.H"
-#include "stk_mesh.H"
+#include "../stk_refine/stk_mesh.H"
 
 
 void STK::GnuplotDump( STK::Mesh & mesh, std::string basename, int step, int version, stk::mesh::FieldBase & field )

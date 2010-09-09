@@ -7,7 +7,7 @@
 
 #include <Epetra_CrsGraph.h>
 
-#include "stk_algebra.H"
+#include "../stk_lib/stk_algebra.H"
 #include "stk_assemblestrategy.H"
 #include "stk_errorestimate.H"
 //#include "stk_fixedsparsematrix.H"
@@ -16,9 +16,9 @@
 #include "stk_gmsh.H"
 #include "../stk_lib/stk_gnuplot.H"
 #include "../stk_lib/stk_iterator.H"
-#include "../stk_lib/stk_mesh.H"
-#include "../stk_lib/stk_types.H"
-#include "../stk_lib/stk_utils.H"
+#include "../stk_refine/stk_mesh.H"
+#include "../stk_refine/stk_types.H"
+#include "../stk_refine/stk_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -1023,7 +1023,7 @@ void STK::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
   double min_err = std::numeric_limits<double>::max();
   double max_err = std::numeric_limits<double>::min();
 
-  for ( ElementIterator i( bulk, active );
+  for ( ElementIterator i( bulk, stk::mesh::Selector( active ) );
         not i.done();
         ++i )
   {
@@ -1050,7 +1050,7 @@ void STK::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
 
   unsigned passed = 0;
 
-  for ( ElementIterator i( bulk, active );
+  for ( ElementIterator i( bulk, stk::mesh::Selector( active ) );
         not i.done();
         ++i )
   {

@@ -60,6 +60,12 @@ namespace DRT
     Epetra_SerialDenseVector & Elevector3() { return elevector3_; }
     //@}
 
+    /// zero global storage
+    void Zero();
+
+    /// complete any global objects
+    virtual void Complete();
+
     /// zero element memory
     void ClearElementStorage( int eledim );
 

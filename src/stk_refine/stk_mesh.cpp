@@ -190,7 +190,14 @@ void STK::Mesh::Print(std::ostream& stream)
 void STK::Mesh::Dump(std::string filename)
 {
   std::ostringstream str;
+#if 0
   str << filename << "-" << parallel_rank() << ".dat";
+#else
+  static std::map<std::string, int> count;
+  int & c = count[filename];
+  c += 1;
+  str << filename << "-" << c << "-" << parallel_rank() << ".dat";
+#endif
   std::ofstream f(str.str().c_str());
   Print(f);
 }

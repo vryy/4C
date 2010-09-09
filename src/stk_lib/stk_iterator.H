@@ -28,7 +28,7 @@
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-#include "stk_types.H"
+#include "../stk_refine/stk_types.H"
 
 namespace STK
 {
@@ -37,7 +37,7 @@ namespace STK
   {
   public:
 
-    ElementIterator( stk::mesh::BulkData & bulk, stk::mesh::Part & active );
+    ElementIterator( stk::mesh::BulkData & bulk, const stk::mesh::Selector & selector );
 
     bool done()
     {
@@ -70,14 +70,14 @@ namespace STK
       return *celltopology_;
     }
 
-    stk::mesh::Part & active() { return active_; }
+    const stk::mesh::Selector & selector() { return selector_; }
 
   private:
 
     void next_bucket();
 
     stk::mesh::BulkData & bulk_;
-    stk::mesh::Part & active_;
+    stk::mesh::Selector selector_;
     const std::vector<stk::mesh::Bucket*> & elements_;
     std::vector<stk::mesh::Bucket*>::const_iterator i_;
     stk::mesh::Bucket * bucket_;

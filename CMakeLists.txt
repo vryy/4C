@@ -1140,28 +1140,32 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/strugenalpha_cmt.cpp
 )
 set(OBJS_STK_LIB
-  src/stk_lib/stk_comm.cpp
+  src/stk_lib/stk_discret.cpp
+  src/stk_lib/stk_discret_state.cpp
+  src/stk_lib/stk_dofset.cpp
   src/stk_lib/stk_field_comm.cpp
   src/stk_lib/stk_gnuplot.cpp
-  src/stk_lib/stk_io.cpp
   src/stk_lib/stk_iterator.cpp
-  src/stk_lib/stk_mesh.cpp
-  src/stk_lib/stk_refine.cpp
-  src/stk_lib/stk_topology.cpp
-  src/stk_lib/stk_unrefine.cpp
-  src/stk_lib/stk_utils.cpp
-  src/stk_lib/stk_discret.cpp
   src/stk_lib/stk_linearsystem.cpp
-  src/stk_lib/stk_fei.cpp
+)
+set(OBJS_STK_REFINE
+  src/stk_refine/stk_comm.cpp
+  src/stk_refine/stk_io.cpp
+  src/stk_refine/stk_mesh.cpp
+  src/stk_refine/stk_refine.cpp
+  src/stk_refine/stk_topology.cpp
+  src/stk_refine/stk_unrefine.cpp
+  src/stk_refine/stk_utils.cpp
 )
 set(OBJS_STK_FLUID
+  src/stk_fluid/fluid_errorestimate.cpp
   src/stk_fluid/fluid_implicit.cpp
+  src/stk_fluid/fluid_resulttest.cpp
 )
 set(OBJS_DRT_STK
   src/drt_stk/stk_adaptive.cpp
   src/drt_stk/stk_assemblestrategy.cpp
   src/drt_stk/stk_errorestimate.cpp
-  #src/drt_stk/stk_fixedsparsematrix.cpp
   src/drt_stk/stk_fluid.cpp
   src/drt_stk/stk_fluidresulttest.cpp
   src/drt_stk/stk_gmsh.cpp
@@ -1345,7 +1349,8 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 
-add_library(stk_adaptive_lib ${OBJS_STK_LIB})
+add_library(stk_refine ${OBJS_STK_REFINE})
+add_library(stk_drt_lib ${OBJS_STK_LIB})
 add_library(drt_lib_stk ${OBJS_DRT_STK})
 
 set(SUPPORT_LIBRARIES
@@ -1356,8 +1361,10 @@ set(SUPPORT_LIBRARIES
   drt_lib_statmech
   drt_lib_constraint
   drt_lib_contact
+  # STK based libraries
   drt_lib_stk
-  stk_adaptive_lib
+  stk_drt_lib
+  stk_refine
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_potential
@@ -1472,13 +1479,33 @@ endif (D_EXODUS)
 
 if (STKADAPTIVE)
 
-  add_executable (stk_test
-    src/stk_test/stk_test.cpp
-    )
-  target_link_libraries (stk_test 
-    stk_adaptive_lib
-    ${LIBRARIES}
-    )
+  # Test programs based on stk
+
+  add_library(stk_test_utils src/stk_test/stk_test_utils.cpp)
+
+  add_executable(stk_test_change_owner src/stk_test/stk_test_change_owner.cpp)
+  target_link_libraries(stk_test_change_owner stk_test_utils ${LIBRARIES})
+
+  add_executable(stk_test_corner1 src/stk_test/stk_test_corner1.cpp)
+  target_link_libraries(stk_test_corner1 stk_test_utils ${LIBRARIES})
+
+  add_executable(stk_test_corner2 src/stk_test/stk_test_corner2.cpp)
+  target_link_libraries(stk_test_corner2 stk_test_utils ${LIBRARIES})
+
+  add_executable(stk_test_ghosttoshared src/stk_test/stk_test_ghosttoshared.cpp)
+  target_link_libraries(stk_test_ghosttoshared stk_test_utils ${LIBRARIES})
+
+  add_executable(stk_test_ownership src/stk_test/stk_test_ownership.cpp)
+  target_link_libraries(stk_test_ownership stk_test_utils ${LIBRARIES})
+
+#  add_executable (stk_test
+#    src/stk_test/stk_test.cpp
+#    )
+#  target_link_libraries (stk_test 
+#    stk_drt_lib
+#    stk_refine
+#    ${LIBRARIES}
+#    )
 
 endif (STKADAPTIVE)
 

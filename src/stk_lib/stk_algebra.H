@@ -109,6 +109,53 @@ void PutScalar( const stk::mesh::BulkData & bulk,
 
 
 template <class field_type>
+void PutScalar( const stk::mesh::BulkData & bulk,
+                const stk::mesh::Selector & select,
+                field_type & dest,
+                typename stk::mesh::FieldTraits< field_type >::data_type scalar )
+{
+  typedef typename stk::mesh::FieldTraits< field_type >::data_type data_type;
+
+  const stk::mesh::DataTraits & dest_traits = dest.data_traits();
+
+  if ( not dest_traits.is_floating_point )
+    throw std::runtime_error( "floating point field expected" );
+
+  for ( std::vector<stk::mesh::FieldBase::Restriction>::const_iterator
+          j  = dest.restrictions().begin() ;
+        j != dest.restrictions().end() ; ++j )
+  {
+    const std::vector<stk::mesh::Bucket*>& all_buckets = bulk.buckets( entity_rank( j->key ) );
+
+    // Is there a way to ask each bucket family just once?
+
+    for ( std::size_t i=0; i<all_buckets.size(); ++i )
+    {
+      stk::mesh::Bucket & bucket = *all_buckets[i];
+
+      if ( select( bucket ) )
+      {
+        int dest_field_data_size = stk::mesh::field_data_size( dest, bucket );
+        if ( dest_field_data_size == 0 ) continue;
+
+        std::size_t size = bucket.size() * dest_field_data_size/sizeof( data_type );
+
+        data_type * dest_data = reinterpret_cast<data_type*>( bucket.field_data_location( dest ) );
+
+        // inner loops
+        // maybe use kokkos or blas here
+
+        for ( std::size_t j=0; j<size; ++j )
+        {
+          dest_data[j] = scalar;
+        }
+      }
+    }
+  }
+}
+
+
+template <class field_type>
 void Update( const stk::mesh::BulkData & bulk,
              //const stk::mesh::Selector& selector,
              field_type & dest,

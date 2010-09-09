@@ -105,6 +105,42 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::AssembleStrategy::MatrixGraph( DRT::Discretiz
   return crsgraph;
 }
 
+void DRT::AssembleStrategy::Zero()
+{
+  if ( Assemblemat1() )
+  {
+    systemmatrix1_->Zero();
+  }
+  if ( Assemblemat2() )
+  {
+    systemmatrix1_->Zero();
+  }
+  if ( Assemblevec1() )
+  {
+    systemvector1_->PutScalar( 0.0 );
+  }
+  if ( Assemblevec2() )
+  {
+    systemvector2_->PutScalar( 0.0 );
+  }
+  if ( Assemblevec3() )
+  {
+    systemvector3_->PutScalar( 0.0 );
+  }
+}
+
+void DRT::AssembleStrategy::Complete()
+{
+  if ( Assemblemat1() )
+  {
+    systemmatrix1_->Complete();
+  }
+  if ( Assemblemat2() )
+  {
+    systemmatrix1_->Complete();
+  }
+}
+
 void DRT::AssembleStrategy::ClearElementStorage( int eledim )
 {
   if (Assemblemat1())

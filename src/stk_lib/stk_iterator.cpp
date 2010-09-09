@@ -1,15 +1,15 @@
 #ifdef STKADAPTIVE
 
 #include "stk_iterator.H"
-#include "stk_utils.H"
+#include "../stk_refine/stk_utils.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STK::ElementIterator::ElementIterator( stk::mesh::BulkData & bulk,
-                                       stk::mesh::Part & active )
+                                       const stk::mesh::Selector & selector )
   : bulk_( bulk ),
-    active_( active ),
+    selector_( selector ),
     elements_( bulk.buckets( stk::mesh::Element ) ),
     i_( elements_.begin() ),
     bucket_( NULL ),
@@ -26,7 +26,7 @@ void STK::ElementIterator::next_bucket()
   while ( i_ != elements_.end() )
   {
     bucket_ = *i_;
-    if ( has_superset( *bucket_, active_ ) )
+    if ( selector_( *bucket_ ) )
     {
       celltopology_ = get_cell_topology( *bucket_ );
 
@@ -173,8 +173,12 @@ void STK::SideIterator::new_side()
 
         find_other_hanging_sides();
 
+#if 0
+        // If we are at a processor boundary, we might find just one side
+        // element here. In this case we are inside an aura element anyway.
         if ( side_elements_.size() < 2 )
           throw std::runtime_error( "expect to find more than one element" );
+#endif
       }
     }
     else
@@ -197,7 +201,7 @@ void STK::SideIterator::find_side_elements( const EntitySet & side_nodes,
         ++elements )
   {
     stk::mesh::Entity & ele = *elements->entity();
-    if ( has_superset( ele.bucket(), ei_.active() ) )
+    if ( ei_.selector()( ele.bucket() ) )
     {
       side_elements.insert( &ele );
     }
@@ -213,7 +217,7 @@ void STK::SideIterator::find_side_elements( const EntitySet & side_nodes,
           ++elements )
     {
       stk::mesh::Entity & ele = *elements->entity();
-      if ( has_superset( ele.bucket(), ei_.active() ) )
+      if ( ei_.selector()( ele.bucket() ) )
       {
         if ( side_elements.count( &ele ) > 0 )
         {
@@ -284,7 +288,7 @@ void STK::SideIterator::find_other_hanging_sides()
           ++elements )
     {
       stk::mesh::Entity & ele = *elements->entity();
-      if ( has_superset( ele.bucket(), ei_.active() ) and
+      if ( ei_.selector()( ele.bucket() ) and
            done_elements.count( &ele )==0 )
       {
         done_elements.insert( &ele );

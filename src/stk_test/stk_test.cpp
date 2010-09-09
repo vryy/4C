@@ -12,13 +12,13 @@
 
 #include <stk_util/parallel/Parallel.hpp>
 
-#include "../stk_lib/stk_io.H"
-#include "../stk_lib/stk_mesh.H"
-#include "../stk_lib/stk_refine.H"
-#include "../stk_lib/stk_unrefine.H"
+#include "../stk_refine/stk_io.H"
+#include "../stk_refine/stk_mesh.H"
+#include "../stk_refine/stk_refine.H"
+#include "../stk_refine/stk_unrefine.H"
 #include "../stk_lib/stk_iterator.H"
 
-#include "../drt_stk/stk_algebra.H"
+#include "../stk_lib/stk_algebra.H"
 
 void execute( STK::Mesh & mesh,
               bool refine,
@@ -171,8 +171,16 @@ int main( int argc, char** argv )
                             stk::mesh::Element,
                             active );
 
+//     stk::mesh::ScalarField & eprocessor = declare_scalar_field_on_all_elements( meta.MetaData(), "processor" );
+
+//     stk::mesh::ScalarIntField & eprocessor = stk::mesh::put_field(
+//       meta.MetaData().declare_field<stk::mesh::ScalarIntField>( "processor" ) ,
+//       stk::mesh::Element , meta.MetaData().universal_part() );
+
     stk::mesh::ScalarField & constrained = declare_scalar_field_on_all_nodes( meta.MetaData(), "constrained" );
     stk::mesh::ScalarField & hanging     = declare_scalar_field_on_all_nodes( meta.MetaData(), "hanging" );
+//     stk::mesh::ScalarIntField & nprocessor  = declare_scalar_int_field_on_all_nodes( meta.MetaData(), "processor" );
+//     stk::mesh::ScalarField & nprocessor  = declare_scalar_field_on_all_nodes( meta.MetaData(), "processor" );
 
     meta.Commit();
 
@@ -180,11 +188,73 @@ int main( int argc, char** argv )
     fields.push_back( &constrained );
     fields.push_back( &hanging );
     fields.push_back( &error );
+//     fields.push_back( &eprocessor );
+//     fields.push_back( &nprocessor );
 
     STK::Mesh mesh( meta, pm );
     mesh.Modify();
 
+    //if ( mesh.parallel_rank()==0 )
     load( meta, mesh, filename );
+
+#if 0
+    mesh.Modify();
+
+    // communication information
+    std::vector<stk::mesh::EntityProc> ep;
+
+    {
+      const std::vector<stk::mesh::Bucket*> & entities = mesh.BulkData().buckets( stk::mesh::Node );
+      for ( std::vector<stk::mesh::Bucket*>::const_iterator i=entities.begin();
+            i!=entities.end();
+            ++i)
+      {
+        stk::mesh::Bucket & bucket = **i;
+        for ( stk::mesh::Bucket::iterator j=bucket.begin();
+              j!=bucket.end();
+              ++j )
+        {
+          if ( j->owner_rank()==mesh.parallel_rank() )
+          {
+            stk::mesh::EntityProc e;
+            e.first = &*j;
+            e.second = * field_data( nprocessor, *e.first );
+            ep.push_back( e );
+          }
+        }
+      }
+    }
+
+    {
+      const std::vector<stk::mesh::Bucket*> & entities = mesh.BulkData().buckets( stk::mesh::Element );
+      for ( std::vector<stk::mesh::Bucket*>::const_iterator i=entities.begin();
+            i!=entities.end();
+            ++i)
+      {
+        stk::mesh::Bucket & bucket = **i;
+        for ( stk::mesh::Bucket::iterator j=bucket.begin();
+              j!=bucket.end();
+              ++j )
+        {
+          if ( j->owner_rank()==mesh.parallel_rank() )
+          {
+            stk::mesh::EntityProc e;
+            e.first = &*j;
+            e.second = * field_data( eprocessor, *e.first );
+            ep.push_back( e );
+          }
+        }
+      }
+    }
+
+    std::sort( ep.begin() , ep.end() , stk::mesh::EntityLess() );
+    std::vector<stk::mesh::EntityProc>::iterator i = std::unique( ep.begin() , ep.end() );
+    ep.erase( i , ep.end() );
+
+    mesh.BulkData().change_entity_owner(ep);
+
+    mesh.Commit();
+#endif
 
     mesh.Modify();
 
@@ -201,12 +271,15 @@ int main( int argc, char** argv )
             ++i)
       {
         stk::mesh::Bucket & bucket = **i;
-        for ( stk::mesh::Bucket::iterator j=bucket.begin();
-              j!=bucket.end();
-              ++j )
+        if ( has_superset( bucket, mesh.OwnedPart() ) )
         {
-          stk::mesh::Entity & e = *j;
-          store.push_back( &e );
+          for ( stk::mesh::Bucket::iterator j=bucket.begin();
+                j!=bucket.end();
+                ++j )
+          {
+            stk::mesh::Entity & e = *j;
+            store.push_back( &e );
+          }
         }
       }
 
@@ -221,7 +294,12 @@ int main( int argc, char** argv )
 
     mesh.Commit();
 
-    std::ifstream log( "refine.log.save" );
+    std::stringstream str;
+    str << "refine-" << mesh.parallel_rank() << ".log";
+
+    //std::ifstream log( "refine.log.save" );
+    std::ifstream log;
+    log.open( str.str().c_str() );
 
     std::vector<stk::mesh::EntityKey> eids;
     bool refine = true;
@@ -234,7 +312,7 @@ int main( int argc, char** argv )
 
       if ( word=="Refine:" )
       {
-        if ( eids.size()>0 )
+        //if ( eids.size()>0 )
         {
           execute( mesh, refine, eids );
           mark( mesh.BulkData(), eids, constrained, hanging, error );
@@ -247,7 +325,7 @@ int main( int argc, char** argv )
       }
       else if ( word=="Unrefine:" )
       {
-        if ( eids.size()>0 )
+        //if ( eids.size()>0 )
         {
           execute( mesh, refine, eids );
           mark( mesh.BulkData(), eids, constrained, hanging, error );
@@ -274,7 +352,7 @@ int main( int argc, char** argv )
       }
     }
 
-    if ( eids.size()>0 )
+    //if ( eids.size()>0 )
     {
       execute( mesh, refine, eids );
       mark( mesh.BulkData(), eids, constrained, hanging, error );

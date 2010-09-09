@@ -39,12 +39,17 @@
 
  */
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 STK::UnrefineSet::UnrefineSet(STK::Mesh* mesh)
   : mesh_(mesh)
 {
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 STK::UnrefineSet::~UnrefineSet()
 {
   remove_.clear();
@@ -55,6 +60,8 @@ STK::UnrefineSet::~UnrefineSet()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::Unrefine(const std::vector<stk::mesh::EntityKey>& elements)
 {
   std::map<stk::mesh::Entity*,std::set<unsigned> > unrefine_elements;
@@ -95,10 +102,12 @@ void STK::UnrefineSet::Unrefine(const std::vector<stk::mesh::EntityKey>& element
 
   DoUnrefine();
 
-  mesh_->Dump( "TestHexMeshOneByOne-failed" );
+  //mesh_->Dump( "TestHexMeshOneByOne-failed" );
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::FindUnrefineChildren(const std::vector<stk::mesh::EntityKey> & elements,
                                             std::map<stk::mesh::Entity*,std::set<unsigned> > & unrefine_elements)
 {
@@ -182,6 +191,8 @@ void STK::UnrefineSet::FindUnrefineChildren(const std::vector<stk::mesh::EntityK
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::SendUnrefineChildren(std::map<stk::mesh::Entity*,std::set<unsigned> > & unrefine_elements,
                                             std::map<stk::mesh::EntityKey,EntityKeySet> & transfer_children)
 {
@@ -280,6 +291,8 @@ void STK::UnrefineSet::SendUnrefineChildren(std::map<stk::mesh::Entity*,std::set
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::SelectParents( std::map<stk::mesh::EntityKey,EntityKeySet> & transfer_children )
 {
   //stk::mesh::Part & owned  = mesh_->OwnedPart();
@@ -339,6 +352,8 @@ void STK::UnrefineSet::SelectParents( std::map<stk::mesh::EntityKey,EntityKeySet
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::FindCompleteParents()
 {
   for ( std::map<stk::mesh::Entity*,ParentInfo>::iterator i=parents_.begin();
@@ -371,6 +386,8 @@ void STK::UnrefineSet::FindCompleteParents()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::FindConstraints()
 {
   for ( std::map<stk::mesh::Entity*,ParentInfo>::iterator i=parents_.begin();
@@ -421,6 +438,8 @@ void STK::UnrefineSet::FindConstraints()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool STK::UnrefineSet::NeedConstraint( stk::mesh::Entity * hn )
 {
   // A node that is know to lose at least one refined element will become (or
@@ -458,6 +477,8 @@ bool STK::UnrefineSet::NeedConstraint( stk::mesh::Entity * hn )
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::RemoveImpossibleUnrefinement()
 {
   stk::mesh::BulkData & bulk = mesh_->BulkData();
@@ -563,6 +584,8 @@ void STK::UnrefineSet::RemoveImpossibleUnrefinement()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool STK::UnrefineSet::UnrefinementPossible( stk::mesh::Entity * parent,
                                              ParentInfo & pi,
                                              EntitySet & reject )
@@ -638,6 +661,8 @@ bool STK::UnrefineSet::UnrefinementPossible( stk::mesh::Entity * parent,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::TestSurfaceUnrefinement( stk::mesh::Entity * parent,
                                                 ParentInfo & pi,
                                                 EntitySet & reject )
@@ -728,6 +753,8 @@ void STK::UnrefineSet::TestSurfaceUnrefinement( stk::mesh::Entity * parent,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::KeepParent( stk::mesh::Entity * parent )
 {
   // It is fine to call this more than once.
@@ -780,11 +807,84 @@ void STK::UnrefineSet::KeepParent( stk::mesh::Entity * parent )
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::CreateConstraints()
 {
   stk::mesh::BulkData & bulk = mesh_->BulkData();
-  //unsigned p_size = bulk.parallel_size();
+  stk::ParallelMachine pm = bulk.parallel();
+  unsigned p_size = bulk.parallel_size();
   unsigned p_rank = bulk.parallel_rank();
+
+  // find which processor creates the hanging node constraint
+
+  stk::CommAll all( pm );
+
+  for ( std::map<stk::mesh::Entity*, HangingNodeInfo>::iterator i=hanging_.begin();
+        i!=hanging_.end();
+        ++i )
+  {
+    stk::mesh::Entity * hn = i->first;
+    HangingNodeInfo & hni = i->second;
+
+    if ( hni.needconstraint and hni.constraint==NULL )
+    {
+      std::vector<unsigned> procs;
+      stk::mesh::comm_procs( *hn , procs );
+      for ( std::vector<unsigned>::iterator j=procs.begin();
+            j!=procs.end();
+            ++j )
+      {
+        stk::CommBuffer & send_buffer = all.send_buffer( *j );
+        send_buffer.pack<stk::mesh::EntityKey>( hn->key() );
+      }
+    }
+  }
+
+  all.allocate_buffers( p_size/4 );
+
+  for ( std::map<stk::mesh::Entity*, HangingNodeInfo>::iterator i=hanging_.begin();
+        i!=hanging_.end();
+        ++i )
+  {
+    stk::mesh::Entity * hn = i->first;
+    HangingNodeInfo & hni = i->second;
+
+    if ( hni.needconstraint and hni.constraint==NULL )
+    {
+      std::vector<unsigned> procs;
+      stk::mesh::comm_procs( *hn , procs );
+      for ( std::vector<unsigned>::iterator j=procs.begin();
+            j!=procs.end();
+            ++j )
+      {
+        stk::CommBuffer & send_buffer = all.send_buffer( *j );
+        send_buffer.pack<stk::mesh::EntityKey>( hn->key() );
+      }
+    }
+  }
+
+  all.communicate();
+
+  std::map<stk::mesh::Entity*,unsigned> hangingnodes;
+
+  for ( unsigned p=0; p<p_size; ++p )
+  {
+    stk::CommBuffer & recv_buffer = all.recv_buffer(p);
+    while (recv_buffer.remaining())
+    {
+      stk::mesh::EntityKey key;
+      recv_buffer.unpack<stk::mesh::EntityKey>(key);
+      stk::mesh::Entity * e = bulk.get_entity( key );
+      if ( e==NULL )
+      {
+        throw std::runtime_error("receive element unavailable");
+      }
+
+      // the last processor that claims the constraint gets it
+      hangingnodes[e] = p;
+    }
+  }
 
   std::vector<std::size_t> requests( mesh_->MetaData().entity_rank_count(), 0 );
 
@@ -795,9 +895,13 @@ void STK::UnrefineSet::CreateConstraints()
     stk::mesh::Entity * hn = i->first;
     HangingNodeInfo & hni = i->second;
 
-    if ( hni.needconstraint and hni.constraint==NULL and hn->owner_rank()==p_rank )
+    if ( hni.needconstraint and hni.constraint==NULL )
     {
-      requests[stk::mesh::Constraint] += 1;
+      std::map<stk::mesh::Entity*,unsigned>::iterator j = hangingnodes.find( hn );
+      if ( j==hangingnodes.end() or j->second <= p_rank )
+      {
+        requests[stk::mesh::Constraint] += 1;
+      }
     }
   }
 
@@ -813,13 +917,17 @@ void STK::UnrefineSet::CreateConstraints()
     stk::mesh::Entity * hn = i->first;
     HangingNodeInfo & hni = i->second;
 
-    if ( hni.needconstraint and hni.constraint==NULL and hn->owner_rank()==p_rank )
+    if ( hni.needconstraint and hni.constraint==NULL )
     {
-      hni.constraint = *ci;
-      ++ci;
+      std::map<stk::mesh::Entity*,unsigned>::iterator j = hangingnodes.find( hn );
+      if ( j==hangingnodes.end() or j->second <= p_rank )
+      {
+        hni.constraint = *ci;
+        ++ci;
 
-      // Do not create the node relations now. The hanging node is obvious but
-      // the other nodes are best dealt with later.
+        // Do not create the node relations now. The hanging node is obvious but
+        // the other nodes are best dealt with later.
+      }
     }
   }
 }
@@ -854,6 +962,8 @@ protected:
 };
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STK::UnrefineSet::DoUnrefine()
 {
   stk::mesh::Part & active = mesh_->ActivePart();

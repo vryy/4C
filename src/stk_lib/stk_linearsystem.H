@@ -3,60 +3,82 @@
 #ifndef STK_LINEARSYSTEM_H
 #define STK_LINEARSYSTEM_H
 
-#include <fei_Factory_Trilinos.hpp>
-#include <fei_LinearSystem.hpp>
+#include <map>
+#include <set>
 
-#include <Intrepid_FieldContainer.hpp>
+#include <Epetra_FECrsMatrix.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_Import.h>
 
-#include <stk_linsys/DofMapper.hpp>
-#include <stk_linsys/LinearSystem.hpp>
-#include <stk_linsys/LinsysFunctions.hpp>
-#include <stk_linsys/ImplDetails.hpp>
-
-#include "stk_mesh.H"
+#include <Teuchos_RCP.hpp>
 
 namespace STK
 {
+  class Discretization;
 
+/// a linear system consists of a system matrix, a vector of unknowns and a rhs.
+/*!
+  Support off-row assembly such that each element is just once evaluated.
+
+ */
 class LinearSystem
 {
 public:
 
-  LinearSystem( Mesh & mesh, stk::mesh::FieldBase * field );
+  LinearSystem( STK::Discretization & dis );
 
-  LinearSystem( Mesh & mesh, stk::mesh::FieldBase * field1, stk::mesh::FieldBase * field2 );
+  /// @name Assemble
 
-  void Commit();
+  /// assemble element matrix
+  void Assemble(int eid,
+                const Epetra_SerialDenseMatrix& Aele,
+                const std::vector<int>& lmrow,
+                const std::vector<int>& lmrowowner,
+                const std::vector<int>& lmcol);
 
-  int Solve( int & status, Teuchos::ParameterList & params );
+  /// assemble rhs
+  void Assemble(int eid,
+                const Epetra_SerialDenseVector& Vele,
+                const std::vector<int>& lm);
 
-  void Done();
+  /// complete any global objects
+  void Complete();
 
-  void Assemble( stk::mesh::Bucket & bucket,
-                 Intrepid::FieldContainer<double> & localStiffMatrix,
-                 stk::mesh::Selector & sel,
-                 stk::mesh::Part & active,
-                 stk::mesh::Part & dbc );
+  //@}
 
-  void Assemble( stk::mesh::Bucket & bucket,
-                 Intrepid::FieldContainer<double> & localRHS,
-                 stk::mesh::Selector & sel,
-                 stk::mesh::Part & dbc );
+  Teuchos::RCP<Epetra_FECrsMatrix> Matrix() { return sysmat_; }
+
+  Teuchos::RCP<Epetra_Vector> RHS() { return rowrhs_; }
+
+  void Zero();
+
+  void ApplyDirichlet( Epetra_Vector & dirichlet );
 
 private:
 
-  void Setup();
+  Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( STK::Discretization & dis );
 
-  Mesh & m_mesh;
-  std::vector<stk::mesh::FieldBase*> m_fields;
-  fei::SharedPtr<fei::Factory> m_factory;
-  stk::linsys::LinearSystem m_ls;
-  stk::linsys::DofMapper * m_dof_mapper;
+  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_;
+  Teuchos::RCP<Epetra_Vector> rowrhs_;
+  Teuchos::RCP<Epetra_Vector> rhs_;
 
-  fei::SharedPtr<fei::LinearSystem> m_fei_ls;
-  fei::SharedPtr<fei::Matrix> m_fei_matrix;
-  fei::SharedPtr<fei::Vector> m_fei_rhs;
-  fei::SharedPtr<fei::Vector> m_fei_x;
+  /// Dirichlet map
+  Epetra_Map rowdbcmap_;
+  Epetra_Map coldbcmap_;
+
+  Epetra_Import importer_;
+
+  struct DofData
+  {
+    std::set<int> realdofmap;
+    double fact;
+  };
+
+  /// hn dof to real dof and factor
+  std::map<int, DofData> hndofmap_;
 };
 
 }

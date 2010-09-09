@@ -1,19 +1,26 @@
 #ifdef STKADAPTIVE
 
-#include "stk_fluidresulttest.H"
+#include "fluid_resulttest.H"
+#include "fluid_implicit.H"
+
+#include "../stk_lib/stk_discret.H"
 #include "../stk_refine/stk_mesh.H"
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_dserror.H"
 
 
-STK::FluidResultTest::FluidResultTest(Fluid& fluid)
-  : mesh_( fluid.GetMesh() )
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+STK::FLD::FluidResultTest::FluidResultTest(Fluid& fluid)
+  : mesh_( fluid.Discretization().GetMesh() )
 {
 }
 
 
-void STK::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STK::FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   int dis;
   res.ExtractInt("DIS",dis);
@@ -69,7 +76,9 @@ void STK::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
 }
 
 
-bool STK::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool STK::FLD::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
 {
   return res.HaveNamed("FLUID");
 }

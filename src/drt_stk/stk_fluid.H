@@ -24,7 +24,7 @@
 #include <Shards_CellTopologyTraits.hpp>
 
 #include "stk_adaptive.H"
-#include "../stk_lib/stk_io.H"
+#include "../stk_refine/stk_io.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_fluid.H"
 

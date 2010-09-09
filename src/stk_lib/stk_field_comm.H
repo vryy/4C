@@ -3,7 +3,7 @@
 #ifndef STK_FIELD_COMM_H
 #define STK_FIELD_COMM_H
 
-#include "stk_comm.H"
+#include "../stk_refine/stk_comm.H"
 
 namespace STK
 {

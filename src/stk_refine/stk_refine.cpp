@@ -19,12 +19,17 @@
 namespace STK
 {
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 RefineSet::RefineSet(Mesh* mesh)
   : mesh_(mesh)
 {
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::Refine(const std::vector<stk::mesh::EntityKey>& elements)
 {
   // Each processor refines its own elements and communicates the refined
@@ -234,6 +239,8 @@ void RefineSet::Refine(const std::vector<stk::mesh::EntityKey>& elements)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::RefineTransitive( stk::mesh::Entity* e,
                                   EntitySet& refine_elements,
                                   EntitySet& remote_refine )
@@ -324,6 +331,8 @@ protected:
 };
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::CommunicateDeactivation( const EntitySet & refine_elements )
 {
   AuraDistribution<CommDeactivationStrategy, const EntitySet >
@@ -333,6 +342,8 @@ void RefineSet::CommunicateDeactivation( const EntitySet & refine_elements )
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::CreateHangingNode(const stk::mesh::Entity* e,
                                   const std::vector<const stk::mesh::Entity*>& nodes)
 {
@@ -399,6 +410,8 @@ void RefineSet::CreateHangingNode(const stk::mesh::Entity* e,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::SyncronizeNodeCreation()
 {
   // At this point we know some nodesets that need to be communicated among
@@ -522,6 +535,8 @@ void RefineSet::SyncronizeNodeCreation()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
                                       const stk::mesh::Entity* n2) const
 {
@@ -541,6 +556,8 @@ stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
                                       const stk::mesh::Entity* n2,
                                       const stk::mesh::Entity* n3,
@@ -564,6 +581,8 @@ stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
                                       const stk::mesh::Entity* n2,
                                       const stk::mesh::Entity* n3,
@@ -595,6 +614,8 @@ stk::mesh::EntityId RefineSet::NodeId(const stk::mesh::Entity* n1,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::CountNewEntities( const EntitySet & elements,
                                   std::vector<std::size_t> & requests )
 {
@@ -851,6 +872,8 @@ private:
 };
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::ConnectNewEntities( EntitySet & elements,
                                     std::vector<std::size_t> & requests,
                                     EntityVector & entities )
@@ -1077,7 +1100,7 @@ void RefineSet::ConnectNewEntities( EntitySet & elements,
                       std::transform( child_nodes.begin(), child_nodes.end(),
                                       std::back_inserter( node_entities ),
                                       boost::bind( &stk::mesh::Relation::entity, _1 ) );
-                      unsigned local_side_num = stk::mesh::element_local_side_id( *me, node_entities );
+                      unsigned local_side_num = stk::mesh::element_local_side_id( *me, get_cell_topology( *child ), node_entities );
                       stk::mesh::declare_element_side( *me, *child, local_side_num, NULL );
                     }
                   }
@@ -1106,6 +1129,8 @@ void RefineSet::ConnectNewEntities( EntitySet & elements,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void RefineSet::RefineElement( stk::mesh::BulkData & bulk,
                                stk::mesh::Entity * e,
                                EntityVector::iterator & elements_iter,
@@ -1155,6 +1180,8 @@ void RefineSet::RefineElement( stk::mesh::BulkData & bulk,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool RefineSet::FaceNeedsRefinement( stk::mesh::Entity * e )
 {
   stk::mesh::PairIterRelation nodes = e->relations( stk::mesh::Node );

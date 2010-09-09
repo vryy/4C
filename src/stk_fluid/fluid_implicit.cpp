@@ -5,13 +5,14 @@
 #include <Teuchos_Time.hpp>
 
 #include "fluid_implicit.H"
+#include "fluid_errorestimate.H"
+#include "fluid_resulttest.H"
 
 #include "../stk_lib/stk_discret.H"
-#include "../stk_lib/stk_fei.H"
-#include "../stk_lib/stk_mesh.H"
+#include "../stk_refine/stk_mesh.H"
 #include "../stk_lib/stk_iterator.H"
 
-#include "../drt_stk/stk_algebra.H"
+#include "../stk_lib/stk_algebra.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -72,21 +73,22 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STK::FLD::FluidState::FluidState( int counter, Fluid & fluid )
-  : counter_( counter )
+  : counter_( counter ),
+    system_( fluid.Discretization() )
 {
-  STK::Discretization & dis = fluid.Discretization();
-  const DRT::DirichletExtractor & extractor = dis.DirichletExtractor();
-  const Teuchos::RCP<const Epetra_Map> & dirichletmap = extractor.DirichletMap();
+//   STK::Discretization & dis = fluid.Discretization();
+//   const DRT::DirichletExtractor & extractor = dis.DirichletExtractor();
+//   const Teuchos::RCP<const Epetra_Map> & dirichletmap = extractor.DirichletMap();
 
-  sysmat_ = Teuchos::rcp( new LINALG::FixedSparseMatrix( dirichletmap ) );
+//   sysmat_ = Teuchos::rcp( new LINALG::FixedSparseMatrix( dirichletmap ) );
 
-  residual_ = Teuchos::rcp( new Epetra_Vector( dis.DofRowMap() ) );
+//   residual_ = Teuchos::rcp( new Epetra_Vector( dis.DofRowMap() ) );
 
-  assemblestrategy_ = Teuchos::rcp( new STK::FEI::AssembleStrategy( dis, dirichletmap,
-                                                                    sysmat_, Teuchos::null,
-                                                                    residual_, Teuchos::null, Teuchos::null ) );
+//   assemblestrategy_ = Teuchos::rcp( new STK::FEI::AssembleStrategy( dis,
+//                                                                     sysmat_, Teuchos::null,
+//                                                                     residual_, Teuchos::null, Teuchos::null ) );
 
-  sysmat_->SetMatrix( assemblestrategy_->MatrixGraph( dis, dirichletmap ) );
+//   sysmat_->SetMatrix( assemblestrategy_->MatrixGraph( dis, dirichletmap ) );
 }
 
 
@@ -94,7 +96,7 @@ STK::FLD::FluidState::FluidState( int counter, Fluid & fluid )
  *----------------------------------------------------------------------*/
 void STK::FLD::FluidState::Output( STK::FLD::Fluid & fluid )
 {
-  if ( m_exo == Teuchos::null )
+  if ( m_exo==Teuchos::null )
   {
     std::vector< const stk::mesh::FieldBase * > out_fields ;
     out_fields.push_back( fluid.velnp_ );
@@ -110,7 +112,6 @@ void STK::FLD::FluidState::Output( STK::FLD::Fluid & fluid )
     str << filename << "-fluid-" << counter_ << ".exo";
     m_exo = dis.GetMesh().OutputContext( str.str(), "Navier-Stokes Problem", out_fields );
   }
-
   m_exo->write( fluid.step_, fluid.time_ );
 }
 
@@ -144,6 +145,14 @@ STK::FLD::Fluid::Fluid( STK::Discretization & dis, Teuchos::RCP<LINALG::Solver> 
   min_volume_   = 1e-6;
 
   solver_ = solver;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> STK::FLD::Fluid::CreateFieldTest()
+{
+  return Teuchos::rcp( new STK::FLD::FluidResultTest( *this ) );
 }
 
 
@@ -453,7 +462,7 @@ namespace STK
     template<DRT::Element::DiscretizationType distype>
     void EvaluateFluidElements( STK::Discretization & dis,
                                 stk::mesh::Bucket & bucket,
-                                STK::FEI::AssembleStrategy & assemblestrategy,
+                                STK::LinearSystem & system,
                                 Teuchos::RCP<MAT::Material> mat,
                                 Teuchos::ParameterList & eleparams,
                                 stk::mesh::VectorField * velnp,
@@ -468,11 +477,13 @@ namespace STK
       const int nsd = FluidElementType::nsd_;
       const int dim = (nsd+1)*nen;
 
-      assemblestrategy.ClearElementStorage( dim );
+      Epetra_SerialDenseMatrix epetra_elemat1( dim, dim );
+      Epetra_SerialDenseMatrix epetra_elemat2( dim, dim );
+      Epetra_SerialDenseVector epetra_elevec1( dim );
 
-      LINALG::Matrix<dim,dim> elemat1( assemblestrategy.Elematrix1(), true );
-      LINALG::Matrix<dim,dim> elemat2( assemblestrategy.Elematrix2(), true );
-      LINALG::Matrix<dim,  1> elevec1( assemblestrategy.Elevector1(), true );
+      LINALG::Matrix<dim,dim> elemat1( epetra_elemat1, true );
+      LINALG::Matrix<dim,dim> elemat2( epetra_elemat2, true );
+      LINALG::Matrix<dim,  1> elevec1( epetra_elevec1, true );
 
       LINALG::Matrix<nsd,nen> edeadaf( true ); // body force
 
@@ -523,8 +534,10 @@ namespace STK
           //ExtractValues<nsd,nen>( e, _, egridv );
         }
 
+        int eid = static_cast<int>( e.key().id() );
+
         int result = f3->Evaluate(
-          e.key().id(),
+          eid,
           eleparams,
           edeadaf,
           elemat1,
@@ -551,8 +564,8 @@ namespace STK
 
         // Assemble
 
-        assemblestrategy.AssembleMatrix1(e.key().id(),lm,lmowner);
-        assemblestrategy.AssembleVector1(lm,lmowner);
+        system.Assemble(eid,epetra_elemat1,lm,lmowner,lm);
+        system.Assemble(eid,epetra_elevec1,lm);
       }
     }
 
@@ -608,6 +621,9 @@ void STK::FLD::Fluid::NonlinearSolve()
 
 #endif
 
+  LinearSystem & system = state_->system_;
+  stk::mesh::Selector dirichlet_select = dis_.DirichletSelector();
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -615,8 +631,7 @@ void STK::FLD::Fluid::NonlinearSolve()
     // get cpu time
     const double tcpu=Teuchos::Time::wallTime();
 
-    state_->sysmat_->Zero();
-    state_->residual_->PutScalar( 0.0 );
+    system.Zero();
 
     // add Neumann loads
     //residual_->Update(1.0,*neumann_loads_,0.0);
@@ -674,6 +689,13 @@ void STK::FLD::Fluid::NonlinearSolve()
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
     f3Parameter->SetParameter( eleparams );
 
+    // We need to evaluate all active elements including ghosted ones. There
+    // might even be elements that do not have any node owned by the local
+    // processor...
+
+    //stk::mesh::Selector activeselector = mesh.ActivePart();
+    stk::mesh::Selector ownedselector = mesh.OwnedPart() & mesh.ActivePart();
+
     const std::vector<stk::mesh::Bucket*> & elements = bulk.buckets( stk::mesh::Element );
     for ( std::vector<stk::mesh::Bucket*>::const_iterator j=elements.begin();
           j!=elements.end();
@@ -681,7 +703,7 @@ void STK::FLD::Fluid::NonlinearSolve()
     {
       stk::mesh::Bucket & bucket = **j;
 
-      if ( stk::mesh::has_superset( bucket, mesh.ActivePart() ) )
+      if ( ownedselector( bucket ) )
       {
         // create material on-demand
         MAT::PAR::Parameter * matpat = dis_.MaterialParameter( bucket );
@@ -692,7 +714,7 @@ void STK::FLD::Fluid::NonlinearSolve()
         if ( stk::mesh::has_superset( bucket, mesh.Quad4() ) )
         {
           STK::FLD::EvaluateFluidElements<DRT::Element::quad4>( dis_, bucket,
-                                                                *state_->assemblestrategy_,
+                                                                system,
                                                                 mat, eleparams,
                                                                 velnp_, pressure_, accnp_, hist_,
                                                                 alefluid_ );
@@ -705,27 +727,16 @@ void STK::FLD::Fluid::NonlinearSolve()
     }
 
     // finalize the complete matrix
-    state_->sysmat_->Complete();
-
-#if 0
-    {
-      std::stringstream str;
-      str << "new" << Discretization().GetMesh().parallel_rank() << ".mat";
-      //std::ofstream rhs( str.str() + ".rhs" );
-      //state_->residual_->Print( rhs );
-      std::ofstream mat( str.str().c_str() );
-      state_->sysmat_->EpetraMatrix()->Print( mat );
-      //state_->sysmat_->Dump( "new" );
-      exit( 0 );
-    }
-#endif
+    system.Complete();
 
     // end time measurement for element
     dtele = Teuchos::Time::wallTime()-tcpu;
 
-    dis_.DirichletExtractor().ZeroDirichlets( state_->residual_ );
+    ScatterFieldData( *system.RHS(), resvel_, respres_ );
 
-    ScatterFieldData( *state_->residual_, resvel_, respres_ );
+    // zero dirichlet values
+    algebra::PutScalar( bulk, dirichlet_select, *resvel_, 0.0 );
+    algebra::PutScalar( bulk, dirichlet_select, *respres_, 0.0 );
 
     double incvelnorm_L2 = algebra::Norm2( bulk, *incvel_ );
     double incprenorm_L2 = algebra::Norm2( bulk, *incpres_ );
@@ -813,21 +824,18 @@ void STK::FLD::Fluid::NonlinearSolve()
     //          boundary conditions
     if ( itnum==1 )
     {
-      //incvel->Update( 1.0, *velnp, 0.0 );
       GatherFieldData( velnp_, pressure_, *incvel );
-      LINALG::ApplyDirichlettoSystem( state_->sysmat_, incvel, state_->residual_, incvel,
-                                      *dis_.DirichletExtractor().DirichletMap() );
     }
     else
     {
       incvel->PutScalar( 0.0 );
-      LINALG::ApplyDirichlettoSystem( state_->sysmat_, incvel, state_->residual_, incvel,
-                                      *dis_.DirichletExtractor().DirichletMap() );
     }
+
+    system.ApplyDirichlet( *incvel );
 
     const double tcpusolve=Teuchos::Time::wallTime();
 
-    solver_->Solve( state_->sysmat_->EpetraOperator(), incvel, state_->residual_, true, itnum==1 );
+    solver_->Solve( system.Matrix(), incvel, system.RHS(), true, itnum==1 );
     //solver_->ResetTolerance();
 
     ScatterFieldData( *incvel, incvel_, incpres_ );
@@ -1029,11 +1037,16 @@ void STK::FLD::Fluid::AdaptiveNonlinearSolve()
 
     ErrorEstimate( refine, unrefine );
 
+    unsigned refine_size   = refine.size();
+    unsigned unrefine_size = unrefine.size();
+
     int r = 0;
     for ( ; r < maxrefine_; ++r )
     {
-      //if ( refine.size()==0 and unrefine.size()==0 )
-      if ( refine.size()==0 )
+      stk::all_reduce( Discretization().GetMesh().parallel(), stk::ReduceSum<1>( &refine_size ) );
+      //stk::all_reduce( Discretization().GetMesh().parallel(), stk::ReduceSum<1>( &unrefine_size ) );
+
+      if ( refine_size==0 )
         break;
 
       dis_.AdaptMesh( refine, unrefine );
@@ -1044,12 +1057,19 @@ void STK::FLD::Fluid::AdaptiveNonlinearSolve()
       refine.clear();
       unrefine.clear();
       ErrorEstimate( refine, unrefine );
+
+      refine_size   = refine.size();
+      unrefine_size = unrefine.size();
     }
-    if ( refine.size()!=0 or unrefine.size()!=0 )
+
+    stk::all_reduce( Discretization().GetMesh().parallel(), stk::ReduceSum<1>( &refine_size ) );
+    stk::all_reduce( Discretization().GetMesh().parallel(), stk::ReduceSum<1>( &unrefine_size ) );
+
+    if ( refine_size!=0 or unrefine_size!=0 )
     {
       if ( r==maxrefine_ )
       {
-        stk::mesh::BulkData & bulk = dis_.GetMesh().BulkData();
+        stk::mesh::BulkData & bulk = Discretization().GetMesh().BulkData();
         if ( bulk.parallel_rank()==0 )
         {
           std::cout << "Warning: failed to reduce error\n";
@@ -1065,22 +1085,27 @@ void STK::FLD::Fluid::AdaptiveNonlinearSolve()
 void STK::FLD::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
                                      std::vector<stk::mesh::EntityKey> & unrefine )
 {
-#if 0
-  stk::mesh::BulkData & bulk = dis_.GetMesh().BulkData();
-  stk::mesh::Part & active = dis_.GetMesh().ActivePart();
+  stk::mesh::BulkData & bulk = Discretization().GetMesh().BulkData();
+  stk::mesh::Part & active = Discretization().GetMesh().ActivePart();
+  stk::mesh::Part & owned  = Discretization().GetMesh().OwnedPart();
 
   //PrintMesh( std::cout, bulk, active );
 
   algebra::PutScalar( bulk, *error_ , 0.0 );
   algebra::PutScalar( bulk, *volume_, 0.0 );
 
-  FluidJumpIntegrator integrator( Discretization(), bulk, active );
-  integrator.Integrate( GetMesh().Coordinates(), *velnp_, *pressure_, *error_, *volume_, state_->residual_ );
+  //Discretization().GetMesh().Dump( "mesh-debug" );
+
+  STK::FLD::FluidJumpIntegrator integrator( Discretization() );
+  integrator.Integrate( Discretization().GetMesh().Coordinates(),
+                        *velnp_, *pressure_,
+                        *error_, *volume_,
+                        *resvel_, *respres_ );
 
   double min_err = std::numeric_limits<double>::max();
   double max_err = std::numeric_limits<double>::min();
 
-  for ( ElementIterator i( bulk, active );
+  for ( STK::ElementIterator i( bulk, stk::mesh::Selector( owned & active ) );
         not i.done();
         ++i )
   {
@@ -1107,7 +1132,7 @@ void STK::FLD::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
 
   unsigned passed = 0;
 
-  for ( ElementIterator i( bulk, active );
+  for ( STK::ElementIterator i( bulk, stk::mesh::Selector( active ) );
         not i.done();
         ++i )
   {
@@ -1132,6 +1157,7 @@ void STK::FLD::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
     }
   }
 
+#if 0
   if ( bulk.parallel_rank()==0 )
   {
     std::cout << "    #refine elements: " << refine.size()

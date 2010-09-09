@@ -22,10 +22,10 @@
 #include "../drt_mat/matpar_bundle.H"
 
 #include "stk_adaptive.H"
-#include "../stk_lib/stk_mesh.H"
-#include "../stk_lib/stk_refine.H"
-#include "../stk_lib/stk_unrefine.H"
-#include "../stk_lib/stk_utils.H"
+#include "../stk_refine/stk_mesh.H"
+#include "../stk_refine/stk_refine.H"
+#include "../stk_refine/stk_unrefine.H"
+#include "../stk_refine/stk_utils.H"
 #include "../stk_lib/stk_field_comm.H"
 #include "stk_fixedsparsematrix.H"
 
