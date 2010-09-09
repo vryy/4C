@@ -1202,6 +1202,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
         linea = (alphaa*exp(alphaa*eta))+(alphac*exp((-alphac)*eta));
       }
 
+      // scan for NaNs due to negative concentrations under exponent gamma
+      if (std::isnan(expterm) or std::isnan(linea))
+        dserror("NaN detected in electrode status calculation");
+
       // compute integrals
       overpotentialint += eta * fac;
       currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
