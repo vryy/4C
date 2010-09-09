@@ -59,13 +59,13 @@ using namespace Teuchos;
 MORTAR::StrategyBase::StrategyBase(RCP<Epetra_Map> problemrowmap,
                                    Teuchos::ParameterList params,
                                    int dim, RCP<Epetra_Comm> comm,
-                                   double alphaf) :
+                                   double alphaf, int maxdof) :
 problemrowmap_(problemrowmap),
 comm_(comm),
 scontact_(params),
 dim_(dim),
 alphaf_(alphaf),
-parredist_(Teuchos::getIntegralValue<int>(params,"PARALLEL_REDIST"))
+maxdof_(maxdof)
 
 {
   // empty constructor

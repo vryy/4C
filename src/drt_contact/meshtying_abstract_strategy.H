@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -93,7 +94,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     MtAbstractStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                        Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
-                       int dim, RCP<Epetra_Comm> comm, double alphaf);
+                       int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -154,21 +155,38 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
 
+	  /*!
+	  \brief Return parallel redistribution status (yes or no)
+
+	  */
+	  bool ParRedist()
+	  {
+	  	INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+      if (partype!=INPAR::MORTAR::parredist_none) return true;
+      else return false;
+	  }
+
     //@}
 
     //! @name Evaluation methods
+
+    /*!
+    \brief Redistribute all meshtying interfaces in parallel
+
+    */
+    void RedistributeMeshtying();
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)
 
     All global maps and vectors are initialized by collecting
     the necessary information from all interfaces. In the case
-    of a parallel redistribution, this mehtod is called again
+    of a parallel redistribution, this method is called again
     to re-setup the above mentioned quantities. In this case
-    the input parameter is set to TRUE, by default it is FALSE.
+    the input parameter is set to TRUE.
     
     */
-    void Setup(bool redistributed = false);
+    void Setup(bool redistributed);
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -413,6 +431,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void InitEvalMortar() {}
     void Initialize() {}
     void OutputStresses() {}
+    void RedistributeContact(RCP<Epetra_Vector> dis) {}
     void ResetActiveSet() {}
     void ForceRefConfig() {}
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}

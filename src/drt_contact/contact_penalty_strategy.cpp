@@ -56,8 +56,8 @@ Maintainer: Alexander Popp
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap,
                                               Teuchos::ParameterList params,
                                               vector<RCP<CONTACT::CoInterface> > interface,
-                                              int dim, RCP<Epetra_Comm> comm, double alphaf) :
-CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf)
+                                              int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf,maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;

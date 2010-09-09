@@ -66,7 +66,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     */
     MtLagrangeStrategy(DRT::Discretization& discret,RCP<Epetra_Map> problemrowmap,
                        Teuchos::ParameterList params, vector<RCP<MORTAR::MortarInterface> > interface,
-                       int dim, RCP<Epetra_Comm> comm, double alphaf);
+                       int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor

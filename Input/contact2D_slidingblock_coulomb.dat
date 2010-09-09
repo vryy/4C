@@ -88,6 +88,7 @@ SEMI_SMOOTH_CN       10
 SEMI_SMOOTH_CT       10
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.3
+PARALLEL_REDIST      No
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field

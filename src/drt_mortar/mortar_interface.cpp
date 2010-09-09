@@ -560,14 +560,19 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   UpdateMasterSlaveSets();
 
   // Initialize data container
-  // loop over all slave row nodes on the current interface
-  for (int i=0; i<oldnodecolmap_->NumMyElements(); ++i)
+  // loop over all slave column nodes on the current interface
+  for (int i=0; i<SlaveColNodes()->NumMyElements(); ++i)
   {
-    int gid = oldnodecolmap_->GID(i);
+    int gid = SlaveColNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
     MortarNode* mnode = static_cast<MortarNode*>(node);
 
+    // initialize if not yet initialized before
+    // (NOTE: depending on which kind of node this really is,
+    // i.e. mortar, contact or friction node, several derived
+    // versions of the InitializeDataContainer() method will
+    // be called here, too, apart from the base class version)
     mnode->InitializeDataContainer();
   }
 
@@ -1003,8 +1008,7 @@ void MORTAR::MortarInterface::Initialize()
   if (!lComm())
     return;
 
-  // loop over all nodes to reset normals, closestnode and Mortar maps
-  // (use fully overlapping column map)
+  // loop over all nodes to reset stuff (fully overlapping column map)
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
     MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
@@ -1013,10 +1017,10 @@ void MORTAR::MortarInterface::Initialize()
     node->HasProj() = false;
   }
 
-  // loop over procs modes nodes to reset (column map)
-  for (int i=0;i<OldColNodes()->NumMyElements();++i)
+  // loop over all slave nodes to reset stuff (standard column map)
+  for (int i=0;i<SlaveColNodes()->NumMyElements();++i)
   {
-    int gid = OldColNodes()->GID(i);
+    int gid = SlaveColNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     MORTAR::MortarNode* monode = static_cast<MORTAR::MortarNode*>(node);

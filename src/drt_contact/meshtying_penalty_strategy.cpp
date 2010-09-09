@@ -55,8 +55,8 @@ Maintainer: Alexander Popp
 CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                               Teuchos::ParameterList params,
                                               vector<RCP<MORTAR::MortarInterface> > interface,
-                                              int dim, RCP<Epetra_Comm> comm, double alphaf) :
-MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
+                                              int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf, maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;

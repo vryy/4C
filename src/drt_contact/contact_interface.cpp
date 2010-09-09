@@ -154,15 +154,8 @@ void CONTACT::CoInterface::Redistribute()
 	//**********************************************************************
 	// (1) SLAVE splitting in close / non-close parts
 	//**********************************************************************
-  // perform contact search (unfortunately this has to be done ONCE here
-  // with a still non-optimal parallel distribution of the interface)
-  CreateSearchTree();
-  RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(*idiscret_->DofRowMap(),false));
-  zeros->PutScalar(0.0);
-  SetState("displacement",zeros);
+  // perform contact search (still with non-optimal distribution)
   Initialize();
-
-  // call search algorithm
   if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
@@ -303,7 +296,7 @@ void CONTACT::CoInterface::Redistribute()
   {
      dserror("ERROR: Redistribute: You should not be here");
   }
-  //-------------------------------------CASE 4: BOTH SLAVE SETS NON-EMPTY
+  //-------------------------------------CASE 2: BOTH SLAVE SETS NON-EMPTY
   else
   {
     // find intersection set of close and non-close nodes
@@ -314,6 +307,7 @@ void CONTACT::CoInterface::Redistribute()
     	if (found!=setglobalfns.end()) intersec.insert(*found);
     }
 
+    // build slave node row map
   	vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
   	int count = scrownodes->NumMyElements();
 
@@ -345,28 +339,42 @@ void CONTACT::CoInterface::Redistribute()
 	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
 
 	// IMPORTANT NOTE:
-	// While merging from the three different parts of the discretization
-	// (close slave, non-close slave, master) is feasible for the node row
-	// map, this is not possible for the node column map. Some necessary
+	// While merging from the two different slave parts of the discretization
+	// (close slave, non-close slave) is feasible for the node row map,
+	// this is not possible for the node column map. Some necessary
 	// information on ghosting at the transition between close and non-close
-	// slave region would always be missed! Thus, to be on the safe side,
-	// we simply use a fully overlapping node column map here.
-	// Thinking of FillComplete() to be called later on, this is absolutely
-	// OK, because there we export the contact interface to full overlap
-	// anyway as this is needed for contact search.
+	// slave region would always be missed! Thus, we reconstruct a
+	// suitable slave node column map by hand here. This is quite simply
+	// done by finding all adjacent nodes to the row nodes of each proc.
 
-	// create fully overlapping node column map
-	// fill my own row node ids
-	vector<int> sdata(srownodes->NumMyElements()+mrownodes->NumMyElements());
-	for (int i=0; i<srownodes->NumMyElements(); ++i)
-		sdata[i] = srownodes->GID(i);
-	for (int i=0; i<mrownodes->NumMyElements(); ++i)
-		sdata[srownodes->NumMyElements()+i] = mrownodes->GID(i);
+	// build slave node column map
+	set<int> lcn;
+	vector<int> vlcn;
 
-	// gather all gids of nodes redundantly
-	vector<int> rdata;
-	LINALG::Gather<int>(sdata,rdata,numproc,&allproc[0],Comm());
-	RCP<Epetra_Map> colnodes = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+	// loop over all row nodes and find adjacent nodes
+	for (int i=0;i<srownodes->NumMyElements();++i)
+	{
+    int gid = srownodes->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
+    // find adjacent elements first
+    for (int k=0;k<node->NumElement();++k)
+    {
+    	// store adjacent nodes
+    	DRT::Element* ele = node->Elements()[k];
+    	for (int n=0;n<ele->NumNode();++n)
+    		lcn.insert(ele->NodeIds()[n]);
+    }
+	}
+
+	// transform set to vector
+	for (iter=lcn.begin();iter!=lcn.end();++iter) vlcn.push_back(*iter);
+	sort(vlcn.begin(),vlcn.end());
+	RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(-1,(int)vlcn.size(),&vlcn[0],0,Comm()));
+
+	// merge interface node column map from slave and master parts
+	RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
 	//**********************************************************************
 	// (6) Get partitioning information into discretization
@@ -459,7 +467,7 @@ void CONTACT::CoInterface::Initialize()
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  // loop over all nodes to reset normals, closestnode and Mortar maps
+  // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
@@ -469,10 +477,10 @@ void CONTACT::CoInterface::Initialize()
     node->HasProj() = false;
    }
   
-  // loop over procs modes nodes to reset (column map)
-  for (int i=0;i<OldColNodes()->NumMyElements();++i)
+  // loop over all slave nodes to reset stuff (standard column map)
+  for (int i=0;i<SlaveColNodes()->NumMyElements();++i)
   {
-    int gid = OldColNodes()->GID(i);
+    int gid = SlaveColNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
@@ -496,7 +504,6 @@ void CONTACT::CoInterface::Initialize()
     (cnode->MoData().GetD()).resize(0);
     (cnode->MoData().GetM()).resize(0);
     (cnode->MoData().GetMmod()).resize(0);
-  
     
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
@@ -4819,31 +4826,28 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 }
 
 /*----------------------------------------------------------------------*
- |  initialize active set (nodes / dofs)                      popp 03/08|
+ |  build active set (nodes / dofs)                           popp 02/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::InitializeActiveSet()
+bool CONTACT::CoInterface::BuildActiveSet(bool init)
 {
-  // define local variables
-  int countnodes = 0;
-  int countdofs = 0;
-  vector<int> mynodegids(snoderowmap_->NumMyElements());
-  vector<int> mydofgids(sdofrowmap_->NumMyElements());
-  
-  // define local variables for slip maps
-  vector<int> myslipnodegids(0);
-  vector<int> myslipdofgids(0);
+	// define local variables
+	vector<int> mynodegids(0);
+	vector<int> mydofgids(0);
+	vector<int> myslipnodegids(0);
+	vector<int> myslipdofgids(0);
 
-  // loop over all slave nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
-    const int numdof = cnode->NumDof();
+	// loop over all slave nodes
+	for (int i=0;i<snoderowmap_->NumMyElements();++i)
+	{
+		int gid = snoderowmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CoNode* cnode = static_cast<CoNode*>(node);
+		const int numdof = cnode->NumDof();
 
     // *******************************************************************
     // INITIALIZATION OF THE ACTIVE SET (t=0)
+		// *******************************************************************
     // This is given by the CoNode member variable IsInitActive(), which
     // has been introduced via the contact conditions in the input file.
     // Thus, if no design line has been chosen to be active at t=0,
@@ -4852,138 +4856,72 @@ bool CONTACT::CoInterface::InitializeActiveSet()
     // the corresponding CoNodes are put into an initial active set!
     // This yields a very flexible solution for contact initialization.
     // *******************************************************************
-    if (cnode->IsInitActive())
-    {
-      // FULL: all slave nodes are assumed to be active
-      cnode->Active()=true;
-      mynodegids[countnodes] = cnode->Id();
-      ++countnodes;
+		if (init)
+		{
+			// check if node is initially active
+			if (cnode->IsInitActive())
+			{
+				cnode->Active()=true;
+				mynodegids.push_back(cnode->Id());
 
-      for (int j=0;j<numdof;++j)
-      {
-        mydofgids[countdofs] = cnode->Dofs()[j];
-        ++countdofs;
-      }
-    }
-  }
+				for (int j=0;j<numdof;++j)
+					mydofgids.push_back(cnode->Dofs()[j]);
+			}
 
-  // resize the temporary vectors
-  mynodegids.resize(countnodes);
-  mydofgids.resize(countdofs);
+			// check if frictional node is initially in slip state
+			if (friction_)
+			{
+				// do nothing: we always assume STICK at t=0
+			}
+		}
 
-  // communicate countnodes and countdofs among procs
-  int gcountnodes, gcountdofs;
-  Comm().SumAll(&countnodes,&gcountnodes,1);
-  Comm().SumAll(&countdofs,&gcountdofs,1);
+		// *******************************************************************
+		// RE-BUILDING OF THE ACTIVE SET
+		// *******************************************************************
+		else
+		{
+			// check if node is active
+			if (cnode->Active())
+			{
+				mynodegids.push_back(cnode->Id());
 
-  // create active node map and active dof map
-  activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
-  activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+				for (int j=0;j<numdof;++j)
+					mydofgids.push_back(cnode->Dofs()[j]);
+			}
 
-  // create an empty slip node map and slip dof map
-  // for the first time step (t=0) all nodes are stick nodes
-  if(friction_)
-  {
-    slipnodes_   = rcp(new Epetra_Map(0,0,Comm()));
-    slipdofs_    = rcp(new Epetra_Map(0,0,Comm()));
-  }
-  
-  // split active dofs into Ndofs, Tdofs and slipTdofs
-  SplitActiveDofs();
+			// check if frictional node is in slip state
+			if (friction_)
+			{
+				if (static_cast<FriNode*>(cnode)->Data().Slip())
+				{
+					myslipnodegids.push_back(cnode->Id());
 
-  return true;
-}
+					for (int j=0;j<numdof;++j)
+						myslipdofgids.push_back(cnode->Dofs()[j]);
+				}
+			}
+		}
+	}
 
-/*----------------------------------------------------------------------*
- |  build active set (nodes / dofs)                           popp 02/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::BuildActiveSet()
-{
-  // define local variables
-  int countnodes = 0;
-  int countdofs = 0;
-  vector<int> mynodegids(snoderowmap_->NumMyElements());
-  vector<int> mydofgids(sdofrowmap_->NumMyElements());
-  
-  // FRICTION - define local variables
-  int countslipnodes = 0;
-  int countslipdofs = 0;
-  vector<int> myslipnodegids(snoderowmap_->NumMyElements());
-  vector<int> myslipdofgids(sdofrowmap_->NumMyElements());
-  
-  // loop over all slave nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
-    const int numdof = cnode->NumDof();
+	// create active node map and active dof map
+	activenodes_ = rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
+	activedofs_  = rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
-    // add node / dofs to temporary map IF active
-    if (cnode->Active())
-    {
-      mynodegids[countnodes] = cnode->Id();
-      ++countnodes;
+	if (friction_)
+	{
+		// create slip node map and slip dof map
+		slipnodes_ = rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
+		slipdofs_  = rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
+	}
 
-      for (int j=0;j<numdof;++j)
-      {
-        mydofgids[countdofs] = cnode->Dofs()[j];
-        ++countdofs;
-      }
-    }
-        
-    // add node / dofs to temporary map IF slip
-    if (friction_)
-    {
-      if (static_cast<FriNode*>(cnode)->Data().Slip())
-      {
-        myslipnodegids[countslipnodes] = cnode->Id();
-        ++countslipnodes;
-
-        for (int j=0;j<numdof;++j)
-        {
-          myslipdofgids[countslipdofs] = cnode->Dofs()[j];
-          ++countslipdofs;
-        }
-      }  
-    }
-  }
-
-  // resize the temporary vectors
-  mynodegids.resize(countnodes);
-  mydofgids.resize(countdofs);
-
-  // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
-  int gcountnodes, gcountdofs, gcountslipnodes,gcountslipdofs;
-  Comm().SumAll(&countnodes,&gcountnodes,1);
-  Comm().SumAll(&countdofs,&gcountdofs,1);
-
-  // create active node map and active dof map
-  activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
-  activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-  
-  // the last three steps for frictional contact
-  if (friction_)
-  {
-    myslipnodegids.resize(countslipnodes);
-    myslipdofgids.resize(countslipdofs);
-
-    Comm().SumAll(&countslipnodes,&gcountslipnodes,1);
-    Comm().SumAll(&countslipdofs,&gcountslipdofs,1);
-
-    slipnodes_ = rcp(new Epetra_Map(gcountslipnodes,countslipnodes,&myslipnodegids[0],0,Comm()));
-    slipdofs_  = rcp(new Epetra_Map(gcountslipdofs,countslipdofs,&myslipdofgids[0],0,Comm()));
-  }
-  
-  // split active dofs into Ndofs and Tdofs and slip dofs in Tslipdofs
-  SplitActiveDofs();
+	// split active dofs and slip dofs
+	SplitActiveDofs();
 
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  split active dofs into Ndofs, Tdofs and slipTdofs          popp 02/08|
+ |  split active dofs into Ndofs, Tdofs and slipTdofs         popp 02/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::SplitActiveDofs()
 {

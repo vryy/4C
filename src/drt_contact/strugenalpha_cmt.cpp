@@ -122,7 +122,7 @@ StruGenAlpha(params,dis,solver,output)
   }
   
   //**********************************************************************
-  // set zero displacment state
+  // set zero displacement state
   //**********************************************************************
   cmtmanager_->GetStrategy().SetState("displacement",zeros_);
       
@@ -134,7 +134,7 @@ StruGenAlpha(params,dis,solver,output)
 #endif // #ifdef MORTARGMSH3
   
   //**********************************************************************
-  // initialization of contact or meshting
+  // initialization of contact or meshtying
   //**********************************************************************
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
@@ -3276,6 +3276,9 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   // time step loop
   for (int i=step; i<nstep; ++i)
   {
+  	// dynamic parallel redistribution (contact only)
+  	cmtmanager_->GetStrategy().RedistributeContact(dis_);
+
     // predictor step
     if (pred=="constant")        ConstantPredictor();
     else if (pred=="consistent") ConsistentPredictor();

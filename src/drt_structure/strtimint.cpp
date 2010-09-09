@@ -392,6 +392,15 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 }
 
 /*----------------------------------------------------------------------*/
+/* Redistribute contact interface(s) in parallel */
+void STR::TimInt::RedistributeContact()
+{
+	// only do something if contact is present
+	if (cmtman_ != Teuchos::null)
+	  cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
+}
+
+/*----------------------------------------------------------------------*/
 /* equilibrate system at initial state
  * and identify consistent accelerations */
 void STR::TimInt::DetermineMassDampConsistAccel()
@@ -1103,6 +1112,9 @@ void STR::TimInt::Integrate()
   double eps = 1.0e-12;
   while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {
+  	// dynamic parallel redistribution (contact)
+  	RedistributeContact();
+
     // integrate time step
     // after this step we hold disn_, etc
     IntegrateStep();

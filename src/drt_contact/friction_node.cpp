@@ -118,15 +118,15 @@ CONTACT::FriNodeDataContainer* CONTACT::FriNodeDataContainer::Clone() const
 void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
 {
   // add jump_
-  DRT::ParObject::AddtoPack(data,jump_,3);
+  DRT::ParObject::AddtoPack(data,jump_,3*sizeof(double));
   // add activeold_
   DRT::ParObject::AddtoPack(data,activeold_);
   // add slip_
   DRT::ParObject::AddtoPack(data,slip_);
   // add traction_
-  DRT::ParObject::AddtoPack(data,traction_,3);
+  DRT::ParObject::AddtoPack(data,traction_,3*sizeof(double));
   // add tractionold_
-  DRT::ParObject::AddtoPack(data,tractionold_,3);
+  DRT::ParObject::AddtoPack(data,tractionold_,3*sizeof(double));
 
   return;
 }
@@ -138,15 +138,15 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
 void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // jump_
-  DRT::ParObject::ExtractfromPack(position,data,jump_,3);
+  DRT::ParObject::ExtractfromPack(position,data,jump_,3*sizeof(double));
   // activeold_
   DRT::ParObject::ExtractfromPack(position,data,activeold_);
   // slip_
   DRT::ParObject::ExtractfromPack(position,data,slip_);
   // traction_
-  DRT::ParObject::ExtractfromPack(position,data,traction_,3);
+  DRT::ParObject::ExtractfromPack(position,data,traction_,3*sizeof(double));
   // tractionold_
-  DRT::ParObject::ExtractfromPack(position,data,tractionold_,3);
+  DRT::ParObject::ExtractfromPack(position,data,tractionold_,3*sizeof(double));
 
   return;
 }
@@ -383,13 +383,18 @@ void CONTACT::FriNode::StoreTracOld()
 }
 
 /*----------------------------------------------------------------------*
- |  Initialize data container                              gitterle 10/09|
+ |  Initialize data container                             gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::InitializeDataContainer()
 {
-  modata_=rcp(new MORTAR::MortarNodeDataContainer());
-  codata_ =rcp(new CONTACT::CoNodeDataContainer());
-  fridata_=rcp(new CONTACT::FriNodeDataContainer());
+	// only initialize if not yet done
+	if (modata_==Teuchos::null && codata_==Teuchos::null && fridata_==Teuchos::null)
+	{
+		modata_=rcp(new MORTAR::MortarNodeDataContainer());
+		codata_ =rcp(new CONTACT::CoNodeDataContainer());
+		fridata_=rcp(new CONTACT::FriNodeDataContainer());
+	}
+
   return;
 }
 

@@ -80,6 +80,7 @@ SEMI_SMOOTH_CT       1000000.0
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         2.0
 SYSTEM               spcoupled
+PARALLEL_REDIST      No
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

@@ -70,7 +70,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   */
   CoPenaltyStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
                     vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                    RCP<Epetra_Comm> comm, double alphaf);
+                    RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
   /*!
   \brief Destructor

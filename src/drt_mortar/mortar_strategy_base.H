@@ -101,10 +101,18 @@ class StrategyBase
 
     Creates the strategy base object and initializes all global variables.
 
+    \param problemrowmap (in): Global problem dof row map
+    \param params (in): List of meshtying/contact parameters
+    \param dim (in): Global problem dimension
+		\param comm (in): A communicator object
+		\param alphaf (in): Midpoint for Gen-alpha time integration
+		\param maxdof (in): Highest dof number in global problem
+
     */
     StrategyBase(RCP<Epetra_Map> problemrowmap,
                  Teuchos::ParameterList params,
-                 int dim, RCP<Epetra_Comm> comm, double alphaf);
+                 int dim, RCP<Epetra_Comm> comm,
+                 double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -125,12 +133,6 @@ class StrategyBase
 
     */
     const int& Dim() { return dim_; }
-
-    /*!
-    \brief Get parallel redistribution status (yes or no)
-
-    */
-    const bool& ParRedist() { return parredist_; }
 
     /*!
     \brief Get Epetra communicator
@@ -179,13 +181,14 @@ class StrategyBase
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
+    virtual void RedistributeContact(RCP<Epetra_Vector> dis) = 0;
+    virtual void RedistributeMeshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0; 
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
-    virtual void Setup(bool redistributed = false) = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;
@@ -209,6 +212,7 @@ class StrategyBase
     int                    dim_;            // dimension of problem (2D or 3D)
     double                 alphaf_;         // Generalized-alpha parameter (0.0 for statics)
     bool                   parredist_;      // flag indicating parallel redistribution status
+    int                    maxdof_;         // highest dof number in problem discretization
 
 }; // class StrategyBase
 } // namespace MORTAR

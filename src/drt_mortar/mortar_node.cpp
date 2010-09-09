@@ -113,13 +113,13 @@ MORTAR::MortarNodeDataContainer* MORTAR::MortarNodeDataContainer::Clone() const
 void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
 {
   // add n_
-  DRT::ParObject::AddtoPack(data,n_,3);
+  DRT::ParObject::AddtoPack(data,n_,3*sizeof(double));
   // add lm_
-  DRT::ParObject::AddtoPack(data,lm_,3);
+  DRT::ParObject::AddtoPack(data,lm_,3*sizeof(double));
   // add lmold_
-  DRT::ParObject::AddtoPack(data,lmold_,3);
+  DRT::ParObject::AddtoPack(data,lmold_,3*sizeof(double));
   // add lmuzawa_
-  DRT::ParObject::AddtoPack(data,lmuzawa_,3);
+  DRT::ParObject::AddtoPack(data,lmuzawa_,3*sizeof(double));
 
   return;
 }
@@ -131,13 +131,13 @@ void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
 void MORTAR::MortarNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // n_
-  DRT::ParObject::ExtractfromPack(position,data,n_,3);
+  DRT::ParObject::ExtractfromPack(position,data,n_,3*sizeof(double));
   // lm_
-  DRT::ParObject::ExtractfromPack(position,data,lm_,3);
+  DRT::ParObject::ExtractfromPack(position,data,lm_,3*sizeof(double));
   // lmold_
-  DRT::ParObject::ExtractfromPack(position,data,lmold_,3);
+  DRT::ParObject::ExtractfromPack(position,data,lmold_,3*sizeof(double));
   // lmuzawa_
-  DRT::ParObject::ExtractfromPack(position,data,lmuzawa_,3);
+  DRT::ParObject::ExtractfromPack(position,data,lmuzawa_,3*sizeof(double));
 
   return;
 }
@@ -258,9 +258,9 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
   // add dofs_
   AddtoPack(data,dofs_);
   // add xspatial_
-  AddtoPack(data,xspatial_,3);
+  AddtoPack(data,xspatial_,3*sizeof(double));
   // add uold_
-  AddtoPack(data,uold_,3);
+  AddtoPack(data,uold_,3*sizeof(double));
   // add hasproj_
   AddtoPack(data,hasproj_);
   // add kappa_
@@ -305,9 +305,9 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   // dofs_
   ExtractfromPack(position,data,dofs_);
   // xspatial_
-  ExtractfromPack(position,data,xspatial_,3);
+  ExtractfromPack(position,data,xspatial_,3*sizeof(double));
   // uold_
-  ExtractfromPack(position,data,uold_,3);
+  ExtractfromPack(position,data,uold_,3*sizeof(double));
   // hasproj_
   ExtractfromPack(position,data,hasproj_);
   // kappa_
@@ -410,11 +410,14 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
 }
 
 /*----------------------------------------------------------------------*
- |  Initialize data container                              gitterle 02/10|
+ |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()
 {
-  modata_=rcp(new MORTAR::MortarNodeDataContainer());
+	// only initialize if not yet done
+	if (modata_==Teuchos::null)
+    modata_=rcp(new MORTAR::MortarNodeDataContainer());
+
   return;
 }
 

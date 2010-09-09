@@ -37,7 +37,9 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_Time.hpp>
 #include "Epetra_SerialComm.h"
+
 #include "meshtying_abstract_strategy.H"
 #include "meshtying_defines.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -59,14 +61,14 @@ using namespace Teuchos;
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
                                                 vector<RCP<MORTAR::MortarInterface> > interface,
-                                                int dim, RCP<Epetra_Comm> comm, double alphaf) :
-MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
+                                                int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf,maxdof),
 probdiscret_(discret),
 interface_(interface),
 dualquadslave3d_(false)
 {
-  // call setup method to do all the work
-  Setup();
+  // call setup method with flag redistributed=FALSE
+  Setup(false);
 
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
@@ -92,6 +94,65 @@ ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 }
 
 /*----------------------------------------------------------------------*
+ | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
+{
+	// initialize time measurement
+	vector<double> times((int)interface_.size());
+
+	// do some more stuff with interfaces
+	for (int i=0; i<(int)interface_.size();++i)
+	{
+		// print parallel distribution
+		interface_[i]->PrintParallelDistribution(i+1);
+
+		//---------------------------------------
+		// PARALLEL REDISTRIBUTION OF INTERFACES
+		//---------------------------------------
+		if (ParRedist())
+		{
+			// time measurement
+			Comm().Barrier();
+			const double t_start = Teuchos::Time::wallTime();
+
+			// redistribute optimally among all procs
+			interface_[i]->Redistribute();
+
+			// call fill complete again
+			interface_[i]->FillComplete(maxdof_);
+
+			// print parallel distribution again
+			interface_[i]->PrintParallelDistribution(i+1);
+
+			// time measurement
+			Comm().Barrier();
+			times[i] = Teuchos::Time::wallTime()-t_start;
+		}
+		//---------------------------------------
+	}
+
+	// re-setup strategy object
+	if (ParRedist())
+	{
+		// time measurement
+		Comm().Barrier();
+		const double t_start = Teuchos::Time::wallTime();
+
+		// re-setup strategy with flag redistributed=TRUE
+		Setup(true);
+
+		// time measurement
+		Comm().Barrier();
+		double t_sum = Teuchos::Time::wallTime()-t_start;
+		for (int i=0; i<(int)interface_.size();++i) t_sum += times[i];
+		if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+	}
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
@@ -100,7 +161,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     
 
-	// make sure to remove all existing maps
+	// make sure to remove all existing maps first
 	// (do NOT remove map of non-interface dofs after redistribution)
 	gsdofrowmap_  = Teuchos::null;
 	gmdofrowmap_  = Teuchos::null;
@@ -146,7 +207,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // setup global accessible vectors and matrices
   // ------------------------------------------------------------------------   
 
-  // setup Lagrange muliplier vectors
+  // setup Lagrange multiplier vectors
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));

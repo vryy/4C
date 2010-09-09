@@ -107,9 +107,9 @@ CONTACT::CoNodeDataContainer* CONTACT::CoNodeDataContainer::Clone() const
 void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
 {
   // add txi_
-  DRT::ParObject::AddtoPack(data,txi_,3);
+  DRT::ParObject::AddtoPack(data,txi_,3*sizeof(double));
   // add teta_
-  DRT::ParObject::AddtoPack(data,teta_,3);
+  DRT::ParObject::AddtoPack(data,teta_,3*sizeof(double));
   return;
 }
 
@@ -120,9 +120,9 @@ void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
 void CONTACT::CoNodeDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // txi_
-  DRT::ParObject::ExtractfromPack(position,data,txi_,3);
+  DRT::ParObject::ExtractfromPack(position,data,txi_,3*sizeof(double));
   // teta_
-  DRT::ParObject::ExtractfromPack(position,data,teta_,3);
+  DRT::ParObject::ExtractfromPack(position,data,teta_,3*sizeof(double));
   return;
 }
 
@@ -306,12 +306,17 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
 }
 
 /*----------------------------------------------------------------------*
- |  Initialize data container                              gitterle 02/10|
+ |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::InitializeDataContainer()
 {
-  codata_=rcp(new CONTACT::CoNodeDataContainer());
-  modata_=rcp(new MORTAR::MortarNodeDataContainer());
+	// only initialize if not yet done
+	if (modata_==Teuchos::null && codata_==Teuchos::null)
+	{
+    codata_=rcp(new CONTACT::CoNodeDataContainer());
+    modata_=rcp(new MORTAR::MortarNodeDataContainer());
+	}
+
   return;
 }
 

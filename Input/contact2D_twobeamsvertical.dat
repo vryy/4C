@@ -94,6 +94,7 @@ SEMI_SMOOTH_CN       100
 SEMI_SMOOTH_CT       100
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3
+PARALLEL_REDIST      No
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         Amesos_KLU_nonsym   // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output

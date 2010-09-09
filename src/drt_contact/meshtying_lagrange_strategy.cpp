@@ -55,8 +55,8 @@ Maintainer: Alexander Popp
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(DRT::Discretization& discret, RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
                                                 vector<RCP<MORTAR::MortarInterface> > interface,
-                                                int dim, RCP<Epetra_Comm> comm, double alphaf) :
-MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf)
+                                                int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf, maxdof)
 {
 	// empty constructor body
 	return;

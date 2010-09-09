@@ -445,18 +445,15 @@ public:
   virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
                                LINALG::SparseMatrix& linslipDISglobal,
                                Epetra_Vector& linslipRHSglobal);
-  
-  /*!
-  \brief Initialize active set of this interface (t=0)
-
-  */
-  virtual bool InitializeActiveSet();
 
   /*!
   \brief Build active set (nodes / dofs) of this interface
 
+  If the flag init==true, the active set is initialized (for t=0)
+  according to the contact initialization defined in the input file.
+
   */
-  virtual bool BuildActiveSet();
+  virtual bool BuildActiveSet(bool init = false);
 
   /*!
   \brief Split active dofs into N- and T-part

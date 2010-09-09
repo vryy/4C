@@ -78,6 +78,15 @@ namespace INPAR
       search_binarytree   ///< binary tree element based
     };
 
+    /// Type of parallel redistribution algorithm
+    /// (this enum represents the input file parameter PARALLEL_REDIST)
+    enum ParRedist
+    {
+      parredist_none,      ///< no redistribution
+      parredist_static,    ///< static redistribution (at t=0 and after restart)
+      parredist_dynamic    ///< dynamic redistribution
+    };
+
   }  // namespace MORTAR
 
 }  // namespace INPAR

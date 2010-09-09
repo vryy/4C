@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_interface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -59,8 +60,8 @@ using namespace Teuchos;
  *----------------------------------------------------------------------*/
 CONTACT::CoAbstractStrategy::CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
                                                 vector<RCP<CONTACT::CoInterface> > interface,
-                                                int dim, RCP<Epetra_Comm> comm, double alphaf) :
-MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf),
+                                                int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf,maxdof),
 interface_(interface),
 isincontact_(false),
 wasincontact_(false),
@@ -69,8 +70,25 @@ isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false)
 {
-	// call setup method to do all the work
-	Setup();
+  // set potential global self contact status
+  // (this is TRUE if at least one contact interface is a self contact interface)
+  bool selfcontact = 0;
+  for (int i=0;i<(int)interface_.size();++i)
+    if (interface_[i]->SelfContact()) ++selfcontact;
+
+  if (selfcontact) isselfcontact_=true;
+
+  // check for infeasible self contact combinations
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
+    dserror("ERROR: Self contact only implemented for frictionless contact!");
+
+  // set frictional contact status
+  if (ftype != INPAR::CONTACT::friction_none)
+    friction_ = true;
+
+	// call setup method with flag redistributed=FALSE, init=TRUE
+	Setup(false,true);
 
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
@@ -96,28 +114,141 @@ ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
 }
 
 /*----------------------------------------------------------------------*
+ | parallel redistribution                                   popp 09/10 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
+{
+	// get out of here if parallel redistribution is switched off
+	if (!ParRedist()) return;
+
+	// decide whether redistribution should be applied or not
+	double average = 0.0;
+  bool doredist = false;
+
+  //**********************************************************************
+	// (1) static redistribution: ONLY at time t=0 or after restart
+	// (both cases can be identified via an empty unbalance_ vector)
+  //**********************************************************************
+  if (WhichParRedist()==INPAR::MORTAR::parredist_static)
+  {
+  	// this is the first time step (t=0) or restart
+  	if ((int)unbalance_.size()==0)
+  	{
+  		// do redistribution
+  		doredist = true;
+  	}
+
+  	// this is a regular time step (neither t=0 nor restart)
+  	else
+  	{
+  		// compute average balance factor of last time step
+  	  for (int k=0;k<(int)unbalance_.size();++k) average += unbalance_[k];
+      average/=(int)unbalance_.size();
+
+      // delete balance factors of last time step
+      unbalance_.resize(0);
+
+  		// no redistribution
+  		doredist = false;
+  	}
+  }
+
+  //**********************************************************************
+	// (2) dynamic redistribution: whenever system is out of balance
+  //**********************************************************************
+  else if (WhichParRedist()==INPAR::MORTAR::parredist_dynamic)
+  {
+  	// not yet fully implemented for friction
+  	if (friction_) dserror("ERROR: Dynamic rebalancing not yet impl. for friction");
+
+  	// this is the first time step (t=0) or restart
+  	if ((int)unbalance_.size()==0)
+  	{
+  		// do redistribution
+  		doredist = true;
+  	}
+
+  	// this is a regular time step (neither t=0 nor restart)
+  	else
+  	{
+  		// compute average balance factor of last time step
+  	  for (int k=0;k<(int)unbalance_.size();++k) average += unbalance_[k];
+      average/=(int)unbalance_.size();
+
+      // delete balance factors of last time step
+      unbalance_.resize(0);
+
+      // decide on redistribution
+			// (we allow a maximum of CONTACTPARREDIST unbalance in the
+      // system as defined in contact_defines.H, i.e. the maximum
+      // local processor workload and the minimum local processor
+      // workload for mortar evaluation of all interfaces may not
+      // differ by more than (CONTACTPARREDIST - 1.0)*100%)
+      if (average >= CONTACTPARREDIST) doredist = true;
+  	}
+  }
+
+	// print balance information to screen
+	if (Comm().MyPID()==0)
+	{
+    cout << "*****************************" << endl;
+		if (average>0) cout << "Parallel balance: " << average << endl;
+		else           cout << "Parallel balance: t=0/restart" << endl;
+		cout << "*****************************" << endl;
+	}
+
+	// get out of here if simulation is still in balance
+	if (!doredist) return;
+
+	// time measurement
+	Comm().Barrier();
+	const double t_start = Teuchos::Time::wallTime();
+
+	// set old and current displacement state
+	// (needed for search within redistribution)
+	SetState("displacement",dis);
+	SetState("olddisplacement",dis);
+
+	// parallel redistribution of all interfaces
+	for (int i=0; i<(int)interface_.size();++i)
+	{
+		// print old parallel distribution
+		interface_[i]->PrintParallelDistribution(i+1);
+
+		// redistribute optimally among all procs
+		interface_[i]->Redistribute();
+
+		// call fill complete again
+		interface_[i]->FillComplete(maxdof_);
+
+		// print new parallel distribution
+		interface_[i]->PrintParallelDistribution(i+1);
+
+		// re-create binary search tree
+		interface_[i]->CreateSearchTree();
+	}
+
+	// re-setup strategy with redistributed=TRUE, init=FALSE
+	Setup(true,false);
+
+	// time measurement
+	Comm().Barrier();
+	double t_end = Teuchos::Time::wallTime()-t_start;
+	if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | setup this strategy object                                popp 08/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
+void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 {
-  // set potential global self contact status
-  // (this is TRUE if at least one contact interface is a self contact interface)
-  bool selfcontact = 0;
-  for (int i=0;i<(int)interface_.size();++i)
-    if (interface_[i]->SelfContact()) ++selfcontact;
-  
-  if (selfcontact) isselfcontact_=true;
-  
-  // check for infeasible self contact combinations
-  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
-  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
-    dserror("ERROR: Self contact only implemented for frictionless contact!");
-  
-  // set frictional contact status
-  if (ftype != INPAR::CONTACT::friction_none)
-    friction_ = true;
-  
-  // make sure to remove all existing maps
+  // ------------------------------------------------------------------------
+  // setup global accessible Epetra_Maps
+  // ------------------------------------------------------------------------
+
+  // make sure to remove all existing maps first
 	// (do NOT remove map of non-interface dofs after redistribution)
 	gsdofrowmap_  = Teuchos::null;
 	gmdofrowmap_  = Teuchos::null;
@@ -138,10 +269,6 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
   	gslipdofs_  = Teuchos::null;
   	gslipt_     = Teuchos::null;
   }
-
-  // ------------------------------------------------------------------------
-  // setup global accessible Epetra_Maps
-  // ------------------------------------------------------------------------
 
 	// make numbering of LM dofs consecutive and unique across N interfaces
 	int offset_if = 0;
@@ -164,7 +291,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
   
     // merge active sets and slip sets of all interfaces
     // (these maps are NOT allowed to be overlapping !!!)
-    interface_[i]->InitializeActiveSet();
+    interface_[i]->BuildActiveSet(init);
     gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
@@ -205,18 +332,76 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed)
   // setup global accessible vectors and matrices
   // ------------------------------------------------------------------------
 
-  // setup Lagrange muliplier vectors
-  z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  // initialize vectors and matrices
+  if (!redistributed)
+  {
+		// setup Lagrange multiplier vectors
+		z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+		zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+		zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 
-  // setup global Mortar matrices Dold and Mold
-  dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  dold_->Zero();
-  dold_->Complete();
-  mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-  mold_->Zero();
-  mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+		// setup global Mortar matrices Dold and Mold
+		dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+		dold_->Zero();
+		dold_->Complete();
+		mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+		mold_->Zero();
+		mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+  }
+
+  // In the redistribution case, first check if the vectors and
+  // matrices have already been defined, If yes, transform them
+  // to the new redistributed maps. If not, initialize them.
+  // Moreover, store redistributed quantities into nodes!!!
+  else
+  {
+  	// setup Lagrange multiplier vectors
+  	if (z_ == Teuchos::null)
+  		z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  	else
+  	{
+  		RCP<Epetra_Vector> newz = rcp(new Epetra_Vector(*gsdofrowmap_));
+  		LINALG::Export(*z_,*newz);
+  		z_ = newz;
+  	}
+
+  	if (zold_ == Teuchos::null)
+  		zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  	else
+  	{
+  		RCP<Epetra_Vector> newzold = rcp(new Epetra_Vector(*gsdofrowmap_));
+  		LINALG::Export(*zold_,*newzold);
+  		zold_ = newzold;
+  	}
+
+  	if (zuzawa_ == Teuchos::null)
+  		zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  	else
+  	{
+			RCP<Epetra_Vector> newzuzawa = rcp(new Epetra_Vector(*gsdofrowmap_));
+			LINALG::Export(*zuzawa_,*newzuzawa);
+			zuzawa_ = newzuzawa;
+  	}
+
+		// setup global Mortar matrices Dold and Mold
+  	if (dold_ == Teuchos::null)
+  	{
+			dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+			dold_->Zero();
+			dold_->Complete();
+  	}
+  	else
+      dold_ = MORTAR::MatrixRowColTransform(dold_,gsdofrowmap_,gsdofrowmap_);
+
+  	if (mold_ == Teuchos::null)
+  	{
+			mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+			mold_->Zero();
+			mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+  	}
+  	else
+  		mold_ = MORTAR::MatrixRowColTransform(mold_,gsdofrowmap_,gmdofrowmap_);
+  }
 
   // output contact stress vectors
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -318,6 +503,9 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::InitEvalInterface()
 {
+	// time measurement (on each processor)
+	const double t_start = Teuchos::Time::wallTime();
+
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -328,7 +516,19 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     interface_[i]->Evaluate();
   }
 
-  return;
+  // time measurement (on each processor)
+  double t_end = Teuchos::Time::wallTime()-t_start;
+
+  // store time indicator for parallel redistribution
+  // (indicator is the maximum local processor time
+  // divided by the minimum local processor time)
+	double maxall = 0.0;
+	double minall = 0.0;
+	Comm().MaxAll(&t_end,&maxall,1);
+	Comm().MinAll(&t_end,&minall,1);
+	unbalance_.push_back(maxall/minall);
+
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -453,6 +653,10 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
 
   // evaluate relative movement
   EvaluateRelMov();
+
+  // reset unbalance factors for redistribution
+  // (during EvalRefState the interface has been evaluated once)
+  unbalance_.resize(0);
 
 #else  
   
@@ -1106,6 +1310,10 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   	WasInContact()=true;
   	WasInContactLastTimeStep()=true;
   }
+
+  // reset unbalance factors for redistribution
+  // (during restart the interface has been evaluated once)
+  unbalance_.resize(0);
 
   return;
 }

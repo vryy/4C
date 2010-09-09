@@ -55,8 +55,8 @@ Maintainer: Alexander Popp
 CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(RCP<Epetra_Map> problemrowmap,
                                                 Teuchos::ParameterList params,
                                                 vector<RCP<CONTACT::CoInterface> > interface,
-                                                int dim, RCP<Epetra_Comm> comm, double alphaf) :
-CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf),
+                                                int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
+CoAbstractStrategy(problemrowmap,params,interface,dim,comm,alphaf,maxdof),
 activesetssconv_(false),
 activesetconv_(false),
 activesetsteps_(1)

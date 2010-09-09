@@ -45,6 +45,7 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -89,7 +90,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     CoAbstractStrategy(RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
                        vector<RCP<CONTACT::CoInterface> > interface, int dim,
-                       RCP<Epetra_Comm> comm, double alphaf);
+                       RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -219,15 +220,53 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
 
+	  /*!
+	  \brief Return parallel redistribution status (yes or no)
+
+	  */
+	  bool ParRedist()
+	  {
+	  	INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+      if (partype!=INPAR::MORTAR::parredist_none) return true;
+      else return false;
+	  }
+
+	  /*!
+	  \brief Return specific parallel redistribution status
+
+	  */
+    INPAR::MORTAR::ParRedist WhichParRedist()
+    {
+    	return Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+	  }
+
     //@}
 
     //! @name Evaluation methods
 
     /*!
+    \brief Redistribute all contact interfaces in parallel
+
+    We hand in the current global displacement state so that
+    a contact search can be performed and set state called.
+    
+    */
+    void RedistributeContact(RCP<Epetra_Vector> dis);
+
+    /*!
     \brief Setup this strategy object (maps, vectors, etc.)
 
+    All global maps and vectors are initialized by collecting
+    the necessary information from all interfaces. In the case
+    of a parallel redistribution, this method is called again
+    to re-setup the above mentioned quantities. In this case
+    we set the input parameter redistributed=TRUE. Moreover,
+    when called for the first time (in the constructor) this
+    method is given the input parameter init=TRUE to account
+    for initialization of the active set.
+
     */
-    void Setup(bool redistributed = false);
+    void Setup(bool redistributed, bool init);
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -248,18 +287,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
       Comm().Barrier();
       const double t_start2 = Teuchos::Time::wallTime();
       InitEvalInterface();
-      double t_end2_local = Teuchos::Time::wallTime()-t_start2;
       Comm().Barrier();
       const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-      double maxall = 0.0;
-      double minall = 0.0;
-      double sumall = 0.0;
-      Comm().MaxAll(&t_end2_local,&maxall,1);
-      Comm().MinAll(&t_end2_local,&minall,1);
-      Comm().SumAll(&t_end2_local,&sumall,1);
-      double unbalance =  ((maxall/sumall)-(1.0/Comm().NumProc()))*Comm().NumProc()*100;
-      if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds\n";
-      if (Comm().MyPID()==0) cout << "                \t(BALANCE: " << maxall/minall << " / UNBALANCE: " << unbalance << "\%)\n";
+      if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds (BALANCE: " << unbalance_.back() << ")\n";
 
       Comm().Barrier();
       const double t_start3 = Teuchos::Time::wallTime();
@@ -603,10 +633,11 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     // are defined as empty here in the case of contact. They can be called from the
     // control routine (time integrator), whenever you like.
     
-    virtual void RestrictMeshtyingZone() {}
-    virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) {}
-    virtual void MeshInitialization() {}
-    virtual void MortarCoupling(const RCP<Epetra_Vector> dis) {}
+    void RedistributeMeshtying() {}
+    void RestrictMeshtyingZone() {}
+    void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) {}
+    void MeshInitialization() {}
+    void MortarCoupling(const RCP<Epetra_Vector> dis) {}
       
     //@}
     
@@ -614,6 +645,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
   protected:
 
     vector<RCP<CONTACT::CoInterface> > interface_; // contact interfaces
+    vector<double>                     unbalance_; // parallel unbalance factors for current timestep
 
     RCP<Epetra_Map> glmdofrowmap_;  // global Lagrange mult. dof row map (of all interfaces)
     RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)

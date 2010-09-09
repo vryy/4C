@@ -299,72 +299,24 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf));
+    strategy_ = rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf));
+    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf));
+    strategy_ = rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
   if(Comm().MyPID()==0) cout << "done!" << endl;
   //**********************************************************************
 
-  // check if we want to apply parallel redistribution
-  bool parredist = GetStrategy().ParRedist();
+	//**********************************************************************
+  // parallel redistribution of all interfaces
+  GetStrategy().RedistributeMeshtying();
+  //**********************************************************************
 
-  // initialize time measurement
-  vector<double> times((int)interfaces.size());
-
-  // do some more stuff with interfaces
+  // create binary search tree
   for (int i=0; i<(int)interfaces.size();++i)
-  {
-  	// print parallel distribution
-  	interfaces[i]->PrintParallelDistribution(i+1);
-
-  	//---------------------------------------
-  	// PARALLEL REDISTRIBUTION OF INTERFACES
-  	//---------------------------------------
-    if (parredist)
-    {
-			// time measurement
-			Comm().Barrier();
-			const double t_start = Teuchos::Time::wallTime();
-
-			// redistribute optimally among all procs
-			interfaces[i]->Redistribute();
-
-			// call fill complete again
-			interfaces[i]->FillComplete(maxdof);
-
-			// print parallel distribution again
-			interfaces[i]->PrintParallelDistribution(i+1);
-
-			// time measurement
-			Comm().Barrier();
-			times[i] = Teuchos::Time::wallTime()-t_start;
-    }
-  	//---------------------------------------
-
-  	// create binary search tree
   	interfaces[i]->CreateSearchTree();
-  }
-
-  // only for parallel redistribution case
-  if (parredist)
-  {
-		// time measurement
-		Comm().Barrier();
-		const double t_start = Teuchos::Time::wallTime();
-
-		// re-setup strategy object (with flag redistributed=TRUE)
-		strategy_->Setup(true);
-
-		// time measurement
-		Comm().Barrier();
-		double t_sum = Teuchos::Time::wallTime()-t_start;
-		for (int i=0; i<(int)interfaces.size();++i) t_sum += times[i];
-		if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
-  }
 
   // print parameter list to screen
   if (Comm().MyPID()==0)
@@ -424,6 +376,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
+
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
+  	dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
 
   // *********************************************************************
   // not (yet) implemented combinations

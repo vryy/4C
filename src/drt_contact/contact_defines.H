@@ -50,6 +50,13 @@ Maintainer: Alexander Popp
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 
 /************************************************************************/
+/* Contact algorithm parameters                                         */
+/************************************************************************/
+
+// DYNAMIC PARALLEL REDISTRIBUTION
+#define CONTACTPARREDIST 1.5      /* max. unbalance before redistribution is called */
+
+/************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 

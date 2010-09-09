@@ -170,6 +170,10 @@ namespace STR
     //! create manager object + initialize all relevant stuff if so
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
 
+    //! Call dynamic redistribution of contact interface(s) at the
+    //! beginning of each new time step
+    void RedistributeContact();
+
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
