@@ -387,7 +387,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true &&
-  		Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST") == true)
+  		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   // *********************************************************************

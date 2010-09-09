@@ -499,7 +499,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   	if (*side == "Selfcontact") self = true;
   }
 
-  if (self == true && Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST") == true)
+  if (self == true &&
+  		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
 
   // *********************************************************************

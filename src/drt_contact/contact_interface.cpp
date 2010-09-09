@@ -478,9 +478,10 @@ void CONTACT::CoInterface::Initialize()
    }
   
   // loop over all slave nodes to reset stuff (standard column map)
-  for (int i=0;i<SlaveColNodes()->NumMyElements();++i)
+  // (include slave side boundary nodes / crosspoints)
+  for (int i=0;i<SlaveColNodesBound()->NumMyElements();++i)
   {
-    int gid = SlaveColNodes()->GID(i);
+    int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);

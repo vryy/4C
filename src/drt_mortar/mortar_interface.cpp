@@ -561,9 +561,10 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 
   // Initialize data container
   // loop over all slave column nodes on the current interface
-  for (int i=0; i<SlaveColNodes()->NumMyElements(); ++i)
+  // (include slave side boundary nodes / crosspoints)
+  for (int i=0; i<SlaveColNodesBound()->NumMyElements(); ++i)
   {
-    int gid = SlaveColNodes()->GID(i);
+    int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
     MortarNode* mnode = static_cast<MortarNode*>(node);
@@ -1018,9 +1019,10 @@ void MORTAR::MortarInterface::Initialize()
   }
 
   // loop over all slave nodes to reset stuff (standard column map)
-  for (int i=0;i<SlaveColNodes()->NumMyElements();++i)
+  // (include slave side boundary nodes / crosspoints)
+  for (int i=0;i<SlaveColNodesBound()->NumMyElements();++i)
   {
-    int gid = SlaveColNodes()->GID(i);
+    int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     MORTAR::MortarNode* monode = static_cast<MORTAR::MortarNode*>(node);
