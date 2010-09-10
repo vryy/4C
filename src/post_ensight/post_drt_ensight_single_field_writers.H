@@ -63,16 +63,14 @@ protected:
                                  PostResult& result,
                                  map<string, vector<ofstream::pos_type> >& resultfilepos,
                                  const string groupname,
-                                 vector<string> name,
-                                 const int numdf);
+                                 vector<string> name);
   void WriteElementCenterEigenStress(const string groupname,
                                      PostResult& result);
   void WriteElementCenterEigenStressStep(std::vector<RCP<ofstream> > files,
                                          PostResult& result,
                                          map<string, vector<ofstream::pos_type> >& resultfilepos,
                                          const string groupname,
-                                         vector<string> name,
-                                         const int numdf);
+                                         vector<string> name);
 
   string stresstype_;
   string straintype_;

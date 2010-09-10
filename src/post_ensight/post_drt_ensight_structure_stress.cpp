@@ -483,104 +483,54 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
 void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
                                                    PostResult& result)
 {
-  int numdf = 6;
-  int numfiles = 6;
-  if (field_->problem()->num_dim()==2)
-  {
-    numdf = 3;
-    numfiles = 4;
-  }
-
+	int numfiles = 6;
   vector<string> name(numfiles);
   string out;
 
-  if (numdf == 6)
+  if (groupname=="gauss_2PK_stresses_xyz")
   {
-    if (groupname=="gauss_2PK_stresses_xyz")
-    {
-      name[0]="nodal_2PK_stresses_eigenval1";
-      name[1]="nodal_2PK_stresses_eigenval2";
-      name[2]="nodal_2PK_stresses_eigenval3";
-      name[3]="nodal_2PK_stresses_eigenvec1";
-      name[4]="nodal_2PK_stresses_eigenvec2";
-      name[5]="nodal_2PK_stresses_eigenvec3";
-      out="principal 2nd Piola-Kirchhoff stresses";
-    }
-    else if (groupname=="gauss_cauchy_stresses_xyz")
-    {
-      name[0]="nodal_cauchy_stresses_eigenval1";
-      name[1]="nodal_cauchy_stresses_eigenval2";
-      name[2]="nodal_cauchy_stresses_eigenval3";
-      name[3]="nodal_cauchy_stresses_eigenvec1";
-      name[4]="nodal_cauchy_stresses_eigenvec2";
-      name[5]="nodal_cauchy_stresses_eigenvec3";
-      out="principal Cauchy stresses";
-    }
-    else if (groupname=="gauss_GL_strains_xyz")
-    {
-      name[0]="nodal_GL_strains_eigenval1";
-      name[1]="nodal_GL_strains_eigenval2";
-      name[2]="nodal_GL_strains_eigenval3";
-      name[3]="nodal_GL_strains_eigenvec1";
-      name[4]="nodal_GL_strains_eigenvec2";
-      name[5]="nodal_GL_strains_eigenvec3";
-      out="principal Green-Lagrange strains";
-    }
-    else if (groupname=="gauss_EA_strains_xyz")
-    {
-      name[0]="nodal_EA_strains_eigenval1";
-      name[1]="nodal_EA_strains_eigenval2";
-      name[2]="nodal_EA_strains_eigenval3";
-      name[3]="nodal_EA_strains_eigenvec1";
-      name[4]="nodal_EA_strains_eigenvec2";
-      name[5]="nodal_EA_strains_eigenvec3";
-      out="principal Euler-Almansi strains";
-    }
-    else
-    {
-      dserror("trying to write something that is not a stress or a strain");
-      exit(1);
-    }
+    name[0]="nodal_2PK_stresses_eigenval1";
+    name[1]="nodal_2PK_stresses_eigenval2";
+    name[2]="nodal_2PK_stresses_eigenval3";
+    name[3]="nodal_2PK_stresses_eigenvec1";
+    name[4]="nodal_2PK_stresses_eigenvec2";
+    name[5]="nodal_2PK_stresses_eigenvec3";
+    out="principal 2nd Piola-Kirchhoff stresses";
+  }
+  else if (groupname=="gauss_cauchy_stresses_xyz")
+  {
+    name[0]="nodal_cauchy_stresses_eigenval1";
+    name[1]="nodal_cauchy_stresses_eigenval2";
+    name[2]="nodal_cauchy_stresses_eigenval3";
+    name[3]="nodal_cauchy_stresses_eigenvec1";
+    name[4]="nodal_cauchy_stresses_eigenvec2";
+    name[5]="nodal_cauchy_stresses_eigenvec3";
+    out="principal Cauchy stresses";
+  }
+  else if (groupname=="gauss_GL_strains_xyz")
+  {
+    name[0]="nodal_GL_strains_eigenval1";
+    name[1]="nodal_GL_strains_eigenval2";
+    name[2]="nodal_GL_strains_eigenval3";
+    name[3]="nodal_GL_strains_eigenvec1";
+    name[4]="nodal_GL_strains_eigenvec2";
+    name[5]="nodal_GL_strains_eigenvec3";
+    out="principal Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_EA_strains_xyz")
+  {
+    name[0]="nodal_EA_strains_eigenval1";
+    name[1]="nodal_EA_strains_eigenval2";
+    name[2]="nodal_EA_strains_eigenval3";
+    name[3]="nodal_EA_strains_eigenvec1";
+    name[4]="nodal_EA_strains_eigenvec2";
+    name[5]="nodal_EA_strains_eigenvec3";
+    out="principal Euler-Almansi strains";
   }
   else
   {
-    if (groupname=="gauss_2PK_stresses_xyz")
-    {
-      name[0]="nodal_2PK_stresses_eigenval1";
-      name[1]="nodal_2PK_stresses_eigenval2";
-      name[2]="nodal_2PK_stresses_eigenvec1";
-      name[3]="nodal_2PK_stresses_eigenvec2";
-      out="principal 2nd Piola-Kirchhoff stresses";
-    }
-    else if (groupname=="gauss_cauchy_stresses_xyz")
-    {
-      name[0]="nodal_cauchy_stresses_eigenval1";
-      name[1]="nodal_cauchy_stresses_eigenval2";
-      name[2]="nodal_cauchy_stresses_eigenvec1";
-      name[3]="nodal_cauchy_stresses_eigenvec2";
-      out="principal Cauchy stresses";
-    }
-    else if (groupname=="gauss_GL_strains_xyz")
-    {
-      name[0]="nodal_GL_strains_eigenval1";
-      name[1]="nodal_GL_strains_eigenval2";
-      name[2]="nodal_GL_strains_eigenvec1";
-      name[3]="nodal_GL_strains_eigenvec2";
-      out="principal Green-Lagrange strains";
-    }
-    else if (groupname=="gauss_EA_strains_xyz")
-    {
-      name[0]="nodal_EA_strains_eigenval1";
-      name[1]="nodal_EA_strains_eigenval2";
-      name[2]="nodal_EA_strains_eigenvec1";
-      name[3]="nodal_EA_strains_eigenvec2";
-      out="principal Euler-Almansi strains";
-    }
-    else
-    {
-      dserror("trying to write something that is not a stress or a strain");
-      exit(1);
-    }
+    dserror("trying to write something that is not a stress or a strain");
+    exit(1);
   }
 
   // new for file continuation
@@ -628,7 +578,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
     variableresulttypemap_[name[i]] = "node";
   }
 
-  WriteNodalEigenStressStep(files,result,resultfilepos,groupname,name,numdf);
+  WriteNodalEigenStressStep(files,result,resultfilepos,groupname,name);
 
 
   // how many bits are necessary per time step (we assume a fixed size)?
@@ -660,7 +610,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
       }
     }
 
-    WriteNodalEigenStressStep(files,result,resultfilepos,groupname,name,numdf);
+    WriteNodalEigenStressStep(files,result,resultfilepos,groupname,name);
   }
   // store information for later case file creation
 
@@ -710,8 +660,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
                                                        PostResult& result,
                                                        map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                        const string groupname,
-                                                       vector<string> name,
-                                                       const int numdf)
+                                                       vector<string> name)
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
@@ -726,40 +675,42 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
-  RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
-  dis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
-
   const Epetra_Map* nodemap = dis->NodeRowMap();
+  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
+  p.set("poststress",nodal_stress);
+  dis->Evaluate(p,null,null,null,null,null);
+  if (nodal_stress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  } 
 
-  // Epetra_MultiVector with eigenvalues (2/3) and eigenvectors (4/9 components) in each row (=node)
-  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*nodemap, 2*numdf));
+  // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
+  RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*nodemap,12));
 
   const int numnodes = dis->NumMyRowNodes();
+  bool threedim = true;
+  if (field_->problem()->num_dim()==2) threedim = false;
 
-  if (numdf==6)
+  // the three-dimensional case
+  if (threedim)
   {
     for (int i=0;i<numnodes;++i)
     {
-
       Epetra_SerialDenseMatrix eigenvec(3,3);
       Epetra_SerialDenseVector eigenval(3);
 
       const DRT::Node* lnode = dis->lRowNode(i);
-      const std::vector<int> lnodedofs = dis->Dof(lnode);
-      if (lnodedofs.size() < 3)
-        dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
-
-      eigenvec(0,0) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      eigenvec(0,1) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      eigenvec(0,2) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
+      
+      eigenvec(0,0) = (*((*nodal_stress)(0)))[i] /= adjele;
+      eigenvec(0,1) = (*((*nodal_stress)(3)))[i] /= adjele;
+      eigenvec(0,2) = (*((*nodal_stress)(5)))[i] /= adjele;
       eigenvec(1,0) = eigenvec(0,1);
-      eigenvec(1,1) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
-      eigenvec(1,2) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      eigenvec(1,1) = (*((*nodal_stress)(1)))[i] /= adjele;
+      eigenvec(1,2) = (*((*nodal_stress)(4)))[i] /= adjele;
       eigenvec(2,0) = eigenvec(0,2);
       eigenvec(2,1) = eigenvec(1,2);
-      eigenvec(2,2) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
+      eigenvec(2,2) = (*((*nodal_stress)(2)))[i] /= adjele;
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -778,38 +729,41 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
 
     }
   }
-  if (numdf==3)
+  // the two-dimensional case
+  else
   {
     for (int i=0;i<numnodes;++i)
     {
-
       Epetra_SerialDenseMatrix eigenvec(2,2);
       Epetra_SerialDenseVector eigenval(2);
 
       const DRT::Node* lnode = dis->lRowNode(i);
-      const std::vector<int> lnodedofs = dis->Dof(lnode);
-      if (lnodedofs.size() < 2)
-        dserror("Too few DOFs at node of interest");
       const int adjele = lnode->NumElement();
 
-      eigenvec(0,0) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      eigenvec(0,1) = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
+      eigenvec(0,0) = (*((*nodal_stress)(0)))[i] /= adjele;
+      eigenvec(0,1) = (*((*nodal_stress)(3)))[i] /= adjele;
       eigenvec(1,0) = eigenvec(0,1);
-      eigenvec(1,1) = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
+      eigenvec(1,1) = (*((*nodal_stress)(1)))[i] /= adjele;
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
       (*((*nodal_eigen_val_vec)(0)))[i] = eigenval(0);
       (*((*nodal_eigen_val_vec)(1)))[i] = eigenval(1);
-      (*((*nodal_eigen_val_vec)(2)))[i] = eigenvec(0,0);
-      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(1,0);
-      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(0,1);
-      (*((*nodal_eigen_val_vec)(5)))[i] = eigenvec(1,1);
+      (*((*nodal_eigen_val_vec)(2)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(0,0);
+      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(1,0);
+      (*((*nodal_eigen_val_vec)(5)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec)(6)))[i] = eigenvec(0,1);
+      (*((*nodal_eigen_val_vec)(7)))[i] = eigenvec(1,1);
+      (*((*nodal_eigen_val_vec)(8)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec)(9)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec)(10)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec)(11)))[i] = 0.0;
     }
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,2*numdf));
+  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,12));
   Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
   int err = data_proc0->Import(*nodal_eigen_val_vec,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -819,8 +773,6 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   //--------------------------------------------------------------------
 
   int numfiles=6;
-  if (numdf==3) numfiles=4;
-
   for (int i=0;i<numfiles;++i)
   {
     vector<ofstream::pos_type>& filepos = resultfilepos[name[i]];
@@ -836,55 +788,26 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   // write results
   //--------------------------------------------------------------------
 
-
-  if (numdf==6)
+  if (myrank_==0)
   {
-    if (myrank_==0)
-    {
-      const int finalnumnode = proc0map_->NumGlobalElements();
+    const int finalnumnode = proc0map_->NumGlobalElements();
 
+    for (int inode=0; inode<finalnumnode; inode++)
+    {
+      for (int i=0;i<3;++i)
+      {
+        Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
+      }
+    }
+
+    for (int idf=0; idf<3; ++idf)
+    {
       for (int inode=0; inode<finalnumnode; inode++)
       {
         for (int i=0;i<3;++i)
         {
-          Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
+          Write(*(files[i+3]), static_cast<float>((*((*data_proc0)(3*i+3+idf)))[inode]));
         }
-      }
-
-      for (int idf=0; idf<3; ++idf)
-      {
-        for (int inode=0; inode<finalnumnode; inode++)
-        {
-          for (int i=0;i<3;++i)
-          {
-            Write(*(files[i+3]), static_cast<float>((*((*data_proc0)(3*i+3+idf)))[inode]));
-          }
-        }
-      }
-    }
-  }
-  if (numdf==3)
-  {
-    if (myrank_==0)
-    {
-      const int finalnumnode = proc0map_->NumGlobalElements();
-      for (int inode=0; inode<finalnumnode; inode++)
-      {
-        for (int i=0;i<2;++i) Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
-      }
-      for (int idf=0; idf<2; ++idf)
-      {
-        for (int inode=0; inode<finalnumnode; inode++)
-        {
-          for (int i=0;i<2;++i)
-          {
-            Write(*(files[i+2]), static_cast<float>((*((*data_proc0)(2*i+2+idf)))[inode]));
-          }
-        }
-      }
-      for (int inode=0;inode<finalnumnode;inode++)
-      {
-        for (int i=0;i<2;i++) Write(*(files[i+2]), static_cast<float>(0.));
       }
     }
   }
@@ -899,104 +822,54 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
 void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupname,
                                                            PostResult& result)
 {
-  int numdf = 6;
   int numfiles = 6;
-  if (field_->problem()->num_dim()==2)
-  {
-    numdf = 3;
-    numfiles = 4;
-  }
-
   vector<string> name(numfiles);
   string out;
 
-  if (numdf == 6)
+  if (groupname=="gauss_2PK_stresses_xyz")
   {
-    if (groupname=="gauss_2PK_stresses_xyz")
-    {
-      name[0]="element_2PK_stresses_eigenval1";
-      name[1]="element_2PK_stresses_eigenval2";
-      name[2]="element_2PK_stresses_eigenval3";
-      name[3]="element_2PK_stresses_eigenvec1";
-      name[4]="element_2PK_stresses_eigenvec2";
-      name[5]="element_2PK_stresses_eigenvec3";
-      out="principal 2nd Piola-Kirchhoff stresses";
-    }
-    else if (groupname=="gauss_cauchy_stresses_xyz")
-    {
-      name[0]="element_cauchy_stresses_eigenval1";
-      name[1]="element_cauchy_stresses_eigenval2";
-      name[2]="element_cauchy_stresses_eigenval3";
-      name[3]="element_cauchy_stresses_eigenvec1";
-      name[4]="element_cauchy_stresses_eigenvec2";
-      name[5]="element_cauchy_stresses_eigenvec3";
-      out="principal Cauchy stresses";
-    }
-    else if (groupname=="gauss_GL_strains_xyz")
-    {
-      name[0]="element_GL_strains_eigenval1";
-      name[1]="element_GL_strains_eigenval2";
-      name[2]="element_GL_strains_eigenval3";
-      name[3]="element_GL_strains_eigenvec1";
-      name[4]="element_GL_strains_eigenvec2";
-      name[5]="element_GL_strains_eigenvec3";
-      out="principal Green-Lagrange strains";
-    }
-    else if (groupname=="gauss_EA_strains_xyz")
-    {
-      name[0]="element_EA_strains_eigenval1";
-      name[1]="element_EA_strains_eigenval2";
-      name[2]="element_EA_strains_eigenval3";
-      name[3]="element_EA_strains_eigenvec1";
-      name[4]="element_EA_strains_eigenvec2";
-      name[5]="element_EA_strains_eigenvec3";
-      out="principal Euler-Almansi strains";
-    }
-    else
-    {
-      dserror("trying to write something that is not a stress or a strain");
-      exit(1);
-    }
+    name[0]="element_2PK_stresses_eigenval1";
+    name[1]="element_2PK_stresses_eigenval2";
+    name[2]="element_2PK_stresses_eigenval3";
+    name[3]="element_2PK_stresses_eigenvec1";
+    name[4]="element_2PK_stresses_eigenvec2";
+    name[5]="element_2PK_stresses_eigenvec3";
+    out="principal 2nd Piola-Kirchhoff stresses";
+  }
+  else if (groupname=="gauss_cauchy_stresses_xyz")
+  {
+    name[0]="element_cauchy_stresses_eigenval1";
+    name[1]="element_cauchy_stresses_eigenval2";
+    name[2]="element_cauchy_stresses_eigenval3";
+    name[3]="element_cauchy_stresses_eigenvec1";
+    name[4]="element_cauchy_stresses_eigenvec2";
+    name[5]="element_cauchy_stresses_eigenvec3";
+    out="principal Cauchy stresses";
+  }
+  else if (groupname=="gauss_GL_strains_xyz")
+  {
+    name[0]="element_GL_strains_eigenval1";
+    name[1]="element_GL_strains_eigenval2";
+    name[2]="element_GL_strains_eigenval3";
+    name[3]="element_GL_strains_eigenvec1";
+    name[4]="element_GL_strains_eigenvec2";
+    name[5]="element_GL_strains_eigenvec3";
+    out="principal Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_EA_strains_xyz")
+  {
+    name[0]="element_EA_strains_eigenval1";
+    name[1]="element_EA_strains_eigenval2";
+    name[2]="element_EA_strains_eigenval3";
+    name[3]="element_EA_strains_eigenvec1";
+    name[4]="element_EA_strains_eigenvec2";
+    name[5]="element_EA_strains_eigenvec3";
+    out="principal Euler-Almansi strains";
   }
   else
   {
-    if (groupname=="gauss_2PK_stresses_xyz")
-    {
-      name[0]="element_2PK_stresses_eigenval1";
-      name[1]="element_2PK_stresses_eigenval2";
-      name[2]="element_2PK_stresses_eigenvec1";
-      name[3]="element_2PK_stresses_eigenvec2";
-      out="principal 2nd Piola-Kirchhoff stresses";
-    }
-    else if (groupname=="gauss_cauchy_stresses_xyz")
-    {
-      name[0]="element_cauchy_stresses_eigenval1";
-      name[1]="element_cauchy_stresses_eigenval2";
-      name[2]="element_cauchy_stresses_eigenvec1";
-      name[3]="element_cauchy_stresses_eigenvec2";
-      out="principal Cauchy stresses";
-    }
-    else if (groupname=="gauss_GL_strains_xyz")
-    {
-      name[0]="element_GL_strains_eigenval1";
-      name[1]="element_GL_strains_eigenval2";
-      name[2]="element_GL_strains_eigenvec1";
-      name[3]="element_GL_strains_eigenvec2";
-      out="principal Green-Lagrange strains";
-    }
-    else if (groupname=="gauss_EA_strains_xyz")
-    {
-      name[0]="element_EA_strains_eigenval1";
-      name[1]="element_EA_strains_eigenval2";
-      name[2]="element_EA_strains_eigenvec1";
-      name[3]="element_EA_strains_eigenvec2";
-      out="principal Euler-Almansi strains";
-    }
-    else
-    {
-      dserror("trying to write something that is not a stress or a strain");
-      exit(1);
-    }
+    dserror("trying to write something that is not a stress or a strain");
+    exit(1);
   }
 
   // new for file continuation
@@ -1045,7 +918,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
     variableresulttypemap_[name[i]] = "element";
   }
 
-  WriteElementCenterEigenStressStep(files,result,resultfilepos,groupname,name,numdf);
+  WriteElementCenterEigenStressStep(files,result,resultfilepos,groupname,name);
 
   // how many bits are necessary per time step (we assume a fixed size)?
   if (myrank_==0)
@@ -1076,7 +949,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
       }
     }
 
-    WriteElementCenterEigenStressStep(files,result,resultfilepos,groupname,name,numdf);
+    WriteElementCenterEigenStressStep(files,result,resultfilepos,groupname,name);
   }
   // store information for later case file creation
 
@@ -1127,8 +1000,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
                                                                PostResult& result,
                                                                map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                                const string groupname,
-                                                               vector<string> name,
-                                                               const int numdf)
+                                                               vector<string> name)
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
@@ -1143,8 +1015,8 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),numdf));
-  p.set("elestress",elestress);
+  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  p.set("poststress",elestress);
   dis->Evaluate(p,null,null,null,null,null);
   if (elestress==null)
   {
@@ -1171,7 +1043,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,numdf));
+  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1181,8 +1053,6 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   //--------------------------------------------------------------------
 
   int numfiles=6;
-  if (numdf==3) numfiles=4;
-
   for (int i=0;i<numfiles;++i)
   {
     vector<ofstream::pos_type>& filepos = resultfilepos[name[i]];
@@ -1217,11 +1087,15 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
     if (myrank_==0) // ensures pointer dofgids is valid
     {
-      if (numdf==6)
+      vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
+      vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
+      
+      bool threedim = true;
+      if (field_->problem()->num_dim()==2) threedim = false;
+      
+      // the three-dimensional case
+      if (threedim)
       {
-        vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
-        vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
-
         for (int i=0;i<numelepertype;++i)
         {
           // extract element global id
@@ -1241,25 +1115,10 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
           LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
         }
-
-        for (int iele=0; iele<numelepertype; iele++)
-        {
-          for (int i=0;i<3;++i) Write(*(files[i]), static_cast<float>((eigenval[iele])[i]));
-        }
-
-        for (int idf=0; idf<3; ++idf)
-        {
-          for (int iele=0; iele<numelepertype; iele++)
-          {
-            for (int i=0;i<3;++i) Write(*(files[i+3]), static_cast<float>((eigenvec[iele])(idf,i)));
-          }
-        }
       }
+      // the two-dimensional case
       else
       {
-        vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(2,2));
-        vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(2));
-
         for (int i=0;i<numelepertype;++i)
         {
           // extract element global id
@@ -1267,30 +1126,43 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
           // get the dof local id w.r.t. the final datamap
           int lid = proc0datamap->LID(gid);
 
-          (eigenvec[i])(0,0) = (*(*data_proc0)(0))[lid];
-          (eigenvec[i])(0,1) = (*(*data_proc0)(2))[lid];
-          (eigenvec[i])(1,0) = (eigenvec[i])(0,1);
-          (eigenvec[i])(1,1) = (*(*data_proc0)(1))[lid];
+          // local 2x2 eigenproblem
+          Epetra_SerialDenseMatrix twodeigenvec(2,2);
+          Epetra_SerialDenseVector twodeigenval(2);
+                
+          twodeigenvec(0,0) = (*(*data_proc0)(0))[lid];
+          twodeigenvec(0,1) = (*(*data_proc0)(3))[lid];
+          twodeigenvec(1,0) = twodeigenvec(0,1);
+          twodeigenvec(1,1) = (*(*data_proc0)(1))[lid];
 
-          LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
+          LINALG::SymmetricEigenProblem(twodeigenvec, twodeigenval, true);
+          
+          (eigenvec[i])(0,0) = twodeigenvec(0,0);
+          (eigenvec[i])(0,1) = twodeigenvec(0,0);
+          (eigenvec[i])(0,2) = 0.0;
+          (eigenvec[i])(1,0) = twodeigenvec(0,0);
+          (eigenvec[i])(1,1) = twodeigenvec(0,0);
+          (eigenvec[i])(1,2) = 0.0;
+          (eigenvec[i])(2,0) = 0.0;
+          (eigenvec[i])(2,1) = 0.0;
+          (eigenvec[i])(2,2) = 0.0;
+          	
+          (eigenval[i])[0] = twodeigenval[0];
+          (eigenval[i])[1] = twodeigenval[1];
+          (eigenval[i])[2] = 0.0;  	
         }
+      }
 
+      for (int iele=0; iele<numelepertype; iele++)
+      {
+        for (int i=0;i<3;++i) Write(*(files[i]), static_cast<float>((eigenval[iele])[i]));
+      }
+
+      for (int idf=0; idf<3; ++idf)
+      {
         for (int iele=0; iele<numelepertype; iele++)
         {
-          for (int i=0;i<2;++i) Write(*(files[i]), static_cast<float>((eigenval[iele])[i]));
-        }
-
-        for (int idf=0; idf<2; ++idf)
-        {
-          for (int iele=0; iele<numelepertype; iele++)
-          {
-            for (int i=0;i<2;++i) Write(*(files[i+2]), static_cast<float>((eigenvec[iele])(idf,i)));
-          }
-        }
-        // 2D vector for eigenproblem needed, 3D vector for paraview -> append 0.
-        for (int inode=0; inode<numelepertype; inode++) // inode == lid of node because we use proc0datamap
-        {
-          for (int i=0;i<2;++i) Write(*(files[i+2]), static_cast<float>(0.));
+          for (int i=0;i<3;++i) Write(*(files[i+3]), static_cast<float>((eigenvec[iele])(idf,i)));
         }
       }
     } // if (myrank_==0)
