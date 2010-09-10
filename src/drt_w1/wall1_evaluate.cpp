@@ -299,26 +299,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         if (lid!=-1)
         {
-          // 4 independent stresses exist in 2D
-          for (int i = 0; i < Wall1::numstr_; ++i)
-          {
-            (*((*poststress)(i)))[lid] = 0.;
-            for (int j = 0; j < intpoints.nquad; ++j)
-            {
-              (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
-            }
-          }
-        }
-      }
-      else if (stresstype=="cxyz_ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        w1_expol(*gpstress, *poststress);
-
-        const Epetra_BlockMap elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-        if (lid!=-1) {
+          // maximum 4 independent stresses exist in 2D
           for (int i = 0; i < Wall1::numstr_; ++i)
           {
             (*((*poststress)(i)))[lid] = 0.;
@@ -777,8 +758,10 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
       case INPAR::STR::strain_gl:
       {
         if (elestrain == NULL) dserror("no strain data available");
-        for (int i = 0; i < Wall1::numstr_; ++i)
-          (*elestrain)(ip,i) = strain(i);
+        (*elestrain)(ip,0) = strain(0);
+        (*elestrain)(ip,1) = strain(1);
+        (*elestrain)(ip,2) = 0.0;
+        (*elestrain)(ip,3) = strain(3);
       }
       break;
       case INPAR::STR::strain_none:
@@ -796,7 +779,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
         if (elestress == NULL) dserror("no stress data available");
         (*elestress)(ip,0) = stress(0,0);
         (*elestress)(ip,1) = stress(1,1);
-        (*elestress)(ip,2) = stress(0,2);
+        (*elestress)(ip,2) = 0.0;
+        (*elestress)(ip,3) = stress(0,2);
       }
       break;
       case INPAR::STR::stress_cauchy:
@@ -1249,7 +1233,8 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
   // copy results to array for output
   (*elestress)(ip,0) = cauchystress(0,0);
   (*elestress)(ip,1) = cauchystress(1,1);
-  (*elestress)(ip,2) = cauchystress(0,1);
+  (*elestress)(ip,2) = 0.0;
+  (*elestress)(ip,3) = cauchystress(0,1);
 }  // StressCauchy
 
 
