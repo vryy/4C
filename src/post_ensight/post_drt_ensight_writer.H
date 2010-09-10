@@ -351,18 +351,6 @@ protected:
             const string groupname,
             const string name,
             const int numdf) const;
-    void WriteNodalStressStep(
-            ofstream& file,
-            const RefCountPtr<Epetra_MultiVector> nodalstresses,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name,
-            const int numdf) const;
-    void WriteElementCenterStressStep(
-            ofstream& file,
-            const RefCountPtr<Epetra_MultiVector> data,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name,
-            const int numdf) const;
     void WriteElementDOFResultStep(
             ofstream& file,
             PostResult& result,

@@ -148,9 +148,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
   // store information for later case file creation
   variableresulttypemap_[name] = "node";
 
-  int numdf = 6;
-  if (field_->problem()->num_dim()==2) numdf = 3;
-  WriteNodalStressStep(file,result,resultfilepos,groupname,name,numdf);
+  WriteNodalStressStep(file,result,resultfilepos,groupname,name);
   // how many bits are necessary per time step (we assume a fixed size)?
   if (myrank_==0)
   {
@@ -168,11 +166,11 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
       FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
     }
 
-    WriteNodalStressStep(file,result,resultfilepos,groupname,name,numdf);
+    WriteNodalStressStep(file,result,resultfilepos,groupname,name);
   }
   // store information for later case file creation
   filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
-  variablenumdfmap_[name] = numdf;
+  variablenumdfmap_[name] = 6;
   variablefilenamemap_[name] = filename;
   // store solution times vector for later case file creation
   {
@@ -198,8 +196,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
                                                   PostResult& result,
                                                   map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                   const string groupname,
-                                                  const string name,
-                                                  const int numdf) const
+                                                  const string name) const
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
@@ -214,54 +211,31 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
-  RCP<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(dis->DofRowMap()),true);
-  dis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
-
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stresses = rcp(new Epetra_MultiVector(*nodemap, numdf));
+  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
+  p.set("poststress",nodal_stress);
+  dis->Evaluate(p,null,null,null,null,null);
+  if (nodal_stress==null)
+  {
+    dserror("vector containing element center stresses/strains not available");
+  }
 
   const int numnodes = dis->NumMyRowNodes();
 
-  if (numdf==6)
+  for (int i=0;i<numnodes;++i)
   {
-    for (int i=0;i<numnodes;++i)
-    {
-      const DRT::Node* lnode = dis->lRowNode(i);
-      const std::vector<int> lnodedofs = dis->Dof(lnode);
-
-      if (lnodedofs.size() < 3)
-        dserror("Too few DOFs at node of interest");
-      const int adjele = lnode->NumElement();
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
-      (*((*nodal_stresses)(2)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
-      (*((*nodal_stresses)(3)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      (*((*nodal_stresses)(4)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
-      (*((*nodal_stresses)(5)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[2])]/adjele;
-    }
-  }
-  if (numdf==3)
-  {
-    for (int i=0;i<numnodes;++i)
-    {
-      const DRT::Node* lnode = dis->lRowNode(i);
-      const std::vector<int> lnodedofs = dis->Dof(lnode);
-      if (lnodedofs.size() < 2)
-        dserror("Too few DOFs at node of interest");
-      const int adjele = lnode->NumElement();
-      (*((*nodal_stresses)(0)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-      (*((*nodal_stresses)(1)))[i] = (*normal_stresses)[dis->DofRowMap()->LID(lnodedofs[1])]/adjele;
-      (*((*nodal_stresses)(2)))[i] = (*shear_stresses)[dis->DofRowMap()->LID(lnodedofs[0])]/adjele;
-    }
+    const DRT::Node* lnode = dis->lRowNode(i);
+    const int adjele = lnode->NumElement();
+    for (int k=0;k<6;++k)
+    	(*((*nodal_stress)(k)))[i] /= adjele;
   }
 
-  const Epetra_BlockMap& datamap = nodal_stresses->Map();
+  const Epetra_BlockMap& datamap = nodal_stress->Map();
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,6));
   Epetra_Import proc0dofimporter(*proc0map_,datamap);
-  int err = data_proc0->Import(*nodal_stresses,proc0dofimporter,Insert);
+  int err = data_proc0->Import(*nodal_stress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
 
@@ -285,7 +259,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
 
   if (myrank_==0) // ensures pointer dofgids is valid
   {
-    for (int idf=0; idf<numdf; ++idf)
+    for (int idf=0; idf<6; ++idf)
     {
       for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
       {
@@ -354,9 +328,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   // store information for later case file creation
   variableresulttypemap_[name] = "element";
 
-  int numdf = 6;
-  if (field_->problem()->num_dim()==2) numdf = 3;
-  WriteElementCenterStressStep(file,result,resultfilepos,groupname,name,numdf);
+  WriteElementCenterStressStep(file,result,resultfilepos,groupname,name);
 
   // how many bits are necessary per time step (we assume a fixed size)?
   if (myrank_==0)
@@ -374,11 +346,11 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
     {
       FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
     }
-    WriteElementCenterStressStep(file,result,resultfilepos,groupname,name,numdf);
+    WriteElementCenterStressStep(file,result,resultfilepos,groupname,name);
   }
   // store information for later case file creation
   filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
-  variablenumdfmap_[name] = numdf;
+  variablenumdfmap_[name] = 6;
   variablefilenamemap_[name] = filename;
   // store solution times vector for later case file creation
   {
@@ -404,8 +376,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
                                                           PostResult& result,
                                                           map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                           const string groupname,
-                                                          const string name,
-                                                          const int numdf) const
+                                                          const string name) const
 {
   //--------------------------------------------------------------------
   // calculate element center stresses from gauss point stresses
@@ -418,8 +389,8 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),numdf));
-  p.set("elestress",elestress);
+  RCP<Epetra_MultiVector> elestress = rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  p.set("poststress",elestress);
   dis->Evaluate(p,null,null,null,null,null);
   if (elestress==null)
   {
@@ -457,7 +428,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,numdf));
+  RefCountPtr<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -486,7 +457,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
 
     if (myrank_==0) // ensures pointer dofgids is valid
     {
-      for (int idf=0; idf<numdf; ++idf)
+      for (int idf=0; idf<6; ++idf)
       {
         for (int iele=0; iele<numelepertype; iele++) // inode == lid of node because we use proc0map_
         {

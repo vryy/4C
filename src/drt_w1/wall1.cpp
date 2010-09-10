@@ -362,8 +362,7 @@ vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 void DRT::ELEMENTS::Wall1::w1_expol
 (
     Epetra_SerialDenseMatrix& stresses,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2
+    Epetra_MultiVector& expolstress
 )
 {
   // get gaussian points
@@ -476,18 +475,15 @@ void DRT::ELEMENTS::Wall1::w1_expol
   Epetra_SerialDenseMatrix nodalstresses(numnode,Wall1::numstr_);
   nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
 
-  // distribute nodal stresses to elevectors for assembling
+  // distribute nodal stresses to expolstress for assembling
   for (int i=0;i<numnode;++i)
   {
-    elevec1(noddof_*i)=nodalstresses(i,0);
-    elevec1(noddof_*i+1)=nodalstresses(i,1);
+  	int gnid = NodeIds()[i];
+    (*(expolstress(0)))[gnid] += nodalstresses(i,0);
+    (*(expolstress(1)))[gnid] += nodalstresses(i,1);
+    (*(expolstress(2)))[gnid] += nodalstresses(i,2);
+    (*(expolstress(3)))[gnid] += nodalstresses(i,3);
   }
-  for (int i=0;i<numnode;++i)
-  {
-    elevec2(noddof_*i)=nodalstresses(i,2);
-    elevec2(noddof_*i+1)=nodalstresses(i,3);
-  }
-
 }
 
 

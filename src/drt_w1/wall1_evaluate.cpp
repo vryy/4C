@@ -283,30 +283,29 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
 
       if (stresstype=="ndxyz")
-      {
+      {    
         // extrapolate stresses/strains at Gauss points to nodes
-        w1_expol(*gpstress, elevec1, elevec2);
-
-     }
+        w1_expol(*gpstress, *poststress);
+      }
       else if (stresstype=="cxyz")
       {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap& elemap = elestress->Map();
+        const Epetra_BlockMap& elemap = poststress->Map();
         int lid = elemap.LID(Id());
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         if (lid!=-1)
         {
-          // 3 independent stresses exist in 2D -> numstr_-1!
-          for (int i = 0; i < Wall1::numstr_-1; ++i)
+          // 4 independent stresses exist in 2D
+          for (int i = 0; i < Wall1::numstr_; ++i)
           {
-            (*((*elestress)(i)))[lid] = 0.;
+            (*((*poststress)(i)))[lid] = 0.;
             for (int j = 0; j < intpoints.nquad; ++j)
             {
-              (*((*elestress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
             }
           }
         }
@@ -314,21 +313,18 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       else if (stresstype=="cxyz_ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes
-        w1_expol(*gpstress, elevec1, elevec2);
+        w1_expol(*gpstress, *poststress);
 
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
+        const Epetra_BlockMap elemap = poststress->Map();
         int lid = elemap.LID(Id());
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         if (lid!=-1) {
           for (int i = 0; i < Wall1::numstr_; ++i)
           {
-            (*((*elestress)(i)))[lid] = 0.;
+            (*((*poststress)(i)))[lid] = 0.;
             for (int j = 0; j < intpoints.nquad; ++j)
             {
-              (*((*elestress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
             }
           }
         }

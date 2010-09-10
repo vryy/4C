@@ -278,8 +278,7 @@ public:
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void w1_expol(
       Epetra_SerialDenseMatrix& stresses, ///< gp stresses
-      Epetra_SerialDenseVector& elevec1,  ///< elevec for normal stresses
-      Epetra_SerialDenseVector& elevec2   ///< elevec for shear stresses
+      Epetra_MultiVector&       expolstress ///< expol stresses
   );
 
   //@}

@@ -49,16 +49,14 @@ protected:
                             PostResult& result,
                             map<string, vector<ofstream::pos_type> >& resultfilepos,
                             const string groupname,
-                            const string name,
-                            const int numdf) const;
+                            const string name) const;
   void WriteElementCenterStress(const string groupname,
                                 PostResult& result);
   void WriteElementCenterStressStep(ofstream& file,
                                     PostResult& result,
                                     map<string, vector<ofstream::pos_type> >& resultfilepos,
                                     const string groupname,
-                                    const string name,
-                                    const int numdf) const;
+                                    const string name) const;
   void WriteNodalEigenStress(const string groupname,
                              PostResult& result);
   void WriteNodalEigenStressStep(std::vector<RCP<ofstream> > files,
