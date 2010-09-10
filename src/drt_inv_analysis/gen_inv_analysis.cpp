@@ -70,6 +70,7 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   //  tolerance for the curve fitting
   tol_ = iap.get<double>("INV_ANA_TOL");
 
+
   /* this is how a monitor file should look like:
 
 steps 25 nnodes 5
@@ -193,7 +194,7 @@ steps 25 nnodes 5
   np_ = p_.Length();
 
   // controlling parameter
-  numb_run_ =  0;     // counter of how many runs were made in the inverse analysis
+  numb_run_ =  1;     // counter of how many runs were made in the inverse analysis
 }
 
 
@@ -202,8 +203,9 @@ steps 25 nnodes 5
 void STR::GenInvAnalysis::Integrate()
 {
   int myrank = discret_->Comm().MyPID();
-  int max_itter = 100;
-  output_->NewResultFile((numb_run_-1));
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
+  output_->NewResultFile((numb_run_));
   // fitting loop
   do
   {
@@ -217,7 +219,6 @@ void STR::GenInvAnalysis::Integrate()
 
     // pertubation of material parameter (should be relativ to the value that is perturbed)
     vector<double> perturb(np_,0.0);
-    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
     for (int i=0; i<np_; ++i)
@@ -266,9 +267,9 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-    if (error_>tol_ && numb_run_<max_itter)
+    if (error_>tol_ && numb_run_<=max_itter)
       output_->NewResultFile(numb_run_);
-  } while (error_>tol_ && numb_run_<max_itter);
+  } while (error_>tol_ && numb_run_<=max_itter);
 
   return;
 }
@@ -512,12 +513,12 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
 
   // storing current material parameters
   p_s_.Reshape(numb_run_+1,  np_);
-  for (int i=0; i<np_; i++)
+  for (int i=1; i<np_; i++)
     p_s_(numb_run_, i)=p_(i);
 
   // storing current material parameter increments
   delta_p_s_.Reshape(numb_run_+1,  np_);
-  for (int i=0; i<np_; i++)
+  for (int i=1; i<np_; i++)
     delta_p_s_(numb_run_, i)=delta_p(i);
 
   mu_s_.Resize(numb_run_+1);
@@ -534,7 +535,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseVector delta_p)
     printf("############################ Inverse Analysis run ## %3i ########\n",  numb_run_);
     printf("#################################################################\n");
 
-    for (int i=0; i < numb_run_+1; i++)
+    for (int i=1; i < numb_run_+1; i++)
     {
       printf("Error    : ");
       printf("%10.5e\n", error_s_(i));
