@@ -70,7 +70,9 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
     dserror("Mortar coupling adapter only works for dual shape functions");
 
   // check for parallel redistribution
-  bool parredist = Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST");
+  bool parredist = false;
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  	parredist = true;
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
@@ -458,8 +460,10 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 {
   // check for parallel redistribution
+  bool parredist = false;
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  bool parredist = Teuchos::getIntegralValue<int>(input,"PARALLEL_REDIST");
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  	parredist = true;
 
   // set new displacement state in mortar interface
   interface_->SetState("displacement", idisp);

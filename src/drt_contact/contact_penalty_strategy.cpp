@@ -497,12 +497,12 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // reset nodal derivZ values
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    for (int j=0;j<interface_[i]->OldColNodes()->NumMyElements();++j)
+    for (int j=0;j<interface_[i]->SlaveColNodesBound()->NumMyElements();++j)
     {
-      int gid = interface_[i]->OldColNodes()->GID(i);
-       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-       CoNode* cnode = static_cast<CoNode*>(node);
+      int gid = interface_[i]->SlaveColNodesBound()->GID(i);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = static_cast<CoNode*>(node);
       
       for (int k=0; k<(int)((cnode->CoData().GetDerivZ()).size()); ++k)
         (cnode->CoData().GetDerivZ())[k].clear();

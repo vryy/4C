@@ -572,7 +572,8 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   // 1) Combined Update and Contact Search
   // -> In this case we only have to call SearchContactCombined(), which
   //    does both bottom-up update and search. Then the dynamics master/slave
-  //    assignment routine UpdateMasterSlaveSets() is called.
+  //    assignment routine UpdateMasterSlaveSets() is called and the new
+	//    slave nodes' data containers are initialized.
   //
   // *********************************************************************
   if (SelfContact())
@@ -585,6 +586,20 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
 
     // update master/slave sets of interface
     UpdateMasterSlaveSets();
+    
+    // Initialize data container for "new" slave nodes
+    // loop over all slave column nodes on the current interface
+    // (include slave side boundary nodes / crosspoints)
+    for (int i=0; i<SlaveColNodesBound()->NumMyElements(); ++i)
+    {
+      int gid = SlaveColNodesBound()->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
+      MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(node);
+
+      // initialize if not yet initialized before
+      mnode->InitializeDataContainer();
+    }
   }
 
   // *********************************************************************
