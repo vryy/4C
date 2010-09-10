@@ -817,9 +817,11 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
      {
      case INPAR::STR::strain_gl:
      {
-       if (elestrain == NULL) dserror("no strain data available");
-       for (int i = 0; i < Wall1::numstr_; ++i)
-         (*elestrain)(ip,i) = strain(i);
+    	 if (elestrain == NULL) dserror("no strain data available");
+       (*elestrain)(ip,0) = strain(0);
+       (*elestrain)(ip,1) = strain(1);
+       (*elestrain)(ip,2) = 0.0;
+       (*elestrain)(ip,3) = strain(3);;
      }
      break;
      case INPAR::STR::strain_none:
@@ -837,7 +839,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
        if (elestress == NULL) dserror("no stress data available");
        (*elestress)(ip,0) = stress(0,0);
        (*elestress)(ip,1) = stress(1,1);
-       (*elestress)(ip,2) = stress(0,2);
+       (*elestress)(ip,2) = 0.0;
+       (*elestress)(ip,3) = stress(0,2);
      }
      break;
      case INPAR::STR::stress_cauchy:
