@@ -211,53 +211,37 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soweg6_expol(gpstress, elevec1, elevec2);
-      }
-      else if (stresstype=="cxyz")
-      {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_WEG6; ++i) {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              s += gpstress(j,i);
-            }
-            s *= 1.0/NUMGPT_WEG6;
-          }
-        }
-      }
-      else if (stresstype=="cxyz_ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soweg6_expol(gpstress, elevec1, elevec2);
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
 
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_WEG6; ++i) {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              s += gpstress(j,i);
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
+      {
+        if (stresstype=="ndxyz")
+        {
+          // extrapolate stresses/strains at Gauss points to nodes
+          soweg6_expol(gpstress, *poststress);
+        }
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          if (lid!=-1) {
+            for (int i = 0; i < NUMSTR_WEG6; ++i) {
+              double& s = (*((*poststress)(i)))[lid];
+              s = 0.;
+              for (int j = 0; j < NUMGPT_WEG6; ++j) {
+                s += gpstress(j,i);
+              }
+              s *= 1.0/NUMGPT_WEG6;
             }
-            s *= 1.0/NUMGPT_WEG6;
           }
         }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
+        else
+        {
+          dserror("unknown type of stress/strain output on element level");
+        }
       }
     }
     break;
@@ -1081,7 +1065,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-    
+
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
@@ -1136,7 +1120,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
     LINALG::Matrix<NUMSTR_WEG6,1> stress(true);
     sow6_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-    
+
     // Cauchy stress
     const double detF = defgrd.Determinant();
 
@@ -1155,7 +1139,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
     LINALG::Matrix<3,3> cauchystress(true);
     temp.Multiply(1.0/detF,defgrd,pkstress);
     cauchystress.MultiplyNT(temp,defgrd);
-    
+
     // evaluate eigenproblem based on stress of previous step
     LINALG::Matrix<3,3> lambda(true);
     LINALG::Matrix<3,3> locsys(true);

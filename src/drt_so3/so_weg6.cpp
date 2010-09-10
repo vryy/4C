@@ -316,8 +316,7 @@ void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
 void DRT::ELEMENTS::So_weg6::soweg6_expol
 (
     LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses,
-    LINALG::Matrix<NUMDOF_WEG6,1>& elevec1,
-    LINALG::Matrix<NUMDOF_WEG6,1>& elevec2
+    Epetra_MultiVector& expolstresses
 )
 {
   static LINALG::Matrix<NUMNOD_WEG6,NUMGPT_WEG6> expol;
@@ -353,20 +352,18 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
         expol(i,j)=expol(j,i);
       }
     }
+   isfilled = true;
   }
 
   LINALG::Matrix<NUMNOD_WEG6,NUMSTR_WEG6> nodalstresses;
+  nodalstresses.Multiply(expol, stresses);
+
+  // "assembly" of extrapolated nodal stresses
   for (int i=0;i<NUMNOD_WEG6;++i)
   {
-    elevec1(3*i)=nodalstresses(i,0);
-    elevec1(3*i+1)=nodalstresses(i,1);
-    elevec1(3*i+2)=nodalstresses(i,2);
-  }
-  for (int i=0;i<NUMNOD_WEG6;++i)
-  {
-    elevec2(3*i)=nodalstresses(i,3);
-    elevec2(3*i+1)=nodalstresses(i,4);
-    elevec2(3*i+2)=nodalstresses(i,5);
+    int gnid = NodeIds()[i];
+    for (int j=0;j<6;j++)
+      (*(expolstresses(j)))[gnid] += nodalstresses(i,j);
   }
 }
 

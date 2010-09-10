@@ -237,11 +237,13 @@ void DRT::ELEMENTS::So_hex27::Print(ostream& os) const
 void DRT::ELEMENTS::So_hex27::soh27_expol
 (
     LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>& stresses,
-    LINALG::Matrix<NUMNOD_SOH27,NUMSTR_SOH27>& nodalstresses
+    Epetra_MultiVector& expolstresses
 )
 {
   static LINALG::Matrix<NUMNOD_SOH27,NUMGPT_SOH27> expol;
   static bool isfilled;
+
+  LINALG::Matrix<NUMNOD_SOH27,NUMSTR_SOH27> nodalstresses;
 
   if (isfilled==true)
   {
@@ -285,6 +287,18 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
     nodalstresses.Multiply(expol, stresses);
 
     isfilled = true;
+  }
+
+  // "assembly" of extrapolated nodal stresses
+  for (int i=0;i<NUMNOD_SOH27;++i)
+  {
+    int gnid = NodeIds()[i];
+    (*(expolstresses(0)))[gnid] += nodalstresses(i,0);
+    (*(expolstresses(1)))[gnid] += nodalstresses(i,1);
+    (*(expolstresses(2)))[gnid] += nodalstresses(i,2);
+    (*(expolstresses(3)))[gnid] += nodalstresses(i,3);
+    (*(expolstresses(4)))[gnid] += nodalstresses(i,4);
+    (*(expolstresses(5)))[gnid] += nodalstresses(i,5);
   }
 }
 

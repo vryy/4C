@@ -444,8 +444,7 @@ private:
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
   void sosh8p8_expol(
     LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses, ///< gp stresses
-    LINALG::Matrix<NUMDOF_,1>& elevec1, ///< nodal normal stresses
-    LINALG::Matrix<NUMDOF_,1>& elevec2  ///< nodal shear stresses
+    Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
   //@}

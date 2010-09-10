@@ -330,8 +330,7 @@ void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
 void DRT::ELEMENTS::So_hex8::soh8_expol
 (
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,
-    LINALG::Matrix<NUMDOF_SOH8,1>& elevec1,
-    LINALG::Matrix<NUMDOF_SOH8,1>& elevec2
+    Epetra_MultiVector& expolstresses
 )
 {
   // static variables, that are the same for every element
@@ -390,19 +389,14 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
   }
 
   LINALG::Matrix<NUMNOD_SOH8,NUMSTR_SOH8> nodalstresses;
-
-  //nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
   nodalstresses.Multiply(expol, stresses);
 
-  for (int i=0;i<NUMNOD_SOH8;++i){
-    elevec1(NODDOF_SOH8*i) = nodalstresses(i,0);
-    elevec1(NODDOF_SOH8*i+1) = nodalstresses(i,1);
-    elevec1(NODDOF_SOH8*i+2) = nodalstresses(i,2);
-  }
-  for (int i=0;i<NUMNOD_SOH8;++i){
-    elevec2(NODDOF_SOH8*i) = nodalstresses(i,3);
-    elevec2(NODDOF_SOH8*i+1) = nodalstresses(i,4);
-    elevec2(NODDOF_SOH8*i+2) = nodalstresses(i,5);
+  // "assembly" of extrapolated nodal stresses
+  for (int i=0;i<NUMNOD_SOH8;++i)
+  {
+    int gnid = NodeIds()[i];
+    for (int j=0;j<6;j++)
+      (*(expolstresses(j)))[gnid] += nodalstresses(i,j);
   }
 }
 

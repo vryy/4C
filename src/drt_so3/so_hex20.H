@@ -430,7 +430,7 @@ protected:
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void soh20_expol(LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>& stresses,
-                  LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20>& nodalstresses);
+                   Epetra_MultiVector& expolstresses);
 
   //! Evaluate Hex20 Shapefcts to keep them static
   const vector<LINALG::Matrix<NUMNOD_SOH20,1> > soh20_shapefcts();

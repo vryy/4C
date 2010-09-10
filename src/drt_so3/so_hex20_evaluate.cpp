@@ -186,86 +186,40 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20> nodalstresses;
-        soh20_expol(gpstress,nodalstresses);
-
-        // separate normal and shear stresses in element vectors
-        for (int i=0;i<NUMNOD_SOH20;++i)
-        {
-          elevec1(NODDOF_SOH20*i)=nodalstresses(i,0);
-          elevec1(NODDOF_SOH20*i+1)=nodalstresses(i,1);
-          elevec1(NODDOF_SOH20*i+2)=nodalstresses(i,2);
-        }
-        for (int i=0;i<NUMNOD_SOH20;++i)
-        {
-          elevec2(NODDOF_SOH20*i)=nodalstresses(i,3);
-          elevec2(NODDOF_SOH20*i+1)=nodalstresses(i,4);
-          elevec2(NODDOF_SOH20*i+2)=nodalstresses(i,5);
-        }
-      }
-      else if (stresstype=="cxyz")
-      {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
+      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==Teuchos::null)
           dserror("No element stress/strain vector available");
-        const Epetra_BlockMap& elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1)
+
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
+      {
+        if (stresstype=="ndxyz")
         {
-          for (int i = 0; i < NUMSTR_SOH20; ++i)
+          // extrapolate stresses/strains at Gauss points to nodes
+          soh20_expol(gpstress,*poststress);
+        }
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap& elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          if (lid!=-1)
           {
-            double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH20; ++j)
+            for (int i = 0; i < NUMSTR_SOH20; ++i)
             {
-              s += gpstress(j,i);
+              double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
+              s = 0.;
+              for (int j = 0; j < NUMGPT_SOH20; ++j)
+              {
+                s += gpstress(j,i);
+              }
+              s *= 1.0/NUMGPT_SOH20;
             }
-            s *= 1.0/NUMGPT_SOH20;
           }
         }
-      }
-      else if (stresstype=="cxyz_ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20> nodalstresses;
-        soh20_expol(gpstress,nodalstresses);
-
-        // separate normal and shear stresses in element vectors
-        for (int i=0;i<NUMNOD_SOH20;++i){
-          elevec1(NODDOF_SOH20*i)=nodalstresses(i,0);
-          elevec1(NODDOF_SOH20*i+1)=nodalstresses(i,1);
-          elevec1(NODDOF_SOH20*i+2)=nodalstresses(i,2);
+        else
+        {
+          dserror("unknown type of stress/strain output on element level");
         }
-        for (int i=0;i<NUMNOD_SOH20;++i){
-          elevec2(NODDOF_SOH20*i)=nodalstresses(i,3);
-          elevec2(NODDOF_SOH20*i+1)=nodalstresses(i,4);
-          elevec2(NODDOF_SOH20*i+2)=nodalstresses(i,5);
-        }
-
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOH20; ++i)
-          {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH20; ++j)
-            {
-              s += gpstress(j,i);
-            }
-            s *= 1.0/NUMGPT_SOH20;
-          }
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;

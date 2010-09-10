@@ -430,8 +430,7 @@ protected:
   void so_tet10_expol
   (
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses, ///< gp stresses
-      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1, ///< nodal normal stresses
-      LINALG::Matrix<NUMDOF_SOTET10,1>& elevec2  ///< nodal shear stresses
+      Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
   // These functions are basically copied from the So_integrator,

@@ -580,10 +580,9 @@ protected:
   void soh8_expol
   (
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses, ///< gp stresses
-      LINALG::Matrix<NUMDOF_SOH8,1>& elevec1, ///< nodal normal stresses
-      LINALG::Matrix<NUMDOF_SOH8,1>& elevec2  ///< nodal shear stresses
+      Epetra_MultiVector& expolstresses                  ///< nodal stresseses
   );
-  
+
   //! remodeling for fibers at the end of time step (st 01/10)
   void soh8_remodel(
         vector<int>&              lm,             // location matrix

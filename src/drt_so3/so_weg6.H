@@ -454,7 +454,7 @@ protected:
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params);         // algorithmic parameters e.g. time
-  
+
   //! remodeling for fibers at the end of time step (st 01/10)
   void sow6_remodel(
         vector<int>&              lm,             // location matrix
@@ -482,8 +482,7 @@ protected:
   void soweg6_expol
   (
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses, ///< gp stresses
-      LINALG::Matrix<NUMDOF_WEG6,1>& elevec1, ///< nodal normal stresses
-      LINALG::Matrix<NUMDOF_WEG6,1>& elevec2  ///< nodal shear stresses
+      Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
 

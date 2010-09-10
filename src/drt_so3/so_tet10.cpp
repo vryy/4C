@@ -200,8 +200,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
 void DRT::ELEMENTS::So_tet10::so_tet10_expol
 (
     LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
-    LINALG::Matrix<NUMDOF_SOTET10,1>& elevec1,
-    LINALG::Matrix<NUMDOF_SOTET10,1>& elevec2
+    Epetra_MultiVector& expolstresses
 )
 {
   static LINALG::Matrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
@@ -266,18 +265,13 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
   LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
   nodalstresses.Multiply(expol,stresses);
 
-  for (int i=0;i<NUMNOD_SOTET10;++i){
-    elevec1(3*i)=nodalstresses(i,0);
-    elevec1(3*i+1)=nodalstresses(i,1);
-    elevec1(3*i+2)=nodalstresses(i,2);
+  // "assembly" of extrapolated nodal stresses
+  for (int i=0;i<NUMNOD_SOTET10;++i)
+  {
+    int gnid = NodeIds()[i];
+    for (int j=0;j<6;j++)
+      (*(expolstresses(j)))[gnid] += nodalstresses(i,j);
   }
-  for (int i=0;i<NUMNOD_SOTET10;++i){
-    elevec2(3*i)=nodalstresses(i,3);
-    elevec2(3*i+1)=nodalstresses(i,4);
-    elevec2(3*i+2)=nodalstresses(i,5);
-  }
-
-
 }
 
 

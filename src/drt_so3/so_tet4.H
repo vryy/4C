@@ -454,10 +454,9 @@ protected:
   void so_tet4_expol
   (
       LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses, ///< gp stresses
-      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec1, ///< nodal normal stresses
-      LINALG::Matrix<NUMDOF_SOTET4,1>& elevec2  ///< nodal shear stresses
+      Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
-  
+
   //! remodeling for fibers at the end of time step (st 01/10)
   void so_tet4_remodel(
         vector<int>&              lm,             // location matrix

@@ -287,32 +287,36 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       if (poststress==null)
         dserror("No element stress/strain vector available");
 
-      if (stresstype=="ndxyz")
-      {    
-        // extrapolate stresses/strains at Gauss points to nodes
-        w1_expol(*gpstress, *poststress);
-      }
-      else if (stresstype=="cxyz")
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
       {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-        if (lid!=-1)
+        if (stresstype=="ndxyz")
         {
-          // maximum 4 independent stresses exist in 2D
-          for (int i = 0; i < Wall1::numstr_; ++i)
+          // extrapolate stresses/strains at Gauss points to nodes
+          w1_expol(*gpstress, *poststress);
+        }
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap& elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+          if (lid!=-1)
           {
-            (*((*poststress)(i)))[lid] = 0.;
-            for (int j = 0; j < intpoints.nquad; ++j)
+            // maximum 4 independent stresses exist in 2D
+            for (int i = 0; i < Wall1::numstr_; ++i)
             {
-              (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              (*((*poststress)(i)))[lid] = 0.;
+              for (int j = 0; j < intpoints.nquad; ++j)
+              {
+                (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              }
             }
           }
         }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
+        else
+        {
+          dserror("unknown type of stress/strain output on element level");
+        }
       }
     }
     break;

@@ -280,59 +280,40 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soh8_expol(gpstress, elevec1, elevec2);
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
 
-      }
-      else if (stresstype=="cxyz")
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
       {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap& elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1)
+        if (stresstype=="ndxyz")
         {
-          for (int i = 0; i < NUMSTR_SOH8; ++i)
+          // extrapolate stresses/strains at Gauss points to nodes
+          soh8_expol(gpstress, *poststress);
+        }
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap& elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          if (lid!=-1)
           {
-            double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            for (int i = 0; i < NUMSTR_SOH8; ++i)
             {
-              s += gpstress(j,i);
+              double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
+              s = 0.;
+              for (int j = 0; j < NUMGPT_SOH8; ++j)
+              {
+                s += gpstress(j,i);
+              }
+              s *= 1.0/NUMGPT_SOH8;
             }
-            s *= 1.0/NUMGPT_SOH8;
           }
         }
-      }
-      else if (stresstype=="cxyz_ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        soh8_expol(gpstress, elevec1, elevec2);
-
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOH8; ++i)
-          {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j)
-            {
-              s += gpstress(j,i);
-            }
-            s *= 1.0/NUMGPT_SOH8;
-          }
+        else
+        {
+          dserror("unknown type of stress/strain output on element level");
         }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;
@@ -1778,7 +1759,7 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-    
+
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
@@ -1833,7 +1814,7 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-    
+
     // Cauchy stress
     const double detF = defgrd.Determinant();
 

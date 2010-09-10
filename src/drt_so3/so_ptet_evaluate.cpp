@@ -222,25 +222,27 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMNOD_PTET,NUMSTR_PTET> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz")
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
+
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
       {
-        for (int i=0;i<NUMNOD_PTET;++i)
+        if (stresstype=="ndxyz")
         {
-          elevec1(3*i)=gpstress(i,0);
-          elevec1(3*i+1)=gpstress(i,1);
-          elevec1(3*i+2)=gpstress(i,2);
+          for (int i=0;i<NUMNOD_PTET;++i)
+          {
+            int gnid = NodeIds()[i];
+            for (int j=0; j<6; ++j)
+              (*((*poststress)(j)))[gnid] = gpstress(i,j);
+          }
         }
-        for (int i=0;i<NUMNOD_PTET;++i)
-        {
-          elevec2(3*i)=gpstress(i,3);
-          elevec2(3*i+1)=gpstress(i,4);
-          elevec2(3*i+2)=gpstress(i,5);
-        }
+        else if (stresstype=="cxyz")
+          dserror("The Ptet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
+        else
+          dserror("unknown type of stress/strain output on element level");
       }
-      else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")
-        dserror("The Ptet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
-      else
-        dserror("unknown type of stress/strain output on element level");
     }
     break;
 

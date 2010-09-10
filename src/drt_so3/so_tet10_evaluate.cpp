@@ -184,49 +184,34 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      if (stresstype=="ndxyz") {
-        // extrapolate stresses/strains at Gauss points to nodes
-        so_tet10_expol(gpstress, elevec1, elevec2);
-      }
-      else if (stresstype=="cxyz") {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOTET10; ++i) {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOTET10; ++j) {
-              s += gpstress(j,i);
-            }
-            s *= 1.0/NUMGPT_SOTET10;
-          }
-        }
-      }
-      else if (stresstype=="cxyz_ndxyz") {
-        // extrapolate stresses/strains at Gauss points to nodes
-        so_tet10_expol(gpstress, elevec1, elevec2);
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
+        dserror("No element stress/strain vector available");
 
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOTET10; ++i) {
-            double& s = (*((*elestress)(i)))[lid];
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOTET10; ++j) {
-              s += gpstress(j,i);
+      // nothing to do for ghost elements
+      if (poststress->Comm().MyPID()==Owner())
+      {
+        if (stresstype=="ndxyz") {
+          // extrapolate stresses/strains at Gauss points to nodes
+          so_tet10_expol(gpstress, *poststress);
+        }
+        else if (stresstype=="cxyz") {
+          const Epetra_BlockMap elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          if (lid!=-1) {
+            for (int i = 0; i < NUMSTR_SOTET10; ++i) {
+              double& s = (*((*poststress)(i)))[lid];
+              s = 0.;
+              for (int j = 0; j < NUMGPT_SOTET10; ++j) {
+                s += gpstress(j,i);
+              }
+              s *= 1.0/NUMGPT_SOTET10;
             }
-            s *= 1.0/NUMGPT_SOTET10;
           }
         }
-      }
-      else {
-        dserror("unknown type of stress/strain output on element level");
+        else {
+          dserror("unknown type of stress/strain output on element level");
+        }
       }
     }
     break;

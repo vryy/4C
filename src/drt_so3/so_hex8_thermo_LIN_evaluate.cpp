@@ -280,62 +280,41 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     string stresstype = params.get<string>("stresstype","ndxyz");
     int gid = Id();
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
-
-    if (stresstype=="ndxyz")
-    {
-      // extrapolate stresses/strains at Gauss points to nodes
-      soh8_expol(gpstress, elevec1, elevec2);
-
-    }
-    else if (stresstype=="cxyz")
-    {
-      Teuchos::RCP<Epetra_MultiVector> elestress =
-        params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
-      if (elestress==Teuchos::null)
+    RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+      if (poststress==null)
         dserror("No element stress/strain vector available");
-      const Epetra_BlockMap& elemap = elestress->Map();
-      int lid = elemap.LID(Id());
-      if (lid!=-1)
+
+    // nothing to do for ghost elements
+    if (poststress->Comm().MyPID()==Owner())
+    {
+      if (stresstype=="ndxyz")
       {
-        for (int i = 0; i < NUMSTR_SOH8; ++i)
-        {
-          double& s = (*((*elestress)(i)))[lid]; // resolve pointer for faster access
-          s = 0.;
-          for (int j = 0; j < NUMGPT_SOH8; ++j)
-          {
-            s += gpstress(j,i);
-          }
-          s *= 1.0/NUMGPT_SOH8;
-        }
-      }
-    }
-    else if (stresstype=="cxyz_ndxyz")
-    {
-      // extrapolate stresses/strains at Gauss points to nodes
-      soh8_expol(gpstress, elevec1, elevec2);
+        // extrapolate stresses/strains at Gauss points to nodes
+        soh8_expol(gpstress, *poststress);
 
-      Teuchos::RCP<Epetra_MultiVector> elestress =
-        params.get<Teuchos::RCP<Epetra_MultiVector> >("elestress",Teuchos::null);
-      if (elestress==Teuchos::null)
-        dserror("No element stress/strain vector available");
-      const Epetra_BlockMap elemap = elestress->Map();
-      int lid = elemap.LID(Id());
-      if (lid!=-1) {
-        for (int i = 0; i < NUMSTR_SOH8; ++i)
+      }
+      else if (stresstype=="cxyz")
+      {
+        const Epetra_BlockMap& elemap = poststress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1)
         {
-          double& s = (*((*elestress)(i)))[lid];
-          s = 0.;
-          for (int j = 0; j < NUMGPT_SOH8; ++j)
+          for (int i = 0; i < NUMSTR_SOH8; ++i)
           {
-            s += gpstress(j,i);
+            double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
+            s = 0.;
+            for (int j = 0; j < NUMGPT_SOH8; ++j)
+            {
+              s += gpstress(j,i);
+            }
+            s *= 1.0/NUMGPT_SOH8;
           }
-          s *= 1.0/NUMGPT_SOH8;
         }
       }
-    }
-    else
-    {
-      dserror("unknown type of stress/strain output on element level");
+      else
+      {
+        dserror("unknown type of stress/strain output on element level");
+      }
     }
   }
   break;
