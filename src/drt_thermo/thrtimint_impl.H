@@ -272,9 +272,29 @@ namespace THR
     
     //! Apply thermal contact
     void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
-                            Teuchos::RCP<Epetra_Vector>& fres,
+                            Teuchos::RCP<Epetra_Vector>& feff,
                             Teuchos::RCP<Epetra_Vector>& temp);
+    
+    // convert maps form structure discretization to thermo discretization
+    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& activedofs,
+                     RCP<Epetra_Map>& masterdofs);
 
+    // apply mortar matrices for nodes in contact
+    void AssembleDM(LINALG::SparseMatrix& dmatrix,
+                    LINALG::SparseMatrix& mmatrix);
+
+    // assemble mechanical dissipation
+    void AssembleMechDissRate(Epetra_Vector& mechdissrate);
+
+    // assemble thermal contact condition
+    void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
+                                    LINALG::SparseMatrix& thermcontTEMP,
+                                    Epetra_Vector& thermcontRHS,
+                                    LINALG::SparseMatrix& dmatrix,
+                                    LINALG::SparseMatrix& mmatrix,
+                                    RCP<Epetra_Map> activedofs,
+                                    RCP<Epetra_Map> masterdofs);
     //@}
 
     //! @name Access methods

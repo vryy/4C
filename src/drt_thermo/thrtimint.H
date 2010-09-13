@@ -138,7 +138,8 @@ namespace THR
       );
     
     //! Set contact manager
-    void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman);
+    void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                          Teuchos::RCP<DRT::Discretization> discretstruct);
 
     //! Do time integration of multiple steps
     void Integrate();
@@ -405,7 +406,9 @@ namespace THR
 
     //! Get number of time steps
     int GetTimeNumStep() const { return stepmax_; }
-
+    
+    //! Get communicator
+    virtual inline const Epetra_Comm& Comm() const {return discret_->Comm();}
 
     //! Return MapExtractor for Dirichlet boundary conditions
     const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
@@ -419,7 +422,9 @@ namespace THR
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
+    Teuchos::RCP<DRT::Discretization> discret_;           //!< attached discretisation
+    Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
+    
     int myrank_;  //!< ID of actual processor in parallel
     const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
                                    //!< to construct matching

@@ -193,11 +193,6 @@ public:
   */
   virtual inline double* tractionold() { return tractionold_; }
   
-  /*!
-  \brief Return mechanical dissipation per node  (length 1)
-  */
-  virtual double& MechDiss() { return mechdiss_; }
-
   //@}
 
 protected:
@@ -218,9 +213,6 @@ protected:
   double                        traction_[3];     // traction vector of current time step
   double                        tractionold_[3];  // traction vector of previous time step
   
-  // thermo contact related quantities
-  double                        mechdiss_;      // mechanical dissipation 
-
 }; // class FriNodeDataContainer
 
 
@@ -317,6 +309,11 @@ public:
   virtual void Print(ostream& os) const ;
 
   /*!
+  \brief Return mechanical dissipation per node  (length 1)
+  */
+  virtual double& MechDiss() { return mechdiss_; }
+
+  /*!
   \brief Return of data container of this node
 
   This method returns the data container of this node where additional
@@ -407,6 +404,9 @@ public:
   //@}
 
 protected:
+  
+  // thermo contact related quantities
+  double                        mechdiss_;      // mechanical dissipation 
 
   RCP<CONTACT::FriNodeDataContainer> fridata_;       // additional information of proc's contact nodes
 

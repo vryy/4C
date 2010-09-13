@@ -73,7 +73,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Tempnp();
 
     /// unknown temperature at \f$t_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Tempn();
+    Teuchos::RCP<const Epetra_Vector> Tempn();
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
@@ -129,10 +129,8 @@ namespace ADAPTER
       );
     
     /// Set contact manager
-    void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman);
-
-    /// update after one Newton step (tsi with contact)
-    void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp);
+    void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                          Teuchos::RCP<DRT::Discretization> discretstruct);
 
     /// update at time step end
     void Update();

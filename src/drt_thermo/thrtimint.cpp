@@ -259,11 +259,13 @@ void THR::TimInt::ApplyDirichletBC(
 }
 
 /*----------------------------------------------------------------------*
- |  Set contact manager                                       mgit 09/10 |
+ |  Set structural contact                                    mgit 09/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt:: SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman)
+void THR::TimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                    Teuchos::RCP<DRT::Discretization> discretstruct)
 {
   cmtman_=cmtman;
+  discretstruct_=discretstruct;
   return;
 }
 

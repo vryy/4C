@@ -469,13 +469,22 @@ void CONTACT::CoInterface::Initialize()
 
   // loop over all nodes to reset stuff (fully overlapping column map)
   // (use fully overlapping column map)
+  
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
     CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
     // reset feasible projection status
     node->HasProj() = false;
-   }
+    
+    if (friction_)
+    {  
+      FriNode* frinode = static_cast<FriNode*>(node);
+  
+      // reset nodal mechanical dissipation
+      frinode->MechDiss() = 0.0;
+    }
+  }
   
   // loop over all slave nodes to reset stuff (standard column map)
   // (include slave side boundary nodes / crosspoints)
@@ -541,7 +550,7 @@ void CONTACT::CoInterface::Initialize()
       frinode->Data().GetMNodes().clear();
 
       // reset nodal mechanical dissipation
-      frinode->Data().MechDiss() = 0.0;
+      frinode->MechDiss() = 0.0;
     }
   }
 

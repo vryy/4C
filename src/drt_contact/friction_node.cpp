@@ -65,8 +65,7 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer():
 activeold_(false),
-slip_(false),
-mechdiss_(0.0)
+slip_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -88,9 +87,7 @@ drowsold_(old.drowsold_),
 mrowsold_(old.mrowsold_),
 snodes_(old.snodes_),
 mnodes_(old.mnodes_),
-mnodesold_(old.mnodesold_),
-mechdiss_(old.mechdiss_)
-
+mnodesold_(old.mnodesold_)
 {
   for (int i=0;i<3;++i)
   {
@@ -161,7 +158,8 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
                           const int numdof, const vector<int>& dofs, const bool isslave,
                           const bool initactive) :
-CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive)
+CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive),
+mechdiss_(0.0)
 {
   return;
 }
@@ -170,7 +168,8 @@ CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive)
  |  copy-ctor (public)                                        mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
-CONTACT::CoNode(old)
+CONTACT::CoNode(old),
+mechdiss_(old.mechdiss_)
 {
   return;
 }
@@ -335,7 +334,7 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 void CONTACT::FriNode::AddMechDissValue(double& val)
 {
   // add given value to mechdiss_
-  Data().MechDiss()+=val;
+  MechDiss()+=val;
 
   return;
 }

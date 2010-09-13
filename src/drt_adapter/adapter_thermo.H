@@ -99,7 +99,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Tempnp() = 0;
 
     /// unknown temperatures at t(n)
-    virtual Teuchos::RCP<Epetra_Vector> Tempn() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Tempn() = 0;
 
     //@}
 
@@ -156,9 +156,6 @@ namespace ADAPTER
     /// evaluate residual at given temperature (?)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
-    /// update after one Newton step (tsi with contact)
-    virtual void UpdateNewton(Teuchos::RCP<Epetra_Vector> temp) = 0;
-
     /// update at time step end
     virtual void Update() = 0;
 
@@ -171,8 +168,9 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
-    /// set contact manager
-    virtual void SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman) = 0;
+    /// set structural contact
+    virtual void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                  Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
 
     //@}
 

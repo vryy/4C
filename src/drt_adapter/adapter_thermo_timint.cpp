@@ -160,7 +160,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempnp()
 /*----------------------------------------------------------------------*
  | get last converged temperature T_{n}                     bborn 08/09 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::Tempn()
+Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::Tempn()
 {
   return thermo_->Temp();
 }
@@ -274,34 +274,6 @@ void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
   thermo_->PrepareSystemForNewtonSolve();
 }
 
-
-/*----------------------------------------------------------------------*
- | Update after one Newton step (tsi with contact)            mgit 08/09 |
- *----------------------------------------------------------------------*/
-void ADAPTER::ThermoTimInt::UpdateNewton(Teuchos::RCP<Epetra_Vector> temp)
-{
-  // Yes, this is complicated. But we have to be very careful
-  // here. The field solver always expects an increment only. And
-  // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest
-  // increment only.
-
-  // residual temperatures (or iteration increments or iteratively
-  // incremental temperatures)
-  Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
-  tempi->Update(-1.0, *tempinc_, 1.0);
-
-  // update incremental temperature member to provided step increments
-  // shortly: tempinc_^<i> := temp^<i+1>
-  tempinc_->Update(1.0, *temp, 0.0);
-
-  // do thermal update with provided residual temperatures
-  thermo_->UpdateIterIncrementally(tempi);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -353,11 +325,12 @@ void ADAPTER::ThermoTimInt::ReadRestart(const int step)
 }
 
 /*----------------------------------------------------------------------*
- | Set contact manager                                       mgit 09/10 |
+ | Set structural contact                                     mgit 09/10 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoTimInt:: SetContactManager(Teuchos::RCP<MORTAR::ManagerBase> cmtman)
+void ADAPTER::ThermoTimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                               Teuchos::RCP<DRT::Discretization> discretstruct)
 {
-  thermo_->SetContactManager(cmtman);
+  thermo_->SetStructContact(cmtman,discretstruct);
 }
 
 /*----------------------------------------------------------------------*

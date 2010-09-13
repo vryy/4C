@@ -149,6 +149,9 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   fres_->Scale(1.0/(*dt_)[0]);
   fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
   fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 1.0);
+  
+  // apply modifications due to thermal contact  
+  ApplyThermoContact(tang_,fres_,tempn_);
 
   tang_->Complete();  // close tangent matrix
 
