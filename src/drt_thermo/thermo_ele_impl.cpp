@@ -235,15 +235,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   ecapa_.Clear();
   // check for the action parameter
   const std::string action = params.get<std::string>("action","none");
-  
+
   double time = 0.0;
-  
+
   if(action!="calc_thermo_energy")
   {
     // extract time
     time = params.get<double>("total time");
   }
-    
+
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
@@ -361,7 +361,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           );
       } // end coupling
     } // end la.Size>1
-  }  // action == "calc_thermo_fintcapa"
+  }  // action == "calc_thermo_fint"
 
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
@@ -510,6 +510,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       }
       case INPAR::THR::dyna_genalpha :
       {
+        dserror("Genalpha not yet implemented");
         break;
       }
       case INPAR::THR::dyna_undefined :
@@ -609,6 +610,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     const int gid = ele->Id();
     LINALG::Matrix<nquad_,nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(),true);  // view only!
 
+//    // 26.08.10 code of Uli for post_drt_monitor (TSI: output heatflux does not fit!!)
+//    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator i = gpheatfluxmap->find(gid);
+//    if ( i==gpheatfluxmap->end() )
+//    dserror("gid %d not found in gpheatfluxmap", gid);
+//    LINALG::Matrix<nquad_,nsd_> gpheatflux(i->second->A(),true);  // view only!
+
     // set views to components
     LINALG::Matrix<nen_*numdofpernode_,1> efluxx(elevec1_epetra,true);  // view only!
     LINALG::Matrix<nen_*numdofpernode_,1> efluxy(elevec2_epetra,true);  // view only!
@@ -669,16 +676,24 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   {
     ;  // do nothing
   }
+
+  //==================================================================================
+  // allowing the predictor TangTemp in .dat --> can be decisive in compressible case!
+  else if (action== "calc_thermo_reset_istep")
+  {
+    // do nothing
+  }
+
   //============================================================================
-  // evaluation of internal thermal energy  
+  // evaluation of internal thermal energy
   else if (action == "calc_thermo_energy")
   {
     // check length of elevec1
     if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-   
+
     // get the material capacity
     double kappa = 0.0;
-    
+
     // material
     Teuchos::RCP<MAT::Material> material = ele->Material();
 
@@ -690,13 +705,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }
     else
       dserror("Material type is not supported");
-    
+
     // get node coordinates
     GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-    
-    // declaration of internal variables   
+
+    // declaration of internal variables
     double intenergy = 0.0;
-    
+
     //----------------------------------------------------------------------
     // integration loop for one element
     //----------------------------------------------------------------------
@@ -712,20 +727,20 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-      
+
       // call material law => cmat_,heatflux_
       Materialize(ele);
-      
+
       LINALG::Matrix<1,1> temp;
       temp.MultiplyTN(1.0,funct_,etemp_,0.0);
-      
+
       // internal energy
-      intenergy +=kappa*fac_*temp(0,0); 
-            
+      intenergy +=kappa*fac_*temp(0,0);
+
       /* =======================================================================*/
     }/* ================================================== end of Loop over GP */
 
-    elevec1_epetra(0) = intenergy; 
+    elevec1_epetra(0) = intenergy;
   } // evaluation of internal energy
 
   //============================================================================
@@ -733,7 +748,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   {
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
   }
-  
+
   return 0;
 } // Evaluate for multiple dofsets
 
@@ -874,6 +889,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     {
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
+      // heatflux q = C * B
       aop.MultiplyNN(cmat_,derxy_); //(1x1)(3x8)
       etang->MultiplyTN(fac_,derxy_,aop,1.0); //(8x8)=(8x3)(3x8)
     }
@@ -924,14 +940,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
     // get GID of the first solid element (by using an homogenous material this
     // is enough)
-    const int structgid = structdis->ElementRowMap()->GID(0);
+    // ask the partner element about his Id
+    const int structgid = ele->Id();
 
     // get the pointer to the adequate structure element based on GIDs
-    DRT::Element* thisele = structdis->gElement(structgid);
+    DRT::Element* structele = structdis->gElement(structgid);
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
-    Teuchos::RCP<MAT::Material> structmat = thisele->Material();
+    Teuchos::RCP<MAT::Material> structmat = structele->Material();
     if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
@@ -939,6 +956,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
       thrstvk->SetupCthermo(ctemp);
     }
+
+    // ask the structure element about his kintype_ to decide which defgrd is used
   }
   // END OF COUPLING
 
@@ -954,6 +973,37 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
     evel(i,0) = vel[i+0];
   }
 
+  // build the deformation gradient w.r.t material configuration
+  // decide if problem is geometric nonlinear or linear
+//  if (kintype_== DRT::ELEMENTS::So_hex8::soh8_geolin)
+//  {
+    // 21.05.10 first step is LINEAR B-operator, so set F == I
+    // true==setzero: filled with zeros, otherwise it is left uninitialized
+    LINALG::Matrix<nsd_,nsd_> defgrd(true);
+//  }
+  // build the nonlinear deformation gradient (total Lagrangean approach)
+  // NONLINEAR:
+//  else if (kintype_== DRT::ELEMENTS::So_hex8::soh8_totlag)
+//  {
+//    // update element geometry
+//    LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
+//    LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
+//
+//    DRT::Node** nodes = ele->Nodes();
+//    for (int i=0; i<nen_; ++i)
+//    {
+//      const double* x = nodes[i]->X();
+//      xrefe(i,0) = x[0];
+//      xrefe(i,1) = x[1];
+//      xrefe(i,2) = x[2];
+//
+//      xcurr(i,0) = xrefe(i,0) + disp[i*nsd_+0];
+//      xcurr(i,1) = xrefe(i,1) + disp[i*nsd_+1];
+//      xcurr(i,2) = xrefe(i,2) + disp[i*nsd_+2];
+//    }
+//  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+//  }
+
   //----------------------------------------------------------------------
   // integration loop for one element
   //----------------------------------------------------------------------
@@ -966,26 +1016,49 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-
-  // build the deformation gradient w.r.t material configuration
-  // 21.05.10 first step is LINEAR B-operator, so set F == I
-  // true==setzero: filled with zeros, otherwise it is left uninitialized
-  LINALG::Matrix<nsd_,nsd_> defgrd(true);
-//  // NONLINEAR:
-//  // build deformation gradient wrt to material configuration
-//  LINALG::Matrix<nsd_,nsd_> defgrd(false);
-
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // set to initial state as test to receive a linear solution
-    for (int i=0; i<3; ++i) defgrd(i,i) = 1;
+    // GEOMETRIC LINEAR problem:
+//    if (kintype_== DRT::ELEMENTS::So_hex8::soh8_geolin)
+//    {
+      for (int i=0; i<3; ++i) defgrd(i,i) = 1;
+//    }
+//    else if (kintype_== DRT::ELEMENTS::So_hex8::soh8_totlag)
+//    {
+      // GEOMETRIC NONLINEAR problem:
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    // CAUTION: defgrd lin ist auskommentiert!!!
+//      defgrd.MultiplyTT(xcurr,derxy_);
+//    }
 
-    // NONLINEAR case:
-//    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-//    defgrd.MultiplyTT(xcurr,derxy_);
-
+   /* non-linear B-operator (may so be called, meaning
+    ** of B-operator is not so sharp in the non-linear realm) *
+    ** B = F . Bl *
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    **
+    **
+    ** linear B-operator Bl == B_L (== B with F == I)
+    */
     LINALG::Matrix<6,nen_*nsd_> bop;
     for (int i=0; i<nen_; ++i)
     {

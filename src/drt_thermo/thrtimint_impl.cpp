@@ -256,6 +256,8 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
     // create the parameters for the discretization
     ParameterList p;
     p.set("action", "calc_thermo_reset_istep");
+    // set the total time
+    p.set("total time",(*time_)[0]);
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -850,17 +852,17 @@ void THR::TimIntImpl::TSIMatrix()
 /*----------------------------------------------------------------------*
  |  Modify thermal system of equation towards thermal contact mgit 09/10|
  *----------------------------------------------------------------------*/
-void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang, 
-                                         Teuchos::RCP<Epetra_Vector>& feff, 
+void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
+                                         Teuchos::RCP<Epetra_Vector>& feff,
                                          Teuchos::RCP<Epetra_Vector>& temp)
 {
   // only in the case of contact
   if(cmtman_==Teuchos::null)
     return;
-   
+
    //contact / meshtying modifications need -fres
    feff->Scale(-1.0);
-  
+
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
   tang->Complete();
@@ -869,7 +871,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   // slave-, active-, inactive-, master-, activemaster-, n- smdofs
   RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
   ConvertMaps (sdofs,adofs,mdofs);
-  
+
   // map of active and master dofs
   amdofs = LINALG::MergeMap(adofs,mdofs,false);
   idofs =  LINALG::SplitMap(*sdofs,*adofs);
@@ -1195,9 +1197,9 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   /**********************************************************************/
   tang = tangnew;
   feff = feffnew;
-  
+
   feff->Scale(-1.0);
-  
+
   // leave this place
   return;
 }
@@ -1330,7 +1332,7 @@ void THR::TimIntImpl::ConvertMaps(RCP<Epetra_Map>& slavedofs,
 
 void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
                                 LINALG::SparseMatrix& mmatrix)
-                                
+
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -1458,7 +1460,7 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
 
   // time step size
   double dt = GetTimeStepSize();
-  
+
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
@@ -1541,28 +1543,28 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
   // with respect to temperature
   thermcontTEMP.Add(dmatrix,false,-beta,1.0);
   thermcontTEMP.Add(mmatrix,false,+beta,1.0);
-  
+
   RCP<Epetra_Vector> fa, fm, rest1, rest2;
-  
-  
-  
+
+
+
   // row map of thermal problem
   RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
 
   LINALG::SplitVector(*problemrowmap,*tempn_,activedofs,fa,masterdofs,fm);
-  
-  
+
+
   //cout << "FA" << *fa << endl;
   //cout << "FM" << *fm << endl;
-  
+
   RCP <Epetra_Vector> DdotTemp = rcp(new Epetra_Vector(*activedofs));
   dmatrix.Multiply(false,*fa,*DdotTemp);
   thermcontRHS.Update(beta,*DdotTemp,1.0);
-  
+
   RCP <Epetra_Vector> MdotTemp = rcp(new Epetra_Vector(*activedofs));
   mmatrix.Multiply(false,*fm,*MdotTemp);
   thermcontRHS.Update(-beta,*MdotTemp,1.0);
-  
+
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
