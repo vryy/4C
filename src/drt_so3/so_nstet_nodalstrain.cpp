@@ -42,13 +42,17 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::Initialize");
 
   const int myrank = dis.Comm().MyPID();
+  const int numproc = dis.Comm().NumProc();
 
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // init elements, make maps of column elements and row nodes
   const int numele = dis.NumMyColElements();
   for (int i=0; i<numele; ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-
-    DRT::ELEMENTS::NStet* actele = dynamic_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i));
+    DRT::ELEMENTS::NStet* actele = 
+                    dynamic_cast<DRT::ELEMENTS::NStet*>(dis.lColElement(i));
     if (!actele) dserror("cast to NStet* failed");
 
     // init the element
@@ -62,11 +66,17 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
     {
       DRT::Node* node = actele->Nodes()[j];
       if (myrank == node->Owner())
-        noderids_.insert(pair<int,DRT::Node*>(node->Id(),node));
+        noderids_[node->Id()] = node;
     }
   }
 
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
   // compute adjacency for each row node
+  // make patch of adjacent elements
+  // make patch of adjacent nodes (including center node itself)
+  // make lm for nodal patch
+  // make lmowner for nodal patch
   std::map<int,DRT::Node*>::iterator node;
   for (node=noderids_.begin(); node != noderids_.end(); ++node)
   {
@@ -104,15 +114,289 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
     int count=0;
     for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
     {
-      vector<int> dofs = dis.Dof(pnode->second);
+      const vector<int>& dofs = dis.Dof(pnode->second);
       for (int j=0; j<(int)dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
-    if (count != ndofperpatch) dserror("dimension mismatch");
     adjlm_[nodeidL] = lm;
-
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
 
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // stuff related to MIS stabilization of pressure
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // build parallel maximum independent set of nodes (MIS-nodes)
+  // this is done in pseudo-serial, as a true parallel MIS algorithm is not
+  // easy and I'm too lazy to do one
+  map<int,DRT::Node*> rnodes = noderids_; // working copy of row nodes
+  vector<int> misnodes(0); // indicator which nodes are mis
+  vector<int> smisnodes(0);// same but for communication
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (proc==myrank)
+    {
+      for (node=rnodes.begin(); node != rnodes.end(); ++node)
+      {
+        const int actnodeid = node->second->Id();
+        // make this node a mis node 
+        misnodes.push_back(actnodeid);
+        
+        cout << myrank << " MIS    " << *(node->second) << endl;
+        
+        // delete all neighboring nodes from its patch from map
+        map<int,DRT::Node*>& nodepatch = adjnode_[actnodeid];
+        std::map<int,DRT::Node*>::iterator neighbor;
+        for (neighbor=nodepatch.begin(); neighbor != nodepatch.end(); ++neighbor)
+        {
+          if (neighbor->first == actnodeid) continue; // do not delete myself
+          /*const int n =*/ rnodes.erase(neighbor->first);
+          //if (n)
+          //cout << myrank << " delon  " << *(neighbor->second) << endl;
+        }
+      }
+    } // if (proc==mypid)
+
+    // broadcast mis nodes of proc
+    int size = misnodes.size();
+    dis.Comm().Broadcast(&size,1,proc);
+    if (proc==myrank) smisnodes = misnodes;
+    else              smisnodes.resize(size);
+    dis.Comm().Broadcast(&smisnodes[0],size,proc);
+
+    // all other procs have to remove nodes adjacent to mis nodes from 
+    // their potential list
+    if (myrank>proc)
+    {
+      for (node=rnodes.begin(); node != rnodes.end();)
+      {
+        const int actnodeid = node->second->Id();
+        map<int,DRT::Node*>& nodepatch = adjnode_[actnodeid];
+        std::map<int,DRT::Node*>::iterator neighbor;
+        bool foundit = false;
+        for (neighbor=nodepatch.begin(); neighbor != nodepatch.end(); ++neighbor)
+        {
+          const int neighborid = neighbor->first;
+          for (int i=0; i<size; ++i)
+            if (neighborid == smisnodes[i])
+            {
+              foundit = true;
+              break;
+            }
+          if (foundit) break;
+        }
+        if (foundit)
+        {
+          //cout << myrank << " deloff " << *(node->second) << endl;
+          rnodes.erase(node++);
+        }
+        else node++;
+      }
+    }
+    dis.Comm().Barrier();
+    smisnodes.clear();
+  } // for (proc=0; proc<numproc; ++proc)
+
+  // convert the misnodes vector to a map because its easier to search
+  map<int,int> misnodesmap;
+  for (int i=0; i<(int)misnodes.size(); ++i)
+    misnodesmap[misnodes[i]] = misnodes[i];
+  misnodes.clear();
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // each MIS node is associated with a patch of column elements of which
+  // it takes the full integration area
+  // Additionally, there are leftover column elements (not adjacent to any MIS node)
+  // they are taken by a greedy algorithm in a second phase
+
+  //----------------------------------------------------------------------
+  // make a working map of column elements
+  map<int,DRT::ELEMENTS::NStet*> elecids = elecids_;
+  dis.Comm().Barrier();
+  
+  //----------------------------------------------------------------------
+  // assign mis nodes all surrounding row elements (greedy phase 1)
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    vector<int> sendeles(0);
+    map<int,int>::iterator mis;
+    if (proc==myrank)
+    {
+      for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+      {
+        vector<DRT::ELEMENTS::NStet*> eles(0);
+        DRT::Node* misnode = noderids_[mis->first];
+        for (int i=0; i<misnode->NumElement(); ++i)
+        {
+          if (elecids.find(misnode->Elements()[i]->Id()) == elecids.end()) continue;
+          eles.push_back((DRT::ELEMENTS::NStet*)misnode->Elements()[i]);
+          elecids.erase(misnode->Elements()[i]->Id());
+        } // i
+        pstab_adjele_[mis->first] = eles;
+      } 
+      
+      // Unassign mis nodes with patches that are too small
+      for (mis=misnodesmap.begin(); mis != misnodesmap.end();)
+      {
+        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
+        const int patchsize = (int)adjele.size();
+        cout << "Proc " << myrank << " MIS node " << mis->first << " patchsize " << patchsize << endl;
+        if (patchsize >= MIS_MIN_PATCHSIZE) mis++;
+        else
+        {
+          cout << "Proc " << myrank << " erased MIS node " << mis->first << " patchsize " << patchsize << endl;
+          for (int i=0; i<patchsize; ++i) elecids[adjele[i]->Id()] = adjele[i];
+          pstab_adjele_.erase(mis->first);
+          misnodesmap.erase(mis++);
+        }
+      } 
+      
+      // make communication vector of all elements taken
+      for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+      {
+        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
+        for (int i=0; i<(int)adjele.size(); ++i) sendeles.push_back(adjele[i]->Id());
+      } 
+      
+    } // if (proc==myrank)
+    
+    int size = (int)sendeles.size();
+    dis.Comm().Broadcast(&size,1,proc);
+    if (proc != myrank) sendeles.resize(size);
+    dis.Comm().Broadcast(&sendeles[0],size,proc);
+    
+    // all other procs remove the already taken elements from their list
+    if (myrank != proc)
+    {
+      for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
+    } // if (myrank != proc)
+    
+    sendeles.clear();
+    dis.Comm().Barrier();
+  } // for (int proc=0; proc<numproc; ++proc)
+
+  //----------------------------------------------------------------------
+  // assign all leftover elements to neighboring patches (greedy phase 2)
+  // this is a distance 2 patch search
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    vector<int> sendeles(0);
+    map<int,int>::iterator mis;
+    if (proc==myrank)
+    {
+      for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+      {
+        vector<DRT::ELEMENTS::NStet*> eles(0);
+        //DRT::Node* misnode = noderids_[mis->first];
+        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
+        for (int i=0; i<(int)adjele.size(); ++i)
+        {
+          DRT::ELEMENTS::NStet* actele = adjele[i];
+          for (int j=0; j<actele->NumNode(); ++j)
+          {
+            DRT::Node* node = actele->Nodes()[j];
+            if (node->Id() == mis->first) continue;
+            for (int k=0; k<node->NumElement(); ++k)
+            {
+              DRT::Element* ele = node->Elements()[k];
+              if (elecids.find(ele->Id()) == elecids.end()) continue;
+              pstab_adjele_[mis->first].push_back((DRT::ELEMENTS::NStet*)ele);
+              elecids.erase(ele->Id());
+              sendeles.push_back(ele->Id());
+              cout << "Proc " << myrank << " leftover NStet " << ele->Id() << 
+                      " found MIS node " << mis->second << endl;
+            } // k
+          } // j
+        } // i
+      }
+    } // if (proc==myrank)
+
+    int size = (int)sendeles.size();
+    dis.Comm().Broadcast(&size,1,proc);
+    if (proc != myrank) sendeles.resize(size);
+    dis.Comm().Broadcast(&sendeles[0],size,proc);
+
+    // all other procs remove the already taken elements from their list
+    if (myrank != proc)
+    {
+      for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
+    } // if (myrank != proc)
+    
+    sendeles.clear();
+    dis.Comm().Barrier();
+
+  } // for (int proc=0; proc<numproc; ++proc)
+
+  //----------------------------------------------------------------------
+  // test whether all column elements on all procs have been assigned a patch
+  if ((int)elecids.size() != 0)
+  {
+    map<int,DRT::ELEMENTS::NStet*>::iterator ele;
+    for (ele=elecids.begin(); ele != elecids.end(); ++ele)
+    {
+      cout << "Proc " << myrank <<
+              " leftover NStet " << ele->second->Id() << 
+              " found NO MIS node (on any proc)" << endl << *ele->second << endl;
+    }
+    dserror("Proc %d has the above column elements leftover",myrank);
+  }
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // have to build adjnode and adjlm arrays for the patches
+  map<int,vector<DRT::ELEMENTS::NStet*> >::iterator mis;
+  for (mis=pstab_adjele_.begin(); mis != pstab_adjele_.end(); ++mis)
+  {
+    int id = mis->first;
+    int mispatchsize = (int)mis->second.size();
+    int patchsize = (int)adjele_[id].size();
+    cout << "Proc " << myrank 
+         << " MIS " << id
+         << " mispatchsize " << mispatchsize
+         << " patchsize " << patchsize << endl;
+    if (mispatchsize==patchsize) 
+    {
+      pstab_ident_patch_[id] = true;
+      mis->second.clear();
+    }
+    else // patch not identical
+    {
+      // adjnode
+      pstab_ident_patch_[id] = false;
+      map<int,DRT::Node*> nodepatch;
+      vector<DRT::ELEMENTS::NStet*>& adjele = mis->second;
+      for (int j=0; j<(int)adjele.size(); ++j) 
+      {
+        DRT::Node** nodes = adjele[j]->Nodes();
+        for (int k=0; k<adjele[j]->NumNode(); ++k)
+          nodepatch[nodes[k]->Id()] = nodes[k];
+      }
+      pstab_adjnode_[id] = nodepatch;
+      
+      // lm array
+      const int numnodepatch = (int)nodepatch.size();
+      const int ndofperpatch = numnodepatch*3;
+      vector<int> lm(ndofperpatch);
+      std::map<int,DRT::Node*>::iterator pnode;
+      int count=0;
+      for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
+      {
+        const vector<int>& dofs = dis.Dof(pnode->second);
+        for (int j=0; j<(int)dofs.size(); ++j)
+          lm[count++] = dofs[j];
+      }
+      pstab_adjlm_[id] = lm;
+    } // else
+  } // for (mis=pstab_adjele_.begin(); mis != pstab_adjele_.end(); ++mis)
+  
+  // the elements should know which MIS node they belong to and on what
+  // processor that MIS node is on. This is neccessary to do stress output
+  
   return 0;
 }
 
@@ -131,7 +415,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::PreEvaluate");
 
   // nodal integration for nlnstiff and internal forces only
-  // (this method does not compute stresses/strains/element updates)
+  // (this method does not compute stresses/strains/element updates/mass matrix)
   string& action = p.get<string>("action","none");
   if (action != "calc_struct_nlnstiffmass" &&
       action != "calc_struct_nlnstiff"     &&
@@ -150,7 +434,11 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   // nodal stiffness and force (we don't do mass here)
   LINALG::SerialDenseMatrix stiff;
-  LINALG::SerialDenseVector force1;
+  LINALG::SerialDenseVector force;
+
+  // nodal stiffness and force for pressure stabilization
+  LINALG::SerialDenseMatrix pstab_stiff;
+  LINALG::SerialDenseVector pstab_force;
 
   //-------------------------------------- construct F for each NStet
   // current displacement
@@ -177,54 +465,68 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   RCP<Epetra_FECrsMatrix> stifftmp;
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
   if (systemmatrix != null and systemmatrix->Filled())
-  {
-#if 1
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
-#else
-    int nrows = systemmatrix->EpetraMatrix()->NumMyRows();
-    std::vector<int> numentries(nrows);
-    for (int i=0; i<nrows; ++i)
-    {
-      systemmatrix->EpetraMatrix()->NumMyRowEntries(i, numentries[i]);
-    }
-    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,&numentries[0],false));
-#endif
-  }
   else
-  {
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
-  }
+
   // create temporary vector in column map to assemble to
+  // FIXME: For MIS, this might NOT be sufficient!
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
 
-  //-------------------------------------------------do nodal stiffness
+  //================================================== do nodal stiffness
   std::map<int,DRT::Node*>::iterator node;
   for (node=noderids_.begin(); node != noderids_.end(); ++node)
   {
     DRT::Node* nodeL   = node->second;     // row node
     const int  nodeLid = nodeL->Id();
 
-    // list of adjacent elements
+    // list of elements on standard patch
     vector<DRT::ELEMENTS::NStet*>& adjele = adjele_[nodeLid];
 
-    // patch of all nodes adjacent to adjacent elements
-    map<int,DRT::Node*>& nodepatch = adjnode_[nodeLid];
+    // list of nodes on standard patch
+    map<int,DRT::Node*>& adjnode = adjnode_[nodeLid];
 
-    // total number of nodes
-    const int numnodepatch = (int)nodepatch.size();
-    // total number of degrees of freedom on patch
-    const int ndofperpatch = numnodepatch*3;
-
-    // location and ownership vector of nodal patch
+    // location vector of nodal patch
     vector<int>& lm = adjlm_[nodeLid];
+
+    // total number of degrees of freedom on patch
+    const int ndofperpatch = (int)lm.size();
+
+    // if node is MIS node it might have a second patch
+    bool mis = (pstab_ident_patch_.find(nodeLid) != pstab_ident_patch_.end());
+    bool samepatch = false;
+    vector<DRT::ELEMENTS::NStet*>* ps_adjele = &adjele;
+    map<int,DRT::Node*>*           ps_adjnode = &adjnode;
+    vector<int>*                   ps_lm = &lm;
+    int                            ps_ndofperpatch = ndofperpatch;
+    LINALG::SerialDenseMatrix*     ps_stiff = &stiff;
+    LINALG::SerialDenseVector*     ps_force = &force;
+    if (mis)
+    {
+      samepatch = pstab_ident_patch_.find(nodeLid)->second;
+      if (!samepatch)
+      {
+        ps_adjele = &(pstab_adjele_[nodeLid]);
+        ps_adjnode = &(pstab_adjnode_[nodeLid]);
+        ps_lm = &(pstab_adjlm_[nodeLid]);
+        ps_ndofperpatch = (int)ps_lm->size();
+        
+        pstab_stiff.LightShape(ps_ndofperpatch,ps_ndofperpatch); pstab_stiff.Zero();
+        pstab_force.LightSize(ps_ndofperpatch);                  pstab_force.Zero();
+        
+        ps_stiff = &pstab_stiff;
+        ps_force = &pstab_force;
+      }
+    }
 
     if (action != "calc_struct_stress")
     {
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
-      force1.LightSize(ndofperpatch);
-      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,
-                       INPAR::STR::stress_none,INPAR::STR::strain_none);
+      force.LightSize(ndofperpatch);
+      NodalIntegration(&stiff,&force,adjnode,adjele,
+                       mis,samepatch,ps_stiff,ps_force,ps_adjnode,ps_adjele,
+                       NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
     {
@@ -232,7 +534,9 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,iostress,iostrain);
+      NodalIntegration(NULL,NULL,adjnode,adjele,
+                       mis,samepatch,NULL,NULL,ps_adjnode,ps_adjele,
+                       &nodalstress,&nodalstrain,iostress,iostrain);
       nodestress_[nodeLid] = nodalstress;
       nodestrain_[nodeLid] = nodalstrain;
     }
@@ -258,7 +562,27 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
             dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
         }
       }
+      if (mis && !samepatch)
+      {
+        for (int i=0; i<ps_ndofperpatch; ++i)
+        {
+          const int rgid = (*ps_lm)[i];
+          for (int j=0; j<ps_ndofperpatch; ++j)
+          {
+            const int cgid = (*ps_lm)[j];
+            int errone = stifftmp->SumIntoGlobalValues(1,&rgid,1,&cgid,&((*ps_stiff)(i,j)));
+            if (errone>0)
+            {
+              int errtwo = stifftmp->InsertGlobalValues(1,&rgid,1,&cgid,&((*ps_stiff)(i,j)));
+              if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+            }
+            else if (errone)
+              dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+          }
+        }
+      }
     }
+    
     if (assemblevec1)
     {
       for (int i=0; i<ndofperpatch; ++i)
@@ -266,11 +590,21 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         const int rgid = lm[i];
         const int lid = forcetmp1.Map().LID(rgid);
         if (lid<0) dserror("global row %d does not exist in column map",rgid);
-        forcetmp1[lid] += force1[i];
+        forcetmp1[lid] += force[i];
+      }
+      if (mis && !samepatch)
+      {
+        for (int i=0; i<ps_ndofperpatch; ++i)
+        {
+          const int rgid = (*ps_lm)[i];
+          const int lid = forcetmp1.Map().LID(rgid);
+          if (lid<0) dserror("global row %d does not exist in column map",rgid);
+          forcetmp1[lid] += (*ps_force)[i];
+        }
       }
     }
 
-  //---------------------------------------------------------------------
+  //=========================================================================
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
 
 
@@ -289,8 +623,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   if (assemblemat1)
   {
     int err = stifftmp->GlobalAssemble(dmap,rmap,false);
-    const Epetra_Map& cmap = stifftmp->ColMap();
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
+    const Epetra_Map& cmap = stifftmp->ColMap();
     for (int lrow=0; lrow<stifftmp->NumMyRows(); ++lrow)
     {
       int numentries;
@@ -347,20 +681,45 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     stiff,
-                                               Epetra_SerialDenseVector*     force,
-                                               map<int,DRT::Node*>&          nodepatch,
-                                               vector<DRT::ELEMENTS::NStet*>& adjele,
-                                               vector<double>*               nodalstress,
-                                               vector<double>*               nodalstrain,
-                                               const INPAR::STR::StressType  iostress,
-                                               const INPAR::STR::StrainType  iostrain)
+void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
+                                                Epetra_SerialDenseVector*       force,
+                                                map<int,DRT::Node*>&            adjnode,
+                                                vector<DRT::ELEMENTS::NStet*>&  adjele,
+                                                bool                            mis,
+                                                bool                            samepatch,
+                                                Epetra_SerialDenseMatrix*       ps_stiff,
+                                                Epetra_SerialDenseVector*       ps_force,
+                                                map<int,DRT::Node*>*            ps_adjnode,
+                                                vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
+                                                vector<double>*                 nodalstress,
+                                                vector<double>*                 nodalstrain,
+                                                const INPAR::STR::StressType    iostress,
+                                                const INPAR::STR::StrainType    iostrain)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
 
-  const int nnodeinpatch = (int)nodepatch.size();
-  const int ndofinpatch  = nnodeinpatch*3;
+  //-------------------------------------------------- standard quantities
+  const int nnodeinpatch = (int)adjnode.size();
+  const int ndofinpatch  = nnodeinpatch * 3;
   const int neleinpatch  = (int)adjele.size();
+
+  // MIS quantities ------------------------------------------------------
+  Epetra_SerialDenseMatrix ps_bop;
+  LINALG::Matrix<3,3>      ps_FnodeL(true);
+  LINALG::Matrix<3,3>      ps_cauchygreen;
+  LINALG::Matrix<6,1>      ps_glstrain(false);
+  LINALG::Matrix<6,6>      ps_cmat(true);
+  LINALG::Matrix<6,1>      ps_stress(true);
+  double                   ps_VnodeL = 0.0;
+  int                      ps_nnodeinpatch = nnodeinpatch;
+  int                      ps_neleinpatch = neleinpatch;
+  if (mis && !samepatch) 
+  {
+    ps_nnodeinpatch = (*ps_adjnode).size() * 3;
+    ps_neleinpatch  = (*ps_adjele).size();
+  }
+  int                      ps_ndofinpatch = ps_nnodeinpatch * 3;
+  bool                     ps_matequal = true;
 
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
@@ -375,6 +734,20 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
   }
 
   //-----------------------------------------------------------------------
+  // MIS see whether materials are equal in patch
+  if (mis && !samepatch)
+  {
+    int mat = (*ps_adjele)[0]->material_;
+    for (int i=1; i<ps_neleinpatch; ++i)
+      if (mat != (*ps_adjele)[i]->material_)
+      {
+        ps_matequal = false;
+        break;
+      }
+  }
+  else if (mis) ps_matequal = matequal;
+
+  //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
   LINALG::Matrix<3,3> FnodeL(true);
   double VnodeL = 0.0;
@@ -387,17 +760,51 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
   FnodeL.Scale(1.0/VnodeL);
 
   //-----------------------------------------------------------------------
-  // do positioning map global nodes -> position in B-Operator
-  map<int,int>  node_pos;
-  std::map<int,DRT::Node*>::iterator pnode;
-  int count=0;
-  for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
+  // MIS build averaged deformation gradient and volume of node
+  if (mis)
   {
-    node_pos[pnode->first] = count;
-    count++;
+    // MIS node takes entire element volume
+    for (int i=0; i<ps_neleinpatch; ++i) 
+    {
+      const double V = (*ps_adjele)[i]->Volume();
+      ps_VnodeL += V;
+      if (!samepatch) ps_FnodeL.Update(V,(*ps_adjele)[i]->F_,1.0);
+    }
+    if (!samepatch) ps_FnodeL.Scale(1.0/ps_VnodeL);
+    else            ps_FnodeL = FnodeL;
   }
 
-  //------------------------------------------------------ build B operator
+  //-----------------------------------------------------------------------
+  // do positioning map global nodes -> position in B-Operator
+  map<int,int>  node_pos;
+  {
+    std::map<int,DRT::Node*>::iterator pnode;
+    int count=0;
+    for (pnode=adjnode.begin(); pnode != adjnode.end(); ++pnode)
+    {
+      node_pos[pnode->first] = count;
+      count++;
+    }
+  }
+  
+  //-----------------------------------------------------------------------
+  // MIS do positioning map global nodes -> position in B-Operator
+  map<int,int>  ps_node_pos;
+  if (mis && !samepatch)
+  {
+    std::map<int,DRT::Node*>::iterator pnode;
+    int count=0;
+    for (pnode=(*ps_adjnode).begin(); pnode != (*ps_adjnode).end(); ++pnode)
+    {
+      ps_node_pos[pnode->first] = count;
+      count++;
+    }
+  }
+  else if (mis) ps_node_pos = node_pos;
+
+  //-----------------------------------------------------------------------
+  // build B operator
+
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
   // loop elements in patch
   for (int ele=0; ele<neleinpatch; ++ele)
@@ -413,7 +820,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
 
     // def-gradient of the element
     LINALG::Matrix<3,3>& F = actele->F_;
-
+    
     // volume ratio of volume per node L of this element to
     // whole volume of node L
     V = V/VnodeL;
@@ -455,10 +862,80 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
 
   } // for (int ele=0; ele<neleinpatch; ++ele)
 
+  //-----------------------------------------------------------------------
+  // MIS build B operator 
+
+  if (mis && !samepatch)
+  {
+    ps_bop.Shape(6,ps_ndofinpatch);
+    
+    // loop elements in MIS patch
+    for (int ele=0; ele<ps_neleinpatch; ++ele)
+    {
+      // current element
+      DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
+
+      // spatial deriv of that element
+      LINALG::Matrix<4,3>& nxyz = actele->nxyz_;
+
+      // entire volume of that element assigned to MIS node L
+      double V = actele->Volume();
+
+      // def-gradient of the element
+      LINALG::Matrix<3,3>& F = actele->F_;
+
+      // volume ratio of volume per node L of this element to
+      // whole volume of node L
+      double ratio = V/ps_VnodeL;
+
+      // loop nodes of that element
+      for (int i=0; i<actele->NumNode(); ++i)
+      {
+        DRT::Node* actnode = actele->Nodes()[i];
+        const int  nodeid  = actnode->Id();
+
+        // local  node index is i
+        // global node index is nodeid
+        // starting position in B-Operator is node_pos[nodeid]
+
+        // find position in map of that node to determine place in bop
+        int pos = ps_node_pos[nodeid];
+
+        ps_bop(0,3*pos+0) += ratio * F(0,0)*nxyz(i,0);
+        ps_bop(0,3*pos+1) += ratio * F(1,0)*nxyz(i,0);
+        ps_bop(0,3*pos+2) += ratio * F(2,0)*nxyz(i,0);
+        ps_bop(1,3*pos+0) += ratio * F(0,1)*nxyz(i,1);
+        ps_bop(1,3*pos+1) += ratio * F(1,1)*nxyz(i,1);
+        ps_bop(1,3*pos+2) += ratio * F(2,1)*nxyz(i,1);
+        ps_bop(2,3*pos+0) += ratio * F(0,2)*nxyz(i,2);
+        ps_bop(2,3*pos+1) += ratio * F(1,2)*nxyz(i,2);
+        ps_bop(2,3*pos+2) += ratio * F(2,2)*nxyz(i,2);
+        //
+        ps_bop(3,3*pos+0) += ratio * (F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0) );
+        ps_bop(3,3*pos+1) += ratio * (F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0) );
+        ps_bop(3,3*pos+2) += ratio * (F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0) );
+        ps_bop(4,3*pos+0) += ratio * (F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1) );
+        ps_bop(4,3*pos+1) += ratio * (F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1) );
+        ps_bop(4,3*pos+2) += ratio * (F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1) );
+        ps_bop(5,3*pos+0) += ratio * (F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2) );
+        ps_bop(5,3*pos+1) += ratio * (F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2) );
+        ps_bop(5,3*pos+2) += ratio * (F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2) );
+
+      } // for (int i=0; i<actele->NumNode(); ++i)
+
+    } // for (int ele=0; ele<neleinpatch; ++ele)
+  }
+  else if (mis)
+  {
+    ps_bop.Shape(6,ps_ndofinpatch);
+    ps_bop = bop;
+  }
+
   //----------------------------------------- averaged material and stresses
   LINALG::Matrix<6,6> cmat(true);
   LINALG::Matrix<6,1> stress(true);
 
+  //----------------------------------------------------------------- strain
   // right cauchy green
   LINALG::Matrix<3,3> cauchygreen;
   cauchygreen.MultiplyTN(FnodeL,FnodeL);
@@ -471,6 +948,26 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
 
+  //-----------------------------------------------------------------------
+  // MIS strain
+  if (mis && !samepatch)
+  {
+    ps_cauchygreen.MultiplyTN(ps_FnodeL,ps_FnodeL);
+    ps_glstrain(0) = 0.5 * (ps_cauchygreen(0,0) - 1.0);
+    ps_glstrain(1) = 0.5 * (ps_cauchygreen(1,1) - 1.0);
+    ps_glstrain(2) = 0.5 * (ps_cauchygreen(2,2) - 1.0);
+    ps_glstrain(3) = ps_cauchygreen(0,1);
+    ps_glstrain(4) = ps_cauchygreen(1,2);
+    ps_glstrain(5) = ps_cauchygreen(2,0);
+  }
+  else if (mis) 
+  {
+    ps_cauchygreen = cauchygreen;
+    ps_glstrain    = glstrain;
+  }
+
+  //-------------------------------------------------------- output of strain
+  // FIXME: MIS not considered yet
   switch (iostrain)
   {
   case INPAR::STR::strain_gl:
@@ -519,6 +1016,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
     dserror("requested strain type not available");
   }
 
+  //-----------------------------------------------------------------------
   // material law and stresses
   if (matequal) // element patch has single material
   {
@@ -529,10 +1027,12 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
   else
   {
     double density; // just a dummy density
-    LINALG::Matrix<6,6> cmatele(true);
-    LINALG::Matrix<6,1> stressele(true);
+    LINALG::Matrix<6,6> cmatele;
+    LINALG::Matrix<6,1> stressele;
     for (int ele=0; ele<neleinpatch; ++ele)
     {
+      cmatele = 0.0;
+      stressele = 0.0;
       // current element
       DRT::ELEMENTS::NStet* actele = adjele[ele];
       // volume of that element assigned to node L
@@ -540,7 +1040,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
-      // here scaling of stresses/tangent with 1.0-alpha
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
     } // for (int ele=0; ele<neleinpatch; ++ele)
@@ -548,6 +1047,47 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
     cmat.Scale(1.0/VnodeL);
   }
 
+  //-----------------------------------------------------------------------
+  // MIS material law and stresses
+  if (mis && !samepatch)
+  {
+    if (ps_matequal)
+    {
+      double density; // just a dummy density
+      RCP<MAT::Material> mat = (*ps_adjele)[0]->Material();
+      SelectMaterial(mat,ps_stress,ps_cmat,density,ps_glstrain,ps_FnodeL,0);
+    }
+    else
+    {
+      double density; // just a dummy density
+      LINALG::Matrix<6,6> cmatele;
+      LINALG::Matrix<6,1> stressele;
+      for (int ele=0; ele<ps_neleinpatch; ++ele)
+      {
+        cmatele = 0.0;
+        stressele = 0.0;
+        // current element
+        DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
+        // volume of that element assigned to node L
+        const double V = actele->Volume();
+        // def-gradient of the element
+        RCP<MAT::Material> mat = actele->Material();
+        SelectMaterial(mat,stressele,cmatele,density,ps_glstrain,ps_FnodeL,0);
+        ps_cmat.Update(V,cmatele,1.0);
+        ps_stress.Update(V,stressele,1.0);
+      } // for (int ele=0; ele<neleinpatch; ++ele)
+      ps_stress.Scale(1.0/ps_VnodeL);
+      ps_cmat.Scale(1.0/ps_VnodeL);
+    }
+  }
+  else if (mis)
+  {
+    ps_stress = stress;
+    ps_cmat = cmat;
+  }
+
+  //-----------------------------------------------------------------------
+  // FIXME MIS not considered yet
   switch (iostress)
   {
   case INPAR::STR::stress_2pk:
@@ -591,33 +1131,74 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
     dserror("requested stress type not available");
   }
 
-#if 1 // dev stab on cauchy stresses
+  //-----------------------------------------------------------------------
+  // stress is plit as follows:
+  // non-MIS node:
+  //     stress = (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
+  // MIS-node:
+  //     stress = beta * vol_node(newpatch) + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
+
+  // define stuff we need in all cases
+  LINALG::Matrix<6,6> cmatdev;
+  LINALG::Matrix<6,6> cmatvol;
+  LINALG::Matrix<6,1> stressdev;
+  LINALG::Matrix<6,1> stressvol;
+  
+  // all nodes
   {
-    // define stuff we need
-    LINALG::Matrix<6,6> cmatdev;
-    LINALG::Matrix<6,1> stressdev;
-
-    // compute deviatoric stress and tangent
+    // compute deviatoric stress and tangent from total stress and tangent
     DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
-
-    // reduce deviatoric stresses
-    stress.Update(-ALPHA_NSTET,stressdev,1.0);
-
-    // reduce deviatoric tangent
-    cmat.Update(-ALPHA_NSTET,cmatdev,1.0);
+    
+    // compute volumetric stress and tangent
+    stressvol.Update(-1.0,stressdev,1.0,stress,0.0);
+    cmatvol.Update(-1.0,cmatdev,1.0,cmat,0.0);
+    
+    // compute nodal stress
+    stress.Update(1-BETA_NSTET,stressvol,1-ALPHA_NSTET,stressdev,0.0);
+    cmat.Update(1-BETA_NSTET,cmatvol,1-ALPHA_NSTET,cmatdev,0.0);
   }
-#endif
+  // MIS nodes
+  if (mis)
+  {
+    // patch (and therefore stress/tangent) identical to standard patch
+    if (samepatch)
+    {
+      ps_stress.Update(BETA_NSTET,stressvol,0.0);
+      ps_cmat.Update(BETA_NSTET,cmatvol,0.0);
+    }
+    // patch (and therefore stress/tangent) different from standard patch
+    else
+    {
+      // define stuff we need
+      cmatdev = 0.0;
+      stressdev = 0.0;
 
-#if 0 // orig. puso tet
-    stress.Scale(1.0-ALPHA_NSTET);
-    cmat.Scale(1.0-ALPHA_NSTET);
-#endif
+      // compute MIS deviatoric stress and tangent from MIS total stress and tangent
+      DevStressTangent(stressdev,cmatdev,ps_cmat,ps_stress,ps_cauchygreen);
+      
+      // compute MIS volumetric stress and tangent
+      stressvol.Update(-1.0,stressdev,1.0,ps_stress,0.0);
+      cmatvol.Update(-1.0,cmatdev,1.0,ps_cmat,0.0);
+      
+      ps_stress.Update(BETA_NSTET,stressvol,0.0);
+      ps_cmat.Update(BETA_NSTET,cmatvol,0.0);
+    }
+  }
 
   //----------------------------------------------------- internal forces
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
     force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
+    //------- MIS node part
+    if (mis)
+    {
+      Epetra_SerialDenseVector ps_stress_epetra(View,ps_stress.A(),ps_stress.Rows());
+      if (samepatch)
+        ps_force->Multiply('T','N',ps_VnodeL,ps_bop,ps_stress_epetra,1.0);
+      else
+        ps_force->Multiply('T','N',ps_VnodeL,ps_bop,ps_stress_epetra,0.0);
+    }
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -627,6 +1208,17 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bop,0.0);
     stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
+    //------- MIS node part
+    if (mis)
+    {
+      Epetra_SerialDenseMatrix ps_cmat_epetra(View,ps_cmat.A(),ps_cmat.Rows(),ps_cmat.Rows(),ps_cmat.Columns());
+      LINALG::SerialDenseMatrix ps_cb(6,ps_ndofinpatch);
+      ps_cb.Multiply('N','N',1.0,ps_cmat_epetra,ps_bop,0.0);
+      if (samepatch)
+        ps_stiff->Multiply('T','N',ps_VnodeL,ps_bop,ps_cb,1.0);
+      else
+        ps_stiff->Multiply('T','N',ps_VnodeL,ps_bop,ps_cb,0.0);
+    }
   }
 
   //----------------------------------------------------- geom. stiffness
@@ -637,10 +1229,11 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
     {
       // current element
       DRT::ELEMENTS::NStet* actele = adjele[ele];
-      // spatial deriv of that element
+      // material deriv of that element
       LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
       // volume of actele assigned to node L
       double V = actele->Volume()/4;
+      
       // loop nodes of that element
       double SmBL[3];
       DRT::Node** nodes = actele->Nodes();
@@ -656,17 +1249,51 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*     st
           // column position of this node in matrix
           int jpos = node_pos[nodes[j]->Id()];
           double bopstrbop = 0.0;
-          for (int dim=0; dim<3; ++dim)
-            bopstrbop += nxyz(j,dim) * SmBL[dim];
+          for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
           (*stiff)(3*ipos+0,3*jpos+0) += bopstrbop;
           (*stiff)(3*ipos+1,3*jpos+1) += bopstrbop;
           (*stiff)(3*ipos+2,3*jpos+2) += bopstrbop;
-        }
-      } // for (int i=0; i<actele->NumNode(); ++i)
+        } // for (int j=0; j<4; ++j)
+      } // for (int i=0; i<4; ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)
-  }
+    
+    //------- MIS node part
+    if (mis && samepatch)
+    {
+      for (int ele=0; ele<ps_neleinpatch; ++ele)
+      {
+        // current element
+        DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
+        // material deriv of that element
+        LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
+        // all volume of actele assigned to MIS node L
+        double V = actele->Volume();
 
-  // there is no nodal mass matrix - this is done the conventional way in the elements
+        // loop nodes of that element
+        double SmBL[3];
+        DRT::Node** nodes = actele->Nodes();
+        for (int i=0; i<4; ++i)
+        {
+          // row position of this node in matrix
+          int ipos = ps_node_pos[nodes[i]->Id()];
+          SmBL[0] = V*(ps_stress(0)*nxyz(i,0) + ps_stress(3)*nxyz(i,1) + ps_stress(5)*nxyz(i,2));
+          SmBL[1] = V*(ps_stress(3)*nxyz(i,0) + ps_stress(1)*nxyz(i,1) + ps_stress(4)*nxyz(i,2));
+          SmBL[2] = V*(ps_stress(5)*nxyz(i,0) + ps_stress(4)*nxyz(i,1) + ps_stress(2)*nxyz(i,2));
+          for (int j=0; j<4; ++j)
+          {
+            // column position of this node in matrix
+            int jpos = ps_node_pos[nodes[j]->Id()];
+            double bopstrbop = 0.0;
+            for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
+            (*ps_stiff)(3*ipos+0,3*jpos+0) += bopstrbop;
+            (*ps_stiff)(3*ipos+1,3*jpos+1) += bopstrbop;
+            (*ps_stiff)(3*ipos+2,3*jpos+2) += bopstrbop;
+          } // for (int j=0; j<4; ++j)
+        } // for (int i=0; i<4; ++i)
+      } // for (int ele=0; ele<ps_neleinpatch; ++ele)
+    } // if (mis)
+  } // if (stiff)
+
   return;
 }
 

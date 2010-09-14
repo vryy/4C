@@ -36,16 +36,9 @@ using namespace Teuchos;
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#if 0
-#define NUMNOD_NSTET       4    ///< number of nodes
-#define NODDOF_NSTET       3    ///< number of dofs per node
-#define NUMDOF_NSTET      12    ///< total dofs per element
-#define NUMSTR_NSTET       6    ///< number of strains/stresses
-#define NUMGPT_NSTET       1    ///< total gauss points per element
-#define NUMDIM_NSTET       3    ///< number of dimensions
-#define NUMCOORD_NSTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
-#endif
-#define ALPHA_NSTET      0.1    ///< stabilization parameter
+#define ALPHA_NSTET       0.1    ///< stabilization parameter for vol-dev split stabilization
+#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
+#define MIS_MIN_PATCHSIZE 2      ///< minimum MIS patch size required
 
 namespace DRT
 {
@@ -99,32 +92,51 @@ public:
 
 private:
 
-  static NStetType instance_;
+  static NStetType                        instance_;
 
   // map of row nodes adjacent to NStet elements
-  map<int,DRT::Node*>                    noderids_;
+  map<int,DRT::Node*>                     noderids_;
+
   // map of column NStet elements
   map<int,DRT::ELEMENTS::NStet*>          elecids_;
-  // map of nodal stresses
-  map<int,vector<double> >               nodestress_;
-  // map of nodal stresses
-  map<int,vector<double> >               nodestrain_;
 
-#if 1 // efficiency at the price of memory
+  // map of nodal stresses
+  map<int,vector<double> >                nodestress_;
+
+  // map of nodal stresses
+  map<int,vector<double> >                nodestrain_;
 
   // vector of elements adjacent to each row node
   map<int,vector<DRT::ELEMENTS::NStet*> > adjele_;
-  // map of nodes forming a patch around a node
-  map<int,map<int,DRT::Node*> >          adjnode_;
-  // map of location vectors for patch around a node
-  map<int,vector<int> >                  adjlm_;
 
-#endif
+  // map of nodes forming a patch around a node
+  map<int,map<int,DRT::Node*> >           adjnode_;
+
+  // map of location vectors for patch around a node
+  map<int,vector<int> >                   adjlm_;
+
+  // contains only MIS nodes
+  // indicate whether MIS patch is identical to patch in adjele_
+  map<int,bool>                           pstab_ident_patch_;
+  // vector of elements associated with an MIS node
+  // if patch is identical to adjele_, then length is zero here
+  map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
+  // adjnode and adjlm for non-identical patches only
+  map<int,map<int,DRT::Node*> >           pstab_adjnode_;
+  map<int,vector<int> >                   pstab_adjlm_;
+  
+
 
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
-                        map<int,DRT::Node*>&            nodepatch,
-                        vector<DRT::ELEMENTS::NStet*>&   adjele,
+                        map<int,DRT::Node*>&            adjnode,
+                        vector<DRT::ELEMENTS::NStet*>&  adjele,
+                        bool                            mis,
+                        bool                            samepatch,
+                        Epetra_SerialDenseMatrix*       ps_stiff,
+                        Epetra_SerialDenseVector*       ps_force,
+                        map<int,DRT::Node*>*            ps_adjnode,
+                        vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
                         vector<double>*                 nodalstress,
                         vector<double>*                 nodalstrain,
                         const INPAR::STR::StressType    iostress,
@@ -148,7 +160,7 @@ private:
 };
 
 /*!
-\brief A nodal-averaged strain 4-noded tet element according to Mike Puso
+\brief A nodal-averaged strain 4-noded tet element
 
 */
 
@@ -281,8 +293,7 @@ public:
   */
   void Print(ostream& os) const;
 
-  virtual NStetType & ElementType() const
-  { return NStetType::Instance(); }
+  virtual NStetType & ElementType() const { return NStetType::Instance(); }
 
   /*!
   \brief Read input for this element
