@@ -538,14 +538,7 @@ double DomainCoverageRatioT(
   {
     const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
     
-    //const int label = ih.PositionWithinConditionNP(cellcenter);
-    
-    // schott Jul 30, 2010
-    bool domPlus = true;
-    if(cell->getDomainPlus()) domPlus = true;
-    else domPlus = false;
-    
-    
+    const int label = ih.PositionWithinConditionNP(cellcenter);
     
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
@@ -602,9 +595,7 @@ double DomainCoverageRatioT(
 
       domain_ele += fac;
 
-//      if(label != 0)
-      // schott Jul 30, 2010
-      if(domPlus==true)
+      if(label != 0)
         domain_fict += fac;
 
     } // end loop over gauss points
