@@ -1297,7 +1297,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(ParameterList& params,LIN
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
-  double artificial = 100;//50;  //50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
+  double artificial = 1000;//50;  //50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 
 
