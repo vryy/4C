@@ -3881,80 +3881,128 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 
 bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2, 1>& LID)
 {
-	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
-	ranlib::UniformClosed<double> UniformGen;
+  //creating a random generator object which creates uniformly distributed random numbers in [0;1]
+  ranlib::UniformClosed<double> UniformGen;
 
-	//if orientation is not to be checked explicitly, this function always returns true
-	if (!Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
-		return true;
+  //if orientation is not to be checked explicitly, this function always returns true
+  if (!Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
+    return true;
 
-	//triad of node on filament which is affected by the new crosslinker
-	LINALG::Matrix<3, 3> Tfil;
+  //triad of node on filament which is affected by the new crosslinker
+  LINALG::Matrix<3, 3> Tfil;
 
-	//direction vectors of filaments projected to plane perpendicular to crosslinker axis and normalized to absolute value one
-	vector<LINALG::Matrix<3, 1> > filprojected;
-	filprojected.resize(2);
+  //direction vectors of filaments projected to plane perpendicular to crosslinker axis and normalized to absolute value one
+  vector<LINALG::Matrix<3, 1> > filprojected;
+  filprojected.resize(2);
 
-	//angles between crosslinker axis and filament axes minus equilibrium angles phi0, respectively
-	vector<double> Deltaphi;
-	Deltaphi.resize(2);
+  //angles between crosslinker axis and filament axes
+  vector<double> Phi;
+  Phi.resize(2);
 
-	//angle between filament axes projected into the plane perpendicular to the crosslinker axis minus equilibrium angles tau0
-	double Deltatau;
+  //angles between crosslinker axis and filament axes minus equilibrium angles phi0, respectively
+  vector<double> Deltaphi;
+  Deltaphi.resize(2);
 
-	//bending and torsion stiffness of crosslinkers
-	double EI = statmechparams_.get<double> ("ELINK", 0.0) * statmechparams_.get<double> ("ILINK", 0.0);
-	double GJ = statmechparams_.get<double> ("ELINK", 0.0) * statmechparams_.get<double> ("IPLINK", 0.0);
+  //angle between filament axes projected into the plane perpendicular to the crosslinker axis
+  double Tau;
 
-	for (int i=0; i<2; i++)
-	{
-		//get nodal triad
-		LINALG::Matrix<4, 1> qnode;
-		for (int j=0; j<4; j++)
-			qnode(j) = nodaltriadscol[j][(int) LID(i)];
+  //angle between filament axes projected into the plane perpendicular to the crosslinker axis minus equilibrium angles tau0
+  double Deltatau;
 
-		//compute triads from quaterions and unit direction vector of crosslinker
-		LARGEROTATIONS::quaterniontotriad(qnode, Tfil);
+  //bending and torsion stiffness of crosslinkers
+  double EI = statmechparams_.get<double> ("ELINK", 0.0) * statmechparams_.get<double> ("ILINK", 0.0);
+  double GJ = statmechparams_.get<double> ("ELINK", 0.0) * statmechparams_.get<double> ("IPLINK", 0.0);
 
-		//auxiliary variable
-		double scalarproduct = Tfil(0, 0)*direction(0) + Tfil(1,0)*direction(1) + Tfil(2, 0)*direction(2);
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"USEPHI"))
+  {
 
-		//computing Deltaphi and Delta at binding site i
-		Deltaphi[i] = acos(scalarproduct) - statmechparams_.get<double> ("PHI0",0.0);
+    for (int i=0; i<2; i++)
+    {
+      //get nodal triad
+      LINALG::Matrix<4, 1> qnode;
+      for (int j=0; j<4; j++)
+        qnode(j) = nodaltriadscol[j][(int) LID(i)];
 
-		//substract from filament direction vector the component parallel to the crosslinker axis and normalize the result
-		(filprojected[i])(0) = Tfil(0, 0) - scalarproduct * direction(0);
-		(filprojected[i])(1) = Tfil(1, 0) - scalarproduct * direction(1);
-		(filprojected[i])(2) = Tfil(2, 0) - scalarproduct * direction(2);
-		filprojected[i].Scale(1.0 / filprojected[i].Norm2());
-	}
+      //compute triads from quaterions and unit direction vector of crosslinker
+      LARGEROTATIONS::quaterniontotriad(qnode, Tfil);
 
-	//tau is the angle between the projections of the two filament direction vectors into the plane perpendicular to the crosslinker axis
-	Deltatau = acos((filprojected[0])(0) * (filprojected[1])(0) +
-									(filprojected[0])(1) * (filprojected[1])(1) +
-									(filprojected[0])(2) * (filprojected[1])(2)) - statmechparams_.get<double> ("TAU0", 0.0);
+      //auxiliary variable
+      double scalarproduct = Tfil(0, 0)*direction(0) + Tfil(1,0)*direction(1) + Tfil(2, 0)*direction(2);
 
-	//assuming bending and torsion potentials 0.5*EI*Deltaphi^2, 0.5*GJ*Deltatau^2 and a Boltzmann distribution for the different states of the crosslinker we get
-	double p0 = exp(-0.5 * EI * Deltaphi[0] * Deltaphi[0] / statmechparams_.get<double> ("KT", 0.0));
-	double p1 = exp(-0.5 * EI * Deltaphi[1] * Deltaphi[1] / statmechparams_.get<double> ("KT", 0.0));
-	double p2 = exp(-0.5 * GJ * Deltatau * Deltatau / statmechparams_.get<double> ("KT", 0.0));
+      //computing Phi, Deltaphi and Delta at binding site i
+      Phi[i] = acos(scalarproduct);
+      Deltaphi[i] = Phi[i] - statmechparams_.get<double> ("PHI0",0.0);
 
-	//p0 = 0.0 if Deltaphi[0] is outside allowed range
-	if(Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0) < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
-	   Deltaphi[0] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
-	   p0 = 0.0;
-	//p1 = 0.0 if Deltaphi[0] is outside allowed range
-  if(Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)< statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
-     Deltaphi[1] + statmechparams_.get<double> ("PHI0",0.0)> statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
-      p1 = 0.0;
+      //substract from filament direction vector the component parallel to the crosslinker axis and normalize the result
+      (filprojected[i])(0) = Tfil(0, 0) - scalarproduct * direction(0);
+      (filprojected[i])(1) = Tfil(1, 0) - scalarproduct * direction(1);
+      (filprojected[i])(2) = Tfil(2, 0) - scalarproduct * direction(2);
+      filprojected[i].Scale(1.0 / filprojected[i].Norm2());
+    }
+
+    //tau is the angle between the projections of the two filament direction vectors into the plane perpendicular to the crosslinker axis
+    Tau = acos((filprojected[0])(0) * (filprojected[1])(0)
+               + (filprojected[0])(1) * (filprojected[1])(1) + (filprojected[0])(2)
+               * (filprojected[1])(2));
+    Deltatau = Tau - statmechparams_.get<double> ("TAU0", 0.0);
+  }
+  else
+  {
+    //set Phi and Deltaphi to default value
+    for (int i=0; i<2; i++)
+    {
+      Phi[i] = 0;
+      Deltaphi[i] = 0;
+    }
+
+    //triad of node on first filament which is affected by the new crosslinker
+    LINALG::Matrix<3, 3> Tfil;
+    LINALG::Matrix<4, 1> qnode;
+    for (int j=0; j<4; j++)
+      qnode(j) = nodaltriadscol[j][(int) LID(1)];
+    LARGEROTATIONS::quaterniontotriad(qnode, Tfil);
+
+    //triad of node on second filament which is affected by the new crosslinker
+    LINALG::Matrix<3, 3> Tfilsec;
+    for (int j=0; j<4; j++)
+      qnode(j) = nodaltriadscol[j][(int) LID(2)];
+    LARGEROTATIONS::quaterniontotriad(qnode, Tfilsec);
+
+    //auxiliary variable
+    double scalarproduct = Tfil(0, 0)*Tfilsec(0,0) + Tfil(1,0)*Tfilsec(1,0) + Tfil(2,0)*Tfilsec(2,0);
+
+    Tau = acos(scalarproduct);
+    Deltatau = Tau - statmechparams_.get<double> ("TAU0",0.0);
+
+  }
+
+
+
+  //assuming bending and torsion potentials 0.5*EI*Deltaphi^2, 0.5*GJ*Deltatau^2 and a Boltzmann distribution for the different states of the crosslinker we get
+  double p0 = exp(-0.5 * EI * Deltaphi[0] * Deltaphi[0] / statmechparams_.get<double> ("KT", 0.0));
+  double p1 = exp(-0.5 * EI * Deltaphi[1] * Deltaphi[1] / statmechparams_.get<double> ("KT", 0.0));
+  double p2 = exp(-0.5 * GJ * Deltatau * Deltatau / statmechparams_.get<double> ("KT", 0.0));
+
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"USEPHI"))
+  {
+    //p0 = 0.0 if Deltaphi[0] is outside allowed range
+    if(Phi[0] < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
+       Phi[0] > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+       p0 = 0.0;
+    //p1 = 0.0 if Deltaphi[0] is outside allowed range
+    if(Phi[1] < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
+       Phi[1] > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+       p1 = 0.0;
+  }
   //p2 = 0.0 if Deltatau is outside allowed range
-  if(Deltatau + statmechparams_.get<double> ("TAU0",0.0)< statmechparams_.get<double>("TAU0",0.0) - statmechparams_.get<double>("TAU0DEV",6.28) ||
-     Deltatau + statmechparams_.get<double> ("TAU0",0.0)> statmechparams_.get<double>("TAU0",0.0) + statmechparams_.get<double>("TAU0DEV",6.28))
+  if(Tau < statmechparams_.get<double>("TAU0",0.0) - statmechparams_.get<double>("TAUODEV",6.28) ||
+     Tau > statmechparams_.get<double>("TAU0",0.0) + statmechparams_.get<double>("TAUODEV",6.28))
      p2 = 0.0;
 
-	//crosslinker has to pass three probability checks with respect to orientation
+  //crosslinker has to pass three probability checks with respect to orientation
   return(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
-} // StatMechManager::Permutation
+} // StatMechManager::CheckOrientation
+
 
 
 /*----------------------------------------------------------------------*
