@@ -150,11 +150,18 @@ protected:
   void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
-   *  \param currentpositions (in) 		 column map node positions
-   *  \param neighboursLID 		(in/out) vector holding LIDs of neighbour nodes
-   *  \param partition				(in)		 vector holding the information to which partial volume the currently observed crosslink molecule belongs
-   *  \param numbond					(in)		 number of existing bonds between crosslink molecule and filament node*/
-  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> > currentpositions, std::vector<int>* neighboursLID,std::vector<int>* partition, int index);
+   *  \param currentpositions 		(in) column map node positions
+   *  \param nodeinpartition  		(in) vector indicating the partition of the nodes
+   *  \param numbond							(in) vector holding the number of established bonds for each crosslink molecule
+   *  \param crosslinkerpositions	(in) vector holding the positions of the crosslink molecules
+   *  \param crosslinkpartitions	(in) vector holding the information to which partial volume the crosslink molecules belong
+   *  \param neighboursLID		(in/out) vector holding the LIDs of the nodes close to crosslink molecules*/
+  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+													  std::vector<std::vector<std::vector<int> > >* nodeinpartition,
+													  Epetra_Vector& numbond,
+													  Epetra_MultiVector& crosslinkerpositions,
+													  Epetra_MultiVector& crosslinkpartitions,
+														RCP<Epetra_MultiVector>& neighboursLID);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
@@ -211,9 +218,10 @@ protected:
 	void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
 																		 int crosslinkernumber, bool coupledmovement=true);
 
-	/*! \brief map crosslink molecules and filament nodes to the according volume partition
-	 * 	\param currentpositions			(in) column map node positions*/
-	void PositionsToPartitions(const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+	/*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
+	 * 	\param currentpositions			(in) 			column map node positions
+	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
+	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
 
   //! \brief switch between different on and off-rates
   bool konswitch_;
@@ -294,10 +302,6 @@ protected:
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
-	// \brief a vector containing  for all nodes the volume partitions they belong to
-	std::vector<std::vector<std::vector<int> > >* nodeinpartition_;
-	// \brief a vector containing neighbour nodes to crosslink molecules
-	std::vector<std::vector<int> >* neighbourslid_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
