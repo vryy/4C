@@ -2715,6 +2715,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//probability with which a crosslinker is established between crosslink molecule and neighbour node
 	double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+	//probability with which a crosslinker blocks two binding spots on the same filament (self-binding)
+	double pself = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON_SELF", 0.0) );
 
 	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
 	ranlib::UniformClosed<double> UniformGen;
@@ -2779,7 +2781,14 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				// flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
 				bool bondestablished = false;
 				// necessary condition to be fulfilled in order to set a crosslinker
-				if(UniformGen.random() < plink)
+				double probability = 0.0;
+				// switch between probability for regular inter-filament binding and self-binding crosslinker
+				if(nodeLID>=0)
+					probability = plink;
+				else
+					probability = pself;
+
+				if(UniformGen.random() < probability)
 				{
 					int free = 0;
 					int occupied = 0;
@@ -2823,7 +2832,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 							// distinguish between a real nodeLID and the entry '-1', which indicates a potentially passive crosslink molecule
 							if(nodeLID>=0)
 								LID(1) = nodeLID;
-							else if(nodeLID < -0.9) // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
+							else // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
 							{
 								int currfilament = (int)(*filamentnumber_)[(int)LID(0)];
 								if((int)LID(0)<basisnodes_-1)
@@ -2864,7 +2873,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 									if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[nodeLID])
 										(*crosslinkonsamefilament_)[irandom] = 1.0;
 								}
-								else if(nodeLID < -0.9) // passive crosslink molecule
+								else // passive crosslink molecule
 								{
 									(*searchforneighbours_)[irandom] = 0.0;
 									LINALG::SerialDenseMatrix oneLID(1,1,true);
