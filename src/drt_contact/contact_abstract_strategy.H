@@ -406,7 +406,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     configuration) before the first time step
 
     */
-    void EvaluateReferenceState(const RCP<Epetra_Vector> vec);
+    void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec);
 
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step

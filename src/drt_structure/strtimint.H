@@ -174,6 +174,9 @@ namespace STR
     //! beginning of each new time step
     void RedistributeContact();
 
+    //! Evaluate reference state for frictional contact in first time step
+    void EvaluateReferenceState();
+    
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix

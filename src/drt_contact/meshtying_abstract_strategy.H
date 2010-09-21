@@ -437,7 +437,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
-    void EvaluateReferenceState (const RCP<Epetra_Vector> vec){}
+    void EvaluateReferenceState (int step,const RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
     

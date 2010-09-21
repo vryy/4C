@@ -196,7 +196,7 @@ class StrategyBase
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    virtual void EvaluateReferenceState(const RCP<Epetra_Vector> vec) = 0;
+    virtual void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() = 0;

@@ -82,7 +82,7 @@ SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         2.0
 COUPLING_AUXPLANE    Yes
 LAGMULT_QUAD3D       pwlin_pwlin
-PARALLEL_REDIST      No
+PARALLEL_REDIST      Static
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

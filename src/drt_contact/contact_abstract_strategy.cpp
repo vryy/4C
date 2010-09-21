@@ -624,12 +624,15 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 /*----------------------------------------------------------------------*
  | evaluate reference state                                gitterle 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector> vec)
+void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec)
 {
 #ifndef CONTACTFORCEREFCONFIG 
   
 	// only do something for frictional case
   if (!friction_) return;
+  
+  // only before the first time step
+  if(step!=0) return;
   
   // set state and do mortar calculation
   SetState("displacement",vec);
@@ -653,6 +656,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   }  
 
   // evaluate relative movement
+  // needed because it is not called in the predictor of the  
+  // lagrange multiplier strategy 
   EvaluateRelMov();
 
   // reset unbalance factors for redistribution
@@ -660,6 +665,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   unbalance_.resize(0);
 
 #else  
+  
+  if(step!=0) return;
   
   // set state and do mortar calculation
   SetState("displacement",vec);
@@ -697,8 +704,13 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const RCP<Epetra_Vector
   StoreToOld(MORTAR::StrategyBase::dm);
 
   // evaluate relative movement
+  // needed because it is not called in the predictor of the  
+  // lagrange multiplier strategy 
   EvaluateRelMov();
   
+  // reset unbalance factors for redistribution
+  // (during EvalRefState the interface has been evaluated once)
+  unbalance_.resize(0);
 #endif
   
   return;
@@ -1311,7 +1323,12 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   	WasInContact()=true;
   	WasInContactLastTimeStep()=true;
   }
-
+  
+  // evaluate relative movement (jump)
+  // needed because it is not called in the predictor of the  
+  // lagrange multiplier strategy 
+  EvaluateRelMov();
+  
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)
   unbalance_.resize(0);
