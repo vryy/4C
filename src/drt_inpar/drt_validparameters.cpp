@@ -1209,6 +1209,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF_start",0.0,"crosslinker off-rate at the beginning",&statmech);
   //Reading double parameter for crosslinker off-rate at the end
   DoubleParameter("K_OFF_end",0.0,"crosslinker off-rate at the end",&statmech);
+  //Reading double parameter for crosslinker off-rate at the end
+  DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
   //upon reaching a number of N_crosslink crosslinkers the first time, statmechmanager switches from K_ON_start and K_OFF_start to K_ON_end and K_OFF_end
   DoubleParameter("N_crosslink",0.0,"number of crosslinkers for switching on- and off-rates",&statmech);
   //Maximal number of crosslinkers a node can establish to other nodes
@@ -1232,8 +1234,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //only angles in the range TAU0 +/- TAUODEV are admitted at all; the default value for this parameter is 2*pi so that by default any value is admitted
   DoubleParameter("TAU0DEV",6.28,"only angles in the range TAU0 +/- TAUODEV",&statmech);
   //Reading whether diffusion of crosslinkers is to simulated
-  setStringToIntegralParameter<int>("USEPHI","Yes","If yes also angle phi is used in orientation calculation",
-                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("USEPHI","Yes","If yes also angle phi is used in orientation calculation",yesnotuple,yesnovalue,&statmech);
   //Young's modulus of crosslinkers
   DoubleParameter("ELINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
   //Moment of inertia of area of crosslinkers
