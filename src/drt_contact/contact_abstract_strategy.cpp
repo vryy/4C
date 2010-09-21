@@ -575,8 +575,9 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   }
   
   // (re)setup global matrices containing fc derivatives
-  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  // must use FE_MATRIX type here, as we will do non-local assembly!
+  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)

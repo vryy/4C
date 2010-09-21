@@ -2559,28 +2559,12 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     return;
   
   /**********************************************************************/
-  // This is a quite complex task and we have to do a lot of parallel
-  // communication here!!! The reason for this is that the directional
-  // derivatives of D and M are stored slave-node-wise meaning that we
-  // can only address the derivatives of D and M via the slave node row
-  // map coorresponding to the Lagrange multiplier dofs! But now we have
-  // to assemble into matrices lind and linm which are based on the slave
-  // node row map corresponding to the slave displacements and to the
-  // master node row map respectively!!! This is not straight forward as
-  // we CANNOT do this without communication: when we have collected one
-  // LM slave node's contribution to lind and linm we have to assemble
-  // these portions to the respective DISP slave nodes and master nodes in
-  // parallel! Only the processor owning the DISP slave node or master node
-  // can do this! Therefore, we communicate the derivatives of D and M to
-  // all procs and then explicitly call the current DISP slave proc or
-  // master to do the assembly into lind or linm respectively.
+  // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
   /**********************************************************************/
   // we have: D_jk,c with j = Lagrange multiplier slave dof
   //                 with k = Displacement slave dof
   //                 with c = Displacement slave or master dof
   // we compute (LinD)_kc = D_jk,c * z_j
-  // (thus if D was always symmetric, we could do without communication
-  // as it would not matter if we assemble D_jk,c * z_k or D_jk,c * z_j)
   /**********************************************************************/
   // we have: M_jl,c with j = Lagrange multiplier slave dof
   //                 with l = Displacement master dof
@@ -2588,130 +2572,71 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   // we compute (LinM)_lc = M_jl,c * z_j
   /**********************************************************************/
 
-  // loop over all LM slave nodes (full map)
-  for (int j=0;j<snodefullmap_->NumMyElements();++j)
+  // loop over all LM slave nodes (row map)
+  for (int j=0;j<snoderowmap_->NumMyElements();++j)
   {
-    int gid = snodefullmap_->GID(j);
+    int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
     int dim = cnode->NumDof();
     
-    // Lagrange multipliers
-    double* lm = NULL;
-    
-    // create variables for computation of LinD
-    map<int,double>::iterator scolcurr;
-    map<int,map<int,double> >::iterator scurr;
-    int slavesize = 0;
-    map<int,map<int,double> > dtempmap;
-    map<int,map<int,double> >& dderiv = dtempmap;
-    
-    // create variables for computation of LinM
-    map<int,double>::iterator mcolcurr;
-    map<int,map<int,double> >::iterator mcurr;
-    int mastersize = 0;
-    map<int,map<int,double> > mtempmap;
-    map<int,map<int,double> >& mderiv = mtempmap;
-        
-    // inter-proc. communication
-    // (we want to keep all procs around, although at the moment only
-    // the cnode owning proc does relevant work!)
-    if (Comm().MyPID()==cnode->Owner())
-    {
-      // Mortar matrix D and M derivatives
-      dderiv = cnode->CoData().GetDerivD();
-      mderiv = cnode->CoData().GetDerivM();
+    // Mortar matrix D and M derivatives
+    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+    map<int,map<int,double> >& mderiv = cnode->CoData().GetDerivM();
 
-      // current Lagrange multipliers
-      lm = cnode->MoData().lm();
+    // current Lagrange multipliers
+    double* lm = cnode->MoData().lm();
 
-      // get sizes and iterator start
-      slavesize = (int)dderiv.size();
-      mastersize = (int)mderiv.size();
-      scurr = dderiv.begin();
-      mcurr = mderiv.begin();
-    }
-
-    //********************************************************************
-    // important notes:
-    // 1) we use lComm here, as we only communicate among participating
-    // procs of this interface (all others are already out of here)
-    // 2) the broadcasting proc has to be given in lComm numbering, not
-    // Comm numbering, which is achieved by calling the map procmap_
-    //********************************************************************
-    lComm()->Broadcast(&slavesize,1,procmap_[cnode->Owner()]);
-    lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
+    // get sizes and iterator start
+    int slavesize = (int)dderiv.size();
+    int mastersize = (int)mderiv.size();
+    map<int,map<int,double> >::iterator scurr = dderiv.begin();
+    map<int,map<int,double> >::iterator mcurr = mderiv.begin();
     
     /********************************************** LinDMatrix **********/
     // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
     for (int k=0;k<slavesize;++k)
     {
-      int sgid = 0;
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        sgid = scurr->first;
-        ++scurr;
-      }
-      lComm()->Broadcast(&sgid,1,procmap_[cnode->Owner()]);
+      int sgid = scurr->first;
+      ++scurr;
 
       DRT::Node* snode = idiscret_->gNode(sgid);
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
       CoNode* csnode = static_cast<CoNode*>(snode);
-      
-      // create variables
-      int mapsize = 0;
-      map<int,double> tempmap2;
-      map<int,double>& thisdderiv = tempmap2;
 
       // Mortar matrix D derivatives
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        thisdderiv = cnode->CoData().GetDerivD()[sgid];
-        mapsize = (int)(thisdderiv.size());
-      }
-      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+    	map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      int mapsize = (int)(thisdderiv.size());
  
       // inner product D_{jk,c} * z_j for index j
       for (int prodj=0;prodj<dim;++prodj)
       {
         int row = csnode->Dofs()[prodj];
-
-        if (Comm().MyPID()==cnode->Owner())
-          scolcurr = thisdderiv.begin();
+        map<int,double>::iterator scolcurr = thisdderiv.begin();
 
         // loop over all directional derivative entries
         for (int c=0;c<mapsize;++c)
         {
-          int col = 0;
-          double val = 0.0;
-          if (Comm().MyPID()==cnode->Owner())
-          {
-            col = scolcurr->first;
-            val = lm[prodj] * (scolcurr->second);
-            ++scolcurr;
-          }
-          // barrier here!
-          lComm()->Barrier();
-          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
-          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
+          int col = scolcurr->first;
+          double val = lm[prodj] * (scolcurr->second);
+          ++scolcurr;
 
-          // owner of DISP slave node has to do the assembly!!!
-          if (Comm().MyPID()==csnode->Owner())
-          {
-            //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
-            if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
-          }
+          // owner of LM slave node can do the assembly, although it actually
+          // might not own the corresponding rows in lindglobal (DISP slave node)
+          // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
+          //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+          if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
         }
 
         // check for completeness of DerivD-Derivatives-iteration
-        if (Comm().MyPID()==cnode->Owner() && scolcurr!=thisdderiv.end())
+        if (scolcurr!=thisdderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
       }
     }
 
     // check for completeness of DerivD-Slave-iteration
-    if (Comm().MyPID()==cnode->Owner() && scurr!=dderiv.end())
+    if (scurr!=dderiv.end())
       dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
     
@@ -2720,76 +2645,284 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
     // loop over all master nodes in the DerivM-map of the current LM slave node
     for (int l=0;l<mastersize;++l)
     {
-      int mgid = 0;
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        mgid = mcurr->first;
-        ++mcurr;
-      }
-      lComm()->Broadcast(&mgid,1,procmap_[cnode->Owner()]);
+      int mgid = mcurr->first;
+      ++mcurr;
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
       CoNode* cmnode = static_cast<CoNode*>(mnode);
       
-      // create variables
-      int mapsize = 0;
-      map<int,double> tempmap2;
-      map<int,double>& thismderiv = tempmap2;
-
       // Mortar matrix M derivatives
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        thismderiv = cnode->CoData().GetDerivM()[mgid];
-        mapsize = (int)(thismderiv.size());
-      }
-      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+    	map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      int mapsize = (int)(thismderiv.size());
  
       // inner product M_{jl,c} * z_j for index j
       for (int prodj=0;prodj<dim;++prodj)
       {
         int row = cmnode->Dofs()[prodj];
-
-        if (Comm().MyPID()==cnode->Owner())
-          mcolcurr = thismderiv.begin();
+        map<int,double>::iterator mcolcurr = thismderiv.begin();
 
         // loop over all directional derivative entries
         for (int c=0;c<mapsize;++c)
         {
-          int col = 0;
-          double val = 0.0;
-          if (Comm().MyPID()==cnode->Owner())
-          {
-            col = mcolcurr->first;
-            val = lm[prodj] * (mcolcurr->second);
-            ++mcolcurr;
-          }
-          // barrier here!
-          lComm()->Barrier();
-          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
-          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
+          int col = mcolcurr->first;
+          double val = lm[prodj] * (mcolcurr->second);
+          ++mcolcurr;
 
-          // owner of master node has to do the assembly!!!
-          if (Comm().MyPID()==cmnode->Owner())
-          {
-            //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
-            if (abs(val)>1.0e-12) linmglobal.Assemble(-val,row,col);
-          }
+          // owner of LM slave node can do the assembly, although it actually
+          // might not own the corresponding rows in lindglobal (DISP slave node)
+          // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
+          //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+          if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
         }
 
         // check for completeness of DerivM-Derivatives-iteration
-        if (Comm().MyPID()==cnode->Owner() && mcolcurr!=thismderiv.end())
+        if (mcolcurr!=thismderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
       }
     }
 
     // check for completeness of DerivM-Master-iteration
-    if (Comm().MyPID()==cnode->Owner() && mcurr!=mderiv.end())
+    if (mcurr!=mderiv.end())
       dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
   
   return;
+  
+//  /**********************************************************************/
+//  // OLD VERSION
+//  // This is a quite complex task and we have to do a lot of parallel
+//  // communication here!!! The reason for this is that the directional
+//  // derivatives of D and M are stored slave-node-wise meaning that we
+//  // can only address the derivatives of D and M via the slave node row
+//  // map coorresponding to the Lagrange multiplier dofs! But now we have
+//  // to assemble into matrices lind and linm which are based on the slave
+//  // node row map corresponding to the slave displacements and to the
+//  // master node row map respectively!!! This is not straight forward as
+//  // we CANNOT do this without communication: when we have collected one
+//  // LM slave node's contribution to lind and linm we have to assemble
+//  // these portions to the respective DISP slave nodes and master nodes in
+//  // parallel! Only the processor owning the DISP slave node or master node
+//  // can do this! Therefore, we communicate the derivatives of D and M to
+//  // all procs and then explicitly call the current DISP slave proc or
+//  // master to do the assembly into lind or linm respectively.
+//  /**********************************************************************/
+//  // we have: D_jk,c with j = Lagrange multiplier slave dof
+//  //                 with k = Displacement slave dof
+//  //                 with c = Displacement slave or master dof
+//  // we compute (LinD)_kc = D_jk,c * z_j
+//  // (thus if D was always symmetric, we could do without communication
+//  // as it would not matter if we assemble D_jk,c * z_k or D_jk,c * z_j)
+//  /**********************************************************************/
+//  // we have: M_jl,c with j = Lagrange multiplier slave dof
+//  //                 with l = Displacement master dof
+//  //                 with c = Displacement slave or master dof
+//  // we compute (LinM)_lc = M_jl,c * z_j
+//  /**********************************************************************/
+//
+//  // loop over all LM slave nodes (full map)
+//  for (int j=0;j<snodefullmap_->NumMyElements();++j)
+//  {
+//    int gid = snodefullmap_->GID(j);
+//    DRT::Node* node = idiscret_->gNode(gid);
+//    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//    CoNode* cnode = static_cast<CoNode*>(node);
+//    int dim = cnode->NumDof();
+//    
+//    // Lagrange multipliers
+//    double* lm = NULL;
+//    
+//    // create variables for computation of LinD
+//    map<int,double>::iterator scolcurr;
+//    map<int,map<int,double> >::iterator scurr;
+//    int slavesize = 0;
+//    map<int,map<int,double> > dtempmap;
+//    map<int,map<int,double> >& dderiv = dtempmap;
+//    
+//    // create variables for computation of LinM
+//    map<int,double>::iterator mcolcurr;
+//    map<int,map<int,double> >::iterator mcurr;
+//    int mastersize = 0;
+//    map<int,map<int,double> > mtempmap;
+//    map<int,map<int,double> >& mderiv = mtempmap;
+//        
+//    // inter-proc. communication
+//    // (we want to keep all procs around, although at the moment only
+//    // the cnode owning proc does relevant work!)
+//    if (Comm().MyPID()==cnode->Owner())
+//    {
+//      // Mortar matrix D and M derivatives
+//      dderiv = cnode->CoData().GetDerivD();
+//      mderiv = cnode->CoData().GetDerivM();
+//
+//      // current Lagrange multipliers
+//      lm = cnode->MoData().lm();
+//
+//      // get sizes and iterator start
+//      slavesize = (int)dderiv.size();
+//      mastersize = (int)mderiv.size();
+//      scurr = dderiv.begin();
+//      mcurr = mderiv.begin();
+//    }
+//
+//    //********************************************************************
+//    // important notes:
+//    // 1) we use lComm here, as we only communicate among participating
+//    // procs of this interface (all others are already out of here)
+//    // 2) the broadcasting proc has to be given in lComm numbering, not
+//    // Comm numbering, which is achieved by calling the map procmap_
+//    //********************************************************************
+//    lComm()->Broadcast(&slavesize,1,procmap_[cnode->Owner()]);
+//    lComm()->Broadcast(&mastersize,1,procmap_[cnode->Owner()]);
+//    
+//    /********************************************** LinDMatrix **********/
+//    // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
+//    for (int k=0;k<slavesize;++k)
+//    {
+//      int sgid = 0;
+//      if (Comm().MyPID()==cnode->Owner())
+//      {
+//        sgid = scurr->first;
+//        ++scurr;
+//      }
+//      lComm()->Broadcast(&sgid,1,procmap_[cnode->Owner()]);
+//
+//      DRT::Node* snode = idiscret_->gNode(sgid);
+//      if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+//      CoNode* csnode = static_cast<CoNode*>(snode);
+//      
+//      // create variables
+//      int mapsize = 0;
+//      map<int,double> tempmap2;
+//      map<int,double>& thisdderiv = tempmap2;
+//
+//      // Mortar matrix D derivatives
+//      if (Comm().MyPID()==cnode->Owner())
+//      {
+//        thisdderiv = cnode->CoData().GetDerivD()[sgid];
+//        mapsize = (int)(thisdderiv.size());
+//      }
+//      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+// 
+//      // inner product D_{jk,c} * z_j for index j
+//      for (int prodj=0;prodj<dim;++prodj)
+//      {
+//        int row = csnode->Dofs()[prodj];
+//
+//        if (Comm().MyPID()==cnode->Owner())
+//          scolcurr = thisdderiv.begin();
+//
+//        // loop over all directional derivative entries
+//        for (int c=0;c<mapsize;++c)
+//        {
+//          int col = 0;
+//          double val = 0.0;
+//          if (Comm().MyPID()==cnode->Owner())
+//          {
+//            col = scolcurr->first;
+//            val = lm[prodj] * (scolcurr->second);
+//            ++scolcurr;
+//          }
+//          // barrier here!
+//          lComm()->Barrier();
+//          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
+//          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
+//
+//          // owner of DISP slave node has to do the assembly!!!
+//          if (Comm().MyPID()==csnode->Owner())
+//          {
+//            //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+//            if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+//          }
+//        }
+//
+//        // check for completeness of DerivD-Derivatives-iteration
+//        if (Comm().MyPID()==cnode->Owner() && scolcurr!=thisdderiv.end())
+//          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+//      }
+//    }
+//
+//    // check for completeness of DerivD-Slave-iteration
+//    if (Comm().MyPID()==cnode->Owner() && scurr!=dderiv.end())
+//      dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
+//    /******************************** Finished with LinDMatrix **********/
+//    
+//        
+//    /********************************************** LinMMatrix **********/
+//    // loop over all master nodes in the DerivM-map of the current LM slave node
+//    for (int l=0;l<mastersize;++l)
+//    {
+//      int mgid = 0;
+//      if (Comm().MyPID()==cnode->Owner())
+//      {
+//        mgid = mcurr->first;
+//        ++mcurr;
+//      }
+//      lComm()->Broadcast(&mgid,1,procmap_[cnode->Owner()]);
+//
+//      DRT::Node* mnode = idiscret_->gNode(mgid);
+//      if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
+//      CoNode* cmnode = static_cast<CoNode*>(mnode);
+//      
+//      // create variables
+//      int mapsize = 0;
+//      map<int,double> tempmap2;
+//      map<int,double>& thismderiv = tempmap2;
+//
+//      // Mortar matrix M derivatives
+//      if (Comm().MyPID()==cnode->Owner())
+//      {
+//        thismderiv = cnode->CoData().GetDerivM()[mgid];
+//        mapsize = (int)(thismderiv.size());
+//      }
+//      lComm()->Broadcast(&mapsize,1,procmap_[cnode->Owner()]);
+// 
+//      // inner product M_{jl,c} * z_j for index j
+//      for (int prodj=0;prodj<dim;++prodj)
+//      {
+//        int row = cmnode->Dofs()[prodj];
+//
+//        if (Comm().MyPID()==cnode->Owner())
+//          mcolcurr = thismderiv.begin();
+//
+//        // loop over all directional derivative entries
+//        for (int c=0;c<mapsize;++c)
+//        {
+//          int col = 0;
+//          double val = 0.0;
+//          if (Comm().MyPID()==cnode->Owner())
+//          {
+//            col = mcolcurr->first;
+//            val = lm[prodj] * (mcolcurr->second);
+//            ++mcolcurr;
+//          }
+//          // barrier here!
+//          lComm()->Barrier();
+//          lComm()->Broadcast(&col,1,procmap_[cnode->Owner()]);
+//          lComm()->Broadcast(&val,1,procmap_[cnode->Owner()]);
+//
+//          // owner of master node has to do the assembly!!!
+//          if (Comm().MyPID()==cmnode->Owner())
+//          {
+//            //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+//            if (abs(val)>1.0e-12) linmglobal.Assemble(-val,row,col);
+//          }
+//        }
+//
+//        // check for completeness of DerivM-Derivatives-iteration
+//        if (Comm().MyPID()==cnode->Owner() && mcolcurr!=thismderiv.end())
+//          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+//      }
+//    }
+//
+//    // check for completeness of DerivM-Master-iteration
+//    if (Comm().MyPID()==cnode->Owner() && mcurr!=mderiv.end())
+//      dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
+//    /******************************** Finished with LinMMatrix **********/
+//  }
+//  
+//  return;
 }
 
 /*----------------------------------------------------------------------*
