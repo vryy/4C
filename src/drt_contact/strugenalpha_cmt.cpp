@@ -143,14 +143,6 @@ StruGenAlpha(params,dis,solver,output)
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
     cmtmanager_->GetStrategy().MeshInitialization();
     
-    // FOR FRICTIONAL CONTACT (ONLY ONCE) AND STORAGE OF MORTAR MATRICES
-    // IN REFERENCE CONFIGURATION (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
-    // (1) Mortar coupling in reference configuration 
-    // for frictional contact we need history values (relative velocity) and
-    // therefore we store the nodal entries of mortar matrices (reference
-    // configuration) before the first time step
-    cmtmanager_->GetStrategy().EvaluateReferenceState(disn_);
-    
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
     cmtmanager_->GetStrategy().SaveReferenceState(zeros_);
@@ -3278,6 +3270,9 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   {
   	// dynamic parallel redistribution (contact only)
   	cmtmanager_->GetStrategy().RedistributeContact(dis_);
+
+   	// evaluate reference state for first step and frictional contact
+    cmtmanager_->GetStrategy().EvaluateReferenceState(i,disn_);
 
     // predictor step
     if (pred=="constant")        ConstantPredictor();

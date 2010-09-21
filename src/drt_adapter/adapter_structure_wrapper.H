@@ -78,7 +78,8 @@ namespace ADAPTER
     { return structure_->Output(); }
     virtual void ReadRestart(int step)
     { return structure_->ReadRestart(step); }
-
+    virtual void EvaluateReferenceState()
+    { structure_->EvaluateReferenceState(); }
     virtual void Solve()
     { return structure_->Solve(); }
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)

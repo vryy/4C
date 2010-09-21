@@ -208,6 +208,9 @@ namespace ADAPTER {
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
+    
+    /// evaluate reference state (for frictional contact)
+    virtual void EvaluateReferenceState() = 0;
 
     //@}
 

@@ -272,6 +272,12 @@ void ADAPTER::StructureTimIntImpl::ReadRestart(int step)
   structure_->ReadRestart(step);
 }
 
+/*----------------------------------------------------------------------*/
+/* evaluate reference state */
+void ADAPTER::StructureTimIntImpl::EvaluateReferenceState()
+{
+  structure_->EvaluateReferenceState();
+}
 
 /*----------------------------------------------------------------------*/
 /* find iteratively solution */

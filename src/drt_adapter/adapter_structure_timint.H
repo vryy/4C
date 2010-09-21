@@ -175,6 +175,9 @@ namespace ADAPTER {
       int step  ///< given time step
     );
 
+    /// read restart information for given time step
+    virtual void EvaluateReferenceState();
+    
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {

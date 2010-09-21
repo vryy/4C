@@ -115,6 +115,12 @@ namespace ADAPTER {
     virtual const Epetra_Map& DomainMap();
 
     virtual void ReadRestart(int step);
+    
+    /// evaluate reference state (for frictional contact)
+    virtual void EvaluateReferenceState()
+    {
+      dserror("not implemented");
+    }
 
     virtual void Solve();
 

@@ -176,6 +176,12 @@ namespace ADAPTER {
     (
       int step  ///< given time step
     );
+    
+    /// evaluate reference state (for frictional contact)
+    virtual void EvaluateReferenceState()
+    {
+      dserror("not implemented"); 
+    }
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()

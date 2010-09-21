@@ -1442,7 +1442,7 @@ void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
 }
 
 /*----------------------------------------------------------------------*
- | assemble mechanical dissipation                             mgit 08/10|
+ | assemble mechanical dissipation for master nodes            mgit 08/10|
  *----------------------------------------------------------------------*/
 
 void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
@@ -1499,7 +1499,7 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
 }
 
 /*----------------------------------------------------------------------*
- | assemble the thermal contact conditions                    mgit 04/10 |
+ | assemble the thermal contact conditions for slave nodes    mgit 04/10 |
  *----------------------------------------------------------------------*/
 
 void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
@@ -1546,16 +1546,10 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
 
   RCP<Epetra_Vector> fa, fm, rest1, rest2;
 
-
-
   // row map of thermal problem
   RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
 
   LINALG::SplitVector(*problemrowmap,*tempn_,activedofs,fa,masterdofs,fm);
-
-
-  //cout << "FA" << *fa << endl;
-  //cout << "FM" << *fm << endl;
 
   RCP <Epetra_Vector> DdotTemp = rcp(new Epetra_Vector(*activedofs));
   dmatrix.Multiply(false,*fa,*DdotTemp);
