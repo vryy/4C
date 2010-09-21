@@ -706,7 +706,8 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   {
     isconverged_ = 0;
     unconvergedsteps_++;
-    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+    if(discret_.Comm().MyPID() == 0)
+      std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("PTC unconverged in %d iterations",numiter);
   }
   else if(!myrank_ and printscreen)
@@ -1004,7 +1005,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   {
     isconverged_ = 0;
     unconvergedsteps_++;
-    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+    if(discret_.Comm().MyPID()==0)
+      std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("FullNewton unconverged in %d iterations",numiter);
   }
   else
