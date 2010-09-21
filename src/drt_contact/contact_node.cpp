@@ -321,6 +321,18 @@ void CONTACT::CoNode::InitializeDataContainer()
 }
 
 /*----------------------------------------------------------------------*
+ |  Reset data container                                      popp 09/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::ResetDataContainer()
+{
+	// reset to null
+  codata_  = Teuchos::null;
+  modata_  = Teuchos::null;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Build averaged nodal normal + tangents                    popp 12/07|
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::BuildAveragedNormal()

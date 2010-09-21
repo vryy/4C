@@ -473,6 +473,15 @@ public:
   */
   virtual void InitializeDataContainer();
 
+  /*!
+  \brief Resets the data container of the node
+
+  With this function, the container with contact specific quantities/information
+  is deleted / reset to null pointer
+
+  */
+  virtual void ResetDataContainer();
+  
   //@}
 
 protected:

@@ -559,22 +559,29 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   // separately so we can easily adress them
   UpdateMasterSlaveSets();
 
-  // Initialize data container
-  // loop over all slave column nodes on the current interface
-  // (include slave side boundary nodes / crosspoints)
-  for (int i=0; i<SlaveColNodesBound()->NumMyElements(); ++i)
+  // initialize / reset data container
+  for (int i=0; i<SlaveFullNodes()->NumMyElements(); ++i)
   {
-    int gid = SlaveColNodesBound()->GID(i);
+    int gid = SlaveFullNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
     MortarNode* mnode = static_cast<MortarNode*>(node);
 
-    // initialize if not yet initialized before
-    // (NOTE: depending on which kind of node this really is,
+    //********************************************************************
+    // NOTE: depending on which kind of node this really is,
     // i.e. mortar, contact or friction node, several derived
-    // versions of the InitializeDataContainer() method will
-    // be called here, too, apart from the base class version)
-    mnode->InitializeDataContainer();
+    // versions of the Initialize/ResetDataContainer() methods
+    // will be called here, apart from the base class version.
+    //********************************************************************
+    
+    // initialize container if not yet initialized before
+    // loop over all slave column nodes on the current interface
+    // (include slave side boundary nodes / crosspoints)
+    if (SlaveColNodesBound()->MyGID(gid))
+      mnode->InitializeDataContainer();
+    // reset containter for all non-column slave nodes
+    else
+    	mnode->ResetDataContainer();
   }
 
   // communicate quadslave3d status among ALL processors

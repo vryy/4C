@@ -422,6 +422,17 @@ void MORTAR::MortarNode::InitializeDataContainer()
 }
 
 /*----------------------------------------------------------------------*
+ |  Reset data container                                      popp 09/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::ResetDataContainer()
+{
+	// reset to null
+  modata_  = Teuchos::null;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Build averaged nodal normal                               popp 12/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::BuildAveragedNormal()

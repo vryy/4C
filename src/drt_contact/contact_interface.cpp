@@ -596,18 +596,22 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // update master/slave sets of interface
     UpdateMasterSlaveSets();
     
-    // Initialize data container for "new" slave nodes
-    // loop over all slave column nodes on the current interface
-    // (include slave side boundary nodes / crosspoints)
-    for (int i=0; i<SlaveColNodesBound()->NumMyElements(); ++i)
+    // initialize / reset data container
+    for (int i=0; i<SlaveFullNodes()->NumMyElements(); ++i)
     {
-      int gid = SlaveColNodesBound()->GID(i);
+      int gid = SlaveFullNodes()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
       MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(node);
 
-      // initialize if not yet initialized before
-      mnode->InitializeDataContainer();
+      // initialize container if not yet initialized before
+      // loop over all slave column nodes on the current interface
+      // (include slave side boundary nodes / crosspoints)
+      if (SlaveColNodesBound()->MyGID(gid))
+        mnode->InitializeDataContainer();
+      // reset containter for all non-column slave nodes
+      else
+      	mnode->ResetDataContainer();
     }
   }
 

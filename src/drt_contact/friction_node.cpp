@@ -397,5 +397,17 @@ void CONTACT::FriNode::InitializeDataContainer()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Reset data container                                      popp 09/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::ResetDataContainer()
+{
+	// reset to null
+  fridata_ = Teuchos::null;
+  codata_  = Teuchos::null;
+  modata_  = Teuchos::null;
+
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
