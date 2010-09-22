@@ -560,9 +560,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   UpdateMasterSlaveSets();
 
   // initialize / reset data container
-  for (int i=0; i<SlaveFullNodes()->NumMyElements(); ++i)
+  for (int i=0; i<SlaveFullNodesBound()->NumMyElements(); ++i)
   {
-    int gid = SlaveFullNodes()->GID(i);
+    int gid = SlaveFullNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
     MortarNode* mnode = static_cast<MortarNode*>(node);

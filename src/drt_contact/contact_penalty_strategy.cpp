@@ -491,8 +491,9 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   feff->Update(-(1-alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
-  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  // must use FE_MATRIX type here, as we will do non-local assembly!
+  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // reset nodal derivZ values
   for (int i=0; i<(int)interface_.size(); ++i)

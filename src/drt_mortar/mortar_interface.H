@@ -288,6 +288,17 @@ public:
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+  
+  /*!
+  \brief Get fully overlapping column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveFullNodesBound() const
+  {
+    if (Filled()) return snodefullmapbound_;
+    else dserror("MORTAR::MortarInterface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
 
   /*!
   \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
