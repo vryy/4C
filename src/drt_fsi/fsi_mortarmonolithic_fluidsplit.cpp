@@ -92,7 +92,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
   if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No inner fluid equations. Splitting not possible. Panic.");
+    dserror("No inner fluid equations. Splitting not possible.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -347,7 +347,6 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
   s->UnComplete();
-
   RCP<LINALG::SparseMatrix> fgg = MLMultiply(f->Matrix(1,1),false,*mortar,false,false,false,true);
   fgg = MLMultiply(*mortar,true,*fgg,false,false,false,true);
   
@@ -355,7 +354,6 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   
   s->Add(*fgg,false,scale*timescale,1.0);
   mat.Assign(0,0,View,*s);
-  
   RCP<LINALG::SparseMatrix> fgi = MLMultiply(*mortar,true,f->Matrix(1,0),false,false,false,true);
   RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
@@ -364,8 +362,11 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   
   lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
   
+#ifdef FLUIDSPLITAMG
+  mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
+#else
   mat.Assign(0,1,View,*lfgi);
-  
+#endif
   RCP<LINALG::SparseMatrix> fig = MLMultiply(f->Matrix(0,1),false,*mortar,false,false,false,true);
   RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig->RowMap(),81,false));
 
@@ -374,7 +375,11 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   
   lfig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
   
+#ifdef FLUIDSPLITAMG
+  mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
+#else
   mat.Assign(1,0,View,*lfig);
+#endif
   
   LINALG::SparseMatrix& fii = f->Matrix(0,0);
 
