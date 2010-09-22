@@ -3570,17 +3570,6 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			discret_.DeleteElement( (int)delcrosslinkers[i]);
 		}
 
-	// couts
-	for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
-	{
-		if(proc==discret_.Comm().MyPID())
-		{
-			cout << "Proc " << discret_.Comm().MyPID() << ": " << delelement<< " crosslinker elements deleted";
-			//for(int i=0; i<(int)delelement.size(); i++)
-				//cout<<delelement.at(i)<<" ";
-			cout<<endl;
-		}
-	}
 } //StatMechManager::SearchAndDeleteCrosslinkers()
 
 /*----------------------------------------------------------------------*
