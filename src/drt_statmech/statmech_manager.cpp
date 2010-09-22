@@ -3062,16 +3062,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		}
 	} // ADDING ELEMENTS
 	// couts
-	for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
-	{
-		if(proc==discret_.Comm().MyPID())
-		{
-		cout<<"Proc "<<discret_.Comm().MyPID()<<": "<<crosslinkerids.size()<<" crosslinker elements added";
-		//for(int i=0; i<(int)crosslinkerids.size(); i++)
-			//cout<<crosslinkerids.at(i)<<" ";
-		cout<<endl;
-		}
-	}
 #endif //#ifdef D_TRUSS3
 #endif //#ifdef D_BEAM3
 #endif //#ifdef D_BEAM3II
