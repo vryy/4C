@@ -981,6 +981,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
       if(mmapold.size()< 1)
         dserror("Error in Interface::EvaluateRelMov(): No old M-Map!");
 
+      if(mnodesold.size() <1)
+        dserror ("Error in Interface::EvaluateRelMov(): No old M-Set!"); 
+      
       set <int> mnodes;
       set<int>::iterator mcurr;
 
@@ -3105,6 +3108,9 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     // get linearization of jump vector
     vector<map<int,double> > derivjump = cnode->Data().GetDerivJump();
     
+    if (derivjump.size()<1)
+      dserror ("AssembleLinStick: Derivative of jump is not exiting!");
+
     // loop over dimensions
     for (int dim=0;dim<cnode->NumDof();++dim)
     {

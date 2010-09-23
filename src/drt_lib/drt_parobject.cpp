@@ -102,6 +102,60 @@ void DRT::ParObject::AddtoPack(vector<char>& data, const vector<char>& stuff)
   AddtoPack(data,&stuff[0],numele*sizeof(char));
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |        a map <int,double> specialization                    (public) |
+ |                                                           mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::AddtoPack(vector<char>& data, const map<int,double> & stuff)
+{
+  
+  int numentries = (int) stuff.size();
+  AddtoPack(data,numentries);
+  
+  // iterator
+  map<int,double>::const_iterator colcurr;
+  
+  int i=0;
+  for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
+  {
+    AddtoPack(data,colcurr->first);
+    AddtoPack(data,colcurr->second);
+    ++i;
+  }
+  
+  if(i!=numentries)
+    dserror("Something wrong with number of elements");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |        a set<int> specialization                            (public) |
+ |                                                           mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::AddtoPack(vector<char>& data, const set<int> & stuff)
+{
+  
+  int numentries = (int) stuff.size();
+  AddtoPack(data,numentries);
+  
+  // iterator
+  set<int>::const_iterator colcurr;
+  
+  int i=0;
+  for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
+  {
+    AddtoPack(data,*colcurr);
+    ++i;
+  }
+  
+  if(i!=numentries)
+    dserror("Something wrong with number of elements");
+
+   return;
+}
+
 /*----------------------------------------------------------------------*
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |
@@ -192,6 +246,58 @@ void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const ve
   ExtractfromPack(position,data,&stuff[0],size);
   return;
 }
+
+/*----------------------------------------------------------------------*
+ | a map specialization                                        (public) |
+ |                                                           mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, map<int,double>& stuff)
+{
+
+  int numentries = 0;
+  ExtractfromPack(position,data,numentries);
+
+  stuff.clear();
+  
+  for(int i=0;i<numentries;i++)
+  {
+    int dof;
+    double value;
+    ExtractfromPack(position,data,dof);
+    ExtractfromPack(position,data,value);
+
+    //add to map
+    stuff.insert (pair<int,double>(dof,value));
+    
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | a set specialization                                        (public) |
+ |                                                           mgit 09/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, set<int>& stuff)
+{
+
+  int numentries = 0;
+  ExtractfromPack(position,data,numentries);
+  
+  stuff.clear();
+
+  for(int i=0;i<numentries;i++)
+  {
+    int value;
+    ExtractfromPack(position,data,value);
+
+    //add to map
+    stuff.insert(value);    
+  }
+  
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |

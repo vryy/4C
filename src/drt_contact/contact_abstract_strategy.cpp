@@ -158,9 +158,6 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
   //**********************************************************************
   else if (WhichParRedist()==INPAR::MORTAR::parredist_dynamic)
   {
-  	// not yet fully implemented for friction
-  	if (friction_) dserror("ERROR: Dynamic rebalancing not yet impl. for friction");
-
   	// this is the first time step (t=0) or restart
   	if ((int)unbalance_.size()==0)
   	{

@@ -124,7 +124,24 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,traction_,3*sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data,tractionold_,3*sizeof(double));
-
+  // add drowsold_,mrowsold_,mnodesold_ and derivjump_
+  int hasdata = drowsold_.size()!=0; 
+  
+  // check if the sizes of all vectors/sets to pack are nonzero
+  if(hasdata && (mrowsold_.size()==0 or mnodesold_.size()==0 or derivjump_.size()==0))
+    dserror("The sizes of all vectors/sets have to be nonzero"); 
+  
+  DRT::ParObject::AddtoPack(data,hasdata);
+  if(hasdata)
+  {    
+    for (int i=0;i<3;i++)
+    {
+      DRT::ParObject::AddtoPack(data,(drowsold_[i]));
+      DRT::ParObject::AddtoPack(data,(mrowsold_[i]));
+      DRT::ParObject::AddtoPack(data,(derivjump_[i]));
+    }
+    DRT::ParObject::AddtoPack(data,mnodesold_);
+  }  
   return;
 }
 
@@ -144,6 +161,23 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   DRT::ParObject::ExtractfromPack(position,data,traction_,3*sizeof(double));
   // tractionold_
   DRT::ParObject::ExtractfromPack(position,data,tractionold_,3*sizeof(double));
+  //drowsold_,mrowsold_,mnodesold_ and derivjump_
+  int hasdata;
+  DRT::ParObject::ExtractfromPack(position,data,hasdata);
+  
+  if(hasdata)
+  {
+    drowsold_.resize(3);
+    mrowsold_.resize(3);
+    derivjump_.resize(3);
+    for (int i=0;i<3;i++)
+    {
+      DRT::ParObject::ExtractfromPack(position,data,drowsold_[i]);
+      DRT::ParObject::ExtractfromPack(position,data,mrowsold_[i]);
+      DRT::ParObject::ExtractfromPack(position,data,derivjump_[i]);
+    }
+    DRT::ParObject::ExtractfromPack(position,data,mnodesold_);
+  }
 
   return;
 }

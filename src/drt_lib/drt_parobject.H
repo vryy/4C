@@ -43,6 +43,8 @@ Maintainer: Michael Gee
 #define PAROBJECT_H
 
 #include <vector>
+#include <map>
+#include <set>
 #include <string>
 #include "../linalg/linalg_serialdensematrix.H"
 #include <Epetra_SerialDenseVector.h>
@@ -274,6 +276,26 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  This method is an overload of the above template for map<int,double>
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : map<int,double> that get's added to stuff
+
+  */
+  static void AddtoPack(vector<char>& data, const map<int,double> & stuff);
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
+  This method is an overload of the above template for set<int>
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : set<int> that get's added to stuff
+
+  */
+  static void AddtoPack(vector<char>& data, const set<int> & stuff);
+  
+  /*!
+  \brief Add stuff to the end of a char vector data
+
   This method is an overload of the above template for Epetra_SerialDenseMatrix
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : Epetra_SerialDenseMatrix that get's added to stuff
@@ -423,6 +445,30 @@ public:
   */
   static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, vector<char>& stuff);
 
+  /*!
+  \brief Extract stuff from a map 
+  
+  This method is an overload of the above template for stuff of type map<int,double>
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : map<int,double> to extract from data
+
+  */
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, map<int,double>& stuff);
+
+  /*!
+  \brief Extract stuff from a set
+
+  This method is an overload of the above template for stuff of type set<int>
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : set<int> to extract from data
+
+  */
+  static void ExtractfromPack(vector<char>::size_type& position, const vector<char>& data, set<int>& stuff);
+  
   /*!
   \brief Extract stuff from a char vector data and increment position
 
