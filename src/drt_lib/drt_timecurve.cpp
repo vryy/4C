@@ -1218,9 +1218,18 @@ std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t,
       dserror("a gap between time slices occured");
   }
 
-  // if we exceed our slices use the last available time
+  // if we exceed our slices we use the last available time slice
+  // for evaluation of f(t). This way the curve becomes a constant function
+  // after the last slice. Consequently, first and second derivatives
+  // have to be zero in that case to be consistent with f(t) evaluation!
   slice = slices_.back();
-  return slice->FctDer(slice->end(), deg);
+  vector<double> res = slice->FctDer(slice->end(), deg);
+  // set derivatives to zero while f(t) stored in res[0] is kept
+  for (size_t i=1; i < res.size();i++)
+  {
+    res[i] = 0.0;
+  }
+  return res;
 }
 
 
