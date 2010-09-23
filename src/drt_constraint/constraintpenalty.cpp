@@ -269,18 +269,16 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         if (curvenum>=0 && usetime)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
         
-        double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
+        double diff = -(curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
         
         // assembly
         int eid = curr->second->Id();        
         
         // scale with time integrator dependent value
-        Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
         elematrix1.Scale(diff);
         for(int i=0; i<eledim; i++)
           for(int j=0; j<eledim; j++)
-            tmpmat(i,j) = elevector1(i)*elevector1(j);
-        elematrix1 = tmpmat;
+            elematrix1(i,j) += elevector1(i)*elevector1(j);
         elematrix1.Scale(2.*scStiff*penalties_[condID]);
           
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
