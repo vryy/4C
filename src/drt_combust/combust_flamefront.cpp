@@ -30,6 +30,7 @@ Maintainer: Florian Henke
 #include "../linalg/linalg_utils.H" // LINALG::Export
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_geometry/position_array.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
