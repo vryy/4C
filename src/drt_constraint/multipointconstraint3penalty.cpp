@@ -444,13 +444,10 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         
         
         double diff = (curvefac*(*initerror_)[eid]-(*acterror_)[eid]);
-//        cout<<"diff "<<eid<<": "<<diff<<endl;
-        Epetra_SerialDenseMatrix tmpmat(eledim,eledim);
         elematrix1.Scale(diff);
         for(int i=0; i<eledim; i++)
           for(int j=0; j<eledim; j++)
-            tmpmat(i,j) = elevector1(i)*elevector1(j);
-        elematrix1 += tmpmat;
+            elematrix1(i,j) += elevector1(i)*elevector1(j);
         elematrix1.Scale(2*scStiff*penalties_[condID]);
 
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);

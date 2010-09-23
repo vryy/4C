@@ -269,7 +269,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         if (curvenum>=0 && usetime)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
         
-        double diff = -(curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
+        double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
         
         // assembly
         int eid = curr->second->Id();        
