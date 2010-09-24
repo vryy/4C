@@ -1489,9 +1489,9 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
   	// add DOF LID where a force sensor is to be set
   	statmechmanager_->UpdateForceSensors(oscillnodes, oscdir_);
-  cout<<"\n=========================================="<<endl;
-  cout<<"UpdateForceSensors: "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
-  cout<<"==========================================\n"<<endl;
+  //cout<<"\n=========================================="<<endl;
+  //cout<<"UpdateForceSensors: "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  //cout<<"==========================================\n"<<endl;
 
 //------------------------------------set Dirichlet values
 	// preliminary
