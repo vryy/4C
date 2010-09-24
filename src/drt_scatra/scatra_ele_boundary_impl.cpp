@@ -16,6 +16,13 @@ Maintainer: Georg Bauer
 #if defined(D_FLUID2) || defined(D_FLUID3)
 #ifdef CCADISCRET
 
+// general Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is off
+// the shifted version of Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is on
+// define-flag PERCENT: how much is the curve shifted
+
+//#define BUTLERVOLMER_SHIFTED
+//#define PERCENT 0.01
+
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
@@ -150,6 +157,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     Epetra_SerialDenseVector&  elevec3_epetra
 )
 {
+// Warning: If ButlerVolmer_Shifted defines-flag is on
+#ifdef BUTLERVOLMER_SHIFTED
+  if (ele->Id()== 0)
+    if (discretization.Comm().MyPID() == 0)
+      cout<<" Warning: ButlerVolmer is shifted to the right about " << PERCENT*100 <<"% !! " << endl;
+#endif
+
   // First, do the things that are needed for all actions:
 
   // get the material (of the parent element)
@@ -899,6 +913,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       {
         double pow_conint_gamma_k = 0.0;
 
+// standard Butler-Volmer
+#ifndef BUTLERVOLMER_SHIFTED
 #ifdef DEBUG
         // some safety checks/ user warnings
         if ((alphaa*frt*eta) > 100.0)
@@ -942,6 +958,52 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
         }
         } // if (kinetics=="Butler-Volmer")
+#else
+// Butler-Volmer Shifted (Ehrl)
+// c=0, gamma not 1 or 0: Butler-Volmer is not defined
+// Concentration dependency pre-factor of the Butler-Volmer law is adapted by a linear part (Taylor series) below a chosen limit
+// Therefore, the pre-factor curve is shifted to the right to ensure the functional value zero for c=0;
+// it is possible to compute limiting currents in the case of a galvanostatic boundary condition without neg. concentrations
+        double limit = refcon * PERCENT;
+        double TaylorAbleitung = gamma*pow(limit,gamma-1)/pow(refcon,gamma);
+        double Versatz = -pow(limit/refcon,gamma)/TaylorAbleitung+limit;
+
+        if (conint < (limit-Versatz))
+        {
+          pow_conint_gamma_k = TaylorAbleitung*conint;
+#ifdef DEBUG
+          cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint/refcon)<<endl;
+          cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+#endif
+        }
+        else
+          pow_conint_gamma_k = pow((conint+Versatz)/refcon,gamma);
+          //pow_conint_gamma_k = pow(conint/refcon,gamma);
+        if (kinetics=="Butler-Volmer")
+        {
+        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+        const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+
+        double concterm = 0.0;
+        if (conint > limit-Versatz)
+          concterm = gamma*pow(conint+Versatz,(gamma-1.0))/pow(refcon,gamma);
+        else
+          concterm = TaylorAbleitung;
+
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
+          // ---------------------matrix
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*expterm;
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*expterm;
+        }
+        } // if (kinetics=="Butler-Volmer")
+#endif
         if (kinetics=="Butler-Volmer-Yang1997")
         {
           // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
@@ -1179,8 +1241,25 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       {
         if (kinetics=="Butler-Volmer")
         {
+// general Butler-Volmer
+#ifndef BUTLERVOLMER_SHIFTED
           expterm = pow(conint/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
           linea = pow(conint/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
+#else
+// Butler-Volmer Shifted: details see in function EvaluateElectrodeKinetics()
+          double limit = refcon*PERCENT;
+          double TaylorAbleitung = gamma*pow(limit,gamma-1)/pow(refcon,gamma);
+          double Versatz = -pow(limit/refcon,gamma)/TaylorAbleitung+limit;
+
+          double concterm = 0.0;
+          if (conint > limit-Versatz)
+            concterm = pow((conint+Versatz)/refcon,gamma);
+          else
+            concterm = TaylorAbleitung*conint;
+
+          expterm = concterm * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
+          linea = concterm * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
+#endif
         }
         if (kinetics=="Butler-Volmer-Yang1997")
         {
