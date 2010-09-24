@@ -323,9 +323,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // split fluid matrix
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
-
-  /*----------------------------------------------------------------------*/
-
+  
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
 
   if (a==Teuchos::null)
@@ -333,8 +331,6 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
-
-  /*----------------------------------------------------------------------*/
 
   double scale     = FluidField().ResidualScaling();
   double timescale = FluidField().TimeScaling();
@@ -363,6 +359,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
   
 #ifdef FLUIDSPLITAMG
+  mat.Matrix(0,1).UnComplete();
   mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
 #else
   mat.Assign(0,1,View,*lfgi);
@@ -376,6 +373,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   lfig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
   
 #ifdef FLUIDSPLITAMG
+  mat.Matrix(1,0).UnComplete();
   mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
 #else
   mat.Assign(1,0,View,*lfig);
@@ -384,13 +382,13 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   LINALG::SparseMatrix& fii = f->Matrix(0,0);
 
 #ifdef FLUIDSPLITAMG
+  mat.Matrix(1,1).UnComplete();
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
   Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField().Interface().FSICondMap());
   mat.Matrix(1,1).Add(*eye,false,1.,1.0);
 #else
   mat.Assign(1,1,View,fii);
 #endif
-
   
   RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
   aigtransform_(a->FullRowMap(),
