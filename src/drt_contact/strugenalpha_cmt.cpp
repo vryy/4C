@@ -77,10 +77,10 @@ StruGenAlpha(params,dis,solver,output)
 
     // store integration parameter alphaf into cmanager as well
     double alphaf = params_.get<double>("alpha f",0.459);
-    
+
     // decide whether this is meshtying or contact
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-    INPAR::CONTACT::ApplicationType apptype = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION"); 
+    INPAR::CONTACT::ApplicationType apptype = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
     if (apptype==INPAR::CONTACT::app_mortarmeshtying)
       cmtmanager_ = rcp(new CONTACT::MtManager(discret_,alphaf));
     else if (apptype==INPAR::CONTACT::app_mortarcontact)
@@ -103,11 +103,11 @@ StruGenAlpha(params,dis,solver,output)
     zeros_->PutScalar(0.0); // just in case
     cmtmanager_->GetStrategy().StoreDirichletStatus(dbcmaps);
   }
-  
+
   //********************************************************************
   // print warning messages for multifield problems (e.g FSI)
   //********************************************************************
-  const string probtype = DRT::Problem::Instance()->ProblemType(); 
+  const string probtype = DRT::Problem::Instance()->ProblemType();
   if (probtype!="structure" && discret_.Comm().MyPID() == 0)
   {
 #ifdef CONTACTPSEUDO2D
@@ -120,19 +120,19 @@ StruGenAlpha(params,dis,solver,output)
     cout << RED << "WARNING: Contact and Meshtying are still experimental "
          << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
   }
-  
+
   //**********************************************************************
   // set zero displacement state
   //**********************************************************************
   cmtmanager_->GetStrategy().SetState("displacement",zeros_);
-      
+
   //**********************************************************************
   // visualization of initial configuration
   //**********************************************************************
 #ifdef MORTARGMSH3
   cmtmanager_->GetStrategy().VisualizeGmsh(0,0);
 #endif // #ifdef MORTARGMSH3
-  
+
   //**********************************************************************
   // initialization of contact or meshtying
   //**********************************************************************
@@ -142,7 +142,7 @@ StruGenAlpha(params,dis,solver,output)
     // perform mesh intialization for rotational invariance
     cmtmanager_->GetStrategy().MortarCoupling(zeros_);
     cmtmanager_->GetStrategy().MeshInitialization();
-    
+
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
     cmtmanager_->GetStrategy().SaveReferenceState(zeros_);
@@ -155,11 +155,11 @@ StruGenAlpha(params,dis,solver,output)
     // strategy type
     INPAR::CONTACT::SolvingStrategy soltype =
     Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-    
+
     // shape function type
     INPAR::MORTAR::ShapeFcn shapefcn =
     Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
-    
+
     // output
     if (discret_.Comm().MyPID() == 0)
     {
@@ -177,7 +177,7 @@ StruGenAlpha(params,dis,solver,output)
         cout << "===== Dual Augmented Lagrange strategy =========================\n" << endl;
     }
   }
-  
+
   return;
 } // CmtStruGenAlpha::CmtStruGenAlpha
 
@@ -212,7 +212,7 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
   {
     CalcRefNorms();
   }
-  
+
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
@@ -458,7 +458,7 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
 
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
-  
+
 #ifdef MORTARGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
@@ -467,7 +467,7 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
 
   //---------------------------------------- complete stiffness matrix
   stiff_->Complete();
-      
+
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -531,7 +531,7 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   {
     CalcRefNorms();
   }
-  
+
   // increment time and step
   double timen = time + dt;
   //int istep = step + 1;
@@ -701,7 +701,7 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
 
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
-  
+
 #ifdef MORTARGMSH2
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
@@ -710,7 +710,7 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
 
   //------------------------------------ ----complete stiffness matrix
   stiff_->Complete();
-    
+
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -942,7 +942,7 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
 
   //------------------------------------ evaluate contact or meshtying
   cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_,true);
-  
+
 #ifdef MORTARGMSH2
   int istep = step + 1;
   cmtmanager_->GetStrategy().VisualizeGmsh(istep,0);
@@ -950,7 +950,7 @@ void CONTACT::CmtStruGenAlpha::ApplyExternalForce(const STR::UTILS::MapExtractor
 
   //------------------------------------ ----complete stiffness matrix
   stiff_->Complete();
-  
+
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -1021,30 +1021,30 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-  
+
   // this is for monolithic FSI with meshtying or contact
   // (only works for penalty and dual Lagrange multiplier / semi-smooth Newton strategy)
-  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");  
+  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
   bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-  
+
   if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
     dserror("ERROR: Monolithic FSI with LM strategy for meshtying/contact only for dual+semismooth case!");
   if (soltype == INPAR::CONTACT::solution_auglag)
     dserror("ERROR: Monolithic FSI with AL strategy for meshtying/contact not yet implemented");
-  
+
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // that contains the element loop, so we can fast forward and finish
-  // up the linear system. 
+  // up the linear system.
   if (disp!=Teuchos::null)
-  {  
+  {
     // set the new solution we just got
     disi_->Update(1.0,*disp,0.0);
 
     //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1186,7 +1186,7 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
-    
+
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
@@ -1210,13 +1210,13 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   #endif
       }
     }
-        
+
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
-    
+
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
-    
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -1229,7 +1229,7 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //----------------------- apply dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
-      
+
   return;
 }
 
@@ -1324,7 +1324,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 
     //---------------------------------------------- solve linear system
     LinearSolve(numiter,tolres,fresmnorm);
-    
+
     //----------------------- transform back to global coordinate system
     if (locsysmanager_ != null) locsysmanager_->RotateLocalToGlobal(disi_);
 #ifdef CONTACTTIME
@@ -1532,7 +1532,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
-  
+
 #ifdef MORTARGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
@@ -1546,7 +1546,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 #endif // #ifdef CONTACTTIME
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
-        
+
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -1685,7 +1685,7 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 
     //---------------------------------------------- solve linear system
     LinearSolve(numiter,tolres,fresmnorm);
-    
+
     //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
 
@@ -1880,13 +1880,13 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 #endif
       }
     }
-    
+
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
-    
+
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
-        
+
 #ifdef MORTARGMSH2
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
@@ -2122,12 +2122,12 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 
       //------------------------------------ evaluate contact or meshtying
       cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
-      
+
       // actually, we want NO update of the active set here, as this
       // would change the system and thus the residual! During line
       // search the active set has to be kept constant!
       // (yet line search is disabled for semi-smooth case anyway)
-      
+
 #ifdef MORTARGMSH2
       int step  = params_.get<int>("step",0);
       int istep = step + 1;
@@ -2136,7 +2136,7 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
 
       //------------------------------------ ----complete stiffness matrix
       stiff_->Complete();
-          
+
       // blank residual DOFs that are on Dirichlet BC
       {
         Epetra_Vector fresmdbc(*fresm_);
@@ -2286,7 +2286,7 @@ void CONTACT::CmtStruGenAlpha::PTC()
 
     //---------------------------------------------- solve linear system
     LinearSolve(numiter,tolres,fresmnorm);
-    
+
     //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
 
@@ -2470,17 +2470,17 @@ void CONTACT::CmtStruGenAlpha::PTC()
 #endif
       }
     }
-    
+
     //------------------------------------ evaluate contact or meshtying
     cmtmanager_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fresm_);
-    
+
 #ifdef MORTARGMSH2
     dserror("Gmsh Output for every iteration only implemented for semi-smooth Newton");
 #endif // #ifdef MORTARGMSH2
 
     //------------------------------------ ----complete stiffness matrix
     stiff_->Complete();
-        
+
     // blank residual DOFs that are on Dirichlet BC
     // in the case of local systems we have to rotate forth and back
     {
@@ -2520,7 +2520,7 @@ void CONTACT::CmtStruGenAlpha::PTC()
     // -> Up to now everything works fine! (popp, 01/2010)
     // -> No need for this modification!
     // *******************************************************************
-    
+
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
@@ -2596,11 +2596,11 @@ bool CONTACT::CmtStruGenAlpha::Converged(const string type, const double disinor
 {
   // refer call back to base class
   bool converged = StruGenAlpha::Converged(type,disinorm,resnorm,toldisp,tolres);
-  
+
   // now also check convergence of active contact set
   // (only in the case of a semi-smooth Newton scheme)
   bool ccontact = cmtmanager_->GetStrategy().ActiveSetSemiSmoothConverged();
-  
+
   // return things
   return (converged && ccontact);
 }
@@ -2793,7 +2793,7 @@ void CONTACT::CmtStruGenAlpha::Output()
 
     // write restart information for contact
     cmtmanager_->WriteRestart(output_);
-    
+
     // evaluate interface tractions for postprocessing
     cmtmanager_->PostprocessTractions(output_);
 
@@ -2819,7 +2819,7 @@ void CONTACT::CmtStruGenAlpha::Output()
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
     isdatawritten = true;
-    
+
     // evaluate interface tractions for postprocessing
     cmtmanager_->PostprocessTractions(output_);
   }
@@ -2853,10 +2853,10 @@ void CONTACT::CmtStruGenAlpha::Output()
     switch (iostress)
     {
     case INPAR::STR::stress_cauchy:
-      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_2pk:
-      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_none:
       break;
@@ -2867,10 +2867,10 @@ void CONTACT::CmtStruGenAlpha::Output()
     switch (iostrain)
     {
     case INPAR::STR::strain_ea:
-      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;
@@ -2890,7 +2890,7 @@ void CONTACT::CmtStruGenAlpha::Output()
 
   // output of energy and momentum quantities
   OutputEnergyMomentum();
-   
+
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
@@ -2919,38 +2919,38 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
     Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(cmtmanager_->GetStrategy().Params(),"EMOUTPUT");
-  
+
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;
-  
+
   // get some parameters from parameter list
   double timen = params_.get<double>("total time",0.0);
   double dt    = params_.get<double>("delta time",0.01);
   int dim      = cmtmanager_->GetStrategy().Dim();
-  
+
   // global linear momentum (M*v)
   RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_.DofRowMap()), true);
   mass_->Multiply(false, *vel_, *mv);
-  
+
   // linear / angular momentum
   vector<double> sumlinmom(3);
   vector<double> sumangmom(3);
   vector<double> angmom(3);
   vector<double> linmom(3);
-  
+
   // vectors of nodal properties
   vector<double> nodelinmom(3);
   vector<double> nodeangmom(3);
   vector<double> position(3);
-  
-  // loop over all nodes belonging to the respective processor 
+
+  // loop over all nodes belonging to the respective processor
   for (int k=0; k<(discret_.NodeRowMap())->NumMyElements();++k)
   {
     // get current node
     int gid = (discret_.NodeRowMap())->GID(k);
     DRT::Node* mynode = discret_.gNode(gid);
     vector<int> globaldofs = discret_.Dof(mynode);
-  
+
     // loop over all DOFs comprised by this node
     for (int i=0;i<dim;i++)
     {
@@ -2963,23 +2963,23 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
     nodeangmom[0] = position[1]*nodelinmom[2] - position[2]*nodelinmom[1];
     nodeangmom[1] = position[2]*nodelinmom[0] - position[0]*nodelinmom[2];
     nodeangmom[2] = position[0]*nodelinmom[1] - position[1]*nodelinmom[0];
-    
+
     // loop over all DOFs comprised by this node
     for (int i=0; i<3; ++i) sumangmom[i] += nodeangmom[i];
   }
-  
+
   // global quantities (sum over all processors)
   for (int i=0;i<3;++i)
   {
     cmtmanager_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
     cmtmanager_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
   }
-  
+
   //--------------------------Calculation of total kinetic energy
   double kinen = 0.0;
   mv->Dot(*vel_,&kinen);
   kinen *= 0.5;
-  
+
   //-------------------------Calculation of total internal energy
   double inten = 0.0;
   ParameterList p;
@@ -2996,7 +2996,7 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
   double exten = 0.0;
   // WARNING: This will only work with dead loads!!!
   //fext_->Dot(*dis_, &exten);
-  
+
   //----------------------------------------Print results to file
   if (emtype == INPAR::CONTACT::output_file ||
       emtype == INPAR::CONTACT::output_both)
@@ -3007,22 +3007,22 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
       // path and filename
       std::ostringstream filename;
       filename << "o/scilab_output/OutputEnergyMomentum.txt";
-      
+
       // open file
       FILE* MyFile = NULL;
       if (timen < 2*dt)
       {
         MyFile = fopen(filename.str().c_str(),"wt");
-        
+
         // initialize file pointer for writing contact interface forces/moments
         FILE* MyConForce = NULL;
         MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
         if (MyConForce!=NULL) fclose(MyConForce);
         else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
       }
-      else  
+      else
         MyFile = fopen(filename.str().c_str(),"at+");
-      
+
       // add current values to file
       if (MyFile!=NULL)
       {
@@ -3030,14 +3030,14 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
        fprintf(MyFile, "%g\t", timen);
        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
        for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
-       fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten); 
+       fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten);
        fclose(MyFile);
-      }  
+      }
       else
         dserror("ERROR: File for writing momentum and energy data could not be opened.");
     }
   }
-  
+
   //-------------------------------Print energy results to screen
   if (emtype == INPAR::CONTACT::output_screen ||
       emtype == INPAR::CONTACT::output_both)
@@ -3053,7 +3053,7 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
       printf("\n------------------------------");
       printf("\nE_total \t %e",kinen+inten-exten);
       printf("\n******************************");
-      
+
       printf("\n\n********************************************");
       printf("\nLINEAR / ANGULAR MOMENTUM:");
       printf("\nL_x  % e \t H_x  % e",linmom[0],angmom[0]);
@@ -3063,10 +3063,10 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
       fflush(stdout);
     }
   }
-  
+
   //-------------------------- Compute and output interface forces
   cmtmanager_->GetStrategy().InterfaceForces(true);
-    
+
   return;
 } // CmtStruGenAlpha::OutputEnergyMomentum()
 
@@ -3081,14 +3081,14 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
   // application type
   INPAR::CONTACT::ApplicationType apptype =
     Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
-  
+
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
     Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-  
+
   // semi-smooth Newton type
   bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
-  
+
   // iteration type
   string equil = params_.get<string>("equilibrium iteration","full newton");
   if (equil != "full newton" && equil != "line search newton" && equil != "ptc")
@@ -3113,7 +3113,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
   // NOTE: The nonlinear solution method FullNewton() now contains both
   // approaches and automatically choses the correct scheme (popp 04/10)
   //********************************************************************
-  
+
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
   //********************************************************************
@@ -3132,19 +3132,19 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
     	discret_.Comm().Barrier();
       const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
-      
+
       // nonlinear iteration
       if (equil=="full newton")              FullNewton();
       else if (equil=="line search newton")  dserror("ERROR: No semi-smooth line search available!");
       else if (equil=="ptc")                 dserror("ERROR: No semi-smooth PTC available!");
-      
+
 #ifdef CONTACTTIME
       discret_.Comm().Barrier();
       const double t_end = Teuchos::Time::wallTime()-t_start;
       if (!myrank_) cout << "*** Time Step (overall): " << t_end << " seconds\n";
 #endif // #ifdef CONTACTTIME
     }
-    
+
     //********************************************************************
     // 2) FIXED-POINT APPROACH FOR CONTACT
     // The search for the correct active set (=contact nonlinearity) is
@@ -3156,18 +3156,18 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
     {
       // predictor type (needed here because of nested loops)
       string pred  = params_.get<string>("predictor","constant");
-      
+
       // active set strategy
       int activeiter = 0;
       while (cmtmanager_->GetStrategy().ActiveSetConverged()==false)
       {
         // increase active set iteration index
         ++activeiter;
-        
+
         // predictor step (except for first active set step)
         if (activeiter>1 && pred=="constant")        ConstantPredictor();
         else if (activeiter>1 && pred=="consistent") ConsistentPredictor();
-        
+
         // nonlinear iteration
         if (equil=="full newton")             FullNewton();
         else if (equil=="line search newton") FullNewtonLineSearch();
@@ -3177,7 +3177,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
         cmtmanager_->GetStrategy().UpdateActiveSet();
       }
     }
-    
+
     //********************************************************************
     // 3) STANDARD NEWTON APPROACH FOR MESHTYING
     // No search for the correct active set has to be resolved for mortar
@@ -3241,7 +3241,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
       cmtmanager_->GetStrategy().UpdateAugmentedLagrange();
 
     } while (cmtmanager_->GetStrategy().ConstraintNorm() >= eps);
-          
+
     // reset penalty parameter
     cmtmanager_->GetStrategy().ResetPenalty();
   }
@@ -3277,18 +3277,18 @@ void CONTACT::CmtStruGenAlpha::Integrate()
     // predictor step
     if (pred=="constant")        ConstantPredictor();
     else if (pred=="consistent") ConsistentPredictor();
-   
+
     // nonlinear solution routine
     CmtNonlinearSolve();
-    
+
     // update and output
     UpdateandOutput();
-    
+
     // check if maxtime reached
     double time = params_.get<double>("total time",0.0);
     if (time>=maxtime) break;
   }
-  
+
   return;
 } // void CmtStruGenAlpha::Integrate()
 
@@ -3302,11 +3302,11 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   if (isadapttol && numiter) solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-  
+
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
-  
+
   //**********************************************************************
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
@@ -3317,7 +3317,7 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
     // saddle point solver call
     cmtmanager_->GetStrategy().SaddlePointSolve(solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
   }
-  
+
   //**********************************************************************
   // Solving a purely displacement based system
   // (1) Dual (not Standard) Lagrange multipliers -> Condensed
@@ -3326,12 +3326,12 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   else
   {
     // standard solver call
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);  
+    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
   }
-  
+
   // reset solver tolerance
   solver_.ResetTolerance();
-  
+
   return;
 } // void CmtStruGeanAlpha::LinearSolve()
 

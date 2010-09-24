@@ -3277,10 +3277,10 @@ void StruGenAlpha::Output()
     switch (iostress)
     {
     case INPAR::STR::stress_cauchy:
-      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_2pk:
-      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_none:
       break;
@@ -3291,10 +3291,10 @@ void StruGenAlpha::Output()
     switch (iostrain)
     {
     case INPAR::STR::strain_ea:
-      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;

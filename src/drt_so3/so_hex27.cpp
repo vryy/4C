@@ -292,13 +292,14 @@ void DRT::ELEMENTS::So_hex27::soh27_expol
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<NUMNOD_SOH27;++i)
   {
+    int adjele = Nodes()[i]->NumElement();
     int gnid = NodeIds()[i];
-    (*(expolstresses(0)))[gnid] += nodalstresses(i,0);
-    (*(expolstresses(1)))[gnid] += nodalstresses(i,1);
-    (*(expolstresses(2)))[gnid] += nodalstresses(i,2);
-    (*(expolstresses(3)))[gnid] += nodalstresses(i,3);
-    (*(expolstresses(4)))[gnid] += nodalstresses(i,4);
-    (*(expolstresses(5)))[gnid] += nodalstresses(i,5);
+    (*(expolstresses(0)))[gnid] += nodalstresses(i,0)/adjele;
+    (*(expolstresses(1)))[gnid] += nodalstresses(i,1)/adjele;
+    (*(expolstresses(2)))[gnid] += nodalstresses(i,2)/adjele;
+    (*(expolstresses(3)))[gnid] += nodalstresses(i,3)/adjele;
+    (*(expolstresses(4)))[gnid] += nodalstresses(i,4)/adjele;
+    (*(expolstresses(5)))[gnid] += nodalstresses(i,5)/adjele;
   }
 }
 

@@ -298,9 +298,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_expol
   // "assembly" of extrapolated nodal stresses
   for (int i=0;i<NUMNOD_SOTET4;++i)
   {
+    int adjele = Nodes()[i]->NumElement();
     int gnid = NodeIds()[i];
     for (int j=0;j<6;j++)
-      (*(expolstresses(j)))[gnid] += nodalstresses(i,j);
+      (*(expolstresses(j)))[gnid] += nodalstresses(i,j)/adjele;
   }
   return;
 }

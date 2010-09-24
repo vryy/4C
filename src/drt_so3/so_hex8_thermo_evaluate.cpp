@@ -222,70 +222,74 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   // evaluate stresses and strains at gauss points
   case calc_struct_stress:
   {
-    // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-    Teuchos::RCP<const Epetra_Vector> disp
-      = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res
-      = discretization.GetState(0,"residual displacement");
-    Teuchos::RCP<vector<char> > stressdata
-      = params.get<Teuchos::RCP<vector<char> > >("stress", Teuchos::null);
-    Teuchos::RCP<vector<char> > straindata
-      = params.get<Teuchos::RCP<vector<char> > >("strain", Teuchos::null);
-    if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-    if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
-    if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
-    vector<double> mydisp((la[0].lm_).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    vector<double> myres((la[0].lm_).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
-    INPAR::STR::StressType iostress
-      = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-    INPAR::STR::StrainType iostrain
-      = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-    // call the well-known soh8_nlnstiffmass for the normal structure solution
-    soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
-      iostress,iostrain);
-
-    // need current temperature state,
-    // call the temperature discretization: thermo equates 2nd dofset
-    // disassemble temperature
-    if (discretization.HasState(1,"temperature"))
+    // nothing to do for ghost elements
+    if (discretization.Comm().MyPID()==Owner())
     {
-      // call the temperature discretization in the location array
-      std::vector<double> mytempnp((la[1].lm_).size());
-      // check if you can get the temperature state
-      Teuchos::RCP<const Epetra_Vector> tempnp
-        = discretization.GetState(1,"temperature");
-      if (tempnp==Teuchos::null)
-        dserror("Cannot get state vector 'tempnp'");
+      // build the location vector only for the structure field
+      vector<int> lm = la[0].lm_;
+      Teuchos::RCP<const Epetra_Vector> disp
+        = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> res
+        = discretization.GetState(0,"residual displacement");
+      Teuchos::RCP<vector<char> > stressdata
+        = params.get<Teuchos::RCP<vector<char> > >("stress", Teuchos::null);
+      Teuchos::RCP<vector<char> > straindata
+        = params.get<Teuchos::RCP<vector<char> > >("strain", Teuchos::null);
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+      vector<double> mydisp((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+      INPAR::STR::StressType iostress
+        = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain
+        = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+      // call the well-known soh8_nlnstiffmass for the normal structure solution
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+                        iostress,iostrain);
 
-      // the temperature field has only one dof per node, disregarded by the
-      // dimension of the problem
-      const int numdofpernode_ = 1;
-      // number of nodes per element
-      const int iel = 8;
+      // need current temperature state,
+      // call the temperature discretization: thermo equates 2nd dofset
+      // disassemble temperature
+      if (discretization.HasState(1,"temperature"))
+      {
+        // call the temperature discretization in the location array
+        std::vector<double> mytempnp((la[1].lm_).size());
+        // check if you can get the temperature state
+        Teuchos::RCP<const Epetra_Vector> tempnp
+          = discretization.GetState(1,"temperature");
+        if (tempnp==Teuchos::null)
+          dserror("Cannot get state vector 'tempnp'");
 
-      if (la[1].Size() != iel*numdofpernode_)
-        dserror("Location vector length for temperature does not match!");
-      // extract the current temperatures
-      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
-      // get the temperature dependent stress
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
-      // calculate the THERMOmechanical solution: temperature stresses
-      soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,NULL,NULL,NULL,
-        &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
+        // the temperature field has only one dof per node, disregarded by the
+        // dimension of the problem
+        const int numdofpernode_ = 1;
+        // number of nodes per element
+        const int iel = 8;
 
-      // total stress
-      // add stresstemp to the mechanical stress
-      stress.Update(1.0,stresstemp,1.0);
+        if (la[1].Size() != iel*numdofpernode_)
+          dserror("Location vector length for temperature does not match!");
+        // extract the current temperatures
+        DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+        // get the temperature dependent stress
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
+        // calculate the THERMOmechanical solution: temperature stresses
+        soh8_nlnstiffmasstemp(la,mydisp,myres,mytempnp,NULL,NULL,NULL,
+                              &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
 
+        // total stress
+        // add stresstemp to the mechanical stress
+        stress.Update(1.0,stresstemp,1.0);
+
+      }
+
+      AddtoPack(*stressdata, stress);
+      AddtoPack(*straindata, strain);
     }
-
-    AddtoPack(*stressdata, stress);
-    AddtoPack(*straindata, strain);
   }
   break;
 
@@ -304,20 +308,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   // (depending on what this routine is called for from the post filter)
   case postprocess_stress:
   {
-    const Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
-      = params.get<Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
-    if (gpstressmap==Teuchos::null)
-      dserror("no gp stress/strain map available for postprocessing");
-    string stresstype = params.get<string>("stresstype","ndxyz");
-    int gid = Id();
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
-    RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+    // nothing to do for ghost elements
+    if (discretization.Comm().MyPID()==Owner())
+    {
+      const Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
+        = params.get<Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      if (gpstressmap==Teuchos::null)
+        dserror("no gp stress/strain map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
       if (poststress==null)
         dserror("No element stress/strain vector available");
 
-    // nothing to do for ghost elements
-    if (poststress->Comm().MyPID()==Owner())
-    {
       if (stresstype=="ndxyz")
       {
         // extrapolate stresses/strains at Gauss points to nodes

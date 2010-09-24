@@ -264,44 +264,49 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     break;
 
     // evaluate stresses and strains at gauss points
-    case calc_struct_stress:{
-      // data
-      Teuchos::RCP<std::vector<char> > stressdata
-        = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
-      Teuchos::RCP<std::vector<char> > straindata
-        = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
-      if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
-      if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
-      // current displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==Teuchos::null)
-        dserror("Cannot get state vectors 'displacement'");
-      std::vector<double> mystat(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
-      LINALG::Matrix<NUMDISP_,1> mydisp;
-      LINALG::Matrix<NUMPRES_,1> mypres;
-      ExtractDispAndPres(mystat,mydisp,mypres);
-      // residual displacements
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null)
-        dserror("Didn't get \"residual displacement\"");
-      std::vector<double> mystati(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,mystati,lm);
-      LINALG::Matrix<NUMDISP_,1> mydispi;
-      LINALG::Matrix<NUMPRES_,1> mypresi;
-      ExtractDispAndPres(mystati,mydispi,mypresi);
-      // types
-      LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
-      LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
-      INPAR::STR::StressType iostress
-        = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain
-        = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-      ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
-                     NULL,NULL,NULL,NULL,NULL,NULL,NULL,
-                     &stress,&strain,NULL,params,iostress,iostrain);
-      AddtoPack(*stressdata, stress);
-      AddtoPack(*straindata, strain);
+    case calc_struct_stress:
+    {
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        // data
+        Teuchos::RCP<std::vector<char> > stressdata
+          = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
+        Teuchos::RCP<std::vector<char> > straindata
+          = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
+        if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
+        if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
+        // current displacements
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==Teuchos::null)
+          dserror("Cannot get state vectors 'displacement'");
+        std::vector<double> mystat(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mystat,lm);
+        LINALG::Matrix<NUMDISP_,1> mydisp;
+        LINALG::Matrix<NUMPRES_,1> mypres;
+        ExtractDispAndPres(mystat,mydisp,mypres);
+        // residual displacements
+        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+        if (res == Teuchos::null)
+          dserror("Didn't get \"residual displacement\"");
+        std::vector<double> mystati(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,mystati,lm);
+        LINALG::Matrix<NUMDISP_,1> mydispi;
+        LINALG::Matrix<NUMPRES_,1> mypresi;
+        ExtractDispAndPres(mystati,mydispi,mypresi);
+        // types
+        LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
+        LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
+        INPAR::STR::StressType iostress
+          = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain
+          = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
+                       NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+                       &stress,&strain,NULL,params,iostress,iostrain);
+        AddtoPack(*stressdata, stress);
+        AddtoPack(*straindata, strain);
+      }
     }
     break;
 
@@ -310,23 +315,23 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:{
-
-      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
-        = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
-      if (gpstressmap==Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
-      int gid = Id();
-      LINALG::Matrix<NUMGPT_,NUMSTR_> gpstress(((*gpstressmap)[gid])->A(),true);
-
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null)
-        dserror("No element stress/strain vector available");
-
+    case postprocess_stress:
+    {
       // nothing to do for ghost elements
-      if (poststress->Comm().MyPID()==Owner())
+      if (discretization.Comm().MyPID()==Owner())
       {
+        const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
+          = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+        if (gpstressmap==Teuchos::null)
+          dserror("no gp stress/strain map available for postprocessing");
+        std::string stresstype = params.get<std::string>("stresstype","ndxyz");
+        int gid = Id();
+        LINALG::Matrix<NUMGPT_,NUMSTR_> gpstress(((*gpstressmap)[gid])->A(),true);
+
+        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==null)
+          dserror("No element stress/strain vector available");
+
         if (stresstype=="ndxyz") {
           // extrapolate stresses/strains at Gauss points to nodes
           sosh8p8_expol(gpstress, *poststress);

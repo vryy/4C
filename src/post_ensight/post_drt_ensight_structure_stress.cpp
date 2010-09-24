@@ -220,16 +220,6 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
     dserror("vector containing element center stresses/strains not available");
   }
 
-  const int numnodes = dis->NumMyRowNodes();
-
-  for (int i=0;i<numnodes;++i)
-  {
-    const DRT::Node* lnode = dis->lRowNode(i);
-    const int adjele = lnode->NumElement();
-    for (int k=0;k<6;++k)
-    	(*((*nodal_stress)(k)))[i] /= adjele;
-  }
-
   const Epetra_BlockMap& datamap = nodal_stress->Map();
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
@@ -681,8 +671,8 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   dis->Evaluate(p,null,null,null,null,null);
   if (nodal_stress==null)
   {
-    dserror("vector containing element center stresses/strains not available");
-  } 
+    dserror("vector containing nodal stresses/strains not available");
+  }
 
   // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
   RCP<Epetra_MultiVector> nodal_eigen_val_vec = rcp(new Epetra_MultiVector(*nodemap,12));
@@ -699,18 +689,15 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
       Epetra_SerialDenseMatrix eigenvec(3,3);
       Epetra_SerialDenseVector eigenval(3);
 
-      const DRT::Node* lnode = dis->lRowNode(i);
-      const int adjele = lnode->NumElement();
-      
-      eigenvec(0,0) = (*((*nodal_stress)(0)))[i] /= adjele;
-      eigenvec(0,1) = (*((*nodal_stress)(3)))[i] /= adjele;
-      eigenvec(0,2) = (*((*nodal_stress)(5)))[i] /= adjele;
+      eigenvec(0,0) = (*((*nodal_stress)(0)))[i];
+      eigenvec(0,1) = (*((*nodal_stress)(3)))[i];
+      eigenvec(0,2) = (*((*nodal_stress)(5)))[i];
       eigenvec(1,0) = eigenvec(0,1);
-      eigenvec(1,1) = (*((*nodal_stress)(1)))[i] /= adjele;
-      eigenvec(1,2) = (*((*nodal_stress)(4)))[i] /= adjele;
+      eigenvec(1,1) = (*((*nodal_stress)(1)))[i];
+      eigenvec(1,2) = (*((*nodal_stress)(4)))[i];
       eigenvec(2,0) = eigenvec(0,2);
       eigenvec(2,1) = eigenvec(1,2);
-      eigenvec(2,2) = (*((*nodal_stress)(2)))[i] /= adjele;
+      eigenvec(2,2) = (*((*nodal_stress)(2)))[i];
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -737,13 +724,10 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
       Epetra_SerialDenseMatrix eigenvec(2,2);
       Epetra_SerialDenseVector eigenval(2);
 
-      const DRT::Node* lnode = dis->lRowNode(i);
-      const int adjele = lnode->NumElement();
-
-      eigenvec(0,0) = (*((*nodal_stress)(0)))[i] /= adjele;
-      eigenvec(0,1) = (*((*nodal_stress)(3)))[i] /= adjele;
+      eigenvec(0,0) = (*((*nodal_stress)(0)))[i];
+      eigenvec(0,1) = (*((*nodal_stress)(3)))[i];
       eigenvec(1,0) = eigenvec(0,1);
-      eigenvec(1,1) = (*((*nodal_stress)(1)))[i] /= adjele;
+      eigenvec(1,1) = (*((*nodal_stress)(1)))[i];
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
@@ -1089,10 +1073,10 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
     {
       vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
       vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
-      
+
       bool threedim = true;
       if (field_->problem()->num_dim()==2) threedim = false;
-      
+
       // the three-dimensional case
       if (threedim)
       {
@@ -1129,14 +1113,14 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
           // local 2x2 eigenproblem
           Epetra_SerialDenseMatrix twodeigenvec(2,2);
           Epetra_SerialDenseVector twodeigenval(2);
-                
+
           twodeigenvec(0,0) = (*(*data_proc0)(0))[lid];
           twodeigenvec(0,1) = (*(*data_proc0)(3))[lid];
           twodeigenvec(1,0) = twodeigenvec(0,1);
           twodeigenvec(1,1) = (*(*data_proc0)(1))[lid];
 
           LINALG::SymmetricEigenProblem(twodeigenvec, twodeigenval, true);
-          
+
           (eigenvec[i])(0,0) = twodeigenvec(0,0);
           (eigenvec[i])(0,1) = twodeigenvec(0,0);
           (eigenvec[i])(0,2) = 0.0;
@@ -1146,10 +1130,10 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
           (eigenvec[i])(2,0) = 0.0;
           (eigenvec[i])(2,1) = 0.0;
           (eigenvec[i])(2,2) = 0.0;
-          	
+
           (eigenval[i])[0] = twodeigenval[0];
           (eigenval[i])[1] = twodeigenval[1];
-          (eigenval[i])[2] = 0.0;  	
+          (eigenval[i])[2] = 0.0;
         }
       }
 

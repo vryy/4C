@@ -234,10 +234,10 @@ void stru_static_drt()
     switch (iostress)
     {
     case INPAR::STR::stress_cauchy:
-      output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementRowMap()));
       break;
     case INPAR::STR::stress_2pk:
-      output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementRowMap()));
       break;
     case INPAR::STR::stress_none:
       break;
@@ -248,10 +248,10 @@ void stru_static_drt()
     switch (iostrain)
     {
     case INPAR::STR::strain_ea:
-      output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+      output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementRowMap()));
       break;
     case INPAR::STR::strain_gl:
-      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementRowMap()));
       break;
     case INPAR::STR::strain_none:
       break;
@@ -486,10 +486,10 @@ void stru_static_drt()
       switch (iostress)
       {
       case INPAR::STR::stress_cauchy:
-        output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+        output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementRowMap()));
         break;
       case INPAR::STR::stress_2pk:
-        output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+        output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementRowMap()));
         break;
       default:
         dserror ("requested stress type not supported");
@@ -499,10 +499,10 @@ void stru_static_drt()
       switch (iostrain)
       {
       case INPAR::STR::strain_ea:
-        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementRowMap()));
         break;
       case INPAR::STR::strain_gl:
-        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementRowMap()));
         break;
       case INPAR::STR::strain_none:
       default:

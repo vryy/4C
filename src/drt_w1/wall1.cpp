@@ -478,11 +478,12 @@ void DRT::ELEMENTS::Wall1::w1_expol
   // distribute nodal stresses to expolstress for assembling
   for (int i=0;i<numnode;++i)
   {
-  	int gnid = NodeIds()[i];
-    (*(expolstress(0)))[gnid] += nodalstresses(i,0);
-    (*(expolstress(1)))[gnid] += nodalstresses(i,1);
-    (*(expolstress(2)))[gnid] += nodalstresses(i,2);
-    (*(expolstress(3)))[gnid] += nodalstresses(i,3);
+    int adjele = Nodes()[i]->NumElement();
+    int gnid = NodeIds()[i];
+    (*(expolstress(0)))[gnid] += nodalstresses(i,0)/adjele;
+    (*(expolstress(1)))[gnid] += nodalstresses(i,1)/adjele;
+    (*(expolstress(2)))[gnid] += nodalstresses(i,2)/adjele;
+    (*(expolstress(3)))[gnid] += nodalstresses(i,3)/adjele;
   }
 }
 

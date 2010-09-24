@@ -177,33 +177,37 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      // The element does not calc stresses, it just takes the nodal
-      // stresses/strains that have been computed by the register class
-      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-      if (stressdata==null) dserror("Cannot get stress 'data'");
-      if (straindata==null) dserror("Cannot get strain 'data'");
-      LINALG::Matrix<4,6> stress;
-      LINALG::Matrix<4,6> strain;
-      map<int,vector<double> >& nodestress = ElementType().nodestress_;
-      map<int,vector<double> >& nodestrain = ElementType().nodestrain_;
-      for (int i=0; i<NumNode(); ++i)
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
       {
-        int gid = Nodes()[i]->Id();
-        map<int,vector<double> >::iterator foolstress = nodestress.find(gid);
-        map<int,vector<double> >::iterator foolstrain = nodestrain.find(gid);
-        if (foolstress==nodestress.end() || foolstrain==nodestrain.end())
-          dserror("Cannot find marching nodal stresses/strains");
-        vector<double>& nstress = foolstress->second;
-        vector<double>& nstrain = foolstrain->second;
-        for (int j=0; j<6; ++j)
+        // The element does not calc stresses, it just takes the nodal
+        // stresses/strains that have been computed by the register class
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        if (stressdata==null) dserror("Cannot get stress 'data'");
+        if (straindata==null) dserror("Cannot get strain 'data'");
+        LINALG::Matrix<4,6> stress;
+        LINALG::Matrix<4,6> strain;
+        map<int,vector<double> >& nodestress = ElementType().nodestress_;
+        map<int,vector<double> >& nodestrain = ElementType().nodestrain_;
+        for (int i=0; i<NumNode(); ++i)
         {
-          stress(i,j) = nstress[j];
-          strain(i,j) = nstrain[j];
+          int gid = Nodes()[i]->Id();
+          map<int,vector<double> >::iterator foolstress = nodestress.find(gid);
+          map<int,vector<double> >::iterator foolstrain = nodestrain.find(gid);
+          if (foolstress==nodestress.end() || foolstrain==nodestrain.end())
+            dserror("Cannot find marching nodal stresses/strains");
+          vector<double>& nstress = foolstress->second;
+          vector<double>& nstrain = foolstrain->second;
+          for (int j=0; j<6; ++j)
+          {
+            stress(i,j) = nstress[j];
+            strain(i,j) = nstrain[j];
+          }
         }
+        AddtoPack(*stressdata, stress);
+        AddtoPack(*straindata, strain);
       }
-      AddtoPack(*stressdata, stress);
-      AddtoPack(*straindata, strain);
     }
     break;
 
@@ -214,33 +218,37 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null)
-        dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
-      int gid = Id();
-      LINALG::Matrix<4,6> gpstress(((*gpstressmap)[gid])->A(),true);
-
-      if (stresstype=="ndxyz")
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
       {
-        for (int i=0;i<4;++i)
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        if (gpstressmap==null)
+          dserror("no gp stress/strain map available for postprocessing");
+        string stresstype = params.get<string>("stresstype","ndxyz");
+        int gid = Id();
+        LINALG::Matrix<4,6> gpstress(((*gpstressmap)[gid])->A(),true);
+
+        if (stresstype=="ndxyz")
         {
-          elevec1(3*i)=gpstress(i,0);
-          elevec1(3*i+1)=gpstress(i,1);
-          elevec1(3*i+2)=gpstress(i,2);
+          for (int i=0;i<4;++i)
+          {
+            elevec1(3*i)=gpstress(i,0);
+            elevec1(3*i+1)=gpstress(i,1);
+            elevec1(3*i+2)=gpstress(i,2);
+          }
+          for (int i=0;i<4;++i)
+          {
+            elevec2(3*i)=gpstress(i,3);
+            elevec2(3*i+1)=gpstress(i,4);
+            elevec2(3*i+2)=gpstress(i,5);
+          }
         }
-        for (int i=0;i<4;++i)
-        {
-          elevec2(3*i)=gpstress(i,3);
-          elevec2(3*i+1)=gpstress(i,4);
-          elevec2(3*i+2)=gpstress(i,5);
-        }
+        else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")
+          dserror("The NStet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
+        else
+          dserror("unknown type of stress/strain output on element level");
       }
-      else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")
-        dserror("The NStet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
-      else
-        dserror("unknown type of stress/strain output on element level");
     }
     break;
 

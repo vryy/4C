@@ -909,7 +909,7 @@ void STR::TimInt::OutputStressStrain
       dserror("requested stress type not supported");
     }
     output_->WriteVector(stresstext, *stressdata,
-                         *(discret_->ElementColMap()));
+                         *(discret_->ElementRowMap()));
   }
 
   // write strain
@@ -929,7 +929,7 @@ void STR::TimInt::OutputStressStrain
       dserror("requested strain type not supported");
     }
     output_->WriteVector(straintext, *straindata,
-                         *(discret_->ElementColMap()));
+                         *(discret_->ElementRowMap()));
   }
 
   // leave me alone
@@ -1116,7 +1116,7 @@ void STR::TimInt::Integrate()
   {
   	// dynamic parallel redistribution (contact)
   	RedistributeContact();
-  	
+
     // evaluate reference state (frictional contact)
     EvaluateReferenceState();
 

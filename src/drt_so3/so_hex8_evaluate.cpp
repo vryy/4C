@@ -231,37 +231,41 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata==null) dserror("Cannot get 'stress' data");
-      if (straindata==null) dserror("Cannot get 'strain' data");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
-      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-
-      // if a linear analysis is desired
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
-        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-      // standard is: geometrically non-linear with Total Lagrangean approach
-      else
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
       {
-        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
-          invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==null) dserror("Cannot get 'stress' data");
+        if (straindata==null) dserror("Cannot get 'strain' data");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
 
-        else // standard analysis
-          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        // if a linear analysis is desired
+        if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        // standard is: geometrically non-linear with Total Lagrangean approach
+        else
+        {
+          if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+            invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+          else // standard analysis
+            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        }
+
+        AddtoPack(*stressdata, stress);
+        AddtoPack(*straindata, strain);
       }
-
-      AddtoPack(*stressdata, stress);
-      AddtoPack(*straindata, strain);
     }
     break;
 
@@ -272,21 +276,21 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null)
-        dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
-      int gid = Id();
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
-
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null)
-        dserror("No element stress/strain vector available");
-
       // nothing to do for ghost elements
-      if (poststress->Comm().MyPID()==Owner())
+      if (discretization.Comm().MyPID()==Owner())
       {
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        if (gpstressmap==null)
+          dserror("no gp stress/strain map available for postprocessing");
+        string stresstype = params.get<string>("stresstype","ndxyz");
+        int gid = Id();
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
+
+        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==null)
+          dserror("No element stress/strain vector available");
+
         if (stresstype=="ndxyz")
         {
           // extrapolate stresses/strains at Gauss points to nodes

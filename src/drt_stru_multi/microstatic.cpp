@@ -774,10 +774,10 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     switch (iostress_)
     {
     case INPAR::STR::stress_cauchy:
-      output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementColMap());
+      output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementRowMap());
       break;
     case INPAR::STR::stress_2pk:
-      output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementColMap());
+      output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementRowMap());
       break;
     case INPAR::STR::stress_none:
       break;
@@ -788,10 +788,10 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     switch (iostrain_)
     {
     case INPAR::STR::strain_ea:
-      output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementColMap());
+      output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
+      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;

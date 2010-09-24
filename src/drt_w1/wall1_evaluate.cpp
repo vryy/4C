@@ -248,25 +248,29 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     break;
     case calc_struct_stress:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata==null) dserror("Cannot get stress 'data'");
-      if (straindata==null) dserror("Cannot get strain 'data'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-      Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
-      Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
-      INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-      w1_nlnstiffmass(lm,mydisp,myres,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
-      AddtoPack(*stressdata, stress);
-      AddtoPack(*straindata, strain);
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==null) dserror("Cannot get stress 'data'");
+        if (straindata==null) dserror("Cannot get strain 'data'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+        Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
+        Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
+        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        w1_nlnstiffmass(lm,mydisp,myres,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+        AddtoPack(*stressdata, stress);
+        AddtoPack(*straindata, strain);
+      }
     }
     break;
     // postprocess stresses/strains at gauss points
@@ -276,20 +280,20 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null)
-        dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
-      int gid = Id();
-      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null)
-        dserror("No element stress/strain vector available");
-
       // nothing to do for ghost elements
-      if (poststress->Comm().MyPID()==Owner())
+      if (discretization.Comm().MyPID()==Owner())
       {
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        if (gpstressmap==null)
+          dserror("no gp stress/strain map available for postprocessing");
+        string stresstype = params.get<string>("stresstype","ndxyz");
+        int gid = Id();
+        RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==null)
+          dserror("No element stress/strain vector available");
+
         if (stresstype=="ndxyz")
         {
           // extrapolate stresses/strains at Gauss points to nodes
