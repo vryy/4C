@@ -124,24 +124,35 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,traction_,3*sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data,tractionold_,3*sizeof(double));
-  // add drowsold_,mrowsold_,mnodesold_ and derivjump_
-  int hasdata = drowsold_.size()!=0; 
   
-  // check if the sizes of all vectors/sets to pack are nonzero
-  if(hasdata && (mrowsold_.size()==0 or mnodesold_.size()==0 or derivjump_.size()==0))
-    dserror("The sizes of all vectors/sets have to be nonzero"); 
+  // add drowsold_,mrowsold_,mnodesold_ 
+  int hasdata = drowsold_.size(); 
+  // check the sizes of vector/sets
+  if(hasdata != (int) mrowsold_.size() or (hasdata == 0 and mnodesold_.size()!=0))
+    dserror("Something wrong with sizes of vector/sets!"); 
   
   DRT::ParObject::AddtoPack(data,hasdata);
-  if(hasdata)
+    
+  if(hasdata!=0)
   {    
-    for (int i=0;i<3;i++)
+    for (int i=0;i<hasdata;i++)
     {
       DRT::ParObject::AddtoPack(data,(drowsold_[i]));
       DRT::ParObject::AddtoPack(data,(mrowsold_[i]));
-      DRT::ParObject::AddtoPack(data,(derivjump_[i]));
     }
     DRT::ParObject::AddtoPack(data,mnodesold_);
-  }  
+  }
+
+  // add derivjump
+  int hasdataderivjump = derivjump_.size(); 
+  DRT::ParObject::AddtoPack(data,hasdataderivjump);
+
+  if (hasdataderivjump!=0)
+  {  
+    for (int i=0;i<hasdataderivjump;i++)
+      DRT::ParObject::AddtoPack(data,(derivjump_[i]));
+  }
+  
   return;
 }
 
@@ -161,24 +172,36 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   DRT::ParObject::ExtractfromPack(position,data,traction_,3*sizeof(double));
   // tractionold_
   DRT::ParObject::ExtractfromPack(position,data,tractionold_,3*sizeof(double));
-  //drowsold_,mrowsold_,mnodesold_ and derivjump_
+
+  //drowsold_,mrowsold_,mnodesold_ 
   int hasdata;
   DRT::ParObject::ExtractfromPack(position,data,hasdata);
   
-  if(hasdata)
+  if(hasdata!=0)
   {
-    drowsold_.resize(3);
-    mrowsold_.resize(3);
-    derivjump_.resize(3);
-    for (int i=0;i<3;i++)
+    drowsold_.resize(hasdata);
+    mrowsold_.resize(hasdata);
+    for (int i=0;i<hasdata;i++)
     {
       DRT::ParObject::ExtractfromPack(position,data,drowsold_[i]);
       DRT::ParObject::ExtractfromPack(position,data,mrowsold_[i]);
-      DRT::ParObject::ExtractfromPack(position,data,derivjump_[i]);
     }
     DRT::ParObject::ExtractfromPack(position,data,mnodesold_);
   }
-
+  
+  //and derivjump_
+  int hasdataderivjump;
+  DRT::ParObject::ExtractfromPack(position,data,hasdataderivjump);
+  
+  if(hasdataderivjump!=0)
+  {
+    derivjump_.resize(hasdataderivjump);
+    for (int i=0;i<hasdataderivjump;i++)
+    {
+      DRT::ParObject::ExtractfromPack(position,data,derivjump_[i]);
+    }
+  }
+  
   return;
 }
 
