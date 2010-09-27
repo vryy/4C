@@ -361,6 +361,14 @@ namespace IO
         const bool           screen_out,
         const int            pid = 0            ///< my processor id
         );
+
+    //! open Gmsh output file to add data
+    std::string GetFileName(
+        const std::string&   filename_base,
+        const int&           actstep,           ///< generate filename for this step
+        const bool           screen_out,
+        const int            pid = 0            ///< my processor id
+        );
   }
 }
 

@@ -190,14 +190,15 @@ void COMBUST::Algorithm::TimeLoop()
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
+     // TODO @Ursula do G-function field first
+      //std::cout << "/!\\ warning === fluid field is solved before G-function field" << std::endl;
+      //DoFluidField();
+
       // TODO In the first iteration of the first time step the convection velocity for the
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
       DoGfuncField();
-
-      // TODO @Ursula check if needed for FGI iteration
-      //phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
 
       // update interface geometry
       UpdateInterface();
@@ -727,30 +728,32 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   // TODO fix this mess; implement a posteriori estimator
   //if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
   //    combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
+
   if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow)
   {
-//  if (fgiter_ < fgitermax_)
-//  {
-//      if (fgiter_ == 0)
-//      {
-//
-//      }
-//      else if (fgiter_ == 1)
-//      {
+      /* at the moment only the convergence of the g-function field is checked
+       * to check the convergence of the fluid field, uncomment the corresponding lines
+       */
+      if (fgiter_ == 0)
+      {
+         // G-function field and fluid field haven't been solved, yet
+
+         // store old solution vectors
 //        if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
 //          dserror("vectors must have the same length 1");
 //        velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-//        phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-//
-//          if (fgiter_ == fgitermax_)
-//          notconverged = false;
-//
-//      }
-      if (fgiter_ > 0) //else
+         phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
+
+         if (fgiter_ == fgitermax_)
+         notconverged = false;
+
+      }
+      else if (fgiter_ > 0)
       {
 //          double velnormL2 = 1.0;
           double gfuncnormL2 = 1.0;
 
+          // store new solution vectors and compute L2-norm
 //        velnpi_->Update(1.0,*velnpip_,0.0);
           phinpi_->Update(1.0,*phinpip_,0.0);
 //        velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
@@ -764,13 +767,13 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 //        fgvelnormL2_ = 0.0;
           fggfuncnormL2_ = 0.0;
 
+          // compute increment and L2-norm of increment
 //        Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
 //        if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
 //          dserror("vectors must have the same length 2");
 //        incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
 //        incvel->Norm2(&fgvelnormL2_);
-
-          Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->NodeRowMap()),true);
+          Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->DofRowMap()),true);
           incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
           incgfunc->Norm2(&fggfuncnormL2_);
 
@@ -799,12 +802,6 @@ bool COMBUST::Algorithm::NotConvergedFGI()
              }
           }
       }
-//  }
-//  else
-//  {
-//    // added by me 21/10/09
-//    notconverged = false;
-//  }
   }
   else // INPAR::COMBUST::combusttype_premixedcombustion
   {
@@ -1088,24 +1085,6 @@ void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
 
-// TODO @Ursula clarify if this should be removed or kept
-//  if (stepreinit_)
-//  {
-//    // reset phin vector in ScaTra time integration scheme to reinitialized vector 'phireinitn_'
-//    ScaTraField().SetPhin(phireinitn_);
-//    // pointer not needed any more
-//    phireinitn_ = Teuchos::null;
-//    //ScaTraField().CalcInitialPhidt();
-//  }
-//
-//  ScaTraField().Update();
-//  if (stepreinit_)
-//  {
-//     std::cout << " ---------- UPDATE PHIDT --------" << std::endl;
-//     ScaTraField().CalcPhidtReinit();
-//     //ScaTraField().CalcInitialPhidt();
-//  }
-
   if (stepreinit_)
   {
     ScaTraField().UpdateReinit();
@@ -1184,8 +1163,125 @@ double COMBUST::Algorithm::ComputeVolume()
   return sumvolume;
 }
 
+/*
+ * Aufgrund der umfangreichen Aenderungen im Combust-Algorithmus gibt es im Moment
+ * zwei Restart-Funktionen die beide nicht laufen. Sobald ich mal Zeit dafür habe,
+ * wird sich das hoffentlich aendern.
+ */
 void COMBUST::Algorithm::Restart(int step)
 {
+  dserror("Restart doesn't work at the moment!");
+
+  if (Comm().MyPID()==0)
+    std::cout << "Restart of combustion problem" << std::endl;
+
+  // restart of scalar transport (G-function) field
+  ScaTraField().ReadRestart(step);
+
+  // get pointers to the discretizations from the time integration scheme of each field
+  const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+
+  //--------------------------
+  // write output to Gmsh file
+  //--------------------------
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_after_restart", Step(), 701, true, gfuncdis->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phin \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Phinm \" {" << endl;
+    // draw scalar field 'Phinp' for every element
+    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+    // draw vector field 'Convective Velocity' for every element
+    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  gmshfilecontent.close();
+
+  //-------------------------------------------------------------
+  // create (old) flamefront conforming to restart state of fluid
+  //-------------------------------------------------------------
+  Teuchos::RCP<COMBUST::FlameFront> flamefrontOld = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
+
+  // export phi n-1 vector from scatra dof row map to fluid node column map
+  const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
+  if (phinmrow->MyLength() != ScaTraField().Phinm()->MyLength())
+    dserror("vectors phinmrow and phinm must have the same length");
+  *phinmrow = *ScaTraField().Phinm();
+  const Teuchos::RCP<Epetra_Vector> phinmcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
+  LINALG::Export(*phinmrow,*phinmcol);
+
+  // reconstruct old flame front
+  flamefrontOld->ProcessFlameFront(combustdyn_,ScaTraField().Phinm());
+  //flamefrontOld->ProcessFlameFront(combustdyn_,phinmcol);
+
+  // build interfacehandle using old flame front
+  // TODO @Martin Test + Kommentar
+  // remark: interfacehandleN = interfacehandleNP, weil noch aeltere Information nicht vorhanden
+
+  // TODO remove old code when new code tested
+  //Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
+  //  rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  //interfacehandleOld->UpdateInterfaceHandle();
+  //FluidField().ImportInterface(interfacehandleOld);
+
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldNP =
+      rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldN =
+        rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
+  interfacehandleOldNP->UpdateInterfaceHandle();
+  interfacehandleOldN->UpdateInterfaceHandle();
+  FluidField().ImportInterface(interfacehandleOldNP,interfacehandleOldN);
+
+  // restart of fluid field
+  FluidField().ReadRestart(step);
+
+  //nur zum testen
+  FluidField().ImportInterface(interfacehandleOldNP,interfacehandleOldN);
+
+  // reset interface for restart
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+
+  interfacehandleNP_->UpdateInterfaceHandle();
+  interfacehandleN_->UpdateInterfaceHandle();
+  //-------------------
+  // write fluid output
+  //-------------------
+  // show flame front to fluid time integration scheme
+  FluidField().ImportFlameFront(flamefront_);
+  FluidField().Output();
+  // delete fluid's memory of flame front; it should never have seen it in the first place!
+  FluidField().ImportFlameFront(Teuchos::null);
+
+  SetTimeStep(FluidField().Time(),step);
+
+  return;
+}
+
+
+void COMBUST::Algorithm::RestartNew(int step)
+{
+  dserror("Restart doesn't work at the moment!");
+
   if (Comm().MyPID()==0)
     std::cout << "Restart of combustion problem" << std::endl;
 

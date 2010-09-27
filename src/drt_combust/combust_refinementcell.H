@@ -84,7 +84,7 @@ namespace COMBUST
     //! remote access method to rootcell
     const COMBUST::RefinementCell* ReturnRootCell() const;
 
-    //TEST
+    //! deletes all children, i.e. all refinement cells of the root cell
     void Clear();
 
     //! create Gmsh output of rootcell

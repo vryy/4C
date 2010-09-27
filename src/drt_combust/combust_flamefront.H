@@ -268,9 +268,6 @@ namespace COMBUST
     const std::vector<std::vector<int> >&       trianglelist
     );
 
-    /// test for numerical integration of discontinous fuctions
-    void Evaluate(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
-
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> fluiddis_;
 

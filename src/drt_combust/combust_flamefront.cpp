@@ -176,8 +176,13 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // generate flame front (interface) geometry
     CaptureFlameFront(rootcell);
 
-    // TODO @Ursula: What kind of test is this? remove?
-    //TEST
+    // TODO @Ursula: check if this is really necessary
+    /* - Rechnungen mit Verfeinerungen (z.B. xfemintegration_hexahedra) benötigen möglicherweise im Laufe
+     *   der Rechnung immer mehr Speicher (das hat zumindest die 3D-Blase mit xfemintegration_hexahedra gezeigt)
+     * - möglicherweise ist es daher notwendig alle Verfeinerungszellen wieder zulöschen
+     * - das muss aber noch genauer betrachtet werden
+     */
+    // delete all refinement cells of root cell
     if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
     {
       rootcell->Clear();
@@ -3681,92 +3686,9 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
     }
     gmshfilecontent << "};\n";
   }
+  gmshfilecontent.close();
 
   return;
-}
-
-/*
- *
- */
-void COMBUST::FlameFront::Evaluate(const Teuchos::RCP<const COMBUST::RefinementCell> rootcell)
-{
-   //dserror("Never call this function")
-
-   double integral=0.0;
-   //here: rootcell == element
-   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-
-   const GEO::DomainIntCells& domainIntCells(myelementintcells_[rootcell->Ele()->Id()]);
-
-   //--------------------------------------------
-   // loop over all refinement cells of element
-   //--------------------------------------------
-   int counter = 0;
-   for (GEO::DomainIntCells::const_iterator icell = domainIntCells.begin(); icell != domainIntCells.end(); ++icell)
-   {
-       counter = counter +1;
-       // gaussian points
-       //const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_hex_27point); //1, 8, 27
-       const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_tet_24point); //1, 4, 5, 10, 11, 15, 24, 45
-
-       //--------------------------------------------
-       // loop over loop over Gauss points
-       //--------------------------------------------
-       for(int iquad=0; iquad<intpoints.nquad; ++iquad)
-       {
-           // coordinates of the current integration point in cell coordinates \eta
-           LINALG::Matrix<3,1> pos_eta_domain;
-           pos_eta_domain(0) = intpoints.qxg[iquad][0];
-           pos_eta_domain(1) = intpoints.qxg[iquad][1];
-           pos_eta_domain(2) = intpoints.qxg[iquad][2];
-
-           // coordinates of the current integration point in element coordinates \xi
-           LINALG::Matrix<3,1> pos_xi_domain;
-           const LINALG::SerialDenseMatrix& xi_cell(icell->CellNodalPosXiDomain());
-           GEO::elementToCurrentCoordinates(icell->Shape(),xi_cell,pos_eta_domain,pos_xi_domain);
-           //compute det
-           //const double detcell = GEO::detEtaToXi3DT<DRT::Element::hex8>(icell->CellNodalPosXiDomain(), pos_eta_domain);
-           double detcell = 0.0;
-           switch (icell->Shape())
-           {
-           case DRT::Element::hex8:
-           {
-             detcell = GEO::detEtaToXi3DT<DRT::Element::hex8>(icell->CellNodalPosXiDomain(), pos_eta_domain);
-             break;
-           }
-           case DRT::Element::tet4:
-           {
-             detcell = GEO::detEtaToXi3DT<DRT::Element::tet4>(icell->CellNodalPosXiDomain(), pos_eta_domain);
-             break;
-           }
-           default: dserror("add your 3D distype to this switch!");
-           }
-
-           double fac = detcell * intpoints.qwgt[iquad];
-
-//           if (icell->getDomainPlus())
-//           {
-//              fac = fac*1;
-//           }
-//           else
-//           {
-//              fac = -1 * fac;
-//           }
-
-           // shape function
-           Epetra_SerialDenseVector  funct(numnode);
-           DRT::UTILS::shape_function_3D(funct,pos_xi_domain(0),pos_xi_domain(1),pos_xi_domain(2),DRT::Element::hex8);
-
-           //only shape function of node 0 is integrated
-           integral += funct(0)*funct(0)*fac;
-       }
-   }
-   std::cout << "------------------------------" << std::endl;
-   std::cout << "Integral: " << std::setw(18) << std::setprecision(12) << std::scientific << integral << std::endl;
-   std::cout << "------------------------------" << std::endl;
-   std::cout << "Anzahl der Integrationszellen: " << counter << std::endl;
-
-   return;
 }
 
 #endif // #ifdef CCADISCRET

@@ -65,6 +65,8 @@ namespace COMBUST
 
     /// restart combustion problem
     void Restart(int step);
+    /// restart combustion problem
+    void RestartNew(int step);
 
   protected:
 
