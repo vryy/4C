@@ -888,7 +888,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           if (!friction_)
             dserror("ERROR: This should not be called for contact without friction");
           CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->Data().ActiveOld() = frinode->Active();
+          frinode->FriData().ActiveOld() = frinode->Active();
           break;
         }
         case MORTAR::StrategyBase::jump:
@@ -896,7 +896,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           if(!friction_)
             dserror("ERROR: This should not be called for contact without friction");
           FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->Data().jump()[dof] = (*vectorinterface)[locindex[dof]];
+          frinode->FriData().jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         default:
@@ -1180,7 +1180,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
       if (cnode->Active()) (*activetoggle)[dof]=1;
       if (friction_)
       {
-        if (static_cast<CONTACT::FriNode*>(cnode)->Data().Slip()) (*sliptoggle)[dof]=1;
+        if (static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()) (*sliptoggle)[dof]=1;
       }
     }
   }
@@ -1252,7 +1252,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
         if (friction_)
         {
           // set value stick / slip in cnode
-          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->Data().Slip()=true;
+          if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
         }
       }
     }
@@ -1796,8 +1796,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 					{
 						txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
 						tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
-						jumptxi += frinode->CoData().txi()[k] * frinode->Data().jump()[k];
-						jumpteta += frinode->CoData().teta()[k] * frinode->Data().jump()[k];
+						jumptxi += frinode->CoData().txi()[k] * frinode->FriData().jump()[k];
+						jumpteta += frinode->CoData().teta()[k] * frinode->FriData().jump()[k];
 					}
 
 					// total tangential component
@@ -1810,7 +1810,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 					// compute status
 					if (cnode->Active())
 					{
-						if (frinode->Data().Slip()) status = 2;
+						if (frinode->FriData().Slip()) status = 2;
 						else                        status = 3;
 					}
 				}
@@ -1877,7 +1877,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 			if (friction_)
 			{
 				FriNode* frinode = static_cast<FriNode*>(cnode);
-				if (frinode->Data().Slip()) slipnodes += 1;
+				if (frinode->FriData().Slip()) slipnodes += 1;
 			}
 		}
 	}

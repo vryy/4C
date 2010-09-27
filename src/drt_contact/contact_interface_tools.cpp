@@ -608,7 +608,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         // frictional contact, slip node = {G}
         else if (friction_ && cnode->Active())
         {
-          if (static_cast<FriNode*>(cnode)->Data().Slip())
+          if (static_cast<FriNode*>(cnode)->FriData().Slip())
           {  
             gmshfilecontentslave << "T3(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
             gmshfilecontentslave << "{" << "G" << "};" << endl;
@@ -2785,11 +2785,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     double jumptxi = 0;
     double jumpteta = 0;
 
-    if (cnode->Active() and !(cnode->Data().Slip()))
+    if (cnode->Active() and !(cnode->FriData().Slip()))
     {
       // calculate value of C-function
       double D = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
+      double Dold = (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
@@ -2798,7 +2798,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       }
 
       vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       map<int,double>::iterator colcurr;
       set <int> mnodes;
@@ -2885,11 +2885,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //     double ztan = 0;
 //     double znor = 0;
 //
-//     if (kcnode->Active() and !(kcnode->Data().Slip()))
+//     if (kcnode->Active() and !(kcnode->FriData().Slip()))
 //     {
 //       // check two versions of weighted gap
 //       double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-//       double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+//       double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
 //
 //       for (int dim=0;dim<kcnode->NumDof();++dim)
 //       {
@@ -2899,7 +2899,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //       }
 //
 //       vector<map<int,double> > mmap = kcnode->MoData().GetM();
-//       vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+//       vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 //
 //       map<int,double>::iterator colcurr;
 //       set <int> mnodes;
@@ -3027,11 +3027,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       double jumptxi = 0;
       double jumpteta = 0;
 
-      if (kcnode->Active() and !(kcnode->Data().Slip()))
+      if (kcnode->Active() and !(kcnode->FriData().Slip()))
       {
         // check two versions of weighted gap
         double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3040,7 +3040,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         }
 
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3177,11 +3177,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       double jumptxi = 0;
       double jumpteta = 0;
 
-      if (kcnode->Active() and !(kcnode->Data().Slip()))
+      if (kcnode->Active() and !(kcnode->FriData().Slip()))
       {
         // check two versions of weighted gap
         double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3190,7 +3190,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
         }
 
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3316,11 +3316,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
     double znor = 0;
     double euclidean = 0;
 
-    if (cnode->Data().Slip())
+    if (cnode->FriData().Slip())
     {
       // calculate value of C-function
       double D = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
+      double Dold = (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
@@ -3332,7 +3332,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       }
 
       vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       map<int,double>::iterator colcurr;
       set <int> mnodes;
@@ -3440,11 +3440,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->Data().Slip())
+      if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
         double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
           jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
@@ -3455,7 +3455,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         }
 
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3615,11 +3615,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->Data().Slip())
+      if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
         double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3631,7 +3631,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         }
 
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -3792,11 +3792,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->Data().Slip())
+      if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
         double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->Data().GetDOld()[0])[kcnode->Dofs()[0]];
+        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3808,7 +3808,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         }
 
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
-        vector<map<int,double> > mmapold = kcnode->Data().GetMOld();
+        vector<map<int,double> > mmapold = kcnode->FriData().GetMOld();
 
         map<int,double>::iterator colcurr;
         set <int> mnodes;
@@ -4268,8 +4268,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // fill vectors and matrices
     for (int j=0;j<dim;j++)
     {
-      jumpvec(j,0) = cnode->Data().jump()[j];
-      tractionold[j] = cnode->Data().tractionold()[j];
+      jumpvec(j,0) = cnode->FriData().jump()[j];
+      tractionold[j] = cnode->FriData().tractionold()[j];
     }
 
     if (dim==3)
@@ -4337,13 +4337,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // evaluate maximal tangential traction
     double maxtantrac = frcoeff*(lmuzawan - kappa * ppnor * gap);
 
-    if(cnode->Active()==true and cnode->Data().Slip()==false)
+    if(cnode->Active()==true and cnode->FriData().Slip()==false)
     {
       reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
       reftrac2[i] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
       reftrac3[i] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
     }
-    if(cnode->Active()==true and cnode->Data().Slip()==true)
+    if(cnode->Active()==true and cnode->FriData().Slip()==true)
     {
       // compute lagrange multipliers and store into node
       reftrac1[i] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
@@ -4424,8 +4424,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // fill vectors and matrices
       for (int j=0;j<dim;j++)
       {
-        jumpvec(j,0) = kcnode->Data().jump()[j];
-        tractionold[j] = kcnode->Data().tractionold()[j];
+        jumpvec(j,0) = kcnode->FriData().jump()[j];
+        tractionold[j] = kcnode->FriData().tractionold()[j];
       }
 
       if (dim==3)
@@ -4494,13 +4494,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
-      if(kcnode->Active()==true and kcnode->Data().Slip()==false)
+      if(kcnode->Active()==true and kcnode->FriData().Slip()==false)
       {
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
         newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
         newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
-      if(kcnode->Active()==true and kcnode->Data().Slip()==true)
+      if(kcnode->Active()==true and kcnode->FriData().Slip()==true)
       {
         // compute lagrange multipliers and store into node
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;
@@ -4631,8 +4631,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // fill vectors and matrices
       for (int j=0;j<dim;j++)
       {
-        jumpvec(j,0) = kcnode->Data().jump()[j];
-        tractionold[j] = kcnode->Data().tractionold()[j];
+        jumpvec(j,0) = kcnode->FriData().jump()[j];
+        tractionold[j] = kcnode->FriData().tractionold()[j];
       }
 
       if (dim==3)
@@ -4700,13 +4700,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff*(lmuzawan- kappa * ppnor * gap);
 
-      if(kcnode->Active()==true and kcnode->Data().Slip()==false)
+      if(kcnode->Active()==true and kcnode->FriData().Slip()==false)
       {
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0];
         newtrac2[k] = n[1]*(lmuzawan - kappa * ppnor * gap)+trailtraction[1];
         newtrac3[k] = n[2]*(lmuzawan - kappa * ppnor * gap)+trailtraction[2];
       }
-      if(kcnode->Active()==true and kcnode->Data().Slip()==true)
+      if(kcnode->Active()==true and kcnode->FriData().Slip()==true)
       {
         // compute lagrange multipliers and store into node
         newtrac1[k] = n[0]*(lmuzawan - kappa * ppnor * gap)+trailtraction[0]*maxtantrac/magnitude;

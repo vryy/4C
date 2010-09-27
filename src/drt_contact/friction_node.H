@@ -320,7 +320,8 @@ public:
   contact specific quantities/information are stored.
 
   */
-  inline CONTACT::FriNodeDataContainer& Data() { return *fridata_; }
+  inline CONTACT::FriNodeDataContainer& FriData() { return *fridata_; }
+  inline RCP<CONTACT::FriNodeDataContainer> PointerFriData() { return fridata_; }
 
   //@}
 

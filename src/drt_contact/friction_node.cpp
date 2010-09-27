@@ -315,7 +315,7 @@ void CONTACT::FriNode::AddSNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddSNode: function called for boundary node %i", Id());
 
-  Data().GetSNodes().insert(node);
+  FriData().GetSNodes().insert(node);
 
   return;
 }
@@ -331,7 +331,7 @@ void CONTACT::FriNode::AddMNode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddMNode: function called for boundary node %i", Id());
 
-  Data().GetMNodes().insert(node);
+  FriData().GetMNodes().insert(node);
 
   return;
 }
@@ -348,15 +348,15 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
     dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)Data().GetDerivJump().size()==0)
-    Data().GetDerivJump().resize(NumDof());
+  if ((int)FriData().GetDerivJump().size()==0)
+    FriData().GetDerivJump().resize(NumDof());
 
   // check row index input
-  if ((int)Data().GetDerivJump().size() <= row)
+  if ((int)FriData().GetDerivJump().size() <= row)
     dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& zmap = Data().GetDerivJump()[row];
+  map<int,double>& zmap = FriData().GetDerivJump()[row];
   zmap[col] += val;
 
   return;
@@ -381,24 +381,24 @@ void CONTACT::FriNode::StoreDMOld()
   // copy drows_ to drowsold_
 
   // reset old nodal Mortar maps
-  for (int j=0;j<(int)(Data().GetDOld().size());++j)
-  (Data().GetDOld())[j].clear();
-  for (int j=0;j<(int)((Data().GetMOld()).size());++j)
-  (Data().GetMOld())[j].clear();
+  for (int j=0;j<(int)(FriData().GetDOld().size());++j)
+  (FriData().GetDOld())[j].clear();
+  for (int j=0;j<(int)((FriData().GetMOld()).size());++j)
+  (FriData().GetMOld())[j].clear();
 
   // clear and zero nodal vectors
-  Data().GetDOld().clear();
-  Data().GetMOld().clear();
-  Data().GetDOld().resize(0);
-  Data().GetMOld().resize(0);
+  FriData().GetDOld().clear();
+  FriData().GetMOld().clear();
+  FriData().GetDOld().resize(0);
+  FriData().GetMOld().resize(0);
 
   // write drows_ to drowsold_
-  Data().GetDOld() = MoData().GetD();
-  Data().GetMOld() = MoData().GetM();
+  FriData().GetDOld() = MoData().GetD();
+  FriData().GetMOld() = MoData().GetM();
 
   // also vectors containing the according master nodes
-  Data().GetMNodesOld().clear();
-  Data().GetMNodesOld() = Data().GetMNodes();
+  FriData().GetMNodesOld().clear();
+  FriData().GetMNodesOld() = FriData().GetMNodes();
 
   return;
 }
@@ -410,7 +410,7 @@ void CONTACT::FriNode::StoreTracOld()
 {
   // write entries to old ones
   for (int j=0;j<3;++j)
-    Data().tractionold()[j]=Data().traction()[j];
+    FriData().tractionold()[j]=FriData().traction()[j];
 
   return;
 }

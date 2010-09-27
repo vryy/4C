@@ -402,13 +402,14 @@ public:
   virtual double& Kappa() { return kappa_; }
 
   /*!
-  \brief Return of data container of this node
+  \brief Return data container of this node
 
   This method returns the data container of this node where additional
   contact specific quantities/information are stored.
 
   */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
+  inline RCP<CONTACT::CoNodeDataContainer> PointerCoData() { return codata_; }
 
   //@}
 

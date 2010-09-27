@@ -546,8 +546,8 @@ void CONTACT::CoInterface::Initialize()
       FriNode* frinode = static_cast<FriNode*>(cnode);
   
       // reset SNodes and Mnodes
-      frinode->Data().GetSNodes().clear();
-      frinode->Data().GetMNodes().clear();
+      frinode->FriData().GetSNodes().clear();
+      frinode->FriData().GetMNodes().clear();
 
       // reset nodal mechanical dissipation
       frinode->MechDiss() = 0.0;
@@ -939,9 +939,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
     if(activeinfuture==true)
     {
       vector<map<int,double> > dmap = cnode->MoData().GetD();
-      vector<map<int,double> > dmapold = cnode->Data().GetDOld();
+      vector<map<int,double> > dmapold = cnode->FriData().GetDOld();
 
-      set <int> snodes = cnode->Data().GetSNodes();
+      set <int> snodes = cnode->FriData().GetSNodes();
 
       // check if there are entries in the old D map
       if(dmapold.size()< 1)
@@ -972,10 +972,10 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
       } //  loop over adjacent slave nodes
 
       vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 
-      set <int> mnodescurrent = cnode->Data().GetMNodes();
-      set <int> mnodesold = cnode->Data().GetMNodesOld();
+      set <int> mnodescurrent = cnode->FriData().GetMNodes();
+      set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
       // check if there are entries in the old M map
       if(mmapold.size()< 1)
@@ -1015,14 +1015,14 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
 
       // write it to nodes
       for(int dim=0;dim<Dim();dim++)
-        cnode->Data().jump()[dim] = jump[dim];
+        cnode->FriData().jump()[dim] = jump[dim];
  
       // linearization of jump vector
 
       // reset derivative map of jump
-      for (int j=0; j<(int)((cnode->Data().GetDerivJump()).size()); ++j)
-        (cnode->Data().GetDerivJump())[j].clear();
-      (cnode->Data().GetDerivJump()).resize(0);
+      for (int j=0; j<(int)((cnode->FriData().GetDerivJump()).size()); ++j)
+        (cnode->FriData().GetDerivJump())[j].clear();
+      (cnode->FriData().GetDerivJump()).resize(0);
       
       /*** 01  **********************************************************/
       
@@ -1200,7 +1200,7 @@ void CONTACT::CoInterface::AssembleRelMov(Epetra_Vector& jumpglobal)
     FriNode* cnode = static_cast<FriNode*>(node);
 
     int dim = cnode->NumDof();
-    double* jump = cnode->Data().jump();
+    double* jump = cnode->FriData().jump();
 
     Epetra_SerialDenseVector jumpnode(dim);
     vector<int> jumpdof(dim);
@@ -1302,7 +1302,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     // jump vector
     Epetra_SerialDenseMatrix jumpvec(dim,1);
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->Data().jump()[i];
+      jumpvec(i,0) = cnode->FriData().jump()[i];
 
     // jump vector
     Epetra_SerialDenseMatrix forcevec(dim,1);
@@ -1314,12 +1314,12 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     jumptan.Multiply('N','N',1,tanplane,jumpvec,0.0);
 
     // norm of tangential jumps for stick nodes
-    if (cnode->Active()== true and cnode->Data().Slip()==false)
+    if (cnode->Active()== true and cnode->FriData().Slip()==false)
     {
       for( int j=0;j<cnode->NumDof();++j)
         cnormtan+=jumptan(j,0)*jumptan(j,0);
     }
-    else if (cnode->Active()== true and cnode->Data().Slip()==true)
+    else if (cnode->Active()== true and cnode->FriData().Slip()==true)
     {
       double jumptxi = 0;
       double jumpteta = 0;
@@ -1329,8 +1329,8 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
       for (int i=0;i<dim;i++)
       {
-        jumptxi+=cnode->CoData().txi()[i]*cnode->Data().jump()[i];
-        jumpteta+=cnode->CoData().teta()[i]*cnode->Data().jump()[i];
+        jumptxi+=cnode->CoData().txi()[i]*cnode->FriData().jump()[i];
+        jumpteta+=cnode->CoData().teta()[i]*cnode->FriData().jump()[i];
 
         forcen+=cnode->MoData().n()[i]*cnode->MoData().lm()[i];
         forcetxi+=cnode->CoData().txi()[i]*cnode->MoData().lm()[i];
@@ -1563,7 +1563,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     Epetra_SerialDenseMatrix jumpvec(dim,1);
 
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->Data().jump()[i];
+      jumpvec(i,0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
     Epetra_SerialDenseMatrix temptrac(dim,1);
@@ -1572,7 +1572,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     // fill vector tractionold
     vector<double> tractionold(dim);
     for (int i=0;i<dim;i++)
-      tractionold[i] = cnode->Data().tractionold()[i];
+      tractionold[i] = cnode->FriData().tractionold()[i];
 
     for (int i=0;i<dim;i++)
       cout << "GiD " << gid << "Tractionold " << tractionold[i] << endl;  
@@ -1599,11 +1599,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))
     {
       //cout << "Node " << gid << " is stick" << endl;
-      cnode->Data().Slip() = false;
+      cnode->FriData().Slip() = false;
 
       // in the stick case, traction is trailtraction
       for (int i=0;i<dim;i++)
-        cnode->Data().traction()[i]=trailtraction[i];
+        cnode->FriData().traction()[i]=trailtraction[i];
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
@@ -1612,11 +1612,11 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     else
     {
       //cout << "Node " << gid << " is slip" << endl;
-      cnode->Data().Slip() = true;
+      cnode->FriData().Slip() = true;
 
       // in the slip case, traction is evaluated with a return map algorithm
       for (int i=0;i<dim;i++)
-        cnode->Data().traction()[i]=maxtantrac/magnitude*trailtraction[i];
+        cnode->FriData().traction()[i]=maxtantrac/magnitude*trailtraction[i];
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
@@ -1628,10 +1628,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     // the normal part was already done in AssembleRegNormalTraction
 
     // stick nodes
-    if(cnode->Active() == true && cnode->Data().Slip() == false)
+    if(cnode->Active() == true && cnode->FriData().Slip() == false)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->Data().GetDerivJump();
+      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
       map<int,double>::iterator colcurr;
 
       // loop over dimensions
@@ -1661,7 +1661,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
           for (int dim =0;dim<cnode->NumDof();++dim)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->Data().jump()[dim];
+            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->FriData().jump()[dim];
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1676,18 +1676,18 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
           for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->Data().jump()[dim];
+            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->FriData().jump()[dim];
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
       }
     }
     // slip nodes
-    else if (cnode->Active() == true && cnode->Data().Slip()== true)
+    else if (cnode->Active() == true && cnode->FriData().Slip()== true)
     {
       /******************** tanplane.deriv(jump).maxtantrac/magnidude ***/
 
-      vector<map<int,double> >& derivjump = cnode->Data().GetDerivJump();
+      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
       map<int,double>::iterator colcurr;
 
       // loop over dimensions
@@ -1717,7 +1717,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
           for (int dim =0;dim<cnode->NumDof();++dim)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->Data().jump()[dim]*maxtantrac/magnitude;
+            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->FriData().jump()[dim]*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1731,7 +1731,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
           for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->Data().jump()[dim]*maxtantrac/magnitude;
+            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->FriData().jump()[dim]*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
         }
@@ -1760,7 +1760,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*cnode->Data().jump()[dim]*kappa*pptan;
+          traction += tanplane(dimout,dim)*cnode->FriData().jump()[dim]*kappa*pptan;
 
         traction+= tractionold[dimout];
 
@@ -1786,7 +1786,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*cnode->Data().jump()[dim]*kappa*pptan;
+          traction += tanplane(dimout,dim)*cnode->FriData().jump()[dim]*kappa*pptan;
 
         traction+=tractionold[dimout];
 
@@ -1797,7 +1797,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
           for (int dim=0;dim<cnode->NumDof();++dim)
           {
-            double val =-colcurr->second*n[dim]*cnode->Data().jump()[dim]*traction/magnitude*pptan*kappa;
+            double val =-colcurr->second*n[dim]*cnode->FriData().jump()[dim]*traction/magnitude*pptan*kappa;
             for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
             {
               double val1 = val*temp[dimrow];
@@ -1812,7 +1812,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*cnode->Data().jump()[dim]*kappa*pptan;
+          traction += tanplane(dimout,dim)*cnode->FriData().jump()[dim]*kappa*pptan;
 
           traction += tractionold[dimout];
 
@@ -1824,7 +1824,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
           {
             int col = colcurr->first;
 
-            double val =-colcurr->second*n[dimout]*cnode->Data().jump()[dim]*traction/magnitude*pptan*kappa;
+            double val =-colcurr->second*n[dimout]*cnode->FriData().jump()[dim]*traction/magnitude*pptan*kappa;
 
             for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
             {
@@ -1921,7 +1921,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     Epetra_SerialDenseMatrix jumpvec(dim,1);
 
     for (int i=0;i<dim;i++)
-      jumpvec(i,0) = cnode->Data().jump()[i];
+      jumpvec(i,0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
     Epetra_SerialDenseMatrix temptrac(dim,1);
@@ -1947,7 +1947,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))    {
       //cout << "Node " << gid << " is stick" << endl;
-      cnode->Data().Slip() = false;
+      cnode->FriData().Slip() = false;
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
@@ -1956,7 +1956,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     else
     {
       //cout << "Node " << gid << " is slip" << endl;
-      cnode->Data().Slip() = true;
+      cnode->FriData().Slip() = true;
 
       // compute lagrange multipliers and store into node
       for( int j=0;j<dim;++j)
@@ -1968,10 +1968,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     // the normal part was already done in AssembleRegNormalTraction
 
     // stick nodes
-    if(cnode->Active() == true && cnode->Data().Slip() == false)
+    if(cnode->Active() == true && cnode->FriData().Slip() == false)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->Data().GetDerivJump();
+      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
       map<int,double>::iterator colcurr;
 
       // loop over dimensions
@@ -2001,7 +2001,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           for (int dim =0;dim<cnode->NumDof();++dim)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->Data().jump()[dim]);
+            double val =-pptan*kappa*(colcurr->second)*n[dim]*(cnode->FriData().jump()[dim]);
             val = val - (colcurr->second)*n[dim]*(cnode->MoData().lmuzawa()[dim]);
             cnode->AddDerivZValue(dimrow,col,val);
           }
@@ -2017,7 +2017,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->Data().jump()[dim]);
+            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*(cnode->FriData().jump()[dim]);
             val = val-(colcurr->second)*n[dimrow]*(cnode->MoData().lmuzawa()[dim]);
             cnode->AddDerivZValue(dimrow,col,val);
           }
@@ -2026,10 +2026,10 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     }
 
     // slip nodes
-    else if (cnode->Active() == true && cnode->Data().Slip()== true)
+    else if (cnode->Active() == true && cnode->FriData().Slip()== true)
     {
       /***************************************** tanplane.deriv(jump) ***/
-      vector<map<int,double> >& derivjump = cnode->Data().GetDerivJump();
+      vector<map<int,double> >& derivjump = cnode->FriData().GetDerivJump();
       map<int,double>::iterator colcurr;
 
       // loop over dimensions
@@ -2059,7 +2059,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           for (int dim =0;dim<cnode->NumDof();++dim)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->Data().jump()[dim];
+            double val =-pptan*kappa*(colcurr->second)*n[dim]*cnode->FriData().jump()[dim];
             val = (val - (colcurr->second)*n[dim]*(cnode->MoData().lmuzawa()[dim]))*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
@@ -2075,7 +2075,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           for (int dimrow =0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = colcurr->first;
-            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->Data().jump()[dim];
+            double val =-pptan*kappa*(colcurr->second)*n[dimrow]*cnode->FriData().jump()[dim];
             val = (val-(colcurr->second)*n[dimrow]*(cnode->MoData().lmuzawa()[dim]))*maxtantrac/magnitude;
             cnode->AddDerivZValue(dimrow,col,val);
           }
@@ -2117,7 +2117,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->Data().jump()[dim]*kappa*pptan);
+          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->FriData().jump()[dim]*kappa*pptan);
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
@@ -2141,7 +2141,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->Data().jump()[dim]*kappa*pptan);
+          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->FriData().jump()[dim]*kappa*pptan);
 
         // loop over all entries of the current derivative map
         for (colcurr=derivn[dimout].begin();colcurr!=derivn[dimout].end();++colcurr)
@@ -2150,7 +2150,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
 
           for (int dim=0;dim<cnode->NumDof();++dim)
           {
-            double val =-colcurr->second*n[dim]*(lmuzawa(dim,0)+cnode->Data().jump()[dim]*pptan*kappa)*traction/magnitude;
+            double val =-colcurr->second*n[dim]*(lmuzawa(dim,0)+cnode->FriData().jump()[dim]*pptan*kappa)*traction/magnitude;
             for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
             {
               double val1 = val*temp[dimrow];
@@ -2165,7 +2165,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
       {
         double traction = 0;
         for (int dim=0;dim<cnode->NumDof();++dim)
-          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->Data().jump()[dim]*kappa*pptan);
+          traction += tanplane(dimout,dim)*(lmuzawa(dim,0)+cnode->FriData().jump()[dim]*kappa*pptan);
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
@@ -2173,7 +2173,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
           for (colcurr=derivn[dim].begin();colcurr!=derivn[dim].end();++colcurr)
           {
             int col = colcurr->first;
-            double val =-colcurr->second*n[dimout]*(lmuzawa(dim,0)+cnode->Data().jump()[dim]*pptan*kappa)*traction/magnitude;
+            double val =-colcurr->second*n[dimout]*(lmuzawa(dim,0)+cnode->FriData().jump()[dim]*pptan*kappa)*traction/magnitude;
 
             for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
             {
@@ -3051,7 +3051,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     // more information from node
     double* txi = cnode->CoData().txi();
     double* teta = cnode->CoData().teta();
-    double* jump = cnode->Data().jump();
+    double* jump = cnode->FriData().jump();
         
     // iterator for maps
     map<int,double>::iterator colcurr;
@@ -3106,7 +3106,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     /*** 1 ************************************** tangent.deriv(jump) ***/
 
     // get linearization of jump vector
-    vector<map<int,double> > derivjump = cnode->Data().GetDerivJump();
+    vector<map<int,double> > derivjump = cnode->FriData().GetDerivJump();
     
     if (derivjump.size()<1)
       dserror ("AssembleLinStick: Derivative of jump is not exiting!");
@@ -3220,7 +3220,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //    int row = stickt->GID(i);
 //    double* xi = cnode->xspatial();
 //    double* txi = cnode->CoData().txi();
-//    double* jump = cnode->Data().jump();
+//    double* jump = cnode->FriData().jump();
 //    double& wgap = cnode->CoData().Getg();
 //
 //    double utan = 0;
@@ -3273,7 +3273,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //
 //    // we need the nodal entries of the D-matrix and the old one
 //    double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-//    double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
+//    double Dold= (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
 //
 //    // loop over all derivative maps (=dimensions)
 //    for (int dim=0;dim<cnode->NumDof();++dim)
@@ -3290,7 +3290,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 //
 //    // we need the nodal entries of the M-matrix and the old one
 //    vector<map<int,double> > mmap = cnode->MoData().GetM();
-//    vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+//    vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 //
 //    // create a set of nodes including nodes according to M entries
 //    // from current and previous time step
@@ -3550,7 +3550,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
        }
 
       // more information from node
-      double* jump = cnode->Data().jump();
+      double* jump = cnode->FriData().jump();
       double* n = cnode->MoData().n();
       double* txi = cnode->CoData().txi();
       double* teta = cnode->CoData().teta();
@@ -3613,7 +3613,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // in the case of frictionless contact for nodes just coming into
       // contact, the frictionless contact condition is applied.
-      if (cnode->Data().ActiveOld()==false)
+      if (cnode->FriData().ActiveOld()==false)
       {
         friclessandfirst=true;
         for (int dim=0;dim<cnode->NumDof();++dim)
@@ -3730,7 +3730,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
 
         // get linearization of jump vector
-        vector<map<int,double> > derivjump = cnode->Data().GetDerivJump();
+        vector<map<int,double> > derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
         for (int dim=0;dim<cnode->NumDof();++dim)
@@ -3999,7 +3999,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
 
       // get more information from node
-      double* jump = cnode->Data().jump();
+      double* jump = cnode->FriData().jump();
       double* n = cnode->MoData().n();
       double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
@@ -4048,7 +4048,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         double val = (prefactor*ztan+sum-frcoeff*znor)*txi[dim]-frcoeff*(ztan+ct*jumptan)*n[dim];
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = txi[dim];
+        if (cnode->FriData().ActiveOld()==false) val = txi[dim];
 #endif
 
         // do not assemble zeros into matrix
@@ -4070,7 +4070,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       rhsnode(0) = (value1+value2+value3);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) rhsnode(0) = 0;
+        if (cnode->FriData().ActiveOld()==false) rhsnode(0) = 0;
 #endif
 
       lm[0] = cnode->Dofs()[1];
@@ -4084,7 +4084,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // we need the nodal entries of the D-matrix and the old one
       double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
 
       // loop over all derivative maps (=dimensions)
       for (int dim=0;dim<cnode->NumDof();++dim)
@@ -4094,7 +4094,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
        //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
 
@@ -4106,7 +4106,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // we need the nodal entries of the M-matrix and the old one
       vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
@@ -4115,8 +4115,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // iterator
       set<int>::iterator mcurr;
 
-      set <int> mnodescurrent = cnode->Data().GetMNodes();
-      set <int> mnodesold = cnode->Data().GetMNodesOld();
+      set <int> mnodescurrent = cnode->FriData().GetMNodes();
+      set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
       for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
         mnodes.insert(*mcurr);
@@ -4145,7 +4145,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
          // do not assemble zeros into matrix
@@ -4163,7 +4163,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
        // do not assemble zeros into matrix
@@ -4192,7 +4192,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
           // do not assemble zeros into matrix
@@ -4218,7 +4218,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4245,7 +4245,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->Data().ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
           // do not assemble zeros into matrix
@@ -4272,7 +4272,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4302,7 +4302,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
           // do not assemble zeros into matrix
@@ -4340,7 +4340,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into matrix
@@ -4363,7 +4363,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4390,7 +4390,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4417,7 +4417,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
            // do not assemble zeros into matrix
@@ -4451,7 +4451,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
              // do not assemble zeros into matrix
@@ -4474,7 +4474,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            //cout << "10 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val =0;
+        if (cnode->FriData().ActiveOld()==false) val =0;
 #endif
 
            // do not assemble zeros into s matrix
@@ -4526,7 +4526,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         dtmap[0].insert(pair<int,double>(colcurr->first,(-1)*colcurr->second));
 
       // get more information from node
-      double* jump = cnode->Data().jump();
+      double* jump = cnode->FriData().jump();
       double* txi = cnode->CoData().txi();
       double* xi = cnode->xspatial();
       double* z = cnode->MoData().lm();
@@ -4578,7 +4578,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         double val = (prefactor*ztan+sum-frbound)*txi[dim];
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = txi[dim];
+        if (cnode->FriData().ActiveOld()==false) val = txi[dim];
 #endif
 
         // do not assemble zeros into matrix
@@ -4598,7 +4598,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       rhsnode(0) = (value1+value2);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) rhsnode(0) = 0;
+        if (cnode->FriData().ActiveOld()==false) rhsnode(0) = 0;
 #endif
 
       lm[0] = cnode->Dofs()[1];
@@ -4612,7 +4612,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // we need the nodal entries of the D-matrix and the old one
       double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold= (cnode->Data().GetDOld()[0])[cnode->Dofs()[0]];
+      double Dold= (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
 
       if (abs(Dold)<0.0001)
         dserror ("Error:No entry for Dold");
@@ -4624,7 +4624,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
        //cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
        // do not assemble zeros into matrix
@@ -4635,7 +4635,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // we need the nodal entries of the M-matrix and the old one
       vector<map<int,double> > mmap = cnode->MoData().GetM();
-      vector<map<int,double> > mmapold = cnode->Data().GetMOld();
+      vector<map<int,double> > mmapold = cnode->FriData().GetMOld();
 
       // create a set of nodes including nodes according to M entries
       // from current and previous time step
@@ -4644,8 +4644,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // iterator
       set<int>::iterator mcurr;
 
-      set <int> mnodescurrent = cnode->Data().GetMNodes();
-      set <int> mnodesold = cnode->Data().GetMNodesOld();
+      set <int> mnodescurrent = cnode->FriData().GetMNodes();
+      set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
       for (mcurr=mnodescurrent.begin(); mcurr != mnodescurrent.end(); mcurr++)
         mnodes.insert(*mcurr);
@@ -4674,7 +4674,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
          // do not assemble zeros into matrix
@@ -4692,7 +4692,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         //cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
         // do not assemble zeros into matrix
@@ -4721,7 +4721,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->Data().ActiveOld()==false) val = 0;
+          if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
           // do not assemble zeros into matrix
           if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
@@ -4746,7 +4746,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->Data().ActiveOld()==false) val = 0;
+            if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4773,7 +4773,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->Data().ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
             // do not assemble zeros into matrix
@@ -4800,7 +4800,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4830,7 +4830,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
           // do not assemble zeros into matrix
@@ -4868,7 +4868,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into matrix
@@ -4891,7 +4891,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4918,7 +4918,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -4945,7 +4945,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            //cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
            // do not assemble zeros into matrix
@@ -4979,7 +4979,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->Data().ActiveOld()==false) val = 0;
+        if (cnode->FriData().ActiveOld()==false) val = 0;
 #endif
 
              // do not assemble zeros into matrix
@@ -5060,7 +5060,7 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
 			// check if frictional node is in slip state
 			if (friction_)
 			{
-				if (static_cast<FriNode*>(cnode)->Data().Slip())
+				if (static_cast<FriNode*>(cnode)->FriData().Slip())
 				{
 					myslipnodegids.push_back(cnode->Id());
 

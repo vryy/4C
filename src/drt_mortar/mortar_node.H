@@ -373,6 +373,7 @@ public:
 
   */
   inline MORTAR::MortarNodeDataContainer& MoData() { return *modata_; }
+  inline RCP<MORTAR::MortarNodeDataContainer> PointerMoData() { return modata_; }
 
   //@}
 

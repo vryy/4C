@@ -2916,7 +2916,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         tz = frinode->CoData().txi()[0]*frinode->MoData().lm()[0] + frinode->CoData().txi()[1]*frinode->MoData().lm()[1];
 
         // compute tangential part of jump
-        tjump = frinode->CoData().txi()[0]*frinode->Data().jump()[0] + frinode->CoData().txi()[1]*frinode->Data().jump()[1];
+        tjump = frinode->CoData().txi()[0]*frinode->FriData().jump()[0] + frinode->CoData().txi()[1]*frinode->FriData().jump()[1];
       }
 
       // check nodes of inactive set *************************************
@@ -2935,8 +2935,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           cnode->Active() = true;
           activesetconv_ = false;
 #ifdef CONTACTFRICTIONLESSFIRST
-       if (static_cast<FriNode*>(cnode)->Data().ActiveOld()==false)
-         static_cast<FriNode*>(cnode)->Data().Slip() = true;
+       if (static_cast<FriNode*>(cnode)->FriData().ActiveOld()==false)
+         static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #endif
         }
       }
@@ -2959,7 +2959,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           activesetconv_ = false;
           
           // friction
-          if (friction_) static_cast<FriNode*>(cnode)->Data().Slip() = false;     
+          if (friction_) static_cast<FriNode*>(cnode)->FriData().Slip() = false;     
         }
         
         // only do something for friction
@@ -2972,14 +2972,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
             double frbound = Params().get<double>("FRBOUND");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(frinode->Data().Slip() == false)
+            if(frinode->FriData().Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 frinode->Data().Slip() = true;
+                 frinode->FriData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -2991,15 +2991,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->Data().ActiveOld()==false)
+                if(frinode->FriData().ActiveOld()==false)
                 {}
                 else
                 {
-                 frinode->Data().Slip() = false;
+                 frinode->FriData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                frinode->Data().Slip() = false;
+                frinode->FriData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -3013,14 +3013,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
             double frcoeff = Params().get<double>("FRCOEFF");
             double ct = Params().get<double>("SEMI_SMOOTH_CT");
 
-            if(frinode->Data().Slip() == false)
+            if(frinode->FriData().Slip() == false)
             {
               // check (tz+ct*tjump)-frbound <= 0
               if(abs(tz+ct*tjump)-frcoeff*nz <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 frinode->Data().Slip() = true;
+                 frinode->FriData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -3032,15 +3032,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->Data().ActiveOld()==false)
+                if(frinode->FriData().ActiveOld()==false)
                 {}
                 else
                 {
-                 frinode->Data().Slip() = false;
+                 frinode->FriData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                frinode->Data().Slip() = false;
+                frinode->FriData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -3248,8 +3248,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           tz[0] += frinode->CoData().txi()[i]*frinode->MoData().lm()[i];
           if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->MoData().lm()[i];
 
-           tjump[0] += frinode->CoData().txi()[i]*frinode->Data().jump()[i];
-           if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->Data().jump()[i];
+           tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
+           if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
         }
 
         // evaluate euclidean norm |tz+ct.tjump|
@@ -3279,10 +3279,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           if (friction_)
           {
             // nodes coming into contact
-            static_cast<FriNode*>(cnode)->Data().Slip() = true;
+            static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (static_cast<FriNode*>(cnode)->Data().ActiveOld()==false)
-              static_cast<FriNode*>(cnode)->Data().Slip() = true;
+            if (static_cast<FriNode*>(cnode)->FriData().ActiveOld()==false)
+              static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #endif
           } 
         }
@@ -3304,7 +3304,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           activesetconv_ = false;
           
           // friction
-          if (friction_) static_cast<FriNode*>(cnode)->Data().Slip() = false;
+          if (friction_) static_cast<FriNode*>(cnode)->FriData().Slip() = false;
         }
         
         // only do something for friction
@@ -3316,14 +3316,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             FriNode* frinode = static_cast<FriNode*>(cnode);
             double frbound = Params().get<double>("FRBOUND");
 
-            if(frinode->Data().Slip() == false)
+            if(frinode->FriData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0
               if(euclidean-frbound <= 0) {}
                 // do nothing (stick was correct)
               else
               {
-                 frinode->Data().Slip() = true;
+                 frinode->FriData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -3335,15 +3335,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->Data().ActiveOld()==false)
+                if(frinode->FriData().ActiveOld()==false)
                 {}
                 else
                 {
-                 frinode->Data().Slip() = false;
+                 frinode->FriData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                frinode->Data().Slip() = false;
+                frinode->FriData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
@@ -3355,7 +3355,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           {
             FriNode* frinode = static_cast<FriNode*>(cnode);
             double frcoeff = Params().get<double>("FRCOEFF");
-            if(frinode->Data().Slip() == false)
+            if(frinode->FriData().Slip() == false)
             {
               // check (euclidean)-frbound <= 0
 #ifdef CONTACTCOMPHUEBER
@@ -3366,7 +3366,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
                 // do nothing (stick was correct)
               else
               {
-                 frinode->Data().Slip() = true;
+                 frinode->FriData().Slip() = true;
                  activesetconv_ = false;
               }
             }
@@ -3382,15 +3382,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->Data().ActiveOld()==false)
+                if(frinode->FriData().ActiveOld()==false)
                 {}
                 else
                 {
-                 frinode->Data().Slip() = false;
+                 frinode->FriData().Slip() = false;
                  activesetconv_ = false;
                 }
 #else
-                frinode->Data().Slip() = false;
+                frinode->FriData().Slip() = false;
                 activesetconv_ = false;
 #endif
               }
