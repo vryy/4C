@@ -1394,7 +1394,7 @@ void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
       if (Comm().MyPID()==cnode->Owner())
       {
         mmap = cnode->MoData().GetM();
-        mnodes = cnode->Data().GetMNodes();
+        mnodes = cnode->FriData().GetMNodes();
         mastersize = mnodes.size();
         mcurr = mnodes.begin();
       }
