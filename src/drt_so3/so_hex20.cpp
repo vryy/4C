@@ -293,12 +293,9 @@ void DRT::ELEMENTS::So_hex20::soh20_expol
   {
     int adjele = Nodes()[i]->NumElement();
     int gnid = NodeIds()[i];
-    (*(expolstresses(0)))[gnid] += nodalstresses(i,0)/adjele;
-    (*(expolstresses(1)))[gnid] += nodalstresses(i,1)/adjele;
-    (*(expolstresses(2)))[gnid] += nodalstresses(i,2)/adjele;
-    (*(expolstresses(3)))[gnid] += nodalstresses(i,3)/adjele;
-    (*(expolstresses(4)))[gnid] += nodalstresses(i,4)/adjele;
-    (*(expolstresses(5)))[gnid] += nodalstresses(i,5)/adjele;
+    int lnid = expolstresses.Map().LID(gnid);
+    for (int j=0;j<6;j++)
+      (*(expolstresses(j)))[lnid] += nodalstresses(i,j)/adjele;
   }
 }
 

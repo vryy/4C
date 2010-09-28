@@ -480,10 +480,11 @@ void DRT::ELEMENTS::Wall1::w1_expol
   {
     int adjele = Nodes()[i]->NumElement();
     int gnid = NodeIds()[i];
-    (*(expolstress(0)))[gnid] += nodalstresses(i,0)/adjele;
-    (*(expolstress(1)))[gnid] += nodalstresses(i,1)/adjele;
-    (*(expolstress(2)))[gnid] += nodalstresses(i,2)/adjele;
-    (*(expolstress(3)))[gnid] += nodalstresses(i,3)/adjele;
+    int lnid = expolstress.Map().LID(gnid);
+    (*(expolstress(0)))[lnid] += nodalstresses(i,0)/adjele;
+    (*(expolstress(1)))[lnid] += nodalstresses(i,1)/adjele;
+    (*(expolstress(2)))[lnid] += nodalstresses(i,2)/adjele;
+    (*(expolstress(3)))[lnid] += nodalstresses(i,3)/adjele;
   }
 }
 

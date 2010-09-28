@@ -300,8 +300,9 @@ void DRT::ELEMENTS::So_tet4::so_tet4_expol
   {
     int adjele = Nodes()[i]->NumElement();
     int gnid = NodeIds()[i];
+    int lnid = expolstresses.Map().LID(gnid);
     for (int j=0;j<6;j++)
-      (*(expolstresses(j)))[gnid] += nodalstresses(i,j)/adjele;
+      (*(expolstresses(j)))[lnid] += nodalstresses(i,j)/adjele;
   }
   return;
 }
