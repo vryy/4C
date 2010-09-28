@@ -118,7 +118,7 @@ public:
 	\brief Get first element
 		
 	*/
-	inline const DRT::ELEMENTS::Beam3& Element2() { return element1_;};
+	inline const DRT::ELEMENTS::Beam3& Element2() { return element2_;};
 
   //! @name public evaluation methods
 	
