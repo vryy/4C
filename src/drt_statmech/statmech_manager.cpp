@@ -3843,7 +3843,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 	for (int i=0; i<N; ++i)
 	{
 		//generate random number between 0 and i
-		j = floor((i + 1.0)*uniformclosedopengen_.random());
+		j = (int)floor((i + 1.0)*uniformclosedopengen_.random());
 
 		/*exchange values at positions i and j (note: value at position i is i due to above initialization
 		 *and because so far only positions <=i have been changed*/
