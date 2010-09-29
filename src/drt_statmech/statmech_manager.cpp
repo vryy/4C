@@ -65,15 +65,17 @@ currentelements_(discret.NumGlobalElements()),
 outputfilenumber_(-1),
 discret_(discret)
 {
-  //initialize random generator on this processor
-
-  //random generator for seeding only
-  ranlib::UniformClosed<double> seedgenerator;
-  //seeding random generator independently on each processor
-  int seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
-  //seedvariable = 1;
-  seedgenerator.seed((unsigned int)seedvariable);
-
+  //if input flag is set random number seed should be the same for all realizations
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+  {
+  	if(!discret_.Comm().MyPID())
+  		cout<<"StatMech: Application of reproducable random numbers"<<endl;
+    //random generator for seeding only (necessary for thermal noise)
+    ranlib::Normal<double> seedgenerator(0,1);
+    //seeding random generator
+    int seedvariable = statmechparams_.get<int>("INITIALSEED", 0);
+    seedgenerator.seed( (unsigned int)seedvariable );
+  }
 
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
    * here we provide a fully overlapping column map which is required by the search tree to look for each
@@ -1968,7 +1970,23 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 #endif // #ifdef MEASURETIME
 	/*first we modify the displacement vector so that current nodal position at the end of current time step complies with
 	 * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
+
+	//Epetra_Vector disrowpre = disrow;
+
 	PeriodicBoundaryShift(disrow, ndim);
+
+	// debuggin cout
+	/*for(int i=0; i<discret_.NumMyRowNodes(); i++)
+	{
+		DRT::Node* node = discret_.lRowNode(i);
+		std::vector<int> dofnode = discret_.Dof(node);
+		for(int j=0; j<3; j++)
+			if(node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<0.0 || node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]>statmechparams_.get<double>("PeriodLength", 0.0))
+			{
+				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrowpre entry "<<i<<": "<<node->X()[j]+disrowpre[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
+				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrow entry    "<<i<<": "<<node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
+			}
+	}*/
 
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
 	if (Teuchos::getIntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
@@ -1977,7 +1995,6 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 		if (Teuchos::getIntegralValue<int>(statmechparams_, "CRSLNKDIFFUSION"))
 		{
 			double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
-
 			CrosslinkerDiffusion(disrow, 0.0, standarddev, dt);
 		}
 
@@ -2029,6 +2046,12 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 				currrot(1) = discol[discret_.DofColMap()->LID(dofnode[4])];
 				currrot(2) = discol[discret_.DofColMap()->LID(dofnode[5])];
 			}
+
+			// debugging cout
+			/*for(int j=0; j<(int)currpos.M(); j++)
+				if(currpos(j)<0.0 || currpos(j)>statmechparams_.get<double>("PeriodLength", 0.0))
+					cout<<"Proc "<<discret_.Comm().MyPID()<<": currpos(discol["<<i<<"] = "<<currpos<<endl;*/
+
 			currentpositions[node->LID()] = currpos;
 			currentrotations[node->LID()] = currrot;
 		}
@@ -2144,7 +2167,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 				}
 				/*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
 				 *to lie again in the domain*/
-				if (node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])] < 0)
+				if (node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])] < 0.0)
 				{
 					disrow[discret_.DofRowMap()->LID(dofnode[j])] += statmechparams_.get<double> ("PeriodLength", 0.0);
 
@@ -2479,6 +2502,7 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 	int N = statmechparams_.get<int>("SEARCHRES", 1);
 
 	/*nodes*/
+	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : partitioning of nodes"<<endl;
 	// loop over node positions to map their column map LIDs to partitions
 	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
 		for(int j=0; j<(int)nodeinpartition.size(); j++) // nodeinpartition.size==3
@@ -2486,10 +2510,13 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 			int partition = (int)std::floor((posi->second)(j)/pl*(double)N);
 			if(partition==N)
 				partition--;
+			if(partition<0 || partition>N-1)
+				cout<<"Proc "<<discret_.Comm().MyPID()<<": pos("<<j<<") = "<<(posi->second)(j)<<", partition = "<<partition<<endl;
 			nodeinpartition[j][partition].push_back((int)(posi->first)); //column lid
 		}
 
 	/*crosslink molecules*/
+	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : Epetra_Export"<<endl;
 	// Export crosslinkerpositions_ to transfermap_ format (kind of a row map format for crosslink molecules)
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
@@ -2505,7 +2532,7 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 	// Export to transfer map format
 	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-
+	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : partitioning of crosslink molecules"<<endl;
 	for(int i=0; i<crosslinkpartitiontrans.MyLength(); i++)
 	{
 	  // mark entries with double-bonded crosslink molecules
@@ -2526,9 +2553,10 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 			}
 	  }
 	}
+	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : DetectNeighbourNodes()...";
 	// detection of nodes within search proximity of the crosslink molecules
 	DetectNeighbourNodes(currentpositions, &nodeinpartition, numbondtrans, crosslinkerpositionstrans, crosslinkpartitiontrans, neighbourslid);
-
+	//cout<<"done!"<<endl;
 	return;
 }//void StatMechManager::PartitioningAndSearch
 
@@ -2721,13 +2749,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
 	ranlib::UniformClosed<double> UniformGen;
 
-	/*if FIXEDSEED is set to Yes, reproducible simulations are required. Note: Blitz uses a different
-	 *seed for each type of random generator (e.g. normal, uniform, ...); thus former seed e.g. for
-	 *normally distributed random generators are not sufficient to guarantee a seed for the generator
-	 *UniformGen*/
-	if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
-		UniformGen.seed((unsigned int)(time_/dt));
-	/*</preliminaries>*/
 
 	//Volume partitioning, assignment of nodes and molecules to partitions, search for neighbours
 	// map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
@@ -3139,13 +3160,6 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
 	ranlib::UniformClosed<double> UniformGen;
 
-	/*if FIXEDSEED is set to Yes, reproducible simulations are required. Note: Blitz uses a different
-	 *seed for each type of random generator (e.g. normal, uniform, ...); thus former seed e.g. for
-	 *normally distributed random generators are not sufficient to guarantee a seed for the generator
-	 *UniformGen*/
-	if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
-		UniformGen.seed((unsigned int)(time_/dt));
-
 	//create Epetra_MultiVector which saves on proc 0 for each col map node to which nodes (GID) crosslinker is to be set
 	Epetra_MultiVector crosslinkstobeadded(nodecolmap,statmechparams_.get<int>("N_CROSSMAX",0),true);
 	crosslinkstobeadded.PutScalar(-1);
@@ -3441,9 +3455,6 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
 	ranlib::UniformClosed<double> UniformGen;
-
-	if (Teuchos::getIntegralValue<int>(statmechparams_, "FIXEDSEED"))
-		UniformGen.seed((unsigned int) (time_ / dt));
 
 	// SEARCH
 	// search and setup for the deletion of elements is done by Proc 0
@@ -4190,8 +4201,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 {
 	/* Here, the diffusion of crosslink molecules is handled.
 	 * Depending on the number of occupied binding spots of the molecule, its movement
-	 * is calculated differently. As a matter of convenience, preparations for the
-	 * visualization of the crosslink molecules are made within this method, too.
+	 * is calculated differently.
 	 */
 
 	// export row displacement to column map format
@@ -4201,11 +4211,9 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 	// diffusion processed by Proc 0
 	if (discret_.Comm().MyPID()==0)
 	{
+
 		// random number generator with normal distribution
 		ranlib::Normal<double> normalGen(mean, standarddev);
-
-		if (Teuchos::getIntegralValue<int>(statmechparams_, "FIXEDSEED"))
-			normalGen.seed((unsigned int) (time_ / dt));
 
 		// bonding cases
 		for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
@@ -4332,8 +4340,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// generate random numbers for each crosslinker and its respective components E [0.0; PeriodLength]
 	ranlib::UniformClosed<double> UniformGen;
 
-	if (Teuchos::getIntegralValue<int>(statmechparams_, "FIXEDSEED"))
-		UniformGen.seed(0);
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions

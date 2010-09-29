@@ -1262,6 +1262,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SEARCHRES",1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
   //search interval
   IntParameter("SEARCHINTERVAL",1,"search for neighbours every SEARCHINTERVAL steps",&statmech);
+  //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
+  IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
   //search probability
   DoubleParameter("SEARCHPROBABILITY",1.0,"value determining the probability of whether to conduct a search for neighbours",&statmech);
   //Reading whether DBCs shall be applied to broken elements
@@ -1273,7 +1275,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
-
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

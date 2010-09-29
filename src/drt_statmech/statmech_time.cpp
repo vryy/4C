@@ -57,7 +57,7 @@ unconvergedsteps_(0),
 isinit_(false),
 deltadbc_(LINALG::CreateVector(*(discret_.DofRowMap()),true))
 {
-  Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
+	Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
 
   //maximal number of random numbers to be generated per time step for any column map element of this processor
@@ -157,18 +157,10 @@ void StatMechTime::Integrate()
   int ndim=psize.get<int>("DIM");
 
 
+
+
   for (int i=step; i<nstep; ++i)
   {
-    //if input flag is set random number seed should be the same for all realizations
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"FIXEDSEED"))
-    {
-      //random generator for seeding only (necessary for thermal noise)
-      ranlib::Normal<double> seedgenerator(0,1);
-      //seeding random generator
-      int seedvariable = i;
-      seedgenerator.seed((unsigned int)seedvariable);
-    }
-
 
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
@@ -194,7 +186,7 @@ void StatMechTime::Integrate()
       }
 
       statmechmanager_->time_ = time + dt;
-
+  		Epetra_Vector discol(*discret_.DofColMap(), true);
       do
       {
         //assuming that iterations will converge
@@ -221,7 +213,6 @@ void StatMechTime::Integrate()
 
         ConsistentPredictor(randomnumbers);
 
-
         if(ndim ==3)
           PTC(randomnumbers);
         else
@@ -241,6 +232,28 @@ void StatMechTime::Integrate()
 
       const double t_admin = Teuchos::Time::wallTime();
       UpdateandOutput();
+
+      // test cout environment for debugging
+  		/*LINALG::Export(*dis_, discol);
+
+			for (int j=0; j<discret_.NumMyColNodes(); ++j)
+			{
+				//get pointer at a node
+				const DRT::Node* node = discret_.lColNode(j);
+
+				//get GIDs of this node's degrees of freedom
+				std::vector<int> dofnode = discret_.Dof(node);
+
+				LINALG::Matrix<3, 1> currpos;
+
+				currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
+				currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
+				currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+
+				for(int k=0; k<(int)currpos.M(); k++)
+					if(currpos(k)<0.0 || currpos(k)>statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
+						cout<<"Proc "<<discret_.Comm().MyPID()<<" postUpAndOut: currpos("<<k<<") = "<<currpos(k)<<endl;
+			}*/
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
