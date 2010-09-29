@@ -180,7 +180,7 @@ public:
   /*!
   \brief Return ptr to vector of element ptrs
   */
-  virtual DRT::Element** Elements()
+  virtual inline DRT::Element** Elements()
   { if (NumElement()) return &element_[0]; else return NULL; }
 
   /*!
