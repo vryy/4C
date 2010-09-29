@@ -36,7 +36,7 @@ using namespace Teuchos;
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#define ALPHA_NSTET       0.1    ///< stabilization parameter for vol-dev split stabilization
+#define ALPHA_NSTET       0.3    ///< stabilization parameter for vol-dev split stabilization
 #define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
 #define MIS_MIN_PATCHSIZE 2      ///< minimum MIS patch size required
 
@@ -100,11 +100,11 @@ private:
   // map of column NStet elements
   map<int,DRT::ELEMENTS::NStet*>          elecids_;
 
-  // map of nodal stresses
-  map<int,vector<double> >                nodestress_;
-
-  // map of nodal stresses
-  map<int,vector<double> >                nodestrain_;
+  // nodal stresses
+  Teuchos::RCP<Epetra_MultiVector>        nstress_;
+  
+  // nodal strains
+  Teuchos::RCP<Epetra_MultiVector>        nstrain_;
 
   // vector of elements adjacent to each row node
   map<int,vector<DRT::ELEMENTS::NStet*> > adjele_;
@@ -118,14 +118,24 @@ private:
   // contains only MIS nodes
   // indicate whether MIS patch is identical to patch in adjele_
   map<int,bool>                           pstab_ident_patch_;
+  
   // vector of elements associated with an MIS node
   // if patch is identical to adjele_, then length is zero here
   map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
+  
   // adjnode and adjlm for non-identical patches only
   map<int,map<int,DRT::Node*> >           pstab_adjnode_;
   map<int,vector<int> >                   pstab_adjlm_;
   
-
+  // vectors for visualization of stress and strain
+  Teuchos::RCP<Epetra_MultiVector>        pstab_stress_;
+  Teuchos::RCP<Epetra_MultiVector>        pstab_strain_;
+  
+  // map indicating which element is associated with which MIS noderids
+  // key is column element gid
+  // value is MIS node gid
+  map<int,int>                            pstab_cid_mis_;
+  Teuchos::RCP<Epetra_Map>                pstab_misstressout_;
 
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
@@ -138,7 +148,9 @@ private:
                         map<int,DRT::Node*>*            ps_adjnode,
                         vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
                         vector<double>*                 nodalstress,
+                        vector<double>*                 misstress,
                         vector<double>*                 nodalstrain,
+                        vector<double>*                 misstrain,
                         const INPAR::STR::StressType    iostress,
                         const INPAR::STR::StrainType    iostrain);
 
@@ -451,12 +463,16 @@ protected:
   }
 
   //! standards displ. tet4 calc routine
-  virtual void nstetnlnstiffmass(vector<int>&              lm,
-                                vector<double>&           disp,
-                                vector<double>&           residual,
-                                LINALG::Matrix<12,12>*    stiffmatrix,
-                                LINALG::Matrix<12,12>*    massmatrix,
-                                LINALG::Matrix<12,1>*    force);
+  virtual void nstetnlnstiffmass(vector<int>&                    lm,
+                                vector<double>&                  disp,
+                                vector<double>&                  residual,
+                                LINALG::Matrix<12,12>*           stiffmatrix,
+                                LINALG::Matrix<12,12>*           massmatrix,
+                                LINALG::Matrix<12,1>*            force,
+                                LINALG::Matrix<1,6>*             elestress,
+                                LINALG::Matrix<1,6>*             elestrain,
+                                const INPAR::STR::StressType     iostress,
+                                const INPAR::STR::StrainType     iostrain);
 
   //! lump mass matrix (bborn 07/08)
   void nstetlumpmass(LINALG::Matrix<12,12>* emass);

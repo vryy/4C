@@ -152,7 +152,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      nstetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
+      nstetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,
+                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) nstetlumpmass(&elemat2);
     }
     break;
@@ -170,7 +171,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<12,12>* elemat1ptr = NULL;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
-      nstetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1);
+      nstetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1,
+                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -180,31 +182,73 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        // The element does not calc stresses, it just takes the nodal
-        // stresses/strains that have been computed by the register class
+        //------------------------------- compute element stress from stabilization
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         if (stressdata==null) dserror("Cannot get stress 'data'");
         if (straindata==null) dserror("Cannot get strain 'data'");
-        LINALG::Matrix<4,6> stress;
-        LINALG::Matrix<4,6> strain;
-        map<int,vector<double> >& nodestress = ElementType().nodestress_;
-        map<int,vector<double> >& nodestrain = ElementType().nodestrain_;
-        for (int i=0; i<NumNode(); ++i)
+        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress",INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        LINALG::Matrix<1,6> stress(true); //hier geht's weiter
+        LINALG::Matrix<1,6> strain(true);
+        LINALG::Matrix<1,6> elestress(true); // set to zero
+        LINALG::Matrix<1,6> elestrain(true);
+        nstetnlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&elestress,&elestrain,iostress,iostrain);
+        
+        //--------------------------------- interpolate nodal stress from every node
+        Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
+        Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
+        const int numnode = NumNode();
+        for (int i=0; i<numnode; ++i)
         {
-          int gid = Nodes()[i]->Id();
-          map<int,vector<double> >::iterator foolstress = nodestress.find(gid);
-          map<int,vector<double> >::iterator foolstrain = nodestrain.find(gid);
-          if (foolstress==nodestress.end() || foolstrain==nodestrain.end())
-            dserror("Cannot find marching nodal stresses/strains");
-          vector<double>& nstress = foolstress->second;
-          vector<double>& nstrain = foolstrain->second;
+          const int gid = Nodes()[i]->Id();
+          const int lid = nodestress->Map().LID(gid);
+          if (lid==-1) dserror("Cannot find matching nodal stresses/strains");
           for (int j=0; j<6; ++j)
           {
-            stress(i,j) = nstress[j];
-            strain(i,j) = nstrain[j];
+            //stress(0,j) += (*(*nodestress)(i))[lid];
+            //strain(0,j) += (*(*nodestrain)(i))[lid];
           }
         }
+        for (int j=0; j<6; ++j) 
+        {
+          //stress(0,j) /= numnode;
+          //strain(0,j) /= numnode;
+        }
+        
+        //-------------------------------------------------------- add element stress
+        for (int j=0; j<6; ++j) 
+        {
+          //stress(0,j) += elestress(0,j);
+          //strain(0,j) += elestrain(0,j);
+        }
+        
+        //---------------------------------------------- add mis stress from mis node
+        map<int,int>::iterator fool = ElementType().pstab_cid_mis_.find(Id());
+        if (fool==ElementType().pstab_cid_mis_.end())
+          dserror("Cannot find this elements mis node on this proc");
+        Teuchos::RCP<Epetra_MultiVector> misstress = ElementType().pstab_stress_;
+        Teuchos::RCP<Epetra_MultiVector> misstrain = ElementType().pstab_strain_;
+        
+        const int misgid = fool->second;
+        const int mislid = misstress->Map().LID(misgid);
+        if (mislid==-1) dserror("Cannot find mis lid for mis gid");
+        for (int j=0; j<6; ++j)
+        {
+          //stress(0,j) += (*(*misstress)(j))[mislid];
+          //strain(0,j) += (*(*misstrain)(j))[mislid];
+          stress(0,j) = (double)misgid;
+          strain(0,j) = (double)misgid;
+        }
+        
+        //----------------------------------------------- add final stress to storage
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);
       }
@@ -223,32 +267,39 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       {
         const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
           params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-        if (gpstressmap==null)
-          dserror("no gp stress/strain map available for postprocessing");
+        if (gpstressmap==null) dserror("no gp stress/strain map available for postprocessing");
         string stresstype = params.get<string>("stresstype","ndxyz");
+
         int gid = Id();
-        LINALG::Matrix<4,6> gpstress(((*gpstressmap)[gid])->A(),true);
+        LINALG::Matrix<1,6> gpstress(((*gpstressmap)[gid])->A(),true);
+
+        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==null) dserror("No element stress/strain vector available");
 
         if (stresstype=="ndxyz")
         {
-          for (int i=0;i<4;++i)
+          for (int i=0; i<NumNode(); ++i)
           {
-            elevec1(3*i)=gpstress(i,0);
-            elevec1(3*i+1)=gpstress(i,1);
-            elevec1(3*i+2)=gpstress(i,2);
-          }
-          for (int i=0;i<4;++i)
-          {
-            elevec2(3*i)=gpstress(i,3);
-            elevec2(3*i+1)=gpstress(i,4);
-            elevec2(3*i+2)=gpstress(i,5);
+            const int gid = Nodes()[i]->Id();
+            const int lid = poststress->Map().LID(gid);
+            if (lid==-1) dserror("Cannot find local id for global id");
+            const int numadjele = Nodes()[i]->NumElement();
+            for (int j=0; j<6; ++j)
+              (*((*poststress)(j)))[lid] = gpstress(0,j) / numadjele;
           }
         }
-        else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz")
-          dserror("The NStet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          if (lid!=-1)
+          {
+            for (int i=0; i<6; ++i) (*((*poststress)(i)))[lid] = gpstress(0,i);
+          }
+        }
         else
           dserror("unknown type of stress/strain output on element level");
-      }
+      } // if (discretization.Comm().MyPID()==Owner())
     }
     break;
 
@@ -291,7 +342,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<12,12> myemat(true);
-      nstetnlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1);
+      nstetnlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,
+                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -316,12 +368,16 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
  |  evaluate the element (private)                             gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
-      vector<int>&              lm,                                                // location matrix
-      vector<double>&           disp,                                              // current displacements
-      vector<double>&           residual,                                          // current residuum
-      LINALG::Matrix<12,12>* stiffmatrix,    // element stiffness matrix
-      LINALG::Matrix<12,12>* massmatrix,     // element mass matrix
-      LINALG::Matrix<12, 1>* force)          // stress output options
+      vector<int>&                     lm,             // location matrix
+      vector<double>&                  disp,           // current displacements
+      vector<double>&                  residual,       // current residuum
+      LINALG::Matrix<12,12>*           stiffmatrix,    // element stiffness matrix
+      LINALG::Matrix<12,12>*           massmatrix,     // element mass matrix
+      LINALG::Matrix<12, 1>*           force,          // stress output options
+      LINALG::Matrix<1,6>*             elestress,      // stress output
+      LINALG::Matrix<1,6>*             elestrain,      // strain output
+      const INPAR::STR::StressType     iostress,       // type of stress
+      const INPAR::STR::StrainType     iostrain)       // type of strain
 {
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
@@ -393,13 +449,13 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
 #if 1 // dev stab on cauchy stresses
   LINALG::Matrix<6,6> cmat(true); // Views
   LINALG::Matrix<6,1> stress(true);
+  LINALG::Matrix<6,1> glstrainbar(false);
   double density = -999.99;
   {
     // do deviatoric F, C, E
     const double J = defgrd.Determinant();
     LINALG::Matrix<3,3> Cbar(cauchygreen);
     Cbar.Scale(pow(J,-2./3.));
-    LINALG::Matrix<6,1> glstrainbar(false);
     glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
     glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
     glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
@@ -430,10 +486,113 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
   Epetra_SerialDenseVector stress(6);
   double density = -999.99;
   SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
-  stress.Scale(ALPHA_PTET);
-  cmat.Scale(ALPHA_PTET);
+  stress.Scale(ALPHA_NSTET);
+  cmat.Scale(ALPHA_NSTET);
 #endif
 
+  //---------------------------------------------- output of stress and strain
+  {
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(0,i) = ALPHA_NSTET * glstrainbar(i);
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(0,i) = ALPHA_NSTET * 0.5 * glstrainbar(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("no strain data available");
+      LINALG::Matrix<3,3> gl;
+      gl(0,0) = glstrainbar(0);      // divide off-diagonals by 2
+      gl(0,1) = 0.5*glstrainbar(3);
+      gl(0,2) = 0.5*glstrainbar(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrainbar(1);
+      gl(1,2) = 0.5*glstrainbar(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrainbar(2);
+      
+      LINALG::Matrix<3,3> Fbar(false);
+      Fbar.SetCopy(defgrd.A());
+      Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+      LINALG::Matrix<3,3> invdefgrd;
+      invdefgrd.Invert(Fbar);
+      
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+      
+      (*elestrain)(0,0) = ALPHA_NSTET * euler_almansi(0,0);
+      (*elestrain)(0,1) = ALPHA_NSTET * euler_almansi(1,1);
+      (*elestrain)(0,2) = ALPHA_NSTET * euler_almansi(2,2);
+      (*elestrain)(0,3) = ALPHA_NSTET * euler_almansi(0,1);
+      (*elestrain)(0,4) = ALPHA_NSTET * euler_almansi(1,2);
+      (*elestrain)(0,5) = ALPHA_NSTET * euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+    break;
+    default:
+      dserror("requested strain option not available");
+    }
+
+
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+      for (int i = 0; i<6; ++i)
+        (*elestress)(0,i) = stress(i); // ALPHA_NSTET scaling is already in stress
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("no stress data available");
+
+      LINALG::Matrix<3,3> pkstress;
+      pkstress(0,0) = stress(0);        // ALPHA_NSTET scaling is already in stress
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
+
+      LINALG::Matrix<3,3> Fbar(false);
+      Fbar.SetCopy(defgrd.A());
+      Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
+
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
+      temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
+      cauchystress.MultiplyNT(temp,Fbar);
+
+      (*elestress)(0,0) = cauchystress(0,0);
+      (*elestress)(0,1) = cauchystress(1,1);
+      (*elestress)(0,2) = cauchystress(2,2);
+      (*elestress)(0,3) = cauchystress(0,1);
+      (*elestress)(0,4) = cauchystress(1,2);
+      (*elestress)(0,5) = cauchystress(0,2);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
+    }
+  }
+
+
+  //----------------------------------------------- internal force and tangent
   if (force)
   {
     // integrate internal force vector f = f + (B^T . sigma) * V_

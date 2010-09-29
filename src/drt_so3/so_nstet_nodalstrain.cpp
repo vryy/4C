@@ -136,11 +136,12 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   map<int,DRT::Node*> rnodes = noderids_; // working copy of row nodes
   vector<int> misnodes(0); // indicator which nodes are mis
   vector<int> smisnodes(0);// same but for communication
+
   for (int proc=0; proc<numproc; ++proc)
   {
     if (proc==myrank)
     {
-      for (node=rnodes.begin(); node != rnodes.end(); ++node)
+      for (node=rnodes.begin(); node != rnodes.end(); )
       {
         const int actnodeid = node->second->Id();
         // make this node a mis node 
@@ -154,10 +155,9 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
         for (neighbor=nodepatch.begin(); neighbor != nodepatch.end(); ++neighbor)
         {
           if (neighbor->first == actnodeid) continue; // do not delete myself
-          /*const int n =*/ rnodes.erase(neighbor->first);
-          //if (n)
-          //cout << myrank << " delon  " << *(neighbor->second) << endl;
+          rnodes.erase(neighbor->first);
         }
+        rnodes.erase(node++);
       }
     } // if (proc==mypid)
 
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
     // all other procs have to remove nodes adjacent to mis nodes from 
     // their potential list
-    if (myrank>proc)
+    if (myrank!=proc)
     {
       for (node=rnodes.begin(); node != rnodes.end();)
       {
@@ -207,6 +207,11 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
     misnodesmap[misnodes[i]] = misnodes[i];
   misnodes.clear();
 
+
+  // look for left over nodes in rnodes
+  for (node=rnodes.begin(); node != rnodes.end(); node++)
+    cout << myrank << " Not MIS and NOT ADJ " << *(node->second) << endl;
+
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   // each MIS node is associated with a patch of column elements of which
@@ -224,6 +229,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   for (int proc=0; proc<numproc; ++proc)
   {
     vector<int> sendeles(0);
+    vector<int> sendelemis(0); // gid of mis node belonging to that element
     map<int,int>::iterator mis;
     if (proc==myrank)
     {
@@ -236,7 +242,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
           if (elecids.find(misnode->Elements()[i]->Id()) == elecids.end()) continue;
           eles.push_back((DRT::ELEMENTS::NStet*)misnode->Elements()[i]);
           elecids.erase(misnode->Elements()[i]->Id());
-        } // i
+        }
         pstab_adjele_[mis->first] = eles;
       } 
       
@@ -257,42 +263,68 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
       } 
       
       // make communication vector of all elements taken
+      // make map cele -> MIS node
       for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
       {
         vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
-        for (int i=0; i<(int)adjele.size(); ++i) sendeles.push_back(adjele[i]->Id());
-      } 
+        for (int i=0; i<(int)adjele.size(); ++i) 
+        {
+          sendeles.push_back(adjele[i]->Id());
+          pstab_cid_mis_[adjele[i]->Id()] = mis->first;
+          sendelemis.push_back(mis->first);
+        }
+      }
       
     } // if (proc==myrank)
     
     int size = (int)sendeles.size();
     dis.Comm().Broadcast(&size,1,proc);
-    if (proc != myrank) sendeles.resize(size);
+    if (proc != myrank) 
+    {
+      sendeles.resize(size);
+      sendelemis.resize(size);
+    }
     dis.Comm().Broadcast(&sendeles[0],size,proc);
+    dis.Comm().Broadcast(&sendelemis[0],size,proc);
     
     // all other procs remove the already taken elements from their list
     if (myrank != proc)
     {
+      // delete already taken elements from my column element map
       for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
+      
+      // look whether I have any of the communicated elements in my column map
+      // If so, put the corresponding MIS node in my map
+      map<int,DRT::ELEMENTS::NStet*>::iterator fool;
+      for (int i=0; i<(int)sendeles.size(); ++i)
+      {
+        fool = elecids_.find(sendeles[i]);
+        if (fool == elecids_.end()) continue;
+        if (fool->first != sendeles[i]) dserror("gid of element mismatch");
+        pstab_cid_mis_[sendeles[i]] = sendelemis[i];
+      }
     } // if (myrank != proc)
     
     sendeles.clear();
+    sendelemis.clear();
     dis.Comm().Barrier();
   } // for (int proc=0; proc<numproc; ++proc)
 
+#if 0
+  // old version
   //----------------------------------------------------------------------
   // assign all leftover elements to neighboring patches (greedy phase 2)
   // this is a distance 2 patch search
   for (int proc=0; proc<numproc; ++proc)
   {
     vector<int> sendeles(0);
+    vector<int> sendelemis(0); // gid of mis node belonging to that element
     map<int,int>::iterator mis;
     if (proc==myrank)
     {
       for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
       {
         vector<DRT::ELEMENTS::NStet*> eles(0);
-        //DRT::Node* misnode = noderids_[mis->first];
         vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
         for (int i=0; i<(int)adjele.size(); ++i)
         {
@@ -304,10 +336,22 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
             for (int k=0; k<node->NumElement(); ++k)
             {
               DRT::Element* ele = node->Elements()[k];
-              if (elecids.find(ele->Id()) == elecids.end()) continue;
+              if (elecids.find(ele->Id()) == elecids.end()) continue; // already taken
+              // check whether this element is completely off-processor
+              // that is, it does not belong to me nor does any of the nodes belong ot me
+              bool iownanode = false;
+              for (int l=0; l<ele->NumNode(); ++l)
+                if (dis.NodeRowMap()->LID(ele->Nodes()[l]->Id())!=-1)
+                {
+                  iownanode = true;
+                  break;
+                }
+              if (!iownanode) continue; // don't take this element, its off-processor
               pstab_adjele_[mis->first].push_back((DRT::ELEMENTS::NStet*)ele);
               elecids.erase(ele->Id());
               sendeles.push_back(ele->Id());
+              sendelemis.push_back(mis->second);
+              pstab_cid_mis_[ele->Id()] = mis->first;
               cout << "Proc " << myrank << " leftover NStet " << ele->Id() << 
                       " found MIS node " << mis->second << endl;
             } // k
@@ -318,25 +362,168 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
     int size = (int)sendeles.size();
     dis.Comm().Broadcast(&size,1,proc);
-    if (proc != myrank) sendeles.resize(size);
+    if (proc != myrank) 
+    {
+      sendeles.resize(size);
+      sendelemis.resize(size);
+    }
     dis.Comm().Broadcast(&sendeles[0],size,proc);
+    dis.Comm().Broadcast(&sendelemis[0],size,proc);
 
     // all other procs remove the already taken elements from their list
     if (myrank != proc)
     {
+      // delete already taken elements from my column element map
       for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
+      
+      // look whether I have any of the communicated elements in my column map
+      // If so, put the corresponding MIS node in my map
+      map<int,DRT::ELEMENTS::NStet*>::iterator fool;
+      for (int i=0; i<(int)sendeles.size(); ++i)
+      {
+        fool = elecids_.find(sendeles[i]);
+        if (fool == elecids_.end()) continue;
+        if (fool->first != sendeles[i]) dserror("gid of element mismatch");
+        pstab_cid_mis_[sendeles[i]] = sendelemis[i];
+      }
     } // if (myrank != proc)
     
     sendeles.clear();
+    sendelemis.clear();
     dis.Comm().Barrier();
 
   } // for (int proc=0; proc<numproc; ++proc)
 
+
+
+#else
+  // new version
+  //----------------------------------------------------------------------
+  // assign all leftover elements to neighboring patches (greedy phase 2)
+  // this is a distance 2 patch search
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    vector<int> sendeles(0);
+    vector<int> sendelemis(0); // gid of mis node belonging to that element
+    map<int,int>::iterator mis;
+    if (proc==myrank)
+    {
+      for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+      {
+        vector<DRT::ELEMENTS::NStet*> eles(0);
+        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele_[mis->first];
+        
+        // build a nodal patch
+        map<int,DRT::Node*> nodepatch;
+        map<int,DRT::Node*>:: iterator fool;
+        for (int i=0; i<(int)adjele.size(); ++i)
+          for (int j=0; j<adjele[i]->NumNode(); ++j)
+            nodepatch[adjele[i]->Nodes()[j]->Id()] = adjele[i]->Nodes()[j];
+        
+        for (fool=nodepatch.begin(); fool != nodepatch.end(); ++fool)
+        {
+          DRT::Node* node = fool->second;
+          if (node->Id() == mis->first) continue;
+          for (int k=0; k<node->NumElement(); ++k)
+          {
+            // a candidate to be added to this patch
+            DRT::Element* ele = node->Elements()[k];
+            
+            // check whether element already taken
+            if (elecids.find(ele->Id()) == elecids.end()) continue;
+            
+            // check whether this element is completely off-processor
+            // that is, none of its nodes belongs to me
+            bool iownanode = false;
+            for (int l=0; l<ele->NumNode(); ++l)
+              if (dis.NodeRowMap()->LID(ele->Nodes()[l]->Id())!=-1)
+              {
+                iownanode = true;
+                break;
+              }
+            if (!iownanode) continue; // don't take this element, its off-processor
+            
+            // check whether the element shares at least three nodes with the patch.
+            // (because if it shares 3 out of 4 nodes, it shares a face with the patch)
+            int numshare = 0;
+            for (int l=0; l<ele->NumNode(); ++l)
+              if (nodepatch.find(ele->Nodes()[l]->Id()) != nodepatch.end())
+                numshare++;
+            if (numshare<2) continue;
+            
+            // yes, we add this element to the patch
+            pstab_adjele_[mis->first].push_back((DRT::ELEMENTS::NStet*)ele);
+            elecids.erase(ele->Id());
+            sendeles.push_back(ele->Id());
+            sendelemis.push_back(mis->second);
+            pstab_cid_mis_[ele->Id()] = mis->first;
+            
+            cout << "Proc " << myrank << " leftover NStet " << ele->Id() << 
+                    " found MIS node " << mis->second << endl;
+
+          } // k
+
+        } // for (fool=nodepatch.begin(); fool != nodepatch.end(); ++fool)
+        
+      } // for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+
+    } // if (proc==myrank)
+
+    int size = (int)sendeles.size();
+    dis.Comm().Broadcast(&size,1,proc);
+    if (proc != myrank) 
+    {
+      sendeles.resize(size);
+      sendelemis.resize(size);
+    }
+    dis.Comm().Broadcast(&sendeles[0],size,proc);
+    dis.Comm().Broadcast(&sendelemis[0],size,proc);
+
+    // all other procs remove the already taken elements from their list
+    if (myrank != proc)
+    {
+      // delete already taken elements from my column element map
+      for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
+      
+      // look whether I have any of the communicated elements in my column map
+      // If so, put the corresponding MIS node in my map
+      map<int,DRT::ELEMENTS::NStet*>::iterator fool;
+      for (int i=0; i<(int)sendeles.size(); ++i)
+      {
+        fool = elecids_.find(sendeles[i]);
+        if (fool == elecids_.end()) continue;
+        pstab_cid_mis_[sendeles[i]] = sendelemis[i];
+      }
+    } // if (myrank != proc)
+    
+    sendeles.clear();
+    sendelemis.clear();
+    dis.Comm().Barrier();
+
+  } // for (int proc=0; proc<numproc; ++proc)
+#endif
+
+  //----------------------------------------------------------------------
+  // create an overlapping map that contains stress data of MIS nodes on all procs
+  // that will need it for stress output
+  {
+    map<int,int>::iterator fool;
+    map<int,int> ngidmap;
+    vector<int> ngid;
+    for (fool=pstab_cid_mis_.begin(); fool != pstab_cid_mis_.end(); ++fool)
+      ngidmap[fool->second] = fool->second;
+    for (fool=ngidmap.begin(); fool != ngidmap.end(); ++fool)
+      ngid.push_back(fool->first);
+    pstab_misstressout_ = rcp(new Epetra_Map(-1,(int)ngid.size(),&ngid[0],0,dis.Comm()));
+  }
+  
+  
+
   //----------------------------------------------------------------------
   // test whether all column elements on all procs have been assigned a patch
+  map<int,DRT::ELEMENTS::NStet*>::iterator ele;
   if ((int)elecids.size() != 0)
   {
-    map<int,DRT::ELEMENTS::NStet*>::iterator ele;
     for (ele=elecids.begin(); ele != elecids.end(); ++ele)
     {
       cout << "Proc " << myrank <<
@@ -344,6 +531,17 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
               " found NO MIS node (on any proc)" << endl << *ele->second << endl;
     }
     dserror("Proc %d has the above column elements leftover",myrank);
+  }
+  
+  // test whether all column elements on this proc know their MIS node_pos
+  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
+  {
+    map<int,int>::iterator fool = pstab_cid_mis_.find(ele->first);
+    if (fool==pstab_cid_mis_.end())
+    {
+      cout << "This element did not find its MIS node:\n" << *ele->second << endl;
+      dserror("Element %d did not find its MIS node",ele->first);
+    }
   }
 
   //----------------------------------------------------------------------
@@ -394,9 +592,6 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
     } // else
   } // for (mis=pstab_adjele_.begin(); mis != pstab_adjele_.end(); ++mis)
   
-  // the elements should know which MIS node they belong to and on what
-  // processor that MIS node is on. This is neccessary to do stress output
-  
   return 0;
 }
 
@@ -422,8 +617,20 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       action != "calc_struct_stress") return;
 
   // These get filled in here, so remove old stuff
-  nodestress_.clear();
-  nodestrain_.clear();
+  if (action == "calc_struct_stress")
+  {
+    nstress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
+    pstab_stress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
+    nstrain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
+    pstab_strain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
+  }
+  else
+  {
+    nstress_ = Teuchos::null;
+    pstab_stress_ = Teuchos::null;
+    nstrain_ = Teuchos::null;
+    pstab_strain_ = Teuchos::null;
+  }
 
   // see what we have for input
   bool assemblemat1 = systemmatrix1!=Teuchos::null;
@@ -470,7 +677,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
 
   // create temporary vector in column map to assemble to
-  // FIXME: For MIS, this might NOT be sufficient!
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
 
   //================================================== do nodal stiffness
@@ -526,7 +732,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       force.LightSize(ndofperpatch);
       NodalIntegration(&stiff,&force,adjnode,adjele,
                        mis,samepatch,ps_stiff,ps_force,ps_adjnode,ps_adjele,
-                       NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+                       NULL,NULL,NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
     {
@@ -534,11 +740,20 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
+      vector<double> misstress(6);
+      vector<double> misstrain(6);
       NodalIntegration(NULL,NULL,adjnode,adjele,
                        mis,samepatch,NULL,NULL,ps_adjnode,ps_adjele,
-                       &nodalstress,&nodalstrain,iostress,iostrain);
-      nodestress_[nodeLid] = nodalstress;
-      nodestrain_[nodeLid] = nodalstrain;
+                       &nodalstress,&misstress,&nodalstrain,&misstrain,iostress,iostrain);
+      int lid = dis.NodeRowMap()->LID(nodeLid);
+      if (lid==-1) dserror("Cannot find local id for row node");
+      for (int i=0; i<6; ++i)
+      {
+        (*(*nstress_)(i))[lid] = nodalstress[i];
+        (*(*nstrain_)(i))[lid] = nodalstrain[i];
+        (*(*pstab_stress_)(i))[lid] = misstress[i];
+        (*(*pstab_strain_)(i))[lid] = misstrain[i];
+      }
     }
 
 
@@ -665,13 +880,24 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     }
   }
 
+
   if (action == "calc_struct_stress")
   {
     // we have to export the nodal stresses and strains to column map
     // so they can be written by the elements
-    DRT::Exporter exporter(*dis.NodeRowMap(),*dis.NodeColMap(),dis.Comm());
-    exporter.Export<double>(nodestress_);
-    exporter.Export<double>(nodestrain_);
+    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
+    LINALG::Export(*nstress_,*tmp);
+    nstress_ = tmp;
+    tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
+    LINALG::Export(*nstrain_,*tmp);
+    nstrain_ = tmp;
+    // export mis stress/strain to special mis map so it can be written by the elements
+    tmp = Teuchos::rcp(new Epetra_MultiVector(*pstab_misstressout_,6,false));
+    LINALG::Export(*pstab_stress_,*tmp);
+    pstab_stress_ = tmp;
+    tmp = Teuchos::rcp(new Epetra_MultiVector(*pstab_misstressout_,6,false));
+    LINALG::Export(*pstab_strain_,*tmp);
+    pstab_strain_ = tmp;
   }
 
 
@@ -692,7 +918,9 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
                                                 map<int,DRT::Node*>*            ps_adjnode,
                                                 vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
                                                 vector<double>*                 nodalstress,
+                                                vector<double>*                 misstress,
                                                 vector<double>*                 nodalstrain,
+                                                vector<double>*                 misstrain,
                                                 const INPAR::STR::StressType    iostress,
                                                 const INPAR::STR::StrainType    iostrain)
 {
@@ -967,47 +1195,127 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   }
 
   //-------------------------------------------------------- output of strain
-  // FIXME: MIS not considered yet
+  LINALG::Matrix<3,3> glstrainout(false);
+  LINALG::Matrix<3,3> misglstrainout(false);
+  if (iostrain != INPAR::STR::strain_none)
+  {
+    double detF = 0.0;
+    LINALG::Matrix<3,3> Fiso(false);
+    LINALG::Matrix<3,3> Fvol(true);
+    LINALG::Matrix<3,3> cauchygreeniso(false);
+    LINALG::Matrix<3,3> cauchygreenvol(false);
+    LINALG::Matrix<3,3> glstrainiso(false);
+    LINALG::Matrix<3,3> glstrainvol(false);
+    
+    detF = FnodeL.Determinant();
+    Fiso = FnodeL;
+    Fiso.Scale(pow(detF,-1.0/3.0));
+    Fvol(0,0) = 1.0; Fvol(1,1) = 1.0; Fvol(2,2) = 1.0;
+    Fvol.Scale(pow(detF,1.0/3.0));
+    
+    cauchygreeniso.MultiplyTN(Fiso,Fiso);
+    cauchygreenvol.MultiplyTN(Fvol,Fvol);
+    
+    glstrainiso(0,0) = 0.5 * (cauchygreeniso(0,0) - 1.0);
+    glstrainiso(0,1) = 0.5 *  cauchygreeniso(0,1);
+    glstrainiso(0,2) = 0.5 *  cauchygreeniso(0,2);
+    glstrainiso(1,0) = glstrainiso(0,1);
+    glstrainiso(1,1) = 0.5 * (cauchygreeniso(1,1) - 1.0);
+    glstrainiso(1,2) = 0.5 *  cauchygreeniso(1,2);
+    glstrainiso(2,0) = glstrainiso(0,2);
+    glstrainiso(2,1) = glstrainiso(1,2);
+    glstrainiso(2,2) = 0.5 * (cauchygreeniso(2,2) - 1.0);
+
+    glstrainvol(0,0) = 0.5 * (cauchygreenvol(0,0) - 1.0);
+    glstrainvol(0,1) = 0.5 *  cauchygreenvol(0,1);
+    glstrainvol(0,2) = 0.5 *  cauchygreenvol(0,2);
+    glstrainvol(1,0) = glstrainvol(0,1);
+    glstrainvol(1,1) = 0.5 * (cauchygreenvol(1,1) - 1.0);
+    glstrainvol(1,2) = 0.5 *  cauchygreenvol(1,2);
+    glstrainvol(2,0) = glstrainvol(0,2);
+    glstrainvol(2,1) = glstrainvol(1,2);
+    glstrainvol(2,2) = 0.5 * (cauchygreenvol(2,2) - 1.0);
+    
+    glstrainout = glstrainiso;
+    glstrainout.Update(1.0-BETA_NSTET,glstrainvol,1.0-ALPHA_NSTET);
+    
+    if (mis)
+    {
+      LINALG::Matrix<3,3> misFvol(true);
+      LINALG::Matrix<3,3> miscauchygreenvol(false);
+
+      double misdetF = ps_FnodeL.Determinant();
+      misFvol(0,0) = 1.0; misFvol(1,1) = 1.0; misFvol(2,2) = 1.0;
+      misFvol.Scale(pow(misdetF,1.0/3.0));
+      miscauchygreenvol.MultiplyTN(misFvol,misFvol);
+      misglstrainout(0,0) = 0.5 * (miscauchygreenvol(0,0) - 1.0);
+      misglstrainout(0,1) = 0.5 *  miscauchygreenvol(0,1);
+      misglstrainout(0,2) = 0.5 *  miscauchygreenvol(0,2);
+      misglstrainout(1,0) = misglstrainout(0,1);
+      misglstrainout(1,1) = 0.5 * (miscauchygreenvol(1,1) - 1.0);
+      misglstrainout(1,2) = 0.5 *  miscauchygreenvol(1,2);
+      misglstrainout(2,0) = misglstrainout(0,2);
+      misglstrainout(2,1) = misglstrainout(1,2);
+      misglstrainout(2,2) = 0.5 * (miscauchygreenvol(2,2) - 1.0);
+      misglstrainout.Scale(BETA_NSTET);
+    }
+    else
+      misglstrainout.PutScalar(0.0);
+  }
   switch (iostrain)
   {
   case INPAR::STR::strain_gl:
   {
-    if (nodalstrain == NULL) dserror("no strain data available");
-    for (int i = 0; i < 3; ++i) (*nodalstrain)[i] = glstrain(i);
-    for (int i = 3; i < 6; ++i) (*nodalstrain)[i] = 0.5 * glstrain(i);
+    if (nodalstrain == NULL || misstrain==NULL) dserror("no strain data available");
+    (*nodalstrain)[0] = glstrainout(0,0);
+    (*nodalstrain)[1] = glstrainout(1,1);
+    (*nodalstrain)[2] = glstrainout(2,2);
+    (*nodalstrain)[3] = glstrainout(0,1);
+    (*nodalstrain)[4] = glstrainout(1,2);
+    (*nodalstrain)[5] = glstrainout(0,2);
+    if (mis)
+    {
+      (*misstrain)[0] = misglstrainout(0,0);
+      (*misstrain)[1] = misglstrainout(1,1);
+      (*misstrain)[2] = misglstrainout(2,2);
+      (*misstrain)[3] = misglstrainout(0,1);
+      (*misstrain)[4] = misglstrainout(1,2);
+      (*misstrain)[5] = misglstrainout(0,2);
+    }
+    else
+      for (int i=0; i<6; ++i) (*misstrain)[i] = 0.0;
   }
   break;
   case INPAR::STR::strain_ea:
   {
-    if (nodalstrain == NULL) dserror("no strain data available");
-
-    // rewriting Green-Lagrange strains in matrix format
-    LINALG::Matrix<3,3> gl;
-    gl(0,0) = glstrain(0);
-    gl(0,1) = 0.5*glstrain(3);
-    gl(0,2) = 0.5*glstrain(5);
-    gl(1,0) = gl(0,1);
-    gl(1,1) = glstrain(1);
-    gl(1,2) = 0.5*glstrain(4);
-    gl(2,0) = gl(0,2);
-    gl(2,1) = gl(1,2);
-    gl(2,2) = glstrain(2);
+    if (nodalstrain == NULL || misstrain==NULL) dserror("no strain data available");
 
     // inverse of deformation gradient
     LINALG::Matrix<3,3> invdefgrd;
-    invdefgrd.Invert(FnodeL);
-
+    invdefgrd.Invert(FnodeL); 
     LINALG::Matrix<3,3> temp;
     LINALG::Matrix<3,3> euler_almansi;
-    temp.Multiply(gl,invdefgrd);
+    temp.Multiply(glstrainout,invdefgrd);
     euler_almansi.MultiplyTN(invdefgrd,temp);
-
     (*nodalstrain)[0] = euler_almansi(0,0);
     (*nodalstrain)[1] = euler_almansi(1,1);
     (*nodalstrain)[2] = euler_almansi(2,2);
     (*nodalstrain)[3] = euler_almansi(0,1);
     (*nodalstrain)[4] = euler_almansi(1,2);
     (*nodalstrain)[5] = euler_almansi(0,2);
+    
+    if (mis)
+    {
+      invdefgrd.Invert(ps_FnodeL);
+      temp.Multiply(misglstrainout,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+      (*misstrain)[0] = euler_almansi(0,0);
+      (*misstrain)[1] = euler_almansi(1,1);
+      (*misstrain)[2] = euler_almansi(2,2);
+      (*misstrain)[3] = euler_almansi(0,1);
+      (*misstrain)[4] = euler_almansi(1,2);
+      (*misstrain)[5] = euler_almansi(0,2);
+    }
   }
   break;
   case INPAR::STR::strain_none:
@@ -1085,50 +1393,10 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     ps_stress = stress;
     ps_cmat = cmat;
   }
-
-  //-----------------------------------------------------------------------
-  // FIXME MIS not considered yet
-  switch (iostress)
+  else
   {
-  case INPAR::STR::stress_2pk:
-  {
-    if (nodalstress == NULL) dserror("no stress data available");
-    for (int i = 0; i < 6; ++i) (*nodalstress)[i] = stress(i);
-  }
-  break;
-  case INPAR::STR::stress_cauchy:
-  {
-    if (nodalstress == NULL) dserror("no stress data available");
-    double detF = FnodeL.Determinant();
-
-    LINALG::Matrix<3,3> pkstress;
-    pkstress(0,0) = stress(0);
-    pkstress(0,1) = stress(3);
-    pkstress(0,2) = stress(5);
-    pkstress(1,0) = pkstress(0,1);
-    pkstress(1,1) = stress(1);
-    pkstress(1,2) = stress(4);
-    pkstress(2,0) = pkstress(0,2);
-    pkstress(2,1) = pkstress(1,2);
-    pkstress(2,2) = stress(2);
-
-    LINALG::Matrix<3,3> temp;
-    LINALG::Matrix<3,3> cauchystress;
-    temp.Multiply(1.0/detF,FnodeL,pkstress);
-    cauchystress.MultiplyNT(temp,FnodeL);
-
-    (*nodalstress)[0] = cauchystress(0,0);
-    (*nodalstress)[1] = cauchystress(1,1);
-    (*nodalstress)[2] = cauchystress(2,2);
-    (*nodalstress)[3] = cauchystress(0,1);
-    (*nodalstress)[4] = cauchystress(1,2);
-    (*nodalstress)[5] = cauchystress(0,2);
-  }
-  break;
-  case INPAR::STR::stress_none:
-    break;
-  default:
-    dserror("requested stress type not available");
+    ps_stress.PutScalar(0.0);
+    ps_cmat.PutScalar(0.0);
   }
 
   //-----------------------------------------------------------------------
@@ -1139,10 +1407,10 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   //     stress = beta * vol_node(newpatch) + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
 
   // define stuff we need in all cases
-  LINALG::Matrix<6,6> cmatdev;
-  LINALG::Matrix<6,6> cmatvol;
-  LINALG::Matrix<6,1> stressdev;
-  LINALG::Matrix<6,1> stressvol;
+  LINALG::Matrix<6,6> cmatdev(true);
+  LINALG::Matrix<6,6> cmatvol(true);
+  LINALG::Matrix<6,1> stressdev(true);
+  LINALG::Matrix<6,1> stressvol(true);
   
   // all nodes
   {
@@ -1184,6 +1452,74 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       ps_cmat.Update(BETA_NSTET,cmatvol,0.0);
     }
   }
+
+  //-----------------------------------------------------------------------
+  // stress output
+  switch (iostress)
+  {
+  case INPAR::STR::stress_2pk:
+  {
+    if (nodalstress == NULL || misstress==NULL) dserror("no stress data available");
+    for (int i = 0; i < 6; ++i) (*nodalstress)[i] = stress(i);
+    if (mis)
+      for (int i = 0; i < 6; ++i) (*misstress)[i] = ps_stress(i);
+    else
+      for (int i = 0; i < 6; ++i) (*misstress)[i] = 0.0;
+  }
+  break;
+  case INPAR::STR::stress_cauchy:
+  {
+    if (nodalstress == NULL || misstress==NULL) dserror("no stress data available");
+
+    LINALG::Matrix<3,3> pkstress;
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> cauchystress;
+    temp.Multiply(1.0/FnodeL.Determinant(),FnodeL,pkstress);
+    cauchystress.MultiplyNT(temp,FnodeL);
+    (*nodalstress)[0] = cauchystress(0,0);
+    (*nodalstress)[1] = cauchystress(1,1);
+    (*nodalstress)[2] = cauchystress(2,2);
+    (*nodalstress)[3] = cauchystress(0,1);
+    (*nodalstress)[4] = cauchystress(1,2);
+    (*nodalstress)[5] = cauchystress(0,2);
+    
+    if (mis)
+    {
+      pkstress(0,0) = ps_stress(0);
+      pkstress(0,1) = ps_stress(3);
+      pkstress(0,2) = ps_stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = ps_stress(1);
+      pkstress(1,2) = ps_stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = ps_stress(2);
+      temp.Multiply(1.0/ps_FnodeL.Determinant(),ps_FnodeL,pkstress);
+      cauchystress.MultiplyNT(temp,ps_FnodeL);
+      (*misstress)[0] = cauchystress(0,0);
+      (*misstress)[1] = cauchystress(1,1);
+      (*misstress)[2] = cauchystress(2,2);
+      (*misstress)[3] = cauchystress(0,1);
+      (*misstress)[4] = cauchystress(1,2);
+      (*misstress)[5] = cauchystress(0,2);
+    }
+  }
+  break;
+  case INPAR::STR::stress_none:
+    break;
+  default:
+    dserror("requested stress type not available");
+  }
+
 
   //----------------------------------------------------- internal forces
   if (force)
@@ -1256,7 +1592,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
         } // for (int j=0; j<4; ++j)
       } // for (int i=0; i<4; ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)
-    
+
     //------- MIS node part
     if (mis && samepatch)
     {
