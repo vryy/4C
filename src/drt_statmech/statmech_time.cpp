@@ -21,8 +21,6 @@ Maintainer: Christian Cyron
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 
-#include <random/normal.h>
-
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif  // #ifdef D_BEAM3
@@ -161,7 +159,6 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
     if(i == 0)

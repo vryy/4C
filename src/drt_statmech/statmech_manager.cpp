@@ -24,10 +24,6 @@ Maintainer: Christian Cyron
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 
-//including random number library of blitz for statistical forces
-#include <random/uniform.h>
-#include <random/normal.h>
-
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
@@ -63,19 +59,21 @@ basisnodes_(discret.NumGlobalNodes()),
 basiselements_(discret.NumGlobalElements()),
 currentelements_(discret.NumGlobalElements()),
 outputfilenumber_(-1),
+normalgen_(0,1),
 discret_(discret)
 {
-  //if input flag is set random number seed should be the same for all realizations
+  //if input flag FIXEDSEED == YES: use same random numbers in each program start based on input variable INITIALSEED
+	int seedvariable = 0;
   if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
-  {
-  	if(!discret_.Comm().MyPID())
-  		cout<<"StatMech: Application of reproducable random numbers"<<endl;
-    //random generator for seeding only (necessary for thermal noise)
-    ranlib::Normal<double> seedgenerator(0,1);
-    //seeding random generator
-    int seedvariable = statmechparams_.get<int>("INITIALSEED", 0);
-    seedgenerator.seed( (unsigned int)seedvariable );
-  }
+  	seedvariable = statmechparams_.get<int>("INITIALSEED", 0);
+  //else set seed according to system time and different for each processor
+  else
+  	seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
+
+	normalgen_.seed( (unsigned int)seedvariable );
+	uniformclosedgen_.seed( (unsigned int)seedvariable );
+	uniformclosedopengen_.seed( (unsigned int)seedvariable );
+
 
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
    * here we provide a fully overlapping column map which is required by the search tree to look for each
@@ -2746,10 +2744,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	//probability with which a crosslinker blocks two binding spots on the same filament (self-binding)
 	double pself = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON_SELF", 0.0) );
 
-	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
-	ranlib::UniformClosed<double> UniformGen;
-
-
 	//Volume partitioning, assignment of nodes and molecules to partitions, search for neighbours
 	// map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
 	RCP<Epetra_MultiVector> neighbourslid;
@@ -2809,7 +2803,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				else
 					probability = pself;
 
-				if(UniformGen.random() < probability)
+				if(uniformclosedgen_.random() < probability)
 				{
 					int free = 0;
 					int occupied = 0;
@@ -2910,7 +2904,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 					// for now, break after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
 					if(bondestablished)
 						break;
-				}// if(UniformGen.random() < plink)
+				}// if(uniformclosedgen_.random() < plink)
 			}// for(int j=0; j<(int)neighboursLID.size(); j++)
 
 		}// for(int i=0; i<numbond_->MyLength(); i++)
@@ -3157,9 +3151,6 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 	//probability with which a crosslinker is established between neighbouring nodes
 	double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
 
-	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
-	ranlib::UniformClosed<double> UniformGen;
-
 	//create Epetra_MultiVector which saves on proc 0 for each col map node to which nodes (GID) crosslinker is to be set
 	Epetra_MultiVector crosslinkstobeadded(nodecolmap,statmechparams_.get<int>("N_CROSSMAX",0),true);
 	crosslinkstobeadded.PutScalar(-1);
@@ -3190,7 +3181,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 			while(j < min(crosslinkerneighbours.NumVectors(),statmechparams_.get<int>("N_CROSSMAX",0)) && crosslinkerneighbours[neighboursorder[j]][nodenumber] != -1 && (*numcrosslinkerpartner_)[nodenumber] < statmechparams_.get<int>("N_CROSSMAX",0) )
 			{
 				//probability check whether at this node a crosslink can be set at all
-				if(UniformGen.random() < plink)
+				if(uniformclosedgen_.random() < plink)
 				{
 
 					//get LID of current neighbor node
@@ -3453,9 +3444,6 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	//probability with which a crosslink breaks up in the current time step
 	double punlink = 1.0 - exp(-dt * koff);
 
-	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
-	ranlib::UniformClosed<double> UniformGen;
-
 	// SEARCH
 	// search and setup for the deletion of elements is done by Proc 0
 	if (discret_.Comm().MyPID()==0)
@@ -3473,7 +3461,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 				{
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
 						if ((*crosslinkerbond_)[j][i]>-0.9)
-							if (UniformGen.random() < punlink)
+							if (uniformclosedgen_.random() < punlink)
 							{
 								// obtain LID and reset crosslinkerbond_ at this position
 								int nodeLID = nodecolmap.LID((int) (*crosslinkerbond_)[j][i]);
@@ -3492,7 +3480,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 				{
 					// currently, if an element is deleted, a one-bonded crosslink molecule remains (no simultaneous cut of both bonds)
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-						if (UniformGen.random() < punlink)
+						if (uniformclosedgen_.random() < punlink)
 						{
 							(*numbond_)[i] = 1.0;
 
@@ -3602,9 +3590,6 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
 	//probability with which a crosslink breaks up in the current time step
 	double punlink = 1.0 - exp(-dt * koff);
 
-	//creating a random generator object which creates uniformly distributed random numbers in [0;1]
-	ranlib::UniformClosed<double> UniformGen;
-
 	//create Epetra_MultiVector which saves on proc 0 for each col map node to which nodes (GID) crosslinker is to be deleted
 	Epetra_MultiVector crosslinkstobedeleted(nodecolmap, statmechparams_.get<int> ("N_CROSSMAX", 0), true);
 	crosslinkstobedeleted.PutScalar(-1);
@@ -3621,7 +3606,7 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
 			//go through all crosslink-partners
 			for (int j=0; j<statmechparams_.get<int> ("N_CROSSMAX", 0); j++)
 				//is a crosslink registered in (*crosslinkerpartner_)[j][i]? If yes: is the probability check to delete it passed?
-				if ((*crosslinkerpartner_)[j][i] > -0.9 && UniformGen.random() < punlink)
+				if ((*crosslinkerpartner_)[j][i] > -0.9 && uniformclosedgen_.random() < punlink)
 				{
 
 					//get LID of current neighbor node to which crosslink is to be deleted
@@ -3709,12 +3694,9 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
 	//multivector for stochastic forces evaluated by each element based on row map
 	Epetra_MultiVector randomnumbersrow(*(discret_.ElementRowMap()), randomnumbers->NumVectors());
 
-	//creating a random generator object which creates random numbers with zero mean and unit standard deviation using the Blitz routine
-	ranlib::Normal<double> normalGen(meanvalue, standarddeviation);
-
 	for (int i=0; i<randomnumbersrow.MyLength(); i++)
 		for (int j=0; j<randomnumbersrow.NumVectors(); j++)
-			randomnumbersrow[j][i] = normalGen.random();
+			randomnumbersrow[j][i] = standarddeviation*normalgen_.random() + meanvalue;
 
 	//export stochastic forces from row map to column map
 	Epetra_Export exporter(*discret_.ElementRowMap(), *discret_.ElementColMap());
@@ -3861,7 +3843,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 	for (int i=0; i<N; ++i)
 	{
 		//generate random number between 0 and i
-		j = rand() % (i + 1);
+		j = floor((i + 1.0)*uniformclosedopengen_.random());
 
 		/*exchange values at positions i and j (note: value at position i is i due to above initialization
 		 *and because so far only positions <=i have been changed*/
@@ -3880,8 +3862,6 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 
 bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2, 1>& LID)
 {
-  //creating a random generator object which creates uniformly distributed random numbers in [0;1]
-  ranlib::UniformClosed<double> UniformGen;
 
   //if orientation is not to be checked explicitly, this function always returns true
   if (!Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
@@ -3999,7 +3979,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
      p2 = 0.0;
 
   //crosslinker has to pass three probability checks with respect to orientation
-  return(UniformGen.random() < p0 && UniformGen.random() < p1 && UniformGen.random() < p2);
+  return(uniformclosedgen_.random() < p0 && uniformclosedgen_.random() < p1 && uniformclosedgen_.random() < p2);
 } // StatMechManager::CheckOrientation
 
 
@@ -4212,9 +4192,6 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 	if (discret_.Comm().MyPID()==0)
 	{
 
-		// random number generator with normal distribution
-		ranlib::Normal<double> normalGen(mean, standarddev);
-
 		// bonding cases
 		for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
 		{
@@ -4240,7 +4217,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 				{
 					// bonding case 1:  no bonds, diffusion
 					case 0:
-						(*crosslinkerpositions_)[j][i] += normalGen.random();
+						(*crosslinkerpositions_)[j][i] += standarddev*normalgen_.random() + mean;
 					break;
 					// bonding case 2: crosslink molecule attached to one filament
 					case 1:
@@ -4305,10 +4282,9 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int,
 		{
 			// generate vector in random direction of length R_LINK to "reset" crosslink molecule position:
 			// it may now reenter or leave the bonding proximity
-			ranlib::UniformClosed<double> UniformGen;
 			LINALG::Matrix<3, 1> deltapos;
 			for (int i=0; i<(int)deltapos.M(); i++)
-				deltapos(i) = UniformGen.random();
+				deltapos(i) = uniformclosedgen_.random();
 			deltapos.Scale(statmechparams_.get<double> ("R_LINK", 0.0) / deltapos.Norm2());
 			for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
 				(*crosslinkerpositions_)[i][crosslinkernumber] += deltapos(i);
@@ -4337,8 +4313,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 
 	crosslinkermap_ = rcp(new Epetra_Map(-1, (int) statmechparams_.get<double> ("N_crosslink", 0.0), &gids[0], 0, discret_.Comm()));
 	transfermap_ = rcp(new Epetra_Map((int) statmechparams_.get<double> ("N_crosslink", 0.0), 0, discret_.Comm()));
-	// generate random numbers for each crosslinker and its respective components E [0.0; PeriodLength]
-	ranlib::UniformClosed<double> UniformGen;
 
 
 	double upperbound = 0.0;
@@ -4352,7 +4326,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 
 	for (int i=0; i<crosslinkerpositions_->MyLength(); i++)
 		for (int j=0; j<crosslinkerpositions_->NumVectors(); j++)
-			(*crosslinkerpositions_)[j][i] = upperbound * UniformGen.random();
+			(*crosslinkerpositions_)[j][i] = upperbound * uniformclosedgen_.random();
 
 	// initial bonding status is set (no bonds)
 	crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));

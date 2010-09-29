@@ -20,6 +20,10 @@ Maintainer: Christian Cyron
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
+//including random number library of blitz for statistical forces
+#include <random/uniform.h>
+#include <random/normal.h>
+
 //forward declaration of class Beam3 used in CheckOrientation(...)
 namespace DRT
 {
@@ -255,6 +259,15 @@ protected:
 
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;
+
+  //! \brief generates Gaussian random numbers with zero mean and unit standard deviation
+  ranlib::Normal<double> normalgen_;
+
+  //! \brief generates uniformly distributed random numbers in interval [0;1]
+  ranlib::UniformClosed<double> uniformclosedgen_;
+
+  //! \brief generates uniformly distributed random numbers in interval [0;1[
+  ranlib::UniformClosedOpen<double> uniformclosedopengen_;
 
   //! \brief reference to current discretization
   DRT::Discretization& discret_;
