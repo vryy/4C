@@ -242,38 +242,40 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       {
         const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
           params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-        if (gpstressmap==null)
-          dserror("no gp stress/strain map available for postprocessing");
+        if (gpstressmap==null) dserror("no gp stress/strain map available for postprocessing");
+
         string stresstype = params.get<string>("stresstype","ndxyz");
         int gid = Id();
         LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> gpstress(((*gpstressmap)[gid])->A(),true);
 
         RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-        if (poststress==null)
-          dserror("No element stress/strain vector available");
+        if (poststress==null) dserror("No element stress/strain vector available");
 
-        if (stresstype=="ndxyz") {
+        if (stresstype=="ndxyz") 
+        {
           // extrapolate stresses/strains at Gauss points to nodes
           so_tet4_expol(gpstress, *poststress);
-
         }
-        else if (stresstype=="cxyz") {
+        else if (stresstype=="cxyz") 
+        {
           const Epetra_BlockMap elemap = poststress->Map();
           int lid = elemap.LID(Id());
-          if (lid!=-1) {
-            for (int i = 0; i < NUMSTR_SOTET4; ++i) {
+          if (lid!=-1) 
+          {
+            for (int i = 0; i < NUMSTR_SOTET4; ++i) 
+            {
               double& s = (*((*poststress)(i)))[lid];
               s = 0.;
-              for (int j = 0; j < NUMGPT_SOTET4; ++j) {
+              for (int j = 0; j < NUMGPT_SOTET4; ++j) 
+              {
                 s += gpstress(j,i);
               }
-              s *= 1.0/NUMGPT_SOTET4;
+              s /= NUMGPT_SOTET4;
             }
           }
         }
-        else {
+        else 
           dserror("unknown type of stress/strain output on element level");
-        }
       }
     }
     break;
@@ -349,7 +351,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -370,7 +372,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -763,7 +765,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     }
     break;
     case INPAR::STR::strain_none:
-      break;
+    break;
     default:
       dserror("requested strain option not available");
     }
@@ -891,7 +893,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       sfac.Scale(detJ_w);
       // intermediate Sm.B_L
-      vector<double> SmB_L(NUMDIM_SOTET4);
+      double SmB_L[NUMDIM_SOTET4];
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
       // with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
