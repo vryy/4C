@@ -30,6 +30,8 @@ Maintainer: Burkhard Bornemann
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "structure_utils_mapextractor.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -926,7 +928,7 @@ void STR::TimIntImpl::UpdateStepConstraint()
 /*----------------------------------------------------------------------*/
 bool STR::TimIntImpl::HaveConstraint()
 {
-  return conman_->HaveConstraint();
+  return conman_->HaveConstraintLagr();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1895,31 +1897,21 @@ void STR::TimIntImpl::STCPreconditioning()
 {
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    if (iter_==1 and step_==0 and
-        (stcscale_==INPAR::STR::stc_curr or stcscale_==INPAR::STR::stc_currsym))
+    if ((iter_==1 and step_==0 and
+        (stcscale_==INPAR::STR::stc_curr or stcscale_==INPAR::STR::stc_currsym))or
+        (stcscale_==INPAR::STR::stc_para or stcscale_==INPAR::STR::stc_parasym))
     {
-      stcmat_->Zero();
-      // create the parameters for the discretization
-      Teuchos::ParameterList p;
-      // action for elements
-      const std::string action = "calc_stc_matrix";
-      p.set("action", action);
-      p.set("stc_scaling", stcscale_);
-      p.set("stc_factor", stcfact_);
-      discret_->  SetState("residual displacement", disi_);
-      discret_->  SetState("displacement", disn_);
-      discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
-      discret_-> ClearState();
-      stcmat_->Complete();
+      ComputeSTCMatrix();
     }
 
     stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
     if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
     {
+      stcmat_->SetUseTranspose(true);
       stiff_ = MLMultiply(*stcmat_,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
       stcmat_->Multiply(false,*fres_,*fressdc);
-
+      stcmat_->SetUseTranspose(false);
       fres_->Update(1.0,*fressdc,0.0);
     }
   }
@@ -1936,6 +1928,100 @@ void STR::TimIntImpl::STCPreconditioning()
 //  #endif
 
   return;
+}
+
+void STR::TimIntImpl::ComputeSTCMatrix()
+{
+#if 1
+  stcmat_->Zero();
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // action for elements
+  const std::string action = "calc_stc_matrix";
+  p.set("action", action);
+  p.set("stc_scaling", stcscale_);
+  p.set("stc_factor", stcfact_);
+  discret_->  SetState("residual displacement", disi_);
+  discret_->  SetState("displacement", disn_);
+  discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_-> ClearState();
+  stcmat_->Complete();
+#else
+  stcmat_->Zero();
+  
+  map<int, DRT::Node*> totnodes;
+  map<double, DRT::Node*> procnodes;
+  
+  DRT::UTILS::FindConditionedNodes(*discret_, "VolumeNeumann", totnodes);
+
+  map<int, DRT::Node*>::iterator nit1;
+  map<int, DRT::Node*>::iterator nit2;
+  
+  while (totnodes.size()>0)
+  {
+    nit1=totnodes.begin();
+    const double* coordm = (*nit1).second->X();
+    procnodes.insert(pair<double, DRT::Node*>(coordm[1],(*nit1).second));
+    //DRT::Node mnode = *(*nit1).second;
+    
+    int succ = totnodes.erase((*nit1).first);
+      if  (!succ) dserror("Strange1!");
+    for ( nit2=totnodes.begin() ; nit2 != totnodes.end(); nit2++ )
+    {
+      const double* coord = (*nit2).second->X();
+      if (abs(coord[0]-coordm[0])<1e-6 and abs(coord[2]-coordm[2])<1e-6)
+      {
+        procnodes.insert(pair<double, DRT::Node*>(coord[1],(*nit2).second));
+        int succ = totnodes.erase((*nit2).first);
+          if  (!succ) dserror("Strange2!");
+      }
+    }
+    map<double, DRT::Node*>::iterator nit3;
+    vector<int> lm;
+    vector<int> lmowner;
+    for ( nit3=procnodes.begin() ; nit3 != procnodes.end(); nit3++ )
+      discret_->Dof((*nit3).second,lm);
+  
+    lmowner.resize(lm.size(),0); // set 0 for Owner!!! FIXME!
+    Epetra_SerialDenseMatrix elematrix;
+    elematrix.Shape(lm.size(),lm.size());
+    double entry1= (stcfact_+1.0)/(2*stcfact_);
+    double entry2= (stcfact_-1.0)/(2*stcfact_);
+    if (lm.size()==9)
+      for (unsigned int i=0; i<3;i++)
+      {
+        elematrix(i,i)=entry1;
+        elematrix(i+6,i+6)=entry1;
+        elematrix(i+3,i+3)=1.0/stcfact_;
+        elematrix(i+6,i)=entry2;
+        elematrix(i,i+6)=entry2;
+        elematrix(i+3,i)=entry2;
+        elematrix(i+3,i+6)=entry2;
+      }
+    else if (lm.size()==12)
+      for (unsigned int i=0; i<3;i++)
+      {
+        elematrix(i,i)=entry1;
+        elematrix(i+9,i+9)=entry1;
+        elematrix(i+3,i+3)=1.0/stcfact_;
+        elematrix(i+6,i+6)=1.0/stcfact_;
+        elematrix(i+9,i)=entry2;
+        elematrix(i,i+9)=entry2;
+        elematrix(i+3,i)=entry2;
+        elematrix(i+3,i+9)=entry2;
+        elematrix(i+6,i)=entry2;
+        elematrix(i+6,i+9)=entry2;
+      }
+    else 
+      dserror("hack only valid for two and three layers");
+
+    stcmat_->Assemble(0,elematrix,lm,lmowner);
+    
+    procnodes.clear();
+  }
+  
+  stcmat_->Complete();
+#endif
 }
 
 /*----------------------------------------------------------------------*

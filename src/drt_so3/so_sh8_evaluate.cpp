@@ -402,7 +402,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     {
       const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
-        dserror("To scale or not to scale, that's the querry!");
+        dserror("To scale or not to scale, that's the query!");
 
       const double stc_fact = params.get<double>("stc_factor");
 

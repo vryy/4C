@@ -280,6 +280,9 @@ namespace STR
     //! Precondition system and return operator
     void STCPreconditioning();
 
+    //! Build up STC Matrix
+    void ComputeSTCMatrix();
+    
     //! recover standard solution
     void RecoverSTCSolution();
     //@}
