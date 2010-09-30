@@ -217,6 +217,12 @@ public:
   virtual void CmtNonlinearSolve() { dserror("Unexpected base class call!"); }
 
   /*!
+  \brief Prepare contact for new time step dummy for overloading only
+
+  */
+  virtual void PrepareStepContact() { dserror("Unexpected base class call!"); }
+
+  /*!
   \brief Compute the residual to a given state x
 
   This method is used by the nox user interface class and by the linalg matrix free operator

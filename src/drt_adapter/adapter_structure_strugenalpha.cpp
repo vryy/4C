@@ -289,9 +289,16 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureGenAlpha::PrepareTimeStep()
 {
+	// prepare contact for new time step
+  if (structure_->HaveContactMeshtying())
+  {
+    structure_->PrepareStepContact();
+  }
+
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
 
+  // predict
   std::string pred = params_->get<string>("predictor","consistent");
   if (pred=="constant")
   {

@@ -385,12 +385,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 }
 
 /*----------------------------------------------------------------------*/
-/* Redistribute contact interface(s) in parallel */
-void STR::TimInt::RedistributeContact()
+/* Prepare contact for new time step */
+void STR::TimInt::PrepareStepContact()
 {
-	// only do something if contact is present
-	if (cmtman_ != Teuchos::null)
-	  cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
+	// get out of here if no contact is present
+	if (cmtman_ == Teuchos::null) return;
+
+	// dynamic parallel redistribution of interfaces
+	cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
+
+	// evaluation of reference state for friction (only at t=0)
+	cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1114,11 +1119,8 @@ void STR::TimInt::Integrate()
   double eps = 1.0e-12;
   while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {
-  	// dynamic parallel redistribution (contact)
-  	RedistributeContact();
-
-    // evaluate reference state (frictional contact)
-    EvaluateReferenceState();
+  	// prepare contact for new time step
+  	PrepareStepContact();
 
     // integrate time step
     // after this step we hold disn_, etc

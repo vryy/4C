@@ -83,6 +83,12 @@ public:
   void Integrate();
 
   /*!
+  \brief Prepare contact for new time step
+
+  */
+  void PrepareStepContact();
+
+  /*!
   \brief do constant predictor step
 
   */

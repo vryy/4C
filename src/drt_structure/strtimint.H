@@ -166,17 +166,6 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Check if contact / meshtying conditions are present and
-    //! create manager object + initialize all relevant stuff if so
-    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
-
-    //! Call dynamic redistribution of contact interface(s) at the
-    //! beginning of each new time step
-    void RedistributeContact();
-
-    //! Evaluate reference state for frictional contact in first time step
-    void EvaluateReferenceState();
-    
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
@@ -346,6 +335,23 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
+
+    //@}
+
+    //! @name Meshtying and contact
+    //@{
+
+    //! Check if contact / meshtying conditions are present and
+    //! create manager object + initialize all relevant stuff if so
+    void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
+
+    //! Prepare contact at the beginning of each new time step
+    //! (call dynamic redistribution of contact interface(s) AND
+    //! evaluate reference state for frictional contact at t=0)
+    void PrepareStepContact();
+
+    //! Only evaluate reference state for frictional contact at t=0
+    void EvaluateReferenceState();
 
     //@}
 

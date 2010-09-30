@@ -214,9 +214,6 @@ void TSI::Algorithm::TimeLoop()
       // counter and print header
       IncrementTimeAndStep();
       PrintHeader();
-      
-      // evaluate reference state
-      StructureField().EvaluateReferenceState();
 
       // predict ans solve structural system
       StructureField().PrepareTimeStep();

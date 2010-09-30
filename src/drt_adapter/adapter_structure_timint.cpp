@@ -214,6 +214,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureTimIntImpl::FExtn()
 /* prepare time step */
 void ADAPTER::StructureTimIntImpl::PrepareTimeStep()
 {
+	// prepare contact for new time step
+	structure_->PrepareStepContact();
+
   // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
 

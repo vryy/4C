@@ -183,6 +183,20 @@ StruGenAlpha(params,dis,solver,output)
 
 
 /*----------------------------------------------------------------------*
+ |  prepare contact for new time step                        popp  09/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::PrepareStepContact()
+{
+	// dynamic parallel redistribution (contact only, not for meshtying)
+	cmtmanager_->GetStrategy().RedistributeContact(dis_);
+
+ 	// evaluate reference state for first step (frictional contact only)
+	int step = params_.get<int>("step" ,0);
+  cmtmanager_->GetStrategy().EvaluateReferenceState(step,disn_);
+}
+
+
+/*----------------------------------------------------------------------*
  |  do consistent predictor step (public)                     popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
@@ -3268,11 +3282,8 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   // time step loop
   for (int i=step; i<nstep; ++i)
   {
-  	// dynamic parallel redistribution (contact only)
-  	cmtmanager_->GetStrategy().RedistributeContact(dis_);
-
-   	// evaluate reference state for first step and frictional contact
-    cmtmanager_->GetStrategy().EvaluateReferenceState(i,disn_);
+  	// prepare contact for new time step
+  	PrepareStepContact();
 
     // predictor step
     if (pred=="constant")        ConstantPredictor();
