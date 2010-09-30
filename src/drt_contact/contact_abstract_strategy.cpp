@@ -119,7 +119,8 @@ ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
 void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
 {
 	// get out of here if parallel redistribution is switched off
-	if (!ParRedist()) return;
+	// or if this is a single processor (serial) job
+	if (!ParRedist() || Comm().NumProc()==1) return;
 
 	// decide whether redistribution should be applied or not
 	double average = 0.0;
