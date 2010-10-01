@@ -207,27 +207,37 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
 	SetState("displacement",dis);
 	SetState("olddisplacement",dis);
 
+	// global flag for redistribution
+	bool anyinterfacedone = false;
+
 	// parallel redistribution of all interfaces
 	for (int i=0; i<(int)interface_.size();++i)
 	{
-		// print old parallel distribution
-		interface_[i]->PrintParallelDistribution(i+1);
-
 		// redistribute optimally among all procs
-		interface_[i]->Redistribute();
+		bool done = interface_[i]->Redistribute(i+1);
 
-		// call fill complete again
-		interface_[i]->FillComplete(maxdof_);
+		// if redistribution has really been performed
+		// (the previous method might have found that there
+		// are no "close" slave elements and thud redistribution
+		// might not be necessary ->indicated by boolean)
+		if (done)
+		{
+			// call fill complete again
+			interface_[i]->FillComplete(maxdof_);
 
-		// print new parallel distribution
-		interface_[i]->PrintParallelDistribution(i+1);
+			// print new parallel distribution
+			interface_[i]->PrintParallelDistribution(i+1);
 
-		// re-create binary search tree
-		interface_[i]->CreateSearchTree();
+			// re-create binary search tree
+			interface_[i]->CreateSearchTree();
+
+			// set global flag to TRUE
+			anyinterfacedone = true;
+		}
 	}
 
 	// re-setup strategy with redistributed=TRUE, init=FALSE
-	Setup(true,false);
+	if (anyinterfacedone) Setup(true,false);
 
 	// time measurement
 	Comm().Barrier();

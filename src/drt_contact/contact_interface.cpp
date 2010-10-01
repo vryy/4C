@@ -123,12 +123,8 @@ void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
 /*----------------------------------------------------------------------*
  |  redistribute contact interface (public)                   popp 08/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::Redistribute()
+bool CONTACT::CoInterface::Redistribute(int index)
 {
-	// OLD VERSION: ball base class method
-	//MORTAR::MortarInterface::Redistribute();
-	//return;
-
 	// we need PARALLEL and PARMETIS defined for this
 #if !defined(PARALLEL) || !defined(PARMETIS)
 	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
@@ -146,10 +142,8 @@ void CONTACT::CoInterface::Redistribute()
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
 	// redistribution useless if only one processor
-  if (numproc==1) return;
-
-  // print message
-  if (!myrank) cout << "\nRedistributing interface using 3-PARMETIS.......";
+	// (return value FALSE, because no redistribution performed)
+  if (numproc==1) return false;
 
 	//**********************************************************************
 	// (1) SLAVE splitting in close / non-close parts
@@ -206,13 +200,32 @@ void CONTACT::CoInterface::Redistribute()
   if (scroweles->NumGlobalElements()==0 && sncroweles->NumGlobalElements()==0)
     dserror("ERROR: Redistribute: Both slave sets (close/non-close) are empty");
 
-  // use simple base class method if slave surface consists of
-  // either ONLY close elements or ONLY non-close elements
-  if (scroweles->NumGlobalElements()==0 || sncroweles->NumGlobalElements()==0)
+  // print element overview
+  if (!myrank)
+  {
+  	int cl = scroweles->NumGlobalElements();
+  	int ncl = sncroweles->NumGlobalElements();
+ 		int ma = mroweles->NumGlobalElements();
+  	cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
+  }
+
+  // do not redistribute if there are NO close elements
+  // (return value FALSE, because no redistribution performed)
+  if (scroweles->NumGlobalElements()==0) return false;
+
+	// print old parallel distribution
+	PrintParallelDistribution(index);
+
+  // use simple base class method if there are ONLY close elements
+  // (return value TRUE, because redistribution performed)
+  if (sncroweles->NumGlobalElements()==0)
   {
   	MORTAR::MortarInterface::Redistribute();
-  	return;
+  	return true;
   }
+
+  // print message
+  if (!myrank) cout << "\nRedistributing interface using 3-PARMETIS.......";
 
 	//**********************************************************************
 	// (2) CLOSE SLAVE redistribution
@@ -396,7 +409,7 @@ void CONTACT::CoInterface::Redistribute()
 	// print message
 	if (!myrank) cout << "done!" << endl;
 
-  return;
+  return true;
 }
 
 /*----------------------------------------------------------------------*

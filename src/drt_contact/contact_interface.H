@@ -232,8 +232,19 @@ public:
   simulations Redistribute() might be called dynamically again and
   again to account for changes of the contact zone.
 
+  Two special cases are treated seperately: First, if ALL slave
+  elements of the interface have some "close" neighbors, we do not
+  need to distinguish the two different slave parts. Thus, we
+  simply call the base class method Redistribute() also used for
+  meshtying. Second, if NO slave element of the interface has any
+  "close" neighbors, we do not need to redistribute at all. This
+  is indicated by returning with a boolean return value FALSE.
+
+  \param index (in): global index of current interface
+  \return flag indicating whether redistribution has been performed
+
   */
-  void Redistribute();
+  bool Redistribute(int index);
 
   /*!
   \brief Create binary search tree
