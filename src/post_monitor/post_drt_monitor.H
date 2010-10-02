@@ -466,7 +466,7 @@ protected:
     PostResult& result,
     const std::string groupname,
     const std::string name,
-    const int numdf,
+    const int dim,
     const int node
     ) const;
 

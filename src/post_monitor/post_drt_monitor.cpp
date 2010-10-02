@@ -398,6 +398,7 @@ void MonWriter::WriteMonThrFile(
   {
     outfile.open(filename.c_str());
   }
+
 //  int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
@@ -462,12 +463,12 @@ void MonWriter::WriteMonThrFile(
     }
   }
 
-  // This is a loop over all possible stress or strain modes (called groupnames).
-  // The call is handed to _all_ processors, because the extrapolation of the
-  // heatfluxes/temperature gradients from Gauss points to nodes is done by
-  // DRT::Discretization utilising an assembly call. The assembly is parallel
-  // and thus all processors have to be incoporated --- at least I think so.
-  // (culpit: bborn, 07/09)
+  // This is a loop over all possible heatflux or temperature gradient modes
+  // (called groupnames).The call is handed to _all_ processors, because the
+  // extrapolation of the heatfluxes/temperature gradients from Gauss points to
+  // nodes is done by DRT::Discretization utilising an assembly call. The
+  // assembly is parallel and thus all processors have to be incoporated
+  // --- at least I think so. (culpit: bborn, 07/09)
   for (std::vector<std::string>::iterator gn=groupnames.begin(); gn!=groupnames.end(); ++gn)
     WriteThrResults(outfile,problem,result,gdof,dim,thrtype,*gn,node);
 
@@ -1157,7 +1158,7 @@ void ThermoMonWriter::CheckInfieldType(string& infieldtype)
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::FieldError(int node)
-{;
+{
   dserror("Node %i does not belong to thermal field!", node);
 }
 
@@ -1213,15 +1214,15 @@ void ThermoMonWriter::WriteResult(
 
   // get actual result vector temperature rate
   resvec = result.read_result("rate");
-  const Epetra_BlockMap& velmap = resvec->Map();
+  const Epetra_BlockMap& ratemap = resvec->Map();
 
   // compute second part of offset
-  offset2 = velmap.MinAllGID();
+  offset2 = ratemap.MinAllGID();
 
   // do output of temperature rate
   for(unsigned i=0; i < gdof.size(); ++i)
   {
-    const int lid = velmap.LID(gdof[i]+offset2);
+    const int lid = ratemap.LID(gdof[i]+offset2);
     if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
@@ -1321,22 +1322,11 @@ void ThermoMonWriter::WriteThrResults(
     if (myrank_ == 0)
       cout << "writing node-based " << out << endl;
 
-    // DOFs at node
-    int numdf = 0;
-    if (dim == 3)
-      numdf = 3;
-    else if (dim == 2)
-      numdf = 2;
-    else if (dim == 1)
-      numdf = 1;
-    else
-      dserror("Cannot handle dimension %d", dim);
-
     // this is a loop over all time steps that should be written
     // bottom control here, because first set has been read already
     do
     {
-      WriteThrResult(outfile,field,result,groupname,name,numdf,node);
+      WriteThrResult(outfile,field,result,groupname,name,dim,node);
     } while (result.next_result());
 
   }
@@ -1351,7 +1341,7 @@ void ThermoMonWriter::WriteThrResult(
   PostResult& result,
   const string groupname,
   const string name,
-  const int numdf,
+  const int dim,
   const int node
   ) const
 {
@@ -1384,7 +1374,7 @@ void ThermoMonWriter::WriteThrResult(
     const int adjele = lnode->NumElement();
 
     std::vector<double> nodal_heatfluxes;
-    if (numdf == 3)
+    if (dim == 3)
     {
       if (lnodedofs.size() < numdofpernode)
         dserror("Too few DOFs at node of interest");
@@ -1392,14 +1382,14 @@ void ThermoMonWriter::WriteThrResult(
       nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
       nodal_heatfluxes.push_back((*heatfluxz)[lnodedofs[0]]/adjele);
     }
-    else if (numdf == 2)
+    else if (dim == 2)
     {
       if (lnodedofs.size() < numdofpernode)
         dserror("Too few DOFs at node of interest");
       nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
       nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
     }
-    else if (numdf == 1)
+    else if (dim == 1)
     {
       if (lnodedofs.size() < numdofpernode)
         dserror("Too few DOFs at node of interest");
@@ -1407,12 +1397,15 @@ void ThermoMonWriter::WriteThrResult(
     }
     else
     {
-      dserror("Don't know what to do with %d DOFs per node", numdf);
+      dserror("Don't know what to do with %d dimensions", dim);
     }
 
     // print to file
+    // step number
     outfile << std::right << std::setw(10) << result.step();
+    // current time step
     outfile << std::right << std::setw(16) << std::scientific << result.time();
+    // current heatfluxes
     for (std::vector<double>::iterator ns=nodal_heatfluxes.begin(); ns!=nodal_heatfluxes.end(); ++ns)
       outfile << std::right << std::setw(16) << std::scientific << *ns;
     outfile << std::endl;
@@ -1451,7 +1444,7 @@ PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
   if (myfield->name() != "thermo")
-    dserror("Fieldtype of field 1 is not thermo.");
+    dserror("Fieldtype of field 2 is not thermo.");
   return myfield;
 }
 
@@ -1573,8 +1566,11 @@ int main(int argc, char** argv)
       {
         TsiThermoMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
-        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
-        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+        mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
+        mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
+        // TODO: bugfix in case of coupled tsi
+//        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
+//        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
       }
       else
       {
