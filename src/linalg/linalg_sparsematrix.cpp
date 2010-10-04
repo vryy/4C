@@ -290,7 +290,7 @@ void LINALG::SparseMatrix::Zero()
   }
   else
   {
-#if 1
+#if 0
     sysmat_->PutScalar(0.);
 #else
     const Epetra_Map domainmap = sysmat_->DomainMap();
