@@ -257,6 +257,10 @@ public:
         const double  dt,
         const double  timefac,
         const int     k
+//        const int id,
+//        const int gp,
+//        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+//        const int                                    iquad       ///< id of current Gauss point
     );
 
     //! evaluate shape functions and their derivatives at current integration point

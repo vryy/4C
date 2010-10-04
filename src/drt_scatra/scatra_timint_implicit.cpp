@@ -55,6 +55,9 @@ Maintainer: Georg Bauer
 #include "../drt_io/io_control.H"
 */
 
+//#define VISUALIZE_ELEDATA_GMSH
+//only if VISUALIZE_ELEDATA_GMSH
+//#include "../drt_io/io_gmsh.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                        vg 05/07|
@@ -744,6 +747,15 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   while (stopnonliniter==false)
   {
+
+#ifdef VISUALIZE_ELEDATA_GMSH
+    const bool screen_out = false;
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityScatra", 0, 5, screen_out, 0);
+    std::ofstream gmshfilecontent(filename.c_str());//, ios_base::out | ios_base::app);
+    gmshfilecontent << "View \" " << "SubgridVelocityScatra" << " \" {\n";
+    gmshfilecontent.close();
+#endif
+
     itnum++;
 
     // check for negative/zero concentration values (in case of ELCH only)
@@ -842,6 +854,14 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   stopgalvanostat = ApplyGalvanostaticControl();
   } // galvanostatic control
+
+#ifdef VISUALIZE_ELEDATA_GMSH
+  const bool screen_out = false;
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityScatra", 0, 5, screen_out, 0);
+  std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+  gmshfilecontent << "};\n";
+  gmshfilecontent.close();
+#endif
 
   return;
 }
@@ -1266,8 +1286,8 @@ void SCATRA::ScaTraTimIntImpl::Output()
 
     // write output to Gmsh postprocessing files
     //if (outputgmsh_ and step_ == 1 ) OutputToGmsh(step_, time_);
-    if (outputgmsh_ and (step_ % 5 == 0)) OutputToGmsh(step_, time_);
-    //if (outputgmsh_) OutputToGmsh(step_, time_); //(outputgmsh_ and (step_ % 50 == 0))
+    //if (outputgmsh_ and (step_ % 5 == 0)) OutputToGmsh(step_, time_);
+    if (outputgmsh_) OutputToGmsh(step_, time_); //(outputgmsh_ and (step_ % 50 == 0))
 
     // add restart data
     if (step_%uprestart_==0) OutputRestart();

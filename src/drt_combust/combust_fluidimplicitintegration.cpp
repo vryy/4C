@@ -29,6 +29,7 @@ Maintainer: Florian Henke
 
 #include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
+//#include "combust_defines.H"
 #include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
@@ -870,6 +871,26 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   {
     itnum++;
 
+#ifdef SUGRVEL_OUTPUT
+      std::cout << "writing gmsh output" << std::endl;
+      const bool screen_out = false;
+
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityFluid", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent(filename.c_str());
+      gmshfilecontent << "View \" " << "SubgridVelocity" << " \" {\n";
+      gmshfilecontent.close();
+
+      const std::string filename2 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Residual", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent2(filename2.c_str());
+      gmshfilecontent2 << "View \" " << "Residual" << " \" {\n";
+      gmshfilecontent2.close();
+
+      const std::string filename3 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Tau", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent3(filename3.c_str());
+      gmshfilecontent3 << "View \" " << "Tau" << " \" {\n";
+      gmshfilecontent3.close();
+#endif
+
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
@@ -914,6 +935,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
+
+#ifdef SUGRVEL_OUTPUT
+      //eleparams.set("step",step_);
+#endif
+
       //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
       //type of linearisation: include reactive terms for linearisation
       if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
@@ -1163,6 +1189,25 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     oldinc_->Update(1.0,*incvel_,0.0);
   }
 
+#ifdef SUGRVEL_OUTPUT
+  const bool screen_out = false;
+
+  const std::string filename = IO::GMSH::GetFileName("SubgridVelocityFluid", step_, screen_out, 0);
+  std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+  gmshfilecontent << "};\n";
+  gmshfilecontent.close();
+
+  const std::string filename2 = IO::GMSH::GetFileName("Residual", step_, screen_out, 0);
+  std::ofstream gmshfilecontent2(filename2.c_str(), ios_base::out | ios_base::app);
+  gmshfilecontent2 << "};\n";
+  gmshfilecontent2.close();
+
+  const std::string filename3 = IO::GMSH::GetFileName("Tau", step_, screen_out, 0);
+  std::ofstream gmshfilecontent3(filename3.c_str(), ios_base::out | ios_base::app);
+  gmshfilecontent3 << "};\n";
+  gmshfilecontent3.close();
+#endif
+
   //--------------------
   // compute error norms // schott Aug 6, 2010
   //--------------------
@@ -1299,19 +1344,19 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   if (write_restart_data)
   {
    std::cout << "Write restart" << std::endl;
-//   std::cout << state_.velnp_->GlobalLength() << std::endl;
+    //std::cout << state_.velnp_->GlobalLength() << std::endl;
     output_->WriteVector("velnp", state_.velnp_);
-//    std::cout << state_.veln_->GlobalLength() << std::endl;
+    //std::cout << state_.veln_->GlobalLength() << std::endl;
     output_->WriteVector("veln" , state_.veln_);
-//    std::cout << state_.velnm_->GlobalLength() << std::endl;
+    //std::cout << state_.velnm_->GlobalLength() << std::endl;
     output_->WriteVector("velnm", state_.velnm_);
-//    std::cout << state_.accnp_->GlobalLength() << std::endl;
+    //std::cout << state_.accnp_->GlobalLength() << std::endl;
     output_->WriteVector("accnp", state_.accnp_);
-//    std::cout << state_.accn_->GlobalLength() << std::endl;
+    //std::cout << state_.accn_->GlobalLength() << std::endl;
     output_->WriteVector("accn" , state_.accn_);
   }
 
-  //  if (discret_->Comm().NumProc() == 1)
+//  if (discret_->Comm().NumProc() == 1)
   if (step_ % 1 == 0 or step_== 1) //write every 5th time step only
   {
     OutputToGmsh("solution_field_pressure","solution_field_velocity",step_, time_);

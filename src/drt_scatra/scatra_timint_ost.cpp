@@ -198,6 +198,10 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
 
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
+  if (scatratype_==INPAR::SCATRA::scatratype_levelset)
+  {
+    discret_->SetState("phin",phin_);
+  }
 
   return;
 }

@@ -285,7 +285,9 @@ namespace XFEM
         case DRT::Element::hex8:
         {
           //rule = getOptimalVelocityGaussrule(celldistype);
-          rule = DRT::UTILS::intrule_hex_27point;
+          //rule = DRT::UTILS::intrule_hex_1point;
+          rule = DRT::UTILS::intrule_hex_8point;
+          //rule = DRT::UTILS::intrule_hex_27point;
           break;
         }
         default:

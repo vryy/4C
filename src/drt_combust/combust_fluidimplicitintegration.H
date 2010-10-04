@@ -25,6 +25,8 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 #include "combust_interface.H"
 
+#include "combust_defines.H"
+
 namespace FLD
 {
 /*!

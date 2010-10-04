@@ -297,6 +297,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
+#ifdef SUGRVEL_OUTPUT
+      //const int               step     = params.get<int>("step");
+#endif
 
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
@@ -414,6 +417,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       dsassert(timealgo == INPAR::FLUID::timeint_stationary, "must be stationary!");
       const double            dt       = 1.0;
       const double            theta    = 1.0;
+#ifdef SUGRVEL_OUTPUT
+      const int               step     = 0;
+#endif
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns

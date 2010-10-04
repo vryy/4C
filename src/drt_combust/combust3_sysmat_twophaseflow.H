@@ -657,8 +657,6 @@ void SysmatTwoPhaseFlow(
       }
 
 // for gmsh output of subgrid velocity
-/*
- * 
 #ifdef SUGRVEL_OUTPUT
       const bool screen_out = false;
 
@@ -723,8 +721,6 @@ void SysmatTwoPhaseFlow(
 ////           std::cout<< "timefac" << timefac << std::endl;
 //         }
 //      }
-* 
-*/
 
       // convective part of convection and sub-grid scale
       LINALG::Matrix<shpVecSize,1> enr_conv_c_sg;

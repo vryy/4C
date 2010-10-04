@@ -19,7 +19,7 @@ Maintainer: Florian Henke
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
 //#define COMBUST_NITSCHE
-#define COMBUST_STRESS_BASED
+//#define COMBUST_STRESS_BASED
 //#define TWOPHASEFLOW_NITSCHE
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //------------------------------------------
@@ -108,6 +108,12 @@ Maintainer: Florian Henke
 #define COMBUST_GMSH_NORMALFIELD
 //#define COMBUST_GMSH_SMOOTHED_NORMALFIELD
 
+//-------------------------------
+//two-phase flow
+//gmsh output of subgrid velocity
+//-------------------------------
+//#define SUGRVEL_OUTPUT
+//don't forget to transfer the time step
 
 //----------------
 // Benedikts flags

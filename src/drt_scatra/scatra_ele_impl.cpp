@@ -40,7 +40,11 @@ Maintainer: Georg Bauer
 #include "../drt_inpar/inpar_scatra.H"
 
 //#define VISUALIZE_ELEMENT_DATA
-#include "scatra_element.H" // only for visualization of element data
+#include "../drt_geometry/integrationcell_coordtrafo.H"
+//#define VISUALIZE_ELEDATA_GMSH
+// only if VISUALIZE_ELEDATA_GMSH
+//#include "../drt_io/io_gmsh.H"
+//#include "../drt_geometry/integrationcell_coordtrafo.H"
 
 // include migration velocity into stabilization
 //#define MIGRATIONSTAB  //stabilization w.r.t migration term (obsolete!)
@@ -531,7 +535,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       } // for i
     }
 
-    if (is_genalpha_ and not is_incremental_)
+    if ((is_genalpha_ and not is_incremental_) or (scatratype == INPAR::SCATRA::scatratype_levelset))
     {
       // extract additional local values from global vector
       RefCountPtr<const Epetra_Vector> phin = discretization.GetState("phin");
@@ -1554,6 +1558,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           else
           {
             CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
+            //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
           }
           // calculate subgrid-scale convective part
           sgconv_.MultiplyTN(derxy_,sgvelint_);
@@ -2954,8 +2959,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
     const double   dt,
     const double   timefac,
     const int      k
+//    const int id,
+//    const int gp,
+//    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+//    const int                                    iquad      ///< id of current Gauss point
   )
 {
+
+  dserror("Read comment!");
+
+  /*
+   * Aufgrund der Vernachlaessigung der Anreicherung der Geschwindigkeit in den vom Level-Set geschnittenen Elementen
+   * ergibt sich hier ein falsches Residuum der Impulsgleichung. Insbesondere ergeben sich somit subgrid velocities in
+   * der Größenordung von u^h, die dann zu einer unphysikalischen Verformung oder sogar zu Zerstoerung des Interfaces
+   * führen koennen. Folglich sollten Cross- und Reynoldsstress-Terme für Level-Set-Probleme mit XFEM im Moment nicht
+   * verwendet werden.
+   */
+
+  /*
+   * Hinweis:
+   * trotz des Tauschs von G-Feld und Fluid sollte hier phin benoetigt werden
+   * das ist aber noch nicht getestet
+   */
 
   std::cout << "* Warning! Check parameter of fluid field! *"<< std::endl;
   // definitions
@@ -3044,9 +3069,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
   bodyforce.Multiply(nodebodyforce,funct_);
 
   //overwrite bodyforce
-  bodyforce(0) = 0.0;
-  bodyforce(1) = -10.0;
-  bodyforce(2) = 0.0;
+//  bodyforce(0) = 0.0;
+  //bodyforce(1) = -9.81;
+//  bodyforce(1) = -980.0;
+//  bodyforce(2) = 0.0;
 
   // get viscous term
   if (use2ndderiv_)
@@ -3079,7 +3105,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
 //    double prefac = 1.0/3.0;
 //    derxy2_.Scale(prefac);
 //
-//    for (int i=0; i<iel; ++i)
+//    for (int i=0; i<nsd_; ++i)
 //    {
 //      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
 //
@@ -3104,24 +3130,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
   {
      phi = phi + funct_(i) * ephin_[k](i,0);
   }
+
   // set density and viscosity depending on phi
   if (phi == 0.0 or phi > 0.0)
   {
-    dens = 1.5;
-    viscosity = 0.0033;
+     //std::cout << "in Omega +" << std::endl;
+    //dens = 1.5;
+    //viscosity = 0.0033;
     //dens = 1000.0;
     //viscosity = 0.35;
+    dens = 1.0;
+    viscosity = 0.01;
+    //dens = 3.0;
+    //viscosity = 0.0135;
+    //dens = 1.0;
+    //viscosity = 0.1;
   }
   else
   {
-    dens = 1.0;
-    viscosity = 0.0022;
+    //std::cout << "in Omega -" << std::endl;
     //dens = 1.0;
+    //viscosity = 0.0022;
+    //dens = 1.225;
     //viscosity = 0.00358;
+    dens = 1000.0;
+    viscosity = 1.0;
+    //dens = 1.0;
+    //viscosity = 0.0045;
+    //dens = 1000.0;
+    //viscosity = 0.1;
   }
 
   // stabilization parameter definition according to Bazilevs et al. (2007)
-  // effective velocity at element center:
   // (weighted) convective velocity
   LINALG::Matrix<nsd_,1> veleff(velint_,false);
   /*
@@ -3195,7 +3235,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
   //--------------------------------------------------------------------
   if (is_genalpha_)
   {
-	  dserror("genalpha not supported");
+    dserror("genalpha not supported");
 //    for (int rr=0;rr<nsd_;++rr)
 //    {
 //      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr));
@@ -3206,14 +3246,55 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
     for (int rr=0;rr<nsd_;++rr)
     {
        sgvelint_(rr) = -tau*(dens*velint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
+
+//test
+//       if (id==2076)
+//       {
+//           std::cout << id << std::endl;
+//           std::cout<< "Residuum" << sgvelint_(rr)/(-tau)*dt << std::endl;
+//           std::cout<< "subgrid vel" << sgvelint_(rr) << std::endl;
+//           std::cout<< "Histvektor" << acc(rr) << std::endl;
+//           std::cout<< "Geschw" << velint_(rr) << std::endl;
+//           std::cout<< "Druck" << gradp(rr) << std::endl;
+//           std::cout<< "Konvek" << conv(rr) << std::endl;
+//           std::cout<< "Epsilon" << visc(rr) << std::endl;
+//           std::cout<< "Bodyforce" << bodyforce(rr) << std::endl;
+//           std::cout<< "dens" << dens << std::endl;
+//           std::cout<< "visc" << viscosity << std::endl;
+//           std::cout<< "timefac" << timefacmod << std::endl;
+//           std::cout << "tau: " << tau<< std::endl;
+//       }
     }
   }
 
-  // TEST
-//  std::cout << "SCATRA" << std::endl;
-//  std::cout << "dens: " << dens<< std::endl;
-//  std::cout << "tau: " << tau<< std::endl;
-//  std::cout << "viscosity: " << viscosity<< std::endl;
+#ifdef VISUALIZE_ELEDATA_GMSH
+  //Gmsh-output of element data
+  {
+      const bool screen_out = false;
+
+      const std::string filename = IO::GMSH::GetFileName("SubgridVelocityScatra", 0, screen_out, 0);
+      std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+      {
+        const double* gpcoord = (intpoints.IP().qxg)[iquad];
+        if (nsd_!=3)
+          dserror("change dimension");
+        LINALG::Matrix<3,1> xsi;
+        for (int idim=0;idim<nsd_;idim++)
+          {xsi(idim) = gpcoord[idim];}
+        LINALG::SerialDenseMatrix xyze(3,nen_);
+        for(int inode=0;inode<nen_;inode++)
+        {
+          xyze(0,inode) = xyze_(0,inode);
+          xyze(1,inode) = xyze_(1,inode);
+          xyze(2,inode) = xyze_(2,inode);
+        }
+          // transform gp from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(distype, xyze, xsi);
+          IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, sgvelint_, xsi, gmshfilecontent);
+      }
+      gmshfilecontent.close();
+  }
+#endif
 
   return;
 } //ScaTraImpl::CalcSubgrVelocityLevelSet

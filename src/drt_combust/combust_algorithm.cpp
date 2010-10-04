@@ -191,8 +191,8 @@ void COMBUST::Algorithm::TimeLoop()
       PrepareFGIteration();
 
      // TODO @Ursula do G-function field first
-      //std::cout << "/!\\ warning === fluid field is solved before G-function field" << std::endl;
-      //DoFluidField();
+//      std::cout << "/!\\ warning === fluid field is solved before G-function field" << std::endl;
+//      DoFluidField();
 
       // TODO In the first iteration of the first time step the convection velocity for the
       //      G-function is zero, if a zero initial fluid field is used.
@@ -210,6 +210,9 @@ void COMBUST::Algorithm::TimeLoop()
 
     // write output to screen and files
     Output();
+    //Remark (important for restart): the time level of phi (n+1, n or n-1) used to reconstruct the interface
+    //                                conforming to the restart state of the fluid depends on the order
+    //                                of Output() and UpdateTimeStep()
 
     if (stepreinit_)
     {
@@ -1163,15 +1166,12 @@ double COMBUST::Algorithm::ComputeVolume()
   return sumvolume;
 }
 
-/*
- * Aufgrund der umfangreichen Aenderungen im Combust-Algorithmus gibt es im Moment
- * zwei Restart-Funktionen die beide nicht laufen. Sobald ich mal Zeit dafür habe,
- * wird sich das hoffentlich aendern.
- */
+
+/* -------------------------------------------------------------------------------*
+ * Restart (fluid is solved before g-func)                               rasthofer|
+ * -------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::Restart(int step)
 {
-  dserror("Restart doesn't work at the moment!");
-
   if (Comm().MyPID()==0)
     std::cout << "Restart of combustion problem" << std::endl;
 
@@ -1223,26 +1223,16 @@ void COMBUST::Algorithm::Restart(int step)
   Teuchos::RCP<COMBUST::FlameFront> flamefrontOld = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
 
   // export phi n-1 vector from scatra dof row map to fluid node column map
-  const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
-  if (phinmrow->MyLength() != ScaTraField().Phinm()->MyLength())
-    dserror("vectors phinmrow and phinm must have the same length");
-  *phinmrow = *ScaTraField().Phinm();
-  const Teuchos::RCP<Epetra_Vector> phinmcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
-  LINALG::Export(*phinmrow,*phinmcol);
+  const Teuchos::RCP<Epetra_Vector> phinrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
+  if (phinrow->MyLength() != ScaTraField().Phin()->MyLength())
+    dserror("vectors phinrow and phin must have the same length");
+  *phinrow = *ScaTraField().Phin();
+  const Teuchos::RCP<Epetra_Vector> phincol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
+  LINALG::Export(*phinrow,*phincol);
 
   // reconstruct old flame front
-  flamefrontOld->ProcessFlameFront(combustdyn_,ScaTraField().Phinm());
-  //flamefrontOld->ProcessFlameFront(combustdyn_,phinmcol);
-
-  // build interfacehandle using old flame front
-  // TODO @Martin Test + Kommentar
-  // remark: interfacehandleN = interfacehandleNP, weil noch aeltere Information nicht vorhanden
-
-  // TODO remove old code when new code tested
-  //Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
-  //  rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
-  //interfacehandleOld->UpdateInterfaceHandle();
-  //FluidField().ImportInterface(interfacehandleOld);
+  //flamefrontOld->ProcessFlameFront(combustdyn_,ScaTraField().Phin());
+  flamefrontOld->ProcessFlameFront(combustdyn_,phincol);
 
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldNP =
       rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
@@ -1254,9 +1244,6 @@ void COMBUST::Algorithm::Restart(int step)
 
   // restart of fluid field
   FluidField().ReadRestart(step);
-
-  //nur zum testen
-  FluidField().ImportInterface(interfacehandleOldNP,interfacehandleOldN);
 
   // reset interface for restart
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
@@ -1273,15 +1260,17 @@ void COMBUST::Algorithm::Restart(int step)
   FluidField().ImportFlameFront(Teuchos::null);
 
   SetTimeStep(FluidField().Time(),step);
+
+  UpdateTimeStep();
 
   return;
 }
 
-
+/* -------------------------------------------------------------------------------*
+ * Restart (g-func is solved before fluid)                               rasthofer|
+ * -------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::RestartNew(int step)
 {
-  dserror("Restart doesn't work at the moment!");
-
   if (Comm().MyPID()==0)
     std::cout << "Restart of combustion problem" << std::endl;
 
@@ -1333,15 +1322,15 @@ void COMBUST::Algorithm::RestartNew(int step)
   Teuchos::RCP<COMBUST::FlameFront> flamefrontOld = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
 
   // export phi n-1 vector from scatra dof row map to fluid node column map
-  const Teuchos::RCP<Epetra_Vector> phinmrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
-  if (phinmrow->MyLength() != ScaTraField().Phinm()->MyLength())
-    dserror("vectors phinmrow and phinm must have the same length");
-  *phinmrow = *ScaTraField().Phinm();
-  const Teuchos::RCP<Epetra_Vector> phinmcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
-  LINALG::Export(*phinmrow,*phinmcol);
+  const Teuchos::RCP<Epetra_Vector> phinprow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
+  if (phinprow->MyLength() != ScaTraField().Phinp()->MyLength())
+    dserror("vectors phinrow and phin must have the same length");
+  *phinprow = *ScaTraField().Phinp();
+  const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
+  LINALG::Export(*phinprow,*phinpcol);
 
   // reconstruct old flame front
-  flamefrontOld->ProcessFlameFront(combustdyn_,phinmcol);
+  flamefrontOld->ProcessFlameFront(combustdyn_,phinpcol);
 
   // build interfacehandle using old flame front
   // TODO @Martin Test + Kommentar
@@ -1364,17 +1353,12 @@ void COMBUST::Algorithm::RestartNew(int step)
   // restart of fluid field
   FluidField().ReadRestart(step);
 
-  //nur zum testen
-  //FluidField().ImportInterface(interfacehandleNP_,interfacehandleN_);
-
-  // reset interface for restart
-  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-
-  interfacehandleNP_->UpdateInterfaceHandle();
-  interfacehandleN_->UpdateInterfaceHandle();
   //-------------------
   // write fluid output
   //-------------------
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+  interfacehandleNP_->UpdateInterfaceHandle();
+  interfacehandleN_->UpdateInterfaceHandle();
   // show flame front to fluid time integration scheme
   FluidField().ImportFlameFront(flamefront_);
   FluidField().Output();
@@ -1382,6 +1366,8 @@ void COMBUST::Algorithm::RestartNew(int step)
   FluidField().ImportFlameFront(Teuchos::null);
 
   SetTimeStep(FluidField().Time(),step);
+
+  UpdateTimeStep();
 
   return;
 }
