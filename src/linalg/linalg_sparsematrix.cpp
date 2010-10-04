@@ -290,6 +290,9 @@ void LINALG::SparseMatrix::Zero()
   }
   else
   {
+#if 1
+    sysmat_->PutScalar(0.);
+#else
     const Epetra_Map domainmap = sysmat_->DomainMap();
     const Epetra_Map rangemap = sysmat_->RangeMap();
     // Remove old matrix before creating a new one so we do not have old and
@@ -303,6 +306,7 @@ void LINALG::SparseMatrix::Zero()
       dserror("matrix type is not correct");
 
     sysmat_->FillComplete(domainmap,rangemap);
+#endif
   }
 }
 
