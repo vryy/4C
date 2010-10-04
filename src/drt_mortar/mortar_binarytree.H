@@ -228,13 +228,7 @@ public:
   \brief Return slabs of DOP
 
   */
-  virtual Epetra_SerialDenseMatrix Slabs() const { return slabs_; }
-
-  /*!
-  \brief Return nomals of DOP
-
-  */
-  virtual Epetra_SerialDenseMatrix Dopnormals() const { return dopnormals_; }
+  virtual Epetra_SerialDenseMatrix& Slabs() { return slabs_; }
 
   /*!
   \brief Return number of k-DOP vertices
@@ -255,10 +249,10 @@ public:
   virtual void SetLayer(int layer) { layer_ = layer; }
 
   /*!
-  \brief Return pointer to element list of TreeNode
+  \brief Return reference to element list of TreeNode
 
   */
-  virtual vector<int> Elelist() const { return elelist_; }
+  virtual vector<int>& Elelist() { return elelist_; }
   
   /*!
   \brief Return dim of Problem

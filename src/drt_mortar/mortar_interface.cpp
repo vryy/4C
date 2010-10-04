@@ -1560,7 +1560,8 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
   // -> In this case we have to explicitly call and updating routine, i.e.
   //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
   //    search routine SearchSeparate(). Of course, the bottom-up
-  //    update makes more sense here!
+  //    update makes more sense here. For very large meshtying problems,
+  //    this version is preferable and thus chosen as default.
   //
   // *********************************************************************
 
@@ -1571,7 +1572,7 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
   //binarytree_->UpdateTreeTopDown();
 
   // update tree in a bottom up way
-  //binarytree_->UpdateTreeBottomUp();
+  binarytree_->UpdateTreeBottomUp();
 
 #ifdef MORTARGMSHCTN
   for (int i=0;i<(int)(binarytree_->CouplingMap().size());i++)
@@ -1581,10 +1582,10 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 #endif //MORTARGMSHCTN
 
   // search with a separate algorithm
-  //binarytree_->SearchSeparate();
+  binarytree_->SearchSeparate();
 
   // search with an combined algorithm
-  binarytree_->SearchCombined();
+  //binarytree_->SearchCombined();
 
 	return true;
 }

@@ -97,7 +97,7 @@ const Epetra_Comm& MORTAR::BinaryTreeNode::Comm() const
 void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
 {
 	// return if proc. has no elements!
-	if (elelist_.size()==0) return;
+	if (Elelist().size()==0) return;
 
 	// calculate bounding volume
   CalculateSlabsDop(true);
@@ -129,7 +129,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   	}
 
   	// check what to do with right child
-  	if (rightchild_->elelist_.size()==0)
+  	if (rightchild_->Elelist().size()==0)
   	{
   		dserror("ERROR: InitializeTree:Processor has no rightchild elements-->return;");
   		return;
@@ -164,7 +164,7 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
 	}
 
   // calculate slabs for every element
-  for (int i=0; i<(int)elelist_.size();++i)
+  for (int i=0; i<(int)Elelist().size();++i)
   {
     int gid = Elelist()[i];
     DRT::Element* element= idiscret_.gElement(gid);
@@ -366,13 +366,13 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 	vector<int> rightelements(0);
 
   //if only 2 elements in Treenode, create new treenodes out of them
-  if (elelist_.size()==2)
+  if (Elelist().size()==2)
   {
   	leftelements.push_back(Elelist()[0]);
   	rightelements.push_back(Elelist()[1]);
   }
   // if more than 2 elements in Treenode
-  else if (elelist_.size()>2)
+  else if (Elelist().size()>2)
   {
 	  //calculate splitting area (split along longest side)
 		double lmax = 0.0;					// max. length of sides of DOP
@@ -400,7 +400,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 						 + xmedian[2]*dopnormals_(splittingnormal,2);
 
 		//split treenode into two parts
-		for (int i=0; i<((int)elelist_.size());++i)
+		for (int i=0; i<((int)Elelist().size());++i)
 	  {
 			bool isright = false; // true, if element should be sorted into right treenode
 			bool isleft = false;	// true, if element should be sorted into left treenode
@@ -464,7 +464,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 	}
 
 	// define type of newly created children treenodes
-  if (elelist_.size()>=2)
+  if (Elelist().size()>=2)
   {
     //defines type of left and right TreeNode
 	  BinaryTreeNodeType lefttype = UNDEFINED;
@@ -1141,7 +1141,7 @@ void MORTAR::BinaryTree::PrintTree(RCP<BinaryTreeNode> treenode)
 	}
   cout <<"\n" <<Comm().MyPID()<< " Tree at layer: " << treenode->Layer()<< " Elements: ";
 	for (int i=0;i<(int)(treenode->Elelist().size());i++)
-	  cout <<" "<<treenode->Elelist().at(i);
+	  cout <<" "<<treenode->Elelist()[i];
 
 	// while treenode is inner node
 	if (treenode->Type()==0 || treenode->Type()==2)
@@ -1168,7 +1168,7 @@ void MORTAR::BinaryTree::PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > >& t
 			cout << " (";
 			for (int l=0;l<(int)(currentnode->Elelist().size());l++)
 			{
-				cout << currentnode->Elelist().at(l) << " ";
+				cout << currentnode->Elelist()[l] << " ";
 			}
 			cout << ") ";
 		}
@@ -1277,8 +1277,8 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(RCP<BinaryTreeNode> streenode,
 		// both treenodes are leaf --> feasible pair
 		if (streenode->Type()==1 && mtreenode->Type()==3)
 		{
-	    int sgid = (int)streenode->Elelist().at(0);		//global id of slave element
-	    int mgid = (int)mtreenode->Elelist().at(0);		//global id of masterelement
+	    int sgid = (int)streenode->Elelist()[0];		//global id of slave element
+	    int mgid = (int)mtreenode->Elelist()[0];		//global id of masterelement
 			//cout <<"\n"<< Comm().MyPID() << "TreeDividedContact found between slave-Element: "
 	    //		 << sgid <<"and master-Element: "<< mgid;
 	    DRT::Element* element= idiscret_.gElement(sgid);
