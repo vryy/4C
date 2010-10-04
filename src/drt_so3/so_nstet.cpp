@@ -369,11 +369,16 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
                    const int                       numproc,
                    DRT::Discretization&            dis)
 {
+  // wenn hier row knoten uebrig bleiben, die nicht nachbar zu einem anderen row knoten sind
+  // dann koennen diese doch selbst mis nodes werden? auch in parallel?
+  // das gibt u.U. sehr kleine zusaetzliche patches?
+  
   map<int,DRT::Node*>::iterator node;
   
   vector<int> misnodes(0); // indicator which nodes are mis
   vector<int> smisnodes(0);// same but for communication
-
+  vector<int> deletednodes(0); // all nodes that where deleted (for communication)
+  
   for (int proc=0; proc<numproc; ++proc)
   {
     if (proc==myrank)
@@ -391,6 +396,7 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
         std::map<int,DRT::Node*>::iterator neighbor;
         for (neighbor=nodepatch.begin(); neighbor != nodepatch.end(); ++neighbor)
         {
+          deletednodes.push_back(neighbor->first);
           if (neighbor->first == actnodeid) continue; // do not delete myself
           rnodes.erase(neighbor->first);
         }
@@ -399,43 +405,30 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
     } // if (proc==mypid)
 
     // broadcast mis nodes of proc
-    int size = misnodes.size();
+    int size = (int)misnodes.size();
     dis.Comm().Broadcast(&size,1,proc);
     if (proc==myrank) smisnodes = misnodes;
     else              smisnodes.resize(size);
     dis.Comm().Broadcast(&smisnodes[0],size,proc);
-
+    size = (int)deletednodes.size();
+    dis.Comm().Broadcast(&size,1,proc);
+    if (proc!=myrank) deletednodes.resize(size);
+    dis.Comm().Broadcast(&deletednodes[0],size,proc);
+    
     // all other procs have to remove nodes adjacent to mis nodes from 
     // their potential list
     if (myrank!=proc)
     {
-      for (node=rnodes.begin(); node != rnodes.end();)
+      for (int i=0; i<size; ++i)
       {
-        const int actnodeid = node->second->Id();
-        map<int,DRT::Node*>& nodepatch = adjnode_[actnodeid];
-        std::map<int,DRT::Node*>::iterator neighbor;
-        bool foundit = false;
-        for (neighbor=nodepatch.begin(); neighbor != nodepatch.end(); ++neighbor)
-        {
-          const int neighborid = neighbor->first;
-          for (int i=0; i<size; ++i)
-            if (neighborid == smisnodes[i])
-            {
-              foundit = true;
-              break;
-            }
-          if (foundit) break;
-        }
-        if (foundit)
-        {
-          //cout << myrank << " deloff " << *(node->second) << endl;
-          rnodes.erase(node++);
-        }
-        else node++;
+        node = rnodes.find(deletednodes[i]);
+        if (node == rnodes.end()) continue;
+        rnodes.erase(node);
       }
     }
     dis.Comm().Barrier();
     smisnodes.clear();
+    deletednodes.clear();
   } // for (proc=0; proc<numproc; ++proc)
 
   // convert the misnodes vector to a map because its easier to search
@@ -466,7 +459,7 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyI(
                            DRT::Discretization&                     dis)
 {
   //----------------------------------------------------------------------
-  // assign mis nodes all surrounding row elements (greedy phase 1)
+  // assign mis nodes all surrounding elements (greedy phase 1)
   for (int proc=0; proc<numproc; ++proc)
   {
     vector<int> sendeles(0);
@@ -532,18 +525,17 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyI(
     if (myrank != proc)
     {
       // delete already taken elements from my column element map
-      for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
-      
       // look whether I have any of the communicated elements in my column map
       // If so, put the corresponding MIS node in my map
       map<int,DRT::ELEMENTS::NStet*>::iterator fool;
-      for (int i=0; i<(int)sendeles.size(); ++i)
+      for (int i=0; i<size; ++i) 
       {
+        elecids.erase(sendeles[i]);
         fool = elecids_full.find(sendeles[i]);
         if (fool == elecids_full.end()) continue;
-        if (fool->first != sendeles[i]) dserror("gid of element mismatch");
         pstab_cid_mis[sendeles[i]].push_back(sendelemis[i]);
       }
+      
     } // if (myrank != proc)
     
     sendeles.clear();
@@ -701,165 +693,214 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
                            const int                                numproc,
                            DRT::Discretization&                     dis)
 {
+  // assign patches weights of elements that are already taken 
+  // and no longer present in elecids
+  map<int,int>::iterator mis;
+  for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
+  {
+    vector<DRT::ELEMENTS::NStet*> eles(0);
+    vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
+    
+    // all elements in this patch have weight 1 on this mis node
+    vector<double> weights;
+    for (int i=0; i<(int)adjele.size(); ++i)
+      weights.push_back(1.0);
+    pstab_adjele_weight[mis->first] = weights;
+  }
+  
+  fflush(stdout);
+  dis.Comm().Barrier();
+
+  // key is leftover elecid
+  // vector<int> is patches this element is (multiple times) connected to
+  map<int,vector<int> >  eleonpatches;
+  // key is leftover elecids
+  // value is number of patches (mutliple times) interested in this element
+  map<int,int>           elenumpatches;
+
+  map<int,DRT::ELEMENTS::NStet*>::iterator fool;
+#if 1
+  for (int proc=0; proc<numproc; ++proc)
+  {
+  if (proc==myrank)
+  {
+#endif    
+  for (fool=elecids.begin(); fool != elecids.end(); ++fool)
+  {
+    // leftover element and its nodes
+    DRT::ELEMENTS::NStet* ele = fool->second;
+    const int numnode = ele->NumNode();
+    DRT::Node** nodes = ele->Nodes();
+
+    cout << "Proc " << myrank << " LEFTOVER " << *ele << " " << endl; fflush(stdout);
+    
+    vector<vector<int> > nodeonpatch(numnode);
+    map<int,double> patchmap;
+    
+    // find out on which patches that I have these nodes are
+    map<int,vector<DRT::ELEMENTS::NStet*> >::iterator patches;
+    for (patches=pstab_adjele.begin(); patches != pstab_adjele.end(); ++patches)
+    {
+      vector<DRT::ELEMENTS::NStet*>& eles = patches->second;
+      
+      // build nodal patch because it does not exist yet here
+      map<int,DRT::Node*> nodalpatch;
+      for (int i=0; i<(int)eles.size(); ++i)
+        for (int j=0; j<eles[i]->NumNode(); ++j)
+          nodalpatch[eles[i]->Nodes()[j]->Id()] = eles[i]->Nodes()[j];
+      
+      // check all nodes of the element in question against this nodal patch
+      for (int i=0; i<numnode; ++i)
+        if (nodalpatch.find(nodes[i]->Id()) != nodalpatch.end())
+          nodeonpatch[i].push_back(patches->first);
+      
+    } // for (patches=pstab_adjele.begin(); patches != pstab_adjele.end(); ++patches)
+
+    for (int i=0; i<numnode; ++i)
+    {
+      for (int j=0; j<(int)nodeonpatch[i].size(); ++j)
+        eleonpatches[ele->Id()].push_back(nodeonpatch[i][j]);
+      elenumpatches[ele->Id()] = (int)eleonpatches[ele->Id()].size();
+    }
+
+  } // for (fool=elecids.begin(); fool != elecids.end(); ++fool)
+#if 1
+  }
+  fflush(stdout);
+  dis.Comm().Barrier();
+  }
+#endif
+
+  // do communication of how many patches have interest in the leftover elements
+  map<int,int>           recvelenumpatches;
+  map<int,int>::iterator recvelenum;
+  map<int,vector<int> >  recveleonpatches;
+  map<int,vector<int> >::iterator recveleon;
   for (int proc=0; proc<numproc; ++proc)
   {
     vector<int> sendeles(0);
-    vector<int> sendelemis(0); // gid of mis node belonging to that element
-    map<int,DRT::ELEMENTS::NStet*>::iterator fool;
-
-    // assign patches weights of elements that are already taken 
-    // and no longer present in elecids
-    map<int,int>::iterator mis;
-    for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
-    {
-      vector<DRT::ELEMENTS::NStet*> eles(0);
-      vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
-      
-      // all elements in this patch have weight 1 on this mis node
-      vector<double> weights;
-      for (int i=0; i<(int)adjele.size(); ++i)
-        weights.push_back(1.0);
-      pstab_adjele_weight[mis->first] = weights;
-    }
-
+    vector<int> sendnums(0);
+    
     if (proc==myrank)
     {
-      for (fool=elecids.begin(); fool != elecids.end();)
+      map<int,vector<int> >::iterator ele;
+      for (ele=eleonpatches.begin(); ele != eleonpatches.end(); ++ele)
       {
-        // leftover element and its nodes
-        DRT::ELEMENTS::NStet* ele = fool->second;
-        const int numnode = ele->NumNode();
-        DRT::Node** nodes = ele->Nodes();
-        
-        cout << "Proc " << myrank <<
-                " leftover NStet with no MIS node " << *ele << " " << endl; fflush(stdout);
-        
-        vector<vector<int> > nodeonpatch(numnode);
-        
-        // find out on which patch these nodes are
-        map<int,vector<DRT::ELEMENTS::NStet*> >::iterator patches;
-        for (patches=pstab_adjele.begin(); patches != pstab_adjele.end(); ++patches)
-        {
-          vector<DRT::ELEMENTS::NStet*>& eles = patches->second;
-
-          // build nodal patch
-          map<int,DRT::Node*> nodalpatch;
-          for (int i=0; i<(int)eles.size(); ++i)
-            for (int j=0; j<eles[i]->NumNode(); ++j)
-              nodalpatch[eles[i]->Nodes()[j]->Id()] = eles[i]->Nodes()[j];
-          
-          // check all row nodes against this nodal patch
-          for (int i=0; i<numnode; ++i)
-          {
-            // only row nodes get weights
-            if (nodes[i]->Owner() != myrank) continue;
-            if (nodalpatch.find(nodes[i]->Id()) != nodalpatch.end())
-              nodeonpatch[i].push_back(patches->first);
-          }
-        } // patches
-        
-#if 1
-        for (int i=0; i<numnode; ++i)
-        {
-          cout << "Proc " << myrank << " Node " << nodes[i]->Id() << " on ";
-          if ((int)nodeonpatch[i].size() == 0) cout << "NO PATCH!";
-          for (int j=0; j<(int)nodeonpatch[i].size(); ++j)
-            cout << nodeonpatch[i][j] << " ";
-          cout << endl;
-        }
-#endif
-        
-        // build a map of the patches the nodes are on
-        // count the splitting portions
-        int count=0;
-        map<int,double> patchmap;
-        for (int i=0; i<numnode; ++i)
-        {
-          for (int j=0; j<(int)nodeonpatch[i].size(); ++j)
-          {
-            patches = pstab_adjele.find(nodeonpatch[i][j]);
-            if (patches==pstab_adjele.end()) dserror("???");
-            patchmap[nodeonpatch[i][j]] = 0.0;
-            count++;
-          }
-        }
-        if (!count) 
-        {
-          fool++;
-          continue; // this element has no business on this proc
-        }
-        
-        // distribute the weights among the patches
-        for (int i=0; i<numnode; ++i)
-        {
-          // each node gets 1/4 of the element
-          // this 1/4 is split among the present patches of that node
-          double weight = 0.25;
-          if (nodeonpatch[i].size()) weight /= (double)nodeonpatch[i].size();
-          else weight = 0.0;
-          for (int j=0; j<(int)nodeonpatch[i].size(); ++j)
-            patchmap[nodeonpatch[i][j]] += weight;
-        }
-
-        map<int,double>::iterator p;
-#if 1
-        for (p=patchmap.begin(); p != patchmap.end(); ++p)
-          cout << "Proc " << myrank << " patch " << p->first << " weight " << p->second << endl; fflush(stdout);
-#endif
-
-        // go through the patch map and add ele to patches
-        // Also add the weight
-        for (p=patchmap.begin(); p != patchmap.end(); ++p)
-        {
-          pstab_adjele[p->first].push_back(ele);
-          pstab_adjele_weight[p->first].push_back(p->second);
-          pstab_cid_mis[ele->Id()].push_back(p->first);
-        }
-        
-        elecids.erase(fool++);
-
-        
-      } // for (fool=elecids.begin(); fool != elecids.end();)
-
-
+        sendnums.push_back(elenumpatches[ele->first]); 
+        sendeles.push_back(ele->first);               // element id
+        sendeles.push_back((int)ele->second.size());  // number of patches
+        for (int i=0; i<(int)ele->second.size(); ++i) // patches
+          sendeles.push_back(ele->second[i]);
+      }
+      
     } // if (proc==myrank)
 
-#if 0
-    int size = (int)sendeles.size();
-    dis.Comm().Broadcast(&size,1,proc);
+    int sizenum = sendnums.size();
+    dis.Comm().Broadcast(&sizenum,1,proc);
+    if (proc != myrank) sendnums.resize(sizenum);
+    dis.Comm().Broadcast(&sendnums[0],sizenum,proc);
 
-    if (proc != myrank) 
-    {
-      sendeles.resize(size);
-      sendelemis.resize(size);
-    }
-    dis.Comm().Broadcast(&sendeles[0],size,proc);
-    dis.Comm().Broadcast(&sendelemis[0],size,proc);
-
-    // all other procs remove the already taken elements from their list
-    // of not-yet taken elements
-    if (myrank != proc)
-    {
-      // delete already taken elements from my column element map
-      for (int i=0; i<size; ++i) elecids.erase(sendeles[i]);
-      
-      // look whether I have any of the communicated elements in my column map
-      // If so, put the corresponding MIS node in my map
-      for (int i=0; i<(int)sendeles.size(); ++i)
-      {
-        fool = elecids_.find(sendeles[i]);
-        if (fool == elecids_full.end()) continue;
-        pstab_cid_mis[sendeles[i]].push_back(sendelemis[i]);
-      }
-    } // if (myrank != proc)
+    int sizeele = sendeles.size();
+    dis.Comm().Broadcast(&sizeele,1,proc);
+    if (proc != myrank) sendeles.resize(sizeele);
+    dis.Comm().Broadcast(&sendeles[0],sizeele,proc);
     
-    sendeles.clear();
-    sendelemis.clear();
-    dis.Comm().Barrier();
-#endif
+    if (proc != myrank)
+    {
+      int* i = &sendeles[0];
+      while (i < &sendeles[sizeele-1]+1)
+      {
+        const int eleid = *i; i++;
+        const int num   = *i; i++;
+        int*      j     = i;
+        i += num;
+        fool = elecids.find(eleid);
+        if (fool == elecids.end()) continue; // I have no interest in this element
+        recvelenumpatches[eleid] += num;
+        for (int k=0; k<num; ++k)
+          recveleonpatches[eleid].push_back(j[k]);
+      }
+    } // if (proc != myrank)
 
+    dis.Comm().Barrier();
+    sendeles.clear();
+    sendnums.clear();
 
   } // for (int proc=0; proc<numproc; ++proc)
+
+  // now all receiving and sending is done, so add up
+  for (recvelenum=recvelenumpatches.begin(); recvelenum != recvelenumpatches.end(); ++recvelenum)
+    elenumpatches[recvelenum->first] += recvelenum->second;
+  for (recveleon=recveleonpatches.begin(); recveleon != recveleonpatches.end(); ++recveleon)
+  {
+    const int eleid = recveleon->first;
+    vector<int>& ps = recveleon->second;
+    map<int,vector<int> >::iterator ele = eleonpatches.find(eleid);
+    if (ele == eleonpatches.end())
+      eleonpatches[eleid] = ps;
+    else
+      for (int i=0; i<(int)ps.size(); ++i)
+        eleonpatches[eleid].push_back(ps[i]);
+  }
+  
+
+
+#if 1
+  for (int proc=0; proc<numproc; ++proc) // serialization for printing only
+  {
+    if (proc==myrank)
+    {
+#endif
+      map<int,vector<int> >::iterator ele;
+      for (ele=eleonpatches.begin(); ele != eleonpatches.end(); ++ele)
+      {
+        fool = elecids.find(ele->first);
+        if (fool == elecids.end()) continue; // I have no interest in this element
+
+        const int eleid = ele->first;
+        const int num   = elenumpatches[eleid];
+        const int num2 = (int)ele->second.size();
+        if (num!=num2) dserror("num %d != num2 %d",num,num2);
+        if (!num) dserror("Element %d not connected to any patch",eleid);
+
+        const double weight = 1.0/num;
+
+        vector<int>& patches = ele->second;
+        map<int,double> patchweights; // key: patch id value: total weight the patch gets
+        for (int i=0; i<(int)patches.size(); ++i)
+          patchweights[patches[i]] = 0;
+        for (int i=0; i<(int)patches.size(); ++i)
+          patchweights[patches[i]] += weight;
+
+        // Add element and its weight to all patches its connected to
+        map<int,double>::iterator p;
+        for (p=patchweights.begin(); p!=patchweights.end(); ++p)
+        {
+          pstab_adjele_weight[p->first].push_back(p->second);
+          pstab_cid_mis[eleid].push_back(p->first);
+          map<int,vector<DRT::ELEMENTS::NStet*> >::iterator patch = pstab_adjele.find(p->first);
+          if (patch==pstab_adjele.end()) continue; // not a patch I own
+          patch->second.push_back(fool->second);
+        }
+        elecids.erase(fool);
+
+#if 1
+        cout << "Proc " << myrank << " NStet " << eleid 
+             << " numpatch " << elenumpatches[ele->first] 
+             << " on";
+        for (p=patchweights.begin(); p!=patchweights.end(); ++p)
+          printf(" p %3d w %10.5e ",p->first,p->second);
+        cout << endl; fflush(stdout);
+#endif
+
+      } // for (ele=eleonpatches.begin(); ele != eleonpatches.end(); ++ele)
+#if 1
+    } // if (proc==myrank)
+    fflush(stdout);
+    dis.Comm().Barrier();
+  } // for (int proc=0; proc<numproc; ++proc)
+#endif
+
   return;
 }
 
@@ -872,8 +913,10 @@ void DRT::ELEMENTS::NStetType::InitMISAdjacency(
                         map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                         map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
                         map<int,map<int,DRT::Node*> >&           pstab_adjnode,
+                        map<int,map<int,DRT::Node*> >&           adjnode,
                         map<int,bool>&                           pstab_ident_patch,
                         map<int,vector<int> >&                   pstab_adjlm,
+                        map<int,vector<int> >&                   adjlm,
                         const int                                myrank,
                         const int                                numproc,
                         DRT::Discretization&                     dis)
@@ -890,8 +933,9 @@ void DRT::ELEMENTS::NStetType::InitMISAdjacency(
          << " patchsize " << patchsize << endl;
     if (mispatchsize==patchsize) 
     {
-      mis->second.clear();
       pstab_ident_patch[id] = true;
+      pstab_adjnode[id] = adjnode[id];
+      pstab_adjlm[id] = adjlm[id];
     }
     else // patch not identical
     {
@@ -916,7 +960,7 @@ void DRT::ELEMENTS::NStetType::InitMISAdjacency(
         for (int j=0; j<(int)dofs.size(); ++j)
           lm.push_back(dofs[j]);
       }
-      pstab_adjlm_[id] = lm;
+      pstab_adjlm[id] = lm;
     } // else
   } // for (mis=pstab_adjele.begin(); mis != pstab_adjele.end(); ++mis)
   return;
@@ -1036,8 +1080,8 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
   //----------------------------------------------------------------------
   // have to build adjnode and adjlm arrays for the patches
-  InitMISAdjacency(pstab_adjele_,adjele_,pstab_adjnode_,pstab_ident_patch_,pstab_adjlm_,
-                   myrank,numproc,dis);
+  InitMISAdjacency(pstab_adjele_,adjele_,pstab_adjnode_,adjnode_,pstab_ident_patch_,
+                   pstab_adjlm_,adjlm_,myrank,numproc,dis);
 
 
   //----------------------------------------------------------------------

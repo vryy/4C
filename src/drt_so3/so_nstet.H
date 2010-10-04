@@ -121,7 +121,6 @@ private:
   map<int,bool>                           pstab_ident_patch_;
   
   // vector of elements associated with an MIS node
-  // zero length if patch identical to adjele_
   // key: mis node number
   map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
 
@@ -131,7 +130,7 @@ private:
   map<int,vector<double> >                pstab_adjele_weight_;
 
   
-  // adjnode and adjlm for non-identical patches only
+  // adjnode and adjlm for mis patches
   map<int,map<int,DRT::Node*> >           pstab_adjnode_;
   map<int,vector<int> >                   pstab_adjlm_;
   
@@ -203,8 +202,10 @@ private:
                         map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                         map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
                         map<int,map<int,DRT::Node*> >&           pstab_adjnode,
+                        map<int,map<int,DRT::Node*> >&           adjnode,
                         map<int,bool>&                           pstab_ident_patch,
                         map<int,vector<int> >&                   pstab_adjlm,
+                        map<int,vector<int> >&                   adjlm,
                         const int                                myrank,
                         const int                                numproc,
                         DRT::Discretization&                     dis);
