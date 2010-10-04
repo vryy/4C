@@ -291,6 +291,14 @@ void LINALG::SparseMatrix::Zero()
   else
   {
 #if 0
+    // Setting the matrix to zero is not the same as creating a new matrix
+    // since -- if (explicitdirichlet_) -- the graph will be the full graph and the
+    // matrix might contain some Dirichlet-rows. In this case we want to go
+    // back to the original graph.
+
+    // Here is room for speed improvements, but things are already quite
+    // complicated.
+
     sysmat_->PutScalar(0.);
 #else
     const Epetra_Map domainmap = sysmat_->DomainMap();
