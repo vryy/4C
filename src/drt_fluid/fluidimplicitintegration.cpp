@@ -2903,8 +2903,8 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       RCP<Epetra_Vector> traction = CalcStresses();
       output_.WriteVector("traction",traction);
-
-      cout<<"Writing stresses"<<endl;
+      if (myrank_==0)
+        cout<<"Writing stresses"<<endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
