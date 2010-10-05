@@ -404,6 +404,12 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		 *as it is considered in the context of the persistence length*/
 		case INPAR::STATMECH::statout_orientationcorrelation:
 		{
+
+		  //we need displacements also of ghost nodes and hence export displacment vector to column map format
+		  Epetra_Vector discol(*(discret_.DofColMap()), true);
+		  LINALG::Export(dis, discol);
+
+
 			FILE* fp = NULL; //file pointer for statistical output file
 
 			//name of output file
@@ -411,21 +417,21 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			outputfilename.str("");
 			outputfilename << "OrientationCorrelation" << outputfilenumber_ << ".dat";
 
-			vector<double> arclength(discret_.NumMyRowElements(), 0);
-			vector<double> cosdiffer(discret_.NumMyRowElements(), 0);
+			vector<double> arclength(discret_.NumMyColNodes() - 1, 0);
+			vector<double> cosdiffer(discret_.NumMyColNodes() - 1, 0);
 
 			//after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps,
 			//when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
 			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (istep% statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
 			{
 				Epetra_SerialDenseMatrix coord;
-				coord.Shape(discret_.NumMyRowNodes(), ndim);
+				coord.Shape(discret_.NumMyColNodes(), ndim);
 
-				for (int id=0; id<discret_.NumMyRowNodes(); id++)
+				for (int id=0; id<discret_.NumMyColNodes(); id++)
 					for (int j=0; j<ndim; j++)
-						coord(id, j) = (discret_.gNode(id))->X()[j] + (dis)[(id) * (ndim - 1) * 3 + j];
+						coord(id, j) = (discret_.lColNode(id))->X()[j] + (discol)[(id) * (ndim - 1) * 3 + j];
 
-				for (int id=0; id<discret_.NumMyRowElements(); id++)
+				for (int id=0; id < discret_.NumMyColNodes() - 1; id++)
 				{
 
 					//calculate the deformed length of every element
@@ -441,17 +447,21 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 					cosdiffer[id] = cosdiffer[id] / (arclength[id] * arclength[0]);
 				}
 
-				fp = fopen(outputfilename.str().c_str(), "a");
-				std::stringstream filecontent;
-				filecontent << istep;
-				filecontent << scientific << setprecision(10);
+				//proc 0 write complete output into file, all other proc inactive
+				if(!discret_.Comm().MyPID())
+				{
+          fp = fopen(outputfilename.str().c_str(), "a");
+          std::stringstream filecontent;
+          filecontent << istep;
+          filecontent << scientific << setprecision(10);
 
-				for (int id = 0; id < discret_.NumMyRowElements(); id++)
-					filecontent << " " << cosdiffer[id];
+          for (int id = 0; id < discret_.NumMyColNodes() - 1; id++)
+            filecontent << " " << cosdiffer[id];
 
-				filecontent << endl;
-				fprintf(fp, filecontent.str().c_str());
-				fclose(fp);
+          filecontent << endl;
+          fprintf(fp, filecontent.str().c_str());
+          fclose(fp);
+				}
 
 			}
 
