@@ -34,6 +34,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "../drt_io/io_gmsh.H"
 
   using namespace XFEM::PHYSICS;
 
@@ -1189,15 +1190,33 @@ void SysmatDomainSigma(
               position[0] = physpos(0);
               position[1] = physpos(1);
               const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
-              const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
-
+              const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);             
+                                            
               if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
               {
                 const double epsilon_x = (gpvelnp(0) - u_exact_x);
                 const double epsilon_y = (gpvelnp(1) - u_exact_y);
 
                 L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
-              }
+                // print the pressure values in file to compare them with the interpolation of a fine mesh              
+//                {
+//                  const std::string fname("/home/shahmiri/Cubit/jeffery_hamel_flow/pressureFiles/pres_hex27_4.txt");
+//                  std::ofstream f(fname.c_str(),ios::out|ios::app);
+//                  f.setf(ios::scientific,ios::floatfield);
+//                  f.precision(12);                 
+//                  f << ele->Id() << " " << position[0] << " " << position[1]  << " "<< physpos(2) << " " << pres << " " << fac << endl;                  
+//                  f.close();
+//                }            
+               // Gmsh output for pressure on eash Gausspoint
+#ifdef GmshOutput_presGP
+                const bool screen_out = false;
+                int step = params.get<int >("step");
+                const std::string filename = IO::GMSH::GetFileName("presGP", step, screen_out, 0);
+                std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+                IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pres, physpos, gmshfilecontent);
+                gmshfilecontent.close();
+#endif
+              }             
             }
 
             //////////////////////////////////////

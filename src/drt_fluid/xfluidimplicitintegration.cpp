@@ -998,6 +998,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
+  // Gmsh output on gausspoint
+  //#define GmshOutput_presGP 
+  
   {
     ParameterList eleparams;
     eleparams.set("action","reset");
@@ -1137,6 +1140,18 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   while (stopnonliniter==false)
   {
+    
+    //only for Gmsh presGP output   
+#ifdef GmshOutput_presGP
+    std::cout << "writing gmsh output" << std::endl;
+    const bool screen_out_eps = false;
+    
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("presGP", step_, 350, screen_out_eps, 0);
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent << "View \" " << "preGP" << " \" {\n";
+    gmshfilecontent.close();   
+#endif
+    
     itnum++;
 
     // -------------------------------------------------------------------
@@ -1215,6 +1230,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       double L2 = 0.0;
       eleparams.set("L2",L2);
 
+      //only for Gmsh presGP output
+#ifdef GmshOutput_presGP
+        eleparams.set("step",step_);
+#endif
+      
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
 //      eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
       eleparams.set("monolithic_FSI",false);
@@ -1559,6 +1579,15 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
     }
    }
+  
+    //only for Gmsh presGP output
+#ifdef GmshOutput_presGP
+      const bool screen_out = false;
+      const std::string filename = IO::GMSH::GetFileName("presGP", step_, screen_out, 0); 
+      std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+      gmshfilecontent << "};\n";
+      gmshfilecontent.close();  
+#endif    
 
    if (fluidfluidCoupling_)
      MovingFluidOutput();
@@ -3872,7 +3901,7 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
               // create local copy of information about dofs
               const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanager_np_);
 
-              // get a copy on columnmn parallel distribution
+              // get a copy on column parallel distribution
               Teuchos::RCP<Epetra_Vector> output_col_velnp = LINALG::CreateVector(*discret_->DofColMap(),true);
               LINALG::Export(*fluidfluidstate_.mfvelnp_,*(output_col_velnp));
 
