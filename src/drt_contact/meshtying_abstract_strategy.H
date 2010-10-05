@@ -166,6 +166,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
       else return false;
 	  }
 
+    /*!
+    \brief Assemble global coordinate vector
+
+    \param sidename (in): string indicating slave or master side
+    \param ref (in): boolean indicating evaluation in reference configuration
+    \param vec (in/out)):  empty global vetcor to be assembled to
+
+    */
+    void AssembleCoords(const string& sidename, bool ref, RCP<Epetra_Vector> vec);
+
     //@}
 
     //! @name Evaluation methods
@@ -454,6 +464,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map (of all interfaces)
     RCP<Epetra_Map> gsmdofrowmap_;         // global slave and master dof row map (s+m map)
     RCP<Epetra_Map> gdisprowmap_;          // global displacement dof row map (s+m+n map)
+
+    RCP<Epetra_Map> gsnoderowmap_;         // global slave node row map (of all interfaces)
+    RCP<Epetra_Map> gmnoderowmap_;         // global master node row map (of all interfaces)
 
     RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
     RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)

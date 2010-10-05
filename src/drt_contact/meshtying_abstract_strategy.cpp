@@ -168,6 +168,8 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 	gsmdofrowmap_ = Teuchos::null;
 	glmdofrowmap_ = Teuchos::null;
 	gdisprowmap_  = Teuchos::null;
+	gsnoderowmap_ = Teuchos::null;
+	gmnoderowmap_ = Teuchos::null;
 	if (!redistributed) gndofrowmap_  = Teuchos::null;
 
 	// make numbering of LM dofs consecutive and unique across N interfaces
@@ -187,6 +189,8 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     // merge interface master, slave maps to global master, slave map
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
+    gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
+    gmnoderowmap_ = LINALG::MergeMap(gmnoderowmap_, interface_[i]->MasterRowNodes());
   }
 
   // setup global non-slave-or-master dof map
@@ -298,19 +302,27 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  g_       = LINALG::CreateVector(*gsdofrowmap_, true);
+  g_       = LINALG::CreateVector(*gsdofrowmap_,true);
 
-  // for all interfaces
+  // assemble D- and M-matrix on all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // assemble D-, M-matrix and g-vector, store them globally
     interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
-    interface_[i]->AssembleG(*g_);
-  }
   
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+
+  // compute g-vector at global level
+  RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+  RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+  AssembleCoords("slave",true,xs);
+  AssembleCoords("master",true,xm);
+	RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+	dmatrix_->Multiply(false,*xs,*Dxs);
+	RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+	mmatrix_->Multiply(false,*xm,*Mxm);
+	g_->Update(1.0,*Dxs,1.0);
+	g_->Update(-1.0,*Mxm,1.0);
   
   return;
 }
@@ -516,12 +528,17 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   // intialize
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
-  // for all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // assemble g-vector, store them globally
-    interface_[i]->AssembleG(*g_);
-  }
+  // compute g-vector at global level
+  RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+  RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+  AssembleCoords("slave",true,xs);
+  AssembleCoords("master",true,xm);
+	RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+	dmatrix_->Multiply(false,*xs,*Dxs);
+	RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+	mmatrix_->Multiply(false,*xm,*Mxm);
+	g_->Update(1.0,*Dxs,1.0);
+	g_->Update(-1.0,*Mxm,1.0);
 
   //**********************************************************************
   // (3) re-initialize finite elements
@@ -1092,6 +1109,67 @@ void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
   // visualization with gmsh
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->VisualizeGmsh(step, iter);
+}
+
+/*----------------------------------------------------------------------*
+ | Visualization of meshtying segments with gmsh              popp 08/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::AssembleCoords(const string& sidename, bool ref,
+		                                             RCP<Epetra_Vector> vec)
+{
+	// NOTE:
+	// An alternative way of doing this would be to loop over
+	// all interfaces and to assemble the coordinates there.
+	// In thast case, one would have to be very careful with
+	// edge nodes / crosspoints, which must not be assembled
+	// twice. The solution would be to overwrite the corresp.
+	// entries in the Epetra_Vector instead of using Assemble().
+
+	// decide which side (slave or master)
+	RCP<Epetra_Map> sidemap = Teuchos::null;
+	if (sidename=="slave")       sidemap = gsnoderowmap_;
+	else if (sidename=="master") sidemap = gmnoderowmap_;
+	else                         dserror("ERROR: Unknown sidename");
+
+	// loop over all row nodes of this side (at the global level)
+	for (int j=0; j<sidemap->NumMyElements(); ++j)
+	{
+		int gid = sidemap->GID(j);
+
+		// find this node in interface discretizations
+		bool found = false;
+		DRT::Node* node = NULL;
+		for (int k=0;k<(int)interface_.size();++k)
+		{
+			found = interface_[k]->Discret().HaveGlobalNode(gid);
+			if (found)
+			{
+				node = interface_[k]->Discret().gNode(gid);
+				break;
+			}
+		}
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// prepare assembly
+		Epetra_SerialDenseVector val(Dim());
+		vector<int> lm(Dim());
+		vector<int> lmowner(Dim());
+
+		for (int k=0;k<Dim();++k)
+		{
+			// reference (true) or current (false) configuration
+			if (ref) val[k] = mtnode->X()[k];
+			else     val[k] = mtnode->xspatial()[k];
+			lm[k] = mtnode->Dofs()[k];
+			lmowner[k] = mtnode->Owner();
+		}
+
+		// do assembly
+		LINALG::Assemble(*vec,val,lm,lmowner);
+	}
+
+  return;
 }
 
 #endif // CCADISCRET

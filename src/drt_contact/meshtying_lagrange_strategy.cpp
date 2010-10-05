@@ -208,27 +208,8 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_, true);
-  
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // loop over all master row nodes on the current interface
-    for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
-    {
-      int gid = interface_[i]->MasterRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-      
-      // do assembly (overwrite duplicate nodes)
-      for (int k=0;k<Dim();++k)
-      {
-        int dof = mtnode->Dofs()[k];
-        (*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->X()[k];
-      }
-    }
-  }
+  RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_,true);
+  AssembleCoords("master",true,Xmaster);
   
   //**********************************************************************
   // (2) solve for modified slave positions on global level
@@ -395,6 +376,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     LINALG::Export(*dis,*tempvec1);
     dmatrix_->Multiply(false,*tempvec1,*tempvec2);
     g_->Update(-1.0,*tempvec2,0.0);
+
     RCP<Epetra_Vector> tempvec3 = rcp(new Epetra_Vector(*gmdofrowmap_));
     RCP<Epetra_Vector> tempvec4 = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*dis,*tempvec3);
@@ -404,75 +386,19 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
 #else
     // VERSION 2: constraints for x (current configuration)
-    // fill xmaster
-    RCP<Epetra_Vector> xmaster = LINALG::CreateVector(*gmdofrowmap_, true);
-    
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all master row nodes on the current interface
-      for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
-      {
-        int gid = interface_[i]->MasterRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-        
-        // prepare assembly   
-        Epetra_SerialDenseVector val(Dim());
-        vector<int> lm(Dim());
-        vector<int> lmowner(Dim());
-        
-        for (int k=0;k<Dim();++k)
-        {
-          val[k] = mtnode->xspatial()[k];
-          lm[k] = mtnode->Dofs()[k];
-          lmowner[k] = mtnode->Owner();
-        }
-        
-        // do assembly
-        LINALG::Assemble(*xmaster,val,lm,lmowner);
-      }
-    }
-    
-    // fill xslave
-    RCP<Epetra_Vector> xslave = LINALG::CreateVector(*gsdofrowmap_, true);
-    
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all master row nodes on the current interface
-      for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
-      {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-        
-        // prepare assembly   
-        Epetra_SerialDenseVector val(Dim());
-        vector<int> lm(Dim());
-        vector<int> lmowner(Dim());
-        
-        for (int k=0;k<Dim();++k)
-        {
-          val[k] = mtnode->xspatial()[k];
-          lm[k] = mtnode->Dofs()[k];
-          lmowner[k] = mtnode->Owner();
-        }
-        
-        // do assembly
-        LINALG::Assemble(*xslave,val,lm,lmowner);
-      }
-    }
-    
-    // finally build constraint vector
-    RCP<Epetra_Vector> tempvec1 = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false,*xslave,*tempvec1);
-    g_->Update(-1.0,*tempvec1,0.0);  
-    RCP<Epetra_Vector> tempvec2 = rcp(new Epetra_Vector(*gsdofrowmap_));
-    mmatrix_->Multiply(false,*xmaster,*tempvec2);
-    g_->Update(1.0,*tempvec2,1.0);  
+
+    RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+    RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+    AssembleCoords("slave",false,xs);
+    dmatrix_->Multiply(false,*xs,*Dxs);
+    g_->Update(-1.0,*Dxs,0.0);
+
+    RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+    RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+    AssembleCoords("master",false,xm);
+  	mmatrix_->Multiply(false,*xm,*Mxm);
+  	g_->Update(1.0,*Mxm,1.0);
+
   #endif // #ifdef MESHTYINGUCONSTR
     
     /**********************************************************************/
@@ -801,11 +727,13 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     LINALG::Export(*dis,*tempvec1);
     dmatrix_->Multiply(false,*tempvec1,*tempvec2);
     g_->Update(-1.0,*tempvec2,0.0);
+
     RCP<Epetra_Vector> tempvec3 = rcp(new Epetra_Vector(*gmdofrowmap_));
     RCP<Epetra_Vector> tempvec4 = rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*dis,*tempvec3);
     mmatrix_->Multiply(false,*tempvec3,*tempvec4);
     g_->Update(1.0,*tempvec4,1.0);
+
     RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*g_,*gexp);
     feffnew->Update(1.0,*gexp,1.0);
@@ -815,78 +743,22 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     //**********************************************************************
     // VERSION 2: constraints for x (current configuration)
     //**********************************************************************
-    // fill xmaster
-    RCP<Epetra_Vector> xmaster = LINALG::CreateVector(*gmdofrowmap_, true);
-    
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all master row nodes on the current interface
-      for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
-      {
-        int gid = interface_[i]->MasterRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-        
-        // prepare assembly   
-        Epetra_SerialDenseVector val(Dim());
-        vector<int> lm(Dim());
-        vector<int> lmowner(Dim());
-        
-        for (int k=0;k<Dim();++k)
-        {
-          val[k] = mtnode->xspatial()[k];
-          lm[k] = mtnode->Dofs()[k];
-          lmowner[k] = mtnode->Owner();
-        }
-        
-        // do assembly
-        LINALG::Assemble(*xmaster,val,lm,lmowner);
-      }
-    }
-    
-    // fill xslave
-    RCP<Epetra_Vector> xslave = LINALG::CreateVector(*gsdofrowmap_, true);
-    
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all master row nodes on the current interface
-      for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
-      {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-        
-        // prepare assembly   
-        Epetra_SerialDenseVector val(Dim());
-        vector<int> lm(Dim());
-        vector<int> lmowner(Dim());
-        
-        for (int k=0;k<Dim();++k)
-        {
-          val[k] = mtnode->xspatial()[k];
-          lm[k] = mtnode->Dofs()[k];
-          lmowner[k] = mtnode->Owner();
-        }
-        
-        // do assembly
-        LINALG::Assemble(*xslave,val,lm,lmowner);
-      }
-    }
-    
-    // finally build constraint vector
-    RCP<Epetra_Vector> tempvec1 = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(false,*xslave,*tempvec1);
-    g_->Update(-1.0,*tempvec1,0.0);  
-    RCP<Epetra_Vector> tempvec2 = rcp(new Epetra_Vector(*gsdofrowmap_));
-    mmatrix_->Multiply(false,*xmaster,*tempvec2);
-    g_->Update(1.0,*tempvec2,1.0);  
+    RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+    RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+    AssembleCoords("slave",false,xs);
+    dmatrix_->Multiply(false,*xs,*Dxs);
+    g_->Update(-1.0,*Dxs,0.0);
+
+    RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+    RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+    AssembleCoords("master",false,xm);
+  	mmatrix_->Multiply(false,*xm,*Mxm);
+  	g_->Update(1.0,*Mxm,1.0);
+
     RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*g_,*gexp);
     feffnew->Update(1.0,*gexp,1.0);
+
   #endif // #ifdef MESHTYINGUCONSTR
     
     /**********************************************************************/
