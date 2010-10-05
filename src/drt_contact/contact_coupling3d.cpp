@@ -179,9 +179,10 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
       RCP<Epetra_SerialDenseVector> mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
       RCP<Epetra_SerialDenseVector> mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
+      RCP<Epetra_SerialDenseMatrix> aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
   
@@ -195,7 +196,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       {  
         integrator.AssembleMechDiss(Comm(),SlaveElement(),*mdisssegs);
         integrator.AssembleMechDiss(Comm(),MasterElement(),*mdisssegm);
-      
+        integrator.AssembleA(Comm(),SlaveElement(),*aseg);
+        
         // dserror 
         if (!CouplingInAuxPlane()) 
           dserror("Tsi with contact only implemented for CouplingInAuxPlane");        

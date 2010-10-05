@@ -147,6 +147,16 @@ public:
   \brief Return friction status of this node (slip=true)
   */
   virtual inline bool& Slip() { return slip_; }
+  
+  /*!
+  \brief Return the old 'A' map (vector) of this node (last converged state)
+  */
+  virtual inline vector<map<int,double> >& GetA() { return arows_; }
+  
+  /*!
+  \brief Return the map with according slave nodes
+  */
+  virtual inline set<int>& GetANodes() { return anodes_; }
 
   /*!
   \brief Return the old 'D' map (vector) of this node (last converged state)
@@ -207,6 +217,9 @@ protected:
   set<int>                      mnodes_;       // nodal set of according master nodes
   set<int>                      mnodesold_;    // nodal set of old according masternodes
 
+  vector<map<int,double> >      arows_;        // nodal rows of matrix A
+  set<int>                      anodes_;       // nodal set of according slave nodes
+  
   vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
 
   // penalty related quantities
@@ -358,22 +371,22 @@ public:
   void AddMechDissValue(double& val);
 
   /*!
-  \brief Add a value to the 'F' map of this node
+  \brief Add a value to the 'A' map of this node
 
-  Note that frows_ here is a vector.
+  Note that arows_ here is a vector.
 
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
   \param col : global dof column id of the value added
 
   */
-  void AddFValue(int& row, int& col, double& val);
+  void AddAValue(int& row, int& col, double& val);
   
   /*!
-  \brief Add a value to the FNode set of this node
+  \brief Add a value to the ANode set of this node
 
   */
-  void AddFNode (int node);
+  void AddANode (int node);
 
   /*!
   \brief Write nodal entries of D and M to Dold and Mold

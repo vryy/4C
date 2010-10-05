@@ -1865,7 +1865,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg,
      RCP<Epetra_SerialDenseVector> mdisssegs,
-     RCP<Epetra_SerialDenseVector> mdisssegm)
+     RCP<Epetra_SerialDenseVector> mdisssegm,
+     RCP<Epetra_SerialDenseMatrix> aseg)
 {
   
   // explicitely defined shapefunction type needed
@@ -2101,6 +2102,34 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     } // shapefcn_ switch
     // compute cell D/M matrix *******************************************
 
+    
+    // evaluate matrix A for thermo-structure-interaction
+    if (tsi)
+    {
+      // loop over all aseg matrix entries
+      // !!! nrow represents the slave Lagrange multipliers !!!
+      // !!! ncol represents the dofs                       !!!
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // integrate LinM and LinD
+        for (int k=0; k<ncol*ndof; ++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*lmval[kindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to aseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          {
+            (*aseg)(j, k) += prod*jac*wgt;
+          }
+        }
+      } // nrow*ndof loop
+    } // tsi
+    
     // evaluate 2nd deriv of trace space shape functions (on slave element)
     sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
     
@@ -2206,7 +2235,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       for (int i=0;i<3;i++)
         mechdiss += lmtan(i,0)*jumptan(i,0);
     }  
-
+    
     // evaluate linearizations *******************************************
     // evaluate the intcell Jacobian derivative
     map<int,double> jacintcellmap;
@@ -5025,5 +5054,77 @@ bool CONTACT::CoIntegrator::AssembleMechDiss(const Epetra_Comm& comm,
 
   return true;
 }
+
+/*----------------------------------------------------------------------*
+ |  Assemble A contribution (2D / 3D)                     gitterle 10/10|
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the A map of the adjacent slave nodes.                   |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
+                                     MORTAR::MortarElement& sele,
+                                     Epetra_SerialDenseMatrix& aseg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleA: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    int sndof = snode->NumDof();
+    
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all slave nodes again ("master nodes")
+      for (int master=0;master<sele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the slave node again ("master dofs")
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = aseg(slave*sndof+sdof,master*mndof+mdof);
+
+          if(abs(val)>1e-12) snode->AddAValue(sdof,col,val);
+          if(abs(val)>1e-12) snode->AddANode(mnode->Id()); 
+        }
+      }
+    }
+    /*
+#ifdef DEBUG
+    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    map<int, double> nodemap0 = (snode->GetD())[0];
+    map<int, double> nodemap1 = (snode->GetD())[1];
+    typedef map<int,double>::const_iterator CI;
+
+    cout << "Row dof id: " << sdofs[0] << endl;;
+    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+
+    cout << "Row dof id: " << sdofs[1] << endl;
+    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
+      cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+    */
+  }
+
+  return true;
+}
+
 
 #endif //#ifdef CCADISCRET

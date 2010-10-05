@@ -860,9 +860,6 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   if(cmtman_==Teuchos::null)
     return;
 
-   //contact / meshtying modifications need -fres
-   feff->Scale(-1.0);
-
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
   tang->Complete();
@@ -885,17 +882,14 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
 
   // modifications only for active nodes
   if (adofs->NumGlobalElements()==0)
-  {
-    feff->Scale(-1.0);
     return;
-  }
 
   // assemble Mortar Matrices D and M in thermo dofs for active nodes
   RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
   RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
 
   AssembleDM(*dmatrix,*mmatrix);
-
+  
   // FillComplete() global Mortar matrices
   dmatrix->Complete();
   mmatrix->Complete(*mdofs,*sdofs);
@@ -1161,7 +1155,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   // add mechanical dissipation to feffnew
   RCP<Epetra_Vector> mechdissrateexp = rcp(new Epetra_Vector(*problemrowmap));
   LINALG::Export(*mechdissrate,*mechdissrateexp);
-  feffnew->Update(1.0,*mechdissrateexp,1.0);
+  feffnew->Update(-1.0,*mechdissrateexp,1.0);
 
   // add i subvector to feffnew
   RCP<Epetra_Vector> fiexp;
@@ -1197,8 +1191,6 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   /**********************************************************************/
   tang = tangnew;
   feff = feffnew;
-
-  feff->Scale(-1.0);
 
   // leave this place
   return;
@@ -1327,7 +1319,7 @@ void THR::TimIntImpl::ConvertMaps(RCP<Epetra_Map>& slavedofs,
 }
 
 /*----------------------------------------------------------------------*
- | assemble mortar matrices in thermo dofs (active nodes)     mgit 04/10 |
+ | assemble mortar matrices in thermo dofs                    mgit 04/10 |
  *----------------------------------------------------------------------*/
 
 void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
@@ -1434,6 +1426,108 @@ void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
           double val = mmap[0][coldis];
           if (abs(val)>1e-12) mmatrix.Assemble(val, rowtemp, coltemp);
           ++mcurr;
+        }
+      }
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assemble A matrix in thermo dofs                           mgit 10/10 |
+ *----------------------------------------------------------------------*/
+
+void THR::TimIntImpl::AssembleA(LINALG::SparseMatrix& amatrix)
+
+{
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+
+  // This is a little bit complicated and a lot of parallel stuff has to
+  // be done here. The point is that, when assembling the mortar matrix
+  // M, we need the temperature dof from the master node which can lie on
+  // a complete different proc. For this reason, we have tho keep all procs
+  // around
+
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // slave nodes (full map)
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveFullNodes();
+
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
+    {
+      int gid = slavenodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = discretstruct_->gNode(gid);
+
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+
+      // row dof of temperature
+      int rowtemp = 0;
+      if(Comm().MyPID()==cnode->Owner())
+        rowtemp = discretstruct_->Dof(1,nodeges)[0];
+
+      /************************************************** A-matrix ******/
+      set<int> anodes;
+      int slavegid=0;
+      set<int>::iterator scurr;
+      int slavesize = 0;
+      vector<map<int,double> > amap;
+
+      if (Comm().MyPID()==cnode->Owner())
+      {
+        amap = cnode->FriData().GetA();
+        anodes = cnode->FriData().GetANodes();
+        slavesize = anodes.size();
+        scurr = anodes.begin();
+      }
+
+      // commiunicate number of master nodes
+      Comm().Broadcast(&slavesize,1,cnode->Owner());
+
+      // loop over all according master nodes
+      for (int l=0;l<slavesize;++l)
+      {
+        if (Comm().MyPID()==cnode->Owner())
+          slavegid=*scurr;
+
+        // communicate GID of masternode
+        Comm().Broadcast(&slavegid,1,cnode->Owner());
+
+        DRT::Node* mnode = (interface[m]->Discret()).gNode(slavegid);
+        DRT::Node* mnodeges = discretstruct_->gNode(slavegid);
+
+        // temperature and displacement dofs
+        int coltemp = 0;
+        int coldis = 0;
+        if(Comm().MyPID()==mnode->Owner())
+        {
+          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
+          coltemp = discretstruct_->Dof(1,mnodeges)[0];
+          coldis = (cmnode->Dofs())[0];
+        }
+
+        // communicate temperature and displacement dof
+        Comm().Broadcast(&coltemp,1,mnode->Owner());
+        Comm().Broadcast(&coldis,1,mnode->Owner());
+
+        // do the assembly
+        if (Comm().MyPID()==cnode->Owner())
+        {
+          double val = amap[0][coldis];
+          if (abs(val)>1e-12) amatrix.Assemble(val, rowtemp, coltemp);
+          ++scurr;
         }
       }
     }
@@ -1553,11 +1647,11 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
 
   RCP <Epetra_Vector> DdotTemp = rcp(new Epetra_Vector(*activedofs));
   dmatrix.Multiply(false,*fa,*DdotTemp);
-  thermcontRHS.Update(beta,*DdotTemp,1.0);
+  thermcontRHS.Update(-beta,*DdotTemp,1.0);
 
   RCP <Epetra_Vector> MdotTemp = rcp(new Epetra_Vector(*activedofs));
   mmatrix.Multiply(false,*fm,*MdotTemp);
-  thermcontRHS.Update(-beta,*MdotTemp,1.0);
+  thermcontRHS.Update(+beta,*MdotTemp,1.0);
 
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)

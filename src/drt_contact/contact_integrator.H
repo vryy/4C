@@ -158,7 +158,8 @@ public:
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg,
      RCP<Epetra_SerialDenseVector> mdisssegs,
-     RCP<Epetra_SerialDenseVector> mdisssegm);
+     RCP<Epetra_SerialDenseVector> mdisssegm,
+     RCP<Epetra_SerialDenseMatrix> aseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -300,6 +301,14 @@ public:
   bool AssembleMechDiss(const Epetra_Comm& comm,
                         MORTAR::MortarElement& sele,
                         Epetra_SerialDenseVector& mdissseg);
+  /*!
+  \brief Assemble A contribution of current overlap into slave nodes
+
+  */
+  bool AssembleA(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& aseg);
+
 
   //@}
    

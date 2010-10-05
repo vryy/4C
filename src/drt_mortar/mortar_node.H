@@ -483,6 +483,9 @@ public:
   virtual void AddMechDissValue(double& val) {}
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
+  virtual void AddAValue (int& row, int& col, double& val) {}
+  virtual void AddANode (int node) {}
+  
 
   //@}
 

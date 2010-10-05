@@ -87,7 +87,9 @@ drowsold_(old.drowsold_),
 mrowsold_(old.mrowsold_),
 snodes_(old.snodes_),
 mnodes_(old.mnodes_),
-mnodesold_(old.mnodesold_)
+mnodesold_(old.mnodesold_),
+arows_(old.arows_),
+anodes_(old.anodes_)
 {
   for (int i=0;i<3;++i)
   {
@@ -360,6 +362,22 @@ void CONTACT::FriNode::AddMNode(int node)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'ANodes' set                        gitterle 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddANode(int node)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMNode: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddMNode: function called for boundary node %i", Id());
+
+  FriData().GetANodes().insert(node);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'DerivJump' map                     gitterle 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
@@ -384,6 +402,34 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'A' map                             gitterle 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddAValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddAValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)FriData().GetA().size()==0)
+    FriData().GetA().resize(NumDof());
+
+  // check row index input
+  if ((int)FriData().GetA().size()<=row)
+    dserror("ERROR: AddDValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& dmap = FriData().GetA()[row];
+  dmap[col] += val;
+
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  Add a value to mechanical dissipation                  gitterle 08/10|
