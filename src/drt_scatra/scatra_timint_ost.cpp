@@ -516,6 +516,7 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   ParameterList p;
   p.set("total time",time_);
   p.set("scatratype",scatratype_);
+  p.set("isale",isale_);
   discret_->ClearState();
   discret_->EvaluateNeumann(p,*neumann_loads_);
   discret_->ClearState();
