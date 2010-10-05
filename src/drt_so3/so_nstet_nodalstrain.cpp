@@ -33,6 +33,117 @@ Maintainer: Michael Gee
 #include "../drt_mat/mooneyrivlin.H"
 
 /*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetType::PatchedDeformationGradient(DRT::Discretization& dis)
+{
+  // A vector to hold data per column element that needs to be synced
+  // column 0 : summed AverJ * weight
+  // column 1 : summed weight
+  RCP<Epetra_MultiVector> eledata = rcp(new Epetra_MultiVector(*elecmap_,2,true));
+  
+#if 0
+  // serialization for printing only
+  const int myrank = dis.Comm().MyPID();
+  const int numproc = dis.Comm().NumProc();
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (proc==myrank)
+    {
+#endif
+     
+  // loop through patches and build averaged deformation gradient
+  // and its determinant
+  map<int,vector<DRT::ELEMENTS::NStet*> >::iterator p;
+  for (p=pstab_adjele_.begin(); p!=pstab_adjele_.end(); ++p)
+  {
+    const int pid = p->first;
+    vector<DRT::ELEMENTS::NStet*>& ele = p->second;
+    const int numele = (int)ele.size();
+    
+    //cout << "===== Proc " << myrank << " Patch " << pid << " Size " << numele << endl;
+    
+    map<int,vector<double> >::iterator weight = pstab_adjele_weight_.find(pid);
+    if (weight==pstab_adjele_weight_.end()) dserror("Cannot find patch weights");
+    vector<double>& elew = weight->second;
+    if (numele != (int)elew.size()) dserror("Number of weights and elements don't match");
+    
+    double WeightedVolume = 0.0;
+    double AverJ = 0.0;
+    for (int i=0; i<numele; ++i)
+    {
+      //printf("NStet %d V %10.5e W %10.5e J %10.5e\n",ele[i]->Id(),ele[i]->Vol(),elew[i],ele[i]->J());
+      
+      double wv = ele[i]->Vol() * elew[i];
+      WeightedVolume += wv;
+      
+      AverJ += wv * ele[i]->J();
+    } // i
+    AverJ /= WeightedVolume;
+
+    //printf("xxxxx Proc %d Patch %d AverJ %10.5e\n",myrank,pid,AverJ);
+
+    // put averaged J in element vector
+    for (int i=0; i<numele; ++i)
+    {
+      int lid = eledata->Map().LID(ele[i]->Id());
+      if (lid==-1) dserror("Cannot find local element id");
+      (*(*eledata)(0))[lid] += elew[i] * AverJ;
+      (*(*eledata)(1))[lid] += elew[i];
+    }
+  } // for (p=pstab_adjele_.begin(); p!=pstab_adjele_.end(); ++p)
+    
+#if 0    
+    } // if (proc==myrank)
+    fflush(stdout);
+    dis.Comm().Barrier();
+  } // for (int proc=0; proc<numproc; ++proc)
+#endif
+
+  // sum up across processors
+  dis.Comm().Barrier();
+  RCP<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*elermap_,2,true));
+  Epetra_Export exporter(*elecmap_,*elermap_);
+  int err = tmp->Export(*eledata,exporter,Add); // add up across processors
+  if (err) dserror("Export using exporter returned err=%d",err);
+  LINALG::Export(*tmp,*eledata); // distribute back to column layout
+
+  // put the modified J back into the elements
+  map<int,DRT::ELEMENTS::NStet*>::iterator ele;
+  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
+  {
+    int gid = ele->second->Id();
+    double Jbar = (*(*eledata)(0))[eledata->Map().LID(gid)];
+    ele->second->Jbar() = Jbar;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& dis)
+{
+  // current displacement
+  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
+  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  // loop elements
+  std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
+  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
+  {
+    vector<int> lm;
+    vector<int> lmowner;
+    ele->second->LocationVector(dis,lm,lmowner);
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    ele->second->BuildF(mydisp);
+    ele->second->BuildJ();
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
@@ -84,20 +195,12 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   LINALG::SerialDenseVector pstab_force;
 
   //-------------------------------------- construct F for each NStet
-  // current displacement
-  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
-  // loop elements
-  std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
-  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
-  {
-    vector<int> lm;
-    vector<int> lmowner;
-    ele->second->LocationVector(dis,lm,lmowner);
-    vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    ele->second->DeformationGradient(mydisp);
-  }
+  ElementDeformationGradient(dis);
+
+  //-----------------------------------------------------------------
+  // construct averaged J=detF for every patch, put in every element
+  PatchedDeformationGradient(dis);
+
 
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
@@ -112,6 +215,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   else
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
 
+  //-----------------------------------------------------------------
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
 
@@ -417,7 +521,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   double VnodeL = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
-    const double V = adjele[i]->Volume()/4;
+    const double V = adjele[i]->Vol()/4;
     VnodeL += V;
     FnodeL.Update(V,adjele[i]->F_,1.0);
   }
@@ -430,7 +534,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // MIS node takes entire element volume
     for (int i=0; i<ps_neleinpatch; ++i) 
     {
-      const double V = (*ps_adjele)[i]->Volume();
+      const double V = (*ps_adjele)[i]->Vol();
       ps_VnodeL += V;
       if (!samepatch) ps_FnodeL.Update(V,(*ps_adjele)[i]->F_,1.0);
     }
@@ -480,7 +584,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     LINALG::Matrix<4,3>& nxyz = actele->nxyz_;
 
     // volume of that element assigned to node L
-    double V = actele->Volume()/4;
+    double V = actele->Vol()/4;
 
     // def-gradient of the element
     LINALG::Matrix<3,3>& F = actele->F_;
@@ -543,10 +647,10 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       LINALG::Matrix<4,3>& nxyz = actele->nxyz_;
 
       // entire volume of that element assigned to MIS node L
-      double V = actele->Volume();
+      double V = actele->Vol();
 
       // def-gradient of the element
-      LINALG::Matrix<3,3>& F = actele->F_;
+      LINALG::Matrix<3,3>& F = actele->F();
 
       // volume ratio of volume per node L of this element to
       // whole volume of node L
@@ -780,7 +884,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       // current element
       DRT::ELEMENTS::NStet* actele = adjele[ele];
       // volume of that element assigned to node L
-      const double V = actele->Volume()/4;
+      const double V = actele->Vol()/4;
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
@@ -813,7 +917,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
         // current element
         DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
         // volume of that element assigned to node L
-        const double V = actele->Volume();
+        const double V = actele->Vol();
         // def-gradient of the element
         RCP<MAT::Material> mat = actele->Material();
         SelectMaterial(mat,stressele,cmatele,density,ps_glstrain,ps_FnodeL,0);
@@ -1004,7 +1108,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       // material deriv of that element
       LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
       // volume of actele assigned to node L
-      double V = actele->Volume()/4;
+      double V = actele->Vol()/4;
       
       // loop nodes of that element
       double SmBL[3];
@@ -1039,7 +1143,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
         // material deriv of that element
         LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
         // all volume of actele assigned to MIS node L
-        double V = actele->Volume();
+        double V = actele->Vol();
 
         // loop nodes of that element
         double SmBL[3];

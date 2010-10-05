@@ -22,6 +22,8 @@ Maintainer: Michael Gee
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::NStetType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::NStet* object = new DRT::ELEMENTS::NStet(-1,-1);
@@ -30,6 +32,8 @@ DRT::ParObject* DRT::ELEMENTS::NStetType::Create( const std::vector<char> & data
 }
 
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletype,
                                                             const string eledistype,
                                                             const int id,
@@ -44,6 +48,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletyp
 }
 
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const int id, const int owner )
 {
   RCP<DRT::Element> ele = rcp(new DRT::ELEMENTS::NStet(id,owner));
@@ -51,6 +57,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const int id, const
 }
 
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 void DRT::ELEMENTS::NStetType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;
@@ -58,11 +66,15 @@ void DRT::ELEMENTS::NStetType::NodalBlockInformation( DRT::Element * dwele, int 
   nv = 3;
 }
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 void DRT::ELEMENTS::NStetType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 void DRT::ELEMENTS::NStetType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["NSTET4"];
@@ -82,7 +94,6 @@ DRT::Element(id,owner),
 material_(0),
 V_(-1.0),
 nxyz_(),
-FisNew_(false),
 F_()
 {
   return;
@@ -96,7 +107,6 @@ DRT::Element(old),
 material_(old.material_),
 V_(old.V_),
 nxyz_(old.nxyz_),
-FisNew_(old.FisNew_),
 F_(old.F_)
 {
   return;
@@ -275,6 +285,10 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(
                            DRT::Discretization&            dis)
 {
   const int numele = dis.NumMyColElements();
+  
+  vector<int> ctmp;
+  vector<int> rtmp;
+  
   for (int i=0; i<numele; ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -287,6 +301,8 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(
 
     // register element in list of column nstet elements
     elecids[actele->Id()] = actele;
+    ctmp.push_back(actele->Id());
+    if (actele->Owner()==myrank) rtmp.push_back(actele->Id());
 
     // compute a map of all row nodes adjacent to a NStet element
     for (int j=0; j<actele->NumNode(); ++j) 
@@ -296,6 +312,9 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(
         noderids[node->Id()] = node;
     }
   }
+  
+  elecmap_ = rcp(new Epetra_Map(-1,(int)ctmp.size(),&ctmp[0],0,dis.Comm()));
+  elermap_ = rcp(new Epetra_Map(-1,(int)rtmp.size(),&rtmp[0],0,dis.Comm()));
   
   return;
 }

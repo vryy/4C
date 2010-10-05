@@ -99,6 +99,8 @@ private:
 
   // map of column NStet elements
   map<int,DRT::ELEMENTS::NStet*>          elecids_;
+  Teuchos::RCP<Epetra_Map>                elecmap_;
+  Teuchos::RCP<Epetra_Map>                elermap_;
 
   // nodal stresses
   Teuchos::RCP<Epetra_MultiVector>        nstress_;
@@ -213,6 +215,10 @@ private:
   Teuchos::RCP<Epetra_Map> InitMISStressMap(map<int,vector<int> >& pstab_cid_mis,
                                             DRT::Discretization& dis);
 
+
+  void PatchedDeformationGradient(DRT::Discretization& dis);
+
+  void ElementDeformationGradient(DRT::Discretization& dis);
 
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
@@ -497,10 +503,24 @@ protected:
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
   //! element's def-gradient and flag indicating age of it
-  bool                                                     FisNew_;
   LINALG::Matrix<3,3>                                      F_;
+  double                                                   J_;
+  double                                                   Jbar_;
 
   // internal calculation methods
+
+  // return volume of element
+  inline double Vol() { return V_; }
+
+  void BuildF(vector<double>& disp);
+
+  void BuildJ() { J_ = F_.Determinant(); return; }
+
+  inline LINALG::Matrix<3,3>& F() { return F_; }
+
+  inline double& J() { return J_; }
+
+  inline double& Jbar() { return Jbar_; }
 
   // don't want = operator
   NStet& operator = (const NStet& old);
@@ -508,9 +528,6 @@ protected:
   // init the inverse of the jacobian and its determinant
   // in the material configuration
   virtual void InitElement();
-
-  // return volume of element
-  virtual inline double Volume() { return V_; }
 
   //! Shape functions
   inline void ShapeFunction(LINALG::Matrix<4,1>& funct,
@@ -551,10 +568,9 @@ protected:
                                 const INPAR::STR::StressType     iostress,
                                 const INPAR::STR::StrainType     iostrain);
 
+
   //! lump mass matrix (bborn 07/08)
   void nstetlumpmass(LINALG::Matrix<12,12>* emass);
-
-  void DeformationGradient(vector<double>& disp);
 
 
   void so_nstet_expol(LINALG::Matrix<1,6>& stresses,

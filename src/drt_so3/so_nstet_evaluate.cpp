@@ -380,10 +380,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       const INPAR::STR::StrainType     iostrain)       // type of strain
 {
   //--------------------------------------------------- geometry update
-  if (!FisNew_) DeformationGradient(disp);
   LINALG::Matrix<3,3>& defgrd = F_;
-  // reset the bool indicating that the stored deformation gradient is 'fresh'
-  FisNew_ = false;
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
   LINALG::Matrix<3,3> cauchygreen;
@@ -607,7 +604,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
     stiffmatrix->MultiplyTN(V_,bop,cb,1.0);
     // integrate `geometric' stiffness matrix and add to keu
     double sBL[3];
-    const double V = Volume();
+    const double V = Vol();
     for (int i=0; i<4; ++i)
     {
       sBL[0] = V*(stress(0) * nxyz_(i,0) + stress(3) * nxyz_(i,1) + stress(5) * nxyz_(i,2));
@@ -634,7 +631,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
     const double alpha  = (5.0 + 3.0*sqrt(5.0))/20.0;
     const double beta   = (5.0 - sqrt(5.0))/20.0;
     const double weight = 0.25;
-    const double V = Volume();
+    const double V = Vol();
     double xsi[4][4];
     xsi[0][0] = alpha;   xsi[0][1] = beta ;   xsi[0][2] = beta ;   xsi[0][3] = beta ;
     xsi[1][0] = beta ;   xsi[1][1] = alpha;   xsi[1][2] = beta ;   xsi[1][3] = beta ;
@@ -687,7 +684,7 @@ void DRT::ELEMENTS::NStet::nstetlumpmass(LINALG::Matrix<12,12>* emass)
 /*----------------------------------------------------------------------*
  |  compute deformation gradient (protected)                   gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::DeformationGradient(vector<double>& disp)
+void DRT::ELEMENTS::NStet::BuildF(vector<double>& disp)
 {
   LINALG::Matrix<4,3> xdisp;
   for (int i=0; i<4; ++i)
@@ -697,10 +694,9 @@ void DRT::ELEMENTS::NStet::DeformationGradient(vector<double>& disp)
     xdisp(i,2) = disp[i*3+2];
   }
   F_.MultiplyTN(xdisp,nxyz_);
-  F_(0,0)+=1;
-  F_(1,1)+=1;
-  F_(2,2)+=1;
-  FisNew_ = true;
+  F_(0,0)+=1.0;
+  F_(1,1)+=1.0;
+  F_(2,2)+=1.0;
   return;
 }
 
