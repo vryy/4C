@@ -64,7 +64,7 @@ void tsi_dyn_drt()
   if (comm.MyPID()==0) TSI::printlogo();
 
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null; // introduced 25.01.10
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
   // set degrees of freedom in the discretization
   if (!structdis->Filled() or !structdis->HaveDofs()) structdis->FillComplete();
@@ -80,9 +80,9 @@ void tsi_dyn_drt()
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes()==0)
   {
-    Epetra_Time time(comm); 
-    
-    // fetch the desired material id for the transport elements
+    Epetra_Time time(comm);
+
+    // fetch the desired material id for the thermo elements
     const int matid = -1;
 
     // create the thermo discretization

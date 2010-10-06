@@ -24,15 +24,15 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include <Epetra_Comm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+//#include <Epetra_Comm.h>
+//
+//#include <Teuchos_RCP.hpp>
+//#include <Teuchos_ParameterList.hpp>
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_thermo.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-//#include "../drt_adapter/adapter_coupling.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
@@ -73,6 +73,9 @@ namespace TSI
     void TimeLoop();
 
     /// time loop for TSI algorithm with one-way coupling
+    void TimeLoopSequStagg();
+
+    /// time loop for TSI algorithm with one-way coupling
     void TimeLoopOneWay();
 
     /// time loop for TSI algorithm with iteration between fields (full coupling)
@@ -107,7 +110,7 @@ namespace TSI
       Teuchos::RCP<Epetra_Vector> vel
       );
 
-    // iterative (two-way) coupling
+    // two-way coupling (sequential staggered, iterative)
 
     /// Outer Iteration loop
     void OuterIterationLoop();
@@ -122,20 +125,14 @@ namespace TSI
       Teuchos::RCP<Epetra_Vector> vel
       );
 
-//    /// solve tempterature equations for current time step
-//    void DoThermoStep(
-//      Teuchos::RCP<Epetra_Vector> idisp
-//      );
-
-
     //@}
 
     //! @name Access methods
 
     /// velocity calculation given the displacements (like in FSI)
-   Teuchos::RCP<Epetra_Vector> CalcVelocity(
-    Teuchos::RCP<const Epetra_Vector> idispnp
-    ) const;
+    Teuchos::RCP<Epetra_Vector> CalcVelocity(
+      Teuchos::RCP<const Epetra_Vector> idispnp
+      ) const;
 
     //@}
 
@@ -157,23 +154,8 @@ namespace TSI
 
     /// temperature increment of the outer loop
     Teuchos::RCP<Epetra_Vector> tempincnp_;
-
-    //! @name Transfer helpers
-
-////    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<Epetra_Vector> iv) const;
-//    virtual Teuchos::RCP<Epetra_Vector> ThermoToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-////
-////    virtual Teuchos::RCP<Epetra_Vector> StructToThermo(Teuchos::RCP<const Epetra_Vector> iv) const;
-//    virtual Teuchos::RCP<Epetra_Vector> ThermoToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-//
-//    //@}
-//
-//    TSI::Algorithm& StructureThermoCoupling() { return coupst_; }
-//
-//    const TSI::Algorithm& StructureThermoCoupling() const { return coupst_; }
-//
-
-    //const Epetra_Comm&          comm_;          // communicator
+    /// displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> dispincnp_;
 
   private:
 
@@ -186,14 +168,12 @@ namespace TSI
 
     /// temperature from time step begin (t_n)
     Teuchos::RCP<Epetra_Vector> tempn_;
-//    /// temperature from time step begin (t_n+1)
-//    Teuchos::RCP<Epetra_Vector> tempnp_;
 
     //! we couple based on displacements
     bool displacementcoupling_;
+    //! quasi-static solution of the mechancial equation
+    bool quasistatic_;
 
-//    /// coupling of structure and temperature
-//    TSI::Algorithm  coupst_;
   };
 } // namespace TSI
 
