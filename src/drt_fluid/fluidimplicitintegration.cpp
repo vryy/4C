@@ -4470,10 +4470,13 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
     }
     L = sqrt(L);
     
-    // normalise the normal vector
-    for (int j = 0; j < numdim_; j++)
+    // normalise the normal vector (if present for the current node)
+    if (L > EPS15)
     {
-      (*ndnorm0)[i+j] /=  L;
+      for (int j = 0; j < numdim_; j++)
+      {
+        (*ndnorm0)[i+j] /=  L;
+      }
     }
   }
 
