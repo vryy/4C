@@ -497,54 +497,61 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   // on all processors. To do so, we'll take the nodal row map and export it
   // to full overlap. Then we export the discretization to full overlap
   // column map. This way, also mortar elements will be fully ghosted on all
-  // processors.
-  // Note that we'll do ghosting only on procs that do own or ghost any of the
-  // nodes in the natural distribution of idiscret_!
+  // processors. Note that we'll do ghosting NOT ONLY on procs that do own
+  // or ghost any of the nodes in the natural distribution of idiscret_, but
+  // really on ALL procs. This makes dynamic redistribution / rebalancing easier!
+
+  //**********************************************************************
+  // IMPORTANT NOTE:
+  // In an older code version, we only did ghosting on procs that own or ghost
+  // any of the interface nodes or elements  in the natural distr. of idiscret_.
+  // The corresponding code lines for creating this proc list are:
+  //
+  // vector<int> stproc(0);
+  // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
+  //   stproc.push_back(Comm().MyPID());
+  // vector<int> rtproc(0);
+  // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
+  //
+  // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
+  // the node gids and element gids are gathered among procs.
+  //**********************************************************************
+
   {
+  	// we want to do full ghosting on all procs
+    vector<int> allproc(Comm().NumProc());
+    for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+
     // fill my own row node ids
     const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
     vector<int> sdata(noderowmap->NumMyElements());
     for (int i=0; i<noderowmap->NumMyElements(); ++i)
       sdata[i] = noderowmap->GID(i);
 
-    // build tprocs and numproc containing processors participating
-    // in this interface
-    vector<int> stproc(0);
-    // a processor participates in the interface, if it owns or ghosts any of
-    // the nodes or elements
-    if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-      stproc.push_back(Comm().MyPID());
-    vector<int> rtproc(0);
-    vector<int> allproc(Comm().NumProc());
-    for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
-    LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
-    vector<int> rdata;
-
     // gather all gids of nodes redundantly
-    LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],Comm());
+    vector<int> rdata;
+    LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
 
-    // build completely overlapping map (on participating processors)
+    // build completely overlapping map of nodes (on ALL processors)
     RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
     sdata.clear();
-    stproc.clear();
     rdata.clear();
-    allproc.clear();
-    // rtproc still in use
 
-    // do the same business for elements
+    // fill my own row element ids
+    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
     sdata.resize(elerowmap->NumMyElements());
-    rdata.resize(0);
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
       sdata[i] = elerowmap->GID(i);
-    // gather of element gids redundantly on processors that have business on the interface
-    LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],Comm());
-    rtproc.clear();
 
-    // build complete overlapping map of elements (on participating processors)
+    // gather all gids of elements redundantly
+    rdata.resize(0);
+    LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
+
+    // build complete overlapping map of elements (on ALL processors)
     RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
     sdata.clear();
     rdata.clear();
+    allproc.clear();
 
     // redistribute the discretization of the interface according to the
     // new column layout
