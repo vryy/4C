@@ -1225,17 +1225,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
   // upper bound of the interval within which uniformly distributed random numbers are generated
   DoubleParameter("MaxRandValue",0.0,"Upper bound of the interval within which uniformly distributed random numbers are generated (usually equal to PeriodLength)",&statmech);
-  //if used at all: equilibrium angle between crosslinker axis and filament at each binding site
+  //angle between filament axes at crosslinked points with zero potential energy
   DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
-  //equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to (if phi is used, too) or (if also angle tau is used) or equilibrium angle between axes of linked filaments (if no phi is not used)
-  DoubleParameter("TAU0",0.0,"/equilibrium angle between filaments projected into plane which crosslinker axis is perpendicular to",&statmech);
-  //only angles in the range PHI0 +/- PHIODEV are admitted at all; the default value for this parameter is 2*pi so that by default any value is admitted
+  //only angles in the range PHI0 +/- PHIODEV are admitted at all for the angle PHI between filament axes at crosslinked points; the default value for this parameter is 2*pi so that by default any value is admitted
   DoubleParameter("PHI0DEV",6.28,"only angles in the range PHI0 +/- PHIODEV",&statmech);
-  //only angles in the range TAU0 +/- TAUODEV are admitted at all; the default value for this parameter is 2*pi so that by default any value is admitted
-  DoubleParameter("TAU0DEV",6.28,"only angles in the range TAU0 +/- TAUODEV",&statmech);
-  //Reading whether diffusion of crosslinkers is to simulated
-  setStringToIntegralParameter<int>("USEPHI","Yes","If yes also angle phi is used in orientation calculation",yesnotuple,yesnovalue,&statmech);
-  //Young's modulus of crosslinkers
+ //Young's modulus of crosslinkers
   DoubleParameter("ELINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
   //Moment of inertia of area of crosslinkers
   DoubleParameter("ILINK",0.0,"Moment of inertia of area of crosslinkers",&statmech);
