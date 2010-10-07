@@ -2983,23 +2983,22 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       // cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
 
-      // check if this active node has a feasible projection
-      // else, one would at first think that a dserror has to be thrown!
-      // (but this is not true in general, as there might indeed be an
-      // active node which nervertheless has no feasible projection,
-      // e.g. a slave node which is just over the edge of the master surface)
-      // -> thus this check has been removed (popp 03/09)
-
-      //if (!cnode->HasProj() && cnode->Active())
-      //  dserror("ERROR: Active node ID: %i without feasible projection", cnode->Id());
-
       // check if this inactive node has a feasible projection
       // else, it cannot be in contact and weighted gap should be positive
       // (otherwise wrong results possible for g~ because of non-positivity
       // of dual shape functions!!!)
-      // when applying a Petrov-Galerkin scheme with standard shape functions
-      // for the weighted gap interpolation this problem does not exist
-      // FIXME: Only the linear case considered here (popp 04/09)
+      //******************************************************************
+      // TODO: This is only necessary for dual LM shape functions and for
+      // quadratic standard LM shape functions! By the way, it makes the
+      // method slightly inconsistent (e.g. patch tests with slave side
+      // being wider than master side). However, we are able to solve many
+      // problems with this little trick. But not all problems, e.g.
+      // dropping edge problems would still fail!!! To solve this dilemma,
+      // we need a clever modification of the LM shape functions such that
+      // their definition is compressed to only the "projecting" element part.
+      // Once we have this, the following trick can (and should) also be
+      // removed in order to make the method consistent again! (10/2010)
+      //******************************************************************
       if (!cnode->HasProj() && !cnode->Active())
       {
         gap = 1.0e12;
