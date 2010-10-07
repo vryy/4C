@@ -434,10 +434,14 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
       lin[i] = 0;
 
     // check ownership or ghosting of any elements / nodes
-    const Epetra_Map* nodemap = Discret().NodeColMap();
-    const Epetra_Map* elemap  = Discret().ElementColMap();
+    //const Epetra_Map* nodemap = Discret().NodeColMap();
+    //const Epetra_Map* elemap  = Discret().ElementColMap();
 
-    if (nodemap->NumMyElements() || elemap->NumMyElements())
+    //********************************************************************
+    // NOTE: currently we choose local=global communicator, but we have
+    // all structures present in the code to change this assignment any time.
+    //********************************************************************
+    //if (nodemap->NumMyElements() || elemap->NumMyElements())
       lin[Comm().MyPID()] = 1;
 
     Comm().MaxAll(&lin[0],&gin[0],Comm().NumProc());
@@ -1177,9 +1181,6 @@ void MORTAR::MortarInterface::Evaluate()
   //**********************************************************************
   // search algorithm
   //**********************************************************************
-  //lComm()->Barrier();
-  //const double t_start = Teuchos::Time::wallTime();
-
   if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
   else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
