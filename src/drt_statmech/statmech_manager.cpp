@@ -3892,12 +3892,12 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 
   //triad of node on first filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = nodaltriadscol[j][(int) LID(1)];
+    qnode(j) = nodaltriadscol[j][(int) LID(0)];
   LARGEROTATIONS::quaterniontotriad(qnode, T1);
 
   //triad of node on second filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = nodaltriadscol[j][(int) LID(2)];
+    qnode(j) = nodaltriadscol[j][(int) LID(1)];
   LARGEROTATIONS::quaterniontotriad(qnode, T2);
 
   //auxiliary variable
