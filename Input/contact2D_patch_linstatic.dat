@@ -83,6 +83,7 @@ MAXITER      1
 APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
+SYSTEM               Condensed
 FRICTION             None
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   No
@@ -746,6 +747,14 @@ E 18 - 1 Master
 E 24 - 1 Master
 E 25 - 1 Master
 E 28 - 1 Slave Active
+//E 14 - 1 Slave Inactive
+//E 15 - 1 Slave Inactive
+//E 16 - 1 Slave Active
+//E 17 - 1 Slave Inactive
+//E 18 - 1 Slave Inactive
+//E 24 - 1 Slave Inactive
+//E 25 - 1 Slave Inactive
+//E 28 - 1 Master
 ---------------------------------DESIGN SURF CONTACT CONDITIONS 3D
 DSURF 0
 -------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
