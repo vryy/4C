@@ -3890,9 +3890,6 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
   //Deltaphi = Phi - Phi0, where Phi0 is the angle between crosslinked filaments with zero potential energy (i.e. the most likely one)
   double DeltaPhi;
 
-  //we do not distinguish between bending and torsion stiffness of crosslinkers, but just use EI as spring constant for a quadratic energy determining the likelihood of different orientation angles of crosslinked filaments
-  double EI = statmechparams_.get<double> ("ELINK", 0.0) * statmechparams_.get<double> ("ILINK", 0.0);
-
   //triad of node on first filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
     qnode(j) = nodaltriadscol[j][(int) LID(1)];
@@ -3910,7 +3907,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
   DeltaPhi = Phi - statmechparams_.get<double> ("PHI0",0.0);
 
   //assuming bending and torsion potentials 0.5*EI*Deltaphi^2 and a Boltzmann distribution for the different states of the crosslinker we get
-  double pPhi = exp(-0.5 * EI * DeltaPhi * DeltaPhi / statmechparams_.get<double> ("KT", 0.0));
+  double pPhi = exp(-0.5 * statmechparams_.get<double> ("CORIENT", 0.0) * DeltaPhi * DeltaPhi / statmechparams_.get<double> ("KT", 0.0));
 
 
   //pPhi = 0.0 if DeltaPhi is outside allowed range
