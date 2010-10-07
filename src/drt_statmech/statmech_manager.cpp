@@ -3904,6 +3904,10 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
   double scalarproduct = T1(0, 0)*T2(0,0) + T1(1,0)*T2(1,0) + T1(2,0)*T2(2,0);
 
   Phi = acos(scalarproduct);
+  //Phi should be the acute angle between 0° and 90° between the filament axes
+  if(Phi > M_PI/2.0)
+    Phi = M_PI - Phi;
+
   DeltaPhi = Phi - statmechparams_.get<double> ("PHI0",0.0);
 
   //assuming bending and torsion potentials 0.5*EI*Deltaphi^2 and a Boltzmann distribution for the different states of the crosslinker we get
