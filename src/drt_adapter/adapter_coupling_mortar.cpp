@@ -287,9 +287,66 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 	//**********************************************************************
 	// (0) check constraints in reference configuration
 	//**********************************************************************
-	// intialize and assemble g-vector
-	RCP<Epetra_Vector> gold = LINALG::CreateVector(*slavedofrowmap, true);
-	interface_->AssembleG(*gold);
+	// build global vectors of slave and master coordinates
+	RCP<Epetra_Vector> xs = LINALG::CreateVector(*slavedofrowmap,true);
+	RCP<Epetra_Vector> xm = LINALG::CreateVector(*masterdofrowmap,true);
+
+	// loop over all slave row nodes
+	for (int j=0; j<interface_->SlaveRowNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->SlaveRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// prepare assembly
+		Epetra_SerialDenseVector val(dim);
+		vector<int> lm(dim);
+		vector<int> lmowner(dim);
+
+		for (int k=0;k<dim;++k)
+		{
+			val[k] = mtnode->X()[k];
+			lm[k] = mtnode->Dofs()[k];
+			lmowner[k] = mtnode->Owner();
+		}
+
+		// do assembly
+		LINALG::Assemble(*xs,val,lm,lmowner);
+	}
+
+	// loop over all master row nodes
+	for (int j=0; j<interface_->MasterRowNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->MasterRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// prepare assembly
+		Epetra_SerialDenseVector val(dim);
+		vector<int> lm(dim);
+		vector<int> lmowner(dim);
+
+		for (int k=0;k<dim;++k)
+		{
+			val[k] = mtnode->X()[k];
+			lm[k] = mtnode->Dofs()[k];
+			lmowner[k] = mtnode->Owner();
+		}
+
+		// do assembly
+		LINALG::Assemble(*xm,val,lm,lmowner);
+	}
+
+	// compute g-vector at global level
+	RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*slavedofrowmap));
+	D_->Multiply(false,*xs,*Dxs);
+	RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*slavedofrowmap));
+	M_->Multiply(false,*xm,*Mxm);
+	RCP<Epetra_Vector > gold = LINALG::CreateVector(*slavedofrowmap, true);
+	gold->Update(1.0,*Dxs,1.0);
+	gold->Update(-1.0,*Mxm,1.0);
 	double gnorm = 0.0;
 	gold->Norm2(&gnorm);
 
@@ -433,9 +490,66 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 	//**********************************************************************
 	// (4) re-evaluate constraints in reference configuration
 	//**********************************************************************
-	// intialize and assemble g-vector
+  // build global vectors of slave and master coordinates
+  xs = LINALG::CreateVector(*slavedofrowmap,true);
+  xm = LINALG::CreateVector(*masterdofrowmap,true);
+
+	// loop over all slave row nodes
+	for (int j=0; j<interface_->SlaveRowNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->SlaveRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// prepare assembly
+		Epetra_SerialDenseVector val(dim);
+		vector<int> lm(dim);
+		vector<int> lmowner(dim);
+
+		for (int k=0;k<dim;++k)
+		{
+      val[k] = mtnode->X()[k];
+			lm[k] = mtnode->Dofs()[k];
+			lmowner[k] = mtnode->Owner();
+		}
+
+		// do assembly
+		LINALG::Assemble(*xs,val,lm,lmowner);
+	}
+
+	// loop over all master row nodes
+	for (int j=0; j<interface_->MasterRowNodes()->NumMyElements(); ++j)
+	{
+		int gid = interface_->MasterRowNodes()->GID(j);
+		DRT::Node* node = interface_->Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+
+		// prepare assembly
+		Epetra_SerialDenseVector val(dim);
+		vector<int> lm(dim);
+		vector<int> lmowner(dim);
+
+		for (int k=0;k<dim;++k)
+		{
+      val[k] = mtnode->X()[k];
+			lm[k] = mtnode->Dofs()[k];
+			lmowner[k] = mtnode->Owner();
+		}
+
+		// do assembly
+		LINALG::Assemble(*xm,val,lm,lmowner);
+	}
+
+  // compute g-vector at global level
+	Dxs = rcp(new Epetra_Vector(*slavedofrowmap));
+	D_->Multiply(false,*xs,*Dxs);
+	Mxm = rcp(new Epetra_Vector(*slavedofrowmap));
+	M_->Multiply(false,*xm,*Mxm);
 	RCP<Epetra_Vector > gnew = LINALG::CreateVector(*slavedofrowmap, true);
-	interface_->AssembleG(*gnew);
+	gnew->Update(1.0,*Dxs,1.0);
+	gnew->Update(-1.0,*Mxm,1.0);
 	gnew->Norm2(&gnorm);
 
 	// error if g is still non-zero

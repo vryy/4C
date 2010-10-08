@@ -670,12 +670,6 @@ public:
   */
   virtual void AssembleDM(LINALG::SparseMatrix& dglobal,
                           LINALG::SparseMatrix& mglobal);
-  
-  /*!
-  \brief Assemble weighted gap g
-
-  */
-  virtual void AssembleG(Epetra_Vector& gglobal);
 
   /*!
   \brief Assemble transformation matrices T and T^(-1)
