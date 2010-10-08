@@ -3949,9 +3949,21 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 
 
   //pPhi = 0.0 if DeltaPhi is outside allowed range
-  if(Phi < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHIODEV",6.28) ||
-     Phi > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHIODEV",6.28))
+  if(Phi < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
+     Phi > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
      pPhi = 0.0;
+
+
+  if(uniformclosedgen_.random() < pPhi)
+  {
+    std::cout<<"\n\nfirst director: "<<T1(0, 0)<<"  "<<T1(1, 0)<<"  "<<T1(2, 0);
+    std::cout<<"\n\nsecond director: "<<T2(0, 0)<<"  "<<T2(1, 0)<<"  "<<T2(2, 0);
+    std::cout<<"\n\nfirst triad "<<T1;
+    std::cout<<"\n\nsecond triad "<<T2;
+    std::cout<<"\n\nCORIENT "<<statmechparams_.get<double> ("CORIENT", 0.0);
+    std::cout<<"\n\nPHI0 "<<statmechparams_.get<double>("PHI0",0.0);
+    std::cout<<"\n\nPHIODEV "<<statmechparams_.get<double>("PHIODEV",6.28);
+  }
 
   //crosslinker has to pass three probability checks with respect to orientation
   return(uniformclosedgen_.random() < pPhi);
