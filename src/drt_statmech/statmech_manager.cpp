@@ -298,47 +298,53 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 	{
 		case INPAR::STATMECH::statout_endtoendlog:
 		{
-			FILE* fp = NULL; //file pointer for statistical output file
 
-			//name of output file
-			std::ostringstream outputfilename;
-			outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
+      double endtoend = 0; //end to end length at a certain time step in single filament dynamics
+      double DeltaR2 = 0;
 
-			double endtoend = 0; //end to end length at a certain time step in single filament dynamics
-			double DeltaR2 = 0;
+      //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
+      if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (starttimeoutput_ == -1.0))
+      {
+        endtoendref_ = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
+            (dis)[num_dof - 2] - (dis)[1], 2), 0.5);
+        starttimeoutput_ = time;
+        istart_ = istep;
+      }
+      if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
+      {
+        endtoend = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
+            (dis)[num_dof - 2] - (dis)[1], 2), 0.5);
 
-			//as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
-			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (starttimeoutput_ == -1.0))
-			{
-				endtoendref_ = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
-						(dis)[num_dof - 2] - (dis)[1], 2), 0.5);
-				starttimeoutput_ = time;
-				istart_ = istep;
-			}
-			if (time > starttimeoutput_ && starttimeoutput_ > -1.0)
-			{
-				endtoend = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
-						(dis)[num_dof - 2] - (dis)[1], 2), 0.5);
+        //applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
+        DeltaR2 = pow((endtoend * endtoend - endtoendref_ * endtoendref_) / (endtoend + endtoendref_), 2);
 
-				//applying in the following a well conditioned substraction formula according to Crisfield, Vol. 1, equ. (7.53)
-				DeltaR2 = pow((endtoend * endtoend - endtoendref_ * endtoendref_) / (endtoend + endtoendref_), 2);
+        //writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
+        if ((istep - istart_) % int(ceil(pow(10, floor(log10((time - starttimeoutput_) / (10* dt )))))) == 0)
+        {
 
-				//writing output: writing Delta(R^2) according to PhD thesis Hallatschek, eq. (4.60), where t=0 corresponds to starttimeoutput_
-				if ((istep - istart_) % int(ceil(pow(10, floor(log10((time - starttimeoutput_) / (10* dt )))))) == 0)
-				{
-					// open file and append new data line
-					fp = fopen(outputfilename.str().c_str(), "a");
+          //proc 0 write complete output into file, all other proc inactive
+          if(!discret_.Comm().MyPID())
+          {
+            FILE* fp = NULL; //file pointer for statistical output file
 
-					//defining temporary stringstream variable
-					std::stringstream filecontent;
-					filecontent << scientific << setprecision(15) << time
-							- starttimeoutput_ << "  " << DeltaR2 << endl;
+            //name of output file
+            std::ostringstream outputfilename;
+            outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
 
-					// move temporary stringstream to file and close it
-					fprintf(fp, filecontent.str().c_str());
-					fclose(fp);
-				}
-			}
+            // open file and append new data line
+            fp = fopen(outputfilename.str().c_str(), "a");
+
+            //defining temporary stringstream variable
+            std::stringstream filecontent;
+            filecontent << scientific << setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << endl;
+
+            // move temporary stringstream to file and close it
+            fprintf(fp, filecontent.str().c_str());
+            fclose(fp);
+          }
+        }
+      }
+
 		}
 		break;
 		case INPAR::STATMECH::statout_endtoendconst:
@@ -355,12 +361,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			}
 			else
 				neumannforce = 0;
-
-			FILE* fp = NULL; //file pointer for statistical output file
-
-			//name of output file
-			std::ostringstream outputfilename;
-			outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
 
 			double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
 
@@ -386,16 +386,27 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 				//writing output: current time and end to end distance are stored at each 100th time step
 				if ((istep - istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0)
 				{
-					// open file and append new data line
-					fp = fopen(outputfilename.str().c_str(), "a");
-					//defining temporary stringstream variable
-					std::stringstream filecontent;
-					filecontent << scientific << setprecision(15) << time << "  "
-											<< endtoend << " " << fint[num_dof - discret_.NumDof(
-												 discret_.gNode(discret_.NumMyRowNodes() - 1))] << endl;
-					// move temporary stringstream to file and close it
-					fprintf(fp, filecontent.str().c_str());
-					fclose(fp);
+
+		      //proc 0 write complete output into file, all other proc inactive
+		      if(!discret_.Comm().MyPID())
+		      {
+            FILE* fp = NULL; //file pointer for statistical output file
+
+            //name of output file
+            std::ostringstream outputfilename;
+            outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+
+            // open file and append new data line
+            fp = fopen(outputfilename.str().c_str(), "a");
+            //defining temporary stringstream variable
+            std::stringstream filecontent;
+            filecontent << scientific << setprecision(15) << time << "  "
+                        << endtoend << " " << fint[num_dof - discret_.NumDof(
+                           discret_.gNode(discret_.NumMyRowNodes() - 1))] << endl;
+            // move temporary stringstream to file and close it
+            fprintf(fp, filecontent.str().c_str());
+            fclose(fp);
+		      }
 				}
 			}
 		}
@@ -408,14 +419,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		  //we need displacements also of ghost nodes and hence export displacment vector to column map format
 		  Epetra_Vector discol(*(discret_.DofColMap()), true);
 		  LINALG::Export(dis, discol);
-
-
-			FILE* fp = NULL; //file pointer for statistical output file
-
-			//name of output file
-			std::ostringstream outputfilename;
-			outputfilename.str("");
-			outputfilename << "OrientationCorrelation" << outputfilenumber_ << ".dat";
 
 			vector<double> arclength(discret_.NumMyColNodes() - 1, 0);
 			vector<double> cosdiffer(discret_.NumMyColNodes() - 1, 0);
@@ -450,6 +453,13 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 				//proc 0 write complete output into file, all other proc inactive
 				if(!discret_.Comm().MyPID())
 				{
+		      FILE* fp = NULL; //file pointer for statistical output file
+
+		      //name of output file
+		      std::ostringstream outputfilename;
+		      outputfilename.str("");
+		      outputfilename << "OrientationCorrelation" << outputfilenumber_ << ".dat";
+
           fp = fopen(outputfilename.str().c_str(), "a");
           std::stringstream filecontent;
           filecontent << istep;
@@ -473,11 +483,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
 			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
 			{
-				FILE* fp = NULL; //file pointer for statistical output file
 
-				//name of output file
-				std::ostringstream outputfilename;
-				outputfilename << "AnisotropicDiffusion" << outputfilenumber_ << ".dat";
 
 				//positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
 				LINALG::Matrix<3, 1> beginnew;
@@ -568,7 +574,15 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 					sumrotmiddle_ += incangle;
 				}
 
+        //proc 0 write complete output into file, all other proc inactive
+        if(!discret_.Comm().MyPID())
 				{
+	        FILE* fp = NULL; //file pointer for statistical output file
+
+	        //name of output file
+	        std::ostringstream outputfilename;
+	        outputfilename << "AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+
 					// open file and append new data line
 					fp = fopen(outputfilename.str().c_str(), "a");
 
@@ -1622,321 +1636,341 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
 	{
 		case INPAR::STATMECH::statout_endtoendlog:
 		{
-			FILE* fp = NULL; //file pointer for statistical output file
 
-			//defining name of output file
-			std::ostringstream outputfilename;
+		  //output is written on proc 0 only
+      if(!discret_.Comm().MyPID())
+      {
 
-			outputfilenumber_ = 0;
+        FILE* fp = NULL; //file pointer for statistical output file
 
-			//file pointer for operating with numbering file
-			FILE* fpnumbering = NULL;
-			std::ostringstream numberingfilename;
+        //defining name of output file
+        std::ostringstream outputfilename;
 
-			//look for a numbering file where number of already existing output files is stored:
-			numberingfilename.str("NumberOfRealizationsLog");
-			fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+        outputfilenumber_ = 0;
 
-			//if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-			if (fpnumbering == NULL)
-			{
-				do
-				{
-					outputfilenumber_++;
-					outputfilename.str("");
-					outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
-					fp = fopen(outputfilename.str().c_str(), "r");
-				}
-				while (fp != NULL);
+        //file pointer for operating with numbering file
+        FILE* fpnumbering = NULL;
+        std::ostringstream numberingfilename;
 
-				//set up new file with name "outputfilename" without writing anything into this file
-				fp = fopen(outputfilename.str().c_str(), "w");
-				fclose(fp);
-			}
-			//if there already exists a numbering file
-			else
-			{
-				fclose(fpnumbering);
+        //look for a numbering file where number of already existing output files is stored:
+        numberingfilename.str("NumberOfRealizationsLog");
+        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
 
-				//read the number of the next realization out of the file into the variable testnumber
-				std::fstream f(numberingfilename.str().c_str());
-				while (f)
-				{
-					std::string tok;
-					f >> tok;
-					if (tok == "Next")
-					{
-						f >> tok;
-						if (tok == "Number:")
-							f >> outputfilenumber_;
-					}
-				} //while(f)
+        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+        if (fpnumbering == NULL)
+        {
+          do
+          {
+            outputfilenumber_++;
+            outputfilename.str("");
+            outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
+            fp = fopen(outputfilename.str().c_str(), "r");
+          }
+          while (fp != NULL);
 
-				//defining outputfilename by means of new testnumber
-				outputfilename.str("");
-				outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
-			}
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+        }
+        //if there already exists a numbering file
+        else
+        {
+          fclose(fpnumbering);
 
-			//increasing the number in the numbering file by one
-			fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-			std::stringstream filecontent;
-			filecontent << "Next Number: " << (outputfilenumber_ + 1);
-			fprintf(fpnumbering, filecontent.str().c_str());
-			fclose(fpnumbering);
+          //read the number of the next realization out of the file into the variable testnumber
+          std::fstream f(numberingfilename.str().c_str());
+          while (f)
+          {
+            std::string tok;
+            f >> tok;
+            if (tok == "Next")
+            {
+              f >> tok;
+              if (tok == "Number:")
+                f >> outputfilenumber_;
+            }
+          } //while(f)
+
+          //defining outputfilename by means of new testnumber
+          outputfilename.str("");
+          outputfilename << "EndToEnd" << outputfilenumber_ << ".dat";
+        }
+
+        //increasing the number in the numbering file by one
+        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+        std::stringstream filecontent;
+        filecontent << "Next Number: " << (outputfilenumber_ + 1);
+        fprintf(fpnumbering, filecontent.str().c_str());
+        fclose(fpnumbering);
+      }
 
 		}
 			break;
 		case INPAR::STATMECH::statout_endtoendconst:
 		{
-			FILE* fp = NULL; //file pointer for statistical output file
+      //output is written on proc 0 only
+      if(!discret_.Comm().MyPID())
+      {
 
-			//defining name of output file
-			std::ostringstream outputfilename;
-			outputfilename.str("");
-			outputfilenumber_ = 0;
+        FILE* fp = NULL; //file pointer for statistical output file
 
-			//file pointer for operating with numbering file
-			FILE* fpnumbering = NULL;
-			std::ostringstream numberingfilename;
+        //defining name of output file
+        std::ostringstream outputfilename;
+        outputfilename.str("");
+        outputfilenumber_ = 0;
 
-			//look for a numbering file where number of already existing output files is stored:
-			numberingfilename.str("NumberOfRealizationsConst");
-			fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+        //file pointer for operating with numbering file
+        FILE* fpnumbering = NULL;
+        std::ostringstream numberingfilename;
 
-			/*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
-			 *value on either filament length; we get the absolute value of the first one of these two conditions */
-			double neumannforce;
-			vector<DRT::Condition*> pointneumannconditions(0);
-			discret_.GetCondition("PointNeumann", pointneumannconditions);
-			if (pointneumannconditions.size() > 0)
-			{
-				const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
-				neumannforce = fabs((*val)[0]);
-			}
-			else
-				neumannforce = 0;
+        //look for a numbering file where number of already existing output files is stored:
+        numberingfilename.str("NumberOfRealizationsConst");
+        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
 
-			//if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-			if (fpnumbering == NULL)
-			{
-				do
-				{
-					//defining name of output file
-					outputfilenumber_++;
-					outputfilename.str("");
-					outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
-					fp = fopen(outputfilename.str().c_str(), "r");
-				}
-				while (fp != NULL);
+        /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
+         *value on either filament length; we get the absolute value of the first one of these two conditions */
+        double neumannforce;
+        vector<DRT::Condition*> pointneumannconditions(0);
+        discret_.GetCondition("PointNeumann", pointneumannconditions);
+        if (pointneumannconditions.size() > 0)
+        {
+          const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
+          neumannforce = fabs((*val)[0]);
+        }
+        else
+          neumannforce = 0;
 
-				//set up new file with name "outputfilename" without writing anything into this file
-				fp = fopen(outputfilename.str().c_str(), "w");
-				fclose(fp);
-			}
-			//if there already exists a numbering file
-			else
-			{
-				fclose(fpnumbering);
+        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+        if (fpnumbering == NULL)
+        {
+          do
+          {
+            //defining name of output file
+            outputfilenumber_++;
+            outputfilename.str("");
+            outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt<< '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+            fp = fopen(outputfilename.str().c_str(), "r");
+          }
+          while (fp != NULL);
 
-				//read the number of the next realization out of the file into the variable testnumber
-				std::fstream f(numberingfilename.str().c_str());
-				while (f)
-				{
-					std::string tok;
-					f >> tok;
-					if (tok == "Next")
-					{
-						f >> tok;
-						if (tok == "Number:")
-							f >> outputfilenumber_;
-					}
-				} //while(f)
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+        }
+        //if there already exists a numbering file
+        else
+        {
+          fclose(fpnumbering);
 
-				//defining outputfilename by means of new testnumber
-				outputfilename.str("");
-				outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
+          //read the number of the next realization out of the file into the variable testnumber
+          std::fstream f(numberingfilename.str().c_str());
+          while (f)
+          {
+            std::string tok;
+            f >> tok;
+            if (tok == "Next")
+            {
+              f >> tok;
+              if (tok == "Number:")
+                f >> outputfilenumber_;
+            }
+          } //while(f)
 
-				//set up new file with name "outputfilename" without writing anything into this file
-				fp = fopen(outputfilename.str().c_str(), "w");
-				fclose(fp);
-			}
+          //defining outputfilename by means of new testnumber
+          outputfilename.str("");
+          outputfilename << "E2E_" << discret_.NumMyRowElements() << '_' << dt << '_' << neumannforce << '_' << outputfilenumber_ << ".dat";
 
-			//increasing the number in the numbering file by one
-			fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-			std::stringstream filecontent;
-			filecontent << "Next Number: " << (outputfilenumber_ + 1);
-			//write fileconent into file!
-			fprintf(fpnumbering, filecontent.str().c_str());
-			//close file
-			fclose(fpnumbering);
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+        }
+
+        //increasing the number in the numbering file by one
+        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+        std::stringstream filecontent;
+        filecontent << "Next Number: " << (outputfilenumber_ + 1);
+        //write fileconent into file!
+        fprintf(fpnumbering, filecontent.str().c_str());
+        //close file
+        fclose(fpnumbering);
+      }
 
 		}
-			break;
-			/*computing and writing into file data about correlation of orientation of different elements
-			 *as it is considered in the context of the persistence length*/
+    break;
+    /*computing and writing into file data about correlation of orientation of different elements
+     *as it is considered in the context of the persistence length*/
 		case INPAR::STATMECH::statout_orientationcorrelation:
 		{
-			FILE* fp = NULL; //file pointer for statistical output file
+      //output is written on proc 0 only
+      if(!discret_.Comm().MyPID())
+      {
 
-			//defining name of output file
-			std::ostringstream outputfilename;
+        FILE* fp = NULL; //file pointer for statistical output file
 
-			outputfilenumber_ = 0;
+        //defining name of output file
+        std::ostringstream outputfilename;
 
-			//file pointer for operating with numbering file
-			FILE* fpnumbering = NULL;
-			std::ostringstream numberingfilename;
+        outputfilenumber_ = 0;
 
-			//look for a numbering file where number of already existing output files is stored:
-			numberingfilename.str("NumberOfRealizationsOrientCorr");
-			fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+        //file pointer for operating with numbering file
+        FILE* fpnumbering = NULL;
+        std::ostringstream numberingfilename;
 
-			//if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-			if (fpnumbering == NULL)
-			{
-				do
-				{
-					outputfilenumber_++;
-					outputfilename.str("");
-					outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
-					fp = fopen(outputfilename.str().c_str(), "r");
-				}
-				while (fp != NULL);
+        //look for a numbering file where number of already existing output files is stored:
+        numberingfilename.str("NumberOfRealizationsOrientCorr");
+        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
 
-				//set up new file with name "outputfilename" without writing anything into this file
-				fp = fopen(outputfilename.str().c_str(), "w");
-				fclose(fp);
-			}
-			//if there already exists a numbering file
-			else
-			{
-				fclose(fpnumbering);
+        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+        if (fpnumbering == NULL)
+        {
+          do
+          {
+            outputfilenumber_++;
+            outputfilename.str("");
+            outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
+            fp = fopen(outputfilename.str().c_str(), "r");
+          }
+          while (fp != NULL);
 
-				//read the number of the next realization out of the file into the variable testnumber
-				std::fstream f(numberingfilename.str().c_str());
-				while (f)
-				{
-					std::string tok;
-					f >> tok;
-					if (tok == "Next")
-					{
-						f >> tok;
-						if (tok == "Number:")
-							f >> outputfilenumber_;
-					}
-				} //while(f)
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+        }
+        //if there already exists a numbering file
+        else
+        {
+          fclose(fpnumbering);
 
-				//defining outputfilename by means of new testnumber
-				outputfilename.str("");
-				outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
-			}
+          //read the number of the next realization out of the file into the variable testnumber
+          std::fstream f(numberingfilename.str().c_str());
+          while (f)
+          {
+            std::string tok;
+            f >> tok;
+            if (tok == "Next")
+            {
+              f >> tok;
+              if (tok == "Number:")
+                f >> outputfilenumber_;
+            }
+          } //while(f)
 
-			//set up new file with name "outputfilename" without writing anything into this file
-			fp = fopen(outputfilename.str().c_str(), "w");
-			fclose(fp);
+          //defining outputfilename by means of new testnumber
+          outputfilename.str("");
+          outputfilename << "OrientationCorrelation" << outputfilenumber_<< ".dat";
+        }
 
-			//increasing the number in the numbering file by one
-			fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-			std::stringstream filecontent;
-			filecontent << "Next Number: " << (outputfilenumber_ + 1);
-			//write fileconent into file!
-			fprintf(fpnumbering, filecontent.str().c_str());
-			//close file
-			fclose(fpnumbering);
+        //set up new file with name "outputfilename" without writing anything into this file
+        fp = fopen(outputfilename.str().c_str(), "w");
+        fclose(fp);
+
+        //increasing the number in the numbering file by one
+        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+        std::stringstream filecontent;
+        filecontent << "Next Number: " << (outputfilenumber_ + 1);
+        //write fileconent into file!
+        fprintf(fpnumbering, filecontent.str().c_str());
+        //close file
+        fclose(fpnumbering);
+      }
 		}
-			break;
-			//simulating diffusion coefficient for anisotropic friction
+    break;
+    //simulating diffusion coefficient for anisotropic friction
 		case INPAR::STATMECH::statout_anisotropic:
 		{
-			FILE* fp = NULL; //file pointer for statistical output file
+      //output is written on proc 0 only
+      if(!discret_.Comm().MyPID())
+      {
 
-			//defining name of output file
-			std::ostringstream outputfilename;
+        FILE* fp = NULL; //file pointer for statistical output file
 
-			outputfilenumber_ = 0;
+        //defining name of output file
+        std::ostringstream outputfilename;
 
-			//file pointer for operating with numbering file
-			FILE* fpnumbering = NULL;
-			std::ostringstream numberingfilename;
+        outputfilenumber_ = 0;
 
-			//look for a numbering file where number of already existing output files is stored:
-			numberingfilename.str("NumberOfRealizationsAniso");
-			fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+        //file pointer for operating with numbering file
+        FILE* fpnumbering = NULL;
+        std::ostringstream numberingfilename;
 
-			//if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-			if (fpnumbering == NULL)
-			{
-				do
-				{
-					outputfilenumber_++;
-					outputfilename.str("");
-					outputfilename << "AnisotropicDiffusion" << outputfilenumber_
-							<< ".dat";
-					fp = fopen(outputfilename.str().c_str(), "r");
-				}
-				while (fp != NULL);
+        //look for a numbering file where number of already existing output files is stored:
+        numberingfilename.str("NumberOfRealizationsAniso");
+        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
 
-				//set up new file with name "outputfilename" without writing anything into this file
-				fp = fopen(outputfilename.str().c_str(), "w");
-				fclose(fp);
-			}
-			//if there already exists a numbering file
-			else
-			{
-				fclose(fpnumbering);
+        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+        if (fpnumbering == NULL)
+        {
+          do
+          {
+            outputfilenumber_++;
+            outputfilename.str("");
+            outputfilename << "AnisotropicDiffusion" << outputfilenumber_
+                << ".dat";
+            fp = fopen(outputfilename.str().c_str(), "r");
+          }
+          while (fp != NULL);
 
-				//read the number of the next realization out of the file into the variable testnumber
-				std::fstream f(numberingfilename.str().c_str());
-				while (f)
-				{
-					std::string tok;
-					f >> tok;
-					if (tok == "Next")
-					{
-						f >> tok;
-						if (tok == "Number:")
-							f >> outputfilenumber_;
-					}
-				} //while(f)
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+        }
+        //if there already exists a numbering file
+        else
+        {
+          fclose(fpnumbering);
 
-				//defining outputfilename by means of new testnumber
-				outputfilename.str("");
-				outputfilename << "AnisotropicDiffusion" << outputfilenumber_ << ".dat";
-			}
+          //read the number of the next realization out of the file into the variable testnumber
+          std::fstream f(numberingfilename.str().c_str());
+          while (f)
+          {
+            std::string tok;
+            f >> tok;
+            if (tok == "Next")
+            {
+              f >> tok;
+              if (tok == "Number:")
+                f >> outputfilenumber_;
+            }
+          } //while(f)
 
-			//set up new file with name "outputfilename" without writing anything into this file
-			fp = fopen(outputfilename.str().c_str(), "w");
-			fclose(fp);
+          //defining outputfilename by means of new testnumber
+          outputfilename.str("");
+          outputfilename << "AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+        }
 
-			//increasing the number in the numbering file by one
-			fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-			std::stringstream filecontent;
-			filecontent << "Next Number: " << (outputfilenumber_ + 1);
-			//write fileconent into file!
-			fprintf(fpnumbering, filecontent.str().c_str());
-			//close file
-			fclose(fpnumbering);
+        //set up new file with name "outputfilename" without writing anything into this file
+        fp = fopen(outputfilename.str().c_str(), "w");
+        fclose(fp);
 
-			//initializing variables for positions of first and last node at the beginning
-			beginold_.PutScalar(0);
-			endold_.PutScalar(0);
-			for (int i=0; i<ndim; i++)
-			{
-				beginold_(i) = (discret_.gNode(0))->X()[i];
-				endold_(i) = (discret_.gNode(discret_.NumMyRowNodes() - 1))->X()[i];
-			}
+        //increasing the number in the numbering file by one
+        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+        std::stringstream filecontent;
+        filecontent << "Next Number: " << (outputfilenumber_ + 1);
+        //write fileconent into file!
+        fprintf(fpnumbering, filecontent.str().c_str());
+        //close file
+        fclose(fpnumbering);
 
-			for (int i=0; i<3; i++)
-				sumdispmiddle_(i, 0) = 0.0;
+        //initializing variables for positions of first and last node at the beginning
+        beginold_.PutScalar(0);
+        endold_.PutScalar(0);
+        for (int i=0; i<ndim; i++)
+        {
+          beginold_(i) = (discret_.gNode(0))->X()[i];
+          endold_(i) = (discret_.gNode(discret_.NumMyRowNodes() - 1))->X()[i];
+        }
 
-			sumsquareincpar_ = 0.0;
-			sumsquareincort_ = 0.0;
-			sumrotmiddle_ = 0.0;
-			sumsquareincmid_ = 0.0;
-			sumsquareincrot_ = 0.0;
+        for (int i=0; i<3; i++)
+          sumdispmiddle_(i, 0) = 0.0;
 
+        sumsquareincpar_ = 0.0;
+        sumsquareincort_ = 0.0;
+        sumrotmiddle_ = 0.0;
+        sumsquareincmid_ = 0.0;
+        sumsquareincrot_ = 0.0;
+      }
 		}
-			break;
+    break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
 			//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
