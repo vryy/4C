@@ -1701,26 +1701,36 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 	//**********************************************************************
 
 #ifdef CONTACTASOUTPUT
+  // create storage for local and global data
+  vector<int>    lnid, gnid;
+  vector<double> llmn, glmn;
+  vector<double> lgap, ggap;
+
+	// introduce integer variable status
+	// (0=inactive, 1=active, 2=slip, 3=stick)
+	// (this is necessary as all data will be written by proc 0, but
+	// the knowledge of the above status ONLY exists on the owner
+	// processor of the respective node. Thus this information must
+	// also be communicated to proc 0 in addition to the actual data!)
+  vector<int>    lsta, gsta;
+
+  // some more storage for local and global friction data
+  vector<double> llmt, glmt;
+  vector<double> ljtx, gjtx;
+  vector<double> ljte, gjte;
+
   // loop over all interfaces
 	for (int i=0; i<(int)interface_.size(); ++i)
 	{
 		//if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
-		// loop over all slave nodes on the current interface
-		for (int j=0;j<interface_[i]->SlaveFullNodes()->NumMyElements();++j)
+		// loop over all slave row nodes on the current interface
+		for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
 		{
 			// gid of current node
-			int gid = interface_[i]->SlaveFullNodes()->GID(j);
+			int gid = interface_[i]->SlaveRowNodes()->GID(j);
 			DRT::Node* node = interface_[i]->Discret().gNode(gid);
 			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-
-			// introduce local integer variable status
-			// (0=inactive, 1=active, 2=slip, 3=stick)
-			// (this is necessary as all data will be written by proc 0, but
-			// the knowledge of the above status ONLY exists on the owner
-			// processor of the respective node. Thus this information must
-			// also be communicated to proc 0 in addition to the actual data!)
-			int status = 0;
 
 			//--------------------------------------------------------------------
 			// FRICTIONLESS CASE
@@ -1730,46 +1740,24 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				// cast to CoNode
 				CoNode* cnode = static_cast<CoNode*>(node);
 
-				// initialize output variables
-				double wgap = 0.0;
+				// compute weighted gap
+				double wgap = (*g_)[g_->Map().LID(gid)];
+
+				// compute normal part of Lagrange multiplier
 				double nz = 0.0;
+				for (int k=0;k<3;++k)
+					nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
 
-				// do processing only for local owner proc
-				if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[cnode->Owner()])
-				{
-					// compute weighted gap
-					wgap = (*g_)[g_->Map().LID(gid)];
+				// store node id
+				lnid.push_back(gid);
 
-					// compute normal part of Lagrange multiplier
-					for (int k=0;k<3;++k)
-						nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+				// store relevant data
+				llmn.push_back(nz);
+				lgap.push_back(wgap);
 
-					// compute status
-					if (cnode->Active()) status = 1;
-				}
-
-				// communicate (locally on interface)
-				interface_[i]->lComm()->Broadcast(&wgap,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&nz,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&status,1,interface_[i]->Procmap()[cnode->Owner()]);
-
-				// output is done by local proc 0
-				if (interface_[i]->lComm()->MyPID()==0)
-				{
-					// print nodes of inactive set *************************************
-					if (status==0)
-					{
-						printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
-						fflush(stdout);
-					}
-
-					// print nodes of active set ***************************************
-					else
-					{
-						printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gid,wgap,nz);
-						fflush(stdout);
-					}
-				}
+				// store status (0=inactive, 1=active, 2=slip, 3=stick)
+				if (cnode->Active()) lsta.push_back(1);
+				else                 lsta.push_back(0);
 			}
 
 			//--------------------------------------------------------------------
@@ -1781,76 +1769,137 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				CoNode* cnode = static_cast<CoNode*>(node);
 				FriNode* frinode = static_cast<FriNode*>(cnode);
 
-				// initialize output variables
-				double wgap = 0.0;
+				// compute weighted gap
+				double wgap = (*g_)[g_->Map().LID(gid)];
+
+				// compute normal part of Lagrange multiplier
 				double nz = 0.0;
-				double tz = 0.0;
+				for (int k=0;k<3;++k)
+					nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
+
+				// compute tangential parts of Lagrange multiplier and jumps
+				double txiz = 0.0;
+				double tetaz = 0.0;
 				double jumptxi = 0.0;
 				double jumpteta = 0.0;
-
-				// do processing only for local owner proc
-				if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[cnode->Owner()])
+				for (int k=0;k<Dim();++k)
 				{
-					// compute weighted gap
-					wgap = (*g_)[g_->Map().LID(gid)];
-
-					// compute normal part of Lagrange multiplier
-					for (int k=0;k<3;++k)
-						nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
-
-					// additional output quantities for friction
-					double txiz = 0.0;
-					double tetaz = 0.0;
-
-					// compute tangential parts of Lagrange multiplier and jumps
-					for (int k=0;k<Dim();++k)
-					{
-						txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
-						tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
-						jumptxi += frinode->CoData().txi()[k] * frinode->FriData().jump()[k];
-						jumpteta += frinode->CoData().teta()[k] * frinode->FriData().jump()[k];
-					}
-
-					// total tangential component
-					tz = sqrt(txiz*txiz+tetaz*tetaz);
-
-					// check for dimensions
-					if (Dim()==2 and abs(jumpteta)>0.0001)
-						dserror("Error: Jumpteta should be zero for 2D");
-
-					// compute status
-					if (cnode->Active())
-					{
-						if (frinode->FriData().Slip()) status = 2;
-						else                        status = 3;
-					}
+					txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
+					tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
+					jumptxi += frinode->CoData().txi()[k] * frinode->FriData().jump()[k];
+					jumpteta += frinode->CoData().teta()[k] * frinode->FriData().jump()[k];
 				}
 
-				// communicate (locally on interface)
-				interface_[i]->lComm()->Broadcast(&wgap,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&nz,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&tz,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&jumptxi,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&jumpteta,1,interface_[i]->Procmap()[cnode->Owner()]);
-				interface_[i]->lComm()->Broadcast(&status,1,interface_[i]->Procmap()[cnode->Owner()]);
+				// total tangential component
+				double tz = sqrt(txiz*txiz+tetaz*tetaz);
 
-				// output is now done by local proc 0
-				if (interface_[i]->lComm()->MyPID()==0)
-				{
-					// print nodes of slip set **************************************
-					if (status == 2)
-					{
-						printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gid,nz,tz,jumptxi,jumpteta);
-						fflush(stdout);
-					}
-					// print nodes of stick set *************************************
-					else if (status == 3)
-					{
-						printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gid,nz,tz,jumptxi,jumpteta);
-						fflush(stdout);
-					}
+				// check for dimensions
+				if (Dim()==2 && abs(jumpteta)>0.0001)
+					dserror("Error: Jumpteta should be zero for 2D");
+
+				// store node id
+				lnid.push_back(gid);
+
+				// store relevant data
+				llmn.push_back(nz);
+				lgap.push_back(wgap);
+				llmt.push_back(tz);
+				ljtx.push_back(jumptxi);
+				ljte.push_back(jumpteta);
+
+				// store status (0=inactive, 1=active, 2=slip, 3=stick)
+				if (cnode->Active())
+			  {
+					if (frinode->FriData().Slip()) lsta.push_back(2);
+					else                           lsta.push_back(3);
 				}
-		  }
+				else
+			  {
+					lsta.push_back(0);
+				}
+			}
+		}
+	}
+
+	// we want to gather data from on all procs
+	vector<int> allproc(Comm().NumProc());
+	for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+
+	// communicate all data to proc 0
+	LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
+	LINALG::Gather<double>(llmn,glmn,(int)allproc.size(),&allproc[0],Comm());
+	LINALG::Gather<double>(lgap,ggap,(int)allproc.size(),&allproc[0],Comm());
+	LINALG::Gather<int>(lsta,gsta,(int)allproc.size(),&allproc[0],Comm());
+
+	// communicate some more data to proc 0 for friction
+	if (friction_)
+	{
+		LINALG::Gather<double>(llmt,glmt,(int)allproc.size(),&allproc[0],Comm());
+		LINALG::Gather<double>(ljtx,gjtx,(int)allproc.size(),&allproc[0],Comm());
+		LINALG::Gather<double>(ljte,gjte,(int)allproc.size(),&allproc[0],Comm());
+	}
+
+	// output is solely done by proc 0
+	if (Comm().MyPID()==0)
+	{
+		//--------------------------------------------------------------------
+		// FRICTIONLESS CASE
+		//--------------------------------------------------------------------
+		if (!friction_)
+		{
+			// loop over all nodes
+			for (int k=0;k<(int)gnid.size();++k)
+			{
+				// print nodes of inactive set *************************************
+				if (gsta[k]==0)
+				{
+					printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+					fflush(stdout);
+				}
+
+				// print nodes of active set ***************************************
+				else if (gsta[k]==1)
+				{
+					printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+					fflush(stdout);
+				}
+
+				// invalid status **************************************************
+				else dserror("ERROR: Invalid node status %i for frictionless case",gsta[k]);
+			}
+		}
+
+		//--------------------------------------------------------------------
+		// FRICTIONAL CASE
+		//--------------------------------------------------------------------
+		else
+		{
+			// loop over all nodes
+			for (int k=0;k<(int)gnid.size();++k)
+			{
+				// print nodes of slip set **************************************
+				if (gsta[k]==2)
+				{
+					printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k]);
+					fflush(stdout);
+				}
+
+				// print nodes of stick set *************************************
+				else if (gsta[k]==3)
+				{
+					printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k]);
+					fflush(stdout);
+				}
+
+				// print nodes of inactive set *************************************
+				else if (gsta[k]==0)
+				{
+					// do nothing
+				}
+
+				// invalid status **************************************************
+		    else dserror("ERROR: Invalid node status %i for frictional case",gsta[k]);
+			}
 		}
 	}
 

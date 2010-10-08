@@ -1048,45 +1048,60 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
     fflush(stdout);
   }
 
+  // create storage for local and global data
+  vector<int>    lnid, gnid;
+  vector<double> llmx, glmx;
+  vector<double> llmy, glmy;
+  vector<double> llmz, glmz;
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
     //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
-    // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveFullNodes()->NumMyElements();++j)
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
     {
-    	// gid of current node
-      int gid = interface_[i]->SlaveFullNodes()->GID(j);
+      // gid of current node
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
       // cast to MortarNode
       MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-      // initialize output variables
-      double lm[3] = {0.0, 0.0, 0.0};
+      // store node id
+      lnid.push_back(gid);
 
-			// do processing only for local owner proc
-			if (interface_[i]->lComm()->MyPID()==interface_[i]->Procmap()[mtnode->Owner()])
-			{
-				// compute Lagrange multiplier
-				for (int k=0;k<3;++k) lm[k] = mtnode->MoData().lm()[k];
-			}
-
-			// communicate (locally on interface)
-			interface_[i]->lComm()->Broadcast(lm,3,interface_[i]->Procmap()[mtnode->Owner()]);
-
-			// output is done by local proc 0
-			if (interface_[i]->lComm()->MyPID()==0)
-			{
-				// print nodes of active set *************************************
-				printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gid,lm[0],lm[1],lm[2]);
-				fflush(stdout);
-			}
+      // store Lagrange multiplier
+      llmx.push_back(mtnode->MoData().lm()[0]);
+      llmy.push_back(mtnode->MoData().lm()[1]);
+      llmz.push_back(mtnode->MoData().lm()[2]);
     }
   }
+
+	// we want to gather data from on all procs
+  vector<int> allproc(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+
+  // communicate all data to proc 0
+  LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(llmx,glmx,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(llmy,glmy,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(llmz,glmz,(int)allproc.size(),&allproc[0],Comm());
+
+	// output is solely done by proc 0
+	if (Comm().MyPID()==0)
+	{
+		// loop over all nodes
+		for (int k=0;k<(int)gnid.size();++k)
+		{
+			// print nodes of active set *************************************
+			printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
+		}
+		fflush(stdout);
+	}
 
   // output line
 	Comm().Barrier();
