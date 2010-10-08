@@ -972,7 +972,7 @@ namespace LINALG
     // put data from map in rdata
     rdata.clear();
     int count=0;
-    map<int,vector<int> >::const_iterator curr;
+    typename map<int,vector<T> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
       const vector<T>& current = curr->second;
