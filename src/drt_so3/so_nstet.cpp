@@ -1099,14 +1099,14 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
 
   //----------------------------------------------------------------------
   // have to build adjnode and adjlm arrays for the patches
-  InitMISAdjacency(pstab_adjele_,adjele_,pstab_adjnode_,adjnode_,pstab_ident_patch_,
-                   pstab_adjlm_,adjlm_,myrank,numproc,dis);
+  //InitMISAdjacency(pstab_adjele_,adjele_,pstab_adjnode_,adjnode_,pstab_ident_patch_,
+  //                 pstab_adjlm_,adjlm_,myrank,numproc,dis);
 
 
   //----------------------------------------------------------------------
   // create an overlapping map that contains stress data of MIS nodes on all procs
   // that will need it for stress output
-  pstab_misstressout_ = InitMISStressMap(pstab_cid_mis_,dis);
+  //pstab_misstressout_ = InitMISStressMap(pstab_cid_mis_,dis);
   
   return 0;
 }

@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
+#include "Sacado.hpp"
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -125,6 +126,8 @@ void DRT::ELEMENTS::NStetType::PatchedDeformationGradient(DRT::Discretization& d
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& dis)
 {
+  typedef Sacado::Fad::DFad<double> FAD;
+  
   // current displacement
   RCP<const Epetra_Vector> disp = dis.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -132,16 +135,132 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
   std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
   for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
   {
+    DRT::ELEMENTS::NStet* e = ele->second;
     vector<int> lm;
     vector<int> lmowner;
-    ele->second->LocationVector(dis,lm,lmowner);
+    e->LocationVector(dis,lm,lmowner);
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    ele->second->BuildF(mydisp);
-    ele->second->BuildJ();
+    
+    // create dfad version of nxyz and mydisp
+    e->fad_disp_.resize(4);
+    for (int i=0; i<4; ++i)
+    {
+      e->fad_disp_[i].resize(3);
+      for (int j=0; j<3; ++j)
+        e->fad_disp_[i][j] = FAD(12,i*3+j,mydisp[i*3+j]);
+    }
+    
+
+    // create deformation gradient
+    e->fad_F_ = e->fad_BuildF<FAD>(e->fad_disp_,e->nxyz_);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+        e->F()(i,j) = e->fad_F_[i][j].val();
+    
+    // create detF
+    e->fad_J_ = fad_Determinant3x3<FAD>(e->fad_F_);
+    e->J() = e->fad_J_.val();
+    
   }
   return;
 }
+
+
+#if 0 // ancient stuff
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<9,12> DRT::ELEMENTS::NStet::BuildF(LINALG::Matrix<3,3>& F, 
+                                                  vector<double>& disp, 
+                                                  LINALG::Matrix<4,3>& nxyz)
+{
+  typedef Sacado::Fad::DFad<double> FAD;
+
+  // copy the input to saccado-type variables
+  vector<vector<FAD> > dfad_nxyz(4);
+  vector<vector<FAD> > dfad_xdisp(4);
+  vector<vector<FAD> > dfad_F;
+  for (int i=0; i<4; ++i) 
+  {
+    dfad_nxyz[i].resize(3);
+    dfad_xdisp[i].resize(3);
+    for (int j=0; j<3; ++j) 
+    {
+      dfad_nxyz[i][j] = nxyz(i,j);
+      dfad_xdisp[i][j] = disp[i*3+j];
+      dfad_xdisp[i][j].diff(i*3+j,3*4);
+    }
+  }
+  
+  dfad_F = fad_BuildF<FAD>(dfad_xdisp,dfad_nxyz);
+  
+  // copy result back
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      F(i,j) = dfad_F[i][j].val();
+
+  // F in vector form: F_{11} F_{22} F_{33} F_{12} F_{23} F_{31} F_{13} F_{32} F_{21}
+  LINALG::Matrix<9,12> tmp;
+  for (int j=0; j<12; ++j)
+  {
+    tmp(0,j) = dfad_F[0][0].fastAccessDx(j);
+    tmp(1,j) = dfad_F[1][1].fastAccessDx(j);
+    tmp(2,j) = dfad_F[2][2].fastAccessDx(j);
+    tmp(3,j) = dfad_F[0][1].fastAccessDx(j);
+    tmp(4,j) = dfad_F[1][2].fastAccessDx(j);
+    tmp(5,j) = dfad_F[2][0].fastAccessDx(j);
+    tmp(6,j) = dfad_F[0][2].fastAccessDx(j);
+    tmp(7,j) = dfad_F[2][1].fastAccessDx(j);
+    tmp(8,j) = dfad_F[1][0].fastAccessDx(j);
+  }
+
+  return tmp;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+vector<double> DRT::ELEMENTS::NStet::BuildJ(double& J, 
+                                            vector<double>& disp, 
+                                            LINALG::Matrix<4,3>& nxyz)
+{
+  const int size = (int)disp.size();
+  if (size!=12) dserror("NStet MUST have 12 displacements");
+  
+  vector<double> Jgrad(size);
+  typedef Sacado::Fad::DFad<double> FAD;
+
+  // copy the input to saccado-type variables
+  vector<vector<FAD> > dfad_nxyz(4);
+  vector<vector<FAD> > dfad_xdisp(4);
+  for (int i=0; i<4; ++i) 
+  {
+    dfad_nxyz[i].resize(3);
+    dfad_xdisp[i].resize(3);
+    for (int j=0; j<3; ++j) 
+    {
+      dfad_nxyz[i][j] = nxyz(i,j);
+      dfad_xdisp[i][j] = disp[i*3+j];
+      dfad_xdisp[i][j].diff(i*3+j,size);
+    }
+  }
+  
+  // build deformation gradient
+  vector<vector<FAD> > dfad_F = fad_BuildF<FAD>(dfad_xdisp,dfad_nxyz);
+  
+  // build its determinant
+  FAD dfad_J = fad_Determinant3x3<FAD>(dfad_F);
+
+  // copy results back
+  J = dfad_J.val();
+  for (int i=0; i<size; ++i) Jgrad[i] = dfad_J.fastAccessDx(i);
+
+  return Jgrad;
+}
+#endif
+
+
 
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 05/08|
@@ -167,16 +286,12 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   if (action == "calc_struct_stress")
   {
     nstress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
-    pstab_stress_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
     nstrain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
-    pstab_strain_ = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),6,false));
   }
   else
   {
     nstress_ = Teuchos::null;
-    pstab_stress_ = Teuchos::null;
     nstrain_ = Teuchos::null;
-    pstab_strain_ = Teuchos::null;
   }
 
   // see what we have for input
@@ -186,13 +301,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   bool assemblevec3 = systemvector3!=Teuchos::null;
   if (assemblevec2 || assemblevec3) dserror("Wrong assembly expectations");
 
+  //-----------------------------------------------------------------
   // nodal stiffness and force (we don't do mass here)
   LINALG::SerialDenseMatrix stiff;
   LINALG::SerialDenseVector force;
-
-  // nodal stiffness and force for pressure stabilization
-  LINALG::SerialDenseMatrix pstab_stiff;
-  LINALG::SerialDenseVector pstab_force;
 
   //-------------------------------------- construct F for each NStet
   ElementDeformationGradient(dis);
@@ -200,7 +312,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // construct averaged J=detF for every patch, put in every element
   PatchedDeformationGradient(dis);
-
 
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
@@ -218,6 +329,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
+
+  //-----------------------------------------------------------------
+  // current displacements
+  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
 
   //================================================== do nodal stiffness
   std::map<int,DRT::Node*>::iterator node;
@@ -238,41 +353,13 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     // total number of degrees of freedom on patch
     const int ndofperpatch = (int)lm.size();
 
-    // if node is MIS node it might have a second patch
-    bool mis = (pstab_ident_patch_.find(nodeLid) != pstab_ident_patch_.end());
-    bool samepatch = false;
-    vector<DRT::ELEMENTS::NStet*>* ps_adjele = &adjele;
-    map<int,DRT::Node*>*           ps_adjnode = &adjnode;
-    vector<int>*                   ps_lm = &lm;
-    int                            ps_ndofperpatch = ndofperpatch;
-    LINALG::SerialDenseMatrix*     ps_stiff = &stiff;
-    LINALG::SerialDenseVector*     ps_force = &force;
-    if (mis)
-    {
-      samepatch = pstab_ident_patch_.find(nodeLid)->second;
-      if (!samepatch)
-      {
-        ps_adjele = &(pstab_adjele_[nodeLid]);
-        ps_adjnode = &(pstab_adjnode_[nodeLid]);
-        ps_lm = &(pstab_adjlm_[nodeLid]);
-        ps_ndofperpatch = (int)ps_lm->size();
-        
-        pstab_stiff.LightShape(ps_ndofperpatch,ps_ndofperpatch); pstab_stiff.Zero();
-        pstab_force.LightSize(ps_ndofperpatch);                  pstab_force.Zero();
-        
-        ps_stiff = &pstab_stiff;
-        ps_force = &pstab_force;
-      }
-    }
-
     if (action != "calc_struct_stress")
     {
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
       force.LightSize(ndofperpatch);
-      NodalIntegration(&stiff,&force,adjnode,adjele,
-                       mis,samepatch,ps_stiff,ps_force,ps_adjnode,ps_adjele,
-                       NULL,NULL,NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      NodalIntegration(&stiff,&force,adjnode,adjele,lm,*disp,dis,
+                       NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     else
     {
@@ -280,20 +367,17 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
-      vector<double> misstress(6);
-      vector<double> misstrain(6);
-      NodalIntegration(NULL,NULL,adjnode,adjele,
-                       mis,samepatch,NULL,NULL,ps_adjnode,ps_adjele,
-                       &nodalstress,&misstress,&nodalstrain,&misstrain,iostress,iostrain);
+      NodalIntegration(NULL,NULL,adjnode,adjele,lm,*disp,dis,
+                       &nodalstress,&nodalstrain,iostress,iostrain);
+
       int lid = dis.NodeRowMap()->LID(nodeLid);
       if (lid==-1) dserror("Cannot find local id for row node");
       for (int i=0; i<6; ++i)
       {
         (*(*nstress_)(i))[lid] = nodalstress[i];
         (*(*nstrain_)(i))[lid] = nodalstrain[i];
-        (*(*pstab_stress_)(i))[lid] = misstress[i];
-        (*(*pstab_strain_)(i))[lid] = misstrain[i];
       }
+
     }
 
 
@@ -317,25 +401,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
             dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
         }
       }
-      if (mis && !samepatch)
-      {
-        for (int i=0; i<ps_ndofperpatch; ++i)
-        {
-          const int rgid = (*ps_lm)[i];
-          for (int j=0; j<ps_ndofperpatch; ++j)
-          {
-            const int cgid = (*ps_lm)[j];
-            int errone = stifftmp->SumIntoGlobalValues(1,&rgid,1,&cgid,&((*ps_stiff)(i,j)));
-            if (errone>0)
-            {
-              int errtwo = stifftmp->InsertGlobalValues(1,&rgid,1,&cgid,&((*ps_stiff)(i,j)));
-              if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
-            }
-            else if (errone)
-              dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
-          }
-        }
-      }
     }
     
     if (assemblevec1)
@@ -346,16 +411,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         const int lid = forcetmp1.Map().LID(rgid);
         if (lid<0) dserror("global row %d does not exist in column map",rgid);
         forcetmp1[lid] += force[i];
-      }
-      if (mis && !samepatch)
-      {
-        for (int i=0; i<ps_ndofperpatch; ++i)
-        {
-          const int rgid = (*ps_lm)[i];
-          const int lid = forcetmp1.Map().LID(rgid);
-          if (lid<0) dserror("global row %d does not exist in column map",rgid);
-          forcetmp1[lid] += (*ps_force)[i];
-        }
       }
     }
 
@@ -431,13 +486,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
     LINALG::Export(*nstrain_,*tmp);
     nstrain_ = tmp;
-    // export mis stress/strain to special mis map so it can be written by the elements
-    tmp = Teuchos::rcp(new Epetra_MultiVector(*pstab_misstressout_,6,false));
-    LINALG::Export(*pstab_stress_,*tmp);
-    pstab_stress_ = tmp;
-    tmp = Teuchos::rcp(new Epetra_MultiVector(*pstab_misstressout_,6,false));
-    LINALG::Export(*pstab_strain_,*tmp);
-    pstab_strain_ = tmp;
   }
 
 
@@ -451,43 +499,22 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
                                                 Epetra_SerialDenseVector*       force,
                                                 map<int,DRT::Node*>&            adjnode,
                                                 vector<DRT::ELEMENTS::NStet*>&  adjele,
-                                                bool                            mis,
-                                                bool                            samepatch,
-                                                Epetra_SerialDenseMatrix*       ps_stiff,
-                                                Epetra_SerialDenseVector*       ps_force,
-                                                map<int,DRT::Node*>*            ps_adjnode,
-                                                vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
+                                                vector<int>&                    lm,
+                                                const Epetra_Vector&            disp,
+                                                DRT::Discretization&            dis,
                                                 vector<double>*                 nodalstress,
-                                                vector<double>*                 misstress,
                                                 vector<double>*                 nodalstrain,
-                                                vector<double>*                 misstrain,
                                                 const INPAR::STR::StressType    iostress,
                                                 const INPAR::STR::StrainType    iostrain)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
-
+  typedef Sacado::Fad::DFad<double> FAD; // for first derivs
+  typedef Sacado::Fad::DFad< Sacado::Fad::DFad<double> > FADFAD; // for first + second derivs
+  
   //-------------------------------------------------- standard quantities
   const int nnodeinpatch = (int)adjnode.size();
   const int ndofinpatch  = nnodeinpatch * 3;
   const int neleinpatch  = (int)adjele.size();
-
-  // MIS quantities ------------------------------------------------------
-  Epetra_SerialDenseMatrix ps_bop;
-  LINALG::Matrix<3,3>      ps_FnodeL(true);
-  LINALG::Matrix<3,3>      ps_cauchygreen;
-  LINALG::Matrix<6,1>      ps_glstrain(false);
-  LINALG::Matrix<6,6>      ps_cmat(true);
-  LINALG::Matrix<6,1>      ps_stress(true);
-  double                   ps_VnodeL = 0.0;
-  int                      ps_nnodeinpatch = nnodeinpatch;
-  int                      ps_neleinpatch = neleinpatch;
-  if (mis && !samepatch) 
-  {
-    ps_nnodeinpatch = (*ps_adjnode).size() * 3;
-    ps_neleinpatch  = (*ps_adjele).size();
-  }
-  int                      ps_ndofinpatch = ps_nnodeinpatch * 3;
-  bool                     ps_matequal = true;
 
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
@@ -501,47 +528,104 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       }
   }
 
-  //-----------------------------------------------------------------------
-  // MIS see whether materials are equal in patch
-  if (mis && !samepatch)
-  {
-    int mat = (*ps_adjele)[0]->material_;
-    for (int i=1; i<ps_neleinpatch; ++i)
-      if (mat != (*ps_adjele)[i]->material_)
-      {
-        ps_matequal = false;
-        break;
-      }
-  }
-  else if (mis) ps_matequal = matequal;
-
+#if 0 // old stuff
   //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
   LINALG::Matrix<3,3> FnodeL(true);
   double VnodeL = 0.0;
+  double Jnodebar = 0.0;
+  double Jnode = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
     const double V = adjele[i]->Vol()/4;
     VnodeL += V;
-    FnodeL.Update(V,adjele[i]->F_,1.0);
+    FnodeL.Update(V,adjele[i]->F(),1.0);
+    Jnodebar += V * adjele[i]->Jbar();
+    Jnode += V * adjele[i]->J();
   }
   FnodeL.Scale(1.0/VnodeL);
-
+  Jnodebar /= VnodeL;
+  Jnode /= VnodeL;
+  //FnodeL.Scale(pow(Jnodebar/Jnode,1.0/3.0));
+#endif
+  
   //-----------------------------------------------------------------------
-  // MIS build averaged deformation gradient and volume of node
-  if (mis)
+  // get displacements of this patch
+  vector<FAD> patchdisp(ndofinpatch);
+  for (int i=0; i<ndofinpatch; ++i)
   {
-    // MIS node takes entire element volume
-    for (int i=0; i<ps_neleinpatch; ++i) 
-    {
-      const double V = (*ps_adjele)[i]->Vol();
-      ps_VnodeL += V;
-      if (!samepatch) ps_FnodeL.Update(V,(*ps_adjele)[i]->F_,1.0);
-    }
-    if (!samepatch) ps_FnodeL.Scale(1.0/ps_VnodeL);
-    else            ps_FnodeL = FnodeL;
+    int lid = disp.Map().LID(lm[i]);
+    if (lid==-1) dserror("Cannot find degree of freedom on this proc");
+    patchdisp[i] = disp[disp.Map().LID(lm[i])];
+    patchdisp[i].diff(i,ndofinpatch);
   }
+  
+  //-----------------------------------------------------------------------
+  // build averaged F, det(F) and volume of node (using sacado)
+  LINALG::Matrix<3,3> FnodeL(true);
+  double VnodeL = 0.0;
+  double Jnode = 0.0;
+  FAD fad_Jnode = 0.0;
+  vector<vector<FAD> > fad_FnodeL(3);
+  for (int i=0; i<3; ++i) fad_FnodeL[i].resize(3);
+  
+  vector<vector<int> > lmlm(neleinpatch);
+  
+  for (int i=0; i<neleinpatch; ++i)
+  {
+    const double V = adjele[i]->Vol()/4;
+    VnodeL += V;
 
+    // get the element's displacements out of the patch' displacements
+    vector<FAD> eledisp(12);
+    vector<int> elelm;
+    vector<int> lmowner;
+    adjele[i]->LocationVector(dis,elelm,lmowner);
+    // have to find position of elelm[i] in lm (FIXME: do this better than brute force)
+    // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
+    lmlm[i].resize(12);
+    for (int j=0; j<12; ++j)
+    {
+      for (int k=0; k<ndofinpatch; ++k)
+        if (elelm[j] == lm[k])
+        {
+          lmlm[i][j] = k;
+          break;
+        }
+      eledisp[j] = patchdisp[lmlm[i][j]];
+    }
+    // copy eledisp to 4x3 format
+    vector<vector<FAD> > eledispmat(4);
+    for (int j=0; j<4; ++j)
+    {
+      eledispmat[j].resize(3);
+      for (int k=0; k<3; ++k) eledispmat[j][k] = eledisp[j*3+k];
+    }
+    
+    // build F and det(F) of this element
+    vector<vector<FAD> > Fele = adjele[i]->fad_BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
+    FAD                  Jele = fad_Determinant3x3<FAD>(Fele);
+    
+    // add up to nodal deformation gradient and nodal det(F)
+    for (int j=0; j<3; ++j)
+      for (int k=0; k<3; ++k)
+        fad_FnodeL[j][k] += V * Fele[j][k];
+    fad_Jnode += V * Jele;
+    
+  } // for (int i=0; i<neleinpatch; ++i)
+
+  // do averaging
+  fad_Jnode /= VnodeL;
+  for (int j=0; j<3; ++j)
+    for (int k=0; k<3; ++k)
+      fad_FnodeL[j][k] /= VnodeL;
+
+  // copy values of fad to 'normal' values
+  Jnode = fad_Jnode.val();
+  for (int j=0; j<3; ++j)
+    for (int k=0; k<3; ++k)
+      FnodeL(j,k) = fad_FnodeL[j][k].val();
+ 
   //-----------------------------------------------------------------------
   // do positioning map global nodes -> position in B-Operator
   map<int,int>  node_pos;
@@ -556,313 +640,84 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   }
   
   //-----------------------------------------------------------------------
-  // MIS do positioning map global nodes -> position in B-Operator
-  map<int,int>  ps_node_pos;
-  if (mis && !samepatch)
-  {
-    std::map<int,DRT::Node*>::iterator pnode;
-    int count=0;
-    for (pnode=(*ps_adjnode).begin(); pnode != (*ps_adjnode).end(); ++pnode)
-    {
-      ps_node_pos[pnode->first] = count;
-      count++;
-    }
-  }
-  else if (mis) ps_node_pos = node_pos;
-
-  //-----------------------------------------------------------------------
   // build B operator
-
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
+  //vector<FAD> E(6);
   // loop elements in patch
   for (int ele=0; ele<neleinpatch; ++ele)
   {
     // current element
     DRT::ELEMENTS::NStet* actele = adjele[ele];
 
-    // spatial deriv of that element
-    LINALG::Matrix<4,3>& nxyz = actele->nxyz_;
-
     // volume of that element assigned to node L
     double V = actele->Vol()/4;
-
-    // def-gradient of the element
-    LINALG::Matrix<3,3>& F = actele->F_;
     
-    // volume ratio of volume per node L of this element to
-    // whole volume of node L
-    V = V/VnodeL;
-
-    // loop nodes of that element
-    for (int i=0; i<actele->NumNode(); ++i)
+    // build the unmodified Green Lagrange strain and its derivative wrt displacements
+    // (which is the nonlinear B-operator) using sacado
+    // we actually do not need the GL strain itself here but rather the B-operator
+    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fad_F_,actele->fad_F_);
+    for (int i=0; i<3; ++i) 
     {
-      DRT::Node* actnode = actele->Nodes()[i];
-      const int  nodeid  = actnode->Id();
-
-      // local  node index is i
-      // global node index is nodeid
-      // starting position in B-Operator is node_pos[nodeid]
-
-      // find position in map of that node to determine place in bop
-      int pos = node_pos[nodeid];
-
-      bop(0,3*pos+0) += V * F(0,0)*nxyz(i,0);
-      bop(0,3*pos+1) += V * F(1,0)*nxyz(i,0);
-      bop(0,3*pos+2) += V * F(2,0)*nxyz(i,0);
-      bop(1,3*pos+0) += V * F(0,1)*nxyz(i,1);
-      bop(1,3*pos+1) += V * F(1,1)*nxyz(i,1);
-      bop(1,3*pos+2) += V * F(2,1)*nxyz(i,1);
-      bop(2,3*pos+0) += V * F(0,2)*nxyz(i,2);
-      bop(2,3*pos+1) += V * F(1,2)*nxyz(i,2);
-      bop(2,3*pos+2) += V * F(2,2)*nxyz(i,2);
-      //
-      bop(3,3*pos+0) += V * (F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0) );
-      bop(3,3*pos+1) += V * (F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0) );
-      bop(3,3*pos+2) += V * (F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0) );
-      bop(4,3*pos+0) += V * (F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1) );
-      bop(4,3*pos+1) += V * (F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1) );
-      bop(4,3*pos+2) += V * (F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1) );
-      bop(5,3*pos+0) += V * (F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2) );
-      bop(5,3*pos+1) += V * (F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2) );
-      bop(5,3*pos+2) += V * (F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2) );
-
-    } // for (int i=0; i<actele->NumNode(); ++i)
+      Emat[i][i] -= 1.0;
+      for (int j=0; j<3; ++j) Emat[i][j] *= 0.5;
+    }
+    vector<FAD> E(6);
+    E[0] = Emat[0][0];
+    E[1] = Emat[1][1];
+    E[2] = Emat[2][2];
+    E[3] = 2.0 * Emat[0][1];
+    E[4] = 2.0 * Emat[1][2];
+    E[5] = 2.0 * Emat[0][2];
+    
+    // volume ratio of volume per node of this element to
+    // whole volume of node L
+    const double ratio = V/VnodeL;
+    
+    for (int j=0; j<12; ++j)
+      for (int k=0; k<6; ++k)
+        bop(k,lmlm[ele][j]) += ratio * E[k].fastAccessDx(j);
 
   } // for (int ele=0; ele<neleinpatch; ++ele)
 
-  //-----------------------------------------------------------------------
-  // MIS build B operator 
+  //-------------------------------------------------------------- averaged strain
+  // right cauchy green
+  vector<vector<FAD> > CG = fad_multiplyTN<3,3,3,FAD>(fad_FnodeL,fad_FnodeL);
+  vector<FAD> Ebar(6);
+  Ebar[0] = 0.5 * (CG[0][0] - 1.0);
+  Ebar[1] = 0.5 * (CG[1][1] - 1.0);
+  Ebar[2] = 0.5 * (CG[2][2] - 1.0);
+  Ebar[3] = CG[0][1];
+  Ebar[4] = CG[1][2];
+  Ebar[5] = CG[2][0];
 
-  if (mis && !samepatch)
-  {
-    ps_bop.Shape(6,ps_ndofinpatch);
-    
-    // loop elements in MIS patch
-    for (int ele=0; ele<ps_neleinpatch; ++ele)
-    {
-      // current element
-      DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
+  // for material law and output, copy to baci object
+  LINALG::Matrix<3,3> cauchygreen(false);
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      cauchygreen(i,j) = CG[i][j].val();
+  LINALG::Matrix<6,1> glstrain(false);
+  glstrain(0) = Ebar[0].val();
+  glstrain(1) = Ebar[1].val();
+  glstrain(2) = Ebar[2].val();
+  glstrain(3) = Ebar[3].val();
+  glstrain(4) = Ebar[4].val();
+  glstrain(5) = Ebar[5].val();
+  
+  //-------------------------------------------------------------------------
+  // build a second B-operator from the averaged strains that are based on
+  // the averaged F
+  Epetra_SerialDenseMatrix bopbar(6,ndofinpatch);
+  for (int i=0; i<ndofinpatch; ++i)
+    for (int k=0; k<6; ++k)
+      bopbar(k,i) = Ebar[k].fastAccessDx(i);
 
-      // spatial deriv of that element
-      LINALG::Matrix<4,3>& nxyz = actele->nxyz_;
-
-      // entire volume of that element assigned to MIS node L
-      double V = actele->Vol();
-
-      // def-gradient of the element
-      LINALG::Matrix<3,3>& F = actele->F();
-
-      // volume ratio of volume per node L of this element to
-      // whole volume of node L
-      double ratio = V/ps_VnodeL;
-
-      // loop nodes of that element
-      for (int i=0; i<actele->NumNode(); ++i)
-      {
-        DRT::Node* actnode = actele->Nodes()[i];
-        const int  nodeid  = actnode->Id();
-
-        // local  node index is i
-        // global node index is nodeid
-        // starting position in B-Operator is node_pos[nodeid]
-
-        // find position in map of that node to determine place in bop
-        int pos = ps_node_pos[nodeid];
-
-        ps_bop(0,3*pos+0) += ratio * F(0,0)*nxyz(i,0);
-        ps_bop(0,3*pos+1) += ratio * F(1,0)*nxyz(i,0);
-        ps_bop(0,3*pos+2) += ratio * F(2,0)*nxyz(i,0);
-        ps_bop(1,3*pos+0) += ratio * F(0,1)*nxyz(i,1);
-        ps_bop(1,3*pos+1) += ratio * F(1,1)*nxyz(i,1);
-        ps_bop(1,3*pos+2) += ratio * F(2,1)*nxyz(i,1);
-        ps_bop(2,3*pos+0) += ratio * F(0,2)*nxyz(i,2);
-        ps_bop(2,3*pos+1) += ratio * F(1,2)*nxyz(i,2);
-        ps_bop(2,3*pos+2) += ratio * F(2,2)*nxyz(i,2);
-        //
-        ps_bop(3,3*pos+0) += ratio * (F(0,0)*nxyz(i,1) + F(0,1)*nxyz(i,0) );
-        ps_bop(3,3*pos+1) += ratio * (F(1,0)*nxyz(i,1) + F(1,1)*nxyz(i,0) );
-        ps_bop(3,3*pos+2) += ratio * (F(2,0)*nxyz(i,1) + F(2,1)*nxyz(i,0) );
-        ps_bop(4,3*pos+0) += ratio * (F(0,1)*nxyz(i,2) + F(0,2)*nxyz(i,1) );
-        ps_bop(4,3*pos+1) += ratio * (F(1,1)*nxyz(i,2) + F(1,2)*nxyz(i,1) );
-        ps_bop(4,3*pos+2) += ratio * (F(2,1)*nxyz(i,2) + F(2,2)*nxyz(i,1) );
-        ps_bop(5,3*pos+0) += ratio * (F(0,2)*nxyz(i,0) + F(0,0)*nxyz(i,2) );
-        ps_bop(5,3*pos+1) += ratio * (F(1,2)*nxyz(i,0) + F(1,0)*nxyz(i,2) );
-        ps_bop(5,3*pos+2) += ratio * (F(2,2)*nxyz(i,0) + F(2,0)*nxyz(i,2) );
-
-      } // for (int i=0; i<actele->NumNode(); ++i)
-
-    } // for (int ele=0; ele<neleinpatch; ++ele)
-  }
-  else if (mis)
-  {
-    ps_bop.Shape(6,ps_ndofinpatch);
-    ps_bop = bop;
-  }
-
+  //-------------------------------------------------------- output of strain
+  if (iostrain != INPAR::STR::strain_none)
+    StrainOutput(iostrain,*nodalstrain,FnodeL,Jnode);
+  
   //----------------------------------------- averaged material and stresses
   LINALG::Matrix<6,6> cmat(true);
   LINALG::Matrix<6,1> stress(true);
-
-  //----------------------------------------------------------------- strain
-  // right cauchy green
-  LINALG::Matrix<3,3> cauchygreen;
-  cauchygreen.MultiplyTN(FnodeL,FnodeL);
-  // Green-Lagrange ( 2x on offdiagonal!)
-  LINALG::Matrix<6,1> glstrain(false);
-  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-  glstrain(3) = cauchygreen(0,1);
-  glstrain(4) = cauchygreen(1,2);
-  glstrain(5) = cauchygreen(2,0);
-
-  //-----------------------------------------------------------------------
-  // MIS strain
-  if (mis && !samepatch)
-  {
-    ps_cauchygreen.MultiplyTN(ps_FnodeL,ps_FnodeL);
-    ps_glstrain(0) = 0.5 * (ps_cauchygreen(0,0) - 1.0);
-    ps_glstrain(1) = 0.5 * (ps_cauchygreen(1,1) - 1.0);
-    ps_glstrain(2) = 0.5 * (ps_cauchygreen(2,2) - 1.0);
-    ps_glstrain(3) = ps_cauchygreen(0,1);
-    ps_glstrain(4) = ps_cauchygreen(1,2);
-    ps_glstrain(5) = ps_cauchygreen(2,0);
-  }
-  else if (mis) 
-  {
-    ps_cauchygreen = cauchygreen;
-    ps_glstrain    = glstrain;
-  }
-
-  //-------------------------------------------------------- output of strain
-  LINALG::Matrix<3,3> glstrainout(false);
-  LINALG::Matrix<3,3> misglstrainout(false);
-  if (iostrain != INPAR::STR::strain_none)
-  {
-    double detF = 0.0;
-    LINALG::Matrix<3,3> Fiso(false);
-    LINALG::Matrix<3,3> Fvol(true);
-    LINALG::Matrix<3,3> cauchygreeniso(false);
-    LINALG::Matrix<3,3> cauchygreenvol(false);
-    LINALG::Matrix<3,3> glstrainiso(false);
-    LINALG::Matrix<3,3> glstrainvol(false);
-    
-    detF = FnodeL.Determinant();
-    Fiso = FnodeL;
-    Fiso.Scale(pow(detF,-1.0/3.0));
-    Fvol(0,0) = 1.0; Fvol(1,1) = 1.0; Fvol(2,2) = 1.0;
-    Fvol.Scale(pow(detF,1.0/3.0));
-    
-    cauchygreeniso.MultiplyTN(Fiso,Fiso);
-    cauchygreenvol.MultiplyTN(Fvol,Fvol);
-    
-    glstrainiso(0,0) = 0.5 * (cauchygreeniso(0,0) - 1.0);
-    glstrainiso(0,1) = 0.5 *  cauchygreeniso(0,1);
-    glstrainiso(0,2) = 0.5 *  cauchygreeniso(0,2);
-    glstrainiso(1,0) = glstrainiso(0,1);
-    glstrainiso(1,1) = 0.5 * (cauchygreeniso(1,1) - 1.0);
-    glstrainiso(1,2) = 0.5 *  cauchygreeniso(1,2);
-    glstrainiso(2,0) = glstrainiso(0,2);
-    glstrainiso(2,1) = glstrainiso(1,2);
-    glstrainiso(2,2) = 0.5 * (cauchygreeniso(2,2) - 1.0);
-
-    glstrainvol(0,0) = 0.5 * (cauchygreenvol(0,0) - 1.0);
-    glstrainvol(0,1) = 0.5 *  cauchygreenvol(0,1);
-    glstrainvol(0,2) = 0.5 *  cauchygreenvol(0,2);
-    glstrainvol(1,0) = glstrainvol(0,1);
-    glstrainvol(1,1) = 0.5 * (cauchygreenvol(1,1) - 1.0);
-    glstrainvol(1,2) = 0.5 *  cauchygreenvol(1,2);
-    glstrainvol(2,0) = glstrainvol(0,2);
-    glstrainvol(2,1) = glstrainvol(1,2);
-    glstrainvol(2,2) = 0.5 * (cauchygreenvol(2,2) - 1.0);
-    
-    glstrainout = glstrainiso;
-    glstrainout.Update(1.0-BETA_NSTET,glstrainvol,1.0-ALPHA_NSTET);
-    
-    if (mis)
-    {
-      LINALG::Matrix<3,3> misFvol(true);
-      LINALG::Matrix<3,3> miscauchygreenvol(false);
-
-      double misdetF = ps_FnodeL.Determinant();
-      misFvol(0,0) = 1.0; misFvol(1,1) = 1.0; misFvol(2,2) = 1.0;
-      misFvol.Scale(pow(misdetF,1.0/3.0));
-      miscauchygreenvol.MultiplyTN(misFvol,misFvol);
-      misglstrainout(0,0) = 0.5 * (miscauchygreenvol(0,0) - 1.0);
-      misglstrainout(0,1) = 0.5 *  miscauchygreenvol(0,1);
-      misglstrainout(0,2) = 0.5 *  miscauchygreenvol(0,2);
-      misglstrainout(1,0) = misglstrainout(0,1);
-      misglstrainout(1,1) = 0.5 * (miscauchygreenvol(1,1) - 1.0);
-      misglstrainout(1,2) = 0.5 *  miscauchygreenvol(1,2);
-      misglstrainout(2,0) = misglstrainout(0,2);
-      misglstrainout(2,1) = misglstrainout(1,2);
-      misglstrainout(2,2) = 0.5 * (miscauchygreenvol(2,2) - 1.0);
-      misglstrainout.Scale(BETA_NSTET);
-    }
-    else
-      misglstrainout.PutScalar(0.0);
-  }
-  switch (iostrain)
-  {
-  case INPAR::STR::strain_gl:
-  {
-    if (nodalstrain == NULL || misstrain==NULL) dserror("no strain data available");
-    (*nodalstrain)[0] = glstrainout(0,0);
-    (*nodalstrain)[1] = glstrainout(1,1);
-    (*nodalstrain)[2] = glstrainout(2,2);
-    (*nodalstrain)[3] = glstrainout(0,1);
-    (*nodalstrain)[4] = glstrainout(1,2);
-    (*nodalstrain)[5] = glstrainout(0,2);
-    if (mis)
-    {
-      (*misstrain)[0] = misglstrainout(0,0);
-      (*misstrain)[1] = misglstrainout(1,1);
-      (*misstrain)[2] = misglstrainout(2,2);
-      (*misstrain)[3] = misglstrainout(0,1);
-      (*misstrain)[4] = misglstrainout(1,2);
-      (*misstrain)[5] = misglstrainout(0,2);
-    }
-    else
-      for (int i=0; i<6; ++i) (*misstrain)[i] = 0.0;
-  }
-  break;
-  case INPAR::STR::strain_ea:
-  {
-    if (nodalstrain == NULL || misstrain==NULL) dserror("no strain data available");
-
-    // inverse of deformation gradient
-    LINALG::Matrix<3,3> invdefgrd;
-    invdefgrd.Invert(FnodeL); 
-    LINALG::Matrix<3,3> temp;
-    LINALG::Matrix<3,3> euler_almansi;
-    temp.Multiply(glstrainout,invdefgrd);
-    euler_almansi.MultiplyTN(invdefgrd,temp);
-    (*nodalstrain)[0] = euler_almansi(0,0);
-    (*nodalstrain)[1] = euler_almansi(1,1);
-    (*nodalstrain)[2] = euler_almansi(2,2);
-    (*nodalstrain)[3] = euler_almansi(0,1);
-    (*nodalstrain)[4] = euler_almansi(1,2);
-    (*nodalstrain)[5] = euler_almansi(0,2);
-    
-    if (mis)
-    {
-      invdefgrd.Invert(ps_FnodeL);
-      temp.Multiply(misglstrainout,invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd,temp);
-      (*misstrain)[0] = euler_almansi(0,0);
-      (*misstrain)[1] = euler_almansi(1,1);
-      (*misstrain)[2] = euler_almansi(2,2);
-      (*misstrain)[3] = euler_almansi(0,1);
-      (*misstrain)[4] = euler_almansi(1,2);
-      (*misstrain)[5] = euler_almansi(0,2);
-    }
-  }
-  break;
-  case INPAR::STR::strain_none:
-    break;
-  default:
-    dserror("requested strain type not available");
-  }
 
   //-----------------------------------------------------------------------
   // material law and stresses
@@ -896,64 +751,14 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   }
 
   //-----------------------------------------------------------------------
-  // MIS material law and stresses
-  if (mis && !samepatch)
-  {
-    if (ps_matequal)
-    {
-      double density; // just a dummy density
-      RCP<MAT::Material> mat = (*ps_adjele)[0]->Material();
-      SelectMaterial(mat,ps_stress,ps_cmat,density,ps_glstrain,ps_FnodeL,0);
-    }
-    else
-    {
-      double density; // just a dummy density
-      LINALG::Matrix<6,6> cmatele;
-      LINALG::Matrix<6,1> stressele;
-      for (int ele=0; ele<ps_neleinpatch; ++ele)
-      {
-        cmatele = 0.0;
-        stressele = 0.0;
-        // current element
-        DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
-        // volume of that element assigned to node L
-        const double V = actele->Vol();
-        // def-gradient of the element
-        RCP<MAT::Material> mat = actele->Material();
-        SelectMaterial(mat,stressele,cmatele,density,ps_glstrain,ps_FnodeL,0);
-        ps_cmat.Update(V,cmatele,1.0);
-        ps_stress.Update(V,stressele,1.0);
-      } // for (int ele=0; ele<neleinpatch; ++ele)
-      ps_stress.Scale(1.0/ps_VnodeL);
-      ps_cmat.Scale(1.0/ps_VnodeL);
-    }
-  }
-  else if (mis)
-  {
-    ps_stress = stress;
-    ps_cmat = cmat;
-  }
-  else
-  {
-    ps_stress.PutScalar(0.0);
-    ps_cmat.PutScalar(0.0);
-  }
-
-  //-----------------------------------------------------------------------
-  // stress is plit as follows:
-  // non-MIS node:
+  // stress is split as follows:
   //     stress = (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
-  // MIS-node:
-  //     stress = beta * vol_node(newpatch) + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
-
-  // define stuff we need in all cases
-  LINALG::Matrix<6,6> cmatdev(true);
-  LINALG::Matrix<6,6> cmatvol(true);
-  LINALG::Matrix<6,1> stressdev(true);
-  LINALG::Matrix<6,1> stressvol(true);
-  
-  // all nodes
   {
+    LINALG::Matrix<6,1> stressdev(true);
+    LINALG::Matrix<6,6> cmatdev(true);
+    LINALG::Matrix<6,1> stressvol(false);
+    LINALG::Matrix<6,6> cmatvol(false);
+  
     // compute deviatoric stress and tangent from total stress and tangent
     DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
     
@@ -962,119 +767,21 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     cmatvol.Update(-1.0,cmatdev,1.0,cmat,0.0);
     
     // compute nodal stress
-    stress.Update(1-BETA_NSTET,stressvol,1-ALPHA_NSTET,stressdev,0.0);
-    cmat.Update(1-BETA_NSTET,cmatvol,1-ALPHA_NSTET,cmatdev,0.0);
-  }
-  // MIS nodes
-  if (mis)
-  {
-    // patch (and therefore stress/tangent) identical to standard patch
-    if (samepatch)
-    {
-      ps_stress.Update(BETA_NSTET,stressvol,0.0);
-      ps_cmat.Update(BETA_NSTET,cmatvol,0.0);
-    }
-    // patch (and therefore stress/tangent) different from standard patch
-    else
-    {
-      // define stuff we need
-      cmatdev = 0.0;
-      stressdev = 0.0;
-
-      // compute MIS deviatoric stress and tangent from MIS total stress and tangent
-      DevStressTangent(stressdev,cmatdev,ps_cmat,ps_stress,ps_cauchygreen);
-      
-      // compute MIS volumetric stress and tangent
-      stressvol.Update(-1.0,stressdev,1.0,ps_stress,0.0);
-      cmatvol.Update(-1.0,cmatdev,1.0,ps_cmat,0.0);
-      
-      ps_stress.Update(BETA_NSTET,stressvol,0.0);
-      ps_cmat.Update(BETA_NSTET,cmatvol,0.0);
-    }
+    stress.Update(1.0-BETA_NSTET,stressvol,1-ALPHA_NSTET,stressdev,0.0);
+    cmat.Update(1.0-BETA_NSTET,cmatvol,1-ALPHA_NSTET,cmatdev,0.0);
   }
 
   //-----------------------------------------------------------------------
   // stress output
-  switch (iostress)
-  {
-  case INPAR::STR::stress_2pk:
-  {
-    if (nodalstress == NULL || misstress==NULL) dserror("no stress data available");
-    for (int i = 0; i < 6; ++i) (*nodalstress)[i] = stress(i);
-    if (mis)
-      for (int i = 0; i < 6; ++i) (*misstress)[i] = ps_stress(i);
-    else
-      for (int i = 0; i < 6; ++i) (*misstress)[i] = 0.0;
-  }
-  break;
-  case INPAR::STR::stress_cauchy:
-  {
-    if (nodalstress == NULL || misstress==NULL) dserror("no stress data available");
-
-    LINALG::Matrix<3,3> pkstress;
-    pkstress(0,0) = stress(0);
-    pkstress(0,1) = stress(3);
-    pkstress(0,2) = stress(5);
-    pkstress(1,0) = pkstress(0,1);
-    pkstress(1,1) = stress(1);
-    pkstress(1,2) = stress(4);
-    pkstress(2,0) = pkstress(0,2);
-    pkstress(2,1) = pkstress(1,2);
-    pkstress(2,2) = stress(2);
-    LINALG::Matrix<3,3> temp;
-    LINALG::Matrix<3,3> cauchystress;
-    temp.Multiply(1.0/FnodeL.Determinant(),FnodeL,pkstress);
-    cauchystress.MultiplyNT(temp,FnodeL);
-    (*nodalstress)[0] = cauchystress(0,0);
-    (*nodalstress)[1] = cauchystress(1,1);
-    (*nodalstress)[2] = cauchystress(2,2);
-    (*nodalstress)[3] = cauchystress(0,1);
-    (*nodalstress)[4] = cauchystress(1,2);
-    (*nodalstress)[5] = cauchystress(0,2);
-    
-    if (mis)
-    {
-      pkstress(0,0) = ps_stress(0);
-      pkstress(0,1) = ps_stress(3);
-      pkstress(0,2) = ps_stress(5);
-      pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = ps_stress(1);
-      pkstress(1,2) = ps_stress(4);
-      pkstress(2,0) = pkstress(0,2);
-      pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = ps_stress(2);
-      temp.Multiply(1.0/ps_FnodeL.Determinant(),ps_FnodeL,pkstress);
-      cauchystress.MultiplyNT(temp,ps_FnodeL);
-      (*misstress)[0] = cauchystress(0,0);
-      (*misstress)[1] = cauchystress(1,1);
-      (*misstress)[2] = cauchystress(2,2);
-      (*misstress)[3] = cauchystress(0,1);
-      (*misstress)[4] = cauchystress(1,2);
-      (*misstress)[5] = cauchystress(0,2);
-    }
-  }
-  break;
-  case INPAR::STR::stress_none:
-    break;
-  default:
-    dserror("requested stress type not available");
-  }
-
+  if (iostress != INPAR::STR::stress_none)
+    StressOutput(iostress,*nodalstress,stress,FnodeL,Jnode);
+  
 
   //----------------------------------------------------- internal forces
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
     force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
-    //------- MIS node part
-    if (mis)
-    {
-      Epetra_SerialDenseVector ps_stress_epetra(View,ps_stress.A(),ps_stress.Rows());
-      if (samepatch)
-        ps_force->Multiply('T','N',ps_VnodeL,ps_bop,ps_stress_epetra,1.0);
-      else
-        ps_force->Multiply('T','N',ps_VnodeL,ps_bop,ps_stress_epetra,0.0);
-    }
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -1082,22 +789,13 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   {
     Epetra_SerialDenseMatrix cmat_epetra(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
-    cb.Multiply('N','N',1.0,cmat_epetra,bop,0.0);
+    cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
     stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
-    //------- MIS node part
-    if (mis)
-    {
-      Epetra_SerialDenseMatrix ps_cmat_epetra(View,ps_cmat.A(),ps_cmat.Rows(),ps_cmat.Rows(),ps_cmat.Columns());
-      LINALG::SerialDenseMatrix ps_cb(6,ps_ndofinpatch);
-      ps_cb.Multiply('N','N',1.0,ps_cmat_epetra,ps_bop,0.0);
-      if (samepatch)
-        ps_stiff->Multiply('T','N',ps_VnodeL,ps_bop,ps_cb,1.0);
-      else
-        ps_stiff->Multiply('T','N',ps_VnodeL,ps_bop,ps_cb,0.0);
-    }
   }
 
   //----------------------------------------------------- geom. stiffness
+  // do not use sacado for second derivative of E as it is way too expensive!
+  // As long as the 2nd deriv is as easy as this, do it by hand
   if (stiff)
   {
     // loop elements in patch
@@ -1106,7 +804,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       // current element
       DRT::ELEMENTS::NStet* actele = adjele[ele];
       // material deriv of that element
-      LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
+      LINALG::Matrix<4,3>& nxyz   = actele->Nxyz();
       // volume of actele assigned to node L
       double V = actele->Vol()/4;
       
@@ -1132,42 +830,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
         } // for (int j=0; j<4; ++j)
       } // for (int i=0; i<4; ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)
-
-    //------- MIS node part
-    if (mis && samepatch)
-    {
-      for (int ele=0; ele<ps_neleinpatch; ++ele)
-      {
-        // current element
-        DRT::ELEMENTS::NStet* actele = (*ps_adjele)[ele];
-        // material deriv of that element
-        LINALG::Matrix<4,3>& nxyz   = actele->nxyz_;
-        // all volume of actele assigned to MIS node L
-        double V = actele->Vol();
-
-        // loop nodes of that element
-        double SmBL[3];
-        DRT::Node** nodes = actele->Nodes();
-        for (int i=0; i<4; ++i)
-        {
-          // row position of this node in matrix
-          int ipos = ps_node_pos[nodes[i]->Id()];
-          SmBL[0] = V*(ps_stress(0)*nxyz(i,0) + ps_stress(3)*nxyz(i,1) + ps_stress(5)*nxyz(i,2));
-          SmBL[1] = V*(ps_stress(3)*nxyz(i,0) + ps_stress(1)*nxyz(i,1) + ps_stress(4)*nxyz(i,2));
-          SmBL[2] = V*(ps_stress(5)*nxyz(i,0) + ps_stress(4)*nxyz(i,1) + ps_stress(2)*nxyz(i,2));
-          for (int j=0; j<4; ++j)
-          {
-            // column position of this node in matrix
-            int jpos = ps_node_pos[nodes[j]->Id()];
-            double bopstrbop = 0.0;
-            for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
-            (*ps_stiff)(3*ipos+0,3*jpos+0) += bopstrbop;
-            (*ps_stiff)(3*ipos+1,3*jpos+1) += bopstrbop;
-            (*ps_stiff)(3*ipos+2,3*jpos+2) += bopstrbop;
-          } // for (int j=0; j<4; ++j)
-        } // for (int i=0; i<4; ++i)
-      } // for (int ele=0; ele<ps_neleinpatch; ++ele)
-    } // if (mis)
   } // if (stiff)
 
   return;
@@ -1325,6 +987,140 @@ void DRT::ELEMENTS::NStetType::DevStressTangent(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetType::StrainOutput(
+                    const INPAR::STR::StrainType iostrain,
+                    vector<double>&              nodalstrain,
+                    LINALG::Matrix<3,3>&         F,
+                    const double&                detF)
+{
+  LINALG::Matrix<3,3> Fiso = F;
+  Fiso.Scale(pow(detF,-1.0/3.0));
+  
+  LINALG::Matrix<3,3> Fvol(true);
+  Fvol(0,0) = 1.0; Fvol(1,1) = 1.0; Fvol(2,2) = 1.0;
+  Fvol.Scale(pow(detF,1.0/3.0));
+  
+  LINALG::Matrix<3,3> cauchygreeniso(false);
+  cauchygreeniso.MultiplyTN(Fiso,Fiso);
+  
+  LINALG::Matrix<3,3> cauchygreenvol(false);
+  cauchygreenvol.MultiplyTN(Fvol,Fvol);
+  
+  LINALG::Matrix<3,3> glstrainiso(false);
+  glstrainiso(0,0) = 0.5 * (cauchygreeniso(0,0) - 1.0);
+  glstrainiso(0,1) = 0.5 *  cauchygreeniso(0,1);
+  glstrainiso(0,2) = 0.5 *  cauchygreeniso(0,2);
+  glstrainiso(1,0) = glstrainiso(0,1);
+  glstrainiso(1,1) = 0.5 * (cauchygreeniso(1,1) - 1.0);
+  glstrainiso(1,2) = 0.5 *  cauchygreeniso(1,2);
+  glstrainiso(2,0) = glstrainiso(0,2);
+  glstrainiso(2,1) = glstrainiso(1,2);
+  glstrainiso(2,2) = 0.5 * (cauchygreeniso(2,2) - 1.0);
+  
+  LINALG::Matrix<3,3> glstrainvol(false);
+  glstrainvol(0,0) = 0.5 * (cauchygreenvol(0,0) - 1.0);
+  glstrainvol(0,1) = 0.5 *  cauchygreenvol(0,1);
+  glstrainvol(0,2) = 0.5 *  cauchygreenvol(0,2);
+  glstrainvol(1,0) = glstrainvol(0,1);
+  glstrainvol(1,1) = 0.5 * (cauchygreenvol(1,1) - 1.0);
+  glstrainvol(1,2) = 0.5 *  cauchygreenvol(1,2);
+  glstrainvol(2,0) = glstrainvol(0,2);
+  glstrainvol(2,1) = glstrainvol(1,2);
+  glstrainvol(2,2) = 0.5 * (cauchygreenvol(2,2) - 1.0);
+  
+  LINALG::Matrix<3,3> glstrainout = glstrainiso;
+  glstrainout.Update(1.0-BETA_NSTET,glstrainvol,1.0-ALPHA_NSTET);
+  
+  switch (iostrain)
+  {
+  case INPAR::STR::strain_gl:
+  {
+    nodalstrain[0] = glstrainout(0,0);
+    nodalstrain[1] = glstrainout(1,1);
+    nodalstrain[2] = glstrainout(2,2);
+    nodalstrain[3] = glstrainout(0,1);
+    nodalstrain[4] = glstrainout(1,2);
+    nodalstrain[5] = glstrainout(0,2);
+  }
+  break;
+  case INPAR::STR::strain_ea:
+  {
+    // inverse of deformation gradient
+    LINALG::Matrix<3,3> invdefgrd;
+    invdefgrd.Invert(F); 
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> euler_almansi;
+    temp.Multiply(glstrainout,invdefgrd);
+    euler_almansi.MultiplyTN(invdefgrd,temp);
+    nodalstrain[0] = euler_almansi(0,0);
+    nodalstrain[1] = euler_almansi(1,1);
+    nodalstrain[2] = euler_almansi(2,2);
+    nodalstrain[3] = euler_almansi(0,1);
+    nodalstrain[4] = euler_almansi(1,2);
+    nodalstrain[5] = euler_almansi(0,2);
+  }
+  break;
+  case INPAR::STR::strain_none:
+    break;
+  default:
+    dserror("requested strain type not available");
+  }
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetType::StressOutput(
+                    const INPAR::STR::StressType iostress,
+                    vector<double>&              nodalstress,
+                    LINALG::Matrix<6,1>&         stress,
+                    LINALG::Matrix<3,3>&         F,
+                    const double&                detF)
+{
+  switch (iostress)
+  {
+  case INPAR::STR::stress_2pk:
+  {
+    for (int i = 0; i < 6; ++i) nodalstress[i] = stress(i);
+  }
+  break;
+  case INPAR::STR::stress_cauchy:
+  {
+    LINALG::Matrix<3,3> pkstress;
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> cauchystress;
+    temp.Multiply(1.0/detF,F,pkstress);
+    cauchystress.MultiplyNT(temp,F);
+    nodalstress[0] = cauchystress(0,0);
+    nodalstress[1] = cauchystress(1,1);
+    nodalstress[2] = cauchystress(2,2);
+    nodalstress[3] = cauchystress(0,1);
+    nodalstress[4] = cauchystress(1,2);
+    nodalstress[5] = cauchystress(0,2);
+  }
+  break;
+  case INPAR::STR::stress_none:
+    break;
+  default:
+    dserror("requested stress type not available");
+  }
+  return;
+}
 
 
 #endif  // #ifdef CCADISCRET

@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
+#include "Sacado.hpp"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 using namespace std;
@@ -36,8 +37,8 @@ using namespace Teuchos;
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#define ALPHA_NSTET       0.3    ///< stabilization parameter for vol-dev split stabilization
-#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
+#define ALPHA_NSTET       0.05    ///< stabilization parameter for vol-dev split stabilization
+#define BETA_NSTET        0.0    ///< stabilization parameter for MIS-pressure stabilization
 #define MIS_MIN_PATCHSIZE 1      ///< minimum MIS patch size required
 
 namespace DRT
@@ -49,6 +50,71 @@ namespace ELEMENTS
 {
 class StructuralVolume;
 class NStet;
+
+
+//-----------------------------------------------------------------
+// this works as multiplyNN (less efficient though) but works with Sacado
+template<int ii, int jj, int kk, typename T> 
+vector<vector<T> > fad_multiplyNN(vector<vector<T > >& left,
+                                  vector<vector<T > >& right)
+{
+  vector<vector<T> > out(ii);
+  for (int i=0; i<ii; ++i)
+  {
+    out[i].resize(jj);
+    for (int j=0; j<jj; ++j)
+    {
+      out[i][j] = 0.0;
+      for (int k=0; k<kk; ++k) out[i][j] += left[i][k] * right[k][j];
+    }
+  }
+  return out;
+}
+
+//-----------------------------------------------------------------
+// this works as multiplyTN (less efficient though) but works with Sacado
+template<int ii, int jj, int kk, typename T> 
+vector<vector<T> > fad_multiplyTN(vector<vector<T > >& left,
+                                  vector<vector<T > >& right)
+{
+  vector<vector<T> > out(ii);
+  for (int i=0; i<ii; ++i)
+  {
+    out[i].resize(jj);
+    for (int j=0; j<jj; ++j)
+    {
+      out[i][j] = 0.0;
+      for (int k=0; k<kk; ++k) out[i][j] += left[k][i] * right[k][j];
+    }
+  }
+  return out;
+}
+
+//-----------------------------------------------------------------
+template<typename T> 
+T fad_Determinant3x3(vector<vector<T> >& F)
+{
+#ifdef DEBUG
+  if ((int)F.size() != 3) dserror("Input has to be dimension 3 x 3");
+  for (int i=0; i<3; ++i) 
+    if ((int)F[i].size() != 3)
+      dserror("Input has to be dimension 3 x 3");
+#endif
+  T b00 = F[0][0];
+  T b01 = F[0][1];
+  T b02 = F[0][2];
+  T b10 = F[1][0];
+  T b11 = F[1][1];
+  T b12 = F[1][2];
+  T b20 = F[2][0];
+  T b21 = F[2][1];
+  T b22 = F[2][2];
+  T a =   b11*b22 - b21*b12;
+  T b = - b10*b22 + b20*b12;
+  T c =   b10*b21 - b20*b11;
+  T det = b00 * a + b01 * b + b02 * c;
+  return det;
+}
 
 
 //=======================================================================
@@ -131,20 +197,14 @@ private:
   // values: weights for all elements on patch in pstab_adjele_
   map<int,vector<double> >                pstab_adjele_weight_;
 
-  
   // adjnode and adjlm for mis patches
-  map<int,map<int,DRT::Node*> >           pstab_adjnode_;
-  map<int,vector<int> >                   pstab_adjlm_;
-  
-  // vectors for visualization of stress and strain
-  Teuchos::RCP<Epetra_MultiVector>        pstab_stress_;
-  Teuchos::RCP<Epetra_MultiVector>        pstab_strain_;
+  //map<int,map<int,DRT::Node*> >           pstab_adjnode_;
+  //map<int,vector<int> >                   pstab_adjlm_;
   
   // map indicating which element is associated with which MIS noderids
   // key is column element gid
   // value is MIS nodes this element is associated with
   map<int,vector<int> >                   pstab_cid_mis_;
-  Teuchos::RCP<Epetra_Map>                pstab_misstressout_;
 
   void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet*>& elecids,
                            map<int,DRT::Node*>&            noderids,
@@ -224,16 +284,11 @@ private:
                         Epetra_SerialDenseVector*       force,
                         map<int,DRT::Node*>&            adjnode,
                         vector<DRT::ELEMENTS::NStet*>&  adjele,
-                        bool                            mis,
-                        bool                            samepatch,
-                        Epetra_SerialDenseMatrix*       ps_stiff,
-                        Epetra_SerialDenseVector*       ps_force,
-                        map<int,DRT::Node*>*            ps_adjnode,
-                        vector<DRT::ELEMENTS::NStet*>*  ps_adjele,
+                        vector<int>&                    lm,
+                        const Epetra_Vector&            disp,
+                        DRT::Discretization&            dis,
                         vector<double>*                 nodalstress,
-                        vector<double>*                 misstress,
                         vector<double>*                 nodalstrain,
-                        vector<double>*                 misstrain,
                         const INPAR::STR::StressType    iostress,
                         const INPAR::STR::StrainType    iostrain);
 
@@ -252,6 +307,19 @@ private:
                                LINALG::Matrix<6,6>& CC,
                                const LINALG::Matrix<6,1>& S,
                                const LINALG::Matrix<3,3>& C);
+
+  void StrainOutput(const INPAR::STR::StrainType iostrain,
+                    vector<double>&              nodalstrain,
+                    LINALG::Matrix<3,3>&         F,
+                    const double&                detF);
+
+  void StressOutput(const INPAR::STR::StressType iostress,
+                    vector<double>&              nodalstress,
+                    LINALG::Matrix<6,1>&         stress,
+                    LINALG::Matrix<3,3>&         F,
+                    const double&                detF);
+
+
 };
 
 /*!
@@ -264,7 +332,8 @@ class NStet : public DRT::Element
 public:
 
   friend class NStetType;
-
+  typedef Sacado::Fad::DFad<double> FAD;
+  typedef Sacado::Fad::DFad< Sacado::Fad::DFad<double> > FADFAD;
 
   /*!
   \brief Standard Constructor
@@ -494,17 +563,29 @@ protected:
 
   //! type of stress evaluation
   StressType                                               stresstype_;
+  
   //! number of the material law
   int                                                      material_;
+  
   //! vector of history variables for each Gauss point
   vector<RCP<MAT::Material> >                              mat_;
+  
   //! volume of element
   double                                                   V_;
+  
+  //! temporarily store displacements (4x3)
+  vector<vector<FAD> >                                    fad_disp_;
+  
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
-  //! element's def-gradient and flag indicating age of it
+  
+  //! element's def-gradient
   LINALG::Matrix<3,3>                                      F_;
+  vector<vector<FAD> >                                     fad_F_;
+  
   double                                                   J_;
+  FAD                                                      fad_J_;
+  
   double                                                   Jbar_;
 
   // internal calculation methods
@@ -512,16 +593,48 @@ protected:
   // return volume of element
   inline double Vol() { return V_; }
 
-  void BuildF(vector<double>& disp);
-
-  void BuildJ() { J_ = F_.Determinant(); return; }
-
+  inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
+  
   inline LINALG::Matrix<3,3>& F() { return F_; }
 
   inline double& J() { return J_; }
 
   inline double& Jbar() { return Jbar_; }
 
+#if 0
+  // sacado version of BuildF in format F_3x3
+  template<typename T> 
+  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
+                                       vector<vector<T> >& nxyz)
+  {
+    vector<vector<T> > F = DRT::ELEMENTS::fad_multiplyTN<3,3,4,T>(xdisp,nxyz);
+    F[0][0] += 1.0;
+    F[1][1] += 1.0;
+    F[2][2] += 1.0;
+    return F;
+  }
+#endif
+
+  template<typename T> 
+  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
+                                       LINALG::Matrix<4,3>& nxyz)
+  {
+    vector<vector<T> > F(3);
+    for (int i=0; i<3; ++i)
+    {
+      F[i].resize(3);
+      for (int j=0; j<3; ++j)
+      {
+        F[i][j] = 0.0;
+        for (int k=0; k<4; ++k) F[i][j] += xdisp[k][i] * nxyz(k,j);
+      }
+    }
+    F[0][0] += 1.0;
+    F[1][1] += 1.0;
+    F[2][2] += 1.0;
+    return F;
+  }
+    
   // don't want = operator
   NStet& operator = (const NStet& old);
 
@@ -577,14 +690,7 @@ protected:
                      LINALG::Matrix<4,6>& nodalstresses);
 
 
-#if 0
-  void SelectMaterial(Epetra_SerialDenseVector& stress,
-                      Epetra_SerialDenseMatrix& cmat,
-                      double& density,
-                      const Epetra_SerialDenseVector& glstrain,
-                      const Epetra_SerialDenseMatrix& defgrd,
-                      int gp);
-#endif
+
   void SelectMaterial(LINALG::Matrix<6,1>& stress,
                       LINALG::Matrix<6,6>& cmat,
                       double& density,
@@ -593,6 +699,7 @@ protected:
                       int gp);
 
 }; // class NStet
+
 
 
 

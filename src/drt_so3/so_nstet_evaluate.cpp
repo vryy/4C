@@ -230,24 +230,6 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
           strain(0,j) += elestrain(0,j);
         }
         
-        //---------------------------------------------- add mis stress from mis node
-        map<int,vector<int> >::iterator fool = ElementType().pstab_cid_mis_.find(Id());
-        if (fool==ElementType().pstab_cid_mis_.end())
-          dserror("Cannot find this elements mis node on this proc");
-        Teuchos::RCP<Epetra_MultiVector> misstress = ElementType().pstab_stress_;
-        Teuchos::RCP<Epetra_MultiVector> misstrain = ElementType().pstab_strain_;
-        
-        const int misgid = fool->second[0];
-        const int mislid = misstress->Map().LID(misgid);
-        if (mislid==-1) dserror("Cannot find mis lid for mis gid");
-        for (int j=0; j<6; ++j)
-        {
-          stress(0,j) += (*(*misstress)(j))[mislid];
-          strain(0,j) += (*(*misstrain)(j))[mislid];
-          //stress(0,j) = (double)misgid;
-          //strain(0,j) = (double)misgid;
-        }
-        
         //----------------------------------------------- add final stress to storage
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);
@@ -679,27 +661,6 @@ void DRT::ELEMENTS::NStet::nstetlumpmass(LINALG::Matrix<12,12>* emass)
   }
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |  compute deformation gradient (protected)                   gee 05/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::BuildF(vector<double>& disp)
-{
-  LINALG::Matrix<4,3> xdisp;
-  for (int i=0; i<4; ++i)
-  {
-    xdisp(i,0) = disp[i*3+0];
-    xdisp(i,1) = disp[i*3+1];
-    xdisp(i,2) = disp[i*3+2];
-  }
-  F_.MultiplyTN(xdisp,nxyz_);
-  F_(0,0)+=1.0;
-  F_(1,1)+=1.0;
-  F_(2,2)+=1.0;
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  | material laws for NStet (protected)                          gee 10/08|
