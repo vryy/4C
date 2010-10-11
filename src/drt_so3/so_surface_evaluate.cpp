@@ -93,7 +93,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    spa_func  = condition.Get<vector<int> > ("funct");
+  const vector<int>*    spa_func = condition.Get<vector<int> >("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -403,7 +403,8 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal
  * Calculates dnormal/dx_j with Saccado  DFAD            holfelder 04/09|
  * ---------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(
+                                                          Epetra_SerialDenseMatrix& d_normal,
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
