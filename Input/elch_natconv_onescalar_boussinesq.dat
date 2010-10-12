@@ -133,7 +133,7 @@ RESTARTEVRY                     2
 TIMESTEP                        1
 UPRES                           1
 TEMPERATURE                     1.0 // dummy value
-NATURAL_CONVECTION              Natural_Convection_substance
+NATURAL_CONVECTION              Yes
 CONVTOL                         5e-6
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC

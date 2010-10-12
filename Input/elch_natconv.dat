@@ -138,7 +138,7 @@ RESTARTEVRY                     1
 TIMESTEP                        1
 UPRES                           1
 TEMPERATURE                     11604.506 // abused as a scaling factor in order to have: F/RT = 1.0
-NATURAL_CONVECTION              Natural_Convection_substance
+NATURAL_CONVECTION              Yes
 CONVTOL                         5e-6
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------SSI DYNAMIC
