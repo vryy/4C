@@ -8,14 +8,22 @@
 namespace LINALG
 {
 
+  /// Sparse matrix with fixed graph that never reallocs
+  /*!
+    The Dirichlet rows (if any) are already marked in the matrix graph. The
+    Assemble() methods respect the Dirichlet lines by virtue of the Dirichlet
+    map.
+   */
   class FixedSparseMatrix : public SparseMatrixBase
   {
   public:
 
+    /// Construct an empty matrix
     FixedSparseMatrix( Teuchos::RCP<const Epetra_Map> dbcmap );
 
     virtual const char* Label() const { return "LINALG::FixedSparseMatrix"; }
 
+    /// set the (filled) graph and allocate internal epetra matrix
     virtual void SetMatrix( Teuchos::RCP<Epetra_CrsGraph> graph );
 
     virtual void Zero();

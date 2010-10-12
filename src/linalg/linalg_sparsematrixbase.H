@@ -10,6 +10,7 @@
 namespace LINALG
 {
 
+  /// Base class of sparse matrix that provides the simple functions
   class SparseMatrixBase : public SparseOperator
   {
   public:
@@ -153,7 +154,7 @@ namespace LINALG
 
   protected:
 
-    /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix )
+    /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
   };
 
