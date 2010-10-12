@@ -1614,10 +1614,6 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     for (int i=0;i<dim;i++)
       tractionold[i] = cnode->FriData().tractionold()[i];
 
-    for (int i=0;i<dim;i++)
-      cout << "GiD " << gid << "Tractionold " << tractionold[i] << endl;  
-    
-
     // Evaluate trailtraction (tractionold+temptrac in penalty case)
     vector<double> trailtraction(dim);
     double magnitude = 0;
