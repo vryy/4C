@@ -189,18 +189,21 @@ find_package(Trilinos REQUIRED)
 
 #find_package(Blitz)
 
-SET(Boost_USE_STATIC_LIBS ON) 
-SET(Boost_USE_MULTITHREAD OFF) 
-#FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
-FIND_PACKAGE( Boost COMPONENTS program_options )
+# some parts of stk depend on boost
+if (STKADAPTIVE)
+  SET(Boost_USE_STATIC_LIBS ON) 
+  SET(Boost_USE_MULTITHREAD OFF) 
+  #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
+  FIND_PACKAGE( Boost COMPONENTS program_options )
 
-if (Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  set(LIBRARIES
-    ${Boost_LIBRARIES}
-    ${LIBRARIES}
-    )
-endif()
+  if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    set(LIBRARIES
+      ${Boost_LIBRARIES}
+      ${LIBRARIES}
+      )
+  endif()
+endif (STKADAPTIVE)
 
 # trilinos libraries
 # Choose trilinos libraries explicitly.
