@@ -497,74 +497,13 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 #endif // #ifdef PARALLEL
   }
 
-  // to ease our search algorithms we'll afford the luxury to ghost all nodes
-  // on all processors. To do so, we'll take the nodal row map and export it
-  // to full overlap. Then we export the discretization to full overlap
-  // column map. This way, also mortar elements will be fully ghosted on all
-  // processors. Note that we'll do ghosting NOT ONLY on procs that do own
-  // or ghost any of the nodes in the natural distribution of idiscret_, but
-  // really on ALL procs. This makes dynamic redistribution / rebalancing easier!
+  // create interface ghosting
+  // (currently, both slave and master are made fully redundant, i.e. exported
+  // to fully overlapping column layout, for the ease of interface search)
+  CreateInterfaceGhosting();
 
-  //**********************************************************************
-  // IMPORTANT NOTE:
-  // In an older code version, we only did ghosting on procs that own or ghost
-  // any of the interface nodes or elements  in the natural distr. of idiscret_.
-  // The corresponding code lines for creating this proc list are:
-  //
-  // vector<int> stproc(0);
-  // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
-  //   stproc.push_back(Comm().MyPID());
-  // vector<int> rtproc(0);
-  // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
-  //
-  // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
-  // the node gids and element gids are gathered among procs.
-  //**********************************************************************
-
-  {
-  	// we want to do full ghosting on all procs
-    vector<int> allproc(Comm().NumProc());
-    for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
-
-    // fill my own row node ids
-    const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    vector<int> sdata(noderowmap->NumMyElements());
-    for (int i=0; i<noderowmap->NumMyElements(); ++i)
-      sdata[i] = noderowmap->GID(i);
-
-    // gather all gids of nodes redundantly
-    vector<int> rdata;
-    LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
-
-    // build completely overlapping map of nodes (on ALL processors)
-    RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
-    sdata.clear();
-    rdata.clear();
-
-    // fill my own row element ids
-    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
-    sdata.resize(elerowmap->NumMyElements());
-    for (int i=0; i<elerowmap->NumMyElements(); ++i)
-      sdata[i] = elerowmap->GID(i);
-
-    // gather all gids of elements redundantly
-    rdata.resize(0);
-    LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
-
-    // build complete overlapping map of elements (on ALL processors)
-    RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
-    sdata.clear();
-    rdata.clear();
-    allproc.clear();
-
-    // redistribute the discretization of the interface according to the
-    // new column layout
-    Discret().ExportColumnNodes(*newnodecolmap);
-    Discret().ExportColumnElements(*newelecolmap);
-
-    // make sure discretization is complete
-    Discret().FillComplete(true,false,false);
-  }
+	// make sure discretization is complete
+	Discret().FillComplete(true,false,false);
 
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily adress them
@@ -708,6 +647,162 @@ void MORTAR::MortarInterface::Redistribute()
 }
 
 /*----------------------------------------------------------------------*
+ | create interface ghosting (public)                         popp 10/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::CreateInterfaceGhosting()
+{
+	// TODO: we still do full ghosting of all SLAVE and MASTER elements
+	// -> this is supposed to go away one day...
+	// -> in a first step, slave redundancy could be removed (except for self contact)
+	// -> in a second step, master redundancy could be removed, too
+
+	// to ease our search algorithms we'll afford the luxury to ghost all nodes
+	// on all processors. To do so, we'll take the node row map and export it to
+	// full overlap. Then we export the discretization to full overlap column map.
+	// This way, also all mortar elements will be fully ghosted on all processors.
+	// Note that we'll do ghosting NOT ONLY on procs that do own or ghost any of the
+	// nodes in the natural distribution of idiscret_, but really on ALL procs.
+	// This makes dynamic redistribution easier!
+
+	//**********************************************************************
+	// IMPORTANT NOTE:
+	// In an older code version, we only did ghosting on procs that own or ghost
+	// any of the interface nodes or elements  in the natural distr. of idiscret_.
+	// The corresponding code lines for creating this proc list are:
+	//
+	// vector<int> stproc(0);
+	// if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
+	//   stproc.push_back(Comm().MyPID());
+	// vector<int> rtproc(0);
+	// LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
+	//
+	// In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
+	// the node gids and element gids are gathered among procs.
+	//**********************************************************************
+
+	// we want to do full ghosting on all procs
+	vector<int> allproc(Comm().NumProc());
+	for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+
+	// fill my own row node ids
+	const Epetra_Map* noderowmap = Discret().NodeRowMap();
+	vector<int> sdata(noderowmap->NumMyElements());
+	for (int i=0; i<noderowmap->NumMyElements(); ++i)
+		sdata[i] = noderowmap->GID(i);
+
+	// gather all gids of nodes redundantly
+	vector<int> rdata;
+	LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
+
+	// build completely overlapping map of nodes (on ALL processors)
+	RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+	sdata.clear();
+	rdata.clear();
+
+	// fill my own row element ids
+	const Epetra_Map* elerowmap  = Discret().ElementRowMap();
+	sdata.resize(elerowmap->NumMyElements());
+	for (int i=0; i<elerowmap->NumMyElements(); ++i)
+		sdata[i] = elerowmap->GID(i);
+
+	// gather all gids of elements redundantly
+	rdata.resize(0);
+	LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
+
+	// build complete overlapping map of elements (on ALL processors)
+	RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+	sdata.clear();
+	rdata.clear();
+	allproc.clear();
+
+	// redistribute the discretization of the interface according to the
+	// new column layout
+	Discret().ExportColumnNodes(*newnodecolmap);
+	Discret().ExportColumnElements(*newelecolmap);
+
+  return;
+
+
+  //**********************************************************************
+	// DRAFT of future version, where only master is kept redundant
+	//**********************************************************************
+
+//	// we want to do full ghosting on all procs
+//	vector<int> allproc(Comm().NumProc());
+//	for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+//
+//	// fill my own master row node ids
+//	const Epetra_Map* noderowmap = Discret().NodeRowMap();
+//	vector<int> sdata;
+//	for (int i=0; i<noderowmap->NumMyElements(); ++i)
+//	{
+//		int gid = noderowmap->GID(i);
+//		DRT::Node* node = Discret().gNode(gid);
+//		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+//		if (!mrtrnode->IsSlave()) sdata.push_back(gid);
+//	}
+//
+//	// gather all master row node gids redundantly
+//	vector<int> rdata;
+//	LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
+//
+//	// add my own slave column node ids (non-redundant, overlap of 1)
+//	const Epetra_Map* nodecolmap = Discret().NodeColMap();
+//	for (int i=0; i<nodecolmap->NumMyElements(); ++i)
+//	{
+//		int gid = nodecolmap->GID(i);
+//		DRT::Node* node = Discret().gNode(gid);
+//		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+//		if (mrtrnode->IsSlave()) rdata.push_back(gid);
+//	}
+//
+//	// build completely overlapping map of nodes (on ALL processors)
+//	RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+//	sdata.clear();
+//	rdata.clear();
+//
+//	// fill my own master row element ids
+//	const Epetra_Map* elerowmap  = Discret().ElementRowMap();
+//	sdata.resize(0);
+//	for (int i=0; i<elerowmap->NumMyElements(); ++i)
+//	{
+//		int gid = elerowmap->GID(i);
+//		DRT::Element* ele = Discret().gElement(gid);
+//		if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
+//		MortarElement* mrtrele = static_cast<MortarElement*>(ele);
+//		if (!mrtrele->IsSlave()) sdata.push_back(gid);
+//	}
+//
+//	// gather all gids of elements redundantly
+//	rdata.resize(0);
+//	LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],Comm());
+//
+//	// add my own slave column node ids (non-redundant, overlap of 1)
+//	const Epetra_Map* elecolmap  = Discret().ElementColMap();
+//	for (int i=0; i<elecolmap->NumMyElements(); ++i)
+//	{
+//		int gid = elecolmap->GID(i);
+//		DRT::Element* ele = Discret().gElement(gid);
+//		if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
+//		MortarElement* mrtrele = static_cast<MortarElement*>(ele);
+//		if (mrtrele->IsSlave()) rdata.push_back(gid);
+//	}
+//
+//	// build complete overlapping map of elements (on ALL processors)
+//	RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+//	sdata.clear();
+//	rdata.clear();
+//	allproc.clear();
+//
+//	// redistribute the discretization of the interface according to the
+//	// new column layout
+//	Discret().ExportColumnNodes(*newnodecolmap);
+//	Discret().ExportColumnElements(*newelecolmap);
+}
+
+/*----------------------------------------------------------------------*
  |  create search tree (public)                               popp 01/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::CreateSearchTree()
@@ -744,58 +839,48 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   // need row and column maps of slave and master nodes separately so we
   // can easily adress them
   {
-    const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    const Epetra_Map* nodecolmap = Discret().NodeColMap();
-
     vector<int> sc;          // slave column map
     vector<int> sr;          // slave row map
-    vector<int> scfull;      // slave full map
     vector<int> mc;          // master column map
     vector<int> mr;          // master row map
-    vector<int> mcfull;      // master full map
     vector<int> srb;         // slave row map + boundary nodes
     vector<int> scb;         // slave column map + boundary nodes
-    vector<int> scfullb;     // slave full map + boundary nodes
     vector<int> mrb;         // master row map - boundary nodes
     vector<int> mcb;         // master column map - boundary nodes
-    vector<int> mcfullb;     // master full map - boundary nodes
 
-    for (int i=0; i<nodecolmap->NumMyElements(); ++i)
+    for (int i=0; i<oldnodecolmap_->NumMyElements(); ++i)
     {
-      int gid = nodecolmap->GID(i);
+      int gid = oldnodecolmap_->GID(i);
       bool isslave = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
       bool isonbound = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsOnBound();
-      if (oldnodecolmap_->MyGID(gid))
+
+			if (isslave || isonbound) scb.push_back(gid);
+			else                      mcb.push_back(gid);
+			if (isslave) sc.push_back(gid);
+			else         mc.push_back(gid);
+
+      if (Discret().NodeRowMap()->MyGID(gid))
       {
-        if (isslave || isonbound) scb.push_back(gid);
-        else                      mcb.push_back(gid);
-        if (isslave) sc.push_back(gid);
-        else         mc.push_back(gid);
+				if (isslave || isonbound) srb.push_back(gid);
+				else                      mrb.push_back(gid);
+				if (isslave) sr.push_back(gid);
+				else         mr.push_back(gid);
       }
-      if (isslave || isonbound) scfullb.push_back(gid);
-      else                      mcfullb.push_back(gid);
-      if (isslave) scfull.push_back(gid);
-      else         mcfull.push_back(gid);
-      if (!noderowmap->MyGID(gid)) continue;
-      if (isslave || isonbound) srb.push_back(gid);
-      else                      mrb.push_back(gid);
-      if (isslave) sr.push_back(gid);
-      else         mr.push_back(gid);
     }
 
     snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
-    snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     mnoderowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
-    mnodefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+    snodefullmap_ = LINALG::AllreduceEMap(*snoderowmap_);
+    mnodefullmap_ = LINALG::AllreduceEMap(*mnoderowmap_);
 
     snoderowmapbound_ = rcp(new Epetra_Map(-1,(int)srb.size(),&srb[0],0,Comm()));
     snodecolmapbound_ = rcp(new Epetra_Map(-1,(int)scb.size(),&scb[0],0,Comm()));
-    snodefullmapbound_ = rcp(new Epetra_Map(-1,(int)scfullb.size(),&scfullb[0],0,Comm()));
     mnoderowmapnobound_ = rcp(new Epetra_Map(-1,(int)mrb.size(),&mrb[0],0,Comm()));
     mnodecolmapnobound_ = rcp(new Epetra_Map(-1,(int)mcb.size(),&mcb[0],0,Comm()));
-    mnodefullmapnobound_ = rcp(new Epetra_Map(-1,(int)mcfullb.size(),&mcfullb[0],0,Comm()));
+    snodefullmapbound_ = LINALG::AllreduceEMap(*snoderowmapbound_);
+    mnodefullmapnobound_ = LINALG::AllreduceEMap(*mnoderowmapnobound_);
   }
 
   //********************************************************************
@@ -804,38 +889,32 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   // do the same business for elements
   // (get row and column maps of slave and master elements seperately)
   {
-    const Epetra_Map* elerowmap = Discret().ElementRowMap();
-    const Epetra_Map* elecolmap = Discret().ElementColMap();
-
     vector<int> sc;          // slave column map
     vector<int> sr;          // slave row map
-    vector<int> scfull;      // slave full map
     vector<int> mc;          // master column map
     vector<int> mr;          // master row map
-    vector<int> mcfull;      // master full map
 
-    for (int i=0; i<elecolmap->NumMyElements(); ++i)
+    for (int i=0; i<oldelecolmap_->NumMyElements(); ++i)
     {
-      int gid = elecolmap->GID(i);
+      int gid = oldelecolmap_->GID(i);
       bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(gid))->IsSlave();
-      if (oldelecolmap_->MyGID(gid))
-      {
-        if (isslave) sc.push_back(gid);
-        else         mc.push_back(gid);
-      }
-      if (isslave) scfull.push_back(gid);
-      else         mcfull.push_back(gid);
-      if (!elerowmap->MyGID(gid)) continue;
-      if (isslave) sr.push_back(gid);
-      else         mr.push_back(gid);
+
+			if (isslave) sc.push_back(gid);
+			else         mc.push_back(gid);
+
+			if (Discret().ElementRowMap()->MyGID(gid))
+			{
+				if (isslave) sr.push_back(gid);
+			  else         mr.push_back(gid);
+			}
     }
 
     selerowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
-    selefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     selecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     melerowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
-    melefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+    selefullmap_ = LINALG::AllreduceEMap(*selerowmap_);
+    melefullmap_ = LINALG::AllreduceEMap(*melerowmap_);
   }
 
   //********************************************************************
@@ -844,57 +923,43 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   // do the same business for dofs
   // (get row and column maps of slave and master dofs seperately)
   {
-    const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    const Epetra_Map* nodecolmap = Discret().NodeColMap();
-
     vector<int> sc;          // slave column map
     vector<int> sr;          // slave row map
-    vector<int> scfull;      // slave full map
     vector<int> mc;          // master column map
     vector<int> mr;          // master row map
-    vector<int> mcfull;      // master full map
 
-    for (int i=0; i<nodecolmap->NumMyElements();++i)
+    for (int i=0; i<oldnodecolmap_->NumMyElements();++i)
     {
-      int gid = nodecolmap->GID(i);
+      int gid = oldnodecolmap_->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       MortarNode* mrtrnode = static_cast<MortarNode*>(node);
       bool isslave = mrtrnode->IsSlave();
 
-      if (oldnodecolmap_->MyGID(gid))
-      {
-        if (isslave)
-          for (int j=0;j<mrtrnode->NumDof();++j)
-            sc.push_back(mrtrnode->Dofs()[j]);
-        else
-          for (int j=0;j<mrtrnode->NumDof();++j)
-            mc.push_back(mrtrnode->Dofs()[j]);
-      }
+			if (isslave)
+				for (int j=0;j<mrtrnode->NumDof();++j)
+					sc.push_back(mrtrnode->Dofs()[j]);
+			else
+				for (int j=0;j<mrtrnode->NumDof();++j)
+					mc.push_back(mrtrnode->Dofs()[j]);
 
-      if (isslave)
-        for (int j=0;j<mrtrnode->NumDof();++j)
-          scfull.push_back(mrtrnode->Dofs()[j]);
-      else
-        for (int j=0;j<mrtrnode->NumDof();++j)
-          mcfull.push_back(mrtrnode->Dofs()[j]);
-
-      if (!noderowmap->MyGID(gid)) continue;
-
-      if (isslave)
-        for (int j=0;j<mrtrnode->NumDof();++j)
-          sr.push_back(mrtrnode->Dofs()[j]);
-      else
-        for (int j=0;j<mrtrnode->NumDof();++j)
-          mr.push_back(mrtrnode->Dofs()[j]);
+		  if (Discret().NodeRowMap()->MyGID(gid))
+			{
+		  	if (isslave)
+					for (int j=0;j<mrtrnode->NumDof();++j)
+						sr.push_back(mrtrnode->Dofs()[j]);
+				else
+					for (int j=0;j<mrtrnode->NumDof();++j)
+						mr.push_back(mrtrnode->Dofs()[j]);
+			}
     }
 
     sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
-    sdoffullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     sdofcolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
-    mdoffullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+    sdoffullmap_ = LINALG::AllreduceEMap(*sdofrowmap_);
+    mdoffullmap_ = LINALG::AllreduceEMap(*mdofrowmap_);
   }
 
   return;
@@ -913,19 +978,21 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
     vector<int> sr;          // slave row map
     vector<int> scfull;      // slave full map
 
-    for (int i=0; i<snodefullmap_->NumMyElements(); ++i)
+    for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
     {
-      int gid = snodefullmap_->GID(i);
-      bool istied = dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsTiedSlave();
+      int gid = snodecolmap_->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+			MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+      int istied = (int)mrtrnode->IsTiedSlave();
 
-      if (istied) scfull.push_back(gid);
       if (istied && snodecolmap_->MyGID(gid)) sc.push_back(gid);
       if (istied && snoderowmap_->MyGID(gid)) sr.push_back(gid);
     }
 
     snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
-    snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+    snodefullmap_ = LINALG::AllreduceEMap(*snoderowmap_);
   }
 
   //********************************************************************
@@ -944,30 +1011,26 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
     vector<int> sr;          // slave row map
     vector<int> scfull;      // slave full map
 
-    for (int i=0; i<snodefullmap_->NumMyElements(); ++i)
+    for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
 		{
-			int gid = snodefullmap_->GID(i);
+			int gid = snodecolmap_->GID(i);
 			DRT::Node* node = Discret().gNode(gid);
 			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 			MortarNode* mrtrnode = static_cast<MortarNode*>(node);
-			bool istied = mrtrnode->IsTiedSlave();
+			int istied = (int)mrtrnode->IsTiedSlave();
 
-			if (istied)
-				for (int j=0;j<mrtrnode->NumDof();++j)
-				  scfull.push_back(mrtrnode->Dofs()[j]);
-
-			if (snodecolmap_->MyGID(gid) && istied)
+			if (istied && snodecolmap_->MyGID(gid))
 			  for (int j=0;j<mrtrnode->NumDof();++j)
 					sc.push_back(mrtrnode->Dofs()[j]);
 
-			if (snoderowmap_->MyGID(gid) && istied)
+			if (istied && snoderowmap_->MyGID(gid))
 				for (int j=0;j<mrtrnode->NumDof();++j)
 					sr.push_back(mrtrnode->Dofs()[j]);
 		}
 
     sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
-    sdoffullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     sdofcolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+    sdoffullmap_ = LINALG::AllreduceEMap(*sdofrowmap_);
   }
 
   return;
@@ -1114,13 +1177,8 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
         node->xspatial()[j]=node->X()[j]+mydisp[j];
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
   }
 
   if (statename=="olddisplacement")
@@ -1150,23 +1208,28 @@ void MORTAR::MortarInterface::SetState(const string& statename, const RCP<Epetra
       if (myolddisp.size()<3)
         myolddisp.resize(3);
 
-      // set current configuration and displacement
+      // set old displacement
       for (int j=0;j<3;++j)
-      {
         node->uold()[j]=myolddisp[j];
-      }
-    }
-
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-      element->Area()=element->ComputeArea();
     }
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  compute element areas (public)                            popp 11/07|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::SetElementAreas()
+{
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+    element->Area()=element->ComputeArea();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -2346,31 +2409,25 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  // loop over proc's slave nodes of the interface for detection
-	// use fully overlapping map to store tying info on all procs
-	for (int i=0;i<snodefullmap_->NumMyElements();++i)
+  //**********************************************************************
+  // STEP 1: Build tying info for slave node row map (locally+globally)
+  //**********************************************************************
+  // global vector for tying info
+  RCP<Epetra_Vector> rowtied = rcp(new Epetra_Vector(*snoderowmap_));
+
+  // loop over proc's slave row nodes of the interface for detection
+	for (int i=0;i<snoderowmap_->NumMyElements();++i)
 	{
-		int gid = snodefullmap_->GID(i);
+		int gid = snoderowmap_->GID(i);
 		DRT::Node* node = idiscret_->gNode(gid);
 		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
 
-		// initialize detection
-		int sized = 0;
-		int sizem = 0;
-
-		// only perform detection for owner proc
-		if (Comm().MyPID()==mrtrnode->Owner())
-		{
-			vector<map<int,double> > dmap = mrtrnode->MoData().GetD();
-			vector<map<int,double> > mmap = mrtrnode->MoData().GetM();
-			sized = dmap.size();
-			sizem = mmap.size();
-		}
-
-		// communicate among all lComm (interface) procs
-		lComm()->Broadcast(&sized,1,procmap_[mrtrnode->Owner()]);
-		lComm()->Broadcast(&sizem,1,procmap_[mrtrnode->Owner()]);
+		// perform detection
+		vector<map<int,double> > dmap = mrtrnode->MoData().GetD();
+		vector<map<int,double> > mmap = mrtrnode->MoData().GetM();
+		int sized = dmap.size();
+		int sizem = mmap.size();
 
     // found untied node
     if (sized==0 && sizem==0)
@@ -2380,6 +2437,9 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
 
     	// set node status to untied slave
     	mrtrnode->SetTiedSlave()=false;
+
+    	// set vector entry (tiedtoggle)
+    	(*rowtied)[i] = 1.0;
     }
 
     // found tied node
@@ -2393,6 +2453,28 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
     {
     	dserror("ERROR: Inconsistency in tied/untied node detection");
     }
+	}
+
+  //**********************************************************************
+  // STEP 2: Export tying info to slave node column map (globally)
+  //**********************************************************************
+	// export tying information to standard column map
+	RCP<Epetra_Vector> coltied = rcp(new Epetra_Vector(*snodecolmap_));
+  LINALG::Export(*rowtied,*coltied);
+
+  //**********************************************************************
+  // STEP 3: Extract tying info for slave node column map (locally)
+  //**********************************************************************
+  // loop over proc's slave col nodes of the interface for storage
+	for (int i=0;i<snodecolmap_->NumMyElements();++i)
+	{
+		int gid = snodecolmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+		// check if this node is untied
+		if ((*coltied)[i]==1.0) mrtrnode->SetTiedSlave()=false;
 	}
 
 	return;

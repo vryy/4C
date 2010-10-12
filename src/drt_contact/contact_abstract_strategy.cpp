@@ -272,7 +272,6 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 
   if (friction_)
   {
-  	gsdoffullmap_ = Teuchos::null;
   	gslipnodes_ = Teuchos::null;
   	gslipdofs_  = Teuchos::null;
   	gslipt_     = Teuchos::null;
@@ -307,7 +306,6 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     
     if (friction_)
     {
-      gsdoffullmap_ = LINALG::MergeMap(gsdoffullmap_,interface_[i]->SlaveFullDofs());
       gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
       gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
       gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
@@ -748,8 +746,10 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
     interface_[i]->AssembleSlaveCoord(xsmod);
  
   // ATTENTION: for EvaluateRelMov() we need the vector xsmod in
-  // fully overlapping layout. Thus, export here.
-  RCP<Epetra_Vector> xsmodfull = rcp(new Epetra_Vector(*gsdoffullmap_));
+  // fully overlapping layout. Thus, export here. First, allreduce
+  // slave dof row map to obtain fully overlapping slave dof map.
+	RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+  RCP<Epetra_Vector> xsmodfull = rcp(new Epetra_Vector(*fullsdofs));
   LINALG::Export(*xsmod,*xsmodfull);
   xsmod = xsmodfull;
 

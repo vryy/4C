@@ -247,11 +247,21 @@ public:
   bool Redistribute(int index);
 
   /*!
+  \brief Create interface ghosting
+
+  Derived version!
+
+  */
+  void CreateInterfaceGhosting();
+
+  /*!
   \brief Create binary search tree
 
   The methods creates a binary tree object for efficient search. This is
   an overloaded method specific for contact, as in this case we have to
   consider the possibility of SELF-contact.
+
+  Derived version!
 
   */
   void CreateSearchTree();

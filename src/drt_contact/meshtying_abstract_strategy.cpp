@@ -363,39 +363,22 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // parallel redistribution) -> introduce restriction!
   if (ParRedist())
   {
+  	// allreduce restricted slave dof row map in new distribution
+  	RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+
 		// map data to be filled
 		vector<int> data;
 
-		// loop over all interfaces
-		for (int i=0; i<(int)interface_.size(); ++i)
+		// loop over all entries of allreduced map
+		for (int k=0;k<fullsdofs->NumMyElements();++k)
 		{
-			// loop over all slave nodes on the current interface
-			for (int j=0; j<interface_[i]->SlaveFullNodes()->NumMyElements(); ++j)
-			{
-				// get global ID of current node and node itself
-				int gid = interface_[i]->SlaveFullNodes()->GID(j);
-				DRT::Node* node = interface_[i]->Discret().gNode(gid);
-				if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-				MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-				int numdof = mtnode->NumDof();
+			// get global ID of current dof
+			int dofgid = fullsdofs->GID(k);
 
-				// get out of here if not tied
-				// (this is so simple here because of fully overlapping map and
-				// the fact that tying info is fully overlapping, too)
-				if (!mtnode->IsTiedSlave()) continue;
-
-				// get all procs except owner out of here
-				vector<int> found(numdof);
-				for (int k=0;k<numdof;++k) found[k] = pgsdofrowmap_->LID(mtnode->Dofs()[k]);
-				if (found[0]<0) continue;
-
-				// check consistency
-				for (int k=0;k<numdof;++k)
-					if (found[k]<0) dserror("ERROR: Ownership inconsistency");
-
-				// add dof ids to data
-				for (int k=0;k<numdof;++k) data.push_back(mtnode->Dofs()[k]);
-			}
+			// check is this GID is stored on this processor in the
+			// slave dof row map based on the old distribution and
+			// add to data vector if so
+			if (pgsdofrowmap_->MyGID(dofgid)) data.push_back(dofgid);
 		}
 
 		// re-setup old slave dof row map (with restriction now)
@@ -454,9 +437,18 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       int gid = interface_[i]->SlaveFullNodes()->GID(j);
       
       // be careful to modify BOTH mtnode in interface discret ...
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+      // (check if the node is available on this processor)
+      bool isininterfacecolmap = false;
+      int ilid = interface_[i]->SlaveColNodes()->LID(gid);
+      if (ilid>=0) isininterfacecolmap = true;
+      DRT::Node* node = NULL;
+      MORTAR::MortarNode* mtnode = NULL;
+      if (isininterfacecolmap)
+      {
+      	node = interface_[i]->Discret().gNode(gid);
+      	if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      	mtnode = static_cast<MORTAR::MortarNode*>(node);
+      }
       
       // ... AND standard node in underlying problem discret
       // (check if the node is available on this processor)
@@ -470,54 +462,79 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
 	      if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
       }
       
-      // new nodal position
+      // new nodal position and problem dimension
       double Xnew[3] = {0.0, 0.0, 0.0};
-      
-      // get corresponding entries from Xslavemod
+      double Xnewglobal[3] = {0.0, 0.0, 0.0};
       int dim = Dim();
-      int numdof = mtnode->NumDof();
-      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
 
-      // find DOFs of current node in Xslavemod and extract this node's position
-      vector<int> locindex(numdof);
-
-      for (int dof=0;dof<numdof;++dof)
+      //******************************************************************
+      // compute new nodal position
+      //******************************************************************
+      // first sort out procs that do not know of mtnode
+      if (isininterfacecolmap)
       {
-        locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
-        if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
-        Xnew[dof] = Xslavemodcol[locindex[dof]];
+				// owner processor of this node will do computation
+				if (Comm().MyPID()==mtnode->Owner())
+				{
+					// get corresponding entries from Xslavemod
+					int numdof = mtnode->NumDof();
+					if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+					// find DOFs of current node in Xslavemod and extract this node's position
+					vector<int> locindex(numdof);
+
+					for (int dof=0;dof<numdof;++dof)
+					{
+						locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
+						if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
+						Xnew[dof] = Xslavemodcol[locindex[dof]];
+					}
+
+					// check is mesh distortion is still OK
+					// (throw a dserror if length of relocation is larger than 80%
+					// of an adjacent element edge -> see Puso, IJNME, 2004)
+					double limit = 0.8;
+					double relocation = 0.0;
+					if (dim==2)
+					{
+						relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+														 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
+					}
+					else if (dim==3)
+					{
+						relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+														 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
+														 +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
+					}
+					else dserror("ERROR: Problem dimension must be either 2 or 3!");
+					bool isok = mtnode->CheckMeshDistortion(relocation,limit);
+					if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
+				}
       }
-      
-      // check is mesh distortion is still OK
-      // (throw a dserror if length of relocation is larger than 80%
-      // of an adjacent element edge -> see Puso, IJNME, 2004)
-      double limit = 0.8;
-      double relocation = 0.0;
-			if (dim==2)
-			{
-				relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-												 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
-			}
-			else if (dim==3)
-			{
-				relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-												 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
-												 +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
-			}
-			else dserror("ERROR: Problem dimension must be either 2 or 3!");
-      bool isok = mtnode->CheckMeshDistortion(relocation,limit);      
-      if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
-      
+
+      // communicate new position Xnew to all procs
+      // (we can use SumAll here, as Xnew will be zero on all processors
+      // except for the owner processor of the current node)
+      Comm().SumAll(&Xnew[0],&Xnewglobal[0],3);
+
       // const_cast to force modifed X() into mtnode
 			// const_cast to force modifed xspatial() into mtnode
 			// const_cast to force modifed X() into pnode
 			// (remark: this is REALLY BAD coding)
 			for (int k=0;k<dim;++k)
 			{
-				const_cast<double&>(mtnode->X()[k])        = Xnew[k];
-				const_cast<double&>(mtnode->xspatial()[k]) = Xnew[k];
+				// modification in interface discretization
+				if (isininterfacecolmap)
+				{
+				  const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
+				  const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
+				}
+
+				// modification in problem discretization
 				if (isinproblemcolmap)
-					const_cast<double&>(pnode->X()[k])       = Xnew[k];
+				{
+					const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
+				}
 			}
     }
   }

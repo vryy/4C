@@ -541,6 +541,16 @@ public:
   virtual void Redistribute();
 
   /*!
+  \brief Create interface ghosting
+
+  To ease our search algorithms we'll afford the luxury to ghost all nodes
+  on all processors in the general mortar coupling framework. Currently, this
+  still holds for both slave and master side of the interface.
+
+  */
+  virtual void CreateInterfaceGhosting();
+
+  /*!
   \brief Create binary search tree
 
   The methods creates a binary tree object for efficient search.
@@ -595,6 +605,12 @@ public:
   */
   virtual void SetState(const string& statename,
                         const RCP<Epetra_Vector> vec);
+
+  /*!
+  \brief Set element areas
+
+  */
+  virtual void SetElementAreas();
 
   /*!
   \brief Evaluate mortar interface

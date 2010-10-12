@@ -1036,15 +1036,10 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     // reset normal etc.
     Initialize();
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
-    // now fincally get the node we want to apply the FD scheme to
+    // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(i/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -1069,13 +1064,8 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // compute finite difference derivative
     for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
@@ -1226,13 +1216,8 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
   // reset normal etc.
   Initialize();
 
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
-  {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
+  // compute element areas
+  SetElementAreas();
   
   // contents of Evaluate()
   Evaluate();
@@ -1323,13 +1308,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1442,13 +1422,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1531,13 +1506,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
   // Initialize
   Initialize();
 
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-  {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
+  // compute element areas
+  SetElementAreas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -1629,13 +1599,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1748,13 +1713,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -1837,13 +1797,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
   // Initialize
   Initialize();
 
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-  {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
+  // compute element areas
+  SetElementAreas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -1957,13 +1912,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2087,13 +2037,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2321,13 +2266,8 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2524,13 +2464,8 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -2698,13 +2633,8 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   // reset matrix containing interface contact segments (gmsh)
   //CSegs().Shape(0,0);
 
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0;j<idiscret_->NumMyColElements();++j)
-  {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
+  // compute element areas
+  SetElementAreas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -3003,13 +2933,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3153,13 +3078,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3587,13 +3507,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -3764,13 +3679,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4002,13 +3912,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // Evaluate
     Evaluate();
@@ -4116,13 +4021,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // Evaluate
     Evaluate();
@@ -4202,13 +4102,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
   // Initialize
   Initialize();
 
-  // loop over all elements to set current element length / area
-  // (use fully overlapping column map)
-  for (int j=0; j<idiscret_->NumMyColElements(); ++j)
-  {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-    element->Area()=element->ComputeArea();
-  }
+  // compute element areas
+  SetElementAreas();
 
   // *******************************************************************
   // contents of Evaluate()
@@ -4386,13 +4281,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       snode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
@@ -4593,13 +4483,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       mnode->xspatial()[2] += delta;
     }
 
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-    }
+    // compute element areas
+    SetElementAreas();
 
     // *******************************************************************
     // contents of Evaluate()
