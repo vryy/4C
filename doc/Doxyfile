@@ -556,6 +556,10 @@ INPUT                  = index.doc \
                          ../src/linalg \
                          ../src/drt_lib \
                          ../src/stk_lib \
+                         ../src/stk_refine \
+                         ../src/stk_fluid \
+                         ../src/stk_structure \
+                         ../src/stk_fsi \
                          ../src/drt_stk \
                          ../src/drt_inpar \
                          ../src/drt_io \
@@ -622,7 +626,8 @@ INPUT_ENCODING         = UTF-8
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
 FILE_PATTERNS          = *.H \
-                         *.cpp
+                         *.cpp \
+                         *.dox
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
