@@ -41,7 +41,7 @@ Maintainer: Christian Cyron
 #endif  // #ifdef D_TRUSS2
 
 
-#define MEASURETIME
+//#define MEASURETIME
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -1382,22 +1382,22 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 //---------------------------------------------------------- loop through elements
   // this step is advantageous because GIDs of original elements are defined in numerical order
-  int numevalelements = statmechmanager_->statmechparams_.get("NUM_EVAL_ELEMENTS", -1);
-  if(numevalelements == -1)
-  	dserror("Check NUM_EVAL_ELEMENTS, the number of evaluated elements, in you StatMech Parameters block");
+  //int numevalelements = statmechmanager_->statmechparams_.get("NUM_EVAL_ELEMENTS", -1);
+  //if(numevalelements == -1)
+  	//dserror("Check NUM_EVAL_ELEMENTS, the number of evaluated elements, in your StatMech Parameters block");
   // loop over the original elements that are to be evaluated (beam or truss)
-	for(int gid=0;gid<numevalelements; gid++)
+	for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
 	{
-		// check if element is on current proc. If not, continue
-		bool havenode = discret_.HaveGlobalElement(gid);
-		if(!havenode)
-			continue;
-		// get the LID of the current element
-		int lid = discret_.gElement(gid)->LID();
 		// An element used to browse through local Row Elements
-	  DRT::Element* 						element = discret_.lRowElement(lid);
-	  // number of DOFs per node
-	  int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
+	  DRT::Element* element = discret_.lRowElement(lid);
+
+	  // skip element if it is a crosslinker element
+	  if(element->Id() > discret_.NumGlobalNodes())
+	  	continue;
+
+	  // number of translational DOFs (not elegant but...ah well...!)
+	  int numdof = 3;
+	  //int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
 	  // positions of nodes of an element with n nodes
 	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
 	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
@@ -1425,13 +1425,11 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 					// ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
 					newfilament = true;
 				}
-
 				// add GID of fixed node to fixed-nodes-vector (to be added to condition later)
 				if(!alreadydone)
 					fixednodes.push_back(element->Nodes()[n]->Id());
 				// add GID of oscillating node to osc.-nodes-vector
 				oscillnodes.push_back(element->Nodes()[n+1]->Id());
-
 				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
 				 * displacement in one particular direction (oscdir_), another which oscillates in the same direction.
 				 * The following code section calculates increments for both node types and stores this increment in
@@ -1442,23 +1440,15 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 				for(int i=0; i<numdof; i++)
 					if(i==oscdir_)
 						(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
-
 				// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir_ = 0.0)
-				//for(int i=0; i<numdof; i++)
-					//if(i!=oscdir_)
-						//(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
-					//else
-					//{
-						// time step size
-						double dt = params_.get<double>("delta time" ,-1.0);
-						// time curve increment
-						double tcincrement = 0.0;
-						if(curvenumber_>-1)
-							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-						(*deltadbc_)[lids.at(numdof*(n+1)+oscdir_)] = amp_*tcincrement;
-					//}
-
+				// time step size
+				double dt = params_.get<double>("delta time" ,-1.0);
+				// time curve increment
+				double tcincrement = 0.0;
+				if(curvenumber_>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+				(*deltadbc_)[lids.at(numdof*(n+1)+oscdir_)] = amp_*tcincrement;
 				// delete last Id of freenodes if it was previously and falsely added
 				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
 					freenodes.pop_back();
@@ -1474,38 +1464,27 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 			if(broken && cut(2,n)==2.0)
 			{
 				bool newfilament = false;
-
 				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
 				{
 					alreadydone = false;
 					newfilament = true;
 				}
-
 				if(!alreadydone)
 					oscillnodes.push_back(element->Nodes()[n]->Id());
 				fixednodes.push_back(element->Nodes()[n+1]->Id());
-
 				// oscillating node
-				//for(int i=0; i<numdof; i++)
-					//if(i!=oscdir_)
-						//(*deltadbc_)[lids.at(numdof*n+i)] = 0.0;
-					//else
-					//{
-						double dt = params_.get<double>("delta time" ,-1.0);
-						double tcincrement = 0.0;
-						if(curvenumber_>-1)
-							tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
-														DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
-						(*deltadbc_)[lids.at(numdof*n+oscdir_)] = amp_*tcincrement;
-					//}
+				double dt = params_.get<double>("delta time" ,-1.0);
+				double tcincrement = 0.0;
+				if(curvenumber_>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber_).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber_).f(time-dt);
+				(*deltadbc_)[lids.at(numdof*n+oscdir_)] = amp_*tcincrement;
 				// fixed node
 				for(int i=0; i<numdof; i++)
 					if(i==oscdir_)
 						(*deltadbc_)[lids.at(numdof*(n+1)+i)] = 0.0;
-
 				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
 					freenodes.pop_back();
-
 				tmpid = element->Nodes()[n+1]->Id();
 				alreadydone = true;
 			} // end of case 2
@@ -1546,21 +1525,14 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	for(int i=0; i<numdof; i++)
 		if(i==oscdir_)
 			addonoff.at(i) = 1;
-	//cout<<"deltadbc_ = \n"<<*deltadbc_<<endl;
+
   // do not do anything if vector is empty
   if(!oscillnodes.empty())
-  {
-  	//cout<<"OSCILLATING NODES"<<endl;
   	DoDirichletConditionPeriodic(&oscillnodes, &addonoff);
-  }
 
   // set condition for fixed nodes
-
 	if(!fixednodes.empty())
-	{
-		//cout<<"FIXED NODES"<<endl;
   	DoDirichletConditionPeriodic(&fixednodes, &addonoff);
-	}
 
   // set condition for free or recently set free nodes
   for(int i=0; i<numdof; i++)
@@ -1568,11 +1540,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
   		addonoff.at(i) = 0;
 
 	if(!freenodes.empty())
-	{
-		//cout<<"FREE NODES"<<endl;
   	DoDirichletConditionPeriodic(&freenodes, &addonoff);
-	}
-	//cout<<"deltadbc_:\n"<<*deltadbc_<<endl;
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
