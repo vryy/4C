@@ -696,7 +696,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 		  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 		  const int numnode = NumNode();
 		  const int numdf=3;
-		  LINALG::SerialDenseMatrix x(numnode,numdf);
 		  LINALG::SerialDenseMatrix xc(numnode,numdf);
 		  SpatialConfiguration(xc,mydisp);
 
