@@ -168,10 +168,8 @@ private:
   Teuchos::RCP<Epetra_Map>                elecmap_;
   Teuchos::RCP<Epetra_Map>                elermap_;
 
-  // nodal stresses
+  // nodal stresses and strains for output
   Teuchos::RCP<Epetra_MultiVector>        nstress_;
-  
-  // nodal strains
   Teuchos::RCP<Epetra_MultiVector>        nstrain_;
 
   // vector of elements adjacent to each row node
@@ -183,11 +181,6 @@ private:
   // map of location vectors for patch around a node
   map<int,vector<int> >                   adjlm_;
 
-  // contains only MIS nodes
-  // indicate whether MIS patch is identical to patch in adjele_
-  // key: mis node number
-  map<int,bool>                           pstab_ident_patch_;
-  
   // vector of elements associated with an MIS node
   // key: mis node number
   map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
@@ -198,13 +191,20 @@ private:
   map<int,vector<double> >                pstab_adjele_weight_;
 
   // adjnode and adjlm for mis patches
-  //map<int,map<int,DRT::Node*> >           pstab_adjnode_;
-  //map<int,vector<int> >                   pstab_adjlm_;
+  map<int,map<int,DRT::Node*> >           pstab_adjnode_;
+  map<int,vector<int> >                   pstab_adjlm_;
   
   // map indicating which element is associated with which MIS noderids
   // key is column element gid
   // value is MIS nodes this element is associated with
   map<int,vector<int> >                   pstab_cid_mis_;
+  map<int,vector<double> >                pstab_cid_mis_weight_;
+  
+  RCP<Epetra_Map>                         pstab_misstressout_;
+
+  // nodal MIS stresses and strains for output
+  Teuchos::RCP<Epetra_MultiVector>        pstab_nstress_;
+  Teuchos::RCP<Epetra_MultiVector>        pstab_nstrain_;
 
   void InitElementsandMaps(map<int,DRT::ELEMENTS::NStet*>& elecids,
                            map<int,DRT::Node*>&            noderids,
@@ -229,6 +229,7 @@ private:
                            map<int,int>&                            misnodesmap,
                            map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                            map<int,vector<int> >&                   pstab_cid_mis,
+                           map<int,vector<double> >&                pstab_cid_mis_weight,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            map<int,DRT::Node*>&                     noderids,
@@ -241,6 +242,7 @@ private:
                            map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                            map<int,vector<double> >&                pstab_adjele_weight,
                            map<int,vector<int> >&                   pstab_cid_mis,
+                           map<int,vector<double> >&                pstab_cid_mis_weight,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            map<int,DRT::Node*>&                     noderids,
@@ -253,6 +255,7 @@ private:
                            map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                            map<int,vector<double> >&                pstab_adjele_weight,
                            map<int,vector<int> >&                   pstab_cid_mis,
+                           map<int,vector<double> >&                pstab_cid_mis_weight,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            map<int,DRT::Node*>&                     noderids,
@@ -260,12 +263,12 @@ private:
                            const int                                numproc,
                            DRT::Discretization&                     dis);
 
+
   void InitMISAdjacency(
                         map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
                         map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
                         map<int,map<int,DRT::Node*> >&           pstab_adjnode,
                         map<int,map<int,DRT::Node*> >&           adjnode,
-                        map<int,bool>&                           pstab_ident_patch,
                         map<int,vector<int> >&                   pstab_adjlm,
                         map<int,vector<int> >&                   adjlm,
                         const int                                myrank,
@@ -276,7 +279,7 @@ private:
                                             DRT::Discretization& dis);
 
 
-  void PatchedDeformationGradient(DRT::Discretization& dis);
+  //void PatchedDeformationGradient(DRT::Discretization& dis);
 
   void ElementDeformationGradient(DRT::Discretization& dis);
 
@@ -292,6 +295,19 @@ private:
                         const INPAR::STR::StressType    iostress,
                         const INPAR::STR::StrainType    iostrain);
 
+
+  void MISNodalIntegration(Epetra_SerialDenseMatrix*       stiff,
+                           Epetra_SerialDenseVector*       force,
+                           map<int,DRT::Node*>&            adjnode,
+                           vector<DRT::ELEMENTS::NStet*>&  adjele,
+                           vector<double>&                 weight,
+                           vector<int>&                    lm,
+                           const Epetra_Vector&            disp,
+                           DRT::Discretization&            dis,
+                           vector<double>*                 nodalstress,
+                           vector<double>*                 nodalstrain,
+                           const INPAR::STR::StressType    iostress,
+                           const INPAR::STR::StrainType    iostrain);
 
   void SelectMaterial(RCP<MAT::Material> mat,
                       LINALG::Matrix<6,1>& stress,
@@ -311,7 +327,9 @@ private:
   void StrainOutput(const INPAR::STR::StrainType iostrain,
                     vector<double>&              nodalstrain,
                     LINALG::Matrix<3,3>&         F,
-                    const double&                detF);
+                    const double&                detF,
+                    const double                 volweight,
+                    const double                 devweight);
 
   void StressOutput(const INPAR::STR::StressType iostress,
                     vector<double>&              nodalstress,

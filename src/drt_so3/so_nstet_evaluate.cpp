@@ -196,9 +196,9 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<1,6> stress(true); //hier geht's weiter
+        LINALG::Matrix<1,6> stress(true); 
         LINALG::Matrix<1,6> strain(true);
-        LINALG::Matrix<1,6> elestress(true); // set to zero
+        LINALG::Matrix<1,6> elestress(true);
         LINALG::Matrix<1,6> elestrain(true);
         nstetnlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&elestress,&elestrain,iostress,iostrain);
         
@@ -213,8 +213,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
           if (lid==-1) dserror("Cannot find matching nodal stresses/strains");
           for (int j=0; j<6; ++j)
           {
-            stress(0,j) += (*(*nodestress)(i))[lid];
-            strain(0,j) += (*(*nodestrain)(i))[lid];
+            stress(0,j) += (*(*nodestress)(j))[lid];
+            strain(0,j) += (*(*nodestrain)(j))[lid];
           }
         }
         for (int j=0; j<6; ++j) 
@@ -230,10 +230,38 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
           strain(0,j) += elestrain(0,j);
         }
         
+        //------------------------------------------------- add stress from MIS nodes
+        Teuchos::RCP<Epetra_MultiVector> mis_stress = ElementType().pstab_nstress_;
+        Teuchos::RCP<Epetra_MultiVector> mis_strain = ElementType().pstab_nstrain_;
+        map<int,vector<int> >::iterator ele = ElementType().pstab_cid_mis_.find(Id());
+        if (ele == ElementType().pstab_cid_mis_.end()) dserror("Cannot find this element");
+        map<int,vector<double> >::iterator elew = ElementType().pstab_cid_mis_weight_.find(Id());
+        if (elew == ElementType().pstab_cid_mis_weight_.end()) dserror("Cannot find this element weight");
+        vector<int>& mis = ele->second;
+        const int nummis = (int)mis.size();
+        if (nummis < 1) dserror("Element not associated with any mis node");
+        vector<double>& misw = elew->second;
+        const int nummisw = (int)misw.size();
+        if (nummis != nummisw) dserror("Number of patches and weight mismatch");
+        //double totweight = 0.0;
+        for (int i=0; i<nummis; ++i)
+        {
+          const int gid = mis[i];
+          const int lid = ElementType().pstab_nstress_->Map().LID(gid);
+          const double weight = misw[i];
+          //totweight += weight;
+          for (int j=0; j<6; ++j)
+          {
+            stress(0,j) += weight * (*(*mis_stress)(j))[lid];
+            strain(0,j) += weight * (*(*mis_strain)(j))[lid];
+          }
+        } // for (int i=0; i<nummis; ++i)
+        //printf("Proc %d Ele %d TotWeight %15.10e\n",Owner(),Id(),totweight);
+        
         //----------------------------------------------- add final stress to storage
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);
-      }
+      } // if (discretization.Comm().MyPID()==Owner())
     }
     break;
 
@@ -252,7 +280,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         if (gpstressmap==null) dserror("no gp stress/strain map available for postprocessing");
         string stresstype = params.get<string>("stresstype","ndxyz");
 
-        int gid = Id();
+        const int gid = Id();
         LINALG::Matrix<1,6> gpstress(((*gpstressmap)[gid])->A(),true);
 
         RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
@@ -267,7 +295,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
             if (lid==-1) dserror("Cannot find local id for global id");
             const int numadjele = Nodes()[i]->NumElement();
             for (int j=0; j<6; ++j)
-              (*((*poststress)(j)))[lid] = gpstress(0,j) / numadjele;
+              (*((*poststress)(j)))[lid] += gpstress(0,j) / numadjele;
           }
         }
         else if (stresstype=="cxyz")
