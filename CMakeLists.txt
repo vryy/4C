@@ -209,6 +209,7 @@ endif (STKADAPTIVE)
 # Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
+  include_directories(${Trilinos_TPL_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
 #  set(USED_Trilinos_LIBRARIES
 #    trilinoscouplings
@@ -321,15 +322,15 @@ endif (Trilinos_FOUND)
 #    )
 #endif(EXODUS_FOUND)
 
-#find_package(Netcdf REQUIRED)
-#if (NETCDF_FOUND)
-#  include_directories(${NETCDF_INCLUDE_DIRS})
-#  link_directories(${NETCDF_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${NETCDF_LIBRARIES}
-#    )
-#endif(NETCDF_FOUND)
+find_package(Netcdf REQUIRED)
+if (NETCDF_FOUND)
+  include_directories(${NETCDF_INCLUDE_DIRS})
+  link_directories(${NETCDF_LIBRARY_DIRS})
+  set(LIBRARIES
+    ${LIBRARIES}
+    ${NETCDF_LIBRARIES}
+    )
+endif(NETCDF_FOUND)
 
 #if (LAPACK_FOUND)
 #  include_directories(${LAPACK_INCLUDE_DIRS})
