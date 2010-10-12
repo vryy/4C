@@ -157,13 +157,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     Epetra_SerialDenseVector&  elevec3_epetra
 )
 {
-// Warning: If ButlerVolmer_Shifted defines-flag is on
-#ifdef BUTLERVOLMER_SHIFTED
-  if (ele->Id()== 0)
-    if (discretization.Comm().MyPID() == 0)
-      cout<<" Warning: ButlerVolmer is shifted to the right about " << PERCENT*100 <<"% !! " << endl;
-#endif
-
   // First, do the things that are needed for all actions:
 
   // get the material (of the parent element)
@@ -368,6 +361,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             timefac,
             dlcapacitance);}
     }
+    // Warning: If ButlerVolmer_Shifted defines-flag is on
+    #ifdef BUTLERVOLMER_SHIFTED
+      if (time < 5*timefac)
+        if (ele->Id()== 0)
+          if (discretization.Comm().MyPID() == 0)
+            cout<<" Warning: ButlerVolmer is shifted to the right about " << PERCENT*100 <<"% !! " << endl;
+    #endif
   }
   else if (action =="calc_therm_press")
   {
