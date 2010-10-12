@@ -154,8 +154,8 @@ void StatMechTime::Integrate()
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int ndim=psize.get<int>("DIM");
 
-
-
+  // @debug cout
+	Epetra_Vector discol(*discret_.DofColMap(), true);
 
   for (int i=step; i<nstep; ++i)
   {
@@ -163,6 +163,28 @@ void StatMechTime::Integrate()
      * to initialize the related output method*/
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
+
+    // test cout environment for debugging
+		LINALG::Export(*dis_, discol);
+
+		for (int j=0; j<discret_.NumMyColNodes(); ++j)
+		{
+			//get pointer at a node
+			const DRT::Node* node = discret_.lColNode(j);
+
+			//get GIDs of this node's degrees of freedom
+			std::vector<int> dofnode = discret_.Dof(node);
+
+			LINALG::Matrix<3, 1> currpos;
+
+			currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
+			currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
+			currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+
+			for(int k=0; k<(int)currpos.M(); k++)
+				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
+					cout<<"Proc "<<discret_.Comm().MyPID()<<" prestep: currpos("<<k<<") = "<<currpos(k)<<endl;
+		}
 
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID())
@@ -183,7 +205,7 @@ void StatMechTime::Integrate()
       }
 
       statmechmanager_->time_ = time + dt;
-  		Epetra_Vector discol(*discret_.DofColMap(), true);
+
       do
       {
         //assuming that iterations will converge
@@ -227,11 +249,14 @@ void StatMechTime::Integrate()
       }
       while(isconverged_ == 0);
 
+      // save status prior to UpdateAndOutput()
+			//Epetra_Vector discolpre = discol;
+
       const double t_admin = Teuchos::Time::wallTime();
       UpdateandOutput();
 
-      // test cout environment for debugging
-  		/*LINALG::Export(*dis_, discol);
+      /*/ test cout environment for debugging
+  		LINALG::Export(*dis_, discol);
 
 			for (int j=0; j<discret_.NumMyColNodes(); ++j)
 			{
@@ -242,14 +267,21 @@ void StatMechTime::Integrate()
 				std::vector<int> dofnode = discret_.Dof(node);
 
 				LINALG::Matrix<3, 1> currpos;
-
+				LINALG::Matrix<3, 1> currpospre;
 				currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
 				currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
 				currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+				currpospre(0) = node->X()[0] + discolpre[discret_.DofColMap()->LID(dofnode[0])];
+				currpospre(1) = node->X()[1] + discolpre[discret_.DofColMap()->LID(dofnode[1])];
+				currpospre(2) = node->X()[2] + discolpre[discret_.DofColMap()->LID(dofnode[2])];
 
 				for(int k=0; k<(int)currpos.M(); k++)
-					if(currpos(k)<0.0 || currpos(k)>statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
+					if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
+					{
+						cout<<"Proc "<<discret_.Comm().MyPID()<<" preUpAndOut : currpos("<<k<<") = "<<currpospre(k)<<endl;
 						cout<<"Proc "<<discret_.Comm().MyPID()<<" postUpAndOut: currpos("<<k<<") = "<<currpos(k)<<endl;
+					}
+
 			}*/
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output

@@ -2013,8 +2013,8 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 	/*first we modify the displacement vector so that current nodal position at the end of current time step complies with
 	 * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
 
-	//Epetra_Vector disrowpre = disrow;
-
+	Epetra_Vector disrowpre = disrow;
+	//cout<<"disrow.MyLength()"<<disrow.MyLength()<<endl;
 	PeriodicBoundaryShift(disrow, ndim);
 
 	// debuggin cout
@@ -2025,8 +2025,8 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 		for(int j=0; j<3; j++)
 			if(node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<0.0 || node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]>statmechparams_.get<double>("PeriodLength", 0.0))
 			{
-				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrowpre entry "<<i<<": "<<node->X()[j]+disrowpre[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
-				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrow entry    "<<i<<": "<<node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
+				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrowpre entry, node "<<i<<", dof "<<dofnode[j]<<", Numele "<<node->NumElement()<<": "<<node->X()[j]+disrowpre[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
+				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrow entry   , node "<<i<<", dof "<<dofnode[j]<<", Numele "<<node->NumElement()<<": "<<node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
 			}
 	}*/
 
@@ -2089,8 +2089,8 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 				currrot(2) = discol[discret_.DofColMap()->LID(dofnode[5])];
 			}
 
-			// debugging cout
-			/*for(int j=0; j<(int)currpos.M(); j++)
+			/*/ debugging cout
+			for(int j=0; j<(int)currpos.M(); j++)
 				if(currpos(j)<0.0 || currpos(j)>statmechparams_.get<double>("PeriodLength", 0.0))
 					cout<<"Proc "<<discret_.Comm().MyPID()<<": currpos(discol["<<i<<"] = "<<currpos<<endl;*/
 
@@ -2775,13 +2775,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) && !konswitch_)
-	kon = statmechparams_.get<double>("K_ON_start",0.0);
+	if(time_ <= statmechparams_.get<double>("STARTTIME", 0.0))
+		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
-	{
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
-		konswitch_=true;
-	}
 
 	//probability with which a crosslinker is established between crosslink molecule and neighbour node
 	double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
@@ -3480,7 +3477,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	if ((currentelements_ - basiselements_) < statmechparams_.get<double> ("N_crosslink", 0.0))
+	if (time_ <= statmechparams_.get<double> ("STARTTIME", 0.0))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
