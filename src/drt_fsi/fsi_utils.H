@@ -24,8 +24,14 @@ namespace ADAPTER
 {
   class CouplingMortar;
   class FluidMovingBoundary;
+  class Structure;
+  class Fluid;
 }
 
+namespace ALE
+{
+  class Ale;
+}
 
 namespace FSI
 {
@@ -98,9 +104,9 @@ namespace FSI
       /// constructor initializing internal variables
       SlideAleUtils
       (
-          RCP<DRT::Discretization> structdis,
-          RCP<DRT::Discretization> fluiddis,
-          ADAPTER::CouplingMortar& coupsf,
+          RCP<DRT::Discretization> structdis,   ///< structure discretization
+          RCP<DRT::Discretization> fluiddis,    ///< fluid discretization
+          ADAPTER::CouplingMortar& coupsf,      ///< mortar adapter
           bool structcoupmaster                 ///< is structure master of adapter coupling?
       );
 
@@ -110,21 +116,21 @@ namespace FSI
       /// remesh ALE corresponding
       void Remeshing
       (
-          Teuchos::RCP<Epetra_Vector> idisptotal,
-          Teuchos::RCP<Epetra_Vector> idispstep,
-          RCP<DRT::Discretization> structdis,
-          RCP<DRT::Discretization> fluiddis,
-          Teuchos::RCP<Epetra_Vector> ifluid,
-          ADAPTER::CouplingMortar& coupsf,
-          const Epetra_Comm& comm,
-          INPAR::FSI::SlideALEProj aletype
+          ADAPTER::Structure& structure,          ///< structure adapter
+          RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
+          Teuchos::RCP<Epetra_Vector> idispale,   ///< standard ALE interface displacement
+          Teuchos::RCP<Epetra_Vector> iprojdispale,     ///< projected ALE interface displacement
+          ADAPTER::CouplingMortar& coupsf,        ///< mortar adapter
+          const Epetra_Comm& comm,                ///< communicator
+          INPAR::FSI::SlideALEProj aletype        ///< projection enum
       );
-      
+
+      /// Compute new coupling matrices D and M
       void EvaluateMortar
       (
-          Teuchos::RCP<Epetra_Vector> idisptotal,
-          Teuchos::RCP<Epetra_Vector> ifluid,
-          ADAPTER::CouplingMortar& coupsf
+          Teuchos::RCP<Epetra_Vector> idispstruct, ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> idispale,    ///< (proj.) displacement of ale
+          ADAPTER::CouplingMortar& coupsf          ///< mortar adapter
       );
 
     protected:
@@ -132,30 +138,28 @@ namespace FSI
       /// compute average interface displacement
       vector<double> Centerdisp
       (
-          Teuchos::RCP<Epetra_Vector> idisptotal,
-          Teuchos::RCP<Epetra_Vector>idispstep,
-          RCP<DRT::Discretization> structdis,
-          const Epetra_Comm& comm
+          Teuchos::RCP<Epetra_Vector> idispn,      ///< structure displacement t_n
+          Teuchos::RCP<Epetra_Vector> idispstep,   ///< structure displacement increment
+          RCP<DRT::Discretization> structdis,      ///< discretization
+          const Epetra_Comm& comm                  ///< communicator
       );
 
-      /// Position of struct nodes
+      /// calculate current position of structure interface nodes
       std::map<int,LINALG::Matrix<3,1> >  CurrentStructPos
       (
-          Teuchos::RCP<Epetra_Vector> idisptotal,
-          Teuchos::RCP<Epetra_Vector> reddisp,
-          DRT::Discretization& interfacedis,
-          RCP<Epetra_Map> msfullelemap
+          Teuchos::RCP<Epetra_Vector> reddisp,     ///< redundant version of structure displacements
+          DRT::Discretization& interfacedis,       ///< interface discretization
+          RCP<Epetra_Map> msfullelemap             ///< merged map
       );
       
-      /// project ALE  nodes to he structure surface
+      /// project ALE nodes onto the structure surface
       void SlideProjection
       (
-          Teuchos::RCP<Epetra_Vector> ifluidstep,
           DRT::Discretization& interfacedis,
           vector<double> centerdisp,
           std::map<int, RCP<DRT::Element> > structreduelements,
           std::map<int,LINALG::Matrix<3,1> > currentpositions,
-          Teuchos::RCP<Epetra_Vector> ifluid,
+          Teuchos::RCP<Epetra_Vector> iprojdispale,             ///< projected ALE interface displacement
           ADAPTER::CouplingMortar& coupsf,
           RCP<DRT::Discretization> fluiddis,
           INPAR::FSI::SlideALEProj aletype
@@ -163,16 +167,20 @@ namespace FSI
       
     private:  
     
-      Teuchos::RCP<Epetra_Vector> idispms_;       ///<displacement of struct and fluid interface for mortar
-      vector<double> centerdisptotal_;            ///<sum over all center displacements     
-//      Teuchos::RCP<Epetra_Vector> ifluid_;        ///<displacement of fluid side of the interface
+      Teuchos::RCP<Epetra_Vector> idispms_;       ///< merged vector of displacements (struct and fluid interface)
+      vector<double> centerdisptotal_;            ///< sum over all center displacement increments
       
-      map<int, DRT::Node*> istructgnodes_;        ///< structnodes in the interface including ghosts
-      map<int, RCP<DRT::Element> > istructeles_;  ///< structlelements in the interface
-      map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluidnodes (= fluid) in the interface
-      map<int, DRT::Node*> ifluidconfnodes_;          ///< non-sliding fluidnodes (= fluid) in the interface
+      map<int, DRT::Node*> istructslidnodes_;        ///< sliding struct nodes in the interface
+      map<int, RCP<DRT::Element> > istructslideles_;  ///< sliding struct elements in the interface
+      map<int, DRT::Node*> istructdispnodes_;        ///< struct nodes in the interface used for centerdisp calculation
+      map<int, RCP<DRT::Element> > istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
+      Teuchos::RCP<Epetra_Map>  slideeleredmap_;      ///< redundant version of sliding struct elements
+      map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluid nodes in the interface
+      map<int, DRT::Node*> ifluidconfnodes_;          ///< sticking fluid nodes in the interface
       
-      bool structcoupmaster_;
+      Teuchos::RCP<Epetra_Vector> iprojhist_;         ///< history of final displacements
+      
+      bool structcoupmaster_; ///< is structure master of coupling?
       
     }; // class SlideAleUtils
     

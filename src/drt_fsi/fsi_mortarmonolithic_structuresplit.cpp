@@ -216,7 +216,6 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                                   coupsfm_,
                                                   false));
     
-    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
     iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
     
     break;
@@ -534,27 +533,21 @@ void FSI::MortarMonolithicStructureSplit::Update()
   // update history variabels for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-  
-    Teuchos::RCP<Epetra_Vector> idispn = StructureField().ExtractInterfaceDispn();
-    Teuchos::RCP<Epetra_Vector> idisptotal = StructureField().ExtractInterfaceDispnp();
-    Teuchos::RCP<Epetra_Vector> idispstep = StructureField().ExtractInterfaceDispnp();
-    idispstep->Update(-1.0, *idispn, 1.0);
-  
-    slideale_->Remeshing(idisptotal,
-                        idispstep,
-                        StructureField().Discretization(),
+    Teuchos::RCP<Epetra_Vector> iprojdisp = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
+    Teuchos::RCP<Epetra_Vector> idispale =
+        AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement());
+
+    slideale_->Remeshing(StructureField(),
                         FluidField().Discretization(),
-                        iprojdisp_,
+                        idispale,
+                        iprojdisp,
                         coupsfm_,
                         Comm(),
                         aleproj_);
   
-    Teuchos::RCP<Epetra_Vector> idisp =AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement());
-    
-    iprojdispinc_->Update(1.0,*iprojdisp_,-1.0,*idisp,0.0);
+    iprojdispinc_->Update(1.0,*iprojdisp,-1.0,*idispale,0.0);
 
-    slideale_->EvaluateMortar(idisptotal, iprojdisp_, coupsfm_);
-  
+    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp, coupsfm_);
   }
   
   StructureField().Update();

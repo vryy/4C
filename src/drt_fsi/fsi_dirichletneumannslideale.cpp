@@ -87,16 +87,18 @@ void FSI::DirichletNeumannSlideale::Remeshing()
   INPAR::FSI::SlideALEProj aletype = 
       Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 	
-	slideale_->Remeshing(idisptotal,
-                        idispstep,
-                        (StructureField().Discretization()),
+
+
+	slideale_->Remeshing(StructureField(),
                         MBFluidField().Discretization(),
+                        idisptotal,
                         islave_,
                         StructureFluidCouplingMortar(),
                         Comm(),
                         aletype);
 	
-	slideale_->EvaluateMortar(idisptotal,islave_,StructureFluidCouplingMortar());
+	slideale_->EvaluateMortar(
+	    StructureField().ExtractInterfaceDispnp(),islave_,StructureFluidCouplingMortar());
 	
 	RCP<Epetra_Map> masterdofrowmap = StructureFluidCouplingMortar().MasterDofRowMap();
 	
