@@ -25,7 +25,8 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ConditionSelector::ConditionSelector(const DRT::Discretization& dis, std::string condname)
+DRT::UTILS::ConditionSelector::ConditionSelector(const DRT::Discretization& dis,
+                                                 std::string condname)
   : dis_(dis), condname_(condname)
 {
   dis.GetCondition(condname, conds_);
@@ -119,8 +120,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 {
   SetupCondDofSets(dis);
 
-  // find all non-conditioned dofs. It is much more clean to do that
-  // afterwards.
+  // Find all non-conditioned dofs by substracting all conditioned ones.
 
   std::set<int> otherdofset(fullmap.MyGlobalElements(),
                             fullmap.MyGlobalElements() + fullmap.NumMyElements());
@@ -136,7 +136,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
     }
   }
 
-  // setup all maps. The "other" map goes first so it becomes the zeroth map
+  // Setup all maps. The "other" map goes first so it becomes the zeroth map
   // of the MultiMapExtractor.
 
   std::vector<RCP<const Epetra_Map> > maps;
@@ -159,17 +159,21 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretization& dis)
 {
+  // we get as many sets as we have selectors
   conddofset_.resize(selectors_.size());
 
+  // for each owned node
   int numrownodes = dis.NumMyRowNodes();
   for (int i=0; i<numrownodes; ++i)
   {
     DRT::Node* node = dis.lRowNode(i);
 
+    // test each selector
     for (unsigned j=0; j<selectors_.size(); ++j)
     {
       ConditionSelector& conds = *selectors_[j];
 
+      // if the selector applies, we are done
       if ( conds.SelectDofs( node, conddofset_[j] ) )
         break;
     }

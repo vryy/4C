@@ -26,6 +26,7 @@ namespace DRT
     /// setup the whole thing
     void Setup(const DRT::Discretization& dis);
 
+    /// put zero to all Dirichlet values
     void ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual ) const;
 
     MAP_EXTRACTOR_VECTOR_METHODS( NonDirichlet, cond_nondirichlet )
