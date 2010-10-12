@@ -66,7 +66,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::AssembleStrategy::MatrixGraph( DRT::Discretiz
       }
       else
       {
-        // just diagonal entry on Dirichlet rows and hanging node rows
+        // just diagonal entry on Dirichlet rows
         rowset.insert( rdofs[rj] );
       }
     }

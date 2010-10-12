@@ -20,23 +20,46 @@ namespace DRT
   class Discretization;
 
   /// General assembly strategy
+  /*!
+    The global matrices and vectors that are filled during the assembly
+    process. This class manages the element assembling. This simplifies the
+    element loop in DRT::Discretization::Evaluate(). Furthermore, the strategy
+    can be exchanged in the assembly process needs to be modified.
+
+    \author u.kue
+   */
   class AssembleStrategy
   {
   public:
 
-    /// Construct
+    /// Construct with allocated global objects or Teuchos::null.
     AssembleStrategy( Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                       Teuchos::RCP<Epetra_Vector>          systemvector1,
                       Teuchos::RCP<Epetra_Vector>          systemvector2,
                       Teuchos::RCP<Epetra_Vector>          systemvector3 );
 
+    /// Destruct
     virtual ~AssembleStrategy();
 
     /// Create matrix graph to create a filled matrix
+    /*!
+      The graph will already include the Dirichlet lines. That is there will
+      be just the diagonal entry on each line that is a Dirichlet line.
+      LINALG::SparseMatrix can assemble to filled matrices with ready made
+      Dirichlet lines. Thus the idea is to explicitly create a graph and
+      creating filled matrices from it. It will never be required to assemble
+      to unfilled matrices or reallocate any matrices as long as the mesh
+      remains the same.
+
+      \note It is much more expensive to assemble to an unfilled matrix than a
+      filled one.
+     */
     virtual Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( DRT::Discretization & dis, Teuchos::RCP<const Epetra_Map> dbcmap );
 
     //! @name Assembly Flags
+    /// Tell which matrix and vector is available to be assembled.
+
     bool Assemblemat1() { return systemmatrix1_!=Teuchos::null; }
     bool Assemblemat2() { return systemmatrix2_!=Teuchos::null; }
     bool Assemblevec1() { return systemvector1_!=Teuchos::null; }
@@ -69,8 +92,9 @@ namespace DRT
     /// zero element memory
     void ClearElementStorage( int eledim );
 
-    //! @name Assembly Methods
+    //! @name Specific Assembly Methods
 
+    /// Asseble to matrix 1
     void AssembleMatrix1(int eid,
                          const std::vector<int>& lm,
                          const std::vector<int>& lmowner)
@@ -81,6 +105,7 @@ namespace DRT
       }
     }
 
+    /// Asseble to matrix 2
     void AssembleMatrix2(int eid,
                          const std::vector<int>& lm,
                          const std::vector<int>& lmowner)
@@ -91,6 +116,7 @@ namespace DRT
       }
     }
 
+    /// Asseble to vector 1
     void AssembleVector1( const std::vector<int>& lm, const std::vector<int>& lmowner )
     {
       if ( Assemblevec1() )
@@ -99,6 +125,7 @@ namespace DRT
       }
     }
 
+    /// Asseble to vector 2
     void AssembleVector2( const std::vector<int>& lm, const std::vector<int>& lmowner )
     {
       if ( Assemblevec2() )
@@ -107,6 +134,7 @@ namespace DRT
       }
     }
 
+    /// Asseble to vector 3
     void AssembleVector3( const std::vector<int>& lm, const std::vector<int>& lmowner )
     {
       if ( Assemblevec3() )
@@ -117,14 +145,16 @@ namespace DRT
 
     //@}
 
-    //! @name Assembly Methods
+    //! @name General Purpose Assembly Methods
 
+    /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
                           const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner);
 
+    /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
                           const Epetra_SerialDenseMatrix& Aele,
@@ -132,11 +162,14 @@ namespace DRT
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol);
 
+    /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
 
+    /// Assemble to given vector
     virtual void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
                           const std::vector<int>& lm, const std::vector<int>& lmowner);
 
+    /// Assemble to given vector
     virtual void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
                           const std::vector<int>& lm, const std::vector<int>& lmowner);
 

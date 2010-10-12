@@ -23,13 +23,15 @@ using namespace std;
 
 namespace DRT
 {
+
+  /// Alias dofset that shares dof numbers with another dofset
   /*!
-  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes 
-  belonging to two discretizations. This way two discretizations can assemble into the same position of the 
-  system matrix. 
-  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a 
+  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes
+  belonging to two discretizations. This way two discretizations can assemble into the same position of the
+  system matrix.
+  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a
   sub-discretization, its dofs are assigned according to the dofs of the source.
-  
+
   */
   class TransparentDofSet : public DRT::DofSet
   {
