@@ -1937,7 +1937,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 			if (friction_)
 			{
 				FriNode* frinode = static_cast<FriNode*>(cnode);
-				if (frinode->FriData().Slip()) slipnodes += 1;
+				if (cnode->Active() && frinode->FriData().Slip()) slipnodes += 1;
 			}
 		}
 	}
