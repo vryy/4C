@@ -136,9 +136,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------sublist for electrochemistry-specific parameters
   if (genprob.probtyp == prb_elch)
   {
-    // flag for natural convection
-    extraparams->set<INPAR::ELCH::NatConv>("Natural Convection",
-        Teuchos::getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION"));
     // temperature of electrolyte solution
     extraparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
 

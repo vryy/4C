@@ -52,7 +52,7 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // ELCH with natural convection
   if (prbtype_ == "elch")
   {
-    if (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no)
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
       // density at time n
       elchdensn_ = LINALG::CreateVector(*dofrowmap,true);

@@ -665,7 +665,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
   // only required for ELCH with natural convection
   if (prbtype_ == "elch")
   {
-    if (extraparams_->get<INPAR::ELCH::NatConv>("Natural Convection")!= INPAR::ELCH::natural_convection_no)
+    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
       // allocate denselch_ with *dofrowmap and initialize it
       const Epetra_Map* dofrowmap = discret_->DofRowMap();

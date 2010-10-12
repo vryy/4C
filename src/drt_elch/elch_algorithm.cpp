@@ -31,7 +31,7 @@ ELCH::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
-   natconv_(getIntegralValue<INPAR::ELCH::NatConv>(prbdyn,"NATURAL_CONVECTION")),
+   natconv_(Teuchos::getIntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
    itmax_ (prbdyn.get<int>("ITEMAX")),
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
@@ -65,7 +65,7 @@ void ELCH::Algorithm::TimeLoop()
   ScaTraField().EvaluateErrorComparedToAnalyticalSol();
 
   // switch ELCH algorithm
-  if (natconv_ == INPAR::ELCH::natural_convection_no)
+  if (natconv_ == false)
     TimeLoopElch();       // one-way coupling
   else
     TimeLoopConvection(); // two-way coupling (natural convection)
@@ -588,7 +588,7 @@ double ELCH::Algorithm::GetInitialFluidDensity()
   double density = 0.0;
 
   // initialization only for convection, otherwise the density0 is set to zero
-  if (natconv_ != INPAR::ELCH::natural_convection_no)
+  if (natconv_ == true)
   {
     // we ask the elements for the density (works for all fluid materials)
     ParameterList eleparams;

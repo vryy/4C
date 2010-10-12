@@ -22,15 +22,6 @@ namespace INPAR
   namespace ELCH
   {
 
-    /// flag for the simulation of natural convection
-    enum NatConv
-    {
-      natural_convection_no,
-      natural_convection_substance,
-      natural_convection_ion
-    };
-
-
   }  // namespace ELCH
 
 }  // namespace INPAR

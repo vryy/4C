@@ -2531,18 +2531,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
   BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
-  setStringToIntegralParameter<INPAR::ELCH::NatConv>("NATURAL_CONVECTION","No",
-                               "Include natural convection effects",
-                               tuple<string>(
-                                 "No",
-                                 "Natural_Convection_substance",
-                                 "Natural_Convection_ion"
-                                 ),
-                                 tuple<INPAR::ELCH::NatConv>(
-                                     INPAR::ELCH::natural_convection_no,
-                                     INPAR::ELCH::natural_convection_substance,
-                                     INPAR::ELCH::natural_convection_ion),
-                               &elchcontrol);
+  BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTATCONVTOL",1.e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTATCURTOL",1.e-15,"Current Tolerance",&elchcontrol);

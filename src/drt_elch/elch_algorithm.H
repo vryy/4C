@@ -100,7 +100,7 @@ namespace ELCH
   private:
 
     /// flag for natural convection effects
-    enum INPAR::ELCH::NatConv natconv_;
+    int natconv_;
 
     /// maximum iteration steps
     const int itmax_;
