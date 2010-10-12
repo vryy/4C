@@ -110,7 +110,9 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 		//---------------------------------------
 		// PARALLEL REDISTRIBUTION OF INTERFACES
 		//---------------------------------------
-		if (ParRedist())
+		// get out of here if parallel redistribution is switched off
+		// or if this is a single processor (serial) job
+		if (ParRedist() && Comm().NumProc()>1)
 		{
 			// time measurement
 			Comm().Barrier();
@@ -133,7 +135,9 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 	}
 
 	// re-setup strategy object
-	if (ParRedist())
+	// get out of here if parallel redistribution is switched off
+	// or if this is a single processor (serial) job
+	if (ParRedist() && Comm().NumProc()>1)
 	{
 		// time measurement
 		Comm().Barrier();

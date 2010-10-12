@@ -415,6 +415,9 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   // store ParameterList in local parameter list
   mtparams = input;
+  
+  // no parallel redistribution in the serial case
+  if (Comm().NumProc()==1) mtparams.set<string>("PARALLEL_REDIST","None");
 
   return true;
 }

@@ -529,6 +529,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // store ParameterList in local parameter list
   cparams = input;
 
+  // no parallel redistribution in the serial case
+  if (Comm().NumProc()==1) cparams.set<string>("PARALLEL_REDIST","None");
+
   return true;
 }
 

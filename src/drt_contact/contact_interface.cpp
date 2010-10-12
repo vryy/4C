@@ -141,10 +141,6 @@ bool CONTACT::CoInterface::Redistribute(int index)
   vector<int> allproc(numproc);
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
-	// redistribution useless if only one processor
-	// (return value FALSE, because no redistribution performed)
-  if (numproc==1) return false;
-
 	//**********************************************************************
 	// (1) SLAVE splitting in close / non-close parts
 	//**********************************************************************

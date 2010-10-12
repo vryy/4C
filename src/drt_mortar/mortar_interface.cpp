@@ -564,9 +564,6 @@ void MORTAR::MortarInterface::Redistribute()
   vector<int> allproc(numproc);
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
-	// redistribution useless if only one processor
-  if (numproc==1) return;
-
   // print message
   if (!myrank) cout << "\nRedistributing interface using 2-PARMETIS.......";
 
