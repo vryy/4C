@@ -61,17 +61,13 @@ STK::Discretization::Discretization( const Epetra_Comm & comm )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & algo )
+void STK::Discretization::MetaSetup( Teuchos::RCP<MetaMesh> meta, DRT::Discretization & dis )
 {
-  algo_ = & algo;
-  meta_ = Teuchos::rcp( new MetaMesh );
-
+  meta_ = meta;
   stk::mesh::MetaData & meta_data = meta_->MetaData();
 
   std::vector<std::string> condition_names;
   dis.GetConditionNames( condition_names );
-
-  std::vector<std::string> condition_parts;
 
   // declare a part for each type of condition
 
@@ -151,18 +147,19 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
     str << par.Name() << par.Id();
     meta_data.declare_part( str.str(), stk::mesh::Element );
   }
+}
 
-  // declare fields
 
-  algo_->declare_fields( meta_data );
-
-  // done with meta data
-
-  meta_->Commit();
-
-  mesh_ = Teuchos::rcp( new Mesh( *meta_, MPI_COMM_WORLD ) );
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STK::Discretization::MeshSetup( Teuchos::RCP<Mesh> mesh, DRT::Discretization & dis )
+{
+  mesh_ = mesh;
+  stk::mesh::MetaData & meta_data = mesh_->MetaData();
   stk::mesh::BulkData & bulk_data = mesh_->BulkData();
+
+  std::vector<std::string> condition_names;
+  dis.GetConditionNames( condition_names );
 
   //const Epetra_Map & noderowmap = *dis.NodeRowMap();
   //const Epetra_Map & nodecolmap = *dis.NodeColMap();
@@ -343,36 +340,6 @@ void STK::Discretization::Setup( DRT::Discretization & dis, STK::Algorithm & alg
 
   bulk_data.modification_end();
 
-#if 0
-
-  bulk_data.modification_begin();
-
-  std::vector<stk::mesh::EntityProc> ep;
-
-  if ( bulk_data.parallel_rank()==0 )
-  {
-    ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 271 ), 1 ) );
-
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 382 ), 1 ) );
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 383 ), 1 ) );
-  }
-  if ( bulk_data.parallel_rank()==3 )
-  {
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 281 ), 1 ) );
-    ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 314 ), 1 ) );
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Node, 342 ), 1 ) );
-
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 321 ), 1 ) );
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 322 ), 1 ) );
-//     ep.push_back( stk::mesh::EntityProc( bulk_data.get_entity( stk::mesh::Element, 323 ), 1 ) );
-  }
-
-  bulk_data.change_entity_owner(ep);
-
-  bulk_data.modification_end();
-
-#endif
-
   // create new state and propagate information
   CreateState();
 }
@@ -401,7 +368,7 @@ void STK::Discretization::AdaptMesh( const std::vector<stk::mesh::EntityKey> & r
   //GetMesh().Dump( "unrefine" );
   Unrefine( unrefine );
   //GetMesh().Dump( "done" );
-  Rebalance();
+  //Rebalance();
   CreateState();
 }
 
@@ -489,9 +456,7 @@ void STK::Discretization::Rebalance()
 
   ep.reserve(numsend);
 
-  Epetra_Map nodemap = NodeRowMap();
-  Epetra_IntVector nodeproc(nodemap);
-  nodeproc.PutValue(-1);
+  std::map<int,int> nodeproc;
 
   STK::Mesh & mesh = GetMesh();
   stk::mesh::BulkData & bulk = mesh.BulkData();
@@ -506,7 +471,8 @@ void STK::Discretization::Rebalance()
     //std::cout << lid << " " << pid << " " << gid << "\n";
 
     stk::mesh::Entity * e = bulk.get_entity( stk::mesh::Element , gid );
-    if ( has_superset( e->bucket(), mesh.OwnedPart() ) )
+    //if ( has_superset( e->bucket(), mesh.OwnedPart() ) )
+    if ( rank == e->owner_rank() )
     {
       ep.push_back(stk::mesh::EntityProc(e,pid));
 
@@ -532,42 +498,61 @@ void STK::Discretization::Rebalance()
     for (stk::mesh::PairIterRelation::iterator inr=nrel.begin(); inr!=nrel.end(); ++inr)
     {
       stk::mesh::Entity * n = inr->entity();
-      if (rank==n->owner_rank())
+      if ( rank == n->owner_rank() )
       {
         int id = static_cast<int>( n->identifier() );
-        int nlid = nodemap.LID( id );
-        if (nlid<0)
-          throw std::logic_error("not a lid");
-        nodeproc[nlid] = std::max(nodeproc[nlid],pid);
+        std::map<int,int>::iterator nodeiter = nodeproc.find( id );
+        if ( nodeiter==nodeproc.end() )
+        {
+          nodeproc[id] = pid;
+        }
+        else
+        {
+          nodeiter->second = std::max( nodeiter->second, pid );
+        }
       }
     }
   }
 
   // add node communications
-  for (int i=0; i<nodeproc.MyLength(); ++i)
+  for ( std::map<int,int>::iterator nodeiter = nodeproc.begin();
+        nodeiter!=nodeproc.end();
+        ++nodeiter )
   {
-    int pid = nodeproc[i];
-    if (pid>-1)
+    int gid = nodeiter->first;
+    int pid = nodeiter->second;
+
+    stk::mesh::Entity * n = bulk.get_entity( stk::mesh::Node , gid );
+    if ( n!=NULL and rank==n->owner_rank() )
     {
-      int gid = nodemap.GID(i);
+      ep.push_back( stk::mesh::EntityProc( n, pid ) );
 
-      stk::mesh::Entity * n = bulk.get_entity( stk::mesh::Node , gid );
-      if ( stk::mesh::has_superset( n->bucket(), mesh.OwnedPart() ) )
+      // move hanging node constraints along with the node
+      stk::mesh::PairIterRelation pi = n->relations( stk::mesh::Constraint );
+      for ( ; not pi.empty(); ++pi )
       {
-        ep.push_back( stk::mesh::EntityProc( n, pid ) );
-
-        // move hanging node constraints along with the node
-        stk::mesh::PairIterRelation pi = n->relations( stk::mesh::Constraint );
-        for ( ; not pi.empty(); ++pi )
+        stk::mesh::Entity * c = pi->entity();
+        // a hanging node always is the first node in its constraint
+        if ( c->relations( stk::mesh::Node )->entity() == n )
         {
-          // a hanging node always is the first node in its constraint
-          if ( pi->entity()->relations( stk::mesh::Node )->entity() == n )
+          if ( rank == c->owner_rank() )
           {
-            ep.push_back( stk::mesh::EntityProc( pi->entity(), pid ) );
-            break;
+            ep.push_back( stk::mesh::EntityProc( c, pid ) );
           }
+          else
+          {
+            // The hanging node has a constraint but it does not belong to the
+            // same process. What am I to do?
+          }
+
+          // there is only one hanging node constraint per node
+          break;
         }
       }
+    }
+    else
+    {
+      dserror( "fatal mistake" );
     }
   }
 

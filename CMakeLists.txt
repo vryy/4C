@@ -189,152 +189,162 @@ find_package(Trilinos REQUIRED)
 
 #find_package(Blitz)
 
-#SET(Boost_USE_STATIC_LIBS ON) 
-#SET(Boost_USE_MULTITHREAD OFF) 
+SET(Boost_USE_STATIC_LIBS ON) 
+SET(Boost_USE_MULTITHREAD OFF) 
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
+FIND_PACKAGE( Boost COMPONENTS program_options )
+
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  set(LIBRARIES
+    ${Boost_LIBRARIES}
+    ${LIBRARIES}
+    )
+endif()
 
 # trilinos libraries
 # Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
-  set(USED_Trilinos_LIBRARIES
-    trilinoscouplings
-    noxepetra
-    nox
-    ifpack
-    aztecoo
-    amesos
-    ml
-    zoltan
-    epetraext
-    epetra
-    teuchos
-    )
+#  set(USED_Trilinos_LIBRARIES
+#    trilinoscouplings
+#    noxepetra
+#    nox
+#    ifpack
+#    aztecoo
+#    amesos
+#    ml
+#    zoltan
+#    epetraext
+#    epetra
+#    teuchos
+#    )
   
-  # some parts of baci might require additional trilinos libraries
+#  # some parts of baci might require additional trilinos libraries
 
-  if (STKADAPTIVE)
-    set(USED_Trilinos_LIBRARIES
-      stk_search stk_linsys
-      stk_mesh_fem stk_mesh_base 
-      #stk_util_use_cases 
-      stk_util_parallel 
-      #stk_util_diag 
-      #stk_util_env 
-      stk_util_util
-      #intrepid
-      #fei_test_utils fei_trilinos fei_base
-      shards
-      #isorropia
-      #zoltan
-      ${USED_Trilinos_LIBRARIES}
-      )
-  endif (STKADAPTIVE)
+#  if (STKADAPTIVE)
+#    set(USED_Trilinos_LIBRARIES
+#      stk_search stk_linsys
+#      stk_mesh_fem stk_mesh_base 
+#      #stk_util_use_cases 
+#      stk_util_parallel 
+#      #stk_util_diag 
+#      #stk_util_env 
+#      stk_util_util
+#      #intrepid
+#      #fei_test_utils fei_trilinos fei_base
+#      shards
+#      #isorropia
+#      #zoltan
+#      ${USED_Trilinos_LIBRARIES}
+#      )
+#  endif (STKADAPTIVE)
 
   set(LIBRARIES
-    ${USED_Trilinos_LIBRARIES}
+    ${Trilinos_LIBRARIES}
+    ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
 
 # define of which library we are using - for compatibility checks
-if (Trilinos_VERSION STREQUAL "10.1d") 
-add_definitions("-DTRILINOS_10_1d")
-else ()
-endif ()
+#if (Trilinos_VERSION STREQUAL "10.1d") 
+#add_definitions("-DTRILINOS_10_1d")
+#else ()
+#endif ()
 
 endif (Trilinos_FOUND)
 
-find_package(Umfpack)
-if (UMFPACK_FOUND)
-  include_directories(${UMFPACK_INCLUDE_DIRS})
-  link_directories(${UMFPACK_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${UMFPACK_LIBRARIES}
-    )
-else (UMFPACK_FOUND)
-  add_definitions("-DHAVENOT_UMFPACK")
-endif (UMFPACK_FOUND)
+#find_package(Umfpack)
+#if (UMFPACK_FOUND)
+#  include_directories(${UMFPACK_INCLUDE_DIRS})
+#  link_directories(${UMFPACK_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${UMFPACK_LIBRARIES}
+#    )
+#else (UMFPACK_FOUND)
+#  add_definitions("-DHAVENOT_UMFPACK")
+#endif (UMFPACK_FOUND)
 
-find_package(SuperLU)
-if (SUPERLU_FOUND)
-  include_directories(${SUPERLU_INCLUDE_DIRS})
-  link_directories(${SUPERLU_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${SUPERLU_LIBRARIES}
-    )
-else (SUPERLU_FOUND)
-  add_definitions("-DHAVENOT_SUPERLU")
-endif (SUPERLU_FOUND)
+#find_package(SuperLU)
+#if (SUPERLU_FOUND)
+#  include_directories(${SUPERLU_INCLUDE_DIRS})
+#  link_directories(${SUPERLU_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${SUPERLU_LIBRARIES}
+#    )
+#else (SUPERLU_FOUND)
+#  add_definitions("-DHAVENOT_SUPERLU")
+#endif (SUPERLU_FOUND)
 
-find_package(PARMETIS REQUIRED)
-if (PARMETIS_FOUND)
-  include_directories(${PARMETIS_INCLUDE_DIRS})
-  link_directories(${PARMETIS_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${PARMETIS_LIBRARIES}
-    )
-endif (PARMETIS_FOUND)
+#find_package(PARMETIS REQUIRED)
+#if (PARMETIS_FOUND)
+#  include_directories(${PARMETIS_INCLUDE_DIRS})
+#  link_directories(${PARMETIS_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${PARMETIS_LIBRARIES}
+#    )
+#endif (PARMETIS_FOUND)
 
-if (Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${Boost_LIBRARIES}
-    )
-endif(Boost_FOUND)
+#if (Boost_FOUND)
+#  include_directories(${Boost_INCLUDE_DIRS})
+#  link_directories(${Boost_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${Boost_LIBRARIES}
+#    )
+#endif(Boost_FOUND)
 
-find_package(NemesisI REQUIRED)
-if (NEMESIS_FOUND)
-  include_directories(${NEMESIS_INCLUDE_DIRS})
-  link_directories(${NEMESIS_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${NEMESIS_LIBRARIES}
-    )
-endif(NEMESIS_FOUND)
+#find_package(NemesisI REQUIRED)
+#if (NEMESIS_FOUND)
+#  include_directories(${NEMESIS_INCLUDE_DIRS})
+#  link_directories(${NEMESIS_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${NEMESIS_LIBRARIES}
+#    )
+#endif(NEMESIS_FOUND)
 
-find_package(ExodusII REQUIRED)
-if (EXODUS_FOUND)
-  include_directories(${EXODUS_INCLUDE_DIRS})
-  link_directories(${EXODUS_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${EXODUS_LIBRARIES}
-    )
-endif(EXODUS_FOUND)
+#find_package(ExodusII REQUIRED)
+#if (EXODUS_FOUND)
+#  include_directories(${EXODUS_INCLUDE_DIRS})
+#  link_directories(${EXODUS_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${EXODUS_LIBRARIES}
+#    )
+#endif(EXODUS_FOUND)
 
-find_package(Netcdf REQUIRED)
-if (NETCDF_FOUND)
-  include_directories(${NETCDF_INCLUDE_DIRS})
-  link_directories(${NETCDF_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${NETCDF_LIBRARIES}
-    )
-endif(NETCDF_FOUND)
+#find_package(Netcdf REQUIRED)
+#if (NETCDF_FOUND)
+#  include_directories(${NETCDF_INCLUDE_DIRS})
+#  link_directories(${NETCDF_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${NETCDF_LIBRARIES}
+#    )
+#endif(NETCDF_FOUND)
 
-if (LAPACK_FOUND)
-  include_directories(${LAPACK_INCLUDE_DIRS})
-  link_directories(${LAPACK_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${LAPACK_LIBRARIES}
-    )
-endif(LAPACK_FOUND)
+#if (LAPACK_FOUND)
+#  include_directories(${LAPACK_INCLUDE_DIRS})
+#  link_directories(${LAPACK_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${LAPACK_LIBRARIES}
+#    )
+#endif(LAPACK_FOUND)
 
-if (BLAS_FOUND)
-  include_directories(${BLAS_INCLUDE_DIRS})
-  link_directories(${BLAS_LIBRARY_DIRS})
-  set(LIBRARIES
-    ${LIBRARIES}
-    ${BLAS_LIBRARIES}
-    )
-endif(BLAS_FOUND)
+#if (BLAS_FOUND)
+#  include_directories(${BLAS_INCLUDE_DIRS})
+#  link_directories(${BLAS_LIBRARY_DIRS})
+#  set(LIBRARIES
+#    ${LIBRARIES}
+#    ${BLAS_LIBRARIES}
+#    )
+#endif(BLAS_FOUND)
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
@@ -1160,7 +1170,16 @@ set(OBJS_STK_REFINE
 set(OBJS_STK_FLUID
   src/stk_fluid/fluid_errorestimate.cpp
   src/stk_fluid/fluid_implicit.cpp
+  src/stk_fluid/fluid_problem.cpp
   src/stk_fluid/fluid_resulttest.cpp
+)
+set(OBJS_STK_STRUCTURE
+  src/stk_structure/str_genalpha.cpp
+  src/stk_structure/str_problem.cpp
+  src/stk_structure/str_resulttest.cpp
+)
+set(OBJS_STK_FSI
+  src/stk_fsi/fsi_problem.cpp
 )
 set(OBJS_DRT_STK
   src/drt_stk/stk_adaptive.cpp
@@ -1280,11 +1299,14 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 
+add_library(alg_stk_fsi ${OBJS_STK_FSI})
+
 set(MULTIFIELD_LIBRARIES
   alg_elch
   alg_fsi
   alg_loma
   alg_tsi
+  alg_stk_fsi
   )
 
 # the adapter layer
@@ -1303,6 +1325,7 @@ add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 
+add_library(alg_stk_structure ${OBJS_STK_STRUCTURE})
 add_library(alg_stk_fluid ${OBJS_STK_FLUID})
 
 set(SINGLEFIELD_LIBRARIES
@@ -1317,6 +1340,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_structure
   alg_invanalysis
   alg_thermo
+  alg_stk_structure
   alg_stk_fluid
   )
 
@@ -1497,6 +1521,9 @@ if (STKADAPTIVE)
 
   add_executable(stk_test_ownership src/stk_test/stk_test_ownership.cpp)
   target_link_libraries(stk_test_ownership stk_test_utils ${LIBRARIES})
+
+  add_executable(stk_test_ownership2 src/stk_test/stk_test_ownership2.cpp)
+  target_link_libraries(stk_test_ownership2 stk_test_utils ${LIBRARIES})
 
 #  add_executable (stk_test
 #    src/stk_test/stk_test.cpp

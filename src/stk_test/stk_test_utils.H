@@ -13,13 +13,14 @@
 
 void Print( stk::mesh::BulkData & bulk_data, std::ostream & stream );
 void Dump( stk::mesh::BulkData & bulk_data, std::string filename );
+void ShowSync( stk::mesh::BulkData & bulk_data, unsigned nx, unsigned ny );
 void Show( stk::mesh::BulkData & bulk_data, unsigned nx, unsigned ny );
 
 
 #define STK_TEST_MAIN( name )                                           \
   int main( int argc, char ** argv )                                    \
   {                                                                     \
-    stk::ParallelMachine pm = stk::parallel_machine_init( &argc , &argv ); \
+    stk::parallel_machine_init( &argc , &argv );                        \
     bool success;                                                       \
     name( success );                                                    \
     stk::parallel_machine_finalize();                                   \

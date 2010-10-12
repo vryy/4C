@@ -21,8 +21,6 @@
 
 #include "stk_discret_state.H"
 
-#include "../drt_lib/drt_condition.H"
-
 namespace MAT
 {
   namespace PAR
@@ -61,8 +59,9 @@ namespace STK
     /// construct empty discretization
     explicit Discretization( const Epetra_Comm & comm );
 
-    /// setup discretization to work with given algorithm
-    void Setup( DRT::Discretization & dis, STK::Algorithm & algo );
+    void MetaSetup( Teuchos::RCP<MetaMesh> meta, DRT::Discretization & dis );
+
+    void MeshSetup( Teuchos::RCP<Mesh> mesh, DRT::Discretization & dis );
 
     const Epetra_Comm & Comm() const { return comm_; }
 

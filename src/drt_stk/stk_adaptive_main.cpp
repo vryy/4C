@@ -1,19 +1,12 @@
 
 #include "stk_adaptive_main.H"
-#include "stk_fluid.H"
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
 
-#include "../stk_lib/stk_discret.H"
-#include "../stk_fluid/fluid_implicit.H"
-
-#include "../linalg/linalg_solver.H"
-
-#include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "../stk_structure/str_problem.H"
+#include "../stk_fluid/fluid_problem.H"
+#include "../stk_fsi/fsi_problem.H"
 
 void adaptive_main()
 {
@@ -24,10 +17,14 @@ void adaptive_main()
       switch (genprob.timetyp)
       {
         case time_static:
-          /* nonlinear statics with new discretization */
-          //break;
+          dserror( "nonlinear statics with new discretization" );
+          break;
         case time_dynamic:
-          //break;
+        {
+          STK::STR::Problem prb;
+          prb.Execute();
+          break;
+        }
         default:
           dserror("Unspecified time handling");
       }
@@ -50,63 +47,14 @@ void adaptive_main()
     case prb_fluid_pm:
     case prb_fluid:
     {
-      Teuchos::RCP<DRT::Discretization> actdis = null;
-      actdis = DRT::Problem::Instance()->Dis( genprob.numff, 0 );
-      if ( not actdis->HaveDofs() )
-      {
-        actdis->FillComplete();
-      }
-
-      // -------------------------------------------------------------------
-      // create a solver
-      // -------------------------------------------------------------------
-      Teuchos::RCP<LINALG::Solver> solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
-                               actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));
-      actdis->ComputeNullSpaceIfNecessary(solver->Params());
-
-#if 0
-      Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-      output->WriteMesh(0,0.0);
-      output->NewStep(0,0.0);
-      output->WriteElementData();
-#endif
-
-#if 1
-
-      STK::Discretization dis( actdis->Comm() );
-      STK::FLD::Fluid fluid( dis, solver );
-
-      dis.Setup( *actdis, fluid );
-
-      dis.AdaptMesh( std::vector<stk::mesh::EntityKey>(),
-                     std::vector<stk::mesh::EntityKey>() );
-
-      fluid.Integrate();
-
-      DRT::Problem::Instance()->AddFieldTest(fluid.CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(actdis->Comm());
-#else
-      STK::Fluid fluid( *actdis, solver );
-      fluid.SetupSTKMesh();
-
-      // full refinement
-      //fluid.RefineAll();
-      //fluid.RefineAll();
-
-      //fluid.RefineHalf();
-
-      //fluid.RefineFirst();
-
-      fluid.SetupDRTMesh();
-
-      fluid.Integrate();
-
-      DRT::Problem::Instance()->AddFieldTest(fluid.CreateFieldTest());
-      DRT::Problem::Instance()->TestAll(actdis->Comm());
-#endif
-
+      STK::FLD::Problem prb;
+      prb.Execute();
+      break;
+    }
+    case prb_fsi:
+    {
+      STK::FSI::Problem prb;
+      prb.Execute();
       break;
     }
     case prb_scatra:
@@ -117,10 +65,8 @@ void adaptive_main()
       //break;
     case prb_freesurf:
       //break;
-    case prb_fsi:
     case prb_pfsi:
     case prb_fsi_lung:
-      //break;
     case prb_fsi_xfem:
       //break;
     case prb_ale:

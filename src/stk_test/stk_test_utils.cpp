@@ -71,6 +71,20 @@ void Dump( stk::mesh::BulkData & bulk_data, std::string filename )
 }
 
 
+void ShowSync( stk::mesh::BulkData & bulk_data, unsigned nx, unsigned ny )
+{
+  for ( unsigned p=0; p<bulk_data.parallel_size(); ++p )
+  {
+    if ( p==bulk_data.parallel_rank() )
+    {
+      Show( bulk_data, nx, ny );
+      std::cout.flush();
+    }
+    MPI_Barrier( bulk_data.parallel() );
+  }
+}
+
+
 // far from perfect but good enough for now
 void Show( stk::mesh::BulkData & bulk_data, unsigned nx, unsigned ny )
 {
