@@ -1,0 +1,10 @@
+
+/// Adaptive meshes based on the stk libraries from trilinos
+/*!
+
+H. Carter Edwards: "Managing complexity in massively parallel, adaptive,
+multiphysics applications" in Engineering with Computers (pub. Springer),
+Volume 22, Number 3-4, 2006.  
+
+*/ 
+namespace STK { }
