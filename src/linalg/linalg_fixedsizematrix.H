@@ -4040,7 +4040,7 @@ TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& sour
 
 // Destructor
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::~Matrix()
+TMatrix<value_type,rows,cols>::~TMatrix()
 {
   if (not isview_)
     delete[] data_;
