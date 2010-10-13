@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include <limits>
@@ -1084,4 +1085,5 @@ void STK::Fluid::ErrorEstimate( std::vector<stk::mesh::EntityKey> & refine,
   }
 }
 
+#endif
 #endif

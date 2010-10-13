@@ -34,6 +34,13 @@
 namespace STK
 {
 
+/// central mesh type definition of a finite element mesh based on stk
+/*!
+  This is a wrapper around stk::mesh::MetaData that adds a few default
+  definitions.
+
+  \author u.kue
+ */
 class MetaMesh
 {
 public:
@@ -104,6 +111,13 @@ private:
 };
 
 
+/// central mesh instance of a finite element mesh based on stk
+/*!
+  This is a wrapper around stk::mesh::MetaData that adds a few default
+  definitions.
+
+  \author u.kue
+ */
 class Mesh
 {
 public:

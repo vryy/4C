@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #ifndef STK_FLUID_H
@@ -179,5 +180,6 @@ private:
 
 }
 
+#endif
 #endif
 #endif

@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #ifndef STK_ASSEMBLESTRATEGY_H
@@ -71,5 +72,6 @@ namespace STK
   };
 }
 
+#endif
 #endif
 #endif

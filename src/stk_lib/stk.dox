@@ -74,5 +74,21 @@ part. Hanging nodes are linked with constraints (which are nothing but
 entities) to their surrounding (surface) nodes. The whole mess of the mesh
 adaptivity comes down to its parallel implementation.
 
+The organization of the adaptivity implementation to different folders is as
+follows:
+
+- src/stk_refine -- the base mesh adaptivity package that is purely based on
+  stk. There is no reference to epetra of DRT here.
+
+- src/stk_lib -- the central classes to maintain a stk based mesh in baci and
+  use it for calculation. This includes the translation from DRT to stk and the
+  connection to LINALG solvers.
+
+- src/stk_test -- a bunch of independent tests that are not linked into baci
+  but executed on their own.
+
+- src/stk_[fluid|structure|fsi|...] -- special subdirectories for algorithms
+  which use the framework.
+
 */ 
 namespace STK { }

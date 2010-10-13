@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include <iostream>
@@ -1465,4 +1466,5 @@ void STK::Adaptive::SetupDirichletNodeMap()
   }
 }
 
+#endif
 #endif

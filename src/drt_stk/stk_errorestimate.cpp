@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include "stk_errorestimate.H"
@@ -766,4 +767,5 @@ void STK::FluidSideEvaluateHelper::Integrate( stk::mesh::ScalarField & error,
   }
 }
 
+#endif
 #endif

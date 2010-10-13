@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #ifndef STK_ADAPTIVE_H
@@ -112,5 +113,6 @@ private:
 
 }
 
+#endif
 #endif
 #endif

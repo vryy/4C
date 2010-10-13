@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #ifndef STK_GMSH_H
@@ -18,5 +19,6 @@ namespace STK
   void DumpGmsh( DRT::Discretization& dis, std::string name, Epetra_Vector & f, int step );
 }
 
+#endif
 #endif
 #endif

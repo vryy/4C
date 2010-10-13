@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include <Epetra_CrsMatrix.h>
@@ -467,4 +468,5 @@ void STK::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n, const E
   dserror( "not supported" );
 }
 
+#endif
 #endif

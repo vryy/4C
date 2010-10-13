@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include "stk_fixedsparsematrix.H"
@@ -355,5 +356,6 @@ void STK::FixedSparseMatrix::Assemble(int eid,
     }
   }
 }
+#endif
 #endif
 #endif

@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #ifndef STK_FIXEDSPARSEMATRIX_H
@@ -48,5 +49,6 @@ namespace STK
   };
 }
 
+#endif
 #endif
 #endif

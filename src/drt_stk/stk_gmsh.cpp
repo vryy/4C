@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include <fstream>
@@ -44,4 +45,5 @@ void STK::DumpGmsh( DRT::Discretization& dis, std::string name, Epetra_Vector & 
     std::cout << "\n";
 }
 
+#endif
 #endif

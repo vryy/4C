@@ -1,3 +1,4 @@
+#if 0
 #ifdef STKADAPTIVE
 
 #include "stk_fluidresulttest.H"
@@ -74,4 +75,5 @@ bool STK::FluidResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("FLUID");
 }
 
+#endif
 #endif
