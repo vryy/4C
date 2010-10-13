@@ -943,7 +943,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
           double m2 = cond->GetDouble("m2");
           double gamma_0 = cond->GetDouble("gamma_0");
           double gamma_min = cond->GetDouble("gamma_min");
-          double gamma_min_eq = cond->GetDouble("gamma_min_eq");
+          double gamma_min_eq = gamma_0-m1;
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 

@@ -1001,7 +1001,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(surfactant,"m2");
   AddNamedReal(surfactant,"gamma_0");
   AddNamedReal(surfactant,"gamma_min");
-  AddNamedReal(surfactant,"gamma_min_eq");
 
   condlist.push_back(surfactant);
 

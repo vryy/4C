@@ -394,8 +394,8 @@ DSURF 1
 E 2 - 1 1 0 0 0 0 0 0.03 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ---------------------------------------------SURFACTANT CONDITIONS
 DSURF 2
-E 6 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03 gamma_min_eq 22.0e-03
-E 5 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03 gamma_min_eq 22.0e-03
+E 6 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03
+E 5 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 0
 ----------------------------------DESIGN COUPLING POINT CONDITIONS
