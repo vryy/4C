@@ -23,11 +23,15 @@ namespace STK
 /*!
   Support off-row assembly such that each element is just once evaluated.
 
+  Support hanging nodes. Hanging node constraits are implicitly removed.
+
+  \author u.kue
  */
 class LinearSystem
 {
 public:
 
+  /// construct from a discretization
   LinearSystem( STK::Discretization & dis );
 
   /// @name Assemble
@@ -39,7 +43,7 @@ public:
                 const std::vector<int>& lmrowowner,
                 const std::vector<int>& lmcol);
 
-  /// assemble rhs
+  /// assemble rhs vector
   void Assemble(int eid,
                 const Epetra_SerialDenseVector& Vele,
                 const std::vector<int>& lm);
@@ -49,35 +53,53 @@ public:
 
   //@}
 
+  /// return sparse matrix
   Teuchos::RCP<Epetra_FECrsMatrix> Matrix() { return sysmat_; }
 
+  /// return rhs
   Teuchos::RCP<Epetra_Vector> RHS() { return rowrhs_; }
 
+  /// zero sparse matrix and rhs vector
   void Zero();
 
+  /// put Dirichlet values according to known Dirichlet map into sparse matrix
+  /// and rhs vector
   void ApplyDirichlet( Epetra_Vector & dirichlet );
 
 private:
 
+  /// create sparse matrix graph including Dirichlet rows and hanging node rows
   Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( STK::Discretization & dis );
 
+  /// sparse matrix
   Teuchos::RCP<Epetra_FECrsMatrix> sysmat_;
+
+  /// non-overlapping (row) rhs vector
   Teuchos::RCP<Epetra_Vector> rowrhs_;
+
+  /// overlapping (column) rhs vector
   Teuchos::RCP<Epetra_Vector> rhs_;
 
-  /// Dirichlet map
+  /// row Dirichlet map
   Epetra_Map rowdbcmap_;
+
+  /// column Dirichlet map
   Epetra_Map coldbcmap_;
 
+  /// transfer operator from column rhs to row rhs
   Epetra_Import importer_;
 
+  /// support data for hanging nodes
   struct DofData
   {
+    /// real node ids this node hangs on
     std::set<int> realdofmap;
+
+    /// distribution factor
     double fact;
   };
 
-  /// hn dof to real dof and factor
+  /// hanging node dof to real dof and factor
   std::map<int, DofData> hndofmap_;
 };
 
