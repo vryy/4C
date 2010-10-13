@@ -10,6 +10,7 @@ namespace STK
 
   class Mesh;
 
+/// Support data for mesh refinement algorithm
 struct CreationData
 {
   CreationData()
@@ -53,7 +54,15 @@ struct CreationData
 };
 
 
+/// parallel mesh refinement algorithm
+/*!
+  The Refine() method is called with a list of elements (actually entity keys)
+  that are to be refined. All selected elements will be refined. The mesh
+  state is preserved by greedy refinement. Neighboring elements are included
+  in the refinement set if required.
 
+  \author u.kue
+ */
 class RefineSet
 {
 public:

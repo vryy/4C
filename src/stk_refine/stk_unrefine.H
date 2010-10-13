@@ -9,6 +9,16 @@
 namespace STK
 {
 
+/// parallel mesh unrefinement algorithm
+/*!
+
+  The Unrefine() method is called with a list of elements (actually entity
+  keys) that are to be removed and replaced by their parent elements. The
+  selected elements will be unrefined only if the mesh remains in a valid
+  state. E.g. there is only one hanging node allowed on each element side.
+
+  \author u.kue
+ */
 class UnrefineSet
 {
 public:
