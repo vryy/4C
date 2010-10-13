@@ -375,10 +375,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         if (eastype_ == soh8_eassosh8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alphao,*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_SOSH8_,1>(*alphao,*alpha);
         }
         else if (eastype_ == soh8_easa) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alphao,*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_A_,1>(*alphao,*alpha);
         }
         else {
           dserror("Not impl.");
@@ -414,12 +414,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
         if (eastype_ == soh8_eassosh8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alpha,*alphao); // alpha := alphao
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_SOSH8_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_SOSH8_,1>(*alpha,*alphao); // alpha := alphao
         }
         else if (eastype_ == soh8_easa) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alpha,*alphao); // alpha := alphao
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_A_,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_A_,1>(*alpha,*alphao); // alpha := alphao
         }
         else {
           dserror("Not impl.");
@@ -452,10 +452,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         if (eastype_ == soh8_eassosh8) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_SOSH8_,1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_SOSH8_,1>(*alpha, *alphao);
         }
         else if (eastype_ == soh8_easa) {
-          LINALG::DENSEFUNCTIONS::update<NUMEAS_A_,1>(*alpha, *alphao);
+          LINALG::DENSEFUNCTIONS::update<double,NUMEAS_A_,1>(*alpha, *alphao);
         }
         else {
           dserror("Not impl.");

@@ -114,11 +114,11 @@ namespace LINALG
     This namespace contains inlined templated functions for various
     matrix operations. They need the matrix sizes as template
     arguments and take the matrices as Epetra_SerialDenseMatrix, or as
-    double*. Normally there is no need for calling them directly,
+    value_type*. Normally there is no need for calling them directly,
     because Matrix provides a more convenient
     interface.
 
-    All double* arguments are considered to be pointers to a matrix stored
+    All value_type* arguments are considered to be pointers to a matrix stored
     in column-major mode, just like the function A() of Epetra- or
     fixed size serial dense matrices return them.
 
@@ -129,7 +129,7 @@ namespace LINALG
   {
 
     /*
-     * Declaration of the functions taking double*
+     * Declaration of the functions taking value_type*
      *
      */
 
@@ -146,8 +146,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e left*\e right
     /*!
@@ -162,8 +162,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e left*\e right^T
     /*!
@@ -179,8 +179,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e left^T*\e right
     /*!
@@ -196,8 +196,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e left^T*\e right^T
     /*!
@@ -214,8 +214,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -232,8 +232,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -250,8 +250,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right^T
     /*!
@@ -269,8 +269,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right
     /*!
@@ -288,8 +288,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right^T
     /*!
@@ -308,8 +308,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -328,8 +328,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -348,8 +348,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
     /*!
@@ -369,8 +369,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
     /*!
@@ -390,8 +390,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
     /*!
@@ -412,8 +412,8 @@ namespace LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Invert matrix: \e out = inv(\e in)
     /*!
@@ -427,8 +427,8 @@ namespace LINALG
       \param in
         pointer to the matrix to be inverted, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline double invert(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(value_type* out, const value_type* in);
 
     /// Invert matrix: \e mat = inv(\e mat)
     /*!
@@ -440,8 +440,8 @@ namespace LINALG
       \param mat
         pointer to the matrix to be inverted in place, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline double invert(double* mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(value_type* mat);
 
     /// Compute determinant
     /*!
@@ -454,8 +454,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return determinant
      */
-    template <unsigned int i, unsigned int j>
-    inline double determinant(const double* mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type determinant(const value_type* mat);
 
     /// Copy: \e out = \e in
     /*!
@@ -467,8 +467,8 @@ namespace LINALG
       \param in
         pointer to the matrix to be copied, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type* in);
 
     /// Scaled copy: \e out = \e infac * \e in
     /*!
@@ -482,8 +482,8 @@ namespace LINALG
       \param in
         pointer to the matrix to read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double infac, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type infac, const value_type* in);
 
     /// Addition: \e out = \e outfac * \e out + \e infac * \e in
     /*!
@@ -499,8 +499,8 @@ namespace LINALG
       \param in
         pointer to the matrix to be added, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, double* out, const double infac, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, value_type* out, const value_type infac, const value_type* in);
 
     /// Addition: \e out = \e left + \e right
     /*!
@@ -515,9 +515,9 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double* left,
-                          const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type* left,
+                          const value_type* right);
 
     /// Addition: \e out = \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -537,8 +537,8 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double leftfac, const double* left, const double rightfac, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type leftfac, const value_type* left, const value_type rightfac, const value_type* right);
 
     /// Addition: \e out = \e outfac * \e out + \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -560,9 +560,9 @@ namespace LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, double* out, const double leftfac, const double* left,
-                          const double rightfac, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, value_type* out, const value_type leftfac, const value_type* left,
+                          const value_type rightfac, const value_type* right);
 
     /// Transposed copy: \e out = \e in^T
     /*!
@@ -574,8 +574,8 @@ namespace LINALG
       \param in
         pointer to the matrix to be copied, size (\c j)x(\c i)
      */
-    template <unsigned int i, unsigned int j>
-    inline void updateT(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(value_type* out, const value_type* in);
 
     /// Scaled transposed copy: \e out = \e infac * \e in^T
     /*!
@@ -589,8 +589,8 @@ namespace LINALG
       \param in
         pointer to the matrix to read from, size (\c j)x(\c i)
      */
-    template <unsigned int i, unsigned int j>
-    inline void updateT(double* out, const double infac, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(value_type* out, const value_type infac, const value_type* in);
 
     /// Transposed addition: \e out = \e outfac * \e out + \e infac * \e in^T
     /*!
@@ -606,8 +606,8 @@ namespace LINALG
       \param in
         pointer to the matrix to be added, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void updateT(const double outfac, double* out, const double infac, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(const value_type outfac, value_type* out, const value_type infac, const value_type* in);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -619,8 +619,8 @@ namespace LINALG
       \param in
         pointer to second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type* in);
 
     /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
     /*!
@@ -634,8 +634,8 @@ namespace LINALG
       \param in
         pointer to second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double fac, double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type fac, value_type* out, const value_type* in);
 
     /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -649,8 +649,8 @@ namespace LINALG
       \param right
         pointer to second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type* left, const value_type* right);
 
     /// Multiply element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
     /*!
@@ -666,8 +666,8 @@ namespace LINALG
       \param right
          pointer to second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiply element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
     /*!
@@ -685,8 +685,8 @@ namespace LINALG
       \param right
         pointer to second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e out(m,n)/\e in(m,n)
     /*!
@@ -698,8 +698,8 @@ namespace LINALG
       \param in
         pointer to divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type* in);
 
     /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)/\e in(m,n)
     /*!
@@ -713,8 +713,8 @@ namespace LINALG
       \param in
         pointer to divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double fac, double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type fac, value_type* out, const value_type* in);
 
     /// Divide element-wise, \e out(m,n) = \e left(m,n)/\e right(m,n)
     /*!
@@ -728,8 +728,8 @@ namespace LINALG
       \param right
         pointer to divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e infac*\e left(m,n)/\e right(m,n)
     /*!
@@ -745,8 +745,8 @@ namespace LINALG
       \param right
          pointer to divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)/\e right(m,n)
     /*!
@@ -764,8 +764,8 @@ namespace LINALG
       \param right
         pointer to divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double outfac, double* out, const double infac, const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Scale matrix
     /*!
@@ -777,8 +777,8 @@ namespace LINALG
       \param mat
         pointer to the matrix, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void scaleMatrix(const double fac, double* mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void scaleMatrix(const value_type fac, value_type* mat);
 
     /// Dot product
     /*!
@@ -791,8 +791,8 @@ namespace LINALG
         pointer to the second matrix, size (\c i)x(\c j)
       \return dot product
      */
-    template <unsigned int i, unsigned int j>
-    inline double dot(const double* left, const double* right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type dot(const value_type* left, const value_type* right);
 
     /// Set matrix to zero
     /*!
@@ -804,8 +804,8 @@ namespace LINALG
       \param mat
         pointer to the matrix, size (\c i)x(\c j)
      */
-    template<unsigned int i, unsigned int j>
-    inline void clearMatrix(double* mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void clearMatrix(value_type* mat);
 
     /// Fill matrix with scalar value
     /*!
@@ -817,8 +817,8 @@ namespace LINALG
       \param mat
         pointer to the matrix, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void putScalar(const double scalar, double* mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void putScalar(const value_type scalar, value_type* mat);
 
     /// Calculate absolut values of a matrix
     /*!
@@ -830,8 +830,8 @@ namespace LINALG
       \param in
         pointer to the matrix the values are read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void abs(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void abs(value_type* out, const value_type* in);
 
     /// Calculate reciprocal values of a matrix
     /*!
@@ -844,8 +844,8 @@ namespace LINALG
       \param in
         pointer to the matrix the values are read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void reciprocal(double* out, const double* in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void reciprocal(value_type* out, const value_type* in);
 
     /// 1-norm
     /*!
@@ -858,8 +858,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return 1-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double norm1(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm1(const value_type* mat);
 
     /// 2-norm (Euclidean norm)
     /*!
@@ -869,8 +869,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return 2-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double norm2(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm2(const value_type* mat);
 
     /// Inf-norm
     /*!
@@ -881,8 +881,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return inf-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double normInf(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type normInf(const value_type* mat);
 
     /// Minimum value of a matrix
     /*!
@@ -892,8 +892,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return minimum value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double minValue(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type minValue(const value_type* mat);
 
     /// Maximum value of a matrix
     /*!
@@ -903,8 +903,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return maximum value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double maxValue(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type maxValue(const value_type* mat);
 
     /// Mean value of a matrix
     /*!
@@ -914,8 +914,8 @@ namespace LINALG
         pointer to the matrix, size (\c i)x(\c j)
       \return mean value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double meanValue(const double* mat);
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type meanValue(const value_type* mat);
 
     /*
      * Declaration of the functions taking Epetra_SerialDenseMatrix
@@ -936,7 +936,7 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e left*\e right
@@ -952,7 +952,7 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e left*\e right^T
@@ -969,7 +969,7 @@ namespace LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size(\c
         j)x(\e k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e left^T*\e right
@@ -986,7 +986,7 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e left^T*\e right^T
@@ -1004,7 +1004,7 @@ namespace LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size(\c
         j)x(\e k)
      */
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
@@ -1022,8 +1022,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
@@ -1041,8 +1041,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right^T
@@ -1060,8 +1060,8 @@ namespace LINALG
       \param right
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right
@@ -1080,8 +1080,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right^T
@@ -1100,8 +1100,8 @@ namespace LINALG
       \param right
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
@@ -1121,8 +1121,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
@@ -1142,8 +1142,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
@@ -1164,8 +1164,8 @@ namespace LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size
         (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
@@ -1186,8 +1186,8 @@ namespace LINALG
       \param right
         second factor, size (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
@@ -1209,8 +1209,8 @@ namespace LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size
         (\c j)x(\c k)
      */
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
 
     /// Invert matrix: \e out = inv(\e in)
@@ -1228,8 +1228,8 @@ namespace LINALG
       \param in
         matrix to be inverted, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline double invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
 
     /// Invert matrix: \e mat = inv(\e mat)
     /*!
@@ -1244,8 +1244,8 @@ namespace LINALG
       \param mat
         matrix to be inverted in place, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline double invert(Epetra_SerialDenseMatrix& mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(Epetra_SerialDenseMatrix& mat);
 
     /// Compute determinant
     /*!
@@ -1259,8 +1259,8 @@ namespace LINALG
       \return determinant
      */
 
-    template <unsigned int i, unsigned int j>
-    inline double determinant(const Epetra_SerialDenseMatrix& mat);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type determinant(const Epetra_SerialDenseMatrix& mat);
 
     /// Copy: \e out = \e in
     /*!
@@ -1272,7 +1272,7 @@ namespace LINALG
       \param in
         matrix to be copied, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
 
     /// Scaled copy: \e out = \e infac * \e in
@@ -1287,8 +1287,8 @@ namespace LINALG
       \param in
         matrix to read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const double infac, const Epetra_SerialDenseMatrix& in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in);
 
     /// Addition: \e out = \e outfac * \e out + \e infac * \e in
     /*!
@@ -1304,8 +1304,8 @@ namespace LINALG
       \param in
         matrix to be added, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, Epetra_SerialDenseMatrix& out, const double infac, const Epetra_SerialDenseMatrix& in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in);
 
     /// Addition: \e out = \e left + \e right
     /*!
@@ -1320,7 +1320,7 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                           const Epetra_SerialDenseMatrix& right);
 
@@ -1342,9 +1342,9 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const double leftfac, const Epetra_SerialDenseMatrix& left,
-                          const double rightfac, const Epetra_SerialDenseMatrix& right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(Epetra_SerialDenseMatrix& out, const value_type leftfac, const Epetra_SerialDenseMatrix& left,
+                          const value_type rightfac, const Epetra_SerialDenseMatrix& right);
 
     /// Addition: \e out = \e outfac * \e out + \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -1366,9 +1366,9 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, Epetra_SerialDenseMatrix& out, const double leftfac,
-                          const Epetra_SerialDenseMatrix& left, const double rightfac, const Epetra_SerialDenseMatrix& right);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type leftfac,
+                          const Epetra_SerialDenseMatrix& left, const value_type rightfac, const Epetra_SerialDenseMatrix& right);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -1380,7 +1380,7 @@ namespace LINALG
       \param in
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
 
     /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
@@ -1395,8 +1395,8 @@ namespace LINALG
       \param in
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
 
     /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -1410,7 +1410,7 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
                                 const Epetra_SerialDenseMatrix right);
 
@@ -1428,8 +1428,8 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const value_type infac, const
                                 Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
 
     /// Multiply element-wise, \e out(m,n) = \e outfac*out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
@@ -1448,8 +1448,8 @@ namespace LINALG
       \param right
         second factor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type outfac, Epetra_SerialDenseMatrix out, const value_type infac, const
                                 Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
@@ -1462,7 +1462,7 @@ namespace LINALG
       \param in
         divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
 
     /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
@@ -1477,8 +1477,8 @@ namespace LINALG
       \param in
         divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
 
     /// Divide element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -1492,7 +1492,7 @@ namespace LINALG
       \param right
         divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
                               const Epetra_SerialDenseMatrix right);
 
@@ -1510,8 +1510,8 @@ namespace LINALG
       \param right
         divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const value_type infac, const
                               Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
 
     /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e right(m,n)
@@ -1530,8 +1530,8 @@ namespace LINALG
       \param right
         divisor, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type outfac, Epetra_SerialDenseMatrix out, const value_type infac, const
                               Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
 
     /// Scale matrix
@@ -1544,9 +1544,9 @@ namespace LINALG
       \param mat
         matrix, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void scaleMatrix(const double scalar, Epetra_SerialDenseMatrix& mat)
-    { scaleMatrix<i,j>(scalar, mat.A()); }
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void scaleMatrix(const value_type scalar, Epetra_SerialDenseMatrix& mat)
+    { scaleMatrix<value_type,i,j>(scalar, mat.A()); }
 
     /// Dot product
     /*!
@@ -1559,9 +1559,9 @@ namespace LINALG
         second matrix, size (\c i)x(\c j)
       \return dot product
      */
-    template <unsigned int i, unsigned int j>
-    inline double dot(const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
-    { return dot<i,j>(left.A(), right.A()); }
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type dot(const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    { return dot<value_type,i,j>(left.A(), right.A()); }
 
     /// Set matrix to zero
     /*!
@@ -1573,9 +1573,9 @@ namespace LINALG
       \param mat
         matrix, size (\c i)x(\c j)
      */
-    template<unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void clearMatrix(Epetra_SerialDenseMatrix& mat)
-    { clearMatrix<i,j>(mat.A()); }
+    { clearMatrix<value_type,i,j>(mat.A()); }
 
     /// Fill matrix with scalar value
     /*!
@@ -1587,9 +1587,9 @@ namespace LINALG
       \param mat
         matrix, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
-    inline void putScalar(const double scalar, Epetra_SerialDenseMatrix& mat)
-    { putScalar<i,j>(scalar, mat.A()); }
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void putScalar(const value_type scalar, Epetra_SerialDenseMatrix& mat)
+    { putScalar<value_type,i,j>(scalar, mat.A()); }
 
     /// Calculate absolut values of a matrix
     /*!
@@ -1601,7 +1601,7 @@ namespace LINALG
       \param in
         matrix the values are read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void abs(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
 
     /// Calculate reciprocal values of a matrix
@@ -1615,7 +1615,7 @@ namespace LINALG
       \param in
         matrix the values are read from, size (\c i)x(\c j)
      */
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void reciprocal(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
 
     /// 1-norm
@@ -1626,9 +1626,9 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return 1-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double norm1(const Epetra_SerialDenseMatrix& mat)
-    { return norm1<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm1(const Epetra_SerialDenseMatrix& mat)
+    { return norm1<value_type,i,j>(mat.A()); }
 
     /// 2-norm (Euclidean norm)
     /*!
@@ -1638,9 +1638,9 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return 2-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double norm2(const Epetra_SerialDenseMatrix& mat)
-    { return norm2<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm2(const Epetra_SerialDenseMatrix& mat)
+    { return norm2<value_type,i,j>(mat.A()); }
 
     /// Inf-norm
     /*!
@@ -1650,9 +1650,9 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return inf-norm of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double normInf(const Epetra_SerialDenseMatrix& mat)
-    { return normInf<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type normInf(const Epetra_SerialDenseMatrix& mat)
+    { return normInf<value_type,i,j>(mat.A()); }
 
     /// Minimum value of a matrix
     /*!
@@ -1662,9 +1662,9 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return minimum value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double minValue(const Epetra_SerialDenseMatrix& mat)
-    { return minValue<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type minValue(const Epetra_SerialDenseMatrix& mat)
+    { return minValue<value_type,i,j>(mat.A()); }
 
     /// Maximum value of a matrix
     /*!
@@ -1674,9 +1674,9 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return maximum value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double maxValue(const Epetra_SerialDenseMatrix& mat)
-    { return maxValue<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type maxValue(const Epetra_SerialDenseMatrix& mat)
+    { return maxValue<value_type,i,j>(mat.A()); }
 
     /// Mean value of a matrix
     /*!
@@ -1686,17 +1686,17 @@ namespace LINALG
         matrix, size (\c i)x(\c j)
       \return mean value of \e mat
      */
-    template <unsigned int i,  unsigned int j>
-    inline double meanValue(const Epetra_SerialDenseMatrix& mat)
-    { return meanValue<i,j>(mat.A()); }
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type meanValue(const Epetra_SerialDenseMatrix& mat)
+    { return meanValue<value_type,i,j>(mat.A()); }
 
     /*
-     * Definitions of the functions taking double*
+     * Definitions of the functions taking value_type*
      *
      */
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(value_type* out, const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1704,7 +1704,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1714,8 +1714,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(double* out, const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(value_type* out, const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1723,7 +1723,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1733,8 +1733,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(double* out, const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(value_type* out, const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1742,7 +1742,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3*k];
           }
@@ -1752,8 +1752,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(double* out, const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(value_type* out, const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1761,7 +1761,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3];
           }
@@ -1771,8 +1771,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(double* out, const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(value_type* out, const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1780,7 +1780,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3*k];
           }
@@ -1790,9 +1790,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(double* out, const double infac,
-                         const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(value_type* out, const value_type infac,
+                         const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1800,7 +1800,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1810,9 +1810,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1820,7 +1820,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1830,9 +1830,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1840,7 +1840,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3*k];
           }
@@ -1850,9 +1850,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1860,7 +1860,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3];
           }
@@ -1870,9 +1870,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1880,7 +1880,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3*k];
           }
@@ -1890,9 +1890,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, double* out, const double infac,
-                         const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(const value_type outfac, value_type* out, const value_type infac,
+                         const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1900,7 +1900,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1910,9 +1910,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const double outfac, double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const value_type outfac, value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1920,7 +1920,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3];
           }
@@ -1930,9 +1930,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const double outfac, double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const value_type outfac, value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1940,7 +1940,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i; ++c2) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3*i]*right[c1+c3*k];
           }
@@ -1950,9 +1950,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const double outfac, double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const value_type outfac, value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1960,7 +1960,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < j*k; c1 += j) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3];
           }
@@ -1970,9 +1970,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const double outfac, double* out, const double infac,
-                           const double* const left, const double* const right)
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const value_type outfac, value_type* out, const value_type infac,
+                           const value_type* const left, const value_type* const right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -1980,7 +1980,7 @@ namespace LINALG
 #endif
       for (unsigned int c1=0; c1 < k; ++c1) {
         for (unsigned int c2=0; c2 < i*j; c2 += j) {
-          double tmp = left[c2]*right[c1];
+          value_type tmp = left[c2]*right[c1];
           for (unsigned int c3=1; c3 < j; ++c3) {
             tmp += left[c2+c3]*right[c1+c3*k];
           }
@@ -1990,38 +1990,27 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double invert(double* out, const double* in)
+    template<class value_type>
+    inline value_type invert1x1(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
-      DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
-      return 0.0;
-    }
-
-    template<>
-    inline double invert<1,1>(double* out, const double* in)
-    {
-#ifdef DEBUG
-      if (out==in) dserror("'out' and 'in' point to same memory location");
-#endif
-      const double det = in[0];
+      const value_type det = in[0];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
       out[0] = 1.0/in[0];
       return det;
     }
 
-    template<>
-    inline double invert<2,2>(double* out, const double* in)
+    template<class value_type>
+    inline value_type invert2x2(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      const double det = in[0]*in[1+1*2] - in[1]*in[1*2];
+      const value_type det = in[0]*in[1+1*2] - in[1]*in[1*2];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
-      const double invdet = 1.0/det;
+      const value_type invdet = 1.0/det;
       out[0    ] =  invdet*in[1+1*2];
       out[1    ] = -invdet*in[1    ];
       out[  1*2] = -invdet*in[  1*2];
@@ -2030,8 +2019,8 @@ namespace LINALG
     }
 
 
-    template<>
-    inline double invert<3,3>(double* out, const double* in)
+    template<class value_type>
+    inline value_type invert3x3(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2039,15 +2028,15 @@ namespace LINALG
       out[0] = in[1+1*3]*in[2+2*3] - in[2+1*3]*in[1+2*3];
       out[1] = in[2    ]*in[1+2*3] - in[1    ]*in[2+2*3];
       out[2] = in[1    ]*in[2+1*3] - in[2    ]*in[1+1*3];
-      const double det = in[0] * out[0] + in[1*3] * out[1] + in[2*3] * out[2];
-      //const double det = in[0]*in[1+3*1]*in[2+3*2] +
+      const value_type det = in[0] * out[0] + in[1*3] * out[1] + in[2*3] * out[2];
+      //const value_type det = in[0]*in[1+3*1]*in[2+3*2] +
       //                   in[0+3*1]*in[1+3*2]*in[2+3*0] +
       //                   in[0+3*2]*in[1+3*0]*in[2+3*1] -
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
-      const double invdet = 1.0/det;
+      const value_type invdet = 1.0/det;
       out[0    ] *= invdet;
       out[1    ] *= invdet;
       out[2    ] *= invdet;
@@ -2060,30 +2049,45 @@ namespace LINALG
       return det;
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double invert(double* mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(value_type* out, const value_type* in)
     {
+#ifdef DEBUG
+      if (out==in) dserror("'out' and 'in' point to same memory location");
+#endif
       DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
-      DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
-      return 0.0;
+
+      switch ( i )
+      {
+      case 1:
+        return invert1x1( out, in );
+      case 2:
+        return invert2x2( out, in );
+      case 3:
+        return invert3x3( out, in );
+      default:
+        DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
+        return 0.0;
+      }
     }
 
-    template <>
-    inline double invert<1,1>(double* mat)
+
+    template <class value_type>
+    inline value_type invert1x1(value_type* mat)
     {
-      const double det = mat[0];
+      const value_type det = mat[0];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 1x1 matrix is zero");
       mat[0] = 1.0/mat[0];
       return det;
     }
 
-    template<>
-    inline double invert<2,2>(double* mat)
+    template<class value_type>
+    inline value_type invert2x2(value_type* mat)
     {
-      double tmp;
-      const double det = mat[0]*mat[1+1*2] - mat[1]*mat[1*2];
+      value_type tmp;
+      const value_type det = mat[0]*mat[1+1*2] - mat[1]*mat[1*2];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 2x2 matrix is zero");
-      const double invdet = 1.0/det;
+      const value_type invdet = 1.0/det;
       tmp = mat[0    ]; mat[0    ] = invdet*mat[1+1*2]; mat[1+1*2] = invdet*tmp;
       mat[1    ] *= -invdet;
       mat[  1*2] *= -invdet;
@@ -2091,24 +2095,24 @@ namespace LINALG
     }
 
 
-    template<>
-    inline double invert<3,3>(double* mat)
+    template<class value_type>
+    inline value_type invert3x3(value_type* mat)
     {
-      const double tmp00 = mat[1+1*3]*mat[2+2*3] - mat[2+1*3]*mat[1+2*3];
-      const double tmp10 = mat[2    ]*mat[1+2*3] - mat[1    ]*mat[2+2*3];
-      const double tmp20 = mat[1    ]*mat[2+1*3] - mat[2    ]*mat[1+1*3];
-      const double det = mat[0] * tmp00 + mat[1*3] * tmp10 + mat[2*3] * tmp20;
-      //const double det = mat[0+3*0]*mat[1+3*1]*mat[2+3*2] +
+      const value_type tmp00 = mat[1+1*3]*mat[2+2*3] - mat[2+1*3]*mat[1+2*3];
+      const value_type tmp10 = mat[2    ]*mat[1+2*3] - mat[1    ]*mat[2+2*3];
+      const value_type tmp20 = mat[1    ]*mat[2+1*3] - mat[2    ]*mat[1+1*3];
+      const value_type det = mat[0] * tmp00 + mat[1*3] * tmp10 + mat[2*3] * tmp20;
+      //const value_type det = mat[0+3*0]*mat[1+3*1]*mat[2+3*2] +
       //                    mat[0+3*1]*mat[1+3*2]*mat[2+3*0] +
       //                    mat[0+3*2]*mat[1+3*0]*mat[2+3*1] -
       //                    mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
       //                    mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
       //                    mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
       if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
-      const double invdet = 1.0/det;
-      const double tmp01 = mat[  1*3];
-      const double tmp11 = mat[1+1*3];
-      const double tmp12 = mat[1+2*3];
+      const value_type invdet = 1.0/det;
+      const value_type tmp01 = mat[  1*3];
+      const value_type tmp11 = mat[1+1*3];
+      const value_type tmp12 = mat[1+2*3];
       mat[  1*3] = invdet * (mat[2+1*3] * mat[  2*3] -    tmp01   * mat[2+2*3]);
       mat[1+1*3] = invdet * (mat[0    ] * mat[2+2*3] - mat[2    ] * mat[  2*3]);
       mat[1+2*3] = invdet * (mat[1    ] * mat[  2*3] - mat[0    ] *    tmp12  );
@@ -2122,70 +2126,84 @@ namespace LINALG
     }
 
 
-    template <unsigned int i, unsigned int j>
-    inline double determinant(const double* mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(value_type* mat)
+    {
+      DENSEERROR::Checker<i==j>::Cannot_compute_inverse_of_nonsquare_matrix();
+
+      switch ( i )
+      {
+      case 1:
+        return invert1x1( mat );
+      case 2:
+        return invert2x2( mat );
+      case 3:
+        return invert3x3( mat );
+      default:
+        DENSEERROR::Checker<(i < 4)>::Use_FixedSizeSerialDenseSolver_for_matrices_bigger_than_3x3();
+        return 0.0;
+      }
+    }
+
+
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type determinant(const value_type* mat)
     {
       DENSEERROR::Checker<i == j>::Cannot_compute_determinant_of_nonsquare_matrix();
 
-      // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
-      // only with minor changes.
-      std::vector<double> tmp(i*j);
-      update<i,j>(&tmp[0],mat);
-      Epetra_LAPACK lapack;
-      std::vector<int> ipiv(j);
-      int info;
-      lapack.GETRF(i,j,&tmp[0],i,&ipiv[0],&info);
-      if (info<0) dserror("Lapack's dgetrf returned %d",info);
-      else if (info>0) return 0.0;
-      double d = tmp[0];
-      for (unsigned int c=1; c<j; ++c) d *= tmp[c+i*c];
-      // swapping rows of A changes the sign of the determinant, so we have to
-      // undo lapack's permutation w.r.t. the determinant
-      // note the fortran indexing convention in ipiv
-      for (unsigned int c=0; c<j; ++c)
-        if (static_cast<unsigned>(ipiv[c])!=c+1) d *= -1.0;
-      return d;
-    }
-
-    template <>
-    inline double determinant<1,1>(const double* mat)
-    {
-      return *mat;
-    }
-
-    template <>
-    inline double determinant<2,2>(const double* mat)
-    {
-      return mat[0    ]*mat[1+1*2] - mat[1    ]*mat[  1*2];
-    }
-
-    template <>
-    inline double determinant<3,3>(const double* mat)
-    {
-      return mat[0    ] * (mat[1+1*3]*mat[2+2*3] - mat[2+1*3]*mat[1+2*3]) +
-        mat[  1*3] * (mat[2    ]*mat[1+2*3] - mat[1    ]*mat[2+2*3]) +
-        mat[  2*3] * (mat[1    ]*mat[2+1*3] - mat[2    ]*mat[1+1*3]);
-      //return mat[0]*mat[1+3*1]*mat[2+3*2] +
-      //  mat[0+3*1]*mat[1+3*2]*mat[2+3*0] +
-      //  mat[0+3*2]*mat[1+3*0]*mat[2+3*1] -
-      //  mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
-      //  mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
-      //  mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
+      switch ( i )
+      {
+      case 1:
+        return *mat;
+      case 2:
+        return mat[0    ]*mat[1+1*2] - mat[1    ]*mat[  1*2];
+      case 3:
+        return mat[0    ] * (mat[1+1*3]*mat[2+2*3] - mat[2+1*3]*mat[1+2*3]) +
+          mat[  1*3] * (mat[2    ]*mat[1+2*3] - mat[1    ]*mat[2+2*3]) +
+          mat[  2*3] * (mat[1    ]*mat[2+1*3] - mat[2    ]*mat[1+1*3]);
+        //return mat[0]*mat[1+3*1]*mat[2+3*2] +
+        //  mat[0+3*1]*mat[1+3*2]*mat[2+3*0] +
+        //  mat[0+3*2]*mat[1+3*0]*mat[2+3*1] -
+        //  mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
+        //  mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
+        //  mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
+      default:
+      {
+        // taken from src/drt_lib/linalg_utils.cpp: LINALG::DeterminantLU,
+        // only with minor changes.
+        std::vector<value_type> tmp(i*j);
+        update<value_type,i,j>(&tmp[0],mat);
+        Epetra_LAPACK lapack;
+        std::vector<int> ipiv(j);
+        int info;
+        lapack.GETRF(i,j,&tmp[0],i,&ipiv[0],&info);
+        if (info<0) dserror("Lapack's dgetrf returned %d",info);
+        else if (info>0) return 0.0;
+        value_type d = tmp[0];
+        for (unsigned int c=1; c<j; ++c) d *= tmp[c+i*c];
+        // swapping rows of A changes the sign of the determinant, so we have to
+        // undo lapack's permutation w.r.t. the determinant
+        // note the fortran indexing convention in ipiv
+        for (unsigned int c=0; c<j; ++c)
+          if (static_cast<unsigned>(ipiv[c])!=c+1) d *= -1.0;
+        return d;
+      }
+      }
     }
 
     /* add matrices */
 
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      std::memcpy(out, in, i*j*sizeof(double));
+      std::memcpy(out, in, i*j*sizeof(value_type));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void update(double* out, const double infac, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(value_type* out, const value_type infac, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2195,14 +2213,14 @@ namespace LINALG
         *(++out) = infac*(*(++in));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, double* out, const double infac, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, value_type* out, const value_type infac, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
-        update<i,j>(out,infac,in);
+        update<value_type,i,j>(out,infac,in);
         return;
       }
       *out *= outfac;
@@ -2213,9 +2231,9 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline
-    void update(double* out, const double* left, const double* right)
+    void update(value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2226,9 +2244,9 @@ namespace LINALG
         *(++out) = *(++left) + *(++right);
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline
-    void update(double* out, const double leftfac, const double* left, const double rightfac, const double* right)
+    void update(value_type* out, const value_type leftfac, const value_type* left, const value_type rightfac, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2239,17 +2257,17 @@ namespace LINALG
         *(++out) = leftfac*(*(++left)) + rightfac*(*(++right));
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline
-    void update(const double outfac, double* out, const double leftfac, const double* left,
-                   const double rightfac, const double* right)
+    void update(const value_type outfac, value_type* out, const value_type leftfac, const value_type* left,
+                   const value_type rightfac, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
-        update<i,j>(out,leftfac,left,rightfac,right);
+        update<value_type,i,j>(out,leftfac,left,rightfac,right);
         return;
       }
       *out *= outfac;
@@ -2260,8 +2278,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void updateT(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2271,8 +2289,8 @@ namespace LINALG
           *(out++) = in[c2+c1*j];
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void updateT(double* out, const double infac, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(value_type* out, const value_type infac, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2282,14 +2300,14 @@ namespace LINALG
           *(out++) = infac*in[c2+c1*j];
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void updateT(const double outfac, double* out, const double infac, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void updateT(const value_type outfac, value_type* out, const value_type infac, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30) { // cannot handle this case here, because 0*nan==nan
-        updateT<i,j>(out,infac,in);
+        updateT<value_type,i,j>(out,infac,in);
         return;
       }
       for (unsigned int c2=0; c2 < j; c2 += 1) {
@@ -2300,8 +2318,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2311,8 +2329,8 @@ namespace LINALG
         *(++out) *= *(++in);
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double fac, double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type fac, value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2322,8 +2340,8 @@ namespace LINALG
         *(++out) *= fac*(*(++in));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2334,8 +2352,8 @@ namespace LINALG
         *(++out) = (*(++left)) * (*(++right));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(double* out, const double infac, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2346,15 +2364,15 @@ namespace LINALG
         *(++out) = infac * (*(++left)) * (*(++right));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double outfac, double* out, const double infac, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30) {
-        eMultiply<i,j>(out,infac,left,right);
+        eMultiply<value_type,i,j>(out,infac,left,right);
         return;
       }
       *out = outfac * (*out) + infac * (*left) * (*right);
@@ -2364,8 +2382,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2375,8 +2393,8 @@ namespace LINALG
         *(++out) /= *(++in);
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double fac, double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type fac, value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2388,8 +2406,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2400,8 +2418,8 @@ namespace LINALG
         *(++out) = (*(++left)) / (*(++right));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(double* out, const double infac, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2412,15 +2430,15 @@ namespace LINALG
         *(++out) = infac * (*(++left)) / (*(++right));
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double outfac, double* out, const double infac, const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type outfac, value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
       if (out==right) dserror("'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30) {
-        eDivide<i,j>(out,infac,left,right);
+        eDivide<value_type,i,j>(out,infac,left,right);
         return;
       }
       *out = outfac * (*out) + infac * (*left) / (*right);
@@ -2430,19 +2448,19 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline
-    void scaleMatrix(const double scalar, double* mat)
+    void scaleMatrix(const value_type scalar, value_type* mat)
     {
       *mat *= scalar;
       for (unsigned int c = 1; c < i*j; ++c)
         *(++mat) *= scalar;
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double dot(const double* left, const double* right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type dot(const value_type* left, const value_type* right)
     {
-      double res = (*left)*(*right);
+      value_type res = (*left)*(*right);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++left; ++right;
         res += (*left)*(*right);
@@ -2450,15 +2468,15 @@ namespace LINALG
       return res;
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void clearMatrix(double* mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void clearMatrix(value_type* mat)
     {
-      std::memset(mat,0,i*j*sizeof(double));
+      std::memset(mat,0,i*j*sizeof(value_type));
     }
 
 
-    template <unsigned int i, unsigned int j>
-    inline void putScalar(const double scalar, double* mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void putScalar(const value_type scalar, value_type* mat)
     {
       *mat = scalar;
       for (unsigned int c = 1; c < i*j; ++c) {
@@ -2467,8 +2485,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void abs(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void abs(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2480,8 +2498,8 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void reciprocal(double* out, const double* in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void reciprocal(value_type* out, const value_type* in)
     {
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
@@ -2493,10 +2511,10 @@ namespace LINALG
       }
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double norm1(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm1(const value_type* mat)
     {
-      double result = *mat >= 0 ? *mat : -(*mat);
+      value_type result = *mat >= 0 ? *mat : -(*mat);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++mat;
         result += *mat >= 0 ? *mat : -(*mat);
@@ -2504,10 +2522,10 @@ namespace LINALG
       return result;
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double norm2(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type norm2(const value_type* mat)
     {
-      double result = (*mat)*(*mat);
+      value_type result = (*mat)*(*mat);
       for (unsigned int c = 1; c < i*j; ++c) {
         ++mat;
         result += (*mat)*(*mat);
@@ -2515,11 +2533,11 @@ namespace LINALG
       return std::sqrt(result);
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double normInf(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type normInf(const value_type* mat)
     {
-      double result = *mat > 0 ? *mat : -*mat;
-      double tmp;
+      value_type result = *mat > 0 ? *mat : -*mat;
+      value_type tmp;
       for (unsigned int c = 1; c < i*j; ++c) {
         ++mat;
         tmp = *mat >= 0 ? *mat : -*mat;
@@ -2528,10 +2546,10 @@ namespace LINALG
       return result;
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double minValue(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type minValue(const value_type* mat)
     {
-      double result = *mat;
+      value_type result = *mat;
       for (unsigned int c = 1; c < i*j; ++c) {
         ++mat;
         if (*mat < result) result = *mat;
@@ -2539,10 +2557,10 @@ namespace LINALG
       return result;
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double maxValue(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type maxValue(const value_type* mat)
     {
-      double result = *mat;
+      value_type result = *mat;
       for (unsigned int c = 1; c < i*j; ++c) {
         ++mat;
         if (*mat > result) result = *mat;
@@ -2550,10 +2568,10 @@ namespace LINALG
       return result;
     }
 
-    template <unsigned int i,  unsigned int j>
-    inline double meanValue(const double* mat)
+    template <class value_type, unsigned int i,  unsigned int j>
+    inline value_type meanValue(const value_type* mat)
     {
-      double result = *mat;
+      value_type result = *mat;
       for (unsigned int c = 1; c < i*j; ++c)
         result += *(++mat);
       return result/(i*j);
@@ -2561,7 +2579,7 @@ namespace LINALG
 
 #if 0
     template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(double* out, const double* left, const double* right)
+    inline void reciprocalMultiply(value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2575,7 +2593,7 @@ namespace LINALG
     }
 
     template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(const double outfac, double* out, const double prodfac, const double* left, const double* right)
+    inline void reciprocalMultiply(const value_type outfac, value_type* out, const value_type prodfac, const value_type* left, const value_type* right)
     {
 #ifdef DEBUG
       if (out==left) dserror("'out' and 'left' point to same memory location");
@@ -2594,7 +2612,7 @@ namespace LINALG
      *
      */
 
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                          const Epetra_SerialDenseMatrix& right)
     {
@@ -2603,10 +2621,10 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k>(out.A(), left.A(), right.A());
+      multiply<value_type,i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                            const Epetra_SerialDenseMatrix& right)
     {
@@ -2615,10 +2633,10 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNN<i,j,k>(out.A(), left.A(), right.A());
+      multiplyNN<value_type,i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                            const Epetra_SerialDenseMatrix& right)
     {
@@ -2627,10 +2645,10 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNT<i,j,k>(out.A(), left.A(), right.A());
+      multiplyNT<value_type,i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                            const Epetra_SerialDenseMatrix& right)
     {
@@ -2639,10 +2657,10 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTN<i,j,k>(out.A(), left.A(), right.A());
+      multiplyTN<value_type,i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
     inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                            const Epetra_SerialDenseMatrix& right)
     {
@@ -2651,11 +2669,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTT<i,j,k>(out.A(), left.A(), right.A());
+      multiplyTT<value_type,i,j,k>(out.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2663,11 +2681,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k>(out.A(), infac, left.A(), right.A());
+      multiply<value_type,i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2675,11 +2693,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNN<i,j,k>(out.A(), infac, left.A(), right.A());
+      multiplyNN<value_type,i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2687,11 +2705,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNT<i,j,k>(out.A(), infac, left.A(), right.A());
+      multiplyNT<value_type,i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2699,11 +2717,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTN<i,j,k>(out.A(), infac, left.A(), right.A());
+      multiplyTN<value_type,i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2711,12 +2729,12 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTT<i,j,k>(out.A(), infac, left.A(), right.A());
+      multiplyTT<value_type,i,j,k>(out.A(), infac, left.A(), right.A());
     }
 
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiply(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                          const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2724,11 +2742,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiply<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+      multiply<value_type,i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNN(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2736,11 +2754,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNN<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyNN<value_type,i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyNT(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2748,11 +2766,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyNT<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyNT<value_type,i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTN(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2760,11 +2778,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTN<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyTN<value_type,i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const double outfac, Epetra_SerialDenseMatrix& out, const double infac,
+    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    inline void multiplyTT(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac,
                            const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -2772,40 +2790,40 @@ namespace LINALG
         dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      multiplyTT<i,j,k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyTT<value_type,i,j,k>(outfac, out.A(), infac, left.A(), right.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in)
     {
 #ifdef DEBUG
       if (out.M() != out.N() or in.M() != in.N() or out.M() != in.M())
         dserror("Invalid matrix sizes for inversion, (%i,%i) = inv( (%i,%i) )",out.M(),out.N(),in.M(),in.N());
 #endif
-      return invert<i,j>(out.A(), in.A());
+      return invert<value_type,i,j>(out.A(), in.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double invert(Epetra_SerialDenseMatrix& mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type invert(Epetra_SerialDenseMatrix& mat)
     {
 #ifdef DEBUG
       if (mat.M() != mat.N())
         dserror("Invalid matrix sizes for inversion, inv( (%i,%i) )",mat.M(),mat.N());
 #endif
-      return invert<i,j>(mat.A());
+      return invert<value_type,i,j>(mat.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline double determinant(const Epetra_SerialDenseMatrix& mat)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline value_type determinant(const Epetra_SerialDenseMatrix& mat)
     {
 #ifdef DEBUG
       if (mat.M() != mat.N())
         dserror("Invalid matrix sizes for determinant, inv( (%i,%i) )",mat.M(),mat.N());
 #endif
-      return determinant<i,j>(mat.A());
+      return determinant<value_type,i,j>(mat.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
                        const Epetra_SerialDenseMatrix& right)
     {
@@ -2814,34 +2832,34 @@ namespace LINALG
         dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      update<i,j>(out.A(), left.A(), right.A());
+      update<value_type,i,j>(out.A(), left.A(), right.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const double leftfac, const Epetra_SerialDenseMatrix& left,
-                       const double rightfac, const Epetra_SerialDenseMatrix& right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(Epetra_SerialDenseMatrix& out, const value_type leftfac, const Epetra_SerialDenseMatrix& left,
+                       const value_type rightfac, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or left.N() != right.N())
         dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      update<i,j>(out.A(), leftfac, left.A(), rightfac, right.A());
+      update<value_type,i,j>(out.A(), leftfac, left.A(), rightfac, right.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, Epetra_SerialDenseMatrix& out, const double leftfac,
-                       const Epetra_SerialDenseMatrix& left, const double rightfac, const Epetra_SerialDenseMatrix& right)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type leftfac,
+                       const Epetra_SerialDenseMatrix& left, const value_type rightfac, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or left.N() != right.N())
         dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
                 out.M(),out.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      update<i,j>(outfac, out.A(), leftfac, left.A(), rightfac, right.A());
+      update<value_type,i,j>(outfac, out.A(), leftfac, left.A(), rightfac, right.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in)
     {
 #ifdef DEBUG
@@ -2849,33 +2867,33 @@ namespace LINALG
         dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)",
                 out.M(),out.N(), in.M(), in.N());
 #endif
-      update<i,j>(out.A(), in.A());
+      update<value_type,i,j>(out.A(), in.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const double infac, const Epetra_SerialDenseMatrix& in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in)
     {
 #ifdef DEBUG
       if (out.M() != in.M() or out.N() != in.N())
         dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)",
                 out.M(),out.N(), in.M(), in.N());
 #endif
-      update<i,j>(out.A(), infac, in.A());
+      update<value_type,i,j>(out.A(), infac, in.A());
     }
 
 
-    template <unsigned int i, unsigned int j>
-    inline void update(const double outfac, Epetra_SerialDenseMatrix& out, const double infac, const Epetra_SerialDenseMatrix& in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in)
     {
 #ifdef DEBUG
       if (out.M() != in.M() or out.N() != in.N())
         dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)",
                 out.M(),out.N(), in.M(), in.N());
 #endif
-      update<i,j>(outfac, out.A(), infac, in.A());
+      update<value_type,i,j>(outfac, out.A(), infac, in.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
     {
 #ifdef DEBUG
@@ -2883,21 +2901,21 @@ namespace LINALG
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)",
                 i,j,out.M(),out.N(),in.M(),in.N());
 #endif
-      eMultiply<i,j>(out.A(),in.A());
+      eMultiply<value_type,i,j>(out.A(),in.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)",
                 i,j,out.M(),out.N(),in.M(),in.N());
 #endif
-      eMultiply<i,j>(fac,out.A(),in.A());
+      eMultiply<value_type,i,j>(fac,out.A(),in.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
                                 const Epetra_SerialDenseMatrix right)
     {
@@ -2906,11 +2924,11 @@ namespace LINALG
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
                 i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-      eMultiply<i,j>(out.A(),left.A(),right.A());
+      eMultiply<value_type,i,j>(out.A(),left.A(),right.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const double infac, const Epetra_SerialDenseMatrix left,
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(Epetra_SerialDenseMatrix out, const value_type infac, const Epetra_SerialDenseMatrix left,
                                 const Epetra_SerialDenseMatrix right)
   {
 #ifdef DEBUG
@@ -2919,11 +2937,11 @@ namespace LINALG
       dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
               i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-    eMultiply<i,j>(out.A(),infac,left.A(),right.A());
+    eMultiply<value_type,i,j>(out.A(),infac,left.A(),right.A());
   }
 
-    template <unsigned int i, unsigned int j>
-    inline void eMultiply(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eMultiply(const value_type outfac, Epetra_SerialDenseMatrix out, const value_type infac, const
                                 Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
     {
 #ifdef DEBUG
@@ -2931,10 +2949,10 @@ namespace LINALG
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
                 i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-      eMultiply<i,j>(outfac,out.A(),infac,left.A(),right.A());
+      eMultiply<value_type,i,j>(outfac,out.A(),infac,left.A(),right.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
     {
 #ifdef DEBUG
@@ -2942,21 +2960,21 @@ namespace LINALG
         dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)",
                 i,j,out.M(),out.N(),in.M(),in.N());
 #endif
-      eDivide<i,j>(out.A(),in.A());
+      eDivide<value_type,i,j>(out.A(),in.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
         dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)",
                 i,j,out.M(),out.N(),in.M(),in.N());
 #endif
-      eDivide<i,j>(fac,out.A(),in.A());
+      eDivide<value_type,i,j>(fac,out.A(),in.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
                               const Epetra_SerialDenseMatrix right)
     {
@@ -2965,11 +2983,11 @@ namespace LINALG
         dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
                 i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-      eDivide<i,j>(out.A(),left.A(),right.A());
+      eDivide<value_type,i,j>(out.A(),left.A(),right.A());
     }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const double infac, const Epetra_SerialDenseMatrix left,
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(Epetra_SerialDenseMatrix out, const value_type infac, const Epetra_SerialDenseMatrix left,
                               const Epetra_SerialDenseMatrix right)
   {
 #ifdef DEBUG
@@ -2978,11 +2996,11 @@ namespace LINALG
       dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
               i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-    eDivide<i,j>(out.A(),infac,left.A(),right.A());
+    eDivide<value_type,i,j>(out.A(),infac,left.A(),right.A());
   }
 
-    template <unsigned int i, unsigned int j>
-    inline void eDivide(const double outfac, Epetra_SerialDenseMatrix out, const double infac, const
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void eDivide(const value_type outfac, Epetra_SerialDenseMatrix out, const value_type infac, const
                               Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
     {
 #ifdef DEBUG
@@ -2990,10 +3008,10 @@ namespace LINALG
         dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
                 i,j,out.M(),out.N(),left.M(),left.N(),right.M(),right.N());
 #endif
-      eDivide<i,j>(outfac,out.A(),infac,left.A(),right.A());
+      eDivide<value_type,i,j>(outfac,out.A(),infac,left.A(),right.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void abs(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& src)
     {
 #ifdef DEBUG
@@ -3001,10 +3019,10 @@ namespace LINALG
         dserror("Invalid matrix sizes for abs, (%i,%i) = abs( (%i,%i) )",
                 dest.M(),dest.N(), src.M(), src.N());
 #endif
-      abs<i,j>(dest.A(), src.A());
+      abs<value_type,i,j>(dest.A(), src.A());
     }
 
-    template <unsigned int i, unsigned int j>
+    template <class value_type, unsigned int i, unsigned int j>
     inline void reciprocal(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& src)
     {
 #ifdef DEBUG
@@ -3012,7 +3030,7 @@ namespace LINALG
         dserror("Invalid matrix sizes for reciprocal, (%i,%i) = reciprocal( (%i,%i) )",
                 dest.M(),dest.N(), src.M(), src.N());
 #endif
-      reciprocal<i,j>(dest.A(), src.A());
+      reciprocal<value_type,i,j>(dest.A(), src.A());
     }
 
 #if 0
@@ -3025,11 +3043,11 @@ namespace LINALG
         dserror("Invalid matrix sizes for reciprocal multiplication, (%i,%i) = reciprocalMultiply( (%i,%i), (%i,%i) )",
                 dest.M(),dest.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      reciprocalMultiply<i,j>(dest.A(), left.A(), right.A());
+      reciprocalMultiply<value_type,i,j>(dest.A(), left.A(), right.A());
     }
 
-    template<unsigned int i, unsigned int j>
-    inline void reciprocalMultiply(const double destfac, Epetra_SerialDenseMatrix& dest, const double prodfac,
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void reciprocalMultiply(const value_type destfac, Epetra_SerialDenseMatrix& dest, const value_type prodfac,
                                    const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
     {
 #ifdef DEBUG
@@ -3037,7 +3055,7 @@ namespace LINALG
         dserror("Invalid matrix sizes for reciprocal multiplication, (%i,%i) = reciprocalMultiply( (%i,%i), (%i,%i) )",
                 dest.M(),dest.N(), left.M(), left.N(), right.M(), right.N());
 #endif
-      reciprocalMultiply<i,j>(destfac, dest.A(), prodfac, left.A(), right.A());
+      reciprocalMultiply<value_type,i,j>(destfac, dest.A(), prodfac, left.A(), right.A());
     }
 #endif
   }
@@ -3047,7 +3065,7 @@ namespace LINALG
 /*!
   A serial dense matrix with templated dimensions that is supposed to
   be fast and lightweight.
-  The double-array is allocated on the heap and stored in
+  The value_type-array is allocated on the heap and stored in
   column-major order, just like in Epetra_SerialDenseMatrix.
 
   The interface is based on that of Epetra_SerialDenseMatrix and
@@ -3061,12 +3079,12 @@ namespace LINALG
   \author Martin Kuettler
   \date 09/08
  */
-template <unsigned int rows, unsigned int cols /* =1  ?*/ >
-class Matrix
+template <class value_type, unsigned int rows, unsigned int cols /* =1  ?*/ >
+class TMatrix
 {
 private:
   /// the pointer holding the data
-  double* data_;
+  value_type* data_;
   /// whether we are a view to some other matrix
   bool isview_;
 
@@ -3080,7 +3098,7 @@ public:
     \param setzero
       whether matrix should be initialised to zero
    */
-  explicit Matrix(bool setzero = false);
+  explicit TMatrix(bool setzero = false);
 
   /// Constructor
   /*!
@@ -3093,7 +3111,7 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit Matrix(double* d, bool view=false);
+  explicit TMatrix(value_type* d, bool view=false);
 
   /// Constructor
   /*!
@@ -3107,7 +3125,7 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit Matrix(const double* d, bool view=false);
+  explicit TMatrix(const value_type* d, bool view=false);
 
   /// Constructor
   /*!
@@ -3120,7 +3138,7 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  explicit Matrix(Epetra_SerialDenseMatrix& d, bool view=false);
+  explicit TMatrix(Epetra_SerialDenseMatrix& d, bool view=false);
 
   /// Constructor
   /*!
@@ -3138,7 +3156,7 @@ public:
     \param view
       whether the data is to be viewed or copied
    */
-  Matrix(Matrix<rows,cols>& source, bool view);
+  TMatrix(TMatrix<value_type,rows,cols>& source, bool view);
 
   /// Copy constructor
   /*!
@@ -3149,15 +3167,15 @@ public:
     \param source
       matrix to copy
    */
-  Matrix(const Matrix<rows,cols>& source);
+  TMatrix(const TMatrix<value_type,rows,cols>& source);
 
   /// Deconstructor
-  ~Matrix();
+  ~TMatrix();
 
-  /// Return the double* holding the data.
-  inline const double* A() const { return data_; }
-  /// Return the double* holding the data.
-  inline double* A() { return data_; }
+  /// Return the value_type* holding the data.
+  inline const value_type* A() const { return data_; }
+  /// Return the value_type* holding the data.
+  inline value_type* A() { return data_; }
   /// Return the number of rows
   inline unsigned int Rows() const { return rows; }
   /// Return the number of columns
@@ -3188,7 +3206,7 @@ public:
     \param data
       memory to be viewed
    */
-  void SetView(double* data);
+  void SetView(value_type* data);
 
   /// Set view
   /*!
@@ -3197,7 +3215,7 @@ public:
     \param source
       matrix to be viewed
    */
-  void SetView(Matrix<rows, cols>& source);
+  void SetView(TMatrix<value_type,rows,cols>& source);
 
   /// Set copy
   /*!
@@ -3208,11 +3226,11 @@ public:
     \param data
       memory to copy
    */
-  void SetCopy(double* data);
+  void SetCopy(value_type* data);
 
   /// Set copy
   /*!
-    Set this matrix to be a copy of source. Only the double array
+    Set this matrix to be a copy of source. Only the value_type array
     will be copied, the \e isview_ flag is ignored (this is equivalent to SetCopy(source.A()).
     The difference to Update(\e source) is that this funcion will allocate
     it's own memory when it was a view before, Update would copy the
@@ -3221,14 +3239,14 @@ public:
     \param source
       matrix to copy from
    */
-  void SetCopy(Matrix<rows, cols>& source);
+  void SetCopy(TMatrix<value_type,rows,cols>& source);
 
 
   /// Calculate determinant
   /*!
     \return determinant
    */
-  inline double Determinant() const;
+  inline value_type Determinant() const;
 
   /// Invert in place
   /*!
@@ -3236,7 +3254,7 @@ public:
 
     \return determinant of matrix before inversion
    */
-  inline double Invert();
+  inline value_type Invert();
 
   /// Invert matrix
   /*!
@@ -3246,7 +3264,7 @@ public:
       matrix to be inverted
     \return determinant of \e other
    */
-  inline double Invert(const Matrix<rows, cols>& other);
+  inline value_type Invert(const TMatrix<value_type,rows,cols>& other);
 
   /// Set to zero
   /*!
@@ -3254,7 +3272,7 @@ public:
     PutScalar(0.0), but it should be faster.
    */
   inline void Clear()
-    { DENSEFUNCTIONS::clearMatrix<rows,cols>(data_); }
+    { DENSEFUNCTIONS::clearMatrix<value_type,rows,cols>(data_); }
 
   // Epetra-style Functions
   /// Fill with scalar
@@ -3264,8 +3282,8 @@ public:
     \param scalar
       value to fill matrix with
    */
-  inline void PutScalar(const double scalar)
-    { DENSEFUNCTIONS::putScalar<rows, cols>(scalar, data_); }
+  inline void PutScalar(const value_type scalar)
+    { DENSEFUNCTIONS::putScalar<value_type, rows, cols>(scalar, data_); }
 
   /// Dot product
   /*!
@@ -3275,8 +3293,8 @@ public:
       second factor
     \return dot product
    */
-  inline double Dot(const Matrix<rows, cols>& other) const
-    { return DENSEFUNCTIONS::dot<rows, cols>(data_, other.data_); }
+  inline value_type Dot(const TMatrix<value_type,rows,cols>& other) const
+    { return DENSEFUNCTIONS::dot<value_type, rows, cols>(data_, other.data_); }
 
   /// Compute absolute value
   /*!
@@ -3285,8 +3303,8 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Abs(const Matrix<rows, cols>& other)
-    { DENSEFUNCTIONS::abs<rows, cols>(data_, other.data_); }
+  inline void Abs(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::abs<value_type, rows, cols>(data_, other.data_); }
 
   /// Compute reciprocal value
   /*!
@@ -3295,8 +3313,8 @@ public:
     \param other
       matrix to read values from
    */
-  inline void Reciprocal(const Matrix<rows, cols>& other)
-    { DENSEFUNCTIONS::reciprocal<rows, cols>(data_, other.data_); }
+  inline void Reciprocal(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(data_, other.data_); }
 
   /// Scale
   /*!
@@ -3305,8 +3323,8 @@ public:
     \param scalar
       scaling factor
    */
-  inline void Scale(const double scalar)
-    { DENSEFUNCTIONS::scaleMatrix<rows, cols>(scalar, data_); }
+  inline void Scale(const value_type scalar)
+    { DENSEFUNCTIONS::scaleMatrix<value_type,rows,cols>(scalar, data_); }
 
   /// Copy: \e this = \e other
   /*!
@@ -3315,8 +3333,8 @@ public:
     \param other
       matrix to copy
    */
-  inline void Update(const Matrix<rows, cols>& other)
-    { DENSEFUNCTIONS::update<rows,cols>(data_,other.data_); }
+  inline void Update(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(data_,other.data_); }
 
   /// Scaled copy: \e this = \e scalarOther * \e other
   /*!
@@ -3327,8 +3345,8 @@ public:
     \param other
       matrix to read from
    */
-  inline void Update(const double scalarOther, const Matrix<rows, cols>& other)
-    { DENSEFUNCTIONS::update<rows,cols>(data_,scalarOther,other.data_); }
+  inline void Update(const value_type scalarOther, const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::update<value_type, rows,cols>(data_,scalarOther,other.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
   /*!
@@ -3341,9 +3359,9 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void Update(const double scalarOther, const Matrix<rows, cols>& other,
-                     const double scalarThis)
-    { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarOther, other.data_); }
+  inline void Update(const value_type scalarOther, const TMatrix<value_type,rows,cols>& other,
+                     const value_type scalarThis)
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, data_, scalarOther, other.data_); }
 
   /// Add: \e this = \e left + \e right
   /*!
@@ -3354,9 +3372,9 @@ public:
     \param right
       second matrix to add
    */
-  inline void Update(const Matrix<rows, cols>& left,
-                     const Matrix<rows, cols>& right)
-    { DENSEFUNCTIONS::update<rows, cols>(data_, left.data_, right.data_); }
+  inline void Update(const TMatrix<value_type,rows,cols>& left,
+                     const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(data_, left.data_, right.data_); }
 
   /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -3371,9 +3389,9 @@ public:
     \param right
       second matrix to add
    */
-  inline void Update(const double scalarLeft, const Matrix<rows, cols>& left,
-                     const double scalarRight, const Matrix<rows, cols>& right)
-    { DENSEFUNCTIONS::update<rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_); }
+  inline void Update(const value_type scalarLeft, const TMatrix<value_type,rows,cols>& left,
+                     const value_type scalarRight, const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -3390,10 +3408,10 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void Update(const double scalarLeft, const Matrix<rows, cols>& left,
-                     const double scalarRight, const Matrix<rows, cols>& right,
-                     const double scalarThis)
-    { DENSEFUNCTIONS::update<rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_); }
+  inline void Update(const value_type scalarLeft, const TMatrix<value_type,rows,cols>& left,
+                     const value_type scalarRight, const TMatrix<value_type,rows,cols>& right,
+                     const value_type scalarThis)
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_); }
 
   /// Transposed copy: \e this = \e other^T
   /*!
@@ -3402,8 +3420,8 @@ public:
     \param other
       matrix to copy
    */
-  inline void UpdateT(const Matrix<cols, rows>& other)
-    { DENSEFUNCTIONS::updateT<rows,cols>(data_,other.A()); }
+  inline void UpdateT(const TMatrix<value_type, cols, rows>& other)
+    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(data_,other.A()); }
 
   /// Scaled transposed copy: \e this = \e scalarOther * \e other^T
   /*!
@@ -3414,8 +3432,8 @@ public:
     \param other
       matrix to read from
    */
-  inline void UpdateT(const double scalarOther, const Matrix<cols, rows>& other)
-    { DENSEFUNCTIONS::updateT<rows,cols>(data_,scalarOther,other.A()); }
+  inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other)
+    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(data_,scalarOther,other.A()); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
   /*!
@@ -3428,9 +3446,9 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void UpdateT(const double scalarOther, const Matrix<cols, rows>& other,
-                      const double scalarThis)
-    { DENSEFUNCTIONS::updateT<rows, cols>(scalarThis, data_, scalarOther, other.A()); }
+  inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other,
+                      const value_type scalarThis)
+    { DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, data_, scalarOther, other.A()); }
 
   /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
   /*!
@@ -3439,8 +3457,8 @@ public:
     \param other
       factor
    */
-  inline void EMultiply(const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,other.data_); }
+  inline void EMultiply(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_,other.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
   /*!
@@ -3451,8 +3469,8 @@ public:
     \param other
       factor
    */
-  inline void EMultiply(const double scalar, const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::eMultiply<rows,cols>(scalar,data_,other.data_); }
+  inline void EMultiply(const value_type scalar, const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalar,data_,other.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
   /*!
@@ -3463,8 +3481,8 @@ public:
     \param right
       second factor
    */
-  inline void EMultiply(const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
-    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_,left.data_,right.data_); }
+  inline void EMultiply(const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_,left.data_,right.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3478,8 +3496,8 @@ public:
     \param right
       second factor
    */
-  inline void EMultiply(const double scalarOther, const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
-    { DENSEFUNCTIONS::eMultiply<rows,cols>(data_, scalarOther, left.data_, right.data_); }
+  inline void EMultiply(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_, scalarOther, left.data_, right.data_); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3494,9 +3512,9 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void EMultiply(const double scalarOther, const Matrix<rows,cols>& left,
-                         const Matrix<rows,cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::eMultiply<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+  inline void EMultiply(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left,
+                         const TMatrix<value_type,rows,cols>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
 
   /// Divide element-wise: \e this(m,n) *= \e other(m,n)
   /*!
@@ -3505,8 +3523,8 @@ public:
     \param other
       factor
    */
-  inline void EDivide(const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::eDivide<rows,cols>(data_,other.data_); }
+  inline void EDivide(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_,other.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
   /*!
@@ -3517,8 +3535,8 @@ public:
     \param other
       factor
    */
-  inline void EDivide(const double scalar, const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::eDivide<rows,cols>(scalar,data_,other.data_); }
+  inline void EDivide(const value_type scalar, const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalar,data_,other.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
   /*!
@@ -3529,8 +3547,8 @@ public:
     \param right
       divisor
    */
-  inline void EDivide(const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
-    { DENSEFUNCTIONS::eDivide<rows,cols>(data_,left.data_,right.data_); }
+  inline void EDivide(const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_,left.data_,right.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3544,8 +3562,8 @@ public:
     \param right
       divisor
    */
-  inline void EDivide(const double scalarOther, const Matrix<rows,cols>& left, const Matrix<rows,cols>& right)
-    { DENSEFUNCTIONS::eDivide<rows,cols>(data_, scalarOther, left.data_, right.data_); }
+  inline void EDivide(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_, scalarOther, left.data_, right.data_); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)/\e right(m,n)
   /*!
@@ -3560,9 +3578,9 @@ public:
     \param scalarThis
       scaling factor for \e this
    */
-  inline void EDivide(const double scalarOther, const Matrix<rows,cols>& left,
-                         const Matrix<rows,cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::eDivide<rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+  inline void EDivide(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left,
+                         const TMatrix<value_type,rows,cols>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
 
 
   /// Calculate 1-norm
@@ -3571,15 +3589,15 @@ public:
 
     \return 1-norm
    */
-  inline double Norm1() const
-    { return DENSEFUNCTIONS::norm1<rows, cols>(data_); }
+  inline value_type Norm1() const
+    { return DENSEFUNCTIONS::norm1<value_type, rows, cols>(data_); }
 
   /// Calculate 2-norm (Euclidean norm)
   /*!
     \return 2-norm
    */
-  inline double Norm2() const
-    { return DENSEFUNCTIONS::norm2<rows, cols>(data_); }
+  inline value_type Norm2() const
+    { return DENSEFUNCTIONS::norm2<value_type, rows, cols>(data_); }
 
   /// Calculate inf-norm
   /*!
@@ -3587,29 +3605,29 @@ public:
 
     \return inf-norm
    */
-  inline double NormInf() const
-    { return DENSEFUNCTIONS::normInf<rows, cols>(data_); }
+  inline value_type NormInf() const
+    { return DENSEFUNCTIONS::normInf<value_type, rows, cols>(data_); }
 
   /// Calculate minimum value
   /*!
     \return minimum value
    */
-  inline double MinValue() const
-    { return DENSEFUNCTIONS::minValue<rows, cols>(data_); }
+  inline value_type MinValue() const
+    { return DENSEFUNCTIONS::minValue<value_type, rows, cols>(data_); }
 
   /// Calculate maximum value
   /*!
     \return maximum value
    */
-  inline double MaxValue() const
-    { return DENSEFUNCTIONS::maxValue<rows, cols>(data_); }
+  inline value_type MaxValue() const
+    { return DENSEFUNCTIONS::maxValue<value_type, rows, cols>(data_); }
 
   /// Calculate mean value
   /*!
     \return mean value
    */
-  inline double MeanValue() const
-    { return DENSEFUNCTIONS::meanValue<rows, cols>(data_); }
+  inline value_type MeanValue() const
+    { return DENSEFUNCTIONS::meanValue<value_type, rows, cols>(data_); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -3621,9 +3639,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void Multiply(const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
+  inline void Multiply(const TMatrix<value_type, rows, inner>& left,
+                       const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -3633,9 +3651,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,left.A(),right.A()); }
+  inline void MultiplyNN(const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right^T
   /*!
@@ -3645,9 +3663,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const Matrix<rows, inner>& left,
-                       const Matrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,left.A(),right.A()); }
+  inline void MultiplyNT(const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, cols, inner>& right)
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right
   /*!
@@ -3657,9 +3675,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const Matrix<inner, rows>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,left.A(),right.A()); }
+  inline void MultiplyTN(const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right^T
   /*!
@@ -3669,9 +3687,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const Matrix<inner, rows>& left,
-                       const Matrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,left.A(),right.A()); }
+  inline void MultiplyTT(const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, cols, inner>& right)
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
 
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -3684,9 +3702,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void Multiply(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+  inline void Multiply(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                       const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
   /*!
@@ -3700,9 +3718,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyNN(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right^T
   /*!
@@ -3714,9 +3732,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyNT(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, cols, inner>& right)
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right
   /*!
@@ -3728,9 +3746,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const double scalarOthers, const Matrix<inner, rows>& left,
-                       const Matrix<inner, cols>& right)
-    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyTN(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, inner, cols>& right)
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
   /*!
@@ -3742,9 +3760,9 @@ public:
       second factor
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const double scalarOthers, const Matrix<inner, rows>& left,
-                       const Matrix<cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyTT(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, cols, inner>& right)
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -3760,9 +3778,9 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void Multiply(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+  inline void Multiply(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                       const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -3776,9 +3794,9 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyNN(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiply<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyNN(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
   /*!
@@ -3792,9 +3810,9 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyNT(const double scalarOthers, const Matrix<rows, inner>& left,
-                       const Matrix<cols, inner>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiplyNT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyNT(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
+                         const TMatrix<value_type, cols, inner>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
   /*!
@@ -3808,9 +3826,9 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyTN(const double scalarOthers, const Matrix<inner, rows>& left,
-                       const Matrix<inner, cols>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiplyTN<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyTN(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
   /*!
@@ -3824,9 +3842,9 @@ public:
       scalar factor for \e this
    */
   template <unsigned int inner>
-  inline void MultiplyTT(const double scalarOthers, const Matrix<inner, rows>& left,
-                       const Matrix<cols, inner>& right, const double scalarThis)
-    { DENSEFUNCTIONS::multiplyTT<rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+  inline void MultiplyTT(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
+                         const TMatrix<value_type, cols, inner>& right, const value_type scalarThis)
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
 
   /// Write \e this to \e out
   /*!
@@ -3844,7 +3862,7 @@ public:
     \param other
       matrix to get data from
    */
-  inline Matrix<rows,cols> operator=(const Matrix<rows,cols>& other);
+  inline TMatrix<value_type,rows,cols> & operator=(const TMatrix<value_type,rows,cols>& other);
 
   /// = operator for double
   /*!
@@ -3853,7 +3871,7 @@ public:
     \param other
       scalar value
    */
-  inline Matrix<rows,cols> operator=(const double other);
+  inline TMatrix<value_type,rows,cols> & operator=(const value_type other);
 
   /// == operator
   /*!
@@ -3862,7 +3880,7 @@ public:
     \param other
       matrix to compare with
    */
-  inline bool operator==(const Matrix<rows,cols>& other) const;
+  inline bool operator==(const TMatrix<value_type,rows,cols>& other) const;
 
   /// != operator
   /*!
@@ -3871,7 +3889,7 @@ public:
     \param other
       matrix to compare with
    */
-  inline bool operator!=(const Matrix<rows,cols>& other) const;
+  inline bool operator!=(const TMatrix<value_type,rows,cols>& other) const;
 
   /// += operator
   /*!
@@ -3880,8 +3898,8 @@ public:
     \param other
       matrix to add
    */
-  inline Matrix<rows,cols>& operator+=(const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, 1.0, other.data_); return *this; }
+  inline TMatrix<value_type,rows,cols>& operator+=(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, data_, 1.0, other.data_); return *this; }
 
   /// -= operator
   /*!
@@ -3890,8 +3908,8 @@ public:
     \param other
       matrix to subtract
    */
-  inline Matrix<rows,cols>& operator-=(const Matrix<rows,cols>& other)
-    { DENSEFUNCTIONS::update<rows,cols>(1.0, data_, -1.0, other.data_); return *this; }
+  inline TMatrix<value_type,rows,cols>& operator-=(const TMatrix<value_type,rows,cols>& other)
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, data_, -1.0, other.data_); return *this; }
 
   /// Access data
   /*!
@@ -3902,7 +3920,7 @@ public:
     \param c
       column index
    */
-  inline double& operator()(unsigned int r, unsigned int c);
+  inline value_type& operator()(unsigned int r, unsigned int c);
 
   /// Access data
   /*!
@@ -3913,7 +3931,7 @@ public:
     \param c
       column index
    */
-  inline const double& operator()(unsigned int r, unsigned int c) const;
+  inline const value_type& operator()(unsigned int r, unsigned int c) const;
 
   /// Access data
   /*!
@@ -3923,7 +3941,7 @@ public:
     \param r
       index
    */
-  inline double& operator()(unsigned int r);  // for vectors, with check at compile-time
+  inline value_type& operator()(unsigned int r);  // for vectors, with check at compile-time
 
   /// Access data
   /*!
@@ -3933,25 +3951,25 @@ public:
     \param r
       index
    */
-  inline const double& operator()(unsigned int r) const;
+  inline const value_type& operator()(unsigned int r) const;
 };
 
-template <unsigned int cols, unsigned int rows>
-std::ostream& operator<<(std::ostream& out, const Matrix<rows,cols>& matrix);
+template <class value_type, unsigned int cols, unsigned int rows>
+std::ostream& operator<<(std::ostream& out, const TMatrix<value_type,rows,cols>& matrix);
 
 // Constructors
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(bool setzero) : data_(0), isview_(false)
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(bool setzero) : data_(0), isview_(false)
 {
   DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
-  data_ = new double[rows*cols];
+  data_ = new value_type[rows*cols];
   if (setzero)
-    DENSEFUNCTIONS::clearMatrix<rows,cols>(data_);
+    DENSEFUNCTIONS::clearMatrix<value_type,rows,cols>(data_);
 }
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(double* d, bool view) :
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3959,13 +3977,13 @@ Matrix<rows, cols>::Matrix(double* d, bool view) :
     data_ = d;
   }
   else {
-    data_ = new double[rows*cols];
-    std::memcpy(data_, d, rows*cols*sizeof(double));
+    data_ = new value_type[rows*cols];
+    std::memcpy(data_, d, rows*cols*sizeof(value_type));
   }
 }
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(const double* d, bool view) :
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3974,13 +3992,13 @@ Matrix<rows, cols>::Matrix(const double* d, bool view) :
     //data_ = d;
   }
   else {
-    data_ = new double[rows*cols];
-    std::memcpy(data_, d, rows*cols*sizeof(double));
+    data_ = new value_type[rows*cols];
+    std::memcpy(data_, d, rows*cols*sizeof(value_type));
   }
 }
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(Epetra_SerialDenseMatrix& d, bool view) :
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -3992,13 +4010,13 @@ Matrix<rows, cols>::Matrix(Epetra_SerialDenseMatrix& d, bool view) :
     data_ = d.A();
   }
   else {
-    data_ = new double[rows*cols];
-    std::memcpy(data_, d.A(), rows*cols*sizeof(double));
+    data_ = new value_type[rows*cols];
+    std::memcpy(data_, d.A(), rows*cols*sizeof(value_type));
   }
 }
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(Matrix<rows,cols>& source, bool view) :
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bool view) :
     data_(0), isview_(view)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4006,30 +4024,30 @@ Matrix<rows, cols>::Matrix(Matrix<rows,cols>& source, bool view) :
     data_ = source.data_;
   }
   else {
-    data_ = new double[rows*cols];
-    std::memcpy(data_, source.data_, rows*cols*sizeof(double));
+    data_ = new value_type[rows*cols];
+    std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
   }
 }
 
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::Matrix(const Matrix<rows,cols>& source) :
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& source) :
   data_(0), isview_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
-  data_ = new double[rows*cols];
-  std::memcpy(data_, source.data_, rows*cols*sizeof(double));
+  data_ = new value_type[rows*cols];
+  std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
 }
 
 // Destructor
-template<unsigned int rows, unsigned int cols>
-Matrix<rows, cols>::~Matrix()
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::~Matrix()
 {
   if (not isview_)
     delete[] data_;
 }
 
-template<unsigned int rows, unsigned int cols>
-void Matrix<rows, cols>::SetView(double* data)
+template<class value_type, unsigned int rows, unsigned int cols>
+void TMatrix<value_type,rows,cols>::SetView(value_type* data)
 {
   if (not isview_) {
     delete[] data_;
@@ -4038,8 +4056,8 @@ void Matrix<rows, cols>::SetView(double* data)
   data_ = data;
 }
 
-template<unsigned int rows, unsigned int cols>
-void Matrix<rows, cols>::SetView(Matrix<rows, cols>& source)
+template<class value_type, unsigned int rows, unsigned int cols>
+void TMatrix<value_type,rows,cols>::SetView(TMatrix<value_type,rows,cols>& source)
 {
   if (not isview_) {
     delete[] data_;
@@ -4048,53 +4066,53 @@ void Matrix<rows, cols>::SetView(Matrix<rows, cols>& source)
   data_ = source.data_;
 }
 
-template<unsigned int rows, unsigned int cols>
-void Matrix<rows, cols>::SetCopy(double* data)
+template<class value_type, unsigned int rows, unsigned int cols>
+void TMatrix<value_type,rows,cols>::SetCopy(value_type* data)
 {
     if (isview_) {
-        data_ = new double[rows*cols];
+        data_ = new value_type[rows*cols];
         isview_ = false;
     }
-    std::memcpy(data_, data, rows*cols*sizeof(double));
+    std::memcpy(data_, data, rows*cols*sizeof(value_type));
 }
 
-template<unsigned int rows, unsigned int cols>
-void Matrix<rows, cols>::SetCopy(Matrix<rows, cols>& source)
+template<class value_type, unsigned int rows, unsigned int cols>
+void TMatrix<value_type,rows,cols>::SetCopy(TMatrix<value_type,rows,cols>& source)
 {
   if (isview_) {
-    data_ = new double[rows*cols];
+    data_ = new value_type[rows*cols];
     isview_ = false;
   }
-  std::memcpy(data_, source.data_, rows*cols*sizeof(double));
+  std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
 }
 
 // Determinant
-template<unsigned int rows, unsigned int cols>
-inline double Matrix<rows,cols>::Determinant() const
+template<class value_type, unsigned int rows, unsigned int cols>
+inline value_type TMatrix<value_type,rows,cols>::Determinant() const
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_determinant_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::determinant<rows, cols>(data_);
+  return DENSEFUNCTIONS::determinant<value_type, rows, cols>(data_);
 }
 
 // Invert
-template<unsigned int rows, unsigned int cols>
-inline double Matrix<rows,cols>::Invert()
+template<class value_type, unsigned int rows, unsigned int cols>
+inline value_type TMatrix<value_type,rows,cols>::Invert()
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::invert<rows, cols>(data_);
+  return DENSEFUNCTIONS::invert<value_type, rows, cols>(data_);
 }
 
-template <unsigned int rows,  unsigned int cols>
-inline double Matrix<rows,cols>::Invert(const Matrix<rows,cols>& other)
+template <class value_type, unsigned int rows,  unsigned int cols>
+inline value_type TMatrix<value_type,rows,cols>::Invert(const TMatrix<value_type,rows,cols>& other)
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::invert<rows, cols>(data_, other.data_);
+  return DENSEFUNCTIONS::invert<value_type, rows, cols>(data_, other.data_);
 }
 
-template <unsigned int rows,  unsigned int cols>
-void Matrix<rows,cols>::Print(std::ostream& out) const
+template <class value_type, unsigned int rows,  unsigned int cols>
+void TMatrix<value_type,rows,cols>::Print(std::ostream& out) const
 {
-  out << "Matrix<" << rows << ',' << cols << '>';
+  out << "TMatrix<" << rows << ',' << cols << '>';
   if (isview_) out << " (view to memory only)";
   if (data_ == NULL) {
     out << " with data_==NULL!\n";
@@ -4116,92 +4134,134 @@ void Matrix<rows,cols>::Print(std::ostream& out) const
 /*!
   Write matrix to out. This function calls matrix.Print(out).
  */
-template <unsigned int cols, unsigned int rows>
-std::ostream& operator<<(std::ostream& out, const Matrix<rows,cols>& matrix)
+template <class value_type, unsigned int cols, unsigned int rows>
+std::ostream& operator<<(std::ostream& out, const TMatrix<value_type,rows,cols>& matrix)
 {
     matrix.Print(out);
     return out;
 }
 
 
-template<unsigned int rows, unsigned int cols>
-inline Matrix<rows,cols>
-Matrix<rows, cols>::operator=(const Matrix<rows,cols>& other)
+template<class value_type, unsigned int rows, unsigned int cols>
+inline TMatrix<value_type,rows,cols> &
+TMatrix<value_type,rows,cols>::operator=(const TMatrix<value_type,rows,cols>& other)
 {
-  DENSEFUNCTIONS::update<rows,cols>(data_, other.data_);
+  DENSEFUNCTIONS::update<value_type, rows,cols>(data_, other.data_);
   return *this;
 }
 
-template<unsigned int rows, unsigned int cols>
-inline Matrix<rows,cols>
-Matrix<rows, cols>::operator=(const double other)
+template<class value_type, unsigned int rows, unsigned int cols>
+inline TMatrix<value_type,rows,cols> &
+TMatrix<value_type,rows,cols>::operator=(const value_type other)
 {
-  DENSEFUNCTIONS::putScalar<rows,cols>(other, data_);
+  DENSEFUNCTIONS::putScalar<value_type, rows,cols>(other, data_);
   return *this;
 }
 
-template<unsigned int rows, unsigned int cols>
+template<class value_type, unsigned int rows, unsigned int cols>
 inline bool
-Matrix<rows, cols>::operator==(const Matrix<rows,cols>& other) const
+TMatrix<value_type,rows,cols>::operator==(const TMatrix<value_type,rows,cols>& other) const
 {
   if (data_ == other.data_) return true;
   // unfortunately memcmp does not work, because +0 and -0 are
-  // different in the memory...
+  // different in memory...
   for (unsigned int c = 0; c < rows*cols; ++c)
     if (data_[c] != other.data_[c]) return false;
   return true;
 }
 
-template<unsigned int rows, unsigned int cols>
+template<class value_type, unsigned int rows, unsigned int cols>
 inline bool
-Matrix<rows, cols>::operator!=(const Matrix<rows,cols>& other) const
+TMatrix<value_type,rows,cols>::operator!=(const TMatrix<value_type,rows,cols>& other) const
 {
   return not (*this == other);
 }
 
 // Access operator
 
-template<unsigned int rows, unsigned int cols>
-inline double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c)
+template<class value_type, unsigned int rows, unsigned int cols>
+inline value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r, unsigned int c)
 {
 #ifdef DEBUG
     if (r >= rows or c >= cols)
-      dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
+      dserror("Indices %i,%i out of range in TMatrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
 }
 
-template<unsigned int rows, unsigned int cols>
-inline const double& Matrix<rows, cols>::operator()(unsigned int r, unsigned int c) const
+template<class value_type, unsigned int rows, unsigned int cols>
+inline const value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r, unsigned int c) const
 {
 #ifdef DEBUG
     if (r >= rows or c >= cols)
-      dserror("Indices %i,%i out of range in Matrix<%i,%i>.",r,c,rows,cols);
+      dserror("Indices %i,%i out of range in TMatrix<%i,%i>.",r,c,rows,cols);
 #endif
   return data_[r+c*rows];
 }
 
-template<unsigned int rows, unsigned int cols>
-inline double& Matrix<rows, cols>::operator()(unsigned int r)
+template<class value_type, unsigned int rows, unsigned int cols>
+inline value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r)
 {
   DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
+      dserror("Index %i out of range in TMatrix<%i,%i>.",r,rows,cols);
 #endif
   return data_[r];
 }
 
-template<unsigned int rows, unsigned int cols>
-inline const double& Matrix<rows, cols>::operator()(unsigned int r) const
+template<class value_type, unsigned int rows, unsigned int cols>
+inline const value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r) const
 {
     DENSEERROR::Checker<(cols==1) or (rows==1)>::Cannot_call_1D_access_function_on_2D_matrix();
 #ifdef DEBUG
     if (r >= (cols == 1 ? rows : cols))
-      dserror("Index %i out of range in Matrix<%i,%i>.",r,rows,cols);
+      dserror("Index %i out of range in TMatrix<%i,%i>.",r,rows,cols);
 #endif
     return data_[r];
 }
+
+
+/// Serial dense matrix with double numbers and templated dimensions
+template <unsigned int rows, unsigned int cols>
+class Matrix : public TMatrix<double, rows, cols>
+{
+public:
+
+  /// Constructor
+  explicit Matrix(bool setzero = false) : TMatrix<double, rows, cols>( setzero ) {}
+
+  /// Constructor
+  explicit Matrix(double* d, bool view=false) : TMatrix<double, rows, cols>( d, view ) {}
+
+  /// Constructor
+  explicit Matrix(const double* d, bool view=false) : TMatrix<double, rows, cols>( d, view ) {}
+
+  /// Constructor
+  explicit Matrix(Epetra_SerialDenseMatrix& d, bool view=false) : TMatrix<double, rows, cols>( d, view ) {}
+
+  /// Constructor
+  Matrix(Matrix<rows,cols>& source, bool view) : TMatrix<double, rows, cols>( source, view ) {}
+
+  /// Copy constructor
+  Matrix(const Matrix<rows,cols>& source) : TMatrix<double, rows, cols>( source ) {}
+
+  /// = operator
+  inline Matrix<rows,cols> & operator=(const Matrix<rows,cols>& other)
+  {
+    TMatrix<double,rows,cols>::operator=( other );
+    return *this;
+  }
+
+  /// = operator for double
+  inline Matrix<rows,cols> & operator=(const double other)
+  {
+    TMatrix<double,rows,cols>::operator=( other );
+    return *this;
+  }
+
+};
+
 
 /// A solver for fixed size serial dense matrices
 /*!
@@ -4236,11 +4296,11 @@ private:
   static Epetra_BLAS blas_;
 
   /// the matrix we got
-  Matrix<rows,cols>* matrix_;
+  TMatrix<double,rows,cols>* matrix_;
   /// the vector of unknowns
-  Matrix<cols,dim_rhs>* vec_X_;
+  TMatrix<double,cols,dim_rhs>* vec_X_;
   /// the right hand side vector
-  Matrix<rows,dim_rhs>* vec_B_;
+  TMatrix<double,rows,dim_rhs>* vec_B_;
 
   /// some storage for LAPACK
   std::vector<int> pivot_vec_;
@@ -4319,7 +4379,7 @@ public:
     \param mat
       new matrix
    */
-  void SetMatrix(Matrix<rows,cols>& mat);
+  void SetMatrix(TMatrix<double,rows,cols>& mat);
 
   /// Set the vectors
   /*!
@@ -4330,7 +4390,7 @@ public:
     \param B
       right hand side vector
    */
-  void SetVectors(Matrix<cols,dim_rhs>& X, Matrix<rows,dim_rhs>& B);
+  void SetVectors(TMatrix<double,cols,dim_rhs>& X, TMatrix<double,rows,dim_rhs>& B);
 
   /// Set the equilibration
   /*!
@@ -4398,7 +4458,7 @@ FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::~FixedSizeSerialDenseSolver()
 }
 
 template<unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(Matrix<rows,cols>& mat)
+void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(TMatrix<double,rows,cols>& mat)
 {
   c_.clear();
   r_.clear();
@@ -4409,8 +4469,8 @@ void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetMatrix(Matrix<rows,cols>&
 }
 
 template<unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetVectors(Matrix<cols,dim_rhs>& X,
-                                                               Matrix<rows,dim_rhs>& B)
+void FixedSizeSerialDenseSolver<rows,cols,dim_rhs>::SetVectors(TMatrix<double,cols,dim_rhs>& X,
+                                                               TMatrix<double,rows,dim_rhs>& B)
 {
   solved_ = false;
   vec_X_ = &X;

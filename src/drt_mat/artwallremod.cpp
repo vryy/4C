@@ -553,8 +553,8 @@ void MAT::ArtWallRemod::Evaluate(
                   defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
     LINALG::Matrix<3,3> pk1(true);
     //pk1.Multiply('N','N',1.0,defgrd,stresses_->at(gp),0.);
-    LINALG::DENSEFUNCTIONS::multiply<3,3,3>(pk1.A(),defgrd.A(),stresses_->at(gp).A());
-    LINALG::DENSEFUNCTIONS::multiplyNT<3,3,3>(stresses_->at(gp).A(),1./detF,pk1.A(),defgrd.A());
+    LINALG::DENSEFUNCTIONS::multiply<double,3,3,3>(pk1.A(),defgrd.A(),stresses_->at(gp).A());
+    LINALG::DENSEFUNCTIONS::multiplyNT<double,3,3,3>(stresses_->at(gp).A(),1./detF,pk1.A(),defgrd.A());
   }
 
   return;

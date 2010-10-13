@@ -275,7 +275,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
-        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alphao,*alpha);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha);
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -306,8 +306,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
+        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
-        LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao);
+        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha, *alphao);
       }
       // Reset of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
@@ -707,9 +707,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       res_d(i) = residual[i];
     }
     // add Kda . res_d to feas
-    LINALG::DENSEFUNCTIONS::multiply<soh8_eassosh8, NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+    LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8, NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
     // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    LINALG::DENSEFUNCTIONS::multiply<soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+    LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -933,9 +933,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     if (eastype_ != soh8_easnone) {
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(M.A(),detJ0/detJ,T0invT.A(),M_GP->at(gp).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(M.A(),detJ0/detJ,T0invT.A(),M_GP->at(gp).A());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
-      LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),(*alpha).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),(*alpha).A());
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains if necessary
@@ -1078,11 +1078,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
         LINALG::Matrix<NUMSTR_SOH8,soh8_eassosh8> cM; // temporary c . M
         cM.Multiply(cmat, M);
-        LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa.A(), detJ_w, M.A(), cM.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa.A(), detJ_w, M.A(), cM.A());
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
-        LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-        LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
       } // ------------------------------------------------------------------ EAS
     }
 
@@ -1116,11 +1116,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       solve_for_inverseKaa.Invert();
 
       LINALG::SerialDenseMatrix KdaTKaa(NUMDOF_SOH8, soh8_eassosh8); // temporary Kda^T.Kaa^{-1}
-      LINALG::DENSEFUNCTIONS::multiplyTN<NUMDOF_SOH8,soh8_eassosh8,soh8_eassosh8>(KdaTKaa, Kda, Kaa);
+      LINALG::DENSEFUNCTIONS::multiplyTN<double,NUMDOF_SOH8,soh8_eassosh8,soh8_eassosh8>(KdaTKaa, Kda, Kaa);
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
-      LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_eassosh8,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaTKaa.A(), Kda.A());
+      LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_eassosh8,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaTKaa.A(), Kda.A());
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_eassosh8,1>(1.0, force->A(), -1.0, KdaTKaa.A(), feas.A());
+      LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_eassosh8,1>(1.0, force->A(), -1.0, KdaTKaa.A(), feas.A());
 
       // store current EAS data in history
       for (int i=0; i<soh8_eassosh8; ++i) {

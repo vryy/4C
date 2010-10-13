@@ -257,8 +257,8 @@ void MAT::HolzapfelCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* de
   //Loop over all gp and update fiber directions
   ca1_->at(gp).resize(3);
   ca2_->at(gp).resize(3);
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
   //cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] << endl;
   //cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<  (a1_->at(gp))[2] << endl;
   return;

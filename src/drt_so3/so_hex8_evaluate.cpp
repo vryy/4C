@@ -342,9 +342,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<soh8_easfull, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild, 1>(*alphao,*alpha); break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alphao,*alpha); break;
+        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<double,soh8_easfull, 1>(*alphao,*alpha); break;
+        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<double,soh8_easmild, 1>(*alphao,*alpha); break;
+        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha); break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
@@ -407,18 +407,18 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         switch(eastype_) {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
           // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easfull,1>(*alpha,*alphao); // alpha := alphao
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
           // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_easmild,1>(*alpha,*alphao); // alpha := alphao
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
           // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
+          LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
@@ -477,9 +477,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<soh8_easfull,1> (*alpha, *alphao); break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<soh8_easmild,1> (*alpha, *alphao); break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<soh8_eassosh8,1>(*alpha, *alphao); break;
+        case DRT::ELEMENTS::So_hex8::soh8_easfull : LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1> (*alpha, *alphao); break;
+        case DRT::ELEMENTS::So_hex8::soh8_easmild : LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1> (*alpha, *alphao); break;
+        case DRT::ELEMENTS::So_hex8::soh8_eassosh8: LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha, *alphao); break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
@@ -982,16 +982,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     switch(eastype_)
     {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
-      LINALG::DENSEFUNCTIONS::multiply<soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-      LINALG::DENSEFUNCTIONS::multiply<soh8_easfull,soh8_easfull,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,soh8_easfull,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easmild:
-      LINALG::DENSEFUNCTIONS::multiply<soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-      LINALG::DENSEFUNCTIONS::multiply<soh8_easmild,soh8_easmild,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,soh8_easmild,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-      LINALG::DENSEFUNCTIONS::multiply<soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
-      LINALG::DENSEFUNCTIONS::multiply<soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d);
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(1.0,*alpha,-1.0,*oldKaainv,*oldfeas);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
     default: dserror("Don't know what to do with EAS type %d", eastype_); break;
@@ -1110,16 +1110,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       switch(eastype_)
       {
       case DRT::ELEMENTS::So_hex8::soh8_easfull:
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easfull>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_easfull,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_easfull>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,soh8_easfull,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easmild:
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easmild>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_easmild,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_easmild>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,soh8_easmild,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
@@ -1319,22 +1319,22 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         switch(eastype_)
         {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
-          LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easfull>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,soh8_easfull>(1.0, Kaa, detJ_w, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easfull,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_easfull>(cM.A(), cmat.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easfull,NUMSTR_SOH8,soh8_easfull>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easfull,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easfull,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
-          LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_easmild>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,soh8_easmild>(1.0, Kaa, detJ_w, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_easmild,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_easmild>(cM.A(), cmat.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easmild,NUMSTR_SOH8,soh8_easmild>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easmild,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_easmild,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-          LINALG::DENSEFUNCTIONS::multiply<NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(cM.A(), cmat.A(), M.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa, detJ_w, M, cM);
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
+          LINALG::DENSEFUNCTIONS::multiply<double,NUMSTR_SOH8,NUMSTR_SOH8,soh8_eassosh8>(cM.A(), cmat.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,soh8_eassosh8>(1.0, Kaa, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8_eassosh8,NUMSTR_SOH8,1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
@@ -1381,19 +1381,19 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       switch(eastype_)
       {
       case DRT::ELEMENTS::So_hex8::soh8_easfull:
-        LINALG::DENSEFUNCTIONS::multiplyTN<NUMDOF_SOH8,soh8_easfull,soh8_easfull>(KdaKaa, Kda, Kaa);
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easfull,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,NUMDOF_SOH8,soh8_easfull,soh8_easfull>(KdaKaa, Kda, Kaa);
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_easfull,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_easfull,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easmild:
-        LINALG::DENSEFUNCTIONS::multiplyTN<NUMDOF_SOH8,soh8_easmild,soh8_easmild>(KdaKaa, Kda, Kaa);
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easmild,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_easmild,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,NUMDOF_SOH8,soh8_easmild,soh8_easmild>(KdaKaa, Kda, Kaa);
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_easmild,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_easmild,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-        LINALG::DENSEFUNCTIONS::multiplyTN<NUMDOF_SOH8,soh8_eassosh8,soh8_eassosh8>(KdaKaa, Kda, Kaa);
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_eassosh8,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
-        LINALG::DENSEFUNCTIONS::multiply<NUMDOF_SOH8,soh8_eassosh8,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+        LINALG::DENSEFUNCTIONS::multiplyTN<double,NUMDOF_SOH8,soh8_eassosh8,soh8_eassosh8>(KdaKaa, Kda, Kaa);
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_eassosh8,NUMDOF_SOH8>(1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,NUMDOF_SOH8,soh8_eassosh8,1>(1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
         break;
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;

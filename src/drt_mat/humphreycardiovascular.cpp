@@ -306,10 +306,10 @@ void MAT::HumphreyCardio::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* def
   ca2_->at(gp).resize(3);
   ca3_->at(gp).resize(3);
   ca4_->at(gp).resize(3);
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca3_->at(gp))[0]),defgrad->A(),&((a3_->at(gp))[0]));
-  LINALG::DENSEFUNCTIONS::multiply<3,3,1>(&((ca4_->at(gp))[0]),defgrad->A(),&((a4_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca3_->at(gp))[0]),defgrad->A(),&((a3_->at(gp))[0]));
+  LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca4_->at(gp))[0]),defgrad->A(),&((a4_->at(gp))[0]));
   return;
 }
 
