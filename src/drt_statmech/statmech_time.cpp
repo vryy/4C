@@ -1336,23 +1336,23 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	if (!(discret_.Filled())) dserror("FillComplete() was not called");
 	if (!(discret_.HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
-  //----------------------------------- some variables
+//----------------------------------- some variables
 	// indicates broken element
-	bool 											broken;
+	bool broken;
 	// time trigger
-	bool 											usetime = true;
+	bool usetime = true;
 	// to avoid redundant or wrong actions when filling vectors or deleting the last element of the free nodes vector
-	bool											alreadydone = false;
+	bool alreadydone = false;
 	// store node Id of previously handled node
-  int 											tmpid = -1;
+  int tmpid = -1;
   // store LIDs of element nodes
-  vector<int>								lids;
+  vector<int>	lids;
   // vectors to manipulate DBC properties
-  vector<int> 							oscillnodes;
-  vector<int> 							fixednodes;
-  vector<int> 							freenodes;
+  vector<int> oscillnodes;
+  vector<int> fixednodes;
+  vector<int> freenodes;
 
-  // init
+  // initialize at the beginning
   if(!isinit_)
   {
   	// get the apmlitude of the oscillation
@@ -1365,7 +1365,6 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 		for(int i=0; i<deltadbc_->MyLength(); i++)
 			(*deltadbc_)[i] = 0.0;
 
-		//error message
 		if(oscdir_!=0 && oscdir_!=1 && oscdir_!=2)
 			dserror("Please define the StatMech Parameter OSCILLDIR correctly");
 
@@ -1380,24 +1379,19 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	if (time<0.0)
 		usetime = false;
 
-//---------------------------------------------------------- loop through elements
-  // this step is advantageous because GIDs of original elements are defined in numerical order
-  //int numevalelements = statmechmanager_->statmechparams_.get("NUM_EVAL_ELEMENTS", -1);
-  //if(numevalelements == -1)
-  	//dserror("Check NUM_EVAL_ELEMENTS, the number of evaluated elements, in your StatMech Parameters block");
-  // loop over the original elements that are to be evaluated (beam or truss)
+//---------------------------------------------------------- loop over elements
+  // loop over row elements
 	for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
 	{
 		// An element used to browse through local Row Elements
 	  DRT::Element* element = discret_.lRowElement(lid);
 
-	  // skip element if it is a crosslinker element
-	  if(element->Id() > discret_.NumGlobalNodes())
+	  // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
+	  if(element->Id() > discret_.NumGlobalNodes() || element->Id() >= statmechmanager_->statmechparams_.get<int>("NUM_EVAL_ELEMENTS", statmechmanager_->BasisElements()))
 	  	continue;
 
 	  // number of translational DOFs (not elegant but...ah well...!)
 	  int numdof = 3;
-	  //int numdof = (int)discret_.Dof(0, element->Nodes()[0]).size();
 	  // positions of nodes of an element with n nodes
 	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
 	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts

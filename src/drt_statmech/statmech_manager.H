@@ -134,6 +134,10 @@ public:
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
+  //! \brief return initial number of elements
+  virtual int BasisElements(){return basiselements_;}
+  //! \brief return initial number of nodes
+  virtual int BasisNodes(){return basisnodes_;}
   //! \brief current simulation time
   double time_;
 
