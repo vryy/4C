@@ -33,6 +33,7 @@
 namespace STK
 {
 
+  /// simple iteration over elements
   class ElementIterator // : std::iterator<std::forward_iterator_tag,stk::mesh::Element>
   {
   public:
@@ -87,6 +88,7 @@ namespace STK
   };
 
 
+  /// simple iteration over element sides within each element
   class SideIterator
   {
   public:
@@ -177,6 +179,7 @@ namespace STK
   };
 
 
+  /// simple iteration over element sides within each element
   class UniqueSideIterator : public SideIterator
   {
   public:
