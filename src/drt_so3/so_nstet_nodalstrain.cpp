@@ -33,95 +33,6 @@ Maintainer: Michael Gee
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 
-#if 0
-/*----------------------------------------------------------------------*
- |                                                             gee 10/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::PatchedDeformationGradient(DRT::Discretization& dis)
-{
-  // A vector to hold data per column element that needs to be synced
-  // column 0 : summed AverJ * weight
-  // column 1 : summed weight
-  RCP<Epetra_MultiVector> eledata = rcp(new Epetra_MultiVector(*elecmap_,2,true));
-  
-#if 0
-  // serialization for printing only
-  const int myrank = dis.Comm().MyPID();
-  const int numproc = dis.Comm().NumProc();
-  for (int proc=0; proc<numproc; ++proc)
-  {
-    if (proc==myrank)
-    {
-#endif
-     
-  // loop through patches and build averaged deformation gradient
-  // and its determinant
-  map<int,vector<DRT::ELEMENTS::NStet*> >::iterator p;
-  for (p=pstab_adjele_.begin(); p!=pstab_adjele_.end(); ++p)
-  {
-    const int pid = p->first;
-    vector<DRT::ELEMENTS::NStet*>& ele = p->second;
-    const int numele = (int)ele.size();
-    
-    //cout << "===== Proc " << myrank << " Patch " << pid << " Size " << numele << endl;
-    
-    map<int,vector<double> >::iterator weight = pstab_adjele_weight_.find(pid);
-    if (weight==pstab_adjele_weight_.end()) dserror("Cannot find patch weights");
-    vector<double>& elew = weight->second;
-    if (numele != (int)elew.size()) dserror("Number of weights and elements don't match");
-    
-    double WeightedVolume = 0.0;
-    double AverJ = 0.0;
-    for (int i=0; i<numele; ++i)
-    {
-      //printf("NStet %d V %10.5e W %10.5e J %10.5e\n",ele[i]->Id(),ele[i]->Vol(),elew[i],ele[i]->J());
-      
-      double wv = ele[i]->Vol() * elew[i];
-      WeightedVolume += wv;
-      
-      AverJ += wv * ele[i]->J();
-    } // i
-    AverJ /= WeightedVolume;
-
-    //printf("xxxxx Proc %d Patch %d AverJ %10.5e\n",myrank,pid,AverJ);
-
-    // put averaged J in element vector
-    for (int i=0; i<numele; ++i)
-    {
-      int lid = eledata->Map().LID(ele[i]->Id());
-      if (lid==-1) dserror("Cannot find local element id");
-      (*(*eledata)(0))[lid] += elew[i] * AverJ;
-      (*(*eledata)(1))[lid] += elew[i];
-    }
-  } // for (p=pstab_adjele_.begin(); p!=pstab_adjele_.end(); ++p)
-    
-#if 0    
-    } // if (proc==myrank)
-    fflush(stdout);
-    dis.Comm().Barrier();
-  } // for (int proc=0; proc<numproc; ++proc)
-#endif
-
-  // sum up across processors
-  dis.Comm().Barrier();
-  RCP<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*elermap_,2,true));
-  Epetra_Export exporter(*elecmap_,*elermap_);
-  int err = tmp->Export(*eledata,exporter,Add); // add up across processors
-  if (err) dserror("Export using exporter returned err=%d",err);
-  LINALG::Export(*tmp,*eledata); // distribute back to column layout
-
-  // put the modified J back into the elements
-  map<int,DRT::ELEMENTS::NStet*>::iterator ele;
-  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
-  {
-    int gid = ele->second->Id();
-    double Jbar = (*(*eledata)(0))[eledata->Map().LID(gid)];
-    ele->second->Jbar() = Jbar;
-  }
-
-  return;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |                                                             gee 10/10|
@@ -145,122 +56,20 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     
     // create dfad version of nxyz and mydisp
-    e->fad_disp_.resize(4);
+    vector<vector<FAD> > fad_disp(4);
     for (int i=0; i<4; ++i)
     {
-      e->fad_disp_[i].resize(3);
+      fad_disp[i].resize(3);
       for (int j=0; j<3; ++j)
-        e->fad_disp_[i][j] = FAD(12,i*3+j,mydisp[i*3+j]);
+        fad_disp[i][j] = FAD(12,i*3+j,mydisp[i*3+j]);
     }
     
-
     // create deformation gradient
-    e->fad_F_ = e->fad_BuildF<FAD>(e->fad_disp_,e->nxyz_);
-    for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j)
-        e->F()(i,j) = e->fad_F_[i][j].val();
+    e->fadF() = e->fad_BuildF<FAD>(fad_disp,e->Nxyz());
     
-    // create detF
-    e->fad_J_ = fad_Determinant3x3<FAD>(e->fad_F_);
-    e->J() = e->fad_J_.val();
-    
-  }
+  } // ele
   return;
 }
-
-
-#if 0 // ancient stuff
-/*----------------------------------------------------------------------*
- |                                                             gee 10/10|
- *----------------------------------------------------------------------*/
-LINALG::Matrix<9,12> DRT::ELEMENTS::NStet::BuildF(LINALG::Matrix<3,3>& F, 
-                                                  vector<double>& disp, 
-                                                  LINALG::Matrix<4,3>& nxyz)
-{
-  typedef Sacado::Fad::DFad<double> FAD;
-
-  // copy the input to saccado-type variables
-  vector<vector<FAD> > dfad_nxyz(4);
-  vector<vector<FAD> > dfad_xdisp(4);
-  vector<vector<FAD> > dfad_F;
-  for (int i=0; i<4; ++i) 
-  {
-    dfad_nxyz[i].resize(3);
-    dfad_xdisp[i].resize(3);
-    for (int j=0; j<3; ++j) 
-    {
-      dfad_nxyz[i][j] = nxyz(i,j);
-      dfad_xdisp[i][j] = disp[i*3+j];
-      dfad_xdisp[i][j].diff(i*3+j,3*4);
-    }
-  }
-  
-  dfad_F = fad_BuildF<FAD>(dfad_xdisp,dfad_nxyz);
-  
-  // copy result back
-  for (int i=0; i<3; ++i)
-    for (int j=0; j<3; ++j)
-      F(i,j) = dfad_F[i][j].val();
-
-  // F in vector form: F_{11} F_{22} F_{33} F_{12} F_{23} F_{31} F_{13} F_{32} F_{21}
-  LINALG::Matrix<9,12> tmp;
-  for (int j=0; j<12; ++j)
-  {
-    tmp(0,j) = dfad_F[0][0].fastAccessDx(j);
-    tmp(1,j) = dfad_F[1][1].fastAccessDx(j);
-    tmp(2,j) = dfad_F[2][2].fastAccessDx(j);
-    tmp(3,j) = dfad_F[0][1].fastAccessDx(j);
-    tmp(4,j) = dfad_F[1][2].fastAccessDx(j);
-    tmp(5,j) = dfad_F[2][0].fastAccessDx(j);
-    tmp(6,j) = dfad_F[0][2].fastAccessDx(j);
-    tmp(7,j) = dfad_F[2][1].fastAccessDx(j);
-    tmp(8,j) = dfad_F[1][0].fastAccessDx(j);
-  }
-
-  return tmp;
-}
-
-/*----------------------------------------------------------------------*
- |                                                             gee 10/10|
- *----------------------------------------------------------------------*/
-vector<double> DRT::ELEMENTS::NStet::BuildJ(double& J, 
-                                            vector<double>& disp, 
-                                            LINALG::Matrix<4,3>& nxyz)
-{
-  const int size = (int)disp.size();
-  if (size!=12) dserror("NStet MUST have 12 displacements");
-  
-  vector<double> Jgrad(size);
-  typedef Sacado::Fad::DFad<double> FAD;
-
-  // copy the input to saccado-type variables
-  vector<vector<FAD> > dfad_nxyz(4);
-  vector<vector<FAD> > dfad_xdisp(4);
-  for (int i=0; i<4; ++i) 
-  {
-    dfad_nxyz[i].resize(3);
-    dfad_xdisp[i].resize(3);
-    for (int j=0; j<3; ++j) 
-    {
-      dfad_nxyz[i][j] = nxyz(i,j);
-      dfad_xdisp[i][j] = disp[i*3+j];
-      dfad_xdisp[i][j].diff(i*3+j,size);
-    }
-  }
-  
-  // build deformation gradient
-  vector<vector<FAD> > dfad_F = fad_BuildF<FAD>(dfad_xdisp,dfad_nxyz);
-  
-  // build its determinant
-  FAD dfad_J = fad_Determinant3x3<FAD>(dfad_F);
-
-  // copy results back
-  J = dfad_J.val();
-  for (int i=0; i<size; ++i) Jgrad[i] = dfad_J.fastAccessDx(i);
-
-  return Jgrad;
-}
-#endif
 
 
 
@@ -316,10 +125,6 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   //-------------------------------------- construct F for each NStet
   ElementDeformationGradient(dis);
-
-  //-----------------------------------------------------------------
-  // construct averaged J=detF for every patch, put in every element
-  //PatchedDeformationGradient(dis);
 
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
@@ -633,48 +438,43 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     VnodeL += V;
 
     // get the element's displacements out of the patch' displacements
-    vector<FAD> eledisp(12);
     vector<int> elelm;
     vector<int> lmowner;
     adjele[i]->LocationVector(dis,elelm,lmowner);
-    // have to find position of elelm[i] in lm (FIXME: do this better than brute force)
+
+    // have to find position of elelm[i] in lm
     // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
     lmlm[i].resize(12);
     for (int j=0; j<12; ++j)
     {
-      for (int k=0; k<ndofinpatch; ++k)
-        if (elelm[j] == lm[k])
-        {
-          lmlm[i][j] = k;
-          break;
-        }
-      eledisp[j] = patchdisp[lmlm[i][j]];
+      vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
+      lmlm[i][j] = k-lm.begin(); // the position of elelm[j] in lm
     }
-    // copy eledisp to 4x3 format
+
+    // copy element disp to 4x3 format
     vector<vector<FAD> > eledispmat(4);
     for (int j=0; j<4; ++j)
     {
       eledispmat[j].resize(3);
-      for (int k=0; k<3; ++k) eledispmat[j][k] = eledisp[j*3+k];
+      for (int k=0; k<3; ++k) eledispmat[j][k] = patchdisp[lmlm[i][j*3+k]];
     }
     
-    // build F and det(F) of this element
+    // build F of this element
     vector<vector<FAD> > Fele = adjele[i]->fad_BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
-    FAD                  Jele = fad_Determinant3x3<FAD>(Fele);
     
-    // add up to nodal deformation gradient and nodal det(F)
+    // add up to nodal deformation gradient
     for (int j=0; j<3; ++j)
       for (int k=0; k<3; ++k)
         fad_FnodeL[j][k] += V * Fele[j][k];
-    fad_Jnode += V * Jele;
     
   } // for (int i=0; i<neleinpatch; ++i)
 
   // do averaging
-  fad_Jnode /= VnodeL;
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
       fad_FnodeL[j][k] /= VnodeL;
+  fad_Jnode = fad_Determinant3x3<FAD>(fad_FnodeL);
+      
 
   // copy values of fad to 'normal' values
   double Jnode = fad_Jnode.val();
@@ -683,19 +483,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     for (int k=0; k<3; ++k)
       FnodeL(j,k) = fad_FnodeL[j][k].val();
  
-  //-----------------------------------------------------------------------
-  // do positioning map global nodes -> position in B-Operator
-  map<int,int>  node_pos;
-  {
-    std::map<int,DRT::Node*>::iterator pnode;
-    int count=0;
-    for (pnode=adjnode.begin(); pnode != adjnode.end(); ++pnode)
-    {
-      node_pos[pnode->first] = count;
-      count++;
-    }
-  }
-  
   //-----------------------------------------------------------------------
   // build B operator
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
@@ -711,7 +498,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fad_F_,actele->fad_F_);
+    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fadF(),actele->fadF());
     for (int i=0; i<3; ++i) 
     {
       Emat[i][i] -= 1.0;
@@ -729,6 +516,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // whole volume of node L
     const double ratio = V/VnodeL;
     
+    // na, wie gierig ist das denn?
     for (int j=0; j<12; ++j)
       for (int k=0; k<6; ++k)
         bop(k,lmlm[ele][j]) += ratio * E[k].fastAccessDx(j);
@@ -808,7 +596,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 
   //-----------------------------------------------------------------------
   // stress is split as follows:
-  //     stress = (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
+  // stress = beta * vol_misnode + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
@@ -857,32 +645,25 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // loop elements in patch
     for (int ele=0; ele<neleinpatch; ++ele)
     {
-      // current element
-      DRT::ELEMENTS::NStet* actele = adjele[ele];
-      // material deriv of that element
-      LINALG::Matrix<4,3>& nxyz = actele->Nxyz();
-      // volume of actele assigned to node L
-      double V = actele->Vol()/4;
+      // material deriv of element
+      LINALG::Matrix<4,3>& nxyz = adjele[ele]->Nxyz();
+      // volume of element assigned to node L
+      const double V = adjele[ele]->Vol()/4;
       
       // loop nodes of that element
       double SmBL[3];
-      DRT::Node** nodes = actele->Nodes();
       for (int i=0; i<4; ++i)
       {
-        // row position of this node in matrix
-        int ipos = node_pos[nodes[i]->Id()];
         SmBL[0] = V*(stress(0)*nxyz(i,0) + stress(3)*nxyz(i,1) + stress(5)*nxyz(i,2));
         SmBL[1] = V*(stress(3)*nxyz(i,0) + stress(1)*nxyz(i,1) + stress(4)*nxyz(i,2));
         SmBL[2] = V*(stress(5)*nxyz(i,0) + stress(4)*nxyz(i,1) + stress(2)*nxyz(i,2));
         for (int j=0; j<4; ++j)
         {
-          // column position of this node in matrix
-          int jpos = node_pos[nodes[j]->Id()];
           double bopstrbop = 0.0;
           for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
-          (*stiff)(3*ipos+0,3*jpos+0) += bopstrbop;
-          (*stiff)(3*ipos+1,3*jpos+1) += bopstrbop;
-          (*stiff)(3*ipos+2,3*jpos+2) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+0],lmlm[ele][j*3+0]) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+1],lmlm[ele][j*3+1]) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+2],lmlm[ele][j*3+2]) += bopstrbop;
         } // for (int j=0; j<4; ++j)
       } // for (int i=0; i<4; ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)
@@ -948,40 +729,33 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   //cout << "=====================================\n";
   for (int i=0; i<neleinpatch; ++i)
   {
-    //cout << "Ele " << adjele[i]->Id() << " w " << weight[i] << " V " << adjele[i]->Vol();
     const double V = weight[i] * adjele[i]->Vol();
     VnodeL += V;
     
     // get the element's displacements out of the patch' displacements
-    vector<FAD> eledisp(12);
     vector<int> elelm;
     vector<int> lmowner;
     adjele[i]->LocationVector(dis,elelm,lmowner);
-    // have to find position of elelm[i] in lm (FIXME: do this better than brute force)
+    // have to find position of elelm[i] in lm
     // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
     lmlm[i].resize(12);
     for (int j=0; j<12; ++j)
     {
-      for (int k=0; k<ndofinpatch; ++k)
-        if (elelm[j] == lm[k])
-        {
-          lmlm[i][j] = k;
-          break;
-        }
-      eledisp[j] = patchdisp[lmlm[i][j]];
+      vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
+      lmlm[i][j] = k-lm.begin(); // the position of elelm[j] in lm
     }
+
     // copy eledisp to 4x3 format
     vector<vector<FAD> > eledispmat(4);
     for (int j=0; j<4; ++j)
     {
       eledispmat[j].resize(3);
-      for (int k=0; k<3; ++k) eledispmat[j][k] = eledisp[j*3+k];
+      for (int k=0; k<3; ++k) eledispmat[j][k] = patchdisp[lmlm[i][j*3+k]];
     }
     
     // build F and det(F) of this element
     vector<vector<FAD> > Fele = adjele[i]->fad_BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
     FAD                  Jele = fad_Determinant3x3<FAD>(Fele);
-    //cout << " J " << Jele.val() << endl;
     
     fad_Jnode += V * Jele;
 
@@ -1006,21 +780,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
       FnodeL(j,k) = fad_FnodeL[j][k].val();
-  
-  
-  //-----------------------------------------------------------------------
-  // do positioning map global nodes -> position in B-Operator
-  map<int,int>  node_pos;
-  {
-    std::map<int,DRT::Node*>::iterator pnode;
-    int count=0;
-    for (pnode=adjnode.begin(); pnode != adjnode.end(); ++pnode)
-    {
-      node_pos[pnode->first] = count;
-      count++;
-    }
-  }
-
+    
   //-----------------------------------------------------------------------
   // build \delta B operator, this is the unmodified operator
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
@@ -1035,7 +795,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fad_F_,actele->fad_F_);
+    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fadF(),actele->fadF());
     for (int i=0; i<3; ++i) 
     {
       Emat[i][i] -= 1.0;
@@ -1130,7 +890,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
 
   //-----------------------------------------------------------------------
   // stress is split as follows:
-  //     stress = (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
+  // stress = beta * vol_misnode + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
@@ -1178,32 +938,25 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     // loop elements in patch
     for (int ele=0; ele<neleinpatch; ++ele)
     {
-      // current element
-      DRT::ELEMENTS::NStet* actele = adjele[ele];
       // material deriv of that element
-      LINALG::Matrix<4,3>& nxyz = actele->Nxyz();
+      LINALG::Matrix<4,3>& nxyz = adjele[ele]->Nxyz();
       // volume of actele assigned to node L
-      double V = weight[ele] * actele->Vol();
+      double V = weight[ele] * adjele[ele]->Vol();
       
       // loop nodes of that element
       double SmBL[3];
-      DRT::Node** nodes = actele->Nodes();
       for (int i=0; i<4; ++i)
       {
-        // row position of this node in matrix
-        int ipos = node_pos[nodes[i]->Id()];
         SmBL[0] = V*(stress(0)*nxyz(i,0) + stress(3)*nxyz(i,1) + stress(5)*nxyz(i,2));
         SmBL[1] = V*(stress(3)*nxyz(i,0) + stress(1)*nxyz(i,1) + stress(4)*nxyz(i,2));
         SmBL[2] = V*(stress(5)*nxyz(i,0) + stress(4)*nxyz(i,1) + stress(2)*nxyz(i,2));
         for (int j=0; j<4; ++j)
         {
-          // column position of this node in matrix
-          int jpos = node_pos[nodes[j]->Id()];
           double bopstrbop = 0.0;
           for (int dim=0; dim<3; ++dim) bopstrbop += nxyz(j,dim) * SmBL[dim];
-          (*stiff)(3*ipos+0,3*jpos+0) += bopstrbop;
-          (*stiff)(3*ipos+1,3*jpos+1) += bopstrbop;
-          (*stiff)(3*ipos+2,3*jpos+2) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+0],lmlm[ele][j*3+0]) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+1],lmlm[ele][j*3+1]) += bopstrbop;
+          (*stiff)(lmlm[ele][i*3+2],lmlm[ele][j*3+2]) += bopstrbop;
         } // for (int j=0; j<4; ++j)
       } // for (int i=0; i<4; ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)

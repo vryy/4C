@@ -37,8 +37,10 @@ using namespace Teuchos;
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#define ALPHA_NSTET       0.05    ///< stabilization parameter for vol-dev split stabilization
-#define BETA_NSTET        0.0    ///< stabilization parameter for MIS-pressure stabilization
+//#define PRINT_NSTET              ///< printout of setup option
+#define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
+#define ALPHA_NSTET       0.05   ///< stabilization parameter for vol-dev split stabilization
+#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
 #define MIS_MIN_PATCHSIZE 1      ///< minimum MIS patch size required
 
 namespace DRT
@@ -278,8 +280,6 @@ private:
   Teuchos::RCP<Epetra_Map> InitMISStressMap(map<int,vector<int> >& pstab_cid_mis,
                                             DRT::Discretization& dis);
 
-
-  //void PatchedDeformationGradient(DRT::Discretization& dis);
 
   void ElementDeformationGradient(DRT::Discretization& dis);
 
@@ -591,21 +591,12 @@ protected:
   //! volume of element
   double                                                   V_;
   
-  //! temporarily store displacements (4x3)
-  vector<vector<FAD> >                                    fad_disp_;
-  
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
   
   //! element's def-gradient
-  LINALG::Matrix<3,3>                                      F_;
   vector<vector<FAD> >                                     fad_F_;
   
-  double                                                   J_;
-  FAD                                                      fad_J_;
-  
-  double                                                   Jbar_;
-
   // internal calculation methods
 
   // return volume of element
@@ -613,25 +604,7 @@ protected:
 
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
   
-  inline LINALG::Matrix<3,3>& F() { return F_; }
-
-  inline double& J() { return J_; }
-
-  inline double& Jbar() { return Jbar_; }
-
-#if 0
-  // sacado version of BuildF in format F_3x3
-  template<typename T> 
-  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
-                                       vector<vector<T> >& nxyz)
-  {
-    vector<vector<T> > F = DRT::ELEMENTS::fad_multiplyTN<3,3,4,T>(xdisp,nxyz);
-    F[0][0] += 1.0;
-    F[1][1] += 1.0;
-    F[2][2] += 1.0;
-    return F;
-  }
-#endif
+  inline vector<vector<FAD> >& fadF() { return fad_F_; }
 
   template<typename T> 
   static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,

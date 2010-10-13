@@ -390,7 +390,10 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       const INPAR::STR::StrainType     iostrain)       // type of strain
 {
   //--------------------------------------------------- geometry update
-  LINALG::Matrix<3,3>& defgrd = F_;
+  LINALG::Matrix<3,3> defgrd(false);
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      defgrd(i,j) = fadF()[i][j].val();
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
   LINALG::Matrix<3,3> cauchygreen;
