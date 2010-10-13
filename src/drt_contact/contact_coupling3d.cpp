@@ -192,10 +192,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
       
       // assemble of mechanical dissipation to slave and master nodes
+      // and matrix A
       if (DRT::Problem::Instance()->ProblemType()=="tsi")
       {  
-        integrator.AssembleMechDiss(Comm(),SlaveElement(),*mdisssegs);
-        integrator.AssembleMechDiss(Comm(),MasterElement(),*mdisssegm);
+        integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
+        integrator.AssembleMechDissMaster(Comm(),MasterElement(),*mdisssegm);
         integrator.AssembleA(Comm(),SlaveElement(),*aseg);
         
         // dserror 

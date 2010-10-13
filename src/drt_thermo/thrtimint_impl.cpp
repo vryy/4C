@@ -1558,10 +1558,15 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
-    // slave nodes (full map)
-    const RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
+    // loop over master full nodes
+    // master nodes are redundant on all procs and the entry of the
+    // mechanical dissipation lies on proc which did the evaluation of 
+    // mortar integrals and mechanical dissipation 
 
-    // loop over all slave nodes of the interface
+    // master nodes
+    const RCP<Epetra_Map> masternodes = interface[m]->MasterFullNodes();
+
+    // loop over all masternodes nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)
     {
       int gid = masternodes->GID(i);
@@ -1571,22 +1576,40 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
 
-      // row dof of temperature
-      int rowtemp = 0;
+      // mechanical dissipation to be assembled     
+      double mechdissglobal = 0;
+      
+      // mechanical dissipation on proc
+      double mechdissproc = 1/dt*cnode->MechDiss();
+            
+      // sum all entries to mechdissglobal
+      Comm().SumAll(&mechdissproc,&mechdissglobal,1);
+      
+      // check if entry is only from one processor
+      if(mechdissproc!=mechdissglobal)
+      {  
+        if (mechdissproc!=0)
+          dserror ("Error in AssembleMechDissRate: Entries from more than one procs");
+      }
+      
+      // owner of master node does the assembly
       if(Comm().MyPID()==cnode->Owner())
-        rowtemp = discretstruct_->Dof(1,nodeges)[0];
+      {
+        // row dof of temperature
+        int rowtemp = discretstruct_->Dof(1,nodeges)[0];
 
-      Epetra_SerialDenseVector mechdissiprate(1);
-      vector<int> dof(1);
-      vector<int> owner(1);
+        Epetra_SerialDenseVector mechdissiprate(1);
+        vector<int> dof(1);
+        vector<int> owner(1);
 
-      mechdissiprate(0) = 1/dt*cnode->MechDiss();
-      dof[0] = rowtemp;
-      owner[0] = cnode->Owner();
+        mechdissiprate(0) = mechdissglobal;
+        dof[0] = rowtemp;
+        owner[0] = cnode->Owner();
 
-      // do assembly
-      if(abs(mechdissiprate(0))>1e-12)
-        LINALG::Assemble(mechdissrate, mechdissiprate, dof, owner);
+        // do assembly
+        if(abs(mechdissiprate(0))>1e-12)
+          LINALG::Assemble(mechdissrate, mechdissiprate, dof, owner);
+      }
     }
   }
   return;

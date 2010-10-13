@@ -5024,17 +5024,17 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble  mechanical dissipation                      gitterle 08/10|
+ |  Assemble  mechanical dissipation to slave nodes       gitterle 08/10|
  |  This method assembles the contribution of a 1D/2D slave and master  |
  |  overlap pair to the mechanical dissipation of adjacent nodes        |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleMechDiss(const Epetra_Comm& comm,
-                                             MORTAR::MortarElement& sele,
-                                             Epetra_SerialDenseVector& mdissseg)
+bool CONTACT::CoIntegrator::AssembleMechDissSlave(const Epetra_Comm& comm,
+                                                  MORTAR::MortarElement& sele,
+                                                  Epetra_SerialDenseVector& mdissseg)
 {
-  // get adjacent slave or master nodes to assemble to
+  // get adjacent slave node to assemble to
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
+  if (!snodes) dserror("ERROR: AssembleMechDissSlave: Null pointer for snodes!");
 
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
@@ -5050,6 +5050,31 @@ bool CONTACT::CoIntegrator::AssembleMechDiss(const Epetra_Comm& comm,
 
     double val = mdissseg(slave);
     snode->AddMechDissValue(val);
+   }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble  mechanical dissipation to master nodes      gitterle 10/10|
+ |  This method assembles the contribution of a 1D/2D slave and master  |
+ |  overlap pair to the mechanical dissipation of adjacent nodes        |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleMechDissMaster(const Epetra_Comm& comm,
+                                                   MORTAR::MortarElement& mele,
+                                                   Epetra_SerialDenseVector& mdissseg)
+{
+  // get adjacent master node to assemble to
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes) dserror("ERROR: AssembleMechDissMaster: Null pointer for snodes!");
+
+  // loop over all master nodes
+  for (int master=0;master<mele.NumNode();++master)
+  {
+    CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
+
+    double val = mdissseg(master);
+    mnode->AddMechDissValue(val);
    }
 
   return true;

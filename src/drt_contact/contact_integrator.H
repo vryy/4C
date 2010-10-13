@@ -294,13 +294,21 @@ public:
   
   /*!
   \brief Assemble mechanical dissipation contribution of current overlap 
-  into slave or master nodes (special version for 3D quadratic mortar with piecewise
-  linear LM interpolation)
+  into slave nodes 
 
   */
-  bool AssembleMechDiss(const Epetra_Comm& comm,
-                        MORTAR::MortarElement& sele,
-                        Epetra_SerialDenseVector& mdissseg);
+  bool AssembleMechDissSlave(const Epetra_Comm& comm,
+                             MORTAR::MortarElement& sele,
+                             Epetra_SerialDenseVector& mdissseg);
+  /*!
+  \brief Assemble mechanical dissipation contribution of current overlap 
+  into master nodes 
+  
+  */
+  bool AssembleMechDissMaster(const Epetra_Comm& comm,
+                              MORTAR::MortarElement& sele,
+                              Epetra_SerialDenseVector& mdissseg);
+
   /*!
   \brief Assemble A contribution of current overlap into slave nodes
 
