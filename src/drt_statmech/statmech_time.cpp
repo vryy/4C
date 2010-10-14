@@ -1387,7 +1387,7 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	  DRT::Element* element = discret_.lRowElement(lid);
 
 	  // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-	  if(element->Id() > discret_.NumGlobalNodes() || element->Id() >= statmechmanager_->statmechparams_.get<int>("NUM_EVAL_ELEMENTS", statmechmanager_->BasisElements()))
+	  if(element->Id() > statmechmanager_->BasisNodes() || element->Id() >= statmechmanager_->statmechparams_.get<int>("NUM_EVAL_ELEMENTS", statmechmanager_->BasisElements()))
 	  	continue;
 
 	  // number of translational DOFs (not elegant but...ah well...!)
