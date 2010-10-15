@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 #ifdef D_SOLID3
 #ifdef CCADISCRET
 
-#include "so_nstet.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -28,6 +27,8 @@ Maintainer: Michael Gee
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
+
+#include "so_nstet.H"
 
 using namespace std;
 
@@ -393,7 +394,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
   LINALG::Matrix<3,3> defgrd(false);
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
-      defgrd(i,j) = fadF()[i][j].val();
+      defgrd(i,j) = F()[i][j].val();
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
   LINALG::Matrix<3,3> cauchygreen;
@@ -704,9 +705,9 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
                       LINALG::Matrix<3,3>& defgrd,
                       int gp)
 {
-  Epetra_SerialDenseVector stress_e(View,stress.A(),stress.Rows());
-  Epetra_SerialDenseMatrix cmat_e(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
-  const Epetra_SerialDenseVector glstrain_e(View,glstrain.A(),glstrain.Rows());
+  Epetra_SerialDenseVector stress_e(::View,stress.A(),stress.Rows());
+  Epetra_SerialDenseMatrix cmat_e(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
+  const Epetra_SerialDenseVector glstrain_e(::View,glstrain.A(),glstrain.Rows());
   //Epetra_SerialDenseMatrix defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
 
 

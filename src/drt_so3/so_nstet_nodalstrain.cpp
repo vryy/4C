@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "so_nstet.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -33,6 +32,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 
+#include "so_nstet.H"
 
 /*----------------------------------------------------------------------*
  |                                                             gee 10/10|
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
     }
     
     // create deformation gradient
-    e->fadF() = e->fad_BuildF<FAD>(fad_disp,e->Nxyz());
+    e->F() = e->fad_BuildF<FAD>(fad_disp,e->Nxyz());
     
   } // ele
   return;
@@ -135,9 +135,9 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   RCP<Epetra_FECrsMatrix> stifftmp;
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
   if (systemmatrix != null and systemmatrix->Filled())
-    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
+    stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
   else
-    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,256,false));
+    stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,rmap,256,false));
 
   //-----------------------------------------------------------------
   // create temporary vector in column map to assemble to
@@ -498,7 +498,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fadF(),actele->fadF());
+    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->F(),actele->F());
     for (int i=0; i<3; ++i) 
     {
       Emat[i][i] -= 1.0;
@@ -624,14 +624,14 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
+    Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
     force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
+    Epetra_SerialDenseMatrix cmat_epetra(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
     stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
@@ -795,7 +795,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->fadF(),actele->fadF());
+    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->F(),actele->F());
     for (int i=0; i<3; ++i) 
     {
       Emat[i][i] -= 1.0;
@@ -917,14 +917,14 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(View,stress.A(),stress.Rows());
+    Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
     force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
+    Epetra_SerialDenseMatrix cmat_epetra(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
     stiff->Multiply('T','N',VnodeL,bop,cb,0.0);

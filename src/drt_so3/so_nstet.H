@@ -36,6 +36,7 @@ using namespace Teuchos;
 #include "so_line.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 //#define PRINT_NSTET              ///< printout of setup option
 #define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
@@ -604,8 +605,9 @@ protected:
 
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
   
-  inline vector<vector<FAD> >& fadF() { return fad_F_; }
+  inline vector<vector<FAD> >& F() { return fad_F_; }
 
+#if 0
   template<typename T> 
   static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
                                        LINALG::Matrix<4,3>& nxyz)
@@ -625,7 +627,27 @@ protected:
     F[2][2] += 1.0;
     return F;
   }
-    
+#endif    
+  template<typename T> 
+  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
+                                       LINALG::Matrix<4,3>& nxyz)
+  {
+    vector<vector<T> > F(3);
+    for (int i=0; i<3; ++i)
+    {
+      F[i].resize(3);
+      for (int j=0; j<3; ++j)
+      {
+        F[i][j] = 0.0;
+        for (int k=0; k<4; ++k) F[i][j] += xdisp[k][i] * nxyz(k,j);
+      }
+    }
+    F[0][0] += 1.0;
+    F[1][1] += 1.0;
+    F[2][2] += 1.0;
+    return F;
+  }
+
   // don't want = operator
   NStet& operator = (const NStet& old);
 

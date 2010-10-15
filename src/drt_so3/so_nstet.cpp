@@ -13,11 +13,12 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "so_nstet.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+
+#include "so_nstet.H"
 
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
