@@ -1588,8 +1588,8 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
       // check if entry is only from one processor
       if(mechdissproc!=mechdissglobal)
       {  
-        if (mechdissproc!=0)
-          dserror ("Error in AssembleMechDissRate: Entries from more than one procs");
+        if (abs(mechdissproc)>1e-12)
+          dserror ("Error in AssembleMechDissRate: Entries from more than one proc");
       }
       
       // owner of master node does the assembly
