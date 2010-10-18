@@ -554,6 +554,10 @@ void MORTAR::MortarInterface::Redistribute()
 	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
 #endif
 
+	// make sure we are supposed to be here
+	if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
+		dserror("ERROR: You are not supposed to be here...");
+	
 	// some local variables
   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
 	const int myrank  = comm->MyPID();
@@ -564,15 +568,40 @@ void MORTAR::MortarInterface::Redistribute()
   vector<int> allproc(numproc);
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
-  // print message
-  if (!myrank) cout << "\nRedistributing interface using 2-PARMETIS.......";
-
   // we need an arbitrary preliminary element row map
   RCP<Epetra_Map> sroweles = rcp(new Epetra_Map(*SlaveRowElements()));
 	RCP<Epetra_Map> mroweles = rcp(new Epetra_Map(*MasterRowElements()));
 
 	//**********************************************************************
-	// (1) SLAVE redistribution
+	// (1) PREPARATIONS decide how many procs are used
+	//**********************************************************************
+	// first we assume that all procs will be used
+	int sproc = numproc;
+	int mproc = numproc;
+	
+	// minimum number of elements per proc
+	int minele = IParams().get<int>("MIN_ELEPROC");
+	
+	// calculate real number of procs to be used
+	if (minele > 0)
+	{
+		sproc = static_cast<int>((sroweles->NumGlobalElements()) / minele);
+		mproc = static_cast<int>((mroweles->NumGlobalElements()) / minele);
+		if (sroweles->NumGlobalElements() < 2*minele) sproc = 1;
+		if (mroweles->NumGlobalElements() < 2*minele) mproc = 1;
+		if (sproc > numproc) sproc = numproc;
+		if (mproc > numproc) mproc = numproc;
+	}
+	
+  // print message
+	if (!myrank)
+  {
+		cout << "\nProcs used for redistribution: " << sproc << " / " << mproc << " (S / M)";
+		cout << "\nRedistributing interface using 2-PARMETIS.......";
+	}
+  
+	//**********************************************************************
+	// (2) SLAVE redistribution
 	//**********************************************************************
 	RCP<Epetra_Map> srownodes = Teuchos::null;
 	RCP<Epetra_Map> scolnodes = Teuchos::null;
@@ -588,12 +617,12 @@ void MORTAR::MortarInterface::Redistribute()
 	//**********************************************************************
 	// call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,comm,time,false);
+	DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,sproc,comm,time,false);
 #endif
 	//**********************************************************************
 
 	//**********************************************************************
-	// (2) MASTER redistribution
+	// (3) MASTER redistribution
 	//**********************************************************************
 	RCP<Epetra_Map> mrownodes = Teuchos::null;
 	RCP<Epetra_Map> mcolnodes = Teuchos::null;
@@ -609,19 +638,19 @@ void MORTAR::MortarInterface::Redistribute()
 	//**********************************************************************
 	// call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,comm,time,false);
+	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
 #endif
 	//**********************************************************************
 
 	//**********************************************************************
-	// (3) Merge global interface node row and column map
+	// (4) Merge global interface node row and column map
 	//**********************************************************************
 	// merge node maps from slave and master parts
 	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
   RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
 	//**********************************************************************
-	// (4) Get partitioning information into discretization
+	// (5) Get partitioning information into discretization
 	//**********************************************************************
 	// build reasonable element maps from the already valid and final node maps
 	// (note that nothing is actually redistributed in here)

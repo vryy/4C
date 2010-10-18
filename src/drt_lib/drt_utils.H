@@ -124,6 +124,7 @@ namespace UTILS
                          RCP<Epetra_Map>& colnodes,
                          vector<int>& nids,
                          int nblock,
+                         int ntarget,
                          RCP<Epetra_Comm> comm,
                          Epetra_Time& time,
                          bool outflag);

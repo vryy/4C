@@ -289,7 +289,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
       InitEvalInterface();
       Comm().Barrier();
       const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-      if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds (BALANCE: " << unbalance_.back() << ")\n";
+      if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
 
       Comm().Barrier();
       const double t_start3 = Teuchos::Time::wallTime();
@@ -644,8 +644,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
   protected:
 
-    vector<RCP<CONTACT::CoInterface> > interface_; // contact interfaces
-    vector<double>                     unbalance_; // parallel unbalance factors for current timestep
+    vector<RCP<CONTACT::CoInterface> > interface_;  // contact interfaces
+    vector<double>                     tunbalance_; // parallel unbalance factors (time) for current timestep
+    vector<int>                        eunbalance_; // parallel unbalance factors (eles) for current timestep
 
     RCP<Epetra_Map> glmdofrowmap_;  // global Lagrange mult. dof row map (of all interfaces)
     RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)

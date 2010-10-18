@@ -69,10 +69,10 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
 
-  // check for parallel redistribution
+  // check for parallel redistribution (only if more than 1 proc)
   bool parredist = false;
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-  	parredist = true;
+  	if (comm.NumProc()>1) parredist = true;
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
@@ -143,7 +143,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
 	//**********************************************************************
 	// PARALLEL REDISTRIBUTION OF INTERFACE
 	//**********************************************************************
-	if (parredist)
+	if (parredist && comm.NumProc()>1)
 	{
 		// redistribute optimally among all procs
 		interface->Redistribute();

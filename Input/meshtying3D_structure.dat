@@ -66,6 +66,10 @@ APPLICATION          MortarMeshtying
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 SYSTEM               Condensed
+// exemplarily test static redistribution with minimum
+// number of elements per proc = 0 here
+PARALLEL_REDIST      Static
+MIN_ELEPROC          0
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

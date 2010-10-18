@@ -247,6 +247,12 @@ public:
   bool Redistribute(int index);
 
   /*!
+  \brief Collect data concering load balance and parallel distribution
+
+  */
+  void CollectDistributionData(int& loadele, int& crowele);
+  
+  /*!
   \brief Create interface ghosting
 
   Derived version!

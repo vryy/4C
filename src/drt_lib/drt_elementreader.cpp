@@ -389,7 +389,7 @@ void ElementReader::Partition()
     comm_->Broadcast(&nids[0],numnodes,0);
 
     DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,nids,nblock,
-                                  comm_,time,not reader_.MyOutputFlag());
+                                  numproc,comm_,time,not reader_.MyOutputFlag());
 
 #else
     nids.clear();

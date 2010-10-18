@@ -379,6 +379,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
   	dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
+  
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+                                                   input.get<int>("MIN_ELEPROC") <  0)
+    dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
   // *********************************************************************
   // not (yet) implemented combinations

@@ -50,18 +50,11 @@ Maintainer: Alexander Popp
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 
 /************************************************************************/
-/* Contact algorithm parameters                                         */
-/************************************************************************/
-
-// DYNAMIC PARALLEL REDISTRIBUTION
-#define CONTACTPARREDIST 1.5      /* max. unbalance before redistribution is called */
-
-/************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-#define CONTACTASOUTPUT             /* flag for detailed active set output */
+//#define CONTACTASOUTPUT             /* flag for detailed active set output */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */

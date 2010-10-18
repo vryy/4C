@@ -72,7 +72,11 @@ FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes
 SEMI_SMOOTH_CN       1.0e3
 SEMI_SMOOTH_CT       1.0
+// exemplarily test dynamic redistribution with minimum
+// number of elements per proc = 0 and time limit = 1.5 here
 PARALLEL_REDIST      Dynamic
+MIN_ELEPROC          0
+MAX_BALANCE          1.5
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

@@ -463,6 +463,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+                                                     input.get<int>("MIN_ELEPROC") <  0)
+    dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
+  
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+                                                     input.get<double>("MAX_BALANCE") <  1.0)
+    dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
+  
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************

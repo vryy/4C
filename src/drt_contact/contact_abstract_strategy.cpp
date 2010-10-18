@@ -100,6 +100,10 @@ dualquadslave3d_(false)
 		pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
 		pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
   }
+  
+  // intialize storage fields for parallel redistribution
+  tunbalance_.clear();
+  eunbalance_.clear();
 
 	return;
 }
@@ -123,17 +127,19 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
 	if (!ParRedist() || Comm().NumProc()==1) return;
 
 	// decide whether redistribution should be applied or not
-	double average = 0.0;
+	double taverage = 0.0;
+	double eaverage = 0;
   bool doredist = false;
+  double max_balance = Params().get<double>("MAX_BALANCE");
 
   //**********************************************************************
 	// (1) static redistribution: ONLY at time t=0 or after restart
-	// (both cases can be identified via an empty unbalance_ vector)
+	// (both cases can be identified via empty unbalance vectors)
   //**********************************************************************
   if (WhichParRedist()==INPAR::MORTAR::parredist_static)
   {
   	// this is the first time step (t=0) or restart
-  	if ((int)unbalance_.size()==0)
+  	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
   	{
   		// do redistribution
   		doredist = true;
@@ -142,12 +148,15 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
   	// this is a regular time step (neither t=0 nor restart)
   	else
   	{
-  		// compute average balance factor of last time step
-  	  for (int k=0;k<(int)unbalance_.size();++k) average += unbalance_[k];
-      average/=(int)unbalance_.size();
+  		// compute average balance factors of last time step
+  	  for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
+      taverage/=(int)tunbalance_.size();
+  	  for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
+      eaverage/=(int)eunbalance_.size();
 
       // delete balance factors of last time step
-      unbalance_.resize(0);
+      tunbalance_.resize(0);
+      eunbalance_.resize(0);
 
   		// no redistribution
   		doredist = false;
@@ -160,7 +169,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
   else if (WhichParRedist()==INPAR::MORTAR::parredist_dynamic)
   {
   	// this is the first time step (t=0) or restart
-  	if ((int)unbalance_.size()==0)
+  	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
   	{
   		// do redistribution
   		doredist = true;
@@ -169,30 +178,42 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
   	// this is a regular time step (neither t=0 nor restart)
   	else
   	{
-  		// compute average balance factor of last time step
-  	  for (int k=0;k<(int)unbalance_.size();++k) average += unbalance_[k];
-      average/=(int)unbalance_.size();
-
+  		// compute average balance factors of last time step
+  	  for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
+      taverage/=(int)tunbalance_.size();
+  	  for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
+      eaverage/=(int)eunbalance_.size();
+      
       // delete balance factors of last time step
-      unbalance_.resize(0);
+      tunbalance_.resize(0);
+      eunbalance_.resize(0);
 
       // decide on redistribution
-			// (we allow a maximum of CONTACTPARREDIST unbalance in the
-      // system as defined in contact_defines.H, i.e. the maximum
-      // local processor workload and the minimum local processor
-      // workload for mortar evaluation of all interfaces may not
-      // differ by more than (CONTACTPARREDIST - 1.0)*100%)
-      if (average >= CONTACTPARREDIST) doredist = true;
+			// -> (we allow a maximum value of the balance measure in the
+      // system as defined in the input parameter MAX_BALANCE, i.e.
+      // the maximum local processor workload and the minimum local
+      // processor workload for mortar evaluation of all interfaces
+      // may not differ by more than (MAX_BALANCE - 1.0)*100%)
+      // -> (moreover, we redistribute if in the majority of iteration
+      // steps of the last time step there has been an unbalance in
+      // element distribution, i.e. if eaverage >= 0.5)
+      if (taverage >= max_balance || eaverage >= 0.5)
+      	doredist = true;
   	}
   }
 
 	// print balance information to screen
 	if (Comm().MyPID()==0)
 	{
-    cout << "*****************************" << endl;
-		if (average>0) cout << "Parallel balance: " << average << endl;
-		else           cout << "Parallel balance: t=0/restart" << endl;
-		cout << "*****************************" << endl;
+    cout << "**********************************************************" << endl;
+		if (taverage>0)
+	  {
+			printf("Parallel balance (time): %e (limit %e) \n",taverage,max_balance);
+			printf("Parallel balance (eles): %e (limit %e) \n",eaverage,0.5);
+		}
+		else
+			printf("Parallel balance: t=0/restart \n");
+		cout << "**********************************************************" << endl;
 	}
 
 	// get out of here if simulation is still in balance
@@ -213,7 +234,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
 	// parallel redistribution of all interfaces
 	for (int i=0; i<(int)interface_.size();++i)
 	{
-		// redistribute optimally among all procs
+		// redistribute optimally among procs
 		bool done = interface_[i]->Redistribute(i+1);
 
 		// if redistribution has really been performed
@@ -522,18 +543,104 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     interface_[i]->Evaluate();
   }
 
-  // time measurement (on each processor)
-  double t_end = Teuchos::Time::wallTime()-t_start;
+  //**********************************************************************
+  // PARALLEL REDISTRIBUTION
+  //**********************************************************************
+	// get out of here if parallel redistribution is switched off
+	// or if this is a single processor (serial) job
+	if (!ParRedist() || Comm().NumProc()==1) return;
 
+	// collect information about participation in coupling evaluation
+	// and in parallel distribution of the individual interfaces
+	vector<int> numloadele((int)interface_.size());
+	vector<int> numcrowele((int)interface_.size());
+  for (int i=0; i<(int)interface_.size(); ++i)
+  	interface_[i]->CollectDistributionData(numloadele[i],numcrowele[i]);
+	
+  // time measurement (on each processor)
+  double t_end_for_minall = Teuchos::Time::wallTime()-t_start;
+  double t_end_for_maxall = t_end_for_minall;
+
+  // restrict time measurement to procs that own at least some part
+  // of the "close" slave interface section(s) on the global level,
+  // i.e. restrict to procs that actually have to do some work
+  int gnumloadele = 0;
+  for (int i=0; i<(int)numloadele.size(); ++i)
+  	gnumloadele += numloadele[i];
+  
+  // for non-loaded procs, set time measurement to values 0.0 / 1.0e12,
+  // which do not affect the maximum and minimum identification
+  if (gnumloadele==0)
+  {
+  	t_end_for_minall =  1.0e12;
+  	t_end_for_maxall =  0.0;
+  }
+  
   // store time indicator for parallel redistribution
   // (indicator is the maximum local processor time
   // divided by the minimum local processor time)
 	double maxall = 0.0;
 	double minall = 0.0;
-	Comm().MaxAll(&t_end,&maxall,1);
-	Comm().MinAll(&t_end,&minall,1);
-	unbalance_.push_back(maxall/minall);
+	Comm().MaxAll(&t_end_for_maxall,&maxall,1);
+	Comm().MinAll(&t_end_for_minall,&minall,1);
+	
+	// check for plausibility before storing
+	if (maxall==0.0 && minall==1.0e12) tunbalance_.push_back(1.0);
+	else                               tunbalance_.push_back(maxall/minall);
+	
+	// obtain info whether there is an unbalance in element distribution
+	bool eleunbalance = false;
+	for (int i=0; i<(int)interface_.size(); ++i)
+	{
+		// find out how many close slave elements in total
+		int totrowele = 0;
+		Comm().SumAll(&numcrowele[i],&totrowele,1);
+		
+		// find out how many procs have work on this interface
+		int lhascrowele = 0;
+		int ghascrowele = 0;
+		if (numcrowele[i]>0) lhascrowele=1;
+		Comm().SumAll(&lhascrowele,&ghascrowele,1);
 
+		// minimum number of elements per proc
+		int minele = Params().get<int>("MIN_ELEPROC");
+		int numproc = Comm().NumProc();
+		
+		//--------------------------------------------------------------------
+		// check if there is an element unbalance
+		//--------------------------------------------------------------------
+		// CASE 0: if minimum number of elements per proc is zero, but
+		// further procs are still available and more than numproc elements
+		if ( (minele == 0) && (totrowele > numproc) && (ghascrowele < numproc) )
+			eleunbalance = true;
+		
+		// CASE 1: in total too few close slave elements but more than one
+		// proc is active (otherwise, i.e. if interface small, we have no choice)
+		if ( (minele > 0) && (totrowele < ghascrowele * minele) && (ghascrowele > 1) )
+			eleunbalance = true;
+		
+		// CASE 2: in total too many close slave elements, but further procs
+		// are still available for redsitribution
+		if ( (minele > 0) && (totrowele >= (ghascrowele+1)*minele) && (ghascrowele < numproc) )
+			eleunbalance = true;
+	}
+	
+	// obtain global info on element unbalance
+  int geleunbalance = 0;
+  int leleunbalance = (int)(eleunbalance);
+  Comm().SumAll(&leleunbalance,&geleunbalance,1);
+  if (geleunbalance>0) eunbalance_.push_back(1);
+  else                 eunbalance_.push_back(0);
+	
+  // debugging output
+	//cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " << numcrowele[0]
+	//     << "\t MIN: " << minall << "\t MAX: " << maxall
+	//     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
+	//     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
+	//     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
+  
+	//**********************************************************************
+	
 	return;
 }
 
@@ -668,7 +775,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
 
   // reset unbalance factors for redistribution
   // (during EvalRefState the interface has been evaluated once)
-  unbalance_.resize(0);
+  tunbalance_.resize(0);
+  eunbalance_.resize(0);
 
 #else  
   
@@ -716,7 +824,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
   
   // reset unbalance factors for redistribution
   // (during EvalRefState the interface has been evaluated once)
-  unbalance_.resize(0);
+  tunbalance_.resize(0);
+  eunbalance_.resize(0);
 #endif
   
   return;
@@ -1339,7 +1448,8 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)
-  unbalance_.resize(0);
+  tunbalance_.resize(0);
+  eunbalance_.resize(0);
 
   return;
 }

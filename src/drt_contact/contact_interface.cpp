@@ -130,6 +130,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
 #endif
 
+	// make sure we are supposed to be here
+	if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
+		dserror("ERROR: You are not supposed to be here...");
+	
 	// some local variables
   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
 	const int myrank  = comm->MyPID();
@@ -196,6 +200,9 @@ bool CONTACT::CoInterface::Redistribute(int index)
   if (scroweles->NumGlobalElements()==0 && sncroweles->NumGlobalElements()==0)
     dserror("ERROR: Redistribute: Both slave sets (close/non-close) are empty");
 
+  //**********************************************************************
+	// (2) SPECIAL CASES and output to screen
+	//**********************************************************************
   // print element overview
   if (!myrank)
   {
@@ -205,26 +212,51 @@ bool CONTACT::CoInterface::Redistribute(int index)
   	cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
   }
 
-  // do not redistribute if there are NO close elements
-  // (return value FALSE, because no redistribution performed)
-  if (scroweles->NumGlobalElements()==0) return false;
-
 	// print old parallel distribution
 	PrintParallelDistribution(index);
 
   // use simple base class method if there are ONLY close elements
   // (return value TRUE, because redistribution performed)
-  if (sncroweles->NumGlobalElements()==0)
+  if (scroweles->NumGlobalElements()==0 || sncroweles->NumGlobalElements()==0)
   {
   	MORTAR::MortarInterface::Redistribute();
   	return true;
   }
 
+  //**********************************************************************
+	// (3) PREPARATIONS decide how many procs are used
+	//**********************************************************************
+	// first we assume that all procs will be used
+	int scproc = numproc;
+	int sncproc = numproc;
+	int mproc = numproc;
+	
+	// minimum number of elements per proc
+	int minele = IParams().get<int>("MIN_ELEPROC");
+	
+	// calculate real number of procs to be used
+	if (minele > 0)
+	{
+		scproc  = static_cast<int>((scroweles->NumGlobalElements()) / minele);
+		sncproc = static_cast<int>((sncroweles->NumGlobalElements()) / minele);
+		mproc   = static_cast<int>((mroweles->NumGlobalElements()) / minele);
+		if (scroweles->NumGlobalElements() < 2*minele)  scproc = 1;
+		if (sncroweles->NumGlobalElements() < 2*minele) sncproc = 1;
+		if (mroweles->NumGlobalElements() < 2*minele)   mproc = 1;
+		if (scproc > numproc)  scproc = numproc;
+		if (sncproc > numproc) sncproc = numproc;
+		if (mproc > numproc)   mproc = numproc;
+	}
+
   // print message
-  if (!myrank) cout << "\nRedistributing interface using 3-PARMETIS.......";
+	if (!myrank)
+	{
+	  cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
+	  cout << "\nRedistributing interface using 3-PARMETIS.......";
+	}
 
 	//**********************************************************************
-	// (2) CLOSE SLAVE redistribution
+	// (4) CLOSE SLAVE redistribution
 	//**********************************************************************
 	RCP<Epetra_Map> scrownodes = Teuchos::null;
 	RCP<Epetra_Map> sccolnodes = Teuchos::null;
@@ -241,15 +273,13 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
 	//**********************************************************************
 	// call PARMETIS (again with #ifdef to be on the safe side)
-	// (close slave set might also be empty!)
 #if defined(PARALLEL) && defined(PARMETIS)
-	if ((int)scnids.size())
-		DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,comm,time,false);
+	DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
 #endif
 	//**********************************************************************
 
 	//**********************************************************************
-	// (3) NON-CLOSE SLAVE redistribution
+	// (5) NON-CLOSE SLAVE redistribution
 	//**********************************************************************
 	RCP<Epetra_Map> sncrownodes = Teuchos::null;
 	RCP<Epetra_Map> snccolnodes = Teuchos::null;
@@ -266,15 +296,13 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
 	//**********************************************************************
 	// call PARMETIS (again with #ifdef to be on the safe side)
-	// (non-close slave set might also be empty!)
 #if defined(PARALLEL) && defined(PARMETIS)
-	if ((int)sncnids.size())
-		DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,comm,time,false);
+	DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
 #endif
 	//**********************************************************************
 
 	//**********************************************************************
-	// (4) MASTER redistribution
+	// (6) MASTER redistribution
 	//**********************************************************************
 	RCP<Epetra_Map> mrownodes = Teuchos::null;
 	RCP<Epetra_Map> mcolnodes = Teuchos::null;
@@ -290,12 +318,12 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	//**********************************************************************
 	// call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,comm,time,false);
+	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
 #endif
 	//**********************************************************************
 
 	//**********************************************************************
-	// (5) Merge global interface node row and column map
+	// (7) Merge global interface node row and column map
 	//**********************************************************************
 	// merge slave node row map from close and non-close parts
   RCP<Epetra_Map> srownodes = Teuchos::null;
@@ -386,7 +414,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
 	//**********************************************************************
-	// (6) Get partitioning information into discretization
+	// (8) Get partitioning information into discretization
 	//**********************************************************************
 	// build reasonable element maps from the already valid and final node maps
 	// (note that nothing is actually redistributed in here)
@@ -406,6 +434,34 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	if (!myrank) cout << "done!" << endl;
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ | collect distribution data (public)                         popp 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
+{
+  // loop over proc's column slave elements of the interface
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+  	int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CoElement* selement = static_cast<CoElement*>(ele1);
+    
+    // bool indicating coupling partners
+    bool add = (selement->NumSearchElements()>0);
+    
+    // check if this element has any coupling partners and add
+    // element ID to input variable loadele if so
+    if (add) loadele += 1;
+    
+    // check if - in addition - the active proc owns this element
+    // and add element ID to input variable rowele if so
+    if (add && selement->Owner()==Comm().MyPID()) crowele += 1;
+  }
+  
+  return;	
 }
 
 /*----------------------------------------------------------------------*

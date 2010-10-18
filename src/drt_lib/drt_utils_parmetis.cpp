@@ -138,6 +138,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    RCP<Epetra_Map>& colnodes,
                                    vector<int>& nids,
                                    int nblock,
+                                   int ntarget,
                                    RCP<Epetra_Comm> comm,
                                    Epetra_Time& time,
                                    bool outflag)
@@ -550,7 +551,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       is independent of the number of processors that call
       this routine.
     */
-    int npart=numproc;
+    int npart=ntarget;
     /*
       This is an array of integers that is used to pass
       additional parameters for the routine. If options[0]=0,

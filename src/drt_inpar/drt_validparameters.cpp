@@ -1077,6 +1077,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::MORTAR::parredist_static, INPAR::MORTAR::parredist_static,
               INPAR::MORTAR::parredist_dynamic, INPAR::MORTAR::parredist_dynamic),
       &scontact);
+  
+  DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&scontact);
+  IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
