@@ -5360,5 +5360,204 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
 
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
 
+
+//Do a finite difference check for a given element id. Meant for debugging only!
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
+  DRT::Element*                         ele,
+  Epetra_SerialDenseMatrix&             sys_mat,
+  Epetra_SerialDenseVector&             residual,
+  Epetra_SerialDenseVector&             subgrdiff,
+  const double                          time,
+  const double                          dt,
+  const double                          timefac,
+  const double                          alphaF,
+  const enum INPAR::SCATRA::TauType     whichtau,
+  const enum INPAR::SCATRA::AssgdType   whichassgd,
+  const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd,
+  const bool                            assgd,
+  const bool                            fssgd,
+  const bool                            turbmodel,
+  const bool                            reinitswitch,
+  const double                          Cs,
+  const double                          tpn,
+  const double                          frt,
+  const enum INPAR::SCATRA::ScaTraType  scatratype
+  )
+{
+  // magnitude of dof perturbation
+  const double epsilon=1e-8;
+
+  // make a copy of all input parameters potentially modified by Sysmat
+  // call --- they are not intended to be modified
+  //double copy_Cs         =Cs;
+  //Teuchos::RCP<const MAT::Material> copy_material=material;
+
+  // alloc the vectors that will store the original, non-perturbed values
+  vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
+  LINALG::Matrix<nen_,1>          origepotnp(true);
+  // copy original concentrations and potentials to these storage arrays
+  for (int i=0;i<nen_;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      origephinp[k](i,0) = ephinp_[k](i,0);
+    }
+    origepotnp(i) = epotnp_(i);
+  } // for i
+
+  // allocate arrays to compute element matrices and vectors at perturbed positions
+  Epetra_SerialDenseMatrix  checkmat1(sys_mat);
+  Epetra_SerialDenseVector  checkvec1(residual);
+  Epetra_SerialDenseVector  checkvec2(subgrdiff);
+
+  // echo to screen
+  printf("+-------------------------------------------+\n");
+  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",ele->Id());
+  printf("+-------------------------------------------+\n");
+  printf("\n");
+
+  // loop columns of matrix by looping nodes and then dof per nodes
+  // loop nodes
+  for(int nn=0;nn<nen_;++nn)
+  {
+    printf("-------------------------------------\n");
+    printf("-------------------------------------\n");
+    printf("NODE of element local id %d\n",nn);
+    // loop dofs
+    for(int rr=0;rr<numdofpernode_;++rr)
+    {
+      // number of the matrix column to check
+      int dof=nn*(numdofpernode_)+rr;
+
+      // clear element matrices and vectors to assemble
+      checkmat1.Scale(0.0);
+      checkvec1.Scale(0.0);
+      checkvec2.Scale(0.0);
+
+      // first put the non-perturbed values to the working arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          ephinp_[k](i,0) = origephinp[k](i,0);
+        }
+        epotnp_(i) = origepotnp(i);
+      } // for i
+
+      // perturb the respective elemental quantities
+      if(rr==(numdofpernode_-1))
+      {
+        printf("potential dof (%d). eps=%g\n",nn,epsilon);
+
+        if (is_genalpha_)
+        {
+          //checkepreaf(nn)+=f3Parameter_->alphaF_*epsilon;
+        }
+        else
+        {
+          epotnp_(nn)+=epsilon;
+        }
+      }
+      else
+      {
+        printf("concentration dof %d (%d)\n",rr,nn);
+
+        if (is_genalpha_)
+        {
+          //checkevelaf(rr,nn)+=f3Parameter_->alphaF_*epsilon;
+          //checkeaccam(rr,nn)+=f3Parameter_->alphaM_/(f3Parameter_->gamma_*f3Parameter_->dt_)*epsilon;
+        }
+        else
+        {
+          ephinp_[rr](nn,0)+=epsilon;
+        }
+      }
+
+      // calculate the right hand side for the perturbed vector
+      Sysmat(
+          ele,
+          checkmat1,
+          checkvec1,
+          checkvec2,
+          time,
+          dt,
+          timefac,
+          alphaF,
+          whichtau,
+          whichassgd,
+          whichfssgd,
+          assgd,
+          fssgd,
+          turbmodel,
+          reinitswitch,
+          Cs,
+          tpn,
+          frt,
+          scatratype);
+
+      // compare the difference between linaer approximation and
+      // (nonlinear) right hand side evaluation
+
+      // note that it makes more sense to compare these quantities
+      // than to compare the matrix entry to the difference of the
+      // the right hand sides --- the latter causes numerical problems
+      // do to deletion
+
+      for(int mm=0;mm<(numdofpernode_*nen_);++mm)
+      {
+        double val;
+        double lin;
+        double nonlin;
+
+        // For af-generalized-alpha scheme, the residual vector for the
+        // solution rhs is scaled on the time-integration level...
+        if (is_genalpha_)
+        {
+          dserror("Do not use this");
+          //val   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
+          //lin   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_)+estif(mm,dof);
+          //nonlin=-(checkvec1(mm)/(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
+        }
+        else
+        {
+          val   =-residual(mm)/epsilon;
+          lin   =-residual(mm)/epsilon+sys_mat(mm,dof);
+          nonlin=-checkvec1(mm)/epsilon;
+        }
+
+        double norm=abs(lin);
+        if(norm<1e-12)
+        {
+          norm=1e-12;
+          cout<<"warning norm of lin is set to 10e-12"<<endl;
+        }
+
+        // output to screen
+        printf("relerr  %+12.5e   ",(lin-nonlin)/norm);
+        printf("abserr  %+12.5e   ",lin-nonlin);
+        printf("orig. value  %+12.5e   ",val);
+        printf("lin. approx. %+12.5e   ",lin);
+        printf("nonlin. funct.  %+12.5e   ",nonlin);
+        printf("matrix[%d,%d]  %+12.5e   ",mm,dof,sys_mat(mm,dof));
+        printf("FD suggestion  %+12.5e ",((residual(mm)/epsilon)-(checkvec1(mm)/epsilon)) );
+        printf("\n");
+      }
+    }
+  }
+
+  // undo changes in state variables
+  for (int i=0;i<nen_;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      ephinp_[k](i,0) = origephinp[k](i,0);
+    }
+    epotnp_(i) = origepotnp(i);
+  } // for i
+
+  return;
+}
+
 #endif // CCADISCRET
 #endif // D_FLUID3 or D_FLUID2

@@ -461,6 +461,30 @@ public:
     }
 
 
+    // Finite difference check for debugging purposes
+    void FDcheck(
+        DRT::Element*                         ele, ///< the element those matrix is calculated
+        Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+        Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+        const double                          time, ///< current simulation time
+        const double                          dt, ///< current time-step length
+        const double                          timefac, ///< time discretization factor
+        const double                          alphaF, ///< factor for generalized-alpha time integration
+        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
+        const enum INPAR::SCATRA::AssgdType   whichassgd, ///< all-scale subgrid-diffusivity definition
+        const enum INPAR::SCATRA::FSSUGRDIFF  whichfssgd, ///< fine-scale subgrid-diffusivity definition
+        const bool                            assgd, ///< all-scale subgrid-diff. flag
+        const bool                            fssgd, ///< fine-scale subgrid-diff. flag
+        const bool                            turbmodel, ///< turbulence model flag
+        const bool                            reinitswitch,
+        const double                          Cs, ///< Smagorinsky constant
+        const double                          tpn, ///< turbulent Prandtl number
+        const double                          frt, ///< factor F/RT needed for ELCH calculations
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
+      );
+
+
     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
