@@ -118,6 +118,10 @@ if (QHULL)
       )
   endif (QHULL_FOUND)
 
+  if (NOT QHULL_FOUND)
+     MESSAGE(FATAL_ERROR "QHull not found")
+  endif ()
+
   find_package(Tetgen REQUIRED)
   if (TETGEN_FOUND)
     include_directories(${TETGEN_INCLUDE_DIRS})
@@ -500,6 +504,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
+  src/drt_adapter/adapter_fluid_xfluid_impl.cpp	
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp
@@ -857,6 +862,8 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_windkessel_optimization.cpp
   src/drt_fluid/fluidimpedancecondition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp
+  src/drt_fluid/fluidxfluidimplicitintegration.cpp
+  src/drt_fluid/fluidxfluidresulttest.cpp	
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/time_integration_scheme.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
