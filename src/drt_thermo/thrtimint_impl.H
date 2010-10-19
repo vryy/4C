@@ -296,6 +296,7 @@ namespace THR
                                     Epetra_Vector& thermcontRHS,
                                     LINALG::SparseMatrix& dmatrix,
                                     LINALG::SparseMatrix& mmatrix,
+                                    LINALG::SparseMatrix& amatrix,
                                     RCP<Epetra_Map> activedofs,
                                     RCP<Epetra_Map> masterdofs);
     //@}

@@ -894,11 +894,19 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   dmatrix->Complete();
   mmatrix->Complete(*mdofs,*sdofs);
 
+  // assemble Matrix A
+  RCP<LINALG::SparseMatrix> amatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
+  AssembleA(*amatrix);
+  
+  // Fill Complete
+  amatrix->Complete();
+  
   // active part of dmatrix and mmatrix
   RCP<Epetra_Map> tmp;
-  RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+  RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,amatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
   LINALG::SplitMatrix2x2(dmatrix,adofs,idofs,adofs,idofs,dmatrixa,tmp1,tmp2,tmp3);
   LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
+  LINALG::SplitMatrix2x2(amatrix,adofs,idofs,sdofs,tmp,amatrixa,tmp4,tmp5,tmp6);
 
   // assemble mechanical dissipation
   RCP<Epetra_Vector> mechdissrate = LINALG::CreateVector(*mdofs,true);
@@ -910,10 +918,10 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true);
 
   // assemble thermal contact contition
-  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrixa,*mmatrixa,adofs,mdofs);
+  AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrixa,*mmatrixa,*amatrixa,adofs,mdofs);
 
   // complete the matrices
-  thermcontLM->Complete(*adofs,*adofs);
+  thermcontLM->Complete(*sdofs,*adofs);
   thermcontTEMP->Complete(*smdofs,*adofs);
 
   /**********************************************************************/
@@ -1014,7 +1022,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   // active part of invd and mhatmatrix
   RCP<Epetra_Map> tmpmap;
   RCP<LINALG::SparseMatrix> invda,mhata;
-  LINALG::SplitMatrix2x2(invd,adofs,idofs,adofs,idofs,invda,tmp1,tmp2,tmp3);
+  LINALG::SplitMatrix2x2(invd,sdofs,tmpmap,adofs,idofs,invda,tmp1,tmp2,tmp3);
   LINALG::SplitMatrix2x2(mhatmatrix,adofs,idofs,mdofs,tmpmap,mhata,tmp1,tmp2,tmp3);
 
   /**********************************************************************/
@@ -1624,6 +1632,7 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
                                                  Epetra_Vector& thermcontRHS,
                                                  LINALG::SparseMatrix& dmatrix,
                                                  LINALG::SparseMatrix& mmatrix,
+                                                 LINALG::SparseMatrix& amatrix,
                                                  RCP<Epetra_Map> activedofs,
                                                  RCP<Epetra_Map> masterdofs)
 {
@@ -1655,7 +1664,7 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
   double delta = heattranss/(heattranss+heattransm);
 
   // with respect to Lagrange multipliers
-  thermcontLM.Add(dmatrix,false,1.0,1.0);
+  thermcontLM.Add(amatrix,false,1.0,1.0);
 
   // with respect to temperature
   thermcontTEMP.Add(dmatrix,false,-beta,1.0);
