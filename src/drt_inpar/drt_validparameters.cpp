@@ -1077,7 +1077,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::MORTAR::parredist_static, INPAR::MORTAR::parredist_static,
               INPAR::MORTAR::parredist_dynamic, INPAR::MORTAR::parredist_dynamic),
       &scontact);
-  
+
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&scontact);
   IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&scontact);
 
@@ -1263,6 +1263,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SEARCHINTERVAL",1,"search for neighbours every SEARCHINTERVAL steps",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
   IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
+  // number of histogram bins for post-analysis
+  IntParameter("HISTOGRAMBINS",-1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   //search probability
   DoubleParameter("SEARCHPROBABILITY",1.0,"value determining the probability of whether to conduct a search for neighbours",&statmech);
   //Reading whether DBCs shall be applied to broken elements
