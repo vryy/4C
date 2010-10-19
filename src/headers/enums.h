@@ -611,7 +611,7 @@ typedef enum _FLUID_SOLVINGSTRATEGIES
 	fluid_solver_implicit=0,
 	fluid_solver_pressurecorrection=1,
 	fluid_solver_pressurecorrection_semiimplicit=2,
-        fluid_solver_ale_xfluid
+    fluid_solver_fluid_xfluid
 } FLUID_SOLVINGSTRATEGIES;
 
 /*----------------------------------------------------------------------*/

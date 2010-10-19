@@ -1520,11 +1520,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>("Implicit",
                                                        "Pressure Correction",
                                                        "Pressure Correction SemiImplicit",
-                                                       "AleXFluid"),
+                                                       "FluidXFluid"),
                                     tuple<int>(fluid_solver_implicit,
                                                fluid_solver_pressurecorrection,
                                                fluid_solver_pressurecorrection_semiimplicit,
-                                               fluid_solver_ale_xfluid),
+                                               fluid_solver_fluid_xfluid),
                                     &fdyn);
 
   setStringToIntegralParameter<INPAR::FLUID::TimeIntegrationScheme>("TIMEINTEGR","One_Step_Theta",

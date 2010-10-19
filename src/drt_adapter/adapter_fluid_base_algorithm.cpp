@@ -33,6 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_genalpha.H"
 #include "adapter_fluid_combust.H"
 #include "adapter_fluid_lung.H"
+#include "adapter_fluid_xfluid_impl.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -471,8 +472,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         tmpfluid = rcp(new ADAPTER::FluidProjection(actdis, solver, psolver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
-      case fluid_solver_ale_xfluid:
-        dserror("TODO");
+      case fluid_solver_fluid_xfluid:
+      {   
+        RCP<DRT::Discretization> xfluiddis = DRT::Problem::Instance()->Dis(genprob.numff,1);
+        tmpfluid = rcp(new ADAPTER::FluidXFluidImpl(actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+      }
         break;
       default:
         dserror("fluid solving strategy unknown.");
