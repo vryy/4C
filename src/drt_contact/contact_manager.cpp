@@ -510,6 +510,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (self == true &&
   		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
+  
+  // no parallel redistribution in for thermal-structure-interaction
+  if(DRT::Problem::Instance()->ProblemType()=="tsi" and 
+    Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+    dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)

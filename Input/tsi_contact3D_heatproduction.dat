@@ -94,6 +94,7 @@ SEARCH_PARAM         0.3
 COUPLING_AUXPLANE    Yes
 HEATTRANSSLAVE       1000
 HEATTRANSMASTER      100 
+PARALLEL_REDIST      No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
