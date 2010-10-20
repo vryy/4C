@@ -697,8 +697,9 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
 			if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
 			{
+
 				std::ostringstream filename;
-				filename << "./DensityDensityCorrFunction_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+				filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
 				DensityDensityCorrOutput(filename);
 			}
 		}
@@ -2198,7 +2199,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 		{
 			// ask whether passed GID/column map LID belongs to the calling Proc and if we currently are above the main diagonal
 			// note: we se MyGID because crosslinkermap_ LID = GID
-			if(transfermap_->MyGID(i)==true && i < j)
+			if(transfermap_->LID(i)!=-1 && i < j)
 			{
 				double deltaxij = 0.0;
 				// calculate the distance between molecule i and molecule j
@@ -2218,6 +2219,13 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 	Epetra_Import importer(*ddcorrelationmap_, *ddcorrelationmap_);
 	crosslinksperbin.Import(*crosslinksperbin_, importer, Add);
 
+	int count = 0;
+	for(int i=0; i<ddcorrelationmap_->NumMyElements(); i++)
+		count += (int)crosslinksperbin[i];
+
+	cout<<"total count = "<<count<<endl;
+	cout<<crosslinksperbin<<endl;
+
 	// write data to file
 	if(!discret_.Comm().MyPID())
 	{
@@ -2226,15 +2234,8 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 		std::stringstream histogram;
 
 		int count = 0;
-		for(int i=0; i<ddcorrelationmap_->NumGlobalElements(); i++)
-		{
+		for(int i=0; i<ddcorrelationmap_->NumMyElements(); i++)
 			histogram<<i<<"    "<<crosslinksperbin[i]<<endl;
-			count += (int)crosslinksperbin[i];
-		}
-
-		cout<<crosslinksperbin<<endl;
-		cout<<"total count = "<<count<<endl;
-
 		//write content into file and close it
 		fprintf(fp, histogram.str().c_str());
 		fclose(fp);
