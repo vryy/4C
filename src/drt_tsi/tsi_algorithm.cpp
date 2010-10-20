@@ -225,7 +225,7 @@ void TSI::Algorithm::TimeLoop()
       IncrementTimeAndStep();
       PrintHeader();
 
-      // predict ans solve structural system
+      // predict and solve structural system
       StructureField().PrepareTimeStep();
       StructureField().Solve();
 

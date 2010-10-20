@@ -2064,12 +2064,12 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 		{
 			cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << endl;
 			cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << endl;
-			cout << YELLOW_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+			cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
 		}
 		else
 		{
 			cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << endl;
-			cout << YELLOW_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+			cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
 		}
 	}
 #endif // #ifdef CONTACTASOUTPUT
