@@ -58,7 +58,7 @@ void fillElementUnknownsArrays(
     M1& eaccn,
     V1& eprenp,
     V2& ephi,
-    M2& etau,
+    M2& etensor,
     V3& ediscpres
 )
 {
@@ -115,35 +115,65 @@ void fillElementUnknownsArrays(
   for (size_t iparam=0; iparam<numparampres; ++iparam)
     eprenp(iparam) = mystate.velnp_[presdof[iparam]];
 
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
-  if (tauele_unknowns_present)
+  const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxx, 0) > 0);
+  if (epsilonele_unknowns_present)
   {
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Tauxx);
-    const size_t numparamtauyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
-    const size_t numparamtauzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
-    const size_t numparamtauxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
-    const size_t numparamtauxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
-    const size_t numparamtauyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
+    const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Epsilonxx);
+    const size_t numparamepsilonyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonyy, 1);
+    const size_t numparamepsilonzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonzz, 1);
+    const size_t numparamepsilonxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxy, 1);
+    const size_t numparamepsilonxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxz, 1);
+    const size_t numparamepsilonyz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonyz, 1);
     const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
     const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-    if (numparamtauxx > shpVecSizeStress)
+    if (numparamepsilonxx > shpVecSizeStress)
     {
       dserror("increase SizeFac for stress unknowns");
     }
-    const std::vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
-    const std::vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
-    const std::vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
-    const std::vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
-    const std::vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
-    const std::vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
-    for (size_t iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = mystate.velnp_[tauxxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = mystate.velnp_[tauyydof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = mystate.velnp_[tauzzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = mystate.velnp_[tauxydof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = mystate.velnp_[tauxzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = mystate.velnp_[tauyzdof[iparam]];
+    const std::vector<int>& epsilonxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonxx>());
+    const std::vector<int>& epsilonyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonyy>());
+    const std::vector<int>& epsilonzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonzz>());
+    const std::vector<int>& epsilonxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonxy>());
+    const std::vector<int>& epsilonxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonxz>());
+    const std::vector<int>& epsilonyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonyz>());
+    for (size_t iparam=0; iparam<numparamepsilonxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[epsilonxxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamepsilonyy; ++iparam)   etensor(1,iparam) = mystate.velnp_[epsilonyydof[iparam]];
+    for (size_t iparam=0; iparam<numparamepsilonzz; ++iparam)   etensor(2,iparam) = mystate.velnp_[epsilonzzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamepsilonxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[epsilonxydof[iparam]];
+    for (size_t iparam=0; iparam<numparamepsilonxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[epsilonxzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamepsilonyz; ++iparam)   etensor(5,iparam) = mystate.velnp_[epsilonyzdof[iparam]];
+  }
+  const bool sigmaele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
+  if (sigmaele_unknowns_present)
+  {
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
+    const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+    const size_t numparamsigmayy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
+    const size_t numparamsigmazz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
+    const size_t numparamsigmaxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
+    const size_t numparamsigmaxz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxz, 1);
+    const size_t numparamsigmayz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayz, 1);
+    const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
+    const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
+    if (numparamsigmaxx > shpVecSizeStress)
+    {
+      dserror("increase SizeFac for stress unknowns");
+    }
+    const std::vector<int>& sigmaxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxx>());
+    const std::vector<int>& sigmayydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayy>());
+    const std::vector<int>& sigmazzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmazz>());
+    const std::vector<int>& sigmaxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
+    const std::vector<int>& sigmaxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
+    const std::vector<int>& sigmayzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
+    for (size_t iparam=0; iparam<numparamsigmaxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[sigmaxxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamsigmayy; ++iparam)   etensor(1,iparam) = mystate.velnp_[sigmayydof[iparam]];
+    for (size_t iparam=0; iparam<numparamsigmazz; ++iparam)   etensor(2,iparam) = mystate.velnp_[sigmazzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamsigmaxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[sigmaxydof[iparam]];
+    for (size_t iparam=0; iparam<numparamsigmaxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[sigmaxzdof[iparam]];
+    for (size_t iparam=0; iparam<numparamsigmayz; ++iparam)   etensor(5,iparam) = mystate.velnp_[sigmayzdof[iparam]];
   }
   const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
   if (discpres_unknowns_present)
@@ -386,11 +416,11 @@ void Sysmat(
   LINALG::Matrix<3,shpVecSize> evelnm;
   LINALG::Matrix<3,shpVecSize> eaccn;
   LINALG::Matrix<numnode,1> ephi;
-  LINALG::Matrix<6,shpVecSizeStress> etau;
+  LINALG::Matrix<6,shpVecSizeStress> etensor;
   LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
 
   fillElementUnknownsArrays<DISTYPE,ASSTYPE>(
-      dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau, ediscpres);
+      dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres);
 
   switch(combusttype)
   {
@@ -401,9 +431,14 @@ void Sysmat(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 #endif
-#ifdef COMBUST_STRESS_BASED
+#ifdef COMBUST_EPSPRES_BASED
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau, ediscpres,
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+#endif
+#ifdef COMBUST_SIGMA_BASED
+    COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 #endif
 
@@ -421,18 +456,30 @@ void Sysmat(
     // boundary integrals are only added for intersected elements (fully enriched elements)
     if (ele->Intersected() == true)
     {
+      // get smoothed gradient of phi for surface tension applications
+      LINALG::Matrix<3,numnode> egradphi;
+      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+
+#ifdef COMBUST_EPSPRES_BASED
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, etau, ediscpres, material, timealgo, dt, theta, assembler,
-          flamespeed);
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          theta, assembler, flamespeed);
+#endif
+#ifdef COMBUST_SIGMA_BASED
+      COMBUST::SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          theta, assembler, flamespeed);
+#endif
     }
 #endif
+
 #endif
   }
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
   {
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
   }
   break;
@@ -442,7 +489,7 @@ void Sysmat(
 //      double ele_meas_minus = 0.0; // for different averages <> and {}
 //
 //      TPF::SysmatTwoPhaseFlow_Surf_Domain<DISTYPE,ASSTYPE,NUMDOF>(
-//        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+//        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, eepsilon,
 //        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler, ele_meas_plus, ele_meas_minus);
 //
 //      // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -453,7 +500,7 @@ void Sysmat(
 //        fillElementGradPhi<DISTYPE>(mystate, egradphi);
 //
 //        TPF::SysmatTwoPhaseFlow_Surf_Boundary<DISTYPE,ASSTYPE,NUMDOF>(
-//            ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etau, material, timealgo, dt, theta, assembler,
+//            ele, ih, dofman, evelnp, eprenp, ephi, egradphi, eepsilon, material, timealgo, dt, theta, assembler,
 //            flamespeed,nitschevel,nitschepres, ele_meas_plus, ele_meas_minus,surftensapprox,surftenscoeff,connected_interface, veljumptype, normaltensionjumptype);
 //      }
   }
@@ -481,28 +528,6 @@ void Sysmat(
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed,nitschevel,nitschepres, ele_meas_plus, ele_meas_minus,surftensapprox,surftenscoeff,connected_interface, veljumptype, normaltensionjumptype);
-    }
-#endif
-
-#ifdef TWOPHASEFLOW_NITSCHE
-    // schott Jun 16, 2010
-
-    COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
-        ele_meas_plus, ele_meas_minus);
-    // boundary integrals are only added for intersected elements (fully enriched elements)
-    // TODO Das, oder das obere
-    if (ele->Intersected() == true)
-    {
-      // get smoothed gradient of phi for surface tension applications
-      LINALG::Matrix<3,numnode> egradphi;
-      fillElementGradPhi<DISTYPE>(mystate, egradphi);
-
-      COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
-          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype);
     }
 #endif
   }
@@ -679,7 +704,7 @@ void NitscheErrors(
   // fill velocity and pressure Arrays
 
   //  fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp,
-  //      ephi, etau, ediscpres);
+  //      ephi, etensor, ediscpres);
 
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);

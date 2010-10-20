@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_combust/combust_defines.H"
-#include "../drt_f3/fluid3_stabilization.H" //schott
+#include "../drt_combust/combust3_utils.H"
 
 /*------------------------------------------------------------------------------------------------*
  | original function: XFEM::ApplyNodalEnrichments                                     henke 03/09 |
@@ -147,7 +147,7 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
 //    // get element diameter
 //    static LINALG::Matrix<nsd,numnode> xyze;
 //    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
-//    const double hk_eleDiam = FLD::UTILS::getEleDiameter<DRT::Element::hex8>(xyze);
+//    const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
     
     // get tolerance for refinement cell computation
     // tolerance for which we change phi-values to zero and get touch points
@@ -305,7 +305,7 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 //    // get element diameter
 //    static LINALG::Matrix<nsd,numnode> xyze;
 //    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
-//    const double hk_eleDiam = FLD::UTILS::getEleDiameter<DRT::Element::hex8>(xyze);
+//    const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
 //    
 //    // get tolerance for refinement cell computation
 //    // TODO get via input parameter

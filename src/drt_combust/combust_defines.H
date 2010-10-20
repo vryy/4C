@@ -14,12 +14,18 @@ Maintainer: Florian Henke
 #ifndef COMBUST_DEFINES_H
 #define COMBUST_DEFINES_H
 
+//---------------------------
+// general combustion options
+//---------------------------
+//#define COMBUST_2D
 //-----------------------------
 // combustion algorithm options
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
 //#define COMBUST_NITSCHE
-//#define COMBUST_STRESS_BASED
+#define COMBUST_STRESS_BASED
+#define COMBUST_EPSPRES_BASED
+//#define COMBUST_SIGMA_BASED
 //#define TWOPHASEFLOW_NITSCHE
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //------------------------------------------
@@ -63,40 +69,58 @@ Maintainer: Florian Henke
 //----------------------------------------------------------
 // combustion domain integral terms stress-based formulation
 //----------------------------------------------------------
-#define COMBUST_STRESS_BASED_TAU_COUPLING
-#define COMBUST_STRESS_BASED_PRESSURE_COUPLING
-#define COMBUST_STRESS_BASED_INCOMPR
+#define COMBUST_EPSPRES_BASED_STRAIN_COUPLING
+//#define COMBUST_EPSPRES_BASED_PRESSURE_COUPLING
+//#define COMBUST_EPSPRES_BASED_ZERO_TRACE
+#define COMBUST_EPSPRES_BASED_FORTHTERM
+//------------------------------------------------
+// combustion stress-based boundary integral terms
+//------------------------------------------------
+//#define COMBUST_EPSPRES_BASED_CONSISTVISCJUMP    // turn on/off
+//#define COMBUST_EPSPRES_BASED_CONSISTPRESJUMP    // turn on/off
+#define COMBUST_EPSPRES_BASED_FLUXJUMP           // turn on/off
+#define COMBUST_EPSPRES_BASED_CONSISTVISCMEAN    // turn on/off
+#define COMBUST_EPSPRES_BASED_CONSISTPRESMEAN    // turn on/off
+#define COMBUST_EPSPRES_BASED_ADJCONSISTVISCJUMP // turn on/off
+#define COMBUST_EPSPRES_BASED_ADJCONSISTPRESJUMP // turn on/off
+//#define COMBUST_EPSPRES_BASED_NEUMANN_INFLOW     // turn on/off
+//#define COMBUST_EPSPRES_BASED_ADVECTIVEFLUX      // turn on/off
+//#define COMBUST_EPSPRES_BASED_NITSCHEVEL
+
+//----------------------------------------------------------
+// combustion domain integral terms strain-based formulation
+//----------------------------------------------------------
+#define COMBUST_SIGMA_BASED_FIELD_COUPLING
+#define COMBUST_SIGMA_BASED_TRACE
+//------------------------------------------------
+// combustion strain-based boundary integral terms
+//------------------------------------------------
+#define COMBUST_SIGMA_BASED_FLUXJUMP           // turn on/off
+#define COMBUST_SIGMA_BASED_CONSISTVISCMEAN    // turn on/off
+#define COMBUST_SIGMA_BASED_ADJCONSISTVISCJUMP // turn on/off
+//#define COMBUST_SIGMA_BASED_NEUMANN_INFLOW     // turn on/off
+//#define COMBUST_SIGMA_BASED_ADVECTIVEFLUX      // turn on/off
+
 //--------------------------------------------------------------------
 // combustion stress-based double one-sided formulation boundary terms
 //--------------------------------------------------------------------
 //#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED
-//------------------------------------------------
-// combustion stress-based boundary integral terms
-//------------------------------------------------
-//#define COMBUST_STRESS_BASED_CONSISTVISCJUMP    // turn on/off
-//#define COMBUST_STRESS_BASED_CONSISTPRESJUMP    // turn on/off
-#define COMBUST_STRESS_BASED_FLUXJUMP           // turn on/off
-#define COMBUST_STRESS_BASED_CONSISTVISCMEAN    // turn on/off
-#define COMBUST_STRESS_BASED_CONSISTPRESMEAN    // turn on/off
-#define COMBUST_STRESS_BASED_ADJCONSISTVISCJUMP // turn on/off
-#define COMBUST_STRESS_BASED_ADJCONSISTPRESJUMP // turn on/off
-//#define COMBUST_STRESS_BASED_NEUMANN_INFLOW     // turn on/off
-//#define COMBUST_STRESS_BASED_ADVECTIVEFLUX      // turn on/off
-
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_PLUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_MINUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_PLUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_MINUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_PLUS
-#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_MINUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_PLUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_MINUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_PLUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_MINUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_PLUS
+//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_MINUS
 
 //-----------------------------
 // combustion test case options
 //-----------------------------
 //#define COMBUST_TESTCOUETTEFLOW          // modify Dirichlet boundary conditions manually for Couette flow test case
 //#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
+//#define COLLAPSE_FLAME
+//#define FLAME_VORTEX
 //#define COMBUST_XVELFREE // free Dirichlet boundary conditions x-component manually
 //#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
 //#define COMBUST_PRESFREE
@@ -145,7 +169,6 @@ Maintainer: Florian Henke
 //#define TPF_NITSCHE_LPS          // turn on/off Nitsche pressure_LPS_stabilization at the interface
 //#define TPF_NITSCHE_LPS_DOMAIN
 //#define BENEDIKT
-//#define TWOPHASEFLOW_NITSCHE
 
 
 

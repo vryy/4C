@@ -2693,6 +2693,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("START_VAL_SEMILAGRANGE","No","Turn XFEM-time-integration strategy for nodal start values on/off",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("START_VAL_ENRICHMENT","No","Turn XFEM-time-integration strategy for enrichment values on/off",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,

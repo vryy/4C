@@ -45,6 +45,15 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Tauzx:            text = "Tauzx"; break;
   case Tauzy:            text = "Tauzy"; break;
   case Tauzz:            text = "Tauzz"; break;
+  case Epsilonxx:        text = "Epsilonxx"; break;
+  case Epsilonxy:        text = "Epsilonxy"; break;
+  case Epsilonxz:        text = "Epsilonxz"; break;
+  case Epsilonyx:        text = "Epsilonyx"; break;
+  case Epsilonyy:        text = "Epsilonyy"; break;
+  case Epsilonyz:        text = "Epsilonyz"; break;
+  case Epsilonzx:        text = "Epsilonzx"; break;
+  case Epsilonzy:        text = "Epsilonzy"; break;
+  case Epsilonzz:        text = "Epsilonzz"; break;
   case Sigmaxx:          text = "Sigmaxx"; break;
   case Sigmaxy:          text = "Sigmaxy"; break;
   case Sigmaxz:          text = "Sigmaxz"; break;
@@ -53,7 +62,7 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Sigmayz:          text = "Sigmayz"; break;
   case Sigmazx:          text = "Sigmazx"; break;
   case Sigmazy:          text = "Sigmazy"; break;
-  case Sigmazz:          text = "Tauzz"; break;
+  case Sigmazz:          text = "Sigmazz"; break;
   case Velxiface:        text = "velxiface"; break;
   case Velyiface:        text = "velyiface"; break;
   case Velziface:        text = "velziface"; break;

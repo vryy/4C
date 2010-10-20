@@ -17,6 +17,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/standardtypes_cpp.H" // has to be declared first
 
 #include "combust_flamefront.H"
+#include "combust_defines.H"
 #include "../drt_combust/combust3.H"
 #include "../drt_combust/combust3_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -1074,6 +1075,22 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(2,0) += nodal_grad_tmp(2,0);
 
       }// end loop over all adjacent elements
+#ifdef FLAME_VORTEX
+          // special case for flame vortex interaction
+          // this is a node of an intersected element
+          // the element must be a boundary element!
+          // assume a continued interface across the domain boundary
+          if(numberOfElements == 2 || numberOfElements == 1)
+          {
+            // set two vectors in y-direction
+            PHI_SMOOTHED_3D(0,0) = 0.0;
+            PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
+            PHI_SMOOTHED_3D(2,0) = 0.0;
+
+            cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
+          }
+#endif
+
 
       // weight sum of nodal_grad_tmp 1/number_of_vectors to get an average value
       PHI_SMOOTHED_3D.Scale(1.0/numberOfElements);
@@ -2011,9 +2028,322 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 
 
 /*------------------------------------------------------------------------------------------------*
+ | project midpoint on level set zero iso-surface                                     henke 10/10 |
+ *------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType DISTYPE,
+         class V>
+bool projectMidpoint(
+    V& valuesGcell,                      // values of G-function at vertices of refinement cell
+    const std::vector<double>& midpoint, // midpoint vector
+    LINALG::Matrix<3,1>&       projpoint // vector of point projected on level set iso-surface
+)
+{
+  // TODO replace absolute tolerances by relative tolerances
+  // indicator for convergence of Newton-Raphson scheme
+  bool converged = false;
+
+  // size of system of equations
+  // remark: number space dimensions for 3d combustion problem + auxiliary variable (alpha)
+  const size_t nsys = 4;
+  // here, a tet4 or hex8 cell is expected
+  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  static LINALG::Matrix<numvertices,1> funct(true);  // shape functions
+  static LINALG::Matrix<3,numvertices> deriv1(true); // derivatives of shape functions
+  static LINALG::Matrix<6,numvertices> deriv2(true); // second derivatives of shape functions
+  static LINALG::Matrix<1,1> valueG(true);           // value of G-function
+  static LINALG::Matrix<3,1> gradG(true);            // gradient of G-function
+  static LINALG::Matrix<6,1> grad2ndG(true);         // second derivatives of G-function
+
+  //----------------------------------
+  // start values for iterative scheme
+  //----------------------------------
+  // start position (projection midpoint = midpoint)
+  projpoint(0) = midpoint[0];
+  projpoint(1) = midpoint[1];
+  projpoint(2) = midpoint[2];
+
+  // auxiliary variable
+  // remark: forth unknown to close system of equations; arbitrary value
+  double alpha = 0.0;
+
+  // function F (system of equations)
+  static LINALG::Matrix<nsys,1> f(true);
+  // gradient of function F (dF/deta(0), dF/deta(1), dF/dalpha)
+  static LINALG::Matrix<nsys,nsys> gradf(true);
+  // increment in Newton iteration (unknown to be solved for)
+  static LINALG::Matrix<nsys,1> incr(true);
+
+  // maximum number Newton iterations
+  size_t maxiter = 5;
+  // convergence tolerance
+  double conv = 0.0;
+
+  //------------------------------------------------------
+  // Newton-Raphson loop for non-linear projection problem
+  //------------------------------------------------------
+  for (size_t iter=0;iter<maxiter;++iter)
+  {
+    // evaluate shape functions in boundary cell space at current position
+    funct.Clear();
+    DRT::UTILS::shape_function_3D(funct,projpoint(0),projpoint(1),projpoint(2),DISTYPE);
+    // evaluate derivatives of shape functions in boundary cell space at current position
+    deriv1.Clear();
+    DRT::UTILS::shape_function_3D_deriv1(deriv1,projpoint(0),projpoint(1),projpoint(2),DISTYPE);
+    deriv2.Clear();
+    DRT::UTILS::shape_function_3D_deriv2(deriv2,projpoint(0),projpoint(1),projpoint(2),DISTYPE);
+
+    // evaluate gradient of G-function at current position \xi_1,\xi_2,\xi_3
+    // gradG(i,j) = deriv(j,k)*valuesGcell(i,k)
+    gradG.Clear();
+    gradG.MultiplyNN(deriv1,valuesGcell);
+
+    grad2ndG.Clear();
+    grad2ndG.MultiplyNN(deriv2,valuesGcell);
+
+    //---------------------------------------------------
+    // build system of equations F and its gradient gradF
+    //---------------------------------------------------
+    // clear static arrays
+    f.Clear();
+    gradf.Clear();
+    incr.Clear();
+
+    // evaluate function F
+    valueG.MultiplyTN(funct,valuesGcell);
+    f(0) = valueG(0,0);                                 // G
+    f(1) = projpoint(0) - midpoint[0] + gradG(0)*alpha; // xi_1 - midpoint_1 + {d G}/{d xi_1} * alpha
+    f(2) = projpoint(1) - midpoint[1] + gradG(1)*alpha; // xi_2 - midpoint_2 + {d G}/{d xi_2} * alpha
+    f(3) = projpoint(2) - midpoint[2] + gradG(2)*alpha; // xi_3 - midpoint_3 + {d G}/{d xi_3} * alpha
+
+    // evaluate gradF (Jacobian matrix)
+    gradf(0,0) = gradG(0); // {d G}/{dxi_1}
+    gradf(0,1) = gradG(1); // {d G}/{dxi_2}
+    gradf(0,2) = gradG(2); // {d G}/{dxi_3}
+    gradf(0,3) = 0.0;
+
+    gradf(1,0) = 1.0;
+    gradf(1,1) = grad2ndG(3)*alpha; // {d^2 G}/{dxi_1*dxi_2} * alpha
+    gradf(1,2) = grad2ndG(4)*alpha; // {d^2 G}/{dxi_1*dxi_3} * alpha
+    gradf(1,3) = gradG(0);          // {d G}/{dxi_1}
+
+    gradf(2,0) = grad2ndG(3)*alpha; // {d^2 G}/{dxi_2*dxi_1} * alpha
+    gradf(2,1) = 1.0;
+    gradf(2,2) = grad2ndG(5)*alpha; // {d^2 G}/{dxi_2*dxi_3} * alpha
+    gradf(2,3) = gradG(1);          // {d G}/{dxi_2}
+
+    gradf(3,0) = grad2ndG(4)*alpha; // {d^2 G}/{dxi_3*dxi_1} * alpha
+    gradf(3,1) = grad2ndG(5)*alpha; // {d^2 G}/{dxi_3*dxi_2} * alpha
+    gradf(3,2) = 1.0;
+    gradf(3,3) = gradG(2);          // {d G}/{dxi_3}
+
+    // check convergence
+    conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2)+f(3)*f(3));
+    //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
+
+    if (conv <= 1.0E-15) break;
+    //----------------------------------------------------
+    // solve linear system of equations: gradF * incr = -F
+    //----------------------------------------------------
+    // F = F*-1.0
+    f.Scale(-1.0);
+    // solve A.X=B
+    LINALG::FixedSizeSerialDenseSolver<nsys,nsys,1> solver;
+    solver.SetMatrix(gradf);              // set A=gradF
+    solver.SetVectors(incr, f);           // set X=incr, B=F
+    solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
+    int err2 = solver.Factor();           // ?
+    int err = solver.Solve();             // incr = gradF^-1.F
+    if ((err!=0) || (err2!=0))
+      dserror("solving linear system in Newton-Raphson method for projection failed");
+
+    // update projection of point and alpha
+    projpoint(0) += incr(0);
+    projpoint(1) += incr(1);
+    projpoint(2) += incr(2);
+    alpha  += incr(3);
+  }
+
+  // Newton iteration unconverged
+  if (conv > 1.0E-15)
+  {
+    cout << "Newton-Raphson algorithm for projection of midpoint did not converge" << endl;
+  }
+  else
+  {
+    converged = true;
+    //LINALG::Matrix<3,1> diff(true);
+    //diff(0) = midpoint[0]-projpoint(0);
+    //diff(1) = midpoint[1]-projpoint(1);
+    //diff(2) = midpoint[2]-projpoint(2);
+    //cout << diff << endl;
+  }
+  return converged;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | projects midpoint on front and back side of cell for 2D-applications               henke 10/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::projectMidpoint2D(
+    std::vector<std::vector<int> >&       trianglelist,
+    std::multimap<int,std::vector<int> >& segmentlist,
+    std::vector<std::vector<double> >&    pointlist,
+    const std::vector<int>&               polypoints,
+    const std::vector<double>&            midpoint // midpoint vector
+)
+{
+  // TODO replace absolute tolerances by relative tolerances
+  if(maxRefinementLevel_>0) dserror("This is not implemented for refinement!");
+  if(polypoints.size()-1 != 4) dserror("this is not a 2D problem");
+
+  // determine global third component (pseudo 3D direction)
+  // third component of midpoint will be zero in paramenter space (without refinement strategy)
+  const double midcomp = 0.0;
+  int thirddim = -1;
+  for (unsigned idim=0;idim<3;++idim)
+  {
+    if ((midpoint[idim] > midcomp-1.0E-8) and (midpoint[idim] < midcomp+1.0E-8))
+    {
+      thirddim = idim;
+      break;
+    }
+  }
+  // create midpoints on front and back side of cell, respectively
+  std::vector<double> midpointback(3);
+  std::vector<double> midpointfront(3);
+  midpointback = midpoint;
+  midpointback[thirddim] = -1.0;
+  midpointfront = midpoint;
+  midpointfront[thirddim] = 1.0;
+
+  //TEST
+  //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
+  //{
+  //  std::cout<< iter << std::endl;
+  //  std::vector<double> coord = pointlist[iter];
+  //  for (std::size_t isd=0; isd<3; isd++)
+  //  {
+  //    std::cout<< coord[isd] << std::endl;
+  //  }
+  //}
+
+  // find IDs of both intersection points located on the back side
+  std::vector<double> point1(3);
+  std::vector<double> point2(3);
+  size_t ipoint = 777;
+  for (ipoint=0;ipoint<4;++ipoint)
+  {
+    // two consecutive points have to have a "third coordinate" of value -1.0
+    point1 = pointlist[polypoints[ipoint]];
+    point2 = pointlist[polypoints[ipoint+1]];
+    if ((point1[thirddim] > -1.0-1.0E-8) and (point1[thirddim] < -1.0+1.0E-8) and
+        (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8))
+    {
+      // this 'ipoint' is the point
+      break;
+    }
+  }
+  if(!((point1[thirddim] > -1.0-1.0E-8) and (point1[thirddim] < -1.0+1.0E-8) and
+       (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8)))
+    dserror("2D midpoint projection algorithm failed");
+
+  // add frontside and backside mid point to list of points
+  size_t midpointback_id = pointlist.size();
+  pointlist.push_back(midpointback);
+  size_t midpointfront_id = pointlist.size();
+  pointlist.push_back(midpointfront);
+
+  // compute IDs of intersection points starting from the first point on the back side
+  size_t first_id  = ipoint;       // first point on the back side
+  size_t second_id = (ipoint+1)%4; // second point on the front side
+  size_t third_id  = (ipoint+2)%4; // first point on the fornt side
+  size_t forth_id  = (ipoint+3)%4; // second point on the front side
+
+  // combine 6 points to 4 triangles with correct orientation
+  // remark: midpointback is located between the first and second intersection point
+  //         midpointfront is located between the third and forth intersection point
+  std::vector<int> trianglepoints(3);
+  // first triangle
+  trianglepoints[0] = polypoints[first_id];
+  trianglepoints[1] = midpointfront_id;
+  trianglepoints[2] = polypoints[forth_id];
+  trianglelist.push_back(trianglepoints);
+  // second triangle
+  trianglepoints[0] = polypoints[first_id];
+  trianglepoints[1] = midpointback_id;
+  trianglepoints[2] = midpointfront_id;
+  trianglelist.push_back(trianglepoints);
+  // third triangle
+  trianglepoints[0] = midpointback_id;
+  trianglepoints[1] = polypoints[third_id];
+  trianglepoints[2] = midpointfront_id;
+  trianglelist.push_back(trianglepoints);
+  // forth triangle
+  trianglepoints[0] = midpointback_id;
+  trianglepoints[1] = polypoints[second_id];
+  trianglepoints[2] = polypoints[third_id];
+  trianglelist.push_back(trianglepoints);
+
+  //TEST
+  //std::cout<<"triangles"<< std::endl;
+  //for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
+  //{
+  //  std::cout<< "dreieck " << itriangle<< std::endl;
+  //  for (int i=0; i<3; i++)
+  //    std::cout<< trianglelist[itriangle][i]<<std::endl;
+  //}
+
+  // replace segment on back side by two segments connected to midpointback
+  size_t segid = 777;
+  for (std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
+  {
+    std::vector<int> points = iter->second;
+    if(((points[0]==polypoints[first_id]) or (points[1] == polypoints[first_id])) and
+       ((points[0]==polypoints[second_id]) or (points[1] == polypoints[second_id])))
+    {
+      segid = iter->first;
+    }
+  }
+  segmentlist.erase(segid);
+  std::vector<int> segment(2);
+  segment[0] = polypoints[first_id];
+  segment[1] = midpointback_id;
+  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+
+  segment[0] = midpointback_id;
+  segment[1] = polypoints[second_id];
+  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+
+  // replace segment on front side by two segments connected to midpointfront
+  for (std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
+  {
+    std::vector<int> points = iter->second;
+    if(((points[0]==polypoints[third_id]) or (points[1] == polypoints[third_id])) and
+        ((points[0]==polypoints[forth_id]) or (points[1] == polypoints[forth_id])))
+    {
+      segid = iter->first;
+    }
+  }
+  segmentlist.erase(segid);
+  segment[0] = polypoints[third_id];
+  segment[1] = midpointfront_id;
+  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+  segment[0] = midpointfront_id;
+  segment[1] = polypoints[forth_id];
+  segmentlist.insert(pair<int,std::vector<int> >(segid,segment));
+
+  // add segment connecting both midpoints (arbitrary ID 6)
+  segment[0] = midpointback_id;
+  segment[1] = midpointfront_id;
+  segmentlist.insert(pair<int,std::vector<int> >(6,segment));
+}
+
+/*------------------------------------------------------------------------------------------------*
  | triangulate the interface (flame front) inside a refinement cell                   henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::TriangulateFlameFront(
+       const COMBUST::RefinementCell* cell,
        std::vector<std::vector<int> >&       trianglelist,
        std::multimap<int,std::vector<int> >& segmentlist,
        std::vector<std::vector<double> >&    pointlist,
@@ -2154,7 +2484,10 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     if (polypoints.size()<4)
       dserror("TriangulateFlameFront needs at least 3 intersectionpoints");
 
-    if (polypoints.size()==4) //there are only tree different points and tree points form a triangle
+    //-----------------------------
+    // three points form a triangle
+    //-----------------------------
+    if (polypoints.size()==4) //there are only three different points and three points form a triangle
     {
       std::vector<int> trianglepoints (3);
       for (int i=0; i<3; i++)
@@ -2163,9 +2496,14 @@ void COMBUST::FlameFront::TriangulateFlameFront(
       }
       trianglelist.push_back(trianglepoints);
     }
+    //----------------------------------------------------
+    // add a midpoint to the pointlist to create triangles
+    //----------------------------------------------------
     else
     {
-      //calculate midpoint of interface first
+      //-----------------------------
+      //calculate midpoint of polygon
+      //-----------------------------
       std::size_t numpoints = polypoints.size() - 1;
       std::vector<double> midpoint (3);
       std::vector<double> point1 (3);
@@ -2180,15 +2518,79 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         point1 = pointlist[polypoints[0]];
         point2 = pointlist[polypoints[(numpoints+1)/2]];
       }
+
       for (int dim=0; dim<3; dim++)
       {
+        // compute middle of this coordinate
         midpoint[dim] = (point2[dim] + point1[dim]) * 0.5;
-        //URSULA 310709 ------ Modification
-        /*This is to avoid problems with TetGen, when triangles lie competely on a surface
-         */
+        // remark: modification added by Ursula (31.07.09)
+        //         to avoid problems with TetGen, if triangles lie competely on a surface
         if (midpoint[dim]==1 or midpoint[dim]==-1) // midpoint lies on surface of the cell
-          midpoint[dim] = midpoint[dim] * 0.98;  // -> move midpoint into th cell
+        {
+          for (unsigned idim=0;idim<gfuncvalues.size();idim++)
+            cout << "G-function value " << idim << " for this cell: " << gfuncvalues[idim] << endl;
+          cout << "/!\\ warning === coodinate of midpoint moved to interior " << midpoint[dim] << endl;
+          // TODO: this should not be an absolute factor, but a relative factor (related to the cell size))
+          midpoint[dim] = midpoint[dim] * 0.98;  // -> move midpoint into the cell
+        }
       }
+
+      //--------------------------------------------------------------------------------
+      // perform Newton-Raphson method to project midpoint on level set zero iso-surface
+      //--------------------------------------------------------------------------------
+      bool converged = false;
+      // projection of midpoint vector
+      LINALG::Matrix<3,1> projpoint(true);
+
+      // get vector of G-function values of root cell
+      const std::vector<double>& gfuncvaluesrootcell = cell->ReturnRootCell()->GetGfuncValues();
+
+      switch(cell->Shape())
+      {
+      case DRT::Element::tet4:
+      {
+#ifdef DEBUG
+        if (gfuncvaluesrootcell.size() != 4)
+          dserror("discretization types do not match!");
+#endif
+        // store G-function values in a fixed size vector
+        const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+        LINALG::Matrix<numvertices,1> valuesGcell(true);
+        for (unsigned irow=0;irow<gfuncvaluesrootcell.size();++irow)
+          valuesGcell(irow) = gfuncvaluesrootcell[irow];
+
+        // project midpoint on level set zero iso-surface
+        converged = projectMidpoint<DRT::Element::tet4>(valuesGcell, midpoint, projpoint);
+        break;
+      }
+      case DRT::Element::hex8:
+      {
+#ifdef DEBUG
+        if (gfuncvaluesrootcell.size() != 8)
+          dserror("discretization types do not match!");
+#endif
+        // store G-function values in a fixed size vector
+        const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+        LINALG::Matrix<numvertices,1> valuesGcell(true);
+        for (unsigned irow=0;irow<gfuncvaluesrootcell.size();++irow)
+          valuesGcell(irow) = gfuncvaluesrootcell[irow];
+
+        // project midpoint on level set zero iso-surface
+        converged = projectMidpoint<DRT::Element::hex8>(valuesGcell, midpoint, projpoint);
+        break;
+      }
+      default:
+        dserror("unknown type of boundary integration cell");
+      }
+      if (converged)
+      {
+        // overwrite midpoint with projection of midpoint
+        for (int dim=0; dim<3; dim++)
+          midpoint[dim] = projpoint(dim);
+      }
+
+#ifndef COMBUST_2D
+      // add midpoint to list of points defining piecewise linear complex (interface surface)
       std::size_t midpoint_id = pointlist.size();//ids start at 0
       //std::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<std::endl;
       pointlist.push_back(midpoint);
@@ -2202,6 +2604,9 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         trianglepoints[2] = midpoint_id;
         trianglelist.push_back(trianglepoints);
       }
+#else
+      projectMidpoint2D(trianglelist,segmentlist,pointlist,polypoints,midpoint);
+#endif
     }
   }
 
@@ -2659,7 +3064,9 @@ void COMBUST::FlameFront::buildPLC(
     intersectionpointsids[iter->first] = numofpoints;
     numofpoints++;
   }
+
   //TEST
+  //std::cout << "number of intersection points " << intersectionpoints.size() << endl;
   //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
   //{
   //  std::cout<< iter << std::endl;
@@ -2692,7 +3099,7 @@ void COMBUST::FlameFront::buildPLC(
   //--------------------------------------
   // triangulate flame front within a cell
   //--------------------------------------
-  TriangulateFlameFront(trianglelist, segmentlist, pointlist, intersectionpointsids, gfuncvalues);
+  TriangulateFlameFront(cell, trianglelist, segmentlist, pointlist, intersectionpointsids, gfuncvalues);
   if (trianglelist.size() <= 0) dserror("There are no triangles!");
 
   //--------------------------------------------
@@ -2746,7 +3153,7 @@ void COMBUST::FlameFront::buildPLC(
   }
 
   // Gmsh output for flame front
-  // FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
+  //FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
 
 }
 
@@ -3048,26 +3455,27 @@ void COMBUST::FlameFront::CallTetGen(
     p = &f->polygonlist[0];
     p->numberofvertices = 3; //triangle has 3 vertices
     p->vertexlist = new int[p->numberofvertices];
+    //TEST
+    //std::cout << "Triangle " << i << std::endl;
+    //std::cout << k << std::endl;
     for(int j=0; j<3; j++)
     {
       p->vertexlist[j] = trianglelist[i][j];
       //TEST
-// std::cout << "Triangle " << i << std::endl;
-// std::cout << k << std::endl;
-// std::cout << p->vertexlist[j] << std::endl;
+      //std::cout << p->vertexlist[j] << std::endl;
     }
     //in.facetmarkerlist[k] = 1; nur für BoundaryIntCells
     k++;
   }
 
-//  std::cout << "----- Start Tetgen -----" << std::endl;
+  //std::cout << "----- Start Tetgen -----" << std::endl;
   //in.save_nodes("tetin");
   //in.save_poly("tetin");
   tetrahedralize(switches, &in,  &out);
   //out.save_nodes("tetout");
   //out.save_elements("tetout");
   //out.save_faces("tetout");
-//  std::cout << "----- End Tetgen -----" << std::endl;
+  //std::cout << "----- End Tetgen -----" << std::endl;
 
   // store interface triangles (+ recovery of higher order meshes)
   fill = 0;

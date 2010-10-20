@@ -89,28 +89,29 @@ namespace XFEM
     LINALG::Matrix<numparam,1>  dzdz;
   };
 
+  // fill stress/strain tensor
   template<class M1, class M2>
-  void fill_tau(
-      const size_t         numparamtau,
-      const M1&            shp_tau,
-      const M2&            etau,
-      LINALG::Matrix<3,3>& tau
+  void fill_tensor(
+      const size_t         numparamstress,
+      const M1&            shp_stress,
+      const M2&            etensor,
+      LINALG::Matrix<3,3>& tensor
   )
   {
-    tau.Clear();
-    for (size_t i = 0; i < numparamtau; ++i)
+    tensor.Clear();
+    for (size_t i = 0; i < numparamstress; ++i)
     {
-      const double fac = shp_tau(i);
-      tau(0,0) += fac*etau(0,i);
-      tau(1,1) += fac*etau(1,i);
-      tau(2,2) += fac*etau(2,i);
-      tau(0,1) += fac*etau(3,i);
-      tau(0,2) += fac*etau(4,i);
-      tau(1,2) += fac*etau(5,i);
+      const double fac = shp_stress(i);
+      tensor(0,0) += fac*etensor(0,i);
+      tensor(1,1) += fac*etensor(1,i);
+      tensor(2,2) += fac*etensor(2,i);
+      tensor(0,1) += fac*etensor(3,i);
+      tensor(0,2) += fac*etensor(4,i);
+      tensor(1,2) += fac*etensor(5,i);
     }
-    tau(1,0) = tau(0,1);
-    tau(2,0) = tau(0,2);
-    tau(2,1) = tau(1,2);
+    tensor(1,0) = tensor(0,1);
+    tensor(2,0) = tensor(0,2);
+    tensor(2,1) = tensor(1,2);
   }
 
   /*!

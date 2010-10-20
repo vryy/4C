@@ -1,7 +1,7 @@
 /*!
-\file dof_distribution_switcher.cpp
+\file startvalues.cpp
 
-\brief provides the dofmanager classes
+\brief Semi Lagrangian algorithm for XFEM time integration
 
 <pre>
 Maintainer: Florian Henke
@@ -10,16 +10,18 @@ Maintainer: Florian Henke
             089 - 289-15235
 </pre>
 */
+
 #ifdef CCADISCRET
 
-#include "dof_management.H"
 #include "dof_management_element.H"
+#include "dof_management.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
-#include <iostream>
 #include "startvalues.H"
+#include <iostream>
+
 
 
 XFEM::Startvalues::Startvalues(
@@ -35,9 +37,6 @@ XFEM::Startvalues::Startvalues(
     map<DofKey<onNode>, DofGID> oldNodalDofColDistrib,
     Epetra_Map newdofrowmap,
     map<DofKey<onNode>, DofGID> nodalDofRowDistrib
-//    map<int,set<DofKey<onNode> > > oldEnrNodalDofSet,
-//    map<DofKey<onNode>,DofGID> oldEnrNodalDofDistrib,
-//    map<int,double> oldEnrValues
 ) :
   veln_(veln),
   oldVectors_(oldVectors),
@@ -53,36 +52,16 @@ XFEM::Startvalues::Startvalues(
   exporter_(discret_->Comm()),
   myrank_(discret_->Comm().MyPID()),
   numproc_(discret_->Comm().NumProc())
-//  oldEnrNodalDofSet_(oldEnrNodalDofSet),
-//  oldEnrNodalDofDistrib_(oldEnrNodalDofDistrib),
-//  oldEnrValues_(oldEnrValues)
 {
+  // remark: in flamefront the phi vectors allways have to fit to the current
+  // discretization so no mapping from node col id to phi dof col id is needed
+  phiOldCol_ = flamefront->Phin(); // last phi vector in column map
+  phiNewCol_ = flamefront->Phinp(); // current phi vector in column map
   
-#ifdef PARALLEL
-  //-------------------------------
-  // prepare parallel communication
-  //-------------------------------
-  // get communicator, e.g. from fluid discretization
-//  numproc_ = comm_->NumProc();
-//  myrank_ = comm_->MyPID();
-//  exporter_ = rcp(new DRT::Exporter(*comm_));
-//  exporter_(*comm_);
-#else
-  const int numproc = 1;
-#endif
-  phiOldCol_ = flamefront->Phin();
-  phiNewCol_ = flamefront->Phinp();
-  // pointer to phivector at time n with rowmap
-//  phiOldRow_ = rcp(new Epetra_Vector(*discret_->NodeRowMap()));
-//  LINALG::Export(*phiOldCol_,*phiOldRow_);
-//  // pointer to phivector at time n+1 with rowmap
-//  phiNewRow_ = rcp(new Epetra_Vector(*discret_->NodeRowMap()));
-//  LINALG::Export(*flamefront->Phinp(),*phiNewRow_);
-  
-//  cout << "phiold is " << *phiOldRow_;
 //  cout << "phioldCol is " << *phiOldCol_;
+//  cout << "phiNewCol is " << *phiNewCol_;
+//  discret_->Comm().Barrier();
   
-  discret_->Comm().Barrier();
   // initialize empty structure vectors
   curr_.clear();
   next_.clear();
@@ -92,16 +71,15 @@ XFEM::Startvalues::Startvalues(
   // fill curr_ structure with the data for the nodes which changed interface side
   for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
   {
-    // node which changed interface side (determined by sign of phi at time n and n+1)
+    // node on current processor which changed interface side
     if ((discret_->lColNode(lnodeid)->Owner() == myrank_) &&
-        ((((*phiNewCol_)[lnodeid]>=0) ? 1 : -1) != (((*phiOldCol_)[lnodeid]>=0) ? 1 : -1)))
+        (interfaceSideCompareCombust((*phiNewCol_)[lnodeid],(*phiOldCol_)[lnodeid]) == false))
     {
       StartpointData curr(*discret_->lColNode(lnodeid),LINALG::Matrix<3,1>(true),0,
-          ((*phiNewCol_)[lnodeid]>=0) ? 1 : -1,1,0,-1,-1,INFINITY);
+          interfaceSideCombust((*phiNewCol_)[lnodeid]),1,0,-1,-1,INFINITY);
       curr_.push_back(curr);
     }
-  }
-  // TODO make a "side-compair function" so just this has to be changed for other applications
+  } // end loop over processor nodes
   
   for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
   {
@@ -121,10 +99,8 @@ XFEM::Startvalues::Startvalues(
           break;
         }
       }
-    }
+    } // end if correct row processor
   } // end loop over processor nodes
-  
-  init_ = curr_;
   
 //  cout << "number of enriched nodes at old timestep on proc " << myrank_ <<
 //      " is " << oldEnrNodes_.size() << endl;
@@ -132,15 +108,13 @@ XFEM::Startvalues::Startvalues(
 //      i != oldEnrNodes_.end();i++)
 //    cout << "node " << *i << " was enriched at old timestep" << endl;
 //  discret_->Comm().Barrier();
-//  cout << "phinew is " << *phiNewRow_;
-  
   return;
 }
 
 /*------------------------------------------------------------------------------------------------*
  * semi-lagrangian back-tracing method                                           winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::Startvalues::semiLagrangeExtrapolation(
+void XFEM::Startvalues::semiLagrangeBackTracking(
     const Teuchos::RCP<COMBUST::FlameFront>& flamefront_,
     const double& dt
 )
@@ -148,65 +122,54 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
   //TODO until now no attention to boundary conditions
   // TODO global startwerte genauer machen über lokales verfahren:
   //      phi = phi + dt * d(phi)/dt liefert O(dt^2) startnäherung statt O(dt)
-  // TODO global/lokal trennen, lokal templaten
-  // TODO testen ob mehrere fgiters funktionieren
-  // TODO entweder enrichments manuell rein oder geeignetes non-enriched element wählen
   // TODO restart testen
   // TODO testen, ob fgiter>1 funzt
-  
-//  cout << "old phi on proc " << myrank_ << ": " << *phiOldRow_;
-//  cout << "new phi on proc " << myrank_ << ": " << *phiNewRow_;
+	// TODO phi0 sollte verfügbar sein!
+  cout << " Computing new startdata for " << curr_.size() << " nodes..." << endl;
   
 /*------------------------*
  * Initialization         *
  *------------------------*/
-  
+  const int max_iter = 20;
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-
-//#ifdef DEBUG
-  cout << " Computing new startdata for " << curr_.size() << " nodes..." << endl;
-//#endif
   
   
-/*---------------------------------------*
- * first part: get a sensible and good  *
- * start value for an interface changing *
- * node in a lagrangian point of view    *
- *---------------------------------------*/
-//  cout << "before function call on proc " << myrank_ << endl;
-//  for (size_t i=0;i<curr_.size();i++)
-//    cout << "on proc " << myrank_ << " startpoint for "
-//        << curr_[i].movNode_ << " is searched" << endl;
   
-  startValuesStartValue(dt);
+/*--------------------------------------------------------*
+ * first part: get a sensible and good start value for an *
+ * interface changing node in a lagrangian point of view  *
+ *--------------------------------------------------------*/
+  startpoints(dt);
   
 //  discret_->Comm().Barrier();
-//  cout << "after calling startValuesStartValue - function on proc " <<
+//  cout << "after calling startValues - function on proc " <<
 //      myrank_ << " size is " << curr_.size() << endl;
 //  for (size_t i=0;i<curr_.size();i++)
 //    cout << "on proc " << myrank_ << " startpoint for "
 //        << curr_[i].movNode_ << " is " << curr_[i].startpoint_;
+//  cout << endl << endl << endl;
+//  discret_->Comm().Barrier();
 
   
 /*----------------------------------------------------*
- * second part: get the correct origin for the node    *
+ * second part: get the correct origin for the node   *
  * in a lagrangian point of view using a newton loop  *
  *----------------------------------------------------*/
   
 #ifdef PARALLEL
   int counter = 0; // loop counter to avoid infinite loops
-  bool procfinished; // true if movNodes is empty
+  bool procfinished = false; // true if movNodes is empty
   
-  // loop over nodes which still dont have and may get a good startvalue
+  // loop over nodes which still don't have and may get a good startvalue
   while (true)
   {
     next_.clear();
 //    cout << curr_.size() << " nodes on proc " << myrank_ << endl;
     counter += 1;
     
-    // counter limit because maximal 10 newton iterations with maximal
+    // counter limit because maximal max_iter newton iterations with maximal
     // numproc processor changes per iteration (avoids infinite loop)
-    if (curr_.size()>0 && counter<10*numproc_)
+    if (curr_.size()>0 && counter<max_iter*numproc_)
     {
       procfinished = false; // processor has still nodes to examine
 #endif
@@ -214,22 +177,22 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
       // loop over all nodes which changed interface side
       for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
       {
-        StartpointData curr = curr_[nodeid];
+        StartpointData curr = curr_[nodeid]; // current analysed node
         
-//        cout << "on proc " << myrank_ <<
-//            " iteration starts for\n" << curr.movNode_ << endl;
+//        cout << "on proc " << myrank_ << " iteration starts for\n" <<
+//            curr.movNode_ << " with changed " << curr.changed_ << endl;
         
         // if no startpoint found, interface is too far away from point
         // so that lagrangian point of view is senseless
         if (curr.changed_)
         {
           // Initialization
-          DRT::Element* fittingele = NULL;  // pointer to the element where start point lies in
-          LINALG::Matrix<nsd,1> xi(true);     // local transformed coordinates of x
-          LINALG::Matrix<nsd,1> vel(true);    // velocity of the start point approximation
-          double phin = 0;   // phi-value of the start point approximation
+          DRT::Element* fittingele = NULL; // pointer to the element where start point lies in
+          LINALG::Matrix<nsd,1> xi(true); // local transformed coordinates of x
+          LINALG::Matrix<nsd,1> vel(true); // velocity of the start point approximation
+          double phin = 0; // phi-value of the start point approximation
           bool elefound = false;             // true if an element for a point was found on the processor
-          bool ihSide = false;             // true if point lies on correct side
+          bool ihSide = true;             // true if point lies on correct side
           
           // search for an element where the current startpoint lies in
           // if found, give out all data at the startpoint
@@ -253,19 +216,19 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
               failed_.push_back(failed);
               cout << "WARNING! Lagrangian start point not in domain!" << endl;
             }
-          }
+          } // end if elefound
           
           // if element is found, the newton iteration 
-          // to find a better start can start
+          // to find a better startpoint can start
           else
           {
             NewtonLoop(
-                fittingele,curr.movNode_,dt,curr.startpoint_,xi,vel,
-                phin,curr.phiSign_,elefound,ihSide,curr.iter_);
+                fittingele,curr,dt,xi,vel,
+                phin,elefound,ihSide,max_iter);
             
             // if iteration can go on (that is when startpoint is on
-            // correct interface side and iter < 10)
-            if (ihSide && curr.iter_<20) // TODO define maxiter here...
+            // correct interface side and iter < max_iter)
+            if (ihSide && curr.iter_<max_iter)
             {
               
               // if element is not found in a newton step, look at
@@ -294,7 +257,7 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
             if (!ihSide)
               curr_[nodeid].changed_ = false;
             
-            if (curr.iter_==20) // maximum number of iterations reached//TODO sollte maxiter sein und übergeben werden
+            if (curr.iter_ == max_iter) // maximum number of iterations reached
             {
               cout << "WARNING: start value set somehow sensible\n"
                       "  but newton iteration to find it didnt converge!" << endl;
@@ -330,7 +293,8 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
       }
     }
     
-//    cout << "before calling iter-export function on proc " << myrank_ << endl;
+//    discret_->Comm().Barrier();
+//    cout << "before calling iter-export function on proc " << myrank_ << endl << endl << endl;
 //    discret_->Comm().Barrier();
     
 #ifdef PARALLEL
@@ -350,7 +314,8 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
   } // end while loop over searched nodes
 #endif
   
-//  cout << "after newton interation on proc " << myrank_ << endl;
+//  discret_->Comm().Barrier();
+//  cout << "after newton interation on proc " << myrank_ << endl << endl << endl;
 //  discret_->Comm().Barrier();
   
   
@@ -371,13 +336,14 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
           curr_[inode].startGid_,
           curr_[inode].startOwner_);
       failed_.push_back(failed);
+      cout << "WARNING! Node ran into infinite loop in startvalues!" << endl;
     }
   }
   
   curr_.clear(); // no more needed
   
 //  cout << "after final filling of failed on proc " << myrank_ << endl;
-//  
+  
 //  cout << "\n\nnow every node should be either in failed or in done vector!" << endl;
 //  for (size_t i=0;i<done_.size();i++)
 //    cout << "on proc " << myrank_ << " done node is " <<
@@ -387,16 +353,23 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
 //    cout << "on proc " << myrank_ << " failed node is "
 //        << failed_[i].movNode_ << "\nwith startGid " << failed_[i].startGid_ <<
 //         " and startOwner " << failed_[i].startOwner_ << endl;
-  
-//  // TODO remove if rest of algorithm works again...
-//  failed_ = curr_;
+//  discret_->Comm().Barrier();
   
   exportAlternativAlgoData();
-  getDataForNotConvergedNodes();
   
+//  cout << "exporting done!" << endl << endl;
+//  discret_->Comm().Barrier();
+//  for (size_t i=0;i<failed_.size();i++)
+//    cout << "on proc " << myrank_ << " failed node is "
+//        << failed_[i].movNode_ << "\nwith startGid " << failed_[i].startGid_ <<
+//         " and startOwner " << failed_[i].startOwner_ << endl;
+//  cout << "\n\n\n\n" << endl;
+//  discret_->Comm().Barrier();
+  
+  getDataForNotConvergedNodes();
+  failed_.clear(); // no more needed
+
 //  cout << "after handling failed nodes on proc " << myrank_ << endl;
-//  
-//  failed_.clear(); // no more needed
 //  cout << "\n\nnow every node should be in done vector!" << endl;
 //  for (size_t i=0;i<done_.size();i++)
 //    cout << "on proc " << myrank_ << " done node is " << done_[i].movNode_ <<
@@ -411,11 +384,13 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
  *-----------------------------------------------------------*/
   
 #ifdef PARALLEL
-  // send the computed startvalues for every node which needs
-  // new start data to the processor where the node is
 //  cout << "before final exporting on proc " << myrank_ << endl;
 //  discret_->Comm().Barrier();
+  
+  // send the computed startvalues for every node which needs
+  // new start data to the processor where the node is
   exportFinalData();
+  
 //  cout << "after final exporting on proc " << myrank_ << endl;
 //  discret_->Comm().Barrier();
 #endif
@@ -428,16 +403,12 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
   
   // now every proc has the whole data for the nodes
   // and so the data can be set to the right place now
-  setFinalStartData();
+  setFinalData();
 //  cout << "setting done on proc " << myrank_ << endl;
 #ifdef DEBUG
-  // TODO @Martin this does not compile in the DEBUG version "numproc not defined n this range"
-  //if (counter > 8*numproc) // too much loops shouldnt be if all this works
-  //  cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
+  if (counter > 8*numproc_) // too much loops shouldnt be if all this works
+    cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
 #endif
-  
-  curr_ = init_; // for next vector TODO to be changed when all is done with one vector of epetra vectors
-  
 } // end semiLagrangeExtrapolation
 //TODO test if seriell version works
 
@@ -446,21 +417,12 @@ void XFEM::Startvalues::semiLagrangeExtrapolation(
 /*------------------------------------------------------------------------------------------------*
  * finding startvalues for the new semi-lagrangian startvalues                   winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::Startvalues::startValuesStartValue(
+void XFEM::Startvalues::startpoints(
     const double& dt
 )
 {
   //Initialization
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-//  vector<DRT::Element*> elevector_; // elements intersected by old interface at time n
-//  
-//  // fill element vector with intersected elements
-//  for (int leleid=0;leleid<discret_->NumMyRowElements();leleid++)
-//  {
-//    DRT::Element* ele = discret_->lRowElement(leleid);
-//    if (ih_old_->ElementIntersected(ele->Id()))
-//      elevector_.push_back(ele);
-//  }
   
   // loop over processors
   for (int procid=0; procid<numproc_; procid++)
@@ -468,7 +430,7 @@ void XFEM::Startvalues::startValuesStartValue(
     // loop over nodes which changed interface side
     for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
     {
-      StartpointData curr = curr_[nodeid];
+      StartpointData& curr = curr_[nodeid]; // current analysed node (modified in curr_ vector also)
       bool currChanged = false; // startvalue for startvalue changed on this proc?
       LINALG::Matrix<nsd,1> newNodeCoords(curr.movNode_.X()); // coords of endpoint
       
@@ -477,57 +439,63 @@ void XFEM::Startvalues::startValuesStartValue(
           enrnode != oldEnrNodes_.end();
           enrnode++)
       {
-//        const int* elenodeids = elevector_[interele]->NodeIds();  // nodegids of element
-//        
-//        // loop over nodes of intersected element
-//        for (int elenode=0;elenode<elevector_[interele]->NumNode();elenode++)
-//        {
-          DRT::Node* lnodeold = discret_->gNode(*enrnode);//elenodeids[elenode]);  // node near interface
-          LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
+        DRT::Node* lnodeold = discret_->gNode(*enrnode);//elenodeids[elenode]);  // node near interface
+        LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
+        
+        // just look for points on the same interface side
+        if (curr.phiSign_ == interfaceSideCombust((*phiOldCol_)[lnodeold->LID()]))
+        {
+          LINALG::Matrix<nsd,1> diff;  // vector from old point at time n to new point at time n+1
+          diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
           
-          // just look for points on the same interface side
-          if (curr.phiSign_ == (((*phiOldCol_)[lnodeold->LID()]>=0) ? 1 : -1))
+          if (diff.Norm2()<curr.dMin_)
           {
-            LINALG::Matrix<nsd,1> diff;  // vector from old point at time n to new point at time n+1
-            diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
-            
-            if (diff.Norm2()<curr.dMin_)
+            // get nodevelocity of a node
+            LINALG::Matrix<nsd,1> nodevel(true);  // velocity of "old" node at time n
+            const set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(*enrnode));//elenodeids[elenode]));
+            for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+                fieldenr != fieldenrset.end();++fieldenr)
             {
-              // get nodevelocity of a node
-              LINALG::Matrix<nsd,1> nodevel(true);  // velocity of "old" node at time n
-              const set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(*enrnode));//elenodeids[elenode]));
-              for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-                  fieldenr != fieldenrset.end();++fieldenr)
-              {
-                const DofKey<onNode> olddofkey(*enrnode,*fieldenr);//elenodeids[elenode], *fieldenr);
-                const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
-                
-                if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-                {
-                  if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-                    nodevel(0) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                  if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-                    nodevel(1) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                  if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-                    nodevel(2) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                }
-              } // end loop over fieldenr
+              const DofKey<onNode> olddofkey(*enrnode,*fieldenr);//elenodeids[elenode], *fieldenr);
+              const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
               
-              // set new data
-              curr.startpoint_.Update(1.0,newNodeCoords,-dt,nodevel);
-              curr.dMin_ = diff.Norm2();
-              curr.startGid_ = *enrnode;//elenodeids[elenode];
-              curr.startOwner_ = discret_->gNode(*enrnode)->Owner();//elenodeids[elenode])->Owner();
-              currChanged = true;
-            } // end if new best startvalue
-          } // end if just points on the correct side
-//        } // end loop over nodes of intersected element
+              if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+              {
+                if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+                  nodevel(0) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+                if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+                  nodevel(1) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+                if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+                  nodevel(2) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+              }
+            } // end loop over fieldenr
+            
+            // set new data
+            curr.startpoint_.Update(1.0,newNodeCoords,-dt,nodevel);
+            curr.dMin_ = diff.Norm2();
+            curr.startGid_ = *enrnode;
+            curr.startOwner_ = discret_->gNode(*enrnode)->Owner();
+            currChanged = true;
+          } // end if new best startvalue
+          
+//          // -------------------------------------------------
+//          // version 2: take near node with nearest trajectory
+//          // -------------------------------------------------
+//          if (nsd == 3) // cross product just sensible in 3d
+//          {
+//            LINALG::Matrix<nsd,1> dist; // distance between straight x_old + mu*v(x_old) and point x_new
+//            LINALG::Matrix<nsd,1> velnormed = nodevel/max(nodevel.Norm2(),1e-16);
+//            LINALG::Matrix<nsd,1> nodedist = newNodeCoords - oldNodeCoords;
+//            
+//            dist(0) = nodedist(1)*velnormed(2) - nodedist(2)*velnormed(1);
+//            dist(1) = nodedist(2)*velnormed(0) - nodedist(0)*velnormed(2);
+//            dist(2) = nodedist(0)*velnormed(1) - nodedist(1)*velnormed(0);
+//            
+//            if (dist.Norm2() < curr.dMin2_ && nodedist.Norm2() < 10*)
+//          }
+        } // end if just points on the correct side
       } // end loop over intersected elements
-      if (currChanged == true)
-      {
-        curr.changed_ = true;
-        curr_[nodeid] = curr;
-      }
+      if (currChanged == true) curr.changed_ = true;
     } // end loop over nodes which changed interface side
     
 #ifdef PARALLEL
@@ -560,10 +528,8 @@ void XFEM::Startvalues::startValuesStartValue(
     }
   } // end loop over nodes
 //  cout << "on proc " << myrank_ << " size is " << curr_.size() << endl;
-} // end startValuesStartValueFinder
-// TODO if it turns out that this search for a startnode is computational
-// expensive (i don't think so) then something else like a search tree has
-// to be build and could be used then
+} // end startValuesFinder
+
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -601,7 +567,8 @@ void XFEM::Startvalues::getDataForNotConvergedNodes(
  * pres = pres + dt*presDeriv1*vel *
  * with pseudo time-step dt        *
  *---------------------------------*/
-      backTracking(nodesElement,failed.movNode_,x,xi);
+      backTracking(
+          nodesElement,failed.movNode_,x,xi);
     } // end if elefound
   } // end loop over nodes
 } // end getDataForNotConvergedNodes
@@ -629,24 +596,24 @@ void XFEM::Startvalues::elementAndLocalCoords(
     dserror("element type not implemented until now!");
   
   // Initialization of what every following Newton loop will need
-  DRT::Element* currele;                 // pointer to the currently viewed element
-  LINALG::Matrix<nsd,numnode> nodecoords;  // node coordinates of the element
+  DRT::Element* currele = NULL;                 // pointer to the currently viewed element
+  LINALG::Matrix<nsd,numnode> nodecoords(true);  // node coordinates of the element
   
-  LINALG::Matrix<nsd,1> incr;        // increment of newton iteration
-  LINALG::Matrix<nsd,1> residuum;    //residuum of newton iteration
+  LINALG::Matrix<nsd,1> incr(true);        // increment of newton iteration
+  LINALG::Matrix<nsd,1> residuum(true);    //residuum of newton iteration
   
-  LINALG::Matrix<numnode,1> shapeFcn;               // shape functions
-  LINALG::Matrix<nsd,numnode> shapeXiDeriv1;        // derivation of shape functions
+  LINALG::Matrix<numnode,1> shapeFcn(true);               // shape functions
+  LINALG::Matrix<nsd,numnode> shapeXiDeriv1(true);        // derivation of shape functions
   
-  LINALG::Matrix<nsd,nsd> xjm;        //jacobian at start vector
-  LINALG::Matrix<nsd,nsd> xji;        // invers of jacobian
+  LINALG::Matrix<nsd,nsd> xjm(true);        //jacobian at start vector
+  LINALG::Matrix<nsd,nsd> xji(true);        // invers of jacobian
   
-  int iter;   // iteration counter
+  int iter = 0;   // iteration counter
   
   const int max_iter = 10;   // maximum number of iterations
-  const double relTolRes = 1e-010;   // relative tolerance for residual
-  const double relTolIncr = 1e-010;   // relaltive tolerance for increment
-  const double XiTol = 1e-6; // max. distance from point to cell in xi-coordinates
+  const double relTolRes = 1e-10;   // relative tolerance for residual
+  const double relTolIncr = 1e-10;   // relaltive tolerance for increment
+  const double XiTol = 1e-3; // max. distance from point to cell in xi-coordinates
   //loop over elements
   for (int ieleid=(((fittingele==NULL) ? 0 : -1));ieleid<discret_->NumMyRowElements();ieleid++)
   {
@@ -739,16 +706,25 @@ void XFEM::Startvalues::elementAndLocalCoords(
   
   if (fittingele != NULL) // fittingele found
   {
-    const int* elenodeids = fittingele->NodeIds();  // nodegids of element nodes
-//    cout << "element is " << *fittingele << endl;
+    LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
+    LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true); // dummy
+    LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true); // dummy
+    LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true); // dummy
     
-    // shape function in local coordinates
-    DRT::UTILS::shape_function_3D(shapeFcn,xi(0),xi(1),xi(2),DISTYPE);
-    LINALG::Matrix<nsd,numnode> shapeXiDeriv1;
-    LINALG::Matrix<2*nsd,numnode> shapeXiDeriv2;
+    pointdataXFEM<nsd,numnode,DISTYPE>(
+        fittingele,
+        xi,
+        xji,
+        shapeFcn,
+        enrShapeFcnVel,
+        enrShapeFcnPres,
+        enrShapeXYVelDeriv1,
+        enrShapeXYPresDeriv1
+    );
     
+    const int* elenodeids = fittingele->NodeIds();  // nodeids of element
     // nodal phivalues
-    LINALG::Matrix<numnode,1> nodephi;
+    LINALG::Matrix<numnode,1> nodephi(true);
     for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
       nodephi(nodeid,0) = (*phiOldCol_)[discret_->gNode(elenodeids[nodeid])->LID()];
     
@@ -758,88 +734,15 @@ void XFEM::Startvalues::elementAndLocalCoords(
     
     // initialize nodal vectors
     LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
+    LINALG::Matrix<1,2*numnode> nodepres(true); // node pressures, just for function call
     
-    // enriched shape functions in local coordinates (N * \Psi)
-    LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
-    
-    // create an element dof manager
-    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager;
-    
-    // create an empty element ansatz map
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
-    eleDofManager = rcp(new XFEM::ElementDofManager(*fittingele,element_ansatz_empty,*olddofman_));
-    
-    // the enrichment functions may depend on the point
-    // therefore the computation of the enrichment functions is called here
-    // the gauss point is contained in shapeFcn!
-    const XFEM::ElementEnrichmentValues enrvals(
-        *fittingele,*eleDofManager,nodephi,
-        shapeFcn,shapeXiDeriv1,shapeXiDeriv2);
-    
-    // enriched shape functions and derivatives for nodal parameters (dofs)
-    enrvals.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx,shapeFcn,enrShapeFcnVel);
-//      cout << "complete shapefunction for pressure is " << enrShapeFcnPres;
-    
-    int dofcounterVelx = 0;
-    int dofcounterVely = 0;
-    int dofcounterVelz = 0;
-    for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
-    {
-      // get nodal velocities and pressures with help of the field set of node
-      const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(elenodeids[nodeid]));
-      for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
-          fieldenr != fieldEnrSet.end();++fieldenr)
-      {
-        const DofKey<onNode> olddofkey(elenodeids[nodeid], *fieldenr);
-        const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
-        switch (fieldenr->getEnrichment().Type())
-        {
-        case XFEM::Enrichment::typeStandard :
-        case XFEM::Enrichment::typeJump :
-        case XFEM::Enrichment::typeVoidFSI : // TODO changes anything if void enrichment is used?
-        case XFEM::Enrichment::typeVoid :
-        case XFEM::Enrichment::typeKink :
-        {
-          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-          {
-            nodevel(0,dofcounterVelx) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-            dofcounterVelx++;
-          }
-          else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-          {
-            nodevel(1,dofcounterVely) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-            dofcounterVely++;
-          }
-          else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-          {
-            nodevel(2,dofcounterVelz) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-            dofcounterVelz++;
-          }
-          else if (fieldenr->getField() == XFEM::PHYSICS::Pres); // not needed here
-          else
-          {
-            cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
-            dserror("not implemented physical field!");
-          }
-          break;
-        }
-        case XFEM::Enrichment::typeUndefined :
-        default :
-        {
-          cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
-          dserror("unknown enrichment type");
-          break;
-        }
-        } // end switch enrichment
-      } // end loop over fieldenr
-    } // end loop over element nodes
+    elementsNodalData<nsd,numnode>(fittingele,nodevel,nodepres);
     
     // interpolate velocity and pressure values at starting point
     vel.Multiply(nodevel, enrShapeFcnVel);
     
 //    cout << "element in which startpoint lies in is:\n" << *fittingele;
 //    cout << "nodal velocities  are " << nodevel;
-//    cout << "number of enriched nodes is " << dofcounterPres-numnode << endl;
 //    cout << "startpoint approximation: " << x;
 //    cout << "in local xi-coordinates: " << xi;
 //    cout << "nodal shape function values are " << shapeFcn;
@@ -847,45 +750,41 @@ void XFEM::Startvalues::elementAndLocalCoords(
 //    cout << "interpolated velocity at this startpoint is " << vel;
   } // end if fitting ele found
 } // end function findElementAndLocalCoords
-// TODO if it turns out that this search for a element is computational
-// too expensive (i don't think so) then something else like a search
-// tree has to be build and could be used then
+
 
 
 /*------------------------------------------------------------------------------------------------*
- * main Newton loop for semi-lagrangian algorithm                                winklmaier 06/10 *
+ * main Newton loop for semi-lagrangian algorithm                                           winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::Startvalues::NewtonLoop(
     DRT::Element*& fittingele,
-    DRT::Node& xNode,
+    StartpointData& curr,
     const double& dt,
-    LINALG::Matrix<3,1>& xAppr,
     LINALG::Matrix<3,1>& xi,
     LINALG::Matrix<3,1>& vel,
     double& phi,
-    int& phiSign,
     bool& elefound,
     bool& ihSide,
-    int& iter
+    int max_iter
 )
 {
   
   const size_t numnode = 8;  // 8 nodes for hex8
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
     
-  //cout << "Startwert\n" << xAppr << endl;
-  //cout << "phiOrigSign " << phiSign << endl;
+  //cout << "Startwert\n" << curr.startpoint_ << endl;
+  //cout << "phiOrigSign " << curr.phiSign_ << endl;
   //cout << "phiApprValue " << phi(0,0) << " und phiApprSign" << ((phi(0,0)>=0) ? 1 : -1) << endl;
   const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8; // only hex8 implemented
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
   
-  if (phiSign != ((phi>=0) ? 1 : -1))
+  if (interfaceSideCompareCombust(curr.phiSign_,phi) == false)
   {
     
 #ifdef DEBUG
-    cout << "phiOrigSign " << phiSign << endl;
-    cout << "phiApprValue " << phi << " und phiApprSign" << ((phi>=0) ? 1 : -1) << endl;
+    cout << "phiOrigSign " << curr.phiSign_ << endl;
+    cout << "phiApprValue " << phi << " und phiApprSign" << interfaceSideCombust(phi) << endl;
     cout << "phivalues have different sign\nlagragian origin lies on other side as target" << endl;
 #endif
     
@@ -896,149 +795,53 @@ void XFEM::Startvalues::NewtonLoop(
     ihSide = true;
     
     // Initialization
-    LINALG::Matrix<numnode,1> shapeFcn;          // shape functions
-    LINALG::Matrix<nsd,numnode> shapeXiDeriv1;        // derivation of shape functions
+    LINALG::Matrix<numnode,1> shapeFcn(true);          // shape functions
     
-    LINALG::Matrix<nsd,nsd> xjm;        //jacobian at start vector
-    LINALG::Matrix<nsd,nsd> xji;        // invers of jacobian
+    LINALG::Matrix<nsd,nsd> xji(true);        // invers of jacobian
     
-    LINALG::Matrix<nsd,numnode> nodevels;    // matrix with node-velocities for the startpoints element
-    LINALG::Matrix<nsd,1> residuum;          // residuum of the newton iteration
-    LINALG::Matrix<nsd,nsd> systemMatrix;      // matrix for the newton system
-    LINALG::Matrix<nsd,1> incr;              // increment of the newton system
+    LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true); // dummy
+    LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true); // dummy
+    LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
+    LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true); // dummy
     
-    const int max_iter = 10; // maximum number of iterations
+    LINALG::Matrix<nsd,1> residuum(true);          // residuum of the newton iteration
+    LINALG::Matrix<nsd,nsd> systemMatrix(true);      // matrix for the newton system
+    LINALG::Matrix<nsd,1> incr(true);              // increment of the newton system
+    
     const double relTolIncr = 1.0e-10;;  // tolerance for the increment
     const double relTolRes = 1.0e-10;    // tolerance for the residual
     
-    LINALG::Matrix<nsd,numnode> nodecoords; // node coordinates of the element
-    for (int elenodeid=0;elenodeid<fittingele->NumNode();elenodeid++)
-    {
-      DRT::Node* currnode = discret_->gNode(fittingele->NodeIds()[elenodeid]);
-      for (size_t i=0;i<nsd;i++)
-        nodecoords(i,elenodeid) = currnode->X()[i];
-    }
-    
-    LINALG::Matrix<nsd,1> origNodeCoords;
+    LINALG::Matrix<nsd,1> origNodeCoords(true);
     for (size_t i=0;i<nsd;i++)
-      origNodeCoords(i) = xNode.X()[i];
+      origNodeCoords(i) = curr.movNode_.X()[i];
     
-    // evaluate shape functions at xi
-    DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE);
-    // evaluate derivative of shape functions at xi
-    DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE);
-    
-    xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian J = (dx/dxi)^T
-    xji.Invert(xjm);       // jacobian inverted J^(-1) = dxi/dx
-    
-    LINALG::Matrix<nsd,numnode> shapeXYDeriv1; // first derivation of global shape functions
-    shapeXYDeriv1.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
-//    cout << "1) deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
-
     // initialize residual
     residuum.Clear();
-    residuum.Update(dt, vel); // dt*v(xAppr)
-    residuum.Update(1.0,xAppr,-1.0,origNodeCoords,1.0);  // R = xAppr - xNode + dt*v(xAppr)
+    residuum.Update(dt, vel); // dt*v(curr.startpoint_)
+    residuum.Update(1.0,curr.startpoint_,-1.0,origNodeCoords,1.0);  // R = curr.startpoint_ - curr.movNode_ + dt*v(curr.startpoint_)
     
-    while(iter < max_iter)  // newton loop
+    while(curr.iter_ < max_iter)  // newton loop
     {
-      iter += 1;
+      curr.iter_ += 1;
       
       { // build Matrix
-        const int* elenodeids = fittingele->NodeIds();  // nodeids of element
-        systemMatrix.Clear();
+        pointdataXFEM<nsd,numnode,DISTYPE>(
+            fittingele,
+            xi,
+            xji,
+            shapeFcn,
+            enrShapeFcnVel,
+            enrShapeFcnPres,
+            enrShapeXYVelDeriv1,
+            enrShapeXYPresDeriv1
+        );
+//        cout << "in newton enrshapexyvelderiv1 is " << enrShapeXYVelDeriv1 << endl;
         
         // initialize nodal vectors
         LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
+        LINALG::Matrix<1,2*numnode> nodepres(true); // node pressures, just for function call
         
-        // second derivative of shape function in local and global coordinates
-        LINALG::Matrix<2*nsd,numnode> shapeXiDeriv2; // just needed for function call
-        LINALG::Matrix<2*nsd,numnode> shapeXYDeriv2(true);
-        
-        // enriched shape functions and there derivatives in local coordinates (N * \Psi)
-        LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
-        LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
-        LINALG::Matrix<2*nsd,2*numnode> enrShapeXYDeriv2(true); // just needed for function call so just one for vel and pres
-        
-        // nodal phivalues
-        LINALG::Matrix<numnode,1> nodephi;
-        for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
-          nodephi(nodeid,0) = (*phiOldCol_)[discret_->gNode(elenodeids[nodeid])->LID()];
-          
-        // create an element dof manager
-        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager;
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
-        eleDofManager = rcp(new XFEM::ElementDofManager(*fittingele,element_ansatz_empty,*olddofman_));
-        
-        // the enrichment functions may depend on the point
-        // therefore the computation of the enrichment functions is called here
-        // the gauss point is contained in shapeFcn!
-        const XFEM::ElementEnrichmentValues enrvals(
-            *fittingele,*eleDofManager,nodephi,
-            shapeFcn,shapeXYDeriv1,shapeXYDeriv2);
-//        cout << "2) deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
-          
-        // enriched shape functions and derivatives for nodal parameters (dofs)
-        enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            XFEM::PHYSICS::Velx,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
-            enrShapeFcnVel,enrShapeXYVelDeriv1,enrShapeXYDeriv2); // enrichment assumed to be equal for the 3 dimensions
-//        cout << "enr shapefunction for vel is " << enrShapeFcnVel << endl;
-//        cout << "enr shapefunction for deriv of vel is " << enrShapeXYVelDeriv1 << endl;
-          
-        int dofcounterVelx = 0;
-        int dofcounterVely = 0;
-        int dofcounterVelz = 0;
-        for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
-        {
-          // get nodal velocities and pressures with help of the field set of node
-          const std::set<XFEM::FieldEnr>& fieldEnrSet(dofman_->getNodeDofSet(elenodeids[nodeid]));
-          for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
-              fieldenr != fieldEnrSet.end();++fieldenr)
-          {
-            const DofKey<onNode> olddofkey(elenodeids[nodeid], *fieldenr);
-            const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
-            switch (fieldenr->getEnrichment().Type())
-            {
-            case XFEM::Enrichment::typeStandard :
-            case XFEM::Enrichment::typeJump :
-            case XFEM::Enrichment::typeVoidFSI : // TODO changes anything if void enrichment is used?
-            case XFEM::Enrichment::typeVoid :
-            case XFEM::Enrichment::typeKink :
-            {
-              if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-              {
-                nodevel(0,dofcounterVelx) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                dofcounterVelx++;
-              }
-              else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-              {
-                nodevel(1,dofcounterVely) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                dofcounterVely++;
-              }
-              else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-              {
-                nodevel(2,dofcounterVelz) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-                dofcounterVelz++;
-              }
-              else if (fieldenr->getField() == XFEM::PHYSICS::Pres); // not needed here
-              else
-              {
-                cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
-                dserror("not implemented physical field!");
-              }
-              break;
-            }
-            case XFEM::Enrichment::typeUndefined :
-            default :
-            {
-              cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
-              dserror("unknown enrichment type");
-              break;
-            }
-            } // end switch enrichment
-          } // end loop over fieldenr
-        } // end loop over element nodes
-//        cout << "nodal velocities of this element are " << nodevel;
+        elementsNodalData<nsd,numnode>(fittingele,nodevel,nodepres);
         
         systemMatrix.MultiplyNT(dt,nodevel,enrShapeXYVelDeriv1); // v_nodes * dN/dx
         for (size_t i=0;i<nsd;i++)
@@ -1052,21 +855,22 @@ void XFEM::Startvalues::NewtonLoop(
       
       // update iteration
       for (size_t i=0;i<nsd;i++)
-        xAppr(i) += incr(i);
+        curr.startpoint_(i) += incr(i);
+//      cout << "in newton loop approximate startvalue is " << curr.startpoint_ << endl;
       
       //=============== update residuum================
-      elementAndLocalCoords(fittingele, xAppr, xi, vel, phi, elefound);
+      elementAndLocalCoords(fittingele, curr.startpoint_, xi, vel, phi, elefound);
       
-      if (elefound) // element of xAppr at this processor
+      if (elefound) // element of curr.startpoint_ at this processor
       {
-//        cout << " in ele " << *fittingele << " \nwith xAppr "
-//            << xAppr << "and xi " << xi;
-        if (phiSign != ((phi>=0) ? 1 : -1))
+//        cout << " in ele " << *fittingele << " \nwith curr.startpoint_ "
+//            << curr.startpoint_ << "and xi " << xi;
+        if (interfaceSideCompareCombust(curr.phiSign_,phi) == false)
         {
           
 #ifdef DEBUG
-          cout << "phiOrigSign " << phiSign << endl;
-          cout << "phiApprValue " << phi << " und phiApprSign" << ((phi>=0) ? 1 : -1) << endl;
+          cout << "phiOrigSign " << curr.phiSign_ << endl;
+          cout << "phiApprValue " << phi << " und phiApprSign" << interfaceSideCombust(phi) << endl;
           cout << "phivalues have different sign\nlagragian origin lies on other side as target" << endl;
 #endif
           
@@ -1079,15 +883,15 @@ void XFEM::Startvalues::NewtonLoop(
           
           // reset residual
           residuum.Clear();
-          residuum.Update(dt, vel); // dt*v(xAppr)
-          residuum.Update(1.0,xAppr,-1.0,origNodeCoords,+1.0);  // R = xAppr - xNode + dt*v(xAppr)
-//          cout << " and tols are " << incr.Norm2()/xAppr.Norm2()
-//              << " and " << residuum.Norm2()/xAppr.Norm2() << endl;
+          residuum.Update(dt, vel); // dt*v(curr.startpoint_)
+          residuum.Update(1.0,curr.startpoint_,-1.0,origNodeCoords,+1.0);  // R = curr.startpoint_ - curr.movNode_ + dt*v(curr.startpoint_)
+//          cout << " and tols are " << incr.Norm2()/curr.startpoint_.Norm2()
+//              << " and " << residuum.Norm2()/curr.startpoint_.Norm2() << endl;
           
           // convergence criterion
-          if (xAppr.Norm2()>1e-3)
+          if (curr.startpoint_.Norm2()>1e-3)
           {
-            if (incr.Norm2()/xAppr.Norm2() < relTolIncr && residuum.Norm2()/xAppr.Norm2() < relTolRes)
+            if (incr.Norm2()/curr.startpoint_.Norm2() < relTolIncr && residuum.Norm2()/curr.startpoint_.Norm2() < relTolRes)
               break;
           }
           else
@@ -1095,24 +899,20 @@ void XFEM::Startvalues::NewtonLoop(
             if (incr.Norm2() < relTolIncr && residuum.Norm2() < relTolRes)
               break;
           }
-          
-          // update jacobian and inverted jacobian
-          xjm.MultiplyNT(shapeXiDeriv1,nodecoords);
-          xji.Invert(xjm);
         }
       }
-      else // element of xAppr not at this processor
+      else // element of curr.startpoint_ not at this processor
         break; // stop newton loop on this proc
     }
     
 #ifdef DEBUG
     // did newton iteration converge?
-    if(iter == max_iter){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
-//    cout << "after " << iter << " iterations the endpoint is\n" << xAppr << endl;
+    if(curr.iter_ == max_iter){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
+//    cout << "after " << curr.iter_ << " iterations the endpoint is\n" << xAppr << endl;
 #endif
     
   } // end if point in correct domain
-}
+} // end function NewtonLoop
 
 
 
@@ -1126,89 +926,43 @@ void XFEM::Startvalues::backTracking(
     LINALG::Matrix<3,1>& xi
 )
 {
-  const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8; // only hex8 implemented
+  const int numnode = 8;
+  const int nsd = 3;
+  const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
+  
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
   
 //  cout << node << "has lagrange origin " << x << "\nwith xi-coordinates "
 //      << xi << "\n in element " << *fittingele << endl;
-  const int numnode = 8; // 8 nodes for hex8
-  const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-  const int* elenodeids = fittingele->NodeIds();  // nodegids of element nodes
-  
-  LINALG::Matrix<numnode,1> shapeFcn; // shape function
-  DRT::UTILS::shape_function_3D(shapeFcn,xi(0),xi(1),xi(2),DISTYPE);
-  // first derivative of shape function in local coordinates
-  LINALG::Matrix<nsd,numnode> shapeXiDeriv1;
-  DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1,xi(0),xi(1),xi(2),DISTYPE);
-//  cout << "deriv1 of local shape fcn is " << shapeXiDeriv1 << endl;
-  
-  LINALG::Matrix<nsd,nsd> xji; // invers of jacobian
-  { // Computing the invers jacobian
-    LINALG::Matrix<nsd,nsd> xjm; //jacobian dx/dxi at start vector
-    LINALG::Matrix<nsd,numnode> nodecoords; // node coordinates of the element
-    
-    // evaluate nodecoords
-    for (int elenodeid=0;elenodeid<fittingele->NumNode();elenodeid++)
-    {
-      DRT::Node* currnode = discret_->gNode(fittingele->NodeIds()[elenodeid]);
-      for (size_t i=0;i<nsd;i++)
-        nodecoords(i,elenodeid) = currnode->X()[i];
-    }
-    
-    xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian J = (dx/dxi)^T
-    xji.Invert(xjm);       // jacobian inverted J^(-1) = dxi/dx
-  }
-  
-  LINALG::Matrix<nsd,numnode> shapeXYDeriv1; // first derivation of global shape functions
-  shapeXYDeriv1.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
-  
-  // second derivative of shape function in local and global coordinates
-  LINALG::Matrix<2*nsd,numnode> shapeXiDeriv2; // just needed for function call
-  LINALG::Matrix<2*nsd,numnode> shapeXYDeriv2(true);
+  const int* elenodeids = fittingele->NodeIds();  // nodeids of element
+
+  LINALG::Matrix<nsd,nsd> xji(true); // invers of jacobian
+  LINALG::Matrix<numnode,1> shapeFcn(true); // shape function
   
   // enriched shape functions and there derivatives in local coordinates (N * \Psi)
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
   LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true);
   LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
   LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true);
-  LINALG::Matrix<2*nsd,2*numnode> enrShapeXYDeriv2(true); // just needed for function call so just one for vel and pres
   
-  // nodal phivalues
-  LINALG::Matrix<numnode,1> nodephi;
-  for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
-    nodephi(nodeid,0) = (*phiOldCol_)[discret_->gNode(elenodeids[nodeid])->LID()];
-  
-  // create an element dof manager
-  Teuchos::RCP<XFEM::ElementDofManager> eleDofManager;
-  const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // element ansatz map needed for eledofman
-  eleDofManager = rcp(new XFEM::ElementDofManager(*fittingele,element_ansatz_empty,*olddofman_));
-  
-  // the enrichment functions may depend on the gauss point
-  // therefore the computation of the enrichment functions is called here
-  // the gauss point is contained in shapeFcn!
-  const XFEM::ElementEnrichmentValues enrvals(
-      *fittingele,*eleDofManager,nodephi,
-      shapeFcn,shapeXYDeriv1,shapeXYDeriv2);
-//    cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
-
-  // enriched shape functions and derivatives for nodal parameters (dofs)
-  enrvals.ComputeModifiedEnrichedNodalShapefunction(
-      XFEM::PHYSICS::Velx,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
-      enrShapeFcnVel,enrShapeXYVelDeriv1,enrShapeXYDeriv2); // enrichment assumed to be equal for the 3 dimensions
-  enrvals.ComputeModifiedEnrichedNodalShapefunction(
-      XFEM::PHYSICS::Pres,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
-      enrShapeFcnPres,enrShapeXYPresDeriv1,enrShapeXYDeriv2);
-//    cout << "enr shapefunction for pressure is " << enrShapeFcnPres;
-//    cout << "enr shapefunction for deriv of pres is " << enrShapeXYPresDeriv1 << endl;
-  
+  pointdataXFEM<nsd,numnode,DISTYPE>(
+      fittingele,
+      xi,
+      xji,
+      shapeFcn,
+      enrShapeFcnVel,
+      enrShapeFcnPres,
+      enrShapeXYVelDeriv1,
+      enrShapeXYPresDeriv1
+  );
   
   // node velocities of the element nodes for transport velocity
   LINALG::Matrix<nsd,2*numnode> nodevel(true);
   // node velocities of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size());
+  vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size());
+  vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
   
   int dofcounterVelx = 0;
   int dofcounterVely = 0;
@@ -1227,7 +981,7 @@ void XFEM::Startvalues::backTracking(
       {
       case XFEM::Enrichment::typeStandard :
       case XFEM::Enrichment::typeJump :
-      case XFEM::Enrichment::typeVoidFSI : // TODO changes anything if void enrichment is used?
+      case XFEM::Enrichment::typeVoidFSI : // TODO changes something if void enrichment is used?
       case XFEM::Enrichment::typeVoid :
       case XFEM::Enrichment::typeKink :
       {
@@ -1276,13 +1030,13 @@ void XFEM::Startvalues::backTracking(
     } // end loop over fieldenr
   } // end loop over element nodes
   
-  LINALG::Matrix<3,1> transportVel; // transport velocity
+  LINALG::Matrix<nsd,1> transportVel(true); // transport velocity
   transportVel.Multiply(nodevel, enrShapeFcnVel);
-  
+
   // computing pseudo time-step deltaT
   // remark: if x is the Lagrange-origin of node, deltaT = dt with respect to small errors.
   // if its not, deltaT estimates the time x needs to move to node)
-  double deltaT; // pseudo time-step
+  double deltaT = 0; // pseudo time-step
   {
     LINALG::Matrix<nsd,1> diff(node.X());
     diff -= x; // diff = x_Node - x_Appr
@@ -1290,46 +1044,51 @@ void XFEM::Startvalues::backTracking(
     double numerator = transportVel.Dot(diff); // numerator = v^T*(x_Node-x_Appr)
     double denominator = transportVel.Dot(transportVel); // denominator = v^T*v
     
-    if (denominator<1e-15)
-      deltaT = 0;
-    else
-      deltaT = numerator/denominator;
+    if (denominator>1e-15) deltaT = numerator/denominator; // else deltaT = 0 as initialized
   }
+//  cout << "pseudo time step is " << deltaT << endl;
   
-  vector<LINALG::Matrix<3,1> > velValues(oldVectors_.size()); // velocity of the data that should be changed
-  vector<double> presValues(oldVectors_.size()); // pressures of the data that should be changed
+  vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
+  vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
   
   // interpolate velocity and pressure gradients for all fields at starting point and get final values
   for (size_t index=0;index<oldVectors_.size();index++)
   {
-    LINALG::Matrix<nsd,1> vel; // velocity data
+    LINALG::Matrix<nsd,1> vel(true); // velocity data
     vel.Multiply(nodeveldata[index],enrShapeFcnVel);
-    LINALG::Matrix<nsd,nsd> velDeriv1; // first derivation of velocity data
+//    if (index == 3)
+//    {
+//      cout << "for " << node << " vel was " << vel;
+//    }
+    LINALG::Matrix<nsd,nsd> velDeriv1(true); // first derivation of velocity data
     velDeriv1.MultiplyNT(nodeveldata[index],enrShapeXYVelDeriv1);
     vel.Multiply(deltaT,velDeriv1,transportVel,1.0); // vel = dt*velDeriv1*transportVel + vel
     velValues[index]=vel;
+//    if (index == 3)
+//    {
+//      cout << " and became " << vel << "nodevels were " << nodeveldata[index]
+//          << " and shapefcns were " << enrShapeFcnVel;
+//    }
     
-    LINALG::Matrix<1,1> pres; // pressure data
+    LINALG::Matrix<1,1> pres(true); // pressure data
     pres.Multiply(nodepresdata[index],enrShapeFcnPres);
 //    if (index == 3)
-//      cout << "for " << node << " pres was " << pres;
-    LINALG::Matrix<1,nsd> presDeriv1; // first derivation of pressure data
+//    {
+//      cout << "pres was " << pres(0);
+//    }
+    LINALG::Matrix<1,nsd> presDeriv1(true); // first derivation of pressure data
     presDeriv1.MultiplyNT(nodepresdata[index],enrShapeXYPresDeriv1);
     pres.Multiply(deltaT,presDeriv1,transportVel,1.0); // pres = dt*presDeriv1*transportVel + pres
     presValues[index] = pres(0); 
 //    if (index == 3)
-//      cout << " and became " << pres << endl;
+//    {
+//      cout << " and became " << pres(0) << "\nnodepressures were " <<
+//          nodepresdata[index] << " and shapefcns were " << enrShapeFcnPres;
+//    }
   }
-  
-//  cout << "first derivation of velocity is " << velDeriv1;
-//  cout << "first derivation of pressure is " << presDeriv1;
-//  cout << "nodal velocities are " << nodeveldata[3];
-//  cout << "nodal pressures are " << nodepresdata[3];
   
   StartpointData done(node,velValues,presValues);
   done_.push_back(done);
-//              cout << "backtracking was done on proc " << myrank_ <<
-//                  " with final pres " << pres;
 } // end getFinalStartvalues
 
 
@@ -1337,7 +1096,7 @@ void XFEM::Startvalues::backTracking(
 /*------------------------------------------------------------------------------------------------*
  * setting the final data in Epetra Vector for a node                            winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::Startvalues::setFinalStartData(
+void XFEM::Startvalues::setFinalData(
 ) const
 {
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
@@ -1356,53 +1115,65 @@ void XFEM::Startvalues::setFinalStartData(
     {
       const DofKey<onNode> newdofkey(gnodeid, *fieldenr);
       const int newdofpos = nodalDofRowDistrib_.find(newdofkey)->second;
+//      cout << "dofkey to be set if enrichment type standard " <<
+//          newdofkey << "with dofpos " << newdofpos << endl;
+      
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
-//          cout << (*velnp_)[newdofrowmap_.LID(newdofpos)] << " becomes " << nodeVel(0) << endl;
           for (size_t index=0;index<newVectors_.size();index++)
+          {
+            if (index == 2)
+              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](0) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](0);
+          }
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-//          cout << (*velnp_)[newdofrowmap_.LID(newdofpos)] << " becomes " << nodeVel(1) << endl;
           for (size_t index=0;index<newVectors_.size();index++)
+          {
+            if (index == 2)
+              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](1) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](1);
+          }
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
         {
-//          cout << (*velnp_)[newdofrowmap_.LID(newdofpos)] << " becomes " << nodeVel(2) << endl;
           for (size_t index=0;index<newVectors_.size();index++)
+          {
+            if (index == 2)
+              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](2) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](2);
+          }
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
-//          cout << (*velnp_)[newdofrowmap_.LID(newdofpos)] << " becomes " << done_[inode].pres_ << endl;
           for (size_t index=0;index<newVectors_.size();index++)
+          {
+            if (index == 2)
+              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[index] << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = presValues[index];
+          }
         }
       }
     } // end loop over fieldenr
 //    cout << *discret_->gNode(gnodeid) << "\n gets velocity\n"
 //    << nodeVel << "and pressure " << pres[inode] << endl;
   } // end loop over nodes
-} // end setFinalStartData
+} // end setFinalData
 
 
 
 void XFEM::Startvalues::setEnrichmentValues(
-)//TODO statt DofGID lieber int...
+)
 {
   // Initialization
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-//  std::set<int> oldEnrNodes; // set with all gids of enriched nodes on proc
-  std::set<int> newEnrNodes;
+//  std::set<int> newEnrNodes;
 //  double halfJump = 0.0;
   // TODO jump is also unknown for some fields in 3D (general everywhere...)
-  
-//  cout << "sizes on proc " << myrank_ << " are: " << oldEnrNodalDofSet_.size() << ", "
-//     << oldEnrNodalDofDistrib_.size() << " and " << allOldEnrValues[0].size() << endl;
+  // TODO look if all works correct! sometimes enrichments get set but no nodes crossed the interface
   
   
 /*---------------------------------------------------------------*
@@ -1410,7 +1181,6 @@ void XFEM::Startvalues::setEnrichmentValues(
  * interface side and identify all enriched nodes for later use  *
  *---------------------------------------------------------------*/
   
-  // 
   for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
   {
     if (discret_->lColNode(lnodeid)->Owner() == myrank_)
@@ -1431,7 +1201,7 @@ void XFEM::Startvalues::setEnrichmentValues(
         
         // olddof found and on same side -> enrichment existed before and can be used
         if ((olddof != oldNodalDofColDistrib_.end()) &&
-            ((((*phiNewCol_)[lnodeid]>=0) ? 1 : -1) == (((*phiOldCol_)[lnodeid]>=0) ? 1 : -1)))
+            (interfaceSideCompareCombust((*phiNewCol_)[lnodeid],(*phiOldCol_)[lnodeid]) == true))
         {
 //          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
 //            halfJump = 0.5;
@@ -1454,7 +1224,7 @@ void XFEM::Startvalues::setEnrichmentValues(
         } // end if dof found
         else // olddof not found or enrichment changed side -> new value needed
         {
-          StartpointData enr(*lnode,(((*phiNewCol_)[lnodeid]>=0) ? 1 : -1),INFINITY,0.0,map<DofKey<onNode>,vector<double> >());
+          StartpointData enr(*lnode,interfaceSideCombust((*phiNewCol_)[lnodeid]),INFINITY,0.0,map<DofKey<onNode>,vector<double> >());
           enr_.push_back(enr);
           break;
           // all other enrichments for this node will be handled later
@@ -1462,20 +1232,6 @@ void XFEM::Startvalues::setEnrichmentValues(
         } // end if dof not found
       } // end if jump enrichment
     } // end loop over fieldenr
-    
-    
-//    const set<XFEM::FieldEnr>& oldfieldenrset(olddofman_->getNodeDofSet(gid));
-//    for (set<XFEM::FieldEnr>::const_iterator oldfieldenr = oldfieldenrset.begin();
-//        oldfieldenr != oldfieldenrset.end();
-//        oldfieldenr++)
-//    {
-//      if (oldfieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-//      {
-//        // not standard dof exists -> node enriched
-//        oldEnrNodes.insert(gid); // TODO one set for every interface side would be better
-//        break;
-//      }
-//    }
     
     
 //    const set<XFEM::FieldEnr>& newfieldenrset(dofman_->getNodeDofSet(gid));
@@ -1505,33 +1261,13 @@ void XFEM::Startvalues::setEnrichmentValues(
 //      i != newEnrNodes.end();i++)
 //    cout << "node " << *i << " is enriched at new timestep" << endl;
 //  discret_->Comm().Barrier();
-
+  
+  
+  
 /*--------------------------------------------------*
  * get the nearest node for the enriched nodes      *
  * which need a completely new enrichment value     *
  *--------------------------------------------------*/
-  
-  
-//  cout << "\n\n\n" << endl;
-//  for (map<int,set<XFEM::DofKey<onNode> > >::const_iterator i=oldEnrNodalDofSet_.begin();
-//      i != oldEnrNodalDofSet_.end();i++)
-//  {
-//    cout << "node with gid " << i->first << " has dofkeys" << endl;
-//    for(set<XFEM::DofKey<onNode> >::const_iterator j=i->second.begin();
-//        j != i->second.end();j++)
-//      cout << *j << endl;
-//  }
-//  cout << "\n\n\n" << endl;
-//  for (map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>::const_iterator i=oldEnrNodalDofDistrib_.begin();
-//      i != oldEnrNodalDofDistrib_.end();
-//      i++)
-//    cout << i->first << ", " << i->second << endl;
-//  cout << "\n\n\n" << endl;
-//  for (map<int,double>::const_iterator i=allOldEnrValues[3].begin();
-//      i != allOldEnrValues[3].end();i++)
-//    cout << i->first << "   " << i->second << endl;
-//  cout << "\n\n\n" << endl;
-//  discret_->Comm().Barrier();
   
   // loop over processors
   for (int procid=0; procid<numproc_; procid++)
@@ -1555,15 +1291,13 @@ void XFEM::Startvalues::setEnrichmentValues(
       {
          DRT::Node* lnodeold = discret_->gNode(*inode);  // enriched node
          
-//         cout << *lnodeold << "is tested now!" << endl;
-         
          // just look at enriched nodes on same interface side
-        if (enr.phiSign_ == (((*phiOldCol_)[lnodeold->LID()]>=0) ? 1 : -1))
+        if (interfaceSideCompareCombust(enr.phiSign_,(*phiOldCol_)[lnodeold->LID()]) == true)
         { // TODO enrichments with phi = 0 can be used by both sides and
           // can be set by both sides because of the enrichments characteristics
           LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
           
-          LINALG::Matrix<nsd,1> diff;  // vector from old point at time n to new point at time n+1
+          LINALG::Matrix<nsd,1> diff(true);  // vector from old point at time n to new point at time n+1
           diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
           
           if (diff.Norm2()<enr.dMin_)
@@ -1660,6 +1394,8 @@ void XFEM::Startvalues::setEnrichmentValues(
     {
       const DofKey<onNode> newdofkey(gid, *fieldenr);
       const int newdofpos = nodalDofRowDistrib_.find(newdofkey)->second;
+//      cout << "dofkey to be set if enrichment type not standard " <<
+//          newdofkey << "with dofpos " << newdofpos << endl;
       
       // now nodes with new enrichments can be set
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
@@ -1675,13 +1411,13 @@ void XFEM::Startvalues::setEnrichmentValues(
         std::map<DofKey<onNode>,vector<double> >::const_iterator currEnrValues = enr.enrValues_.find(newdofkey);
         if (currEnrValues != enr.enrValues_.end())
         {
-          for (size_t i=0;i<newVectors_.size();i++)
+          for (size_t index=0;index<newVectors_.size();index++)
           {
-//            cout << "enrichment value was " << (*newVectors_[i])[newdofrowmap_.LID(newdofpos)];
-            const double currOldEnr = currEnrValues->second[i];
-            (*newVectors_[i])[newdofrowmap_.LID(newdofpos)] = currOldEnr;
+            const double currOldEnr = currEnrValues->second[index];
+            if (index == 2)
+              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " became " << currOldEnr << endl;
+            (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = currOldEnr;
 //                halfJump + (currOldEnr-halfJump)*phiQuotient;
-//            cout << " and became " << (*newVectors_[i])[newdofrowmap_.LID(newdofpos)] << endl;
             // new_enr = jump_size/2 + (old_enr-jump_size/2)*phi_new/phi_old
           }
         }
@@ -1698,6 +1434,182 @@ void XFEM::Startvalues::setEnrichmentValues(
     } // end loop over fieldenr
   } // end loop over newly enriched nodes
 } // end function setEnrichmentValues
+
+
+
+bool XFEM::Startvalues::interfaceSideCompareCombust(
+    double phi1,
+    double phi2
+) const
+{
+  if (interfaceSideCombust(phi1) == interfaceSideCombust(phi2)) return true;
+  else return false; // TODO how should an interface be handled which is completely on cell boundarys
+}
+
+
+
+int XFEM::Startvalues::interfaceSideCombust(
+    double phi
+) const
+{
+  if (phi >= 0) return 1;
+  else return -1;
+}
+
+
+
+template<size_t nsd, size_t numnode>
+void XFEM::Startvalues::elementsNodalData(
+    DRT::Element*& element,
+    LINALG::Matrix<nsd,2*numnode>& nodevel,
+    LINALG::Matrix<1,2*numnode>& nodepres
+) const
+{
+  nodevel.Clear();
+  nodepres.Clear();
+  
+  const int* elenodeids = element->NodeIds();  // nodegids of element nodes
+  
+  int dofcounterVelx = 0;
+  int dofcounterVely = 0;
+  int dofcounterVelz = 0;
+  int dofcounterPres = 0;
+  
+  for (int nodeid=0;nodeid<element->NumNode();nodeid++) // loop over element nodes
+  {
+    // get nodal velocities and pressures with help of the field set of node
+    const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(elenodeids[nodeid]));
+    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+        fieldenr != fieldEnrSet.end();++fieldenr)
+    {
+      const DofKey<onNode> olddofkey(elenodeids[nodeid], *fieldenr);
+      const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
+      switch (fieldenr->getEnrichment().Type())
+      {
+      case XFEM::Enrichment::typeStandard :
+      case XFEM::Enrichment::typeJump :
+      case XFEM::Enrichment::typeVoidFSI : // TODO changes anything if void enrichment is used?
+      case XFEM::Enrichment::typeVoid :
+      case XFEM::Enrichment::typeKink :
+      {
+        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+        {
+          nodevel(0,dofcounterVelx) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+          dofcounterVelx++;
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+        {
+          nodevel(1,dofcounterVely) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+          dofcounterVely++;
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+        {
+          nodevel(2,dofcounterVelz) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+          dofcounterVelz++;
+        }
+        else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+        {
+          nodepres(0,dofcounterPres) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+          dofcounterPres++;
+        }
+        else
+        {
+          cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+          dserror("not implemented physical field!");
+        }
+        break;
+      }
+      case XFEM::Enrichment::typeUndefined :
+      default :
+      {
+        cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+        dserror("unknown enrichment type");
+        break;
+      }
+      } // end switch enrichment
+    } // end loop over fieldenr
+  } // end loop over element nodes
+}
+
+
+
+template<size_t nsd, size_t numnode, DRT::Element::DiscretizationType DISTYPE>
+void XFEM::Startvalues::pointdataXFEM(
+    DRT::Element*& element,
+    LINALG::Matrix<nsd,1>& xi,
+    LINALG::Matrix<nsd,nsd>& xji,
+    LINALG::Matrix<numnode,1>& shapeFcn,
+    LINALG::Matrix<2*numnode,1>& enrShapeFcnVel,
+    LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
+    LINALG::Matrix<nsd,2*numnode>& enrShapeXYVelDeriv1,
+    LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1
+) const
+{
+  const int* elenodeids = element->NodeIds();  // nodeids of element
+  
+  if (DISTYPE != DRT::Element::hex8)
+    dserror("element type not implemented until now!");
+  
+  // clear data that should be filled
+  shapeFcn.Clear();
+  enrShapeFcnVel.Clear();
+  enrShapeXYVelDeriv1.Clear();
+  enrShapeFcnPres.Clear();
+  enrShapeXYPresDeriv1.Clear();
+  
+  LINALG::Matrix<nsd,numnode> nodecoords(true); // node coordinates of the element
+  for (size_t nodeid=0;nodeid<numnode;nodeid++)
+  {
+    DRT::Node* currnode = discret_->gNode(elenodeids[nodeid]);
+    for (size_t i=0;i<nsd;i++)
+      nodecoords(i,nodeid) = currnode->X()[i];
+  }
+  
+  LINALG::Matrix<nsd,numnode> shapeXiDeriv1(true);
+  // evaluate shape functions at xi
+  DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE);
+  // evaluate derivative of shape functions at xi
+  DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE);
+  
+  LINALG::Matrix<nsd,nsd> xjm(true);
+  xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian J = (dx/dxi)^T
+  xji.Invert(xjm);       // jacobian inverted J^(-1) = dxi/dx
+  
+  LINALG::Matrix<nsd,numnode> shapeXYDeriv1(true); // first derivation of global shape functions
+  shapeXYDeriv1.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
+//  cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
+  
+  // second  derivative of (enriched) shape function in local and global coordinates
+  LINALG::Matrix<2*nsd,numnode> shapeXYDeriv2(true); // just needed for function call
+  LINALG::Matrix<2*nsd,2*numnode> enrShapeXYDeriv2(true); // just needed for function call so just one for vel and pres
+  
+  // nodal phivalues
+  LINALG::Matrix<numnode,1> nodephi(true);
+  for (int nodeid=0;nodeid<element->NumNode();nodeid++) // loop over element nodes
+    nodephi(nodeid,0) = (*phiOldCol_)[discret_->gNode(elenodeids[nodeid])->LID()];
+    
+  // create an element dof manager
+  const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
+  Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*olddofman_));
+  
+  // the enrichment functions may depend on the point
+  // therefore the computation of the enrichment functions is called here
+  // the gauss point is contained in shapeFcn!
+  const XFEM::ElementEnrichmentValues enrvals(
+      *element,*eleDofManager,nodephi,
+      shapeFcn,shapeXYDeriv1,shapeXYDeriv2);
+//        cout << "2) deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
+    
+  // enriched shape functions and derivatives for nodal parameters (dofs)
+  enrvals.ComputeModifiedEnrichedNodalShapefunction(
+      XFEM::PHYSICS::Velx,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
+      enrShapeFcnVel,enrShapeXYVelDeriv1,enrShapeXYDeriv2); // enrichment assumed to be equal for the 3 dimensions
+  enrvals.ComputeModifiedEnrichedNodalShapefunction(
+      XFEM::PHYSICS::Pres,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
+      enrShapeFcnPres,enrShapeXYPresDeriv1,enrShapeXYDeriv2);
+//        cout << "enr shapefunction for vel is " << enrShapeFcnVel << endl;
+//        cout << "enr shapefunction for deriv of vel is " << enrShapeXYVelDeriv1 << endl;
+}
 
 
 
@@ -1860,7 +1772,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
   failedVec[myrank_].clear();
   
   
-  // send data to the processor where the point lies
+  // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest higher neighbour...)
   for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
   {
     // Initialization of sending
@@ -1876,11 +1788,6 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       source -=numproc_;
     
     dataSend.clear();
-//    cout << "before sending on proc " << myrank_ << " sizes are "
-//        << gid[dest].size() << ", " << movGid[dest].size() <<
-//        ", " << movCoords[dest].size() << " and " <<
-//        movOwner[dest].size() << endl;
-//    comm_->Barrier();
     
     // pack data to be sent
     DRT::ParObject::AddtoPack(dataSend,failedVec[dest].size());
@@ -1952,20 +1859,9 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       
       StartpointData failed(movNode,startGid,myrank_); // startOwner is current proc
       failed_.push_back(failed);
-    }
-//    cout << "after sending on proc " << myrank_ << " sizes are "
-//        << gidNew.size() << ", " << movGidNew.size() <<
-//        ", " << movCoordsNew.size() << " and " <<
-//        movOwnerNew.size() << endl;
-    
-    // check if sizes fit
-//    if (gidNew.size()!=movGidNew.size() ||
-//        gidNew.size()!=movCoordsNew.size() ||
-//        gidNew.size()!=movOwnerNew.size())
-//      dserror("sending of alternative starting point data failed!");
-    
+    } // end loop over number of nodes to get
   } // end loop over processors
-} // end exportfinalData
+} // end exportAlternativAlgoData
 
 
 
@@ -1975,7 +1871,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
 void XFEM::Startvalues::exportIterData(
   bool& procfinished
 )
-{
+{//TODO works sending a boolean variable
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
   
   // Initialization
@@ -2098,7 +1994,8 @@ void XFEM::Startvalues::exportIterData(
     
     //unpack received data
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
-    for (size_t inode=0;inode<numberOfNodes;inode++)
+    
+    for (size_t inode=0;inode<numberOfNodes;inode++) // loop over number of nodes to get
     {
       int gid;
       LINALG::Matrix<nsd,1> coords;
@@ -2137,20 +2034,7 @@ void XFEM::Startvalues::exportIterData(
 //          ", phisign " << curr.phiSign_ << ", searchedprocs " << curr.searchedProcs_ <<
 //          ", iter " << curr.iter_ << ", startgid " << curr.startGid_ <<
 //          " and startowner " << curr.startOwner_ << endl;
-    }
-    
-    // check if all sizes fit
-//    if (gids.size()!=numberOfNodes ||
-//        coords.size()!=numberOfNodes ||
-//        owners.size()!=numberOfNodes ||
-//        curr_.startpoints_.size()!=numberOfNodes ||
-//        curr_.changed_.size()!=numberOfNodes ||
-//        curr_.phiSign_.size()!=numberOfNodes ||
-//        curr_.searchedProcs_.size()!=numberOfNodes ||
-//        curr_.iter_.size()!=numberOfNodes ||
-//        curr_.startGid_.size()!=numberOfNodes ||
-//        curr_.startpoints_.size()!=numberOfNodes)
-//      dserror("sending of starting point data failed!");
+    } // end loop over number of points to get
   } // end if procfinished == false
 } // end exportIterData
 
@@ -2182,7 +2066,7 @@ void XFEM::Startvalues::exportFinalData()
   // clear data about current proc
   doneVec[myrank_].clear();
   
-  // send data to the processor where the point lies
+  // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest higher neighbour...)
   for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
   {
     // Initialization of sending
@@ -2201,7 +2085,7 @@ void XFEM::Startvalues::exportFinalData()
     
     // pack data to be sent
     DRT::ParObject::AddtoPack(dataSend,doneVec[dest].size());
-    for (size_t inode=0;inode<doneVec[dest].size();inode++)
+    for (size_t inode=0;inode<doneVec[dest].size();inode++) // loop over number of nodes to be sent
     {
       StartpointData done = doneVec[dest][inode];
       
@@ -2247,7 +2131,8 @@ void XFEM::Startvalues::exportFinalData()
     // unpack received data
     size_t numberOfNodes;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
-    for (size_t inode=0;inode<numberOfNodes;inode++)
+    
+    for (size_t inode=0;inode<numberOfNodes;inode++) // loop over number of nodes to get
     {
       int gid;
       vector<LINALG::Matrix<nsd,1> > velValues;
@@ -2259,12 +2144,7 @@ void XFEM::Startvalues::exportFinalData()
       
       StartpointData done(*discret_->gNode(gid),velValues,presValues); // startOwner is current proc
       done_.push_back(done);
-    }
-    
-//    // check if sizes fit
-//    if (velNew.size()!=presNew.size() ||
-//        velNew.size()!=gidNew.size())
-//      dserror("sending of final starting point data failed!");
+    } // end loop over number of nodes to get
   } // end loop over processors
 } // end exportfinalData
 
@@ -2305,7 +2185,6 @@ void XFEM::Startvalues::exportEnrichmentData()
 //        j != enr.enrValues_.end();j++)
 //      cout << j->first << " with values " << j->second[0] << " and " << j->second[2] << endl;
     
-    vector<char> data;
     DRT::ParObject::AddtoPack(dataSend,enr.movNode_.Id());
     DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(enr.movNode_.X()));
     DRT::ParObject::AddtoPack(dataSend,enr.movNode_.Owner());
@@ -2320,6 +2199,7 @@ void XFEM::Startvalues::exportEnrichmentData()
         currEnrVal++)
     {
       vector<char> data;
+      data.clear();
       currEnrVal->first.Pack(data);
       
       DRT::ParObject::AddtoPack(dataSend,data);
@@ -2392,6 +2272,7 @@ void XFEM::Startvalues::exportEnrichmentData()
     for (size_t currEnrVal = 0; currEnrVal < numEnr; currEnrVal++)
     {
       vector<char> data;
+      data.clear();
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,data);
       DofKey<onNode> dofkey(data);
       

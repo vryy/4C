@@ -62,6 +62,15 @@ enum Field
     Tauzx,              ///< fluid deviatoric stress
     Tauzy,              ///< fluid deviatoric stress
     Tauzz,              ///< fluid deviatoric stress
+    Epsilonxx,          ///< fluid strain
+    Epsilonxy,          ///< fluid strain
+    Epsilonxz,          ///< fluid strain
+    Epsilonyx,          ///< fluid strain
+    Epsilonyy,          ///< fluid strain
+    Epsilonyz,          ///< fluid strain
+    Epsilonzx,          ///< fluid strain
+    Epsilonzy,          ///< fluid strain
+    Epsilonzz,          ///< fluid strain
     Sigmaxx,            ///< stress
     Sigmaxy,            ///< stress
     Sigmaxz,            ///< stress

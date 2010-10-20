@@ -62,7 +62,7 @@ void SysmatTwoPhaseFlow(
     const M1&                           eaccn,
     const V1&                           eprenp,
     const V2&                           ephi,
-    const M2&                           etau,
+    const M2&                           etensor,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double                        dt,            ///< delta t (time step size)
@@ -621,16 +621,16 @@ void SysmatTwoPhaseFlow(
 
       //            const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
       //            const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-      //            static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
-      //            static LINALG::Matrix<nsd,nsd> tau;
-      //            const bool tauele_unknowns_present = false;
+      //            static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
+      //            static LINALG::Matrix<nsd,nsd> epsilon;
+      //            const bool epsilonele_unknowns_present = false;
       //
                     // build stiffness matrix standard entries
       //            COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
-      //                assembler, shpvel, shp_tau, fac, timefac, timefacfac, densaf, dynvisc,
-      //                gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, tau,
+      //                assembler, shpvel, shp_epsilon, fac, timefac, timefacfac, densaf, dynvisc,
+      //                gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, epsilon,
       //                enr_conv_c_, enr_viscs2,
-      //                tauele_unknowns_present, instationary, newton, pstab, supg, cstab,
+      //                epsilonele_unknowns_present, instationary, newton, pstab, supg, cstab,
       //                tau_stab_M, tau_stab_Mp, tau_stab_C);
 
       //-------------------------------------------------------------------
@@ -804,11 +804,11 @@ void SysmatTwoPhaseFlow(
 
       /* Viskositaetsterm */
       /*
-                          /                        \
-                         |       / \         /  \   |
-                         |  eps | v | , tau | Du |  |
-                         |       \ /         \  /   |
-                          \                        /
+                          /                                 \
+                         |       / \                  /  \   |
+                         |  eps | v | , 2\mu epsilon | Du |  |
+                         |       \ /                  \  /   |
+                          \                                 /
        */
       // dynvisc is dynamic viscosity
       assembler.template Matrix<Velx,Velx>(shpvel.dx,   2.0*dynvisc*timefacfac, shpvel.dx);
@@ -937,11 +937,11 @@ void SysmatTwoPhaseFlow(
 
         /* pressure stabilisation: viscosity (-L_visc_u) */
         /*
-                           /                             \
-                          |                         /  \  |
-                        - |  nabla q , nabla o tau | Du | |
-                          |                         \  /  |
-                           \                             /
+                           /                                      \
+                          |                                  /  \  |
+                        - |  nabla q , nabla o 2/mu epsilon | Du | |
+                          |                                  \  /  |
+                           \                                      /
          */
         assembler.template Matrix<Pres,Velx>(shppres.dx, -2.0*dynvisc*ttimetauMp, enr_viscs2.xx);
         assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*dynvisc*ttimetauMp, enr_viscs2.xy);

@@ -201,7 +201,7 @@ void SysmatDomainNitsche(
       static XFEM::ApproxFunc<2,shpVecSize> shp;
 #if 0
       // comment missing
-      static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+      static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
 #endif
       if (ASSTYPE == XFEM::xfem_assembly)
       {
@@ -425,7 +425,7 @@ void SysmatDomainNitsche(
 
       //  TWOPHASEFLOWJUMP::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
       //        shp_presproj_plus, shp_presproj_minus,
-      //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+      //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, eepsilon,
       //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
       COMBUST::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(
           meas_ele_plus, meas_ele_minus,
@@ -475,13 +475,9 @@ void SysmatDomainNitsche(
       // for each element get shp_presstab = shp_jump.d0 - shp_presproj_jump
 #endif
 
-#if 0
-// TODO @Benedikt Brauchen wir das?
-      // set measure of element in plus and minus domain   
-      if(matid==3)        {ele_meas_plus  += fac;}
-      else if (matid==4)  {ele_meas_minus += fac;}
-      else dserror("wrong matid!!!");
-#endif
+      // TODO aufpassen!
+      ele_meas_plus = 0.5;
+      ele_meas_minus = 0.5;
 
       //------------------------------------------------------
       // get velocities and accelerations at integration point
@@ -1303,7 +1299,6 @@ cout << "/!\\ hier ist was auskommentiert" << endl;
     //             n    stands for the normal vector on the interface pointing from the positive (+)
     //                  domain into the negative (-) domain (n = n^+ = -n^-)
     //--------------------------------------------------------------------------------------------
-
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
     //-------------------------    |                                      |
     // viscous consistency term  + |  || v || , { 2\mu epsilon( Du ) } n  |
@@ -1588,7 +1583,6 @@ cout << "/!\\ hier ist was auskommentiert" << endl;
     assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
 #endif
 #endif
-
 #ifdef COMBUST_NITSCHE_NITSCHEVEL
     //------------------------    |                              |
     // Nitsche term (velocity)  + |  \alpha_u || v ||, || Du ||  |
@@ -1843,7 +1837,7 @@ void SysmatBoundaryNitsche(
 
   //  TWOPHASEFLOWJUMP::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
   //        shp_presproj_plus, shp_presproj_minus,
-  //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etau,
+  //          ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, eepsilon,
   //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 
   COMBUST::BuildPresProjShapefunction<DISTYPE,ASSTYPE,shpPresProjVecSize,NUMDOF>(meas_ele_plus, meas_ele_minus,
@@ -2210,7 +2204,7 @@ void Nitsche_BuildPresProjShapefunction(
   //  const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
 #if 0
   // figure out whether we have stress unknowns at all
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+  const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
   //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
   //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 #endif
@@ -2223,7 +2217,7 @@ void Nitsche_BuildPresProjShapefunction(
 #if 0
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, numparam is determined by the dofmanager
-  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+  const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 #endif
 
   // stabilization parameter
@@ -2335,7 +2329,7 @@ void Nitsche_BuildPresProjShapefunction(
       static XFEM::ApproxFunc<2,shpVecSize> shp;
 #if 0
       // comment missing
-      static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+      static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
 #endif
       if (ASSTYPE == XFEM::xfem_assembly)
       {
@@ -2378,7 +2372,7 @@ void Nitsche_BuildPresProjShapefunction(
         else dserror("no valid matid in BuildPresProjShapefunction");
 
 #if 0
-        if (tauele_unknowns_present)
+        if (epsilonele_unknowns_present)
         {
           LINALG::Matrix<shpVecSizeStress,1> enr_funct_stress;
 
@@ -2388,14 +2382,14 @@ void Nitsche_BuildPresProjShapefunction(
               funct_stress,
               enr_funct_stress);
 
-          for (size_t iparam = 0; iparam < numparamtauxx; ++iparam)
+          for (size_t iparam = 0; iparam < numparamepsilonxx; ++iparam)
           {
-            shp_tau(iparam) = enr_funct_stress(iparam);
+            shp_epsilon(iparam) = enr_funct_stress(iparam);
           }
         }
         else
         {
-          shp_tau.Clear();
+          shp_epsilon.Clear();
         }
 #endif
 

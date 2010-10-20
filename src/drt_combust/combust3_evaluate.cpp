@@ -148,15 +148,13 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       //--------------------------------------------------
       // find out whether an element is intersected or not
       //--------------------------------------------------
-      // remark: initialization call of fluid time integration scheme will end up here: The initial
+      // remark: initialization call of fluid time integration scheme will also end up here: The initial
       //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
-      if (ih_->FlameFront() == Teuchos::null)
-      {
-        this->bisected_      = false;
-        this->touched_plus_  = false;
-        this->touched_minus_ = false;
-      }
-      else // regular call
+      this->bisected_      = false;
+      this->touched_plus_  = false;
+      this->touched_minus_ = false;
+
+      if (ih_->FlameFront() != Teuchos::null) // not the initial call
       {
         // more than one domain integration cell -> element bisected
         if(ih_->ElementBisected(this))
@@ -189,7 +187,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // get access to global dofman
       const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
-      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::TauPressureAnsatz());
+#ifdef COMBUST_STRESS_BASED
+#ifdef COMBUST_EPSPRES_BASED
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::EpsilonPressureAnsatz());
+#endif
+#ifdef COMBUST_SIGMA_BASED
+      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = rcp(new COMBUST::CauchyStressAnsatz());
+#endif
+#endif
       // create an empty element ansatz map to be filled in the following
       map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
       // create an empty element ansatz map
@@ -200,7 +205,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 #endif
       //-------------------------------------------------------------------------
       // build element dof manager according to global dof manager
-      // remark: - this procedure is closely related to XFEM::createDofMapCombust()
+      // remark: this procedure is closely related to XFEM::createDofMapCombust()
       //-------------------------------------------------------------------------
 #ifdef COMBUST_STRESS_BASED
       if (params.get<bool>("DLM_condensation")) // DLM condensation turned on
@@ -267,7 +272,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // instationary formulation
       const bool instationary = true;
       // smoothed gradient of phi required (surface tension application)
-      const bool gradphi = false;
+      const bool gradphi = true;
 
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
@@ -379,7 +384,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stationary formulation
       const bool instationary = false;
       // smoothed gradient of phi required (surface tension application)
-      const bool gradphi = false;
+      const bool gradphi = true;
 
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
@@ -591,7 +596,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // stationary formulation
         const bool instationary = false;
         // smoothed gradient of phi required (surface tension application)
-        const bool gradphi = false;
+        const bool gradphi = true;
         const INPAR::COMBUST::NitscheError NitscheErrorType = params.get<INPAR::COMBUST::NitscheError>("Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors

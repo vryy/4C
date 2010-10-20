@@ -56,7 +56,7 @@ COMBUSTTYPE                     Premixed_Combustion
 LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
 NITSCHE_VELOCITY                100000
-NITSCHE_PRESSURE                100000	
+SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
 REINITFUNCNO                    2

@@ -214,6 +214,7 @@ void COMBUST::Algorithm::TimeLoop()
     //                                conforming to the restart state of the fluid depends on the order
     //                                of Output() and UpdateTimeStep()
 
+    // sollte direkt nach DoGfuncField() gerufen werden
     if (stepreinit_)
     {
       // compute current volume of minus domain

@@ -171,11 +171,12 @@ namespace COMBUST
 
     /// not documented yet
     void TriangulateFlameFront(
-            std::vector<std::vector<int> >&        trianglelist,
-            std::multimap<int,std::vector<int> >&  segmentlist,
-            std::vector<std::vector<double> >&     pointlist,
-            std::map<int,int>&                     intersectionpoints_id, //
-            const std::vector<double>&             gfuncvalue //
+            const COMBUST::RefinementCell*        cell,
+            std::vector<std::vector<int> >&       trianglelist,
+            std::multimap<int,std::vector<int> >& segmentlist,
+            std::vector<std::vector<double> >&    pointlist,
+            std::map<int,int>&                    intersectionpoints_id,
+            const std::vector<double>&            gfuncvalue
             );
 
     /// not documented yet
@@ -193,6 +194,15 @@ namespace COMBUST
             const std::vector<double>&            gfuncvalue,
             const std::vector<std::vector<double> >& pointlist
             );
+
+    /// projects midpoint on front and back side of cell for 2D-applications
+    void projectMidpoint2D(
+        std::vector<std::vector<int> >&       trianglelist,
+        std::multimap<int,std::vector<int> >& segmentlist,
+        std::vector<std::vector<double> >&    pointlist,
+        const std::vector<int>&               polypoints,
+        const std::vector<double>&            midpoint
+    );
 
     /// not documented yet
     void buildPLC(

@@ -1077,7 +1077,7 @@ void SysmatDomainSigma(
             static LINALG::Matrix<nsd,nsd> tau;
             if (tauele_unknowns_present)
             {
-              XFEM::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+              XFEM::fill_tensor(numparamtauxx, shp_tau.d0, etau, tau);
             }
             else
             {
@@ -1506,7 +1506,7 @@ void SysmatBoundarySigma(
 
             // get viscous stress unknowns
             static LINALG::Matrix<nsd,nsd> tau;
-            XFEM::fill_tau(numparamtauxx, shp_tau.d0, etau, tau);
+            XFEM::fill_tensor(numparamtauxx, shp_tau.d0, etau, tau);
 
             const std::size_t dx = 0;
             const std::size_t dy = 1;

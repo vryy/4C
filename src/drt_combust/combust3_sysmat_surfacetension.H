@@ -1557,7 +1557,7 @@ void Sysmat_TPF_SurfaceTension_Boundary(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-    const M2&                         etau,
+    const M2&                         eepsilon,
     Teuchos::RCP<const MAT::Material> material,      ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
@@ -1624,7 +1624,7 @@ void Sysmat_TPF_SurfaceTension_Boundary(
 
 
 #if 0
-  const bool tauele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+  const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
   // for now, I don't try to compare to elements without stress unknowns, since they lock anyway
 #endif
 
@@ -1634,8 +1634,8 @@ void Sysmat_TPF_SurfaceTension_Boundary(
 #if 0
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, the numparam is determined by the dofmanager
-  //const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-  const size_t numparamtauxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+  //const int numparamepsilonxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
+  const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 #endif
 
   // get domain integration cells for this element

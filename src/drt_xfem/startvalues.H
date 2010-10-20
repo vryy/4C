@@ -16,11 +16,6 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_exporter.H"
 
-
-// TODO wie muss das ganze mit der elementdofmanager construction bei
-// stressbased ausschauen
-//TODO evtl map einführen für die nodes (evtl über mapextractor
-
 namespace XFEM
 {
   
@@ -58,7 +53,7 @@ namespace XFEM
     }
     
     //! get startvalues in timestep for nodes which changed interface-side
-    void semiLagrangeExtrapolation(
+    void semiLagrangeBackTracking(
         const Teuchos::RCP<COMBUST::FlameFront>& flamefront_,
         const double& dt
     );
@@ -76,109 +71,6 @@ namespace XFEM
 
     //! disabled default constructor
     explicit Startvalues();
-    
-    //! determine a first starting point approximation
-    // for points "x" which changed interface side 
-    void startValuesStartValue(
-        const double& dt
-    );
-    
-    //! determine velocity and pressure for nodes where the
-    // "normal" semi-lagrange startfinder failed
-    void getDataForNotConvergedNodes(
-    );
-    
-    //! find Element, local coordinates and data for a given, arbitrary point
-    void elementAndLocalCoords(
-        DRT::Element*& fittingele,
-        LINALG::Matrix<3,1>& x,
-        LINALG::Matrix<3,1>& xi,
-        LINALG::Matrix<3,1>& vel,
-        double& phi,
-        bool& eleFound
-    ) const;
-    
-    //! run a Newton loop in order to compute the exact lagrangian
-    // origin for a node which changed interface side
-    void NewtonLoop(
-        DRT::Element*& fittingele,
-        DRT::Node& xNode,
-        const double& dt,
-        LINALG::Matrix<3,1>& xAppr,
-        LINALG::Matrix<3,1>& xi,
-        LINALG::Matrix<3,1>& vel,
-        double& phi,
-        int& phiSign,
-        bool& eleFound,
-        bool& eleSide,
-        int& iter
-    );
-    
-    //! track back the lagrangian origin to get final startvalues
-    void backTracking(
-        DRT::Element*& fittingele,
-        DRT::Node& node,
-        LINALG::Matrix<3,1>& x,
-        LINALG::Matrix<3,1>& xi
-    );
-    
-    //! set the final startvalues for a node
-    void setFinalStartData(
-    ) const;
-    
-# ifdef PARALLEL
-    //! export data to neighbour proc while computing
-    // a first startpoint approximation
-    void exportStartData(
-    );
-    
-    void exportAlternativAlgoData(
-    );
-    
-    //! export data to neighbour proc in Newton loop
-    void exportIterData(
-      bool& procfinished
-    );
-    
-    //! export final data to the proc where the according node is
-    void exportFinalData(
-    );
-    
-    //! export enrichment data to the neighbour proc
-    void exportEnrichmentData(
-    );
-# endif 
-    
-    // data
-    RCP<Epetra_Vector> phiNewRow_;
-    RCP<Epetra_Vector> phiNewCol_;
-    RCP<Epetra_Vector> phiOldRow_;
-    RCP<Epetra_Vector> phiOldCol_;
-    RCP<Epetra_Vector> veln_;
-    set<int> oldEnrNodes_; // elements intersected by old interface at time n
-    vector<RCP<Epetra_Vector> > oldVectors_;
-    vector<RCP<Epetra_Vector> > newVectors_;
-    const RCP<InterfaceHandle> ih_old_;
-    
-    
-    // data accessing
-    const RCP<DRT::Discretization> discret_;
-    const RCP<XFEM::DofManager> olddofman_;
-    const RCP<XFEM::DofManager> dofman_;
-    Epetra_Map olddofcolmap_;
-    map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
-    Epetra_Map newdofrowmap_;
-    map<DofKey<onNode>, DofGID> nodalDofRowDistrib_;
-    
-    // stuff for parallel communication
-    DRT::Exporter exporter_;
-    const int myrank_;
-    const int numproc_;
-    
-//    // enrichment data
-//    map<int,set<XFEM::DofKey<XFEM::onNode> > > oldEnrNodalDofSet_;
-//    map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldEnrNodalDofDistrib_;
-//    map<int,double> oldEnrValues_;
     
     // this class holds data for a node that will get a new startvalue
     class StartpointData
@@ -284,10 +176,136 @@ namespace XFEM
       
       StartpointData(); // don't want copy constructor
       
-    }; // end class Curr
+    }; // end class StartpointData
     
-    // vector with the data that was created at the beginning
-    vector<StartpointData> init_;
+    
+    
+    //! determine a first starting point approximation
+    // for points "x" which changed interface side 
+    void startpoints(
+        const double& dt
+    );
+    
+    //! determine velocity and pressure for nodes where the
+    // "normal" semi-lagrange startfinder failed
+    void getDataForNotConvergedNodes(
+    );
+    
+    //! find Element, local coordinates and data for a given, arbitrary point
+    void elementAndLocalCoords(
+        DRT::Element*& fittingele,
+        LINALG::Matrix<3,1>& x,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,1>& vel,
+        double& phi,
+        bool& eleFound
+    ) const;
+    
+    //! run a Newton loop in order to compute the exact lagrangian
+    // origin for a node which changed interface side
+    void NewtonLoop(
+        DRT::Element*& fittingele,
+        StartpointData& curr,
+        const double& dt,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,1>& vel,
+        double& phi,
+        bool& eleFound,
+        bool& eleSide,
+        int max_iter
+    );
+    
+    //! track back the lagrangian origin to get final startvalues
+    void backTracking(
+        DRT::Element*& fittingele,
+        DRT::Node& node,
+        LINALG::Matrix<3,1>& x,
+        LINALG::Matrix<3,1>& xi
+    );
+    
+    //! set the final startvalues for a node
+    void setFinalData(
+    ) const;
+    
+    bool interfaceSideCompareCombust(
+        double phi1,
+        double phi2
+    ) const;
+    
+    int interfaceSideCombust(
+        double phi
+    ) const;
+    
+    template<size_t nsd, size_t numnode>
+    void elementsNodalData(
+        DRT::Element*& element,
+        LINALG::Matrix<nsd,2*numnode>& nodevel,
+        LINALG::Matrix<1,2*numnode>& nodepres
+    ) const;
+    
+    template<size_t nsd, size_t numnode, DRT::Element::DiscretizationType DISTYPE>
+    void pointdataXFEM(
+        DRT::Element*& element,
+        LINALG::Matrix<nsd,1>& xi,
+        LINALG::Matrix<nsd,nsd>& xji,
+        LINALG::Matrix<numnode,1>& shapeFcn,
+        LINALG::Matrix<2*numnode,1>& enrShapeFcnVel,
+        LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
+        LINALG::Matrix<nsd,2*numnode>& enrShapeXYVelDeriv1,
+        LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1
+    ) const;
+    
+    
+# ifdef PARALLEL
+    //! export data to neighbour proc while computing
+    // a first startpoint approximation
+    void exportStartData(
+    );
+    
+    void exportAlternativAlgoData(
+    );
+    
+    //! export data to neighbour proc in Newton loop
+    void exportIterData(
+      bool& procfinished
+    );
+    
+    //! export final data to the proc where the according node is
+    void exportFinalData(
+    );
+    
+    //! export enrichment data to the neighbour proc
+    void exportEnrichmentData(
+    );
+# endif 
+    
+    // data
+    RCP<Epetra_Vector> phiNewRow_;
+    RCP<Epetra_Vector> phiNewCol_;
+    RCP<Epetra_Vector> phiOldRow_;
+    RCP<Epetra_Vector> phiOldCol_;
+    RCP<Epetra_Vector> veln_;
+    set<int> oldEnrNodes_; // elements intersected by old interface at time n
+    vector<RCP<Epetra_Vector> > oldVectors_;
+    vector<RCP<Epetra_Vector> > newVectors_;
+    const RCP<InterfaceHandle> ih_old_;
+    
+    
+    // data accessing
+    const RCP<DRT::Discretization> discret_;
+    const RCP<XFEM::DofManager> olddofman_;
+    const RCP<XFEM::DofManager> dofman_;
+    Epetra_Map olddofcolmap_;
+    map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
+    Epetra_Map newdofrowmap_;
+    map<DofKey<onNode>, DofGID> nodalDofRowDistrib_;
+    
+    // stuff for parallel communication
+    DRT::Exporter exporter_;
+    const int myrank_;
+    const int numproc_;
+    
+    
     // vector with the data that is currently used
     // to compute a new startvalue on the particular processor
     vector<StartpointData> curr_;
@@ -306,6 +324,5 @@ namespace XFEM
     
   }; // class Startvalues
 } // namespace XFEM
-
 #endif /*STARTVALUES_H_*/
 #endif  // CCADISCRET

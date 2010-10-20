@@ -41,9 +41,9 @@ struct SymmetryMangle {static const XFEM::PHYSICS::Field name = FIELD;};
 template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
 template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
 template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
-template<> struct SymmetryMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
-template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
-template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Epsilonyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Epsilonxy;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Epsilonzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Epsilonxz;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Epsilonzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Epsilonyz;};
 
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix

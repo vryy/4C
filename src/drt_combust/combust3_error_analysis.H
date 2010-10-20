@@ -1105,7 +1105,7 @@ void Nitsche_BuildDomainIntegratedErrors(
       static XFEM::ApproxFunc<2,shpVecSize> shp;
 #if 0
       // comment missing
-      static LINALG::Matrix<shpVecSizeStress,1> shp_tau;
+      static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
 #endif
       if (ASSTYPE == XFEM::xfem_assembly)
       {

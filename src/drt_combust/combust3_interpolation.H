@@ -175,6 +175,32 @@ namespace COMBUST
       return element_ansatz;
     }
   };
+
+  //! implementation for XFEM elements with element strains and pressure
+  class EpsilonPressureAnsatz : public XFEM::ElementAnsatz
+  {
+  public:
+    //! default constructor
+    explicit EpsilonPressureAnsatz()
+    :XFEM::ElementAnsatz()
+    {
+    };
+    //! destructor
+    virtual ~EpsilonPressureAnsatz(){};
+    //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
+    virtual map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype) const
+    {
+      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxx   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonyy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonzz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxy   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonxz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::Epsilonyz   ,COMBUST::getStressInterpolationType3D(eledistype)));
+      element_ansatz.insert(make_pair(XFEM::PHYSICS::DiscPres,COMBUST::getDiscPressureInterpolationType3D(eledistype)));
+      return element_ansatz;
+    }
+  };
 }
 
 #endif /*COMBUST3_INTERPOLATION_H*/

@@ -147,11 +147,11 @@ void BuildStandardDomainIntegrals(
 #ifdef COMBUST_DOM_DIFFUSION
   // viscous term
   /*
-                /                        \
-               |       / \         /  \   |
-               |  eps | v | , tau | Du |  |
-               |       \ /         \  /   |
-                \                        /
+                /                                 \
+               |       / \                  /  \   |
+               |  eps | v | , 2\mu epsilon | Du |  |
+               |       \ /                  \  /   |
+                \                                 /
    */
   assembler.template Matrix<Velx,Velx>(shp.dx, 2.0*dynvisc*timefacfac, shp.dx);
   assembler.template Matrix<Velx,Velx>(shp.dy,     dynvisc*timefacfac, shp.dy);
