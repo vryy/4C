@@ -692,6 +692,17 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			}
 		}
 		break;
+		case INPAR::STATMECH::statout_densitydensitycorr:
+		{
+			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+			if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
+			{
+				std::ostringstream filename;
+				filename << "./DensityDensityCorrFunction_"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
+				DensityDensityCorrOutput(filename);
+			}
+		}
+		break;
 		case INPAR::STATMECH::statout_none:
 		default:
 		break;
@@ -2001,6 +2012,234 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
 	return;
 } // StatMechManager::StatMechInitOutput()
 
+/*----------------------------------------------------------------------*
+ | output for structural polymorphism             (public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2)
+{
+	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
+	 * The output consists of a vector v E R³ for each element and the respective node coordinates C.
+	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
+	 * element is written, too. This ensures an easy adaption of the output for post-processing.
+	 *
+	 * columns of the output file: element-ID, filament-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
+	 * */
+
+	FILE* fp = NULL;
+
+	fp = fopen(filename1.str().c_str(), "w");
+
+	std::stringstream filamentcoords;
+
+	// get filament number conditions
+	vector<DRT::Condition*> filamentnumbers(0);
+	discret_.GetCondition("FilamentNumber", filamentnumbers);
+
+	for (int i=0; i<discret_.NumMyRowElements(); ++i)
+	{
+		DRT::Element* element = discret_.lRowElement(i);
+
+		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
+		if (element->Id() > basisnodes_)
+			continue;
+
+		LINALG::SerialDenseMatrix coord(3, element->NumNode(), true);
+		// filament number
+		int filnumber = 0;
+		// a switch to avoid redundant search for filament number
+		bool done = false;
+
+		for (int j=0; j<3; j++)
+		{
+			for (int k=0; k<element->NumNode(); k++)
+			{
+				double referenceposition = ((element->Nodes())[k])->X()[j];
+				vector<int> dofnode = discret_.Dof((element->Nodes())[k]);
+				double displacement = disrow[discret_.DofRowMap()->LID(dofnode[j])];
+				coord(j,k) = referenceposition + displacement;
+
+				// get corresponding filament number
+				// loop over all filaments
+				if (!done)
+					for (int l = 0; l < (int) filamentnumbers.size(); l++)
+						for (int m = 0; m < (int) filamentnumbers[l]->Nodes()->size(); m++)
+							if (element->Nodes()[k]->Id() == filamentnumbers[l]->Nodes()->at(m))
+							{
+								filnumber = filamentnumbers[l]->Id();
+								done = true;
+							}
+			}
+		}
+
+		const DRT::ElementType & eot = element->ElementType();
+
+#ifdef D_BEAM3
+		if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+			for (int j=0; j<element->NumNode()-1; j++)
+				filamentcoords << element->Id() << " " << filnumber << "   "
+											 << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
+											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
+		else
+#endif
+#ifdef D_BEAM3II
+		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
+		for(int j=0; j<element->NumNode()-1; j++)
+		filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+									<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
+									<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl;
+		else
+#endif
+#ifdef D_TRUSS3
+		if (eot == DRT::ELEMENTS::Truss3Type::Instance())
+			for (int j=0; j<element->NumNode()-1; j++)
+				filamentcoords << element->Id() << " " << filnumber << "   "
+										   << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
+											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
+											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
+		else
+#endif
+		{
+		}
+	}
+	//write content into file and close it
+	fprintf(fp, filamentcoords.str().c_str());
+	fclose(fp);
+
+	/* A measure to quantify bundling, is hereafter established and written to a separate output file.
+	 * It works as follows:
+	 * 1) Specify all possible filament pairs P(i,j)
+	 * 2) n(i,j) counts the number of crosslinkers of P(i,j)
+	 * 3) n_av determines the average number of non-zero n(i,j) [e.g. n_av==1 indicates a perfectly
+	 *    homogenous isotropic network]
+	 */
+
+	//if(discret_.Comm().MyPID()==0)
+	//{
+	LINALG::SerialDenseMatrix ncross((int) filamentnumbers.size(), (int) filamentnumbers.size(), true);
+	// loop over all possible filament pairs and their nodes (wow!)
+	// filament i
+	for (int i=0; i<(int)filamentnumbers.size() - 1; i++)
+	{
+		// filament j
+		for (int j=i+1; j<(int)filamentnumbers.size(); j++)
+		{
+			// number of crosslinkers of filament pair P(i,j)
+			int n_ij = 0;
+			// node k of filament i
+			for (int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
+			{
+				// get node k of filament i if available on proc, else: next node in condition
+				if (discret_.HaveGlobalNode(filamentnumbers[i]->Nodes()->at(k)))
+				{
+					//cout<<"Node_k="<<k<<",i="<<i<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
+					DRT::Node* node_ki = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
+					// node l of filament j
+					for (int l = 0; l < (int) filamentnumbers[j]->Nodes()->size(); l++)
+					{
+						// get node l of filament j if available on proc, else: next node in condition
+						if (discret_.HaveGlobalNode(filamentnumbers[j]->Nodes()->at(l)))
+						{
+							//cout<<"Node_l="<<l<<",j="<<j<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
+							DRT::Node* node_lj = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
+							// identify any crosslinkers with nodes k and l
+							DRT::Element** adjelement_k = node_ki->Elements();
+							DRT::Element** adjelement_l = node_lj->Elements();
+
+							// loop over Elements adjacent to nodes k and l and increment n_ij if the element
+							// GIDs of element m and n match, i.e. the two filament share a crosslinker
+							for (int m = 0; m < node_ki->NumElement(); m++)
+							{
+								if (adjelement_k[m]->Id() > basisnodes_)
+									for (int n = 0; n < node_lj->NumElement(); n++)
+										if (adjelement_k[m]->Id() == adjelement_l[n]->Id())
+											n_ij++;
+							}
+						}
+					}
+				}
+			}
+			// store the number of crosslinker of P(i,j) at the respective position in the matrix
+			ncross(i, j) = n_ij;
+		}
+	}
+
+	// write the matrix ncross into a file via stream
+	fp = fopen(filename2.str().c_str(), "w");
+	std::stringstream crosslinkercount;
+
+	for (int i=0; i<ncross.M(); i++)
+	{
+		for (int j=0; j<ncross.N(); j++)
+			crosslinkercount << ncross(i, j) << "  ";
+		crosslinkercount << endl;
+	}
+
+	//write content into file and close it
+	fprintf(fp, crosslinkercount.str().c_str());
+	fclose(fp);
+	//}
+}// StatMechManager:StructPolymorphOutput()
+
+/*----------------------------------------------------------------------*
+ | output for density-density-correlation-function(public) mueller 07/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filename)
+{
+	/* Calculate the distances for all tuples of crosslink molecules.
+	 * Each processor calculates the distances between its row map molecules and column map molecules
+	 * Since we compare a set to itself, we just calculate one half of the matrix ( n²/2 - n calculations for n molecules)
+	 */
+	// zerofy crosslinksperbin_ to fill it anew
+	crosslinksperbin_->PutScalar(0.0);
+	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
+	for(int i=0; i<crosslinkermap_->NumGlobalElements(); i++)
+		for(int j=0; j<crosslinkermap_->NumGlobalElements(); j++)
+		{
+			// ask whether passed GID/column map LID belongs to the calling Proc and if we currently are above the main diagonal
+			// note: we se MyGID because crosslinkermap_ LID = GID
+			if(transfermap_->MyGID(i)==true && i < j)
+			{
+				double deltaxij = 0.0;
+				// calculate the distance between molecule i and molecule j
+				for(int k=0; k<crosslinkerpositions_->NumVectors(); k++)
+					deltaxij += ((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j])*((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j]);
+				deltaxij = pow(deltaxij, 0.5);
+				//calculate the bin to which the current distance belongs and increment the count for that bin
+				int currbin = (int)floor(deltaxij/(statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0))*statmechparams_.get<int>("HISTOGRAMBINS", 0));
+				if(currbin==statmechparams_.get<int>("HISTOGRAMBINS", 0))
+					currbin--;
+				(*crosslinksperbin_)[currbin] += 1.0;
+			}
+		}
+
+	// Export
+	Epetra_Vector crosslinksperbin(*ddcorrelationmap_, true);
+	Epetra_Import importer(*ddcorrelationmap_, *ddcorrelationmap_);
+	crosslinksperbin.Import(*crosslinksperbin_, importer, Add);
+
+	// write data to file
+	if(!discret_.Comm().MyPID())
+	{
+		FILE* fp = NULL;
+		fp = fopen(filename.str().c_str(), "w");
+		std::stringstream histogram;
+
+		int count = 0;
+		for(int i=0; i<ddcorrelationmap_->NumGlobalElements(); i++)
+		{
+			histogram<<i<<"    "<<crosslinksperbin[i]<<endl;
+			count += (int)crosslinksperbin[i];
+		}
+
+		cout<<crosslinksperbin<<endl;
+		cout<<"total count = "<<count<<endl;
+
+		//write content into file and close it
+		fprintf(fp, histogram.str().c_str());
+		fclose(fp);
+	}
+}
 
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
@@ -2775,7 +3014,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	if(time_ <= statmechparams_.get<double>("STARTTIME", 0.0))
+	if(time_ < statmechparams_.get<double>("STARTTIME", 0.0))
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
@@ -2788,7 +3027,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	//Volume partitioning, assignment of nodes and molecules to partitions, search for neighbours
 	// map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
 	RCP<Epetra_MultiVector> neighbourslid;
-	if(istep%statmechparams_.get<int>("SEARCHINTERVAL",1)==0 && statmechparams_.get<int>("SEARCHRES",1)>0)
+	if(statmechparams_.get<int>("SEARCHRES",1)>0)
 		PartitioningAndSearch(currentpositions, neighbourslid);
 	//cout<<*neighbourslid<<endl;
 	/*the following part of the code is executed on processor 0 only and leads to the decision, at which nodes crosslinks shall be set
@@ -2805,7 +3044,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	{
 		//cout<<*neighbourslid<<endl;
 		// obtain a random order in which the crosslinkers are addressed
-		std::vector<int> order = Permutation((int)statmechparams_.get<double>("N_crosslink", 0.0));
+		std::vector<int> order = Permutation(statmechparams_.get<int>("N_crosslink", 0));
 
 		for(int i=0; i<numbond_->MyLength(); i++)
 		{
@@ -3181,7 +3420,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	if( (currentelements_ - basiselements_) < statmechparams_.get<double>("N_crosslink",0.0) && !konswitch_)
+	if( (currentelements_ - basiselements_) < statmechparams_.get<int>("N_crosslink", 0) && !konswitch_)
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
 	{
@@ -3477,7 +3716,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	if (time_ <= statmechparams_.get<double> ("STARTTIME", 0.0))
+	if (time_ < statmechparams_.get<double> ("STARTTIME", 0.0))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
@@ -3623,7 +3862,7 @@ void StatMechManager::DelCrosslinkers(const double& dt, const Epetra_Map& nodero
 {
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	if ((currentelements_ - basiselements_) < statmechparams_.get<double> ("N_crosslink", 0.0))
+	if ((currentelements_ - basiselements_) < statmechparams_.get<int> ("N_crosslink", 0))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
@@ -3954,177 +4193,6 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
   return(uniformclosedgen_.random() < pPhi);
 } // StatMechManager::CheckOrientation
 
-
-
-/*----------------------------------------------------------------------*
- | output for structural polymorphism             (public) mueller 07/10|
- *----------------------------------------------------------------------*/
-void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2)
-{
-	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
-	 * The output consists of a vector v E R³ for each element and the respective node coordinates C.
-	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
-	 * element is written, too. This ensures an easy adaption of the output for post-processing.
-	 *
-	 * columns of the output file: element-ID, filament-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
-	 * */
-
-	FILE* fp = NULL;
-
-	fp = fopen(filename1.str().c_str(), "w");
-
-	std::stringstream filamentcoords;
-
-	// get filament number conditions
-	vector<DRT::Condition*> filamentnumbers(0);
-	discret_.GetCondition("FilamentNumber", filamentnumbers);
-
-	for (int i=0; i<discret_.NumMyRowElements(); ++i)
-	{
-		DRT::Element* element = discret_.lRowElement(i);
-
-		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
-		if (element->Id() > basisnodes_)
-			continue;
-
-		LINALG::SerialDenseMatrix coord(3, element->NumNode(), true);
-		// filament number
-		int filnumber = 0;
-		// a switch to avoid redundant search for filament number
-		bool done = false;
-
-		for (int j=0; j<3; j++)
-		{
-			for (int k=0; k<element->NumNode(); k++)
-			{
-				double referenceposition = ((element->Nodes())[k])->X()[j];
-				vector<int> dofnode = discret_.Dof((element->Nodes())[k]);
-				double displacement = disrow[discret_.DofRowMap()->LID(dofnode[j])];
-				coord(j,k) = referenceposition + displacement;
-
-				// get corresponding filament number
-				// loop over all filaments
-				if (!done)
-					for (int l = 0; l < (int) filamentnumbers.size(); l++)
-						for (int m = 0; m < (int) filamentnumbers[l]->Nodes()->size(); m++)
-							if (element->Nodes()[k]->Id() == filamentnumbers[l]->Nodes()->at(m))
-							{
-								filnumber = filamentnumbers[l]->Id();
-								done = true;
-							}
-			}
-		}
-
-		const DRT::ElementType & eot = element->ElementType();
-
-#ifdef D_BEAM3
-		if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-			for (int j=0; j<element->NumNode()-1; j++)
-				filamentcoords << element->Id() << " " << filnumber << "   "
-											 << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
-											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
-		else
-#endif
-#ifdef D_BEAM3II
-		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
-		for(int j=0; j<element->NumNode()-1; j++)
-		filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-									<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
-									<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl;
-		else
-#endif
-#ifdef D_TRUSS3
-		if (eot == DRT::ELEMENTS::Truss3Type::Instance())
-			for (int j=0; j<element->NumNode()-1; j++)
-				filamentcoords << element->Id() << " " << filnumber << "   "
-										   << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
-											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
-		else
-#endif
-		{
-		}
-	}
-	//write content into file and close it
-	fprintf(fp, filamentcoords.str().c_str());
-	fclose(fp);
-
-	/* A measure to quantify bundling, is hereafter established and written to a separate output file.
-	 * It works as follows:
-	 * 1) Specify all possible filament pairs P(i,j)
-	 * 2) n(i,j) counts the number of crosslinkers of P(i,j)
-	 * 3) n_av determines the average number of non-zero n(i,j) [e.g. n_av==1 indicates a perfectly
-	 *    homogenous isotropic network]
-	 */
-
-	//if(discret_.Comm().MyPID()==0)
-	//{
-	LINALG::SerialDenseMatrix ncross((int) filamentnumbers.size(), (int) filamentnumbers.size(), true);
-	// loop over all possible filament pairs and their nodes (wow!)
-	// filament i
-	for (int i=0; i<(int)filamentnumbers.size() - 1; i++)
-	{
-		// filament j
-		for (int j=i+1; j<(int)filamentnumbers.size(); j++)
-		{
-			// number of crosslinkers of filament pair P(i,j)
-			int n_ij = 0;
-			// node k of filament i
-			for (int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
-			{
-				// get node k of filament i if available on proc, else: next node in condition
-				if (discret_.HaveGlobalNode(filamentnumbers[i]->Nodes()->at(k)))
-				{
-					//cout<<"Node_k="<<k<<",i="<<i<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
-					DRT::Node* node_ki = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
-					// node l of filament j
-					for (int l = 0; l < (int) filamentnumbers[j]->Nodes()->size(); l++)
-					{
-						// get node l of filament j if available on proc, else: next node in condition
-						if (discret_.HaveGlobalNode(filamentnumbers[j]->Nodes()->at(l)))
-						{
-							//cout<<"Node_l="<<l<<",j="<<j<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
-							DRT::Node* node_lj = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
-							// identify any crosslinkers with nodes k and l
-							DRT::Element** adjelement_k = node_ki->Elements();
-							DRT::Element** adjelement_l = node_lj->Elements();
-
-							// loop over Elements adjacent to nodes k and l and increment n_ij if the element
-							// GIDs of element m and n match, i.e. the two filament share a crosslinker
-							for (int m = 0; m < node_ki->NumElement(); m++)
-							{
-								if (adjelement_k[m]->Id() > basisnodes_)
-									for (int n = 0; n < node_lj->NumElement(); n++)
-										if (adjelement_k[m]->Id() == adjelement_l[n]->Id())
-											n_ij++;
-							}
-						}
-					}
-				}
-			}
-			// store the number of crosslinker of P(i,j) at the respective position in the matrix
-			ncross(i, j) = n_ij;
-		}
-	}
-
-	// write the matrix ncross into a file via stream
-	fp = fopen(filename2.str().c_str(), "w");
-	std::stringstream crosslinkercount;
-
-	for (int i=0; i<ncross.M(); i++)
-	{
-		for (int j=0; j<ncross.N(); j++)
-			crosslinkercount << ncross(i, j) << "  ";
-		crosslinkercount << endl;
-	}
-
-	//write content into file and close it
-	fprintf(fp, crosslinkercount.str().c_str());
-	fclose(fp);
-	//}
-}// StatMechManager:StructPolymorphOutput()
-
 /*----------------------------------------------------------------------*
  | check the binding mode of a crosslinker        (public) mueller 07/10|
  *----------------------------------------------------------------------*/
@@ -4278,14 +4346,22 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int,
  *----------------------------------------------------------------------*/
 void StatMechManager::CrosslinkerMoleculeInit()
 {
-	// create crosslinker map
+	// create crosslinker maps
 	std::vector<int> gids;
-	for (int i=0; i<(int)statmechparams_.get<double> ("N_crosslink", 0.0); i++)
+	for (int i=0; i<statmechparams_.get<int> ("N_crosslink", 0); i++)
 		gids.push_back(i);
+	// crosslinker column and row map
+	crosslinkermap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int> ("N_crosslink", 0), &gids[0], 0, discret_.Comm()));
+	transfermap_ = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
 
-	crosslinkermap_ = rcp(new Epetra_Map(-1, (int) statmechparams_.get<double> ("N_crosslink", 0.0), &gids[0], 0, discret_.Comm()));
-	transfermap_ = rcp(new Epetra_Map((int) statmechparams_.get<double> ("N_crosslink", 0.0), 0, discret_.Comm()));
-
+	// create density-density-correlation-function map
+	std::vector<int> bins;
+	for (int i=0; i<statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
+		bins.push_back(i);
+	// map for histogram bins
+	ddcorrelationmap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
+	// initialize the bins vector with zeros
+	crosslinksperbin_ = rcp(new Epetra_Vector(*ddcorrelationmap_, false));
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions

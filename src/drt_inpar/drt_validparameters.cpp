@@ -1167,7 +1167,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "endtoend_const",
                                                     "viscoelasticity",
                                                     "gmsh",
-                                                    "structpolymorph"),
+                                                    "structpolymorph",
+                                                    "densitydensitycorr"),
                                  //translating input strings into BACI input parameters
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
@@ -1176,7 +1177,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_gmsh,
-                                            INPAR::STATMECH::statout_structpolymorph),
+                                            INPAR::STATMECH::statout_structpolymorph,
+                                            INPAR::STATMECH::statout_densitydensitycorr),
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<INPAR::STATMECH::FrictionModel>("FRICTION_MODEL","none","friction model for polymer dynamics",
@@ -1215,7 +1217,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading double parameter for crosslinker off-rate at the end
   DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
   //upon reaching a number of N_crosslink crosslinkers the first time, statmechmanager switches from K_ON_start and K_OFF_start to K_ON_end and K_OFF_end
-  DoubleParameter("N_crosslink",0.0,"number of crosslinkers for switching on- and off-rates",&statmech);
+  IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //Maximal number of crosslinkers a node can establish to other nodes
   IntParameter("N_CROSSMAX",-1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
   //Reading double parameter for crosslinker protein mean length
@@ -1265,8 +1267,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
   // number of histogram bins for post-analysis
   IntParameter("HISTOGRAMBINS",-1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
-  //search probability
-  DoubleParameter("SEARCHPROBABILITY",1.0,"value determining the probability of whether to conduct a search for neighbours",&statmech);
   //Reading whether DBCs shall be applied to broken elements
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);
