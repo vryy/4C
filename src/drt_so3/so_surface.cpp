@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "so_surface.H"
+#include "so_line.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -143,6 +144,11 @@ void DRT::ELEMENTS::StructuralSurface::Print(ostream& os) const
   return;
 }
 
+vector<RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines()
+{
+   return DRT::UTILS::ElementBoundaryFactory
+     <DRT::ELEMENTS::StructuralLine,DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines,this);
+}
 
 
 #endif  // #ifdef CCADISCRET
