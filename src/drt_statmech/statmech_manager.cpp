@@ -2189,42 +2189,52 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 {
 	/* Calculate the distances for all tuples of crosslink molecules.
 	 * Each processor calculates the distances between its row map molecules and column map molecules
-	 * Since we compare a set to itself, we just calculate one half of the matrix ( n²/2 - n calculations for n molecules)
-	 */
-	// zerofy crosslinksperbin_ to fill it anew
-	crosslinksperbin_->PutScalar(0.0);
+	 * Since we compare a set to itself, we just calculate one half of the matrix ( (n²-n)/2 calculations for n molecules)*/
+	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 0);
+
+	int transcount = 0;
+	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
 	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
-	for(int i=0; i<crosslinkermap_->NumGlobalElements(); i++)
-		for(int j=0; j<crosslinkermap_->NumGlobalElements(); j++)
+	for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+		for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 		{
-			// ask whether passed GID/column map LID belongs to the calling Proc and if we currently are above the main diagonal
-			// note: we se MyGID because crosslinkermap_ LID = GID
-			if(transfermap_->LID(i)!=-1 && i < j)
+			// check for existence in transfermap_ (row map) and whether the current entry is above the main diagonal
+			if(transfermap_->LID(crosslinkermap_->GID(i))!=-1 && j>i)
 			{
+				transcount++;
+				double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 				double deltaxij = 0.0;
+
 				// calculate the distance between molecule i and molecule j
 				for(int k=0; k<crosslinkerpositions_->NumVectors(); k++)
 					deltaxij += ((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j])*((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j]);
-				deltaxij = pow(deltaxij, 0.5);
-				//calculate the bin to which the current distance belongs and increment the count for that bin
-				int currbin = (int)floor(deltaxij/(statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0))*statmechparams_.get<int>("HISTOGRAMBINS", 0));
-				if(currbin==statmechparams_.get<int>("HISTOGRAMBINS", 0))
+				deltaxij = sqrt(deltaxij);
+				// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
+				int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
+				// in case the distance is exactly periodlength*sqrt(3)
+				if(currbin==numbins)
 					currbin--;
-				(*crosslinksperbin_)[currbin] += 1.0;
+				crosslinksperbinrow[currbin] += 1.0;
 			}
 		}
 
 	// Export
-	Epetra_Vector crosslinksperbin(*ddcorrelationmap_, true);
-	Epetra_Import importer(*ddcorrelationmap_, *ddcorrelationmap_);
-	crosslinksperbin.Import(*crosslinksperbin_, importer, Add);
+	Epetra_Vector crosslinksperbincol(*ddcorrcolmap_, true);
+	Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
+	crosslinksperbincol.Import(crosslinksperbinrow, importer, Insert);
 
+	// Add the processor-specific data up
 	int count = 0;
-	for(int i=0; i<ddcorrelationmap_->NumMyElements(); i++)
-		count += (int)crosslinksperbin[i];
+	std::vector<int> crosslinksperbin(numbins, 0);
+	for(int i=0; i<numbins; i++)
+		for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+		{
+			crosslinksperbin[i] += (int)crosslinksperbincol[pid*numbins+i];
+			count += (int)crosslinksperbincol[pid*numbins+i];
+		}
 
-	cout<<"total count = "<<count<<endl;
-	cout<<crosslinksperbin<<endl;
+	//cout<<crosslinksperbincol<<endl;
+	//cout<<"MyCrosslinks = "<<transfermap_->NumMyElements()<<", GlobalCrosslinks = "<<crosslinkermap_->NumGlobalElements()<<"/"<<crosslinkermap_->NumMyElements()<<", proc-spec. count = "<<transcount<<", total count (proc="<<discret_.Comm().MyPID()<<") = "<<count<<endl;
 
 	// write data to file
 	if(!discret_.Comm().MyPID())
@@ -2233,8 +2243,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 		fp = fopen(filename.str().c_str(), "w");
 		std::stringstream histogram;
 
-		int count = 0;
-		for(int i=0; i<ddcorrelationmap_->NumMyElements(); i++)
+		for(int i=0; i<numbins; i++)
 			histogram<<i<<"    "<<crosslinksperbin[i]<<endl;
 		//write content into file and close it
 		fprintf(fp, histogram.str().c_str());
@@ -4353,16 +4362,15 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		gids.push_back(i);
 	// crosslinker column and row map
 	crosslinkermap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int> ("N_crosslink", 0), &gids[0], 0, discret_.Comm()));
-	transfermap_ = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
+	transfermap_    = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
 
-	// create density-density-correlation-function map
+	// create density-density-correlation-function map with
 	std::vector<int> bins;
-	for (int i=0; i<statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
+	for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 0); i++)
 		bins.push_back(i);
-	// map for histogram bins
-	ddcorrelationmap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
-	// initialize the bins vector with zeros
-	crosslinksperbin_ = rcp(new Epetra_Vector(*ddcorrelationmap_, false));
+	ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 0), &bins[0], 0, discret_.Comm()));
+	// create processor-specific density-density-correlation-function map
+	ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), 0, discret_.Comm()));
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions

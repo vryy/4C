@@ -308,8 +308,10 @@ protected:
   RCP<Epetra_Map> crosslinkermap_;
   // \brief row Epetra_Map handling crosslink molecules
   RCP<Epetra_Map> transfermap_;
-  // \brief a column Epetra_Map handling data of the density-density-correlation-function
-  RCP<Epetra_Map> ddcorrelationmap_;
+  // \brief an Epetra_Map handling processor-specific data of the density-density-correlation-function
+  RCP<Epetra_Map> ddcorrrowmap_;
+  // \brief an Epetra_Map handling cumulated data of the density-density-correlation-function from all processors
+  RCP<Epetra_Map> ddcorrcolmap_;
 	// \brief a vector memorizing the bonding status of the crosslink molecules
 	RCP<Epetra_MultiVector>		crosslinkerbond_;
 	// \brief a vector containing the current postion of the crosslink molecules
@@ -324,8 +326,6 @@ protected:
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
-  // \brief a vector holding the crosslink molecule count for each bin of the histogram
-	RCP<Epetra_Vector> crosslinksperbin_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
