@@ -32,6 +32,8 @@
 #include "../drt_ale3/ale3.H"
 #include "../drt_ale3/ale3_nurbs.H"
 
+#include "../drt_so3/so_surface.H"
+#include "../drt_so3/so_line.H"
 
 #include "fsi_debugwriter.H"
 #include "../drt_geometry/searchtree.H"
@@ -839,9 +841,19 @@ void FSI::UTILS::SlideAleUtils::Remeshing
     if (slideeleredmap_->LID(msfullelemap->GID(eleind))!=-1)
     {
       DRT::Element* tmpele = interfacedis.gElement(msfullelemap->GID(eleind));
-      structreduelements[tmpele->Id()]= rcp(tmpele,false);
+      if (dim == 3)
+      {
+        structreduelements[tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralSurface(
+          tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
+      }
+      else if (dim == 2)
+      {
+        structreduelements[tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralLine(
+          tmpele->Id(),tmpele->Owner(),tmpele->NumNode(),tmpele->NodeIds(),tmpele->Nodes(),&(*tmpele),0));
+      }
     }
   }
+  
 
   //currentpositions of struct nodes for the search tree (always 3 coordinates)
   std::map<int,LINALG::Matrix<3,1> > currentpositions =
