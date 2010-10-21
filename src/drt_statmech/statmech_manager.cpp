@@ -2244,7 +2244,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 		std::stringstream histogram;
 
 		for(int i=0; i<numbins; i++)
-			histogram<<i<<"    "<<crosslinksperbin[i]<<endl;
+			histogram<<i+1<<"    "<<crosslinksperbin[i]<<endl;
 		//write content into file and close it
 		fprintf(fp, histogram.str().c_str());
 		fclose(fp);
