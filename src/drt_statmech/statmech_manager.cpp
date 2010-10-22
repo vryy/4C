@@ -50,6 +50,7 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
+isinit_(false),
 konswitch_(false),
 nsearch_(0),
 starttimeoutput_(-1.0),
@@ -2191,32 +2192,120 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 	 * Each processor calculates the distances between its row map molecules and column map molecules
 	 * Since we compare a set to itself, we just calculate one half of the matrix ( (n²-n)/2 calculations for n molecules)*/
 	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 0);
+	// number of overall independent combinations
+	int numcombinations = (statmechparams_.get<int>("N_crosslink", 0)*statmechparams_.get<int>("N_crosslink", 0)-statmechparams_.get<int>("N_crosslink", 0))/2;
+	// combinations on each processor
+	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+	int remainder = numcombinations%combinationsperproc;
 
-	int transcount = 0;
-	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
-	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
-	for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
-		for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+	// get starting index tuples for later use
+	if(!isinit_)
+	{
+		// first entry
+		startindex_.push_back(std::vector<int>(2,0));
+		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
 		{
-			// check for existence in transfermap_ (row map) and whether the current entry is above the main diagonal
-			if(transfermap_->LID(crosslinkermap_->GID(i))!=-1 && j>i)
-			{
-				transcount++;
-				double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-				double deltaxij = 0.0;
+			std::vector<int> start(2,0);
+			bool continueloop = false;
+			bool quitloop = false;
+			int counter = 0;
+			int appendix = 0;
+			if(mypid==discret_.Comm().NumProc()-1)
+				appendix = remainder;
 
-				// calculate the distance between molecule i and molecule j
-				for(int k=0; k<crosslinkerpositions_->NumVectors(); k++)
-					deltaxij += ((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j])*((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j]);
-				deltaxij = sqrt(deltaxij);
-				// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
-				int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
-				// in case the distance is exactly periodlength*sqrt(3)
-				if(currbin==numbins)
-					currbin--;
-				crosslinksperbinrow[currbin] += 1.0;
+			// loop over crosslinker pairs
+			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+			{
+				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+				{
+					if(i==startindex_[mypid][0] && j==startindex_[mypid][1])
+						continueloop = true;
+					if(j>i && continueloop)
+					{
+						if(counter<combinationsperproc+appendix)
+							counter++;
+						else
+						{
+							// new start index j
+							if(j==crosslinkermap_->NumMyElements()-1)
+								start[1] = 0;
+							else
+								start[1] = j;
+							quitloop = true;
+							break;
+						}
+					}
+				}
+				if(quitloop)
+				{
+					// new start index i
+					if(start[1]==0)
+						start[0] = i+1;
+					else
+						start[0] = i;
+					// new start tuple
+					startindex_.push_back(start);
+					break;
+				}
 			}
 		}
+		isinit_ = true;
+	}
+
+	int combicount = 0;
+	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
+	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
+	for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+	{
+		bool quitloop = false;
+		if(mypid==discret_.Comm().MyPID())
+		{
+			bool continueloop = false;
+			int appendix = 0;
+			if(mypid==discret_.Comm().NumProc()-1)
+				appendix = remainder;
+
+			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+			{
+				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+				{
+					// start adding crosslink from here
+					if(i==startindex_[mypid][0] && j==startindex_[mypid][1])
+						continueloop = true;
+					// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
+					if(j>i && continueloop)
+						if(combicount<combinationsperproc+appendix)
+						{
+							combicount++;
+							double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+							double deltaxij = 0.0;
+
+							// calculate the distance between molecule i and molecule j
+							for(int k=0; k<crosslinkerpositions_->NumVectors(); k++)
+								deltaxij += ((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j])*((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j]);
+							deltaxij = sqrt(deltaxij);
+							// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
+							int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
+							// in case the distance is exactly periodlength*sqrt(3)
+							if(currbin==numbins)
+								currbin--;
+							crosslinksperbinrow[currbin] += 1.0;
+						}
+						else
+						{
+							quitloop = true;
+							break;
+						}
+				}
+				if(quitloop)
+					break;
+			}
+			if(quitloop)
+				break;
+		}
+		else
+			continue;
+	}
 
 	// Export
 	Epetra_Vector crosslinksperbincol(*ddcorrcolmap_, true);
@@ -2224,17 +2313,10 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 	crosslinksperbincol.Import(crosslinksperbinrow, importer, Insert);
 
 	// Add the processor-specific data up
-	int count = 0;
 	std::vector<int> crosslinksperbin(numbins, 0);
 	for(int i=0; i<numbins; i++)
 		for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
-		{
 			crosslinksperbin[i] += (int)crosslinksperbincol[pid*numbins+i];
-			count += (int)crosslinksperbincol[pid*numbins+i];
-		}
-
-	//cout<<crosslinksperbincol<<endl;
-	//cout<<"MyCrosslinks = "<<transfermap_->NumMyElements()<<", GlobalCrosslinks = "<<crosslinkermap_->NumGlobalElements()<<"/"<<crosslinkermap_->NumMyElements()<<", proc-spec. count = "<<transcount<<", total count (proc="<<discret_.Comm().MyPID()<<") = "<<count<<endl;
 
 	// write data to file
 	if(!discret_.Comm().MyPID())

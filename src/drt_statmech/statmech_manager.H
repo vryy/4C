@@ -233,6 +233,9 @@ protected:
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
 	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
 
+	//! \brief initialization
+	bool isinit_;
+
   //! \brief switch between different on and off-rates
   bool konswitch_;
 
@@ -326,6 +329,8 @@ protected:
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
+	// \brief a vector holding indices used in DensityDensityCorrOutput()
+	std::vector<std::vector<int> > startindex_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
