@@ -399,7 +399,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_growth: /*------- integration point based growth */
     {
       MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-      const double dt = params.get<double>("delta time",-1.0);
+      double dt = params.get<double>("delta time",-1.0);
       const double t = params.get<double>("total time",-1.0);
       grow->Evaluate(glstrain,gp,cmat,stress,dt,t);
       *density = grow->Density();

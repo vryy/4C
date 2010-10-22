@@ -3,7 +3,7 @@
 \brief
 This file contains routines for an integration point based growth law
 example input line
-MAT 1 MAT_GROWTH DENS 1.0 MATELASTIC 2 STARTTIME 0.2 KPLUS 0.5 MPLUS 4.0 KMINUS 0.25 MMINUS 5.0
+MAT 1 MAT_GROWTH DENS 1.0 IDMATELASTIC 2 STARTTIME 0.2 ENDTIME 100.0 KPLUS 0.5 MPLUS 4.0 KMINUS 0.25 MMINUS 5.0
 
 Here a kinematic integration point based approach of growth is modeled.
 For a detailed description see:
@@ -54,9 +54,11 @@ namespace MAT
       // density
       const double density_;
       // elastic material number
-      const int matelastic_;
+      const int idmatelastic_;
       // start growth after starttime
       const double starttime_;
+      // stop growth after endtime
+      const double endtime_;
       // growth law parameter kthetaplus
       const double kthetaplus_;
       // growth law parameter mthetaplus
@@ -150,7 +152,8 @@ namespace MAT
     /// Setup
     void Setup
     (
-      const int numgp  ///< number of Gauss points
+      const int numgp,  ///< number of Gauss points
+      DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
     /// Update
@@ -163,18 +166,21 @@ namespace MAT
       const int gp,   ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      const double dt, ///< delta time
+      double dt, ///< delta time
       const double time ///< time
     );
 
     /// Return density
     double Density() const {return params_->density_;};
 
-    /// return theta
+    /// Return theta
     RCP<vector<double> > Gettheta() const {return theta_;};
 
-    /// return mandel stress
+    /// Return mandel stress
     RCP<vector<double> > Getmandel() const {return mandel_;};
+
+    /// Return elastic material
+    Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -184,14 +190,16 @@ namespace MAT
     /// my material parameters
     MAT::PAR::Growth* params_;
 
-    /// growth parameter
+    /// growth stretch
     RCP<vector<double> > theta_;
-    /// growth parameter old time step
+    /// growth stretch old time step
     RCP<vector<double> > thetaold_;
     /// mandel stress
     RCP<vector<double> > mandel_;
-
-    bool isinit_;  ///< indicates if material is initialized
+    /// elastic material
+    Teuchos::RCP<MAT::Material> matelastic_;
+    /// indicates if material is initialized
+    bool isinit_;
 
     /// Evaluate elastic material
     void EvaluateElastic
@@ -213,6 +221,21 @@ namespace MAT
     );
 
   };
+
+  /// Debug output to gmsh-file
+  /* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
+  {
+    discret_->SetState("displacement",Dis());
+    MAT::GrowthOutputToGmsh(discret_, GetStep(), 1);
+  }
+  don't forget to include growth_ip.H */
+  void GrowthOutputToGmsh
+  (
+    const Teuchos::RCP<DRT::Discretization> dis, ///< discretization with displacements
+    const int timestep, ///< index of timestep
+    const int iter ///< iteration index of newton iteration
+  );
+
 }  // namespace MAT
 
 #endif /*CCADISCRET*/

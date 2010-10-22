@@ -440,13 +440,13 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
 
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
     if (name == "Fiber1"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
       data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
       data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
     } else {
       return false;
@@ -454,21 +454,21 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, vector<double>& data)
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
-    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-    vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
     if (name == "Fiber1"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
       data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
     } else if (name == "Fiber2"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
       data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
     } else if (name == "Fiber3"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
       data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
     } else if (name == "Fiber4"){
       if ((int)data.size()!=3) dserror("size mismatch");
+      vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
       data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
     } else {
       return false;

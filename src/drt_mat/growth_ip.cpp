@@ -3,7 +3,7 @@
 \brief
 This file contains routines for an integration point based growth law
 example input line
-MAT 1 MAT_GROWTH DENS 1.0 MATELASTIC 2 STARTTIME 0.2 KPLUS 0.5 MPLUS 4.0 KMINUS 0.25 MMINUS 5.0
+MAT 1 MAT_GROWTH DENS 1.0 IDMATELASTIC 2 STARTTIME 0.2 ENDTIME 100.0 KPLUS 0.5 MPLUS 4.0 KMINUS 0.25 MMINUS 5.0
 
 Here a kinematic integration point based approach of growth is modeled.
 For a detailed description see:
@@ -26,8 +26,15 @@ Maintainer: Susanna Tinkl
 #include <vector>
 #include "growth_ip.H"
 #include "logneohooke.H"
+#include "holzapfelcardiovascular.H"
+#include "humphreycardiovascular.H"
+#include "aaaneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_utils.H"  // for function Factory in Unpack
+#include "../drt_io/io_gmsh.H" // for debug plotting with gmsh
+#include "../drt_io/io_control.H" // for debug plotting with gmsh
+#include "contchainnetw.H" // for debug plotting with gmsh
 
 
 /*----------------------------------------------------------------------*
@@ -38,8 +45,9 @@ MAT::PAR::Growth::Growth(
   )
 : Parameter(matdata),
   density_(matdata->GetDouble("DENS")),
-  matelastic_(matdata->GetInt("MATELASTIC")),
+  idmatelastic_(matdata->GetInt("IDMATELASTIC")),
   starttime_(matdata->GetDouble("STARTTIME")),
+  endtime_(matdata->GetDouble("ENDTIME")),
   kthetaplus_(matdata->GetDouble("KPLUS")),
   mthetaplus_(matdata->GetDouble("MPLUS")),
   kthetaminus_(matdata->GetDouble("KMINUS")),
@@ -113,6 +121,14 @@ void MAT::Growth::Pack(vector<char>& data) const
     AddtoPack(data,thetaold_->at(gp));
     AddtoPack(data,mandel_->at(gp));
   }
+
+  // Pack data of elastic material
+  vector<char> dataelastic;
+  if (matelastic_!=Teuchos::null) {
+  matelastic_->Pack(dataelastic);
+  }
+  AddtoPack(data,dataelastic);
+
   return;
 }
 
@@ -155,11 +171,11 @@ void MAT::Growth::Unpack(const vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d",data.size(),position);
     return;
   }
+
   // unpack growth internal variables
   theta_ = rcp(new vector<double> (numgp));
   thetaold_ = rcp(new vector<double> (numgp));
   mandel_ = rcp(new vector<double> (numgp));
-
   for (int gp = 0; gp < numgp; ++gp) {
     double a;
     ExtractfromPack(position,data,a);
@@ -170,6 +186,23 @@ void MAT::Growth::Unpack(const vector<char>& data)
     mandel_->at(gp) = a;
   }
 
+  // Unpack data of elastic material (these lines are copied from drt_element.cpp)
+  vector<char> dataelastic;
+  ExtractfromPack(position,data,dataelastic);
+  if (dataelastic.size()>0) {
+    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    MAT::Material* matel = dynamic_cast<MAT::Material*>(o);
+    if (matel==NULL)
+      dserror("failed to unpack elastic material");
+    matelastic_ = rcp(matel);
+  } else matelastic_ = Teuchos::null;
+
+  // alternative way to unpack, but not in postprocessing
+  // if (params_!=NULL) {
+  //   matel_ = MAT::Material::Factory(params_->matelastic_);
+  //   matel_->Unpack(dataelastic);
+  // }
+
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
@@ -179,7 +212,7 @@ void MAT::Growth::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         02/10|
  *----------------------------------------------------------------------*/
-void MAT::Growth::Setup(const int numgp)
+void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   theta_ = rcp(new vector<double> (numgp));
   thetaold_ = rcp(new vector<double> (numgp));
@@ -189,6 +222,16 @@ void MAT::Growth::Setup(const int numgp)
     theta_->at(j) = 1.0;
     thetaold_->at(j) = 1.0;
     mandel_->at(j) = 0.0;
+  }
+
+  // Setup of elastic material
+  matelastic_ = MAT::Material::Factory(params_->idmatelastic_);
+  if (matelastic_->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
+    MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(matelastic_.get());
+    holz->Setup(numgp, linedef);
+  } else if (matelastic_->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
+    MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(matelastic_.get());
+    hum->Setup(numgp, linedef);
   }
 
   isinit_ = true;
@@ -217,19 +260,19 @@ void MAT::Growth::Update()
  Only the elastic part contributes to the stresses, thus we have to
  compute the elastic Cauchy Green Tensor Cdach and elastic 2PK stress Sdach.
  */
-
 void MAT::Growth::Evaluate
 (
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
   LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  const double dt,
+  double dt,
   const double time
 )
 {
   double eps = 1.0e-12;
-  if (time > params_->starttime_ + eps) {
+  double endtime = params_->endtime_;
+  if (time > params_->starttime_ + eps && time <= endtime + eps) {
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
     const double thetaold = thetaold_->at(gp);
@@ -237,6 +280,9 @@ void MAT::Growth::Evaluate
     double theta = thetaold;
     double mandelcrit = 0.0; //1.0E-6;
     double signmandel = 1.0; // adjusts sign of mandelcrit to sign of mandel
+
+    // check wether starttime is divisible by dt, if not adapt dt in first growth step
+    if (time < params_->starttime_ + dt - eps) dt = time - params_->starttime_;
 
     //--------------------------------------------------------------------------------------
     // build identity tensor I
@@ -272,11 +318,10 @@ void MAT::Growth::Evaluate
     int localistep = 0;
     double thetaquer = 0.0;
     int maxstep = 30;
-    double abstol = 1.0E-9;
-    double reltol = abstol;
+    double abstol = 1.0E-10;
 
     // local Newton iteration to obtain exact theta
-    while (abs(residual) > reltol && localistep < maxstep)
+    while (abs(residual) > abstol && localistep < maxstep)
     {
       localistep += 1;
       double temp = 0.0;
@@ -290,7 +335,7 @@ void MAT::Growth::Evaluate
       // damping strategy
       double omega = 2.0;
       double thetatemp = theta;
-      double residualtemp = abs(residual);
+      double residualtemp = residual;
       double omegamin = 1.0/64.0;
       while (abs(residualtemp) > (1.0-0.5*omega)*abs(residual) && omega > omegamin)
       {
@@ -327,7 +372,7 @@ void MAT::Growth::Evaluate
       }
 
     } // end of local Newton iteration
-    if (localistep == maxstep && abs(residual) > reltol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
+    if (localistep == maxstep && abs(residual) > abstol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
 
     double temp = 0.0;
     for (int i=0; i<6; i++)
@@ -358,6 +403,45 @@ void MAT::Growth::Evaluate
     theta_->at(gp) = theta;
     mandel_->at(gp) = mandel;
 
+  } else if (time > endtime + eps) {  // turn off growth
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
+    LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
+    double theta = theta_->at(gp);
+
+    //--------------------------------------------------------------------------------------
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
+    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+
+    // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
+    LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
+    Cdach.Scale(1.0/theta/theta);
+    // elastic Green Lagrange strain
+    LINALG::Matrix<NUM_STRESS_3D,1> glstraindach(Cdach);
+    glstraindach -= Id;
+    glstraindach.Scale(0.5);
+    // elastic 2 PK stress and constitutive matrix
+    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
+
+    // 2PK stress S = F_g^-1 Sdach F_g^-T
+    LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
+    S.Scale(1.0/theta/theta);
+    *stress = S;
+
+    // constitutive matrix including growth
+    cmatelastic.Scale(1.0/theta/theta/theta/theta);
+    *cmat = cmatelastic;
+
+    // trace of elastic Mandel stress Mdach = Cdach Sdach
+    double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
+                    Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
+    mandel_->at(gp) = mandel;
+
   } else {
     EvaluateElastic(glstrain,gp,cmat,stress);
     // build identity tensor I
@@ -375,9 +459,7 @@ void MAT::Growth::Evaluate
 
 /*----------------------------------------------------------------------*
  |  Evaluate elastic Material                     (private)        02/10|
- *----------------------------------------------------------------------*
- */
-
+ *----------------------------------------------------------------------*/
 void MAT::Growth::EvaluateElastic
 (
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
@@ -386,19 +468,25 @@ void MAT::Growth::EvaluateElastic
   LINALG::Matrix<NUM_STRESS_3D,1> * stress
 )
 {
-  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(params_->matelastic_);
-  if (mat->MaterialType() == INPAR::MAT::m_logneohooke) {
-    MAT::LogNeoHooke* log = static_cast <MAT::LogNeoHooke*>(mat.get());
+  if (matelastic_->MaterialType() == INPAR::MAT::m_logneohooke) {
+    MAT::LogNeoHooke* log = static_cast <MAT::LogNeoHooke*>(matelastic_.get());
     log->Evaluate(*glstrain, *cmat, *stress);
+  } else if (matelastic_->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
+    MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(matelastic_.get());
+    holz->Evaluate(glstrain, gp, cmat, stress);
+  } else if (matelastic_->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
+    MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(matelastic_.get());
+    hum->Evaluate(glstrain, gp, cmat, stress);
+  } else if (matelastic_->MaterialType() == INPAR::MAT::m_aaaneohooke){
+    MAT::AAAneohooke* aaaneo = static_cast <MAT::AAAneohooke*>(matelastic_.get());
+    aaaneo->Evaluate(*glstrain, *cmat, *stress);
   } else dserror("material not implemented for growth");
 
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate growth law                           (private)        02/10|
- *----------------------------------------------------------------------*
- */
-
+ *----------------------------------------------------------------------*/
 void MAT::Growth::EvaluateGrowthLaw
 (
   double * ktheta,
@@ -424,6 +512,88 @@ void MAT::Growth::EvaluateGrowthLaw
     *dktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
   }
 
+}
+
+/*----------------------------------------------------------------------*
+ |  Debug output to gmsh-file                                      10/10|
+ *----------------------------------------------------------------------*
+ this needs to be copied to STR::TimInt::OutputStep() to enable debug output
+ {
+   discret_->SetState("displacement",Dis());
+   MAT::GrowthOutputToGmsh(discret_, GetStep(), 1);
+ }
+ don't forget to include growth_ip.H */
+void MAT::GrowthOutputToGmsh
+(
+  const Teuchos::RCP<DRT::Discretization> dis,
+  const int timestep,
+  const int iter
+)
+{
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  // file for mandel stress
+  std::stringstream filename_mandel;
+  filename_mandel << filebase << "_mandel" << std::setw(3) << setfill('0') << timestep << std::setw(2) << setfill('0') << iter << ".pos";
+  std::ofstream f_system_mandel(filename_mandel.str().c_str());
+  stringstream gmshfilecontent_mandel;
+  gmshfilecontent_mandel << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
+
+  // file for theta
+  std::stringstream filename_theta;
+  filename_theta << filebase << "_theta" << std::setw(3) << setfill('0') << timestep << std::setw(2) << setfill('0') << iter << ".pos";
+  std::ofstream f_system_theta(filename_theta.str().c_str());
+  stringstream gmshfilecontent_theta;
+  gmshfilecontent_theta << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
+
+  for (int iele=0; iele<dis->NumMyColElements(); ++iele)
+  {
+    const DRT::Element* actele = dis->lColElement(iele);
+
+    // build current configuration
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*dis,lm,lmowner);
+    RCP<const Epetra_Vector> disp = dis->GetState("displacement");
+    vector<double> mydisp(lm.size(),0);
+
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+    RCP<vector<double> > mandel = grow->Getmandel();
+    RCP<vector<double> > theta = grow->Gettheta();
+
+    // material plot at gauss points
+    int ngp = grow->Gettheta()->size();
+    for (int gp = 0; gp < ngp; ++gp){
+      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp); //defined in contchainnetw
+
+      // write mandel stress
+      double mandelgp = mandel->at(gp);
+      gmshfilecontent_mandel << "SP(" << scientific << point[0] << ",";
+      gmshfilecontent_mandel << scientific << point[1] << ",";
+      gmshfilecontent_mandel << scientific << point[2] << ")";
+      gmshfilecontent_mandel << "{" << scientific
+      << mandelgp
+      << "};" << endl;
+
+      // write theta
+      double thetagp = theta->at(gp);
+	  gmshfilecontent_theta << "SP(" << scientific << point[0] << ",";
+	  gmshfilecontent_theta << scientific << point[1] << ",";
+	  gmshfilecontent_theta << scientific << point[2] << ")";
+	  gmshfilecontent_theta << "{" << scientific
+	  << thetagp
+      << "};" << endl;
+    }
+  }
+  gmshfilecontent_mandel << "};" << endl;
+  f_system_mandel << gmshfilecontent_mandel.str();
+  f_system_mandel.close();
+
+  gmshfilecontent_theta << "};" << endl;
+  f_system_theta << gmshfilecontent_theta.str();
+  f_system_theta.close();
+
+  return;
 }
 
 #endif // CCADISCRET

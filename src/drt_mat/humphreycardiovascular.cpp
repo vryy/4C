@@ -216,8 +216,6 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
   ca4_ = rcp(new vector<vector<double> > (numgp));
   int initflag = params_->init_;
 
-  const double gamma = (45*PI)/180.; //angle for diagonal fibers
-
   if (initflag==0){
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
     LINALG::Matrix<3,3> id(true);
@@ -268,15 +266,6 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
       ca3_->at(gp).resize(3);
       ca4_->at(gp).resize(3);
       EvaluateFiberVecs(gp,locsys,Id);
-      for (int i = 0; i < 3; i++) {
-        double test1=0;
-        double test2=0;
-        test1 = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-        test2 = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
-        if (abs(a1_->at(gp)[i] - locsys(i,2)) > 0 || abs(a2_->at(gp)[i] - locsys(i,1)) > 0||
-            abs(a3_->at(gp)[i] - test1) > 0 || abs(a4_->at(gp)[i] - test2) > 0)
-        cout << "something went wrong during computation of fiber vectors" << endl;
-      }
     }
   } else if (initflag==3){
     // start with isotropic computation, thus fiber directions are set to zero
