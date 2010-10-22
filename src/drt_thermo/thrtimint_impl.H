@@ -286,6 +286,10 @@ namespace THR
 
     // apply A matrix for nodes in contact
     void AssembleA(LINALG::SparseMatrix& amatrix);
+
+    // apply B matrix for nodes in contact
+    void AssembleB(LINALG::SparseMatrix& bmatrix);
+
     
     // assemble mechanical dissipation
     void AssembleMechDissRate(Epetra_Vector& mechdissrate);

@@ -329,14 +329,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
            << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
 #endif // #ifdef CONTACTPSEUDO2D
-      cout << RED << "WARNING: Contact and Meshtying are still experimental "
-           << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
+      
+      if (probtype!="tsi")
+        cout << RED << "WARNING: Contact and Meshtying are still experimental "
+             << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
 
       // errors
-      if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
-        dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");
-      if (soltype == INPAR::CONTACT::solution_auglag)
-        dserror("ERROR: Multifield problems with AL strategy for meshtying/contact not yet implemented");
+      if (probtype!="tsi")
+      {
+        if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
+          dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");
+        if (soltype == INPAR::CONTACT::solution_auglag)
+          dserror("ERROR: Multifield problems with AL strategy for meshtying/contact not yet implemented");
+      }
     }
 
     // set zero displacment state

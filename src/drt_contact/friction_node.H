@@ -325,6 +325,16 @@ public:
   \brief Return mechanical dissipation per node  (length 1)
   */
   virtual double& MechDiss() { return mechdiss_; }
+  
+  /*!
+  \brief Return the 'B' map (vector) of this node 
+    */
+  virtual inline vector<map<int,double> >& GetB() { return brows_; }
+  
+  /*!
+  \brief Return the map with according master nodes
+  */
+  virtual inline set<int>& GetBNodes() { return bnodes_; }
 
   /*!
   \brief Return of data container of this node
@@ -357,7 +367,7 @@ public:
 
   Note that derivjump_ here is a vector.
 
-  \param row : local dof row id to add to (rowwise)
+  \param row : local dof row id to add to (rowise)
   \param val : value to be added
   \param col : global dof column id of the value added
 
@@ -373,9 +383,7 @@ public:
   /*!
   \brief Add a value to the 'A' map of this node
 
-  Note that arows_ here is a vector.
-
-  \param row : local dof row id to add to (rowwise)
+  \param row : local dof row id to add to (rowise)
   \param val : value to be added
   \param col : global dof column id of the value added
 
@@ -387,6 +395,22 @@ public:
 
   */
   void AddANode (int node);
+
+  /*!
+  \brief Add a value to the 'B' map of this node
+
+  \param row : local dof row id to add to (rowise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddBValue(int& row, int& col, double& val);
+  
+  /*!
+  \brief Add a value to the BNode set of this node
+
+  */
+  void AddBNode (int node);
 
   /*!
   \brief Write nodal entries of D and M to Dold and Mold
@@ -430,6 +454,8 @@ protected:
   
   // thermo contact related quantities
   double                        mechdiss_;      // mechanical dissipation 
+  vector<map<int,double> >      brows_;        // nodal rows of matrix A
+  set<int>                      bnodes_;       // nodal set of according slave nodes
 
   RCP<CONTACT::FriNodeDataContainer> fridata_;       // additional information of proc's contact nodes
 

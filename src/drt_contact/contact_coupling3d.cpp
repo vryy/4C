@@ -180,9 +180,10 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       RCP<Epetra_SerialDenseVector> mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
       RCP<Epetra_SerialDenseVector> mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
       RCP<Epetra_SerialDenseMatrix> aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      RCP<Epetra_SerialDenseMatrix> bseg = rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
       
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg,bseg);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
   
@@ -192,12 +193,13 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
       
       // assemble of mechanical dissipation to slave and master nodes
-      // and matrix A
+      // and matrix A and B
       if (DRT::Problem::Instance()->ProblemType()=="tsi")
       {  
         integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
         integrator.AssembleMechDissMaster(Comm(),MasterElement(),*mdisssegm);
         integrator.AssembleA(Comm(),SlaveElement(),*aseg);
+        integrator.AssembleB(Comm(),MasterElement(),*bseg);
         
         // dserror 
         if (!CouplingInAuxPlane()) 

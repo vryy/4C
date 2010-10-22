@@ -368,11 +368,25 @@ void CONTACT::FriNode::AddANode(int node)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
-    dserror("ERROR: AddMNode: function called for master node %i", Id());
+    dserror("ERROR: AddANode: function called for master node %i", Id());
   if (IsOnBound()==true)
-    dserror("ERROR: AddMNode: function called for boundary node %i", Id());
+    dserror("ERROR: AddANode: function called for boundary node %i", Id());
 
   FriData().GetANodes().insert(node);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'BNodes' set                        gitterle 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddBNode(int node)
+{
+  // check if this is a slave node
+  if (IsSlave()==true)
+    dserror("ERROR: AddBNode: function called for slave node %i", Id());
+
+  GetBNodes().insert(node);
 
   return;
 }
@@ -420,16 +434,35 @@ void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
 
   // check row index input
   if ((int)FriData().GetA().size()<=row)
-    dserror("ERROR: AddDValue: tried to access invalid row index!");
+    dserror("ERROR: AddAValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& dmap = FriData().GetA()[row];
-  dmap[col] += val;
+  map<int,double>& amap = FriData().GetA()[row];
+  amap[col] += val;
 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'B' map                             gitterle 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddBValue(int& row, int& col, double& val)
+{
 
+  // check if this has been called before
+  if ((int) GetB().size()==0)
+    GetB().resize(NumDof());
+
+  // check row index input
+  if ((int) GetB().size()<=row)
+    dserror("ERROR: AddBValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  map<int,double>& bmap = GetB()[row];
+  bmap[col] += val;
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Add a value to mechanical dissipation                  gitterle 08/10|

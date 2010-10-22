@@ -1866,7 +1866,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      RCP<Epetra_SerialDenseVector> gseg,
      RCP<Epetra_SerialDenseVector> mdisssegs,
      RCP<Epetra_SerialDenseVector> mdisssegm,
-     RCP<Epetra_SerialDenseMatrix> aseg)
+     RCP<Epetra_SerialDenseMatrix> aseg,
+     RCP<Epetra_SerialDenseMatrix> bseg)
 {
   
   // explicitely defined shapefunction type needed
@@ -2125,6 +2126,29 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
           {
             (*aseg)(j, k) += prod*jac*wgt;
+          }
+        }
+      } // nrow*ndof loop
+      
+      // loop over all bseg matrix entries
+      // !!! nrow represents the master shape functions     !!!
+      // !!! ncol represents the dofs                       !!!
+      for (int j=0; j<ncol*ndof; ++j)
+      {
+        // integrate bseg
+        for (int k=0; k<ncol*ndof; ++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = mval[jindex]*mval[kindex];
+
+          // isolate the bseg entries to be filled and
+          // add current Gauss point's contribution to bseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+          {
+            (*bseg)(j, k) += prod*jac*wgt;
           }
         }
       } // nrow*ndof loop
@@ -5130,26 +5154,65 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
         }
       }
     }
-    /*
-#ifdef DEBUG
-    cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    map<int, double> nodemap0 = (snode->GetD())[0];
-    map<int, double> nodemap1 = (snode->GetD())[1];
-    typedef map<int,double>::const_iterator CI;
-
-    cout << "Row dof id: " << sdofs[0] << endl;;
-    for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-
-    cout << "Row dof id: " << sdofs[1] << endl;
-    for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-    */
   }
 
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Assemble B contribution (2D / 3D)                     gitterle 10/10|
+ |  This method assembles the contribution of a 1D/2D master            |
+ |  element to the B map of the adjacent master node.                   |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
+                                     MORTAR::MortarElement& mele,
+                                     Epetra_SerialDenseMatrix& bseg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes)
+    dserror("ERROR: AssembleB: Null pointer for mnodes!");
+
+  // loop over all master nodes
+  for (int slave=0;slave<mele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(mnodes[slave]);
+    int sndof = snode->NumDof();
+    
+    // FIXGIT: not working in parallel yet
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all dofs of the slave node
+    for (int sdof=0;sdof<sndof;++sdof)
+    {
+      // loop over all master nodes again ("master nodes")
+      for (int master=0;master<mele.NumNode();++master)
+      {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs();
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the master node again ("master dofs")
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+          double val = bseg(slave*sndof+sdof,master*mndof+mdof);
+
+          if(abs(val)>1e-12) snode->AddBValue(sdof,col,val);
+          if(abs(val)>1e-12) snode->AddBNode(mnode->Id()); 
+        }
+      }
+    }
+  }
+
+  return true;
+}
 
 #endif //#ifdef CCADISCRET

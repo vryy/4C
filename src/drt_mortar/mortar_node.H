@@ -485,7 +485,8 @@ public:
   virtual void AddMNode(int node) {}
   virtual void AddAValue (int& row, int& col, double& val) {}
   virtual void AddANode (int node) {}
-  
+  virtual void AddBValue (int& row, int& col, double& val) {}
+  virtual void AddBNode (int node) {}
 
   //@}
 

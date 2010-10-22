@@ -975,8 +975,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
-  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&scontact);
-  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&scontact);
 
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
@@ -1080,6 +1078,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&scontact);
   IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&scontact);
+  
+  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&scontact);
+  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&scontact);
+  
+  setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
+                               yesnotuple,yesnovalue,&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

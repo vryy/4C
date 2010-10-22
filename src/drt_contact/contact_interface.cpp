@@ -565,6 +565,16 @@ void CONTACT::CoInterface::Initialize()
   
       // reset nodal mechanical dissipation
       frinode->MechDiss() = 0.0;
+      
+      // reset matrix B quantities
+      frinode->GetBNodes().clear();
+      
+      // reset nodal B maps
+      for (int j=0;j<(int)((frinode->GetB()).size());++j)
+        (frinode->GetB())[j].clear();
+      
+      (frinode->GetB()).resize(0);
+
     }
   }
   

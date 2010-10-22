@@ -471,6 +471,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                      input.get<double>("MAX_BALANCE") <  1.0)
     dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
   
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
+      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
+    dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
+  
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
