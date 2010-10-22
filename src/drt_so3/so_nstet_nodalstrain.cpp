@@ -56,22 +56,20 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     
     // create dfad version of nxyz and mydisp
-    vector<vector<FAD> > fad_disp(4);
+    Teuchos::SerialDenseMatrix<int,FAD> disp(4,3,false);
     for (int i=0; i<4; ++i)
-    {
-      fad_disp[i].resize(3);
       for (int j=0; j<3; ++j)
-        fad_disp[i][j] = FAD(12,i*3+j,mydisp[i*3+j]);
-    }
+        disp(i,j) = FAD(12,i*3+j,mydisp[i*3+j]);
     
     // create deformation gradient
-    e->F() = e->fad_BuildF<FAD>(fad_disp,e->Nxyz());
+    e->F() = e->BuildF<FAD>(disp,e->Nxyz());
     
   } // ele
   return;
 }
 
-
+void AutoDiffDemo();
+void AutoDiffDemo(DRT::Discretization& dis);
 
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 05/08|
@@ -124,6 +122,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   LINALG::SerialDenseVector mis_force;
 
   //-------------------------------------- construct F for each NStet
+  //AutoDiffDemo();
+  //AutoDiffDemo(dis);
   ElementDeformationGradient(dis);
 
   //-----------------------------------------------------------------
@@ -219,8 +219,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       
         for (int i=0; i<6; ++i)
         {
-          (*(*pstab_nstress_)(i))[lid] = nodalstress[i];
-          (*(*pstab_nstrain_)(i))[lid] = nodalstrain[i];
+          (*(*pstab_nstress_)(i))[lid] = mis_nodalstress[i];
+          (*(*pstab_nstrain_)(i))[lid] = mis_nodalstrain[i];
         }
       } // mis
       
@@ -427,8 +427,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // build averaged F, det(F) and volume of node (using sacado)
   double VnodeL = 0.0;
   FAD fad_Jnode = 0.0;
-  vector<vector<FAD> > fad_FnodeL(3);
-  for (int i=0; i<3; ++i) fad_FnodeL[i].resize(3);
+  Teuchos::SerialDenseMatrix<int,FAD> fad_FnodeL(3,3,true);
   
   vector<vector<int> > lmlm(neleinpatch);
   
@@ -452,36 +451,33 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     }
 
     // copy element disp to 4x3 format
-    vector<vector<FAD> > eledispmat(4);
+    Teuchos::SerialDenseMatrix<int,FAD> eledispmat(4,3,false);
     for (int j=0; j<4; ++j)
-    {
-      eledispmat[j].resize(3);
-      for (int k=0; k<3; ++k) eledispmat[j][k] = patchdisp[lmlm[i][j*3+k]];
-    }
+      for (int k=0; k<3; ++k) 
+        eledispmat(j,k) = patchdisp[lmlm[i][j*3+k]];
     
     // build F of this element
-    vector<vector<FAD> > Fele = adjele[i]->fad_BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
+    Teuchos::SerialDenseMatrix<int,FAD> Fele = 
+      adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->Nxyz());
     
     // add up to nodal deformation gradient
-    for (int j=0; j<3; ++j)
-      for (int k=0; k<3; ++k)
-        fad_FnodeL[j][k] += V * Fele[j][k];
+    Fele *= V;
+    fad_FnodeL += Fele;
     
   } // for (int i=0; i<neleinpatch; ++i)
 
   // do averaging
-  for (int j=0; j<3; ++j)
-    for (int k=0; k<3; ++k)
-      fad_FnodeL[j][k] /= VnodeL;
-  fad_Jnode = fad_Determinant3x3<FAD>(fad_FnodeL);
-      
+  fad_FnodeL *= (1.0/VnodeL);
+
+  // compute det(F)
+  fad_Jnode = adjele[0]->Determinant3x3<FAD>(fad_FnodeL);
 
   // copy values of fad to 'normal' values
   double Jnode = fad_Jnode.val();
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
-      FnodeL(j,k) = fad_FnodeL[j][k].val();
+      FnodeL(j,k) = fad_FnodeL(j,k).val();
  
   //-----------------------------------------------------------------------
   // build B operator
@@ -498,19 +494,20 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->F(),actele->F());
+    Teuchos::SerialDenseMatrix<int,FAD> Emat(3,3,false);
+    Emat.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,actele->F(),actele->F(),0.0);
     for (int i=0; i<3; ++i) 
     {
-      Emat[i][i] -= 1.0;
-      for (int j=0; j<3; ++j) Emat[i][j] *= 0.5;
+      Emat(i,i) -= 1.0;
+      for (int j=0; j<3; ++j) Emat(i,j) *= 0.5;
     }
     vector<FAD> E(6);
-    E[0] = Emat[0][0];
-    E[1] = Emat[1][1];
-    E[2] = Emat[2][2];
-    E[3] = 2.0 * Emat[0][1];
-    E[4] = 2.0 * Emat[1][2];
-    E[5] = 2.0 * Emat[0][2];
+    E[0] = Emat(0,0);
+    E[1] = Emat(1,1);
+    E[2] = Emat(2,2);
+    E[3] = 2.0 * Emat(0,1);
+    E[4] = 2.0 * Emat(1,2);
+    E[5] = 2.0 * Emat(0,2);
     
     // volume ratio of volume per node of this element to
     // whole volume of node L
@@ -525,20 +522,21 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
-  vector<vector<FAD> > CG = fad_multiplyTN<3,3,3,FAD>(fad_FnodeL,fad_FnodeL);
+  Teuchos::SerialDenseMatrix<int,FAD> CG(3,3,false);
+  CG.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,fad_FnodeL,fad_FnodeL,0.0);
   vector<FAD> Ebar(6);
-  Ebar[0] = 0.5 * (CG[0][0] - 1.0);
-  Ebar[1] = 0.5 * (CG[1][1] - 1.0);
-  Ebar[2] = 0.5 * (CG[2][2] - 1.0);
-  Ebar[3] = CG[0][1];
-  Ebar[4] = CG[1][2];
-  Ebar[5] = CG[2][0];
+  Ebar[0] = 0.5 * (CG(0,0) - 1.0);
+  Ebar[1] = 0.5 * (CG(1,1) - 1.0);
+  Ebar[2] = 0.5 * (CG(2,2) - 1.0);
+  Ebar[3] =        CG(0,1);
+  Ebar[4] =        CG(1,2);
+  Ebar[5] =        CG(2,0);
 
   // for material law and output, copy to baci object
   LINALG::Matrix<3,3> cauchygreen(false);
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
-      cauchygreen(i,j) = CG[i][j].val();
+      cauchygreen(i,j) = CG(i,j).val();
   LINALG::Matrix<6,1> glstrain(false);
   glstrain(0) = Ebar[0].val();
   glstrain(1) = Ebar[1].val();
@@ -549,7 +547,11 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   
   //-------------------------------------------------------- output of strain
   if (iostrain != INPAR::STR::strain_none)
+#ifndef PUSOSOLBERG
     StrainOutput(iostrain,*nodalstrain,FnodeL,Jnode,1.0-BETA_NSTET,1.0-ALPHA_NSTET);
+#else
+    StrainOutput(iostrain,*nodalstrain,FnodeL,glstrain,1.0-ALPHA_NSTET);
+#endif
   
   //-------------------------------------------------------------------------
   // build a second B-operator from the averaged strains that are based on
@@ -597,6 +599,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   //-----------------------------------------------------------------------
   // stress is split as follows:
   // stress = beta * vol_misnode + (1-beta) * vol_node + (1-alpha) * dev_node + alpha * dev_ele
+#ifndef PUSOSOLBERG
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
@@ -614,12 +617,17 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     stress.Update(1.0-BETA_NSTET,stressvol,1-ALPHA_NSTET,stressdev,0.0);
     cmat.Update(1.0-BETA_NSTET,cmatvol,1-ALPHA_NSTET,cmatdev,0.0);
   }
+#else
+  {
+    stress.Scale(1.-ALPHA_NSTET);
+    cmat.Scale(1.-ALPHA_NSTET);
+  }
+#endif  
 
   //-----------------------------------------------------------------------
   // stress output
   if (iostress != INPAR::STR::stress_none)
     StressOutput(iostress,*nodalstress,stress,FnodeL,Jnode);
-  
 
   //----------------------------------------------------- internal forces
   if (force)
@@ -746,16 +754,14 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     }
 
     // copy eledisp to 4x3 format
-    vector<vector<FAD> > eledispmat(4);
+    Teuchos::SerialDenseMatrix<int,FAD> eledispmat(4,3,false);
     for (int j=0; j<4; ++j)
-    {
-      eledispmat[j].resize(3);
-      for (int k=0; k<3; ++k) eledispmat[j][k] = patchdisp[lmlm[i][j*3+k]];
-    }
+      for (int k=0; k<3; ++k) 
+        eledispmat(j,k) = patchdisp[lmlm[i][j*3+k]];
     
     // build F and det(F) of this element
-    vector<vector<FAD> > Fele = adjele[i]->fad_BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
-    FAD                  Jele = fad_Determinant3x3<FAD>(Fele);
+    Teuchos::SerialDenseMatrix<int,FAD> Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
+    FAD Jele = adjele[i]->Determinant3x3<FAD>(Fele);
     
     fad_Jnode += V * Jele;
 
@@ -767,19 +773,16 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   FAD Jpowthird = pow(fad_Jnode,1./3.);
 
   // build volumetric deformation gradient
-  vector<vector<FAD> > fad_FnodeL(3);
+  Teuchos::SerialDenseMatrix<int,FAD> fad_FnodeL(3,3,true);
   for (int i=0; i<3; ++i) 
-  {
-    fad_FnodeL[i].resize(3,0.0);
-    fad_FnodeL[i][i] = Jpowthird;
-  }
+    fad_FnodeL(i,i) = Jpowthird;
   
   // copy to baci-type objects for output of strain
   const double Jnode = fad_Jnode.val();
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
-      FnodeL(j,k) = fad_FnodeL[j][k].val();
+      FnodeL(j,k) = fad_FnodeL(j,k).val();
     
   //-----------------------------------------------------------------------
   // build \delta B operator, this is the unmodified operator
@@ -795,19 +798,20 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     // build the unmodified Green Lagrange strain and its derivative wrt displacements
     // (which is the nonlinear B-operator) using sacado
     // we actually do not need the GL strain itself here, only its variation the B-operator
-    vector<vector<FAD> > Emat = fad_multiplyTN<3,3,3,FAD>(actele->F(),actele->F());
+    Teuchos::SerialDenseMatrix<int,FAD> Emat(3,3,false);
+    Emat.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,actele->F(),actele->F(),0.0);
     for (int i=0; i<3; ++i) 
     {
-      Emat[i][i] -= 1.0;
-      for (int j=0; j<3; ++j) Emat[i][j] *= 0.5;
+      Emat(i,i) -= 1.0;
+      for (int j=0; j<3; ++j) Emat(i,j) *= 0.5;
     }
     vector<FAD> E(6);
-    E[0] = Emat[0][0];
-    E[1] = Emat[1][1];
-    E[2] = Emat[2][2];
-    E[3] = 2.0 * Emat[0][1];
-    E[4] = 2.0 * Emat[1][2];
-    E[5] = 2.0 * Emat[0][2];
+    E[0] =       Emat(0,0);
+    E[1] =       Emat(1,1);
+    E[2] =       Emat(2,2);
+    E[3] = 2.0 * Emat(0,1);
+    E[4] = 2.0 * Emat(1,2);
+    E[5] = 2.0 * Emat(0,2);
     
     // volume ratio of volume per node of this element to
     // whole volume of node L
@@ -821,20 +825,21 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   
   //-----------------------------------------------------------------------
   // green-lagrange strains based on averaged volumetric F
-  vector<vector<FAD> > CG = fad_multiplyTN<3,3,3,FAD>(fad_FnodeL,fad_FnodeL);
+  Teuchos::SerialDenseMatrix<int,FAD> CG(3,3,false);
+  CG.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,fad_FnodeL,fad_FnodeL,0.0);
   vector<FAD> Ebar(6);
-  Ebar[0] = 0.5 * (CG[0][0] - 1.0);
-  Ebar[1] = 0.5 * (CG[1][1] - 1.0);
-  Ebar[2] = 0.5 * (CG[2][2] - 1.0);
-  Ebar[3] = CG[0][1];
-  Ebar[4] = CG[1][2];
-  Ebar[5] = CG[2][0];
+  Ebar[0] = 0.5 * (CG(0,0) - 1.0);
+  Ebar[1] = 0.5 * (CG(1,1) - 1.0);
+  Ebar[2] = 0.5 * (CG(2,2) - 1.0);
+  Ebar[3] =        CG(0,1);
+  Ebar[4] =        CG(1,2);
+  Ebar[5] =        CG(2,0);
   
   // for material law and output, copy to baci object
   LINALG::Matrix<3,3> cauchygreen(false);
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
-      cauchygreen(i,j) = CG[i][j].val();
+      cauchygreen(i,j) = CG(i,j).val();
 
   LINALG::Matrix<6,1> glstrain(false);
   for (int i=0; i<6; ++i)
@@ -1221,6 +1226,65 @@ void DRT::ELEMENTS::NStetType::StrainOutput(
 /*----------------------------------------------------------------------*
  |                                                             gee 10/10|
  *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NStetType::StrainOutput(
+                    const INPAR::STR::StrainType iostrain,
+                    vector<double>&              nodalstrain,
+                    LINALG::Matrix<3,3>&         F,
+                    LINALG::Matrix<6,1>&         glstrain,
+                    const double                 weight)
+{
+  LINALG::Matrix<3,3> glstrainout;
+  
+  glstrainout(0,0) = weight * glstrain(0); 
+  glstrainout(1,1) = weight * glstrain(1); 
+  glstrainout(2,2) = weight * glstrain(2); 
+  glstrainout(0,1) = weight * glstrain(3); 
+  glstrainout(1,2) = weight * glstrain(4); 
+  glstrainout(0,2) = weight * glstrain(5); 
+  
+  
+  switch (iostrain)
+  {
+  case INPAR::STR::strain_gl:
+  {
+    nodalstrain[0] = glstrainout(0,0);
+    nodalstrain[1] = glstrainout(1,1);
+    nodalstrain[2] = glstrainout(2,2);
+    nodalstrain[3] = glstrainout(0,1);
+    nodalstrain[4] = glstrainout(1,2);
+    nodalstrain[5] = glstrainout(0,2);
+  }
+  break;
+  case INPAR::STR::strain_ea:
+  {
+    // inverse of deformation gradient
+    LINALG::Matrix<3,3> invdefgrd;
+    invdefgrd.Invert(F); 
+    LINALG::Matrix<3,3> temp;
+    LINALG::Matrix<3,3> euler_almansi;
+    temp.Multiply(glstrainout,invdefgrd);
+    euler_almansi.MultiplyTN(invdefgrd,temp);
+    nodalstrain[0] = euler_almansi(0,0);
+    nodalstrain[1] = euler_almansi(1,1);
+    nodalstrain[2] = euler_almansi(2,2);
+    nodalstrain[3] = euler_almansi(0,1);
+    nodalstrain[4] = euler_almansi(1,2);
+    nodalstrain[5] = euler_almansi(0,2);
+  }
+  break;
+  case INPAR::STR::strain_none:
+    break;
+  default:
+    dserror("requested strain type not available");
+  }
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                             gee 10/10|
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::StressOutput(
                     const INPAR::STR::StressType iostress,
                     vector<double>&              nodalstress,
@@ -1266,6 +1330,8 @@ void DRT::ELEMENTS::NStetType::StressOutput(
   }
   return;
 }
+
+
 
 
 #endif  // #ifdef CCADISCRET

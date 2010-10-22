@@ -244,13 +244,13 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         vector<double>& misw = elew->second;
         const int nummisw = (int)misw.size();
         if (nummis != nummisw) dserror("Number of patches and weight mismatch");
-        //double totweight = 0.0;
+        double totweight = 0.0;
         for (int i=0; i<nummis; ++i)
         {
           const int gid = mis[i];
           const int lid = ElementType().pstab_nstress_->Map().LID(gid);
           const double weight = misw[i];
-          //totweight += weight;
+          totweight += weight;
           for (int j=0; j<6; ++j)
           {
             stress(0,j) += weight * (*(*mis_stress)(j))[lid];
@@ -258,6 +258,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
           }
         } // for (int i=0; i<nummis; ++i)
         //printf("Proc %d Ele %d TotWeight %15.10e\n",Owner(),Id(),totweight);
+        //cout << stresstest;
         
         //----------------------------------------------- add final stress to storage
         AddtoPack(*stressdata, stress);
@@ -394,7 +395,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
   LINALG::Matrix<3,3> defgrd(false);
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
-      defgrd(i,j) = F()[i][j].val();
+      defgrd(i,j) = F()(i,j).val();
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
   LINALG::Matrix<3,3> cauchygreen;
@@ -457,11 +458,11 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
   }
 
   //------------------------------------------------- call material law
-#if 1 // dev stab on cauchy stresses
-  LINALG::Matrix<6,6> cmat(true); // Views
+  LINALG::Matrix<6,6> cmat(true);
   LINALG::Matrix<6,1> stress(true);
   LINALG::Matrix<6,1> glstrainbar(false);
   double density = -999.99;
+#ifndef PUSOSOLBERG // dev stab on cauchy stresses
   {
     // do deviatoric F, C, E
     const double J = defgrd.Determinant();
@@ -490,15 +491,13 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
     stress.Scale(ALPHA_NSTET);
     cmat.Scale(ALPHA_NSTET);
   }
-#endif
-
-#if 0 // original puso tet
-  Epetra_SerialDenseMatrix cmat(6,6);
-  Epetra_SerialDenseVector stress(6);
-  double density = -999.99;
-  SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
-  stress.Scale(ALPHA_NSTET);
-  cmat.Scale(ALPHA_NSTET);
+#else
+  {
+    SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
+    stress.Scale(ALPHA_NSTET);
+    cmat.Scale(ALPHA_NSTET);
+    glstrainbar = glstrain;
+  }
 #endif
 
   //---------------------------------------------- output of stress and strain
@@ -528,16 +527,22 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       gl(2,1) = gl(1,2);
       gl(2,2) = glstrainbar(2);
       
+#ifndef PUSOSOLBERG
       LINALG::Matrix<3,3> Fbar(false);
       Fbar.SetCopy(defgrd.A());
       Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
       LINALG::Matrix<3,3> invdefgrd;
       invdefgrd.Invert(Fbar);
+#else
+      LINALG::Matrix<3,3> invdefgrd;
+      invdefgrd.Invert(defgrd);
+#endif
       
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> euler_almansi;
       temp.Multiply(gl,invdefgrd);
       euler_almansi.MultiplyTN(invdefgrd,temp);
+
       
       (*elestrain)(0,0) = ALPHA_NSTET * euler_almansi(0,0);
       (*elestrain)(0,1) = ALPHA_NSTET * euler_almansi(1,1);
@@ -578,14 +583,19 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       pkstress(2,1) = pkstress(1,2);
       pkstress(2,2) = stress(2);
 
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
+
+#ifndef PUSOSOLBERG
       LINALG::Matrix<3,3> Fbar(false);
       Fbar.SetCopy(defgrd.A());
       Fbar.Scale(pow(defgrd.Determinant(),-1./3.));
-
-      LINALG::Matrix<3,3> temp;
-      LINALG::Matrix<3,3> cauchystress;
       temp.Multiply(1.0/Fbar.Determinant(),Fbar,pkstress,0.);
       cauchystress.MultiplyNT(temp,Fbar);
+#else
+      temp.Multiply(1.0/defgrd.Determinant(),defgrd,pkstress,0.);
+      cauchystress.MultiplyNT(temp,defgrd);
+#endif
 
       (*elestress)(0,0) = cauchystress(0,0);
       (*elestress)(0,1) = cauchystress(1,1);

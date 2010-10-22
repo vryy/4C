@@ -178,17 +178,7 @@ void DRT::ELEMENTS::PtetType::PreEvaluate(DRT::Discretization& dis,
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
   if (systemmatrix != null and systemmatrix->Filled())
   {
-#if 1
     stifftmp = rcp(new Epetra_FECrsMatrix(Copy,systemmatrix->EpetraMatrix()->Graph()));
-#else
-    int nrows = systemmatrix->EpetraMatrix()->NumMyRows();
-    std::vector<int> numentries(nrows);
-    for (int i=0; i<nrows; ++i)
-    {
-      systemmatrix->EpetraMatrix()->NumMyRowEntries(i, numentries[i]);
-    }
-    stifftmp = rcp(new Epetra_FECrsMatrix(Copy,rmap,&numentries[0],false));
-#endif
   }
   else
   {
@@ -205,51 +195,16 @@ void DRT::ELEMENTS::PtetType::PreEvaluate(DRT::Discretization& dis,
     const int  nodeLid = nodeL->Id();
 
     // list of adjacent elements
-#if 0
-    vector<DRT::ELEMENTS::Ptet*> adjele(0);
-    for (int j=0; j<nodeL->NumElement(); ++j)
-    {
-      const int eleid = node->second->Elements()[j]->Id();
-      std::map<int,DRT::ELEMENTS::Ptet*>::iterator ele = elecids_.find(eleid);
-      if (ele==elecids_.end()) continue;
-      adjele.push_back(ele->second);
-    }
-#else
     vector<DRT::ELEMENTS::Ptet*>& adjele = adjele_[nodeLid];
-#endif
 
-
-#if 0
-    // patch of all nodes adjacent to adjacent elements
-    map<int,DRT::Node*> nodepatch;
-    nodepatch.clear();
-    for (int j=0; j<(int)adjele.size(); ++j)
-      for (int k=0; k<adjele[j]->NumNode(); ++k)
-        nodepatch[adjele[j]->Nodes()[k]->Id()] = adjele[j]->Nodes()[k];
-#else
     map<int,DRT::Node*>& nodepatch = adjnode_[nodeLid];
-#endif
 
     // total number of nodes
     const int numnodepatch = (int)nodepatch.size();
     // total number of degrees of freedom on patch
     const int ndofperpatch = numnodepatch*3;
 
-#if 0
-    // location and ownership vector of nodal patch
-    vector<int> lm(ndofperpatch);
-    std::map<int,DRT::Node*>::iterator pnode;
-    int count=0;
-    for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
-    {
-      vector<int> dofs = dis.Dof(pnode->second);
-      for (int j=0; j<(int)dofs.size(); ++j)
-        lm[count++]        = dofs[j];
-    }
-    if (count != ndofperpatch) dserror("dimension mismatch");
-#else
     vector<int>& lm      = adjlm_[nodeLid];
-#endif
 
     if (action != "calc_struct_stress")
     {

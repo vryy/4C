@@ -38,11 +38,18 @@ using namespace Teuchos;
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_SerialDenseMatrix.hpp>
 
-//#define PRINT_NSTET              ///< printout of setup option
+//#define PRINT_NSTET            ///< printout of setup option
 #define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
-#define ALPHA_NSTET       0.05   ///< stabilization parameter for vol-dev split stabilization
-#define BETA_NSTET        1.0    ///< stabilization parameter for MIS-pressure stabilization
 #define MIS_MIN_PATCHSIZE 1      ///< minimum MIS patch size required
+
+// stabilization approach & parameters
+//#define PUSOSOLBERG              ///< run the Puso&Solberg tet
+#define ALPHA_NSTET       0.20   ///< stabilization parameter for vol-dev split stabilization
+#define BETA_NSTET        0.8    ///< stabilization parameter for MIS-pressure stabilization
+#ifdef PUSOSOLBERG
+#undef  BETA_NSTET
+#define BETA_NSTET        0.0    ///< beta has to be zero in puso&solberg tet
+#endif
 
 namespace DRT
 {
@@ -53,71 +60,6 @@ namespace ELEMENTS
 {
 class StructuralVolume;
 class NStet;
-
-
-//-----------------------------------------------------------------
-// this works as multiplyNN (less efficient though) but works with Sacado
-template<int ii, int jj, int kk, typename T> 
-vector<vector<T> > fad_multiplyNN(vector<vector<T > >& left,
-                                  vector<vector<T > >& right)
-{
-  vector<vector<T> > out(ii);
-  for (int i=0; i<ii; ++i)
-  {
-    out[i].resize(jj);
-    for (int j=0; j<jj; ++j)
-    {
-      out[i][j] = 0.0;
-      for (int k=0; k<kk; ++k) out[i][j] += left[i][k] * right[k][j];
-    }
-  }
-  return out;
-}
-
-//-----------------------------------------------------------------
-// this works as multiplyTN (less efficient though) but works with Sacado
-template<int ii, int jj, int kk, typename T> 
-vector<vector<T> > fad_multiplyTN(vector<vector<T > >& left,
-                                  vector<vector<T > >& right)
-{
-  vector<vector<T> > out(ii);
-  for (int i=0; i<ii; ++i)
-  {
-    out[i].resize(jj);
-    for (int j=0; j<jj; ++j)
-    {
-      out[i][j] = 0.0;
-      for (int k=0; k<kk; ++k) out[i][j] += left[k][i] * right[k][j];
-    }
-  }
-  return out;
-}
-
-//-----------------------------------------------------------------
-template<typename T> 
-T fad_Determinant3x3(vector<vector<T> >& F)
-{
-#ifdef DEBUG
-  if ((int)F.size() != 3) dserror("Input has to be dimension 3 x 3");
-  for (int i=0; i<3; ++i) 
-    if ((int)F[i].size() != 3)
-      dserror("Input has to be dimension 3 x 3");
-#endif
-  T b00 = F[0][0];
-  T b01 = F[0][1];
-  T b02 = F[0][2];
-  T b10 = F[1][0];
-  T b11 = F[1][1];
-  T b12 = F[1][2];
-  T b20 = F[2][0];
-  T b21 = F[2][1];
-  T b22 = F[2][2];
-  T a =   b11*b22 - b21*b12;
-  T b = - b10*b22 + b20*b12;
-  T c =   b10*b21 - b20*b11;
-  T det = b00 * a + b01 * b + b02 * c;
-  return det;
-}
 
 
 //=======================================================================
@@ -332,6 +274,12 @@ private:
                     const double                 volweight,
                     const double                 devweight);
 
+  void StrainOutput(const INPAR::STR::StrainType iostrain,
+                    vector<double>&              nodalstrain,
+                    LINALG::Matrix<3,3>&         F,
+                    LINALG::Matrix<6,1>&         glstrain,
+                    const double                 weight);
+
   void StressOutput(const INPAR::STR::StressType iostress,
                     vector<double>&              nodalstress,
                     LINALG::Matrix<6,1>&         stress,
@@ -345,7 +293,6 @@ private:
 \brief A nodal-averaged strain 4-noded tet element
 
 */
-
 class NStet : public DRT::Element
 {
 public:
@@ -594,59 +541,55 @@ protected:
   
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
-  
+
   //! element's def-gradient
-  vector<vector<FAD> >                                     fad_F_;
+  Teuchos::SerialDenseMatrix<int,FAD>                      F_;
   
   // internal calculation methods
 
   // return volume of element
   inline double Vol() { return V_; }
 
+  public:
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
+  protected:
   
-  inline vector<vector<FAD> >& F() { return fad_F_; }
+  inline Teuchos::SerialDenseMatrix<int,FAD>& F() { return F_; }
 
-#if 0
   template<typename T> 
-  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
-                                       LINALG::Matrix<4,3>& nxyz)
+  static Teuchos::SerialDenseMatrix<int,T> BuildF(
+                                         Teuchos::SerialDenseMatrix<int,T>& xdisp,
+                                         LINALG::Matrix<4,3>& nxyz)
   {
-    vector<vector<T> > F(3);
+    Teuchos::SerialDenseMatrix<int,T> F(3,3,true);
     for (int i=0; i<3; ++i)
     {
-      F[i].resize(3);
       for (int j=0; j<3; ++j)
-      {
-        F[i][j] = 0.0;
-        for (int k=0; k<4; ++k) F[i][j] += xdisp[k][i] * nxyz(k,j);
-      }
+        for (int k=0; k<4; ++k) 
+          F(i,j) += xdisp(k,i) * nxyz(k,j);
+      F(i,i) += 1.0;
     }
-    F[0][0] += 1.0;
-    F[1][1] += 1.0;
-    F[2][2] += 1.0;
     return F;
   }
-#endif    
+
   template<typename T> 
-  static vector<vector<T> > fad_BuildF(vector<vector<T> >& xdisp,
-                                       LINALG::Matrix<4,3>& nxyz)
+  T Determinant3x3(Teuchos::SerialDenseMatrix<int,T>& F)
   {
-    vector<vector<T> > F(3);
-    for (int i=0; i<3; ++i)
-    {
-      F[i].resize(3);
-      for (int j=0; j<3; ++j)
-      {
-        F[i][j] = 0.0;
-        for (int k=0; k<4; ++k) F[i][j] += xdisp[k][i] * nxyz(k,j);
-      }
-    }
-    F[0][0] += 1.0;
-    F[1][1] += 1.0;
-    F[2][2] += 1.0;
-    return F;
-  }
+    T b00 = F(0,0);
+    T b01 = F(0,1);
+    T b02 = F(0,2);
+    T b10 = F(1,0);
+    T b11 = F(1,1);
+    T b12 = F(1,2);
+    T b20 = F(2,0);
+    T b21 = F(2,1);
+    T b22 = F(2,2);
+    T a =   b11*b22 - b21*b12;
+    T b = - b10*b22 + b20*b12;
+    T c =   b10*b21 - b20*b11;
+    T det = b00 * a + b01 * b + b02 * c;
+    return det;
+}
 
   // don't want = operator
   NStet& operator = (const NStet& old);
