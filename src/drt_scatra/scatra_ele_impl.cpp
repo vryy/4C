@@ -2827,7 +2827,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     default: dserror("Unknown definition of tau\n");
   } //switch (whichtau)
 
-#if 1
+#if 0
       cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
 #endif
 #ifdef VISUALIZE_ELEMENT_DATA
