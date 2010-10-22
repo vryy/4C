@@ -22,7 +22,7 @@ namespace SCATRA
 bool IsBinaryElectrolyte(const std::vector<double>& valence)
 {
   int numions(0);
-  for (int k=0; k < (int) valence.size(); k++)
+  for (size_t k=0; k < valence.size(); k++)
   {
     if (abs(valence[k]) > EPS10)
       numions++;
@@ -33,19 +33,39 @@ bool IsBinaryElectrolyte(const std::vector<double>& valence)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+std::vector<int> GetIndicesBinaryElectrolyte(const std::vector<double>& valence)
+{
+  // indices of the two charged species to be determined
+  vector<int> indices;
+  for (size_t k=0; k < valence.size(); k++)
+  {
+    // is there some charge?
+    if (abs(valence[k]) > EPS10)
+      indices.push_back(k);
+  }
+  if (indices.size() != 2) dserror("Found no binary electrolyte!");
+
+  return indices;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double CalResDiffCoeff(
     const std::vector<double>& valence,
     const std::vector<double>& diffus,
-    const std::vector<double>& diffusvalence
+    const std::vector<int>& indices
     )
 {
-  if ((abs(valence[0])<EPS10) or (abs(valence[1])<EPS10))
-    dserror("ion species with ids 0 or 1 cannot be neutral.");
-  const double n = (diffusvalence[0]-diffusvalence[1]);
-  if (abs(n) < EPS15)
-    dserror("denominator in resulting diffusion coefficient is zero");
+  if (indices.size() != 2) dserror("Non-matching number of indices!");
+  const int first = indices[0];
+  const int second = indices[1];
+  if ((valence[first]*valence[second])>EPS10)
+    dserror("Binary electrolyte has no opposite charges.");
+  const double n = ((diffus[first]*valence[first])-(diffus[second]*valence[second]));
+  if (abs(n) < EPS12)
+    dserror("denominator in resulting diffusion coefficient is nearly zero");
 
-  return diffus[0]*diffus[1]*(valence[0]-valence[1])/n;
+  return diffus[first]*diffus[second]*(valence[first]-valence[second])/n;
 }
 
 

@@ -214,7 +214,9 @@ public:
         const double                          timefac,
         const enum INPAR::SCATRA::TauType     whichtau,
         const double                          vol,
-        const int                             k
+        const int                             k,
+        const double                          frt,
+        const bool                            migrationintau
     );
 
     //! calculate all-scale subgrid diffusivity
@@ -624,17 +626,22 @@ public:
     LINALG::Matrix<nsd_,1> fsgradphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<nen_,1> laplace_;
-
     //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
     double thermpressnp_;
     //! thermodynamic pressure at t_(n+alpha_M) (LOMA specific)
     double thermpressam_;
     //! time derivative of thermodynamic pressure (LOMA specific)
     double thermpressdt_;
-
+    //! reconstructed flux values via L2 projection
     vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
-
+    //! flag whether consistency of stabilized method should be improved or not
     bool betterconsistency_;
+    //! derivative of stabilization parameter with respect to el. potential (ELCH)
+    vector<LINALG::Matrix<nen_,1> > tauderpot_;
+    //! use migration velocity in formula for stabilization parameter (ELCH)
+    bool migrationintau_;
+    //! use migration velocity in the stabilization operator (ELCH)
+    bool migrationstab_;
 
   };
 

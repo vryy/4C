@@ -46,8 +46,7 @@ Maintainer: Georg Bauer
 //#include "../drt_io/io_gmsh.H"
 //#include "../drt_geometry/integrationcell_coordtrafo.H"
 
-// include migration velocity into stabilization
-//#define MIGRATIONSTAB  //stabilization w.r.t migration term (obsolete!)
+//#define supi
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
 // use effective diffusion coefficient for stabilization
@@ -277,7 +276,10 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     thermpressam_(0.0),
     thermpressdt_(0.0),
     efluxreconstr_(numscal_),
-    betterconsistency_(false)
+    betterconsistency_(false),
+    tauderpot_(numscal_),
+    migrationintau_(true),
+    migrationstab_(true)
 {
   return;
 }
@@ -652,6 +654,32 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         tpn,
         frt,
         scatratype);
+#if 0
+    // for debugging of matrix entries
+    if(ele->Id()==9 and (time < 3 or time > 99.0))
+    {
+      FDcheck(
+          ele,
+          elemat1_epetra,
+          elevec1_epetra,
+          elevec2_epetra,
+          time,
+          dt,
+          timefac,
+          alphaF,
+          whichtau,
+          whichassgd,
+          whichfssgd,
+          assgd,
+          fssgd,
+          turbmodel,
+          reinitswitch,
+          Cs,
+          tpn,
+          frt,
+          scatratype);
+    }
+#endif
   }
   // calculate time derivative for time value t_0
   else if (action =="calc_initial_time_deriv")
@@ -1109,19 +1137,24 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     double resdiffus(diffus_[0]);
     if (iselch_) // electrochemistry problem
     {
-#ifdef MIGRATIONSTAB
-      // compute global derivatives
-      derxy_.Multiply(xij_,deriv_);
+      // when migration velocity is included to tau (we provide always now)
+      {
+        // compute global derivatives
+        derxy_.Multiply(xij_,deriv_);
 
-      // get "migration velocity" divided by D_k*z_k at element center
-      migvelint_.Multiply(-frt,derxy_,epotnp_);
-#endif
+        // get "migration velocity" divided by D_k*z_k at element center
+        migvelint_.Multiply(-frt,derxy_,epotnp_);
+      }
 
       // ELCH: special stabilization in case of binary electrolytes
-      twoionsystem = SCATRA::IsBinaryElectrolyte(valence_);
+      twoionsystem= SCATRA::IsBinaryElectrolyte(valence_);
       if (twoionsystem)
-        resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,diffusvalence_);
-
+      {
+        std::vector<int> indices_twoions = SCATRA::GetIndicesBinaryElectrolyte(valence_);
+        resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,indices_twoions);
+        migrationstab_=false;
+        migrationintau_=false;
+      }
     }
 
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
@@ -1134,14 +1167,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       // calculation of fine-scale artificial subgrid diffusivity at element center
       if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
 
-      // generating copy of diffusivity for use in CalTau routine
-      double diffus = diffus_[k];
 #ifdef ACTIVATEBINARYELECTROLYTE
-      // use resulting diffusion coefficient for binary electrolyte solutions
-      if (twoionsystem && (k<2)) diffus = resdiffus;
+      if (twoionsystem && (abs(valence_[k])>EPS10))
+        CalTau(ele,resdiffus,dt,timefac,whichtau,vol,k,frt,false);
+      else
 #endif
       // calculation of stabilization parameter at element center
-      CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+      CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
     }
   }
 
@@ -1178,20 +1210,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //--------------------------------------------------------------------
       if (tau_gp_)
       {
-#ifdef MIGRATIONSTAB
         // compute global derivatives
         derxy_.Multiply(xij_,deriv_);
 
         // get "migration velocity" divided by D_k*z_k at element center
         migvelint_.Multiply(-frt,derxy_,epotnp_);
-#endif
 
         // ELCH: special stabilization in case of binary electrolytes
         bool twoionsystem(false);
         double resdiffus(diffus_[0]);
         twoionsystem = SCATRA::IsBinaryElectrolyte(valence_);
         if (twoionsystem)
-          resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,diffusvalence_);
+        {
+          std::vector<int> indices_twoions = SCATRA::GetIndicesBinaryElectrolyte(valence_);
+          resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,indices_twoions);
+          migrationstab_=false;
+          migrationintau_=false;
+        }
 
         for (int k = 0;k<numscal_;++k) // loop of each transported scalar
         {
@@ -1204,14 +1239,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // at integration point
           if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
 
-          // generating copy of diffusivity for use in CalTau routine
-          double diffus = diffus_[k];
 #ifdef ACTIVATEBINARYELECTROLYTE
           // use resulting diffusion coefficient for binary electrolyte solutions
-          if (twoionsystem && (k<2)) diffus = resdiffus;
+          if (twoionsystem && (abs(valence_[k])>EPS10))
+            CalTau(ele,resdiffus,dt,timefac,whichtau,vol,k,frt,false);
+          else
 #endif
           // calculation of stabilization parameter at integration point
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+          CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
         }
       }
 
@@ -1544,7 +1579,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           double diffus = diffus_[k];
 
           // calculation of stabilization parameter at integration point
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+          CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
         }
 
         // subgrid-scale velocity
@@ -2436,11 +2471,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     const double                          timefac,
     const enum INPAR::SCATRA::TauType     whichtau,
     const double                          vol,
-    const int                             k
+    const int                             k,
+    const double                          frt,
+    const bool                            migrationintau
   )
 {
   // get element-type constant for tau
   const double mk = SCATRA::MK<distype>();
+  // reset
+  tauderpot_[k].Clear();
 
   //----------------------------------------------------------------------
   // computation of stabilization parameter
@@ -2453,12 +2492,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
       LINALG::Matrix<nsd_,1> veleff(velint_,false);
-#ifdef MIGRATIONSTAB
+
       if (iselch_) // ELCH
       {
-        veleff.Update(diffusvalence_[k],migvelint_,1.0);
+        if (migrationintau)
+        {
+          veleff.Update(diffusvalence_[k],migvelint_,1.0);
+        }
       }
-#endif
+
       /*
                                                                               1.0
                  +-                                                      -+ - ---
@@ -2507,6 +2549,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
           }
           normG+=G*G;
           Gnormu+=dens_sqr*veleff(nn,0)*G*veleff(rr,0);
+          if (iselch_) // ELCH
+          {
+            if (migrationintau)
+            {
+              // for calculation of partial derivative of tau
+              for (int jj=0;jj < nen_; jj++)
+                (tauderpot_[k])(jj,0) += dens_sqr*frt*diffusvalence_[k]*((derxy_(nn,jj)*G*veleff(rr,0))+(veleff(nn,0)*G*derxy_(rr,jj)));
+            }
+          } // ELCH
         }
       }
 
@@ -2520,6 +2571,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         tau_[k] = 1.0/(sqrt(dens_sqr*reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus*diffus*normG));
       else
         tau_[k] = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt)+reacoeff_[k]*reacoeff_[k])+Gnormu+CI*diffus*diffus*normG));
+
+      if (iselch_) //ELCH
+      {
+        if (migrationintau)
+        {
+          // finalize derivative of Bazilves-tau w.r.t electric potential
+          tauderpot_[k].Scale(0.5*tau_[k]*tau_[k]*tau_[k]);
+        }
+      }
     }
     break;
     case INPAR::SCATRA::tau_franca_valentin:
@@ -2527,35 +2587,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     {
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
-#ifdef MIGRATIONSTAB
-      if (iselch_) // ELCH
-      {
-        // get Euclidean norm of effective velocity at element center:
-        // (weighted) convective velocity + individual migration velocity
-        LINALG::Matrix<nsd_,1> veleff(velint_,false);
 
-        veleff.Update(diffusvalence_[k],migvelint_,1.0);
-        vel_norm = veleff.Norm2();
+      if (iselch_ and migrationintau)
+      {
+        migrationstab_=false;
+      }
+         // dserror("FrancaValentin with migrationintau not available at the moment");
+        /*
+          // get Euclidean norm of effective velocity at element center:
+          // (weighted) convective velocity + individual migration velocity
+          LINALG::Matrix<nsd_,1> veleff(velint_,false);
+
+          veleff.Update(diffusvalence_[k],migvelint_,1.0);
+          vel_norm = veleff.Norm2();
 
 #ifdef VISUALIZE_ELEMENT_DATA
-        veleff.Update(diffusvalence_[k],migvelint_,0.0);
-        double vel_norm_mig = veleff.Norm2();
-        double migepe2 = mk * vel_norm_mig * h / diffus;
+          veleff.Update(diffusvalence_[k],migvelint_,0.0);
+          double vel_norm_mig = veleff.Norm2();
+          double migepe2 = mk * vel_norm_mig * h / diffus;
 
-        DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
-        if (!actele) dserror("cast to Transport* failed");
-        vector<double> v(1,migepe2);
-        ostringstream temp;
-        temp << k;
-        string name = "Pe_mig_"+temp.str();
-        actele->AddToData(name,v);
-        name = "hk_"+temp.str();
-        v[0] = h;
-        actele->AddToData(name,v);
+          DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+          if (!actele) dserror("cast to Transport* failed");
+          vector<double> v(1,migepe2);
+          ostringstream temp;
+          temp << k;
+          string name = "Pe_mig_"+temp.str();
+          actele->AddToData(name,v);
+          name = "hk_"+temp.str();
+          v[0] = h;
+          actele->AddToData(name,v);
 #endif
       }
-      else
-#endif
+      else*/
         vel_norm = velint_.Norm2();
 
       // get characteristic element length
@@ -2645,30 +2708,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
-#ifdef MIGRATIONSTAB
-      if (iselch_) // ELCH
+
+      if (iselch_ and migrationintau) // ELCH
       {
-        // get Euclidean norm of effective velocity at element center:
-        // (weighted) convective velocity + individual migration velocity
-        LINALG::Matrix<nsd_,1> veleff(velint_,false);
-        veleff.Update(diffusvalence_[k],migvelint_,1.0);
-        //veleff.Update(diffus_[k],migvelint_,1.0);
-        vel_norm = veleff.Norm2();
+        dserror("Migration in tau not considered in Tau_Exact_1d");
       }
       else
-#endif
         vel_norm = velint_.Norm2();
-
-#if 0
-      cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
-#endif
 
       double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
 
       const double pp = exp(epe);
       const double pm = exp(-epe);
       double xi = 0.0;
-      if (epe >= 700.0) tau_[k] = 0.5*h/vel_norm;
+      if (epe >= 700.0)
+        tau_[k] = 0.5*h/vel_norm;
       else if (epe < 700.0 and epe > EPS15)
       {
         xi = (((pp+pm)/(pp-pm))-(1.0/epe)); // xi = coth(epe) - 1/epe
@@ -2773,6 +2827,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     default: dserror("Unknown definition of tau\n");
   } //switch (whichtau)
 
+#if 1
+      cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
+#endif
 #ifdef VISUALIZE_ELEMENT_DATA
   // visualize stabilization parameter
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
@@ -4261,7 +4318,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
           double diffus = diffus_[k];
 
           // calculation of stabilization parameter at element center
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+          CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
         }
       }
   }
@@ -4307,7 +4364,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
         double diffus = diffus_[k];
 
         // calculation of stabilization parameter at integration point
-        CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
+        CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
       }
 
       const double fac_tau = fac*tau_[k];
@@ -4518,12 +4575,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<endl;}
 #endif
   // some 'working doubles'
-  double diffus_valence_k;
   double rhsint;  // rhs at int. point
   // integration factors and coefficients of single terms
   double timefacfac;
   double timetaufac;
-  double taufac;
 
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
@@ -4531,7 +4586,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     conint_[k] = funct_.Dot(ephinp_[k]);
 
     // stabilization parameters
-    taufac = tau_[k]*fac;
+    const double taufac = tau_[k]*fac;
 
     if (is_stationary_)
     {
@@ -4550,7 +4605,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     gradphi_.Multiply(derxy_,ephinp_[k]);
 
     // factor D_k * z_k
-    diffus_valence_k = diffusvalence_[k];
+    const double diffus_valence_k = diffusvalence_[k];
 
     if (use2ndderiv_)
     {
@@ -4569,10 +4624,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     for (int vi=0; vi<nen_; ++vi)
     {
       const int    fvi = vi*numdofpernode_+k;
-      double timetaufac_conv_eff_vi = timetaufac*conv_(vi);
-#ifdef MIGRATIONSTAB
-      timetaufac_conv_eff_vi += timetaufac*diffus_valence_k*migconv_(vi);
-#endif
+      double conv_eff_vi = conv_(vi);
+      if (migrationstab_)
+      {
+        conv_eff_vi += diffus_valence_k*migconv_(vi);
+      }
+
 #ifdef LINE3EXACTSTAB
       if (distype==DRT::Element::line3 && vi!=2 && timetaufac > 0)
         timetaufac_conv_eff_vi *= tau_corner_[k]/tau_[k];
@@ -4613,23 +4670,55 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // not implemented
 
         /* 1) convective stabilization */
-
+#ifdef supi
+if (k != (numscal_-2))
+{
+#endif
         /* convective term */
         // partial derivative w.r.t concentration
-        emat(fvi, fui) += timetaufac_conv_eff_vi*conv_(ui);
-        emat(fvi, fui) += timetaufac_conv_eff_vi*diffus_valence_k*migconv_(ui);
+        // convective stabilization of convective term
+        emat(fvi, fui) += timetaufac*conv_eff_vi*conv_(ui);
+        // migration convective stabilization of convective term
+        emat(fvi, fui) += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
         // partial derivative w.r.t potential
-#if 1
-        double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
-          emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi*diffus_valence_k*val_ui;
-#else
+
         // linearization w.r.t potential phi
+        // convective stabilization of migration term (checked!!!)
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
-        double val_vi; GetLaplacianWeakFormRHS(val_vi, derxy_,gradphi_,vi);
-        double norm = gradphi_.Norm2();
-        emat(fvi, ui*numdofpernode_+ numscal_) += timetaufac*(laplawf*norm*norm + val_vi*val_ui);
+        emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+
+        if (migrationintau_)
+        {
+          // derivative of tau (Bazilevs) with respect to electric potential
+          const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
+          const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
+          const double tauderiv_ui = ((tauderpot_[k])(ui,0));
+          emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*conv_eff_vi*tauderiv_ui*(conv_ephinp_k + Dkzk_mig_ephinp_k);
+        }
+        if (migrationstab_)
+        {
+          // migration convective stabilization of convective term
+          emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+          // migration convective stabilization of migration term
+          double myval = timetaufac*diffus_valence_k*migconv_(vi);
+          emat(fvi,ui*numdofpernode_+numscal_) -= 2.0*frt*myval*diffus_valence_k*val_ui;
+        }
+
+#ifdef supi
+        if (abs(valence_[k]) >0.1) // only for ions
+  {
+    // index of last charged species (typically equals numscal_-1, but can be different)
+    const int ilcs = numscal_-3;
+  const int row = ui*numdofpernode_+ilcs; // contribution to last scalar as well
+  const double myfactor = (valence_[k]/valence_[numscal_-2]);
+  emat(row, ui*numdofpernode_+k) += myfactor*timetaufac*conv_eff_vi*conv_(ui);
+  emat(row, ui*numdofpernode_+k) += myfactor*timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
+  emat(row,ui*numdofpernode_+numscal_) -= myfactor*timetaufac*conv_eff_vi*diffus_valence_k*val_ui;
+  }
+}
 #endif
-      } // for ui
+
+} // for ui
     } // for vi
 
     if (use2ndderiv_)
@@ -4698,16 +4787,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     // compute residual of strong form for residual-based stabilization
     double taufacresidual(0.0);
 if ( not betterconsistency_)
+{
+  //  taufacresidual = taufac*rhsint - timetaufac*conv_ephinp_k;// (conv_eff_k - diff_ephinp_k + migrea_k);
     taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
+#if 0
+    cout<<"taufacresidual = "<<taufacresidual<<endl;
+    cout<<"residual = "<<taufacresidual/taufac<<endl;
+    cout<<"complete taufacresidual = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
+#endif
+}
 else
 {
     double fdiv(0.0); // we get the negative(!) reconstructed flux from outside!
     // compute divergence of approximated diffusive and migrative fluxes
     GetDivergence(fdiv,efluxreconstr_[k],derxy_);
-    cout<<"conv_ephinp_k = "<<conv_ephinp_k<<" fdiv = "<<fdiv<<endl;
     taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + fdiv);
-    cout<<"taufacresidual = "<<taufacresidual<<endl;
-}
+#if 0
+    if (eleid_>7000000)
+    {
+    cout<<"conv_ephinp_k = "<<conv_ephinp_k<<" fdiv = "<<fdiv<<endl;
+    cout<<"taufacresidual (consistency) = "<<taufacresidual<<endl;
+    cout<<"taufacresidual (classical)   = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
+    }
+#endif
+    }
     if (!is_stationary_) // add transient term to the residual
       taufacresidual -= taufac*funct_ephinp_k;
 
@@ -4766,9 +4869,21 @@ else
 #endif
 
       // 1) convective stabilization
+#ifdef supi
+      if (k != (numscal_-2))
+      {
+#endif
       erhs[fvi] += conv_(vi)* taufacresidual *adjust;
-#ifdef MIGRATIONSTAB
-      erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
+      if (migrationstab_)
+      {
+        erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
+      }
+#ifdef supi
+      if (abs(valence_[k]) >0.1)
+      {
+        erhs[vi*numdofpernode_+numscal_-2] += (valence_[k]/valence_[numscal_-2])*conv_(vi)* taufacresidual *adjust; // last scalar
+      }
+      } // if (k != (numscal_-3))
 #endif
 
     } // for vi
@@ -4811,9 +4926,10 @@ else
           /* 1) convective stabilization */
           /* transient term */
           emat(fvi, fui) += taufac*conv_(vi)*funct_(ui);
-#ifdef MIGRATIONSTAB
-          emat(fvi, fui) += taufac*diffus_valence_k*migconv_(vi)*funct_(ui);
-#endif
+          if (migrationstab_)
+          {
+            emat(fvi, fui) += taufac*diffus_valence_k*migconv_(vi)*funct_(ui);
+          }
 
           if (use2ndderiv_)
           {
