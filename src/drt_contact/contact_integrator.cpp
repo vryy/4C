@@ -4993,7 +4993,7 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
@@ -5031,7 +5031,7 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
     if (snode->Owner() != comm.MyPID()) continue;
