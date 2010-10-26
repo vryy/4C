@@ -172,7 +172,7 @@ protected:
 														RCP<Epetra_MultiVector>& neighboursLID);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
-  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim);
+  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();

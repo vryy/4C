@@ -295,6 +295,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 	//the following variable makes sense in case of serial computing only; its use is not allowed for parallel computing!
 	int num_dof = dis.GlobalLength();
 
+  double starttime = statmechparams_.get<double>("STARTTIME",0.0);
+
 	switch (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
 	{
 		case INPAR::STATMECH::statout_endtoendlog:
@@ -304,7 +306,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
       double DeltaR2 = 0;
 
       //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
-      if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (starttimeoutput_ == -1.0))
+      if ( (time > starttime && fabs(time-starttime)>dt/1e4) && (starttimeoutput_ == -1.0))
       {
         endtoendref_ = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
             (dis)[num_dof - 2] - (dis)[1], 2), 0.5);
@@ -366,7 +368,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
 
 			//as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
-			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (starttimeoutput_ == -1.0))
+			if ((time > starttime && fabs(time-starttime)>dt/1e4) && (starttimeoutput_ == -1.0))
 			{
 				starttimeoutput_ = time;
 				istart_ = istep;
@@ -426,7 +428,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 
 			//after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps,
 			//when discret_.NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
-			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (istep% statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
+			if ((time > starttime && fabs(time-starttime)>dt/1e4) && (istep% statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
 			{
 				Epetra_SerialDenseMatrix coord;
 				coord.Shape(discret_.NumMyColNodes(), ndim);
@@ -482,7 +484,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		case INPAR::STATMECH::statout_anisotropic:
 		{
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-			if ((time >= statmechparams_.get<double> ("STARTTIME", 0.0)) && (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
+			if ((time > starttime && fabs(time-starttime)>dt/1e4) && (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
 			{
 
 
@@ -2346,7 +2348,7 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 
 	Epetra_Vector disrowpre = disrow;
 	//cout<<"disrow.MyLength()"<<disrow.MyLength()<<endl;
-	PeriodicBoundaryShift(disrow, ndim);
+	PeriodicBoundaryShift(disrow, ndim, dt);
 
 	// debuggin cout
 	/*for(int i=0; i<discret_.NumMyRowNodes(); i++)
@@ -2512,8 +2514,10 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
  | Shifts current position of nodes so that they comply with periodic   |
  | boundary conditions                                       cyron 04/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
+void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
 {
+  double starttime = statmechparams_.get<double>("STARTTIME",0.0);
+
 	//only if period length >0 has been defined periodic boundary conditions are swithced on
 	if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
 		for (int i=0; i<discret_.NumMyRowNodes(); i++)
@@ -2535,7 +2539,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 					/*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
 					 *may fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
 					 *z-surface, the shear has to be substracted from nodal coordinates in that case */
-					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > statmechparams_.get<double> ("STARTTIME", 0.0))
+					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
 						disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] -= statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
 				}
 				/*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
@@ -2547,7 +2551,7 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim)
 					/*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
 					 *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
 					 *z-surface, the shear has to be added to nodal coordinates in that case */
-					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > statmechparams_.get<double> ("STARTTIME", 0.0))
+					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
 						disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] += statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
 				}
 			}
@@ -3106,7 +3110,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	if(time_ < statmechparams_.get<double>("STARTTIME", 0.0))
+	double starttime = statmechparams_.get<double>("STARTTIME", 0.0);
+
+	if(time_ <= starttime || (time_>starttime && fabs(time_-starttime) < dt/1e4))
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
@@ -3808,7 +3814,9 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	if (time_ < statmechparams_.get<double> ("STARTTIME", 0.0))
+	double starttime = statmechparams_.get<double>("STARTTIME", 0.0);
+
+	if (time_ <= starttime || (time_>starttime && fabs(time_-starttime)<dt/1e4))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);

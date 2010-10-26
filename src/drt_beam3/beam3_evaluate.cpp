@@ -1293,8 +1293,12 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(ParameterList& params,  //!<para
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
+  double time = params.get<double>("total time",0.0);
+  double starttime = params.get<double>("STARTTIME",0.0);
+  double dt = params.get<double>("delta time");
+
   //oscillations start only at params.get<double>("STARTTIME",0.0)
-  if(params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) + params.get<double>("DELTA_T_NEW",0.0) && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
+  if(time > starttime && fabs(time-starttime)>dt/1e4 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
   {
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
 
@@ -1709,6 +1713,10 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
    *of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
+  double time = params.get<double>("total time",0.0);
+	double starttime = params.get<double>("STARTTIME",0.0);
+	double dt = params.get<double>("delta time");
+
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
    * method has to change the displacement variables*/
   if(params.get<double>("PeriodLength",0.0) > 0.0)
@@ -1728,7 +1736,7 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
            *z-surface, the shear has to be substracted from nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) )
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4)
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] += params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
 
@@ -1739,7 +1747,7 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(ParameterList& params,  //!<paramete
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
            *z-surface, the shear has to be added to nodal coordinates in that case */
-          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<double>("total time",0.0) > params.get<double>("STARTTIME",0.0) )
+          if(dof == 2 && params.get<int>("CURVENUMBER",-1) >=  1 && time>starttime && fabs(time-starttime)>dt/1e4 )
             disp[numdof*i+params.get<int>("OSCILLDIR",-1)] -= params.get<double>("SHEARAMPLITUDE",0.0)*DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).f(params.get<double>("total time",0.0));
         }
       }

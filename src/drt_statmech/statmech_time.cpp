@@ -13,7 +13,8 @@ Maintainer: Christian Cyron
 #ifdef CCADISCRET
 
 #include <Teuchos_Time.hpp>
-
+#include <iostream>
+#include <iomanip>
 #include "statmech_time.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -164,7 +165,7 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
 
-    // test cout environment for debugging
+//===================================== test cout environment for debugging
 		LINALG::Export(*dis_, discol);
 
 		for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -185,7 +186,7 @@ void StatMechTime::Integrate()
 				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
 					cout<<"Proc "<<discret_.Comm().MyPID()<<" prestep: currpos("<<k<<") = "<<currpos(k)<<endl;
 		}
-
+//======================================
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID())
     {
@@ -203,14 +204,11 @@ void StatMechTime::Integrate()
       		params_.set("delta time", dt);
       	}
       }
-
       statmechmanager_->time_ = time + dt;
-      //if(!discret_.Comm().MyPID())
-      //	cout<<">>>>time= "<<time<<", time_="<<statmechmanager_->time_<<", delta_t = "<<params_.get<double>("delta time", dt)<<endl;
 
       do
       {
-        // test cout environment for debugging
+//======================================test cout environment for debugging
     		LINALG::Export(*dis_, discol);
 
     		for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -231,7 +229,7 @@ void StatMechTime::Integrate()
     				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
     					cout<<"Proc "<<discret_.Comm().MyPID()<<" itstep: currpos("<<k<<") = "<<currpos(k)<<endl;
     		}
-
+//======================================
         //assuming that iterations will converge
         isconverged_ = 1;
 
@@ -246,18 +244,9 @@ void StatMechTime::Integrate()
         //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
         statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
 
-        /*/test: StructPolyMorphOutput in initial configuration
-        if(time==0.0)
-        {
-					std::ostringstream tmpfilename;
-					tmpfilename <<"./GmshOutput/InitStructPolymorph_"<<discret_.Comm().MyPID()<<".dat";
-					statmechmanager_->StructPolymorphOutput(*dis_, tmpfilename);
-        }*/
-
-
         ConsistentPredictor(randomnumbers);
 
-        // test cout environment for debugging
+//======================================test cout environment for debugging
 				LINALG::Export(*dis_, discol);
 
 				for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -278,13 +267,13 @@ void StatMechTime::Integrate()
 						if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
 							cout<<"Proc "<<discret_.Comm().MyPID()<<" postpred: currpos("<<k<<") = "<<currpos(k)<<endl;
 				}
-
+//======================================
         if(ndim ==3)
           PTC(randomnumbers);
         else
           FullNewton(randomnumbers);
 
-        // test cout environment for debugging
+//======================================test cout environment for debugging
 				LINALG::Export(*dis_, discol);
 
 				for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -305,7 +294,7 @@ void StatMechTime::Integrate()
 						if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
 							cout<<"Proc "<<discret_.Comm().MyPID()<<" postiter: currpos("<<k<<") = "<<currpos(k)<<endl;
 				}
-
+//======================================
         /*if iterations have not converged a new trial requires setting all intern element variables to
          * status at the beginning of this time step*/
         if(isconverged_ == 0)
@@ -324,7 +313,7 @@ void StatMechTime::Integrate()
       const double t_admin = Teuchos::Time::wallTime();
       UpdateandOutput();
 
-      // test cout environment for debugging
+//======================================test cout environment for debugging
   		LINALG::Export(*dis_, discol);
 
 			for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -350,8 +339,8 @@ void StatMechTime::Integrate()
 						cout<<"Proc "<<discret_.Comm().MyPID()<<" preUpAndOut : currpos("<<k<<") = "<<currpospre(k)<<endl;
 						cout<<"Proc "<<discret_.Comm().MyPID()<<" postUpAndOut: currpos("<<k<<") = "<<currpos(k)<<endl;
 					}
-
 			}
+//======================================
 
       /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
        * as it may take place independently on writing geometric output data in a specific time step or not*/
@@ -360,7 +349,7 @@ void StatMechTime::Integrate()
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
       if(!discret_.Comm().MyPID())
-      cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
+      	cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 
       if (time>=maxtime) break;
   }
@@ -944,7 +933,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
-    // test cout environment for debugging
+//======================================test cout environment for debugging
 		LINALG::Export(*dis_, discol);
 
 		for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -965,7 +954,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
 					cout<<"Proc "<<discret_.Comm().MyPID()<<" PTC-"<<numiter<<"-postApplyDirichlet: currpos("<<k<<") = "<<currpos(k)<<endl;
 		}
-
+//======================================
     //--------------------------------------------------- solve for disi
     const double t_solver = Teuchos::Time::wallTime();
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -1046,7 +1035,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       discret_.ClearState();
 
-      // test cout environment for debugging
+//======================================test cout environment for debugging
   		LINALG::Export(*dis_, discol);
 
   		for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -1067,6 +1056,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
   					cout<<"Proc "<<discret_.Comm().MyPID()<<" PTC-"<<numiter<<"-postFint: currpos("<<k<<") = "<<currpos(k)<<endl;
   		}
+//======================================
       // do NOT finalize the stiffness matrix to add damping to it later
     }
 
@@ -1150,7 +1140,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-    // test cout environment for debugging
+//======================================test cout environment for debugging
 		LINALG::Export(*dis_, discol);
 
 		for (int j=0; j<discret_.NumMyColNodes(); ++j)
@@ -1171,6 +1161,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 				if(currpos(k) + statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <0.0 || currpos(k) - statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0) > statmechmanager_->statmechparams_.get<double>("PeriodLength", 0.0))
 					cout<<"Proc "<<discret_.Comm().MyPID()<<" PTC-"<<numiter<<"-end: currpos("<<k<<") = "<<currpos(k)<<endl;
 		}
+//======================================
   }
   //============================================= end equilibrium loop
   print_unconv = false;
@@ -1506,18 +1497,15 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 	} // init
 
   // get the current time
-	const double time = statmechmanager_->time_;
-	// check if start time for DBC evaluation has been reached. If not, do nothing and just return!
-	if(time <= statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0))
-	{
-		//if(!discret_.Comm().MyPID())
-			//cout<<">>>>t="<<params_.get<double>("total time",0.0)<<", time+="<<time<<", dt="<<params_.get<double>("delta time",0.0)<<": DBCs not yet applied"<<endl;
+	const double time = params.get<double>("total time", 0.0);
+	double dt = params.get<double>("delta time", 0.01);
+	double starttime = statmechmanager_->statmechparams_.get<double>("STARTTIME",-1.0);
+	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
+	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
 		return;
-	}
 	if (time<0.0)
 		usetime = false;
-	//if(!discret_.Comm().MyPID())
-		//cout<<"t="<<params_.get<double>("total time",0.0)<<", time+="<<time<<", dt="<<params_.get<double>("delta time",0.0)<<": DBCs applied"<<endl;
+
 //---------------------------------------------------------- loop over elements
   // loop over row elements
 	for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
@@ -1677,8 +1665,10 @@ void StatMechTime::EvaluateDirichletPeriodic(ParameterList& params)
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
-  cout<<"DBC Evaluation time: "<<t_end-t_start<<endl;
+  if(!discret_.Comm().MyPID())
+  	cout<<"DBC Evaluation time: "<<t_end-t_start<<endl;
 #endif // #ifdef MEASURETIME
+
 	return;
 }
 
@@ -1708,8 +1698,7 @@ void StatMechTime::DoDirichletConditionPeriodic(vector<int>* nodeids,
 	// some checks for errors
 	if (!nodeids) dserror("No Node IDs were handed over!");
 	if(disn_==Teuchos::null) dserror("Displacement vector must be !=null");
-	if(deltadbc_==Teuchos::null || dirichtoggle_==Teuchos::null)
-		dserror("deltadbc_ and dirichtoggle_ must be non-empty");
+	if(deltadbc_==Teuchos::null || dirichtoggle_==Teuchos::null) dserror("deltadbc_ and dirichtoggle_ must be non-empty");
 
 	// get the condition properties
 	const int nnode = nodeids->size();
