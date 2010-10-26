@@ -596,7 +596,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
 
       // normal vector at this node for this element
       LINALG::Matrix<3,1> nvec(true);
-      if (ngradphi == 0.0)
+      if ((ngradphi < 1.0E-12) and (ngradphi > -1.0E-12)) // 'ngradphi' == 0.0
       {
         // length of normal is zero for this element -> level set must be constant within element (gradient is zero)
         std::cout << "/!\\ warning === no contribution to average normal vector from element " << ele->Id() << std::endl;
@@ -619,7 +619,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
     // compute norm of average normal vector
     double avnorm = sqrt(avnvec(0)*avnvec(0)+avnvec(1)*avnvec(1)+avnvec(2)*avnvec(2));
     // divide vector by its norm to get unit normal vector
-    if (avnorm == 0.0)
+    if ((avnorm < 1.0E-12) and (avnorm > -1.0E-12)) // 'avnorm' == 0.0
     {
       // length of average normal is zero at this node -> node must be the tip of a
       // "regular level set cone" (all normals add up to zero normal vector)
