@@ -536,6 +536,13 @@ public:
   virtual DRT::ELEMENTS::Transport* ParentElement()
   {return parent_;}
 
+  //! Return a boundary element id of this boundary element
+  virtual int BeleNumber()
+  {
+    return lbeleid_;
+  }
+
+
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)

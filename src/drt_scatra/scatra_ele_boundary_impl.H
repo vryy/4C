@@ -233,6 +233,24 @@ public:
         Epetra_SerialDenseVector&             erhs,
         const double                          timefac,
         const double                          alphaF);
+  
+    /*!
+    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element.
+    \param elevec1 (out)      : vector to be filled by element.
+
+    */
+    template <DRT::Element::DiscretizationType bndydistype,DRT::Element::DiscretizationType pdistype>
+    void MixHybDirichlet(DRT::ELEMENTS::TransportBoundary* surfele,
+                         ParameterList&                    params,
+                         DRT::Discretization&              discretization,
+                         vector<int>&                      lm,
+                         Epetra_SerialDenseMatrix&         elemat_epetra,
+                         Epetra_SerialDenseVector&         elevec_epetra);
 
     //! number of dof per node
     const int numdofpernode_;

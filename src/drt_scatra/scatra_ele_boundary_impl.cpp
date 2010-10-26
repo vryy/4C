@@ -520,6 +520,53 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
                   elevec1_epetra,
                   timefac,
                   alphaF);
+
+  }
+  else if (action =="MixedHybridDirichlet")
+  {
+    switch (distype)
+    {
+      // 2D:
+      case DRT::Element::line2:
+      {
+        if(ele->ParentElement()->Shape()==DRT::Element::quad4)
+        {
+          MixHybDirichlet<DRT::Element::line2,DRT::Element::quad4>(ele,
+                                                                   params,
+                                                                   discretization,
+                                                                   lm,
+                                                                   elemat1_epetra,
+                                                                   elevec1_epetra);
+        }
+        else
+        {
+          dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+        } 
+        break;
+      }
+      // 3D:
+      case DRT::Element::quad4:
+      {
+        if(ele->ParentElement()->Shape()==DRT::Element::hex8)
+        {
+          MixHybDirichlet<DRT::Element::quad4,DRT::Element::hex8>(ele,
+                                                                  params,
+                                                                  discretization,
+                                                                  lm,
+                                                                  elemat1_epetra,
+                                                                  elevec1_epetra);
+        }
+        else
+        {
+          dserror("expected combination quad4/hex8 for surface/parent pair");
+        } 
+        break;
+      }
+      default:
+      {
+        dserror("not implemented yet\n");
+      }
+      }
   }
   else
     dserror("Unknown type of action for Scatra boundary impl.: %s",action.c_str());
@@ -1483,6 +1530,606 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral(
   return;
 
 } //ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bndydistype,
+          DRT::Element::DiscretizationType pdistype>
+   void  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::MixHybDirichlet(
+     DRT::ELEMENTS::TransportBoundary* surfele,
+     ParameterList&                    params,
+     DRT::Discretization&              discretization,
+     vector<int>&                      lm,
+     Epetra_SerialDenseMatrix&         elemat_epetra,
+     Epetra_SerialDenseVector&         elevec_epetra)
+{
+  //--------------------------------------------------
+  // time integration business
+
+  const bool   is_stationary = params.get<bool>("using stationary formulation");
+  
+  double       timefac = 1.0;
+
+  if(!is_stationary)
+  {
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+    timefac = params.get<double>("time factor");
+  }
+
+  //--------------------------------------------------
+  // get my parent element
+  DRT::Element* parent=surfele->ParentElement();
+
+  // get parent elements location vector and ownerships
+
+  // the vectors have been allocated outside in
+  // EvaluateConditionUsingParentData
+  RefCountPtr<vector<int> > plm
+    =
+    params.get<RefCountPtr<vector<int> > >("plm");
+  RefCountPtr<vector<int> > plmowner
+    =
+    params.get<RefCountPtr<vector<int> > >("plmowner");
+
+  parent->LocationVector(discretization,*plm,*plmowner);
+
+  /// number of parentnodes
+  static const int piel    = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  /// number of surfacenodes
+  static const int siel    = DRT::UTILS::DisTypeToNumNodePerEle<bndydistype>::numNodePerElement;
+
+  /// number of spatial dimensions
+  static const int nsd     = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  static const int bndynsd = DRT::UTILS::DisTypeToDim<bndydistype>::dim;
+
+  // number of internal flux dofs
+  static const int numfluxdof = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // --------------------------------------------------
+  // Reshape element matrices and vectors and init to zero, construct views
+  const int peledim = piel;
+
+  elemat_epetra.Shape(peledim,peledim);
+  elevec_epetra.Size (peledim);
+  
+  LINALG::Matrix<peledim,peledim> elemat(elemat_epetra.A(),true);
+  LINALG::Matrix<peledim,      1> elevec(elevec_epetra.A(),true);
+
+
+  // --------------------------------------------------
+  // Extra matrices 
+
+  // for volume integrals
+  LINALG::Matrix<numfluxdof*piel,numfluxdof*piel> mat_s_q(true);
+  LINALG::Matrix<numfluxdof*piel,           piel> mat_s_gradphi(true);
+
+  // for boundary integrals
+
+  LINALG::Matrix<           piel,numfluxdof*piel> mat_w_q_o_n(true);
+  LINALG::Matrix<numfluxdof*piel,           piel> mat_s_o_n_phi(true);
+
+  // rearranging and computational arrays
+  LINALG::Matrix<numfluxdof*piel,numfluxdof*piel> inv_s_q(true);
+
+
+  // --------------------------------------------------
+  // Extra vectors 
+
+  // for volume integrals
+
+  LINALG::Matrix<numfluxdof*piel,              1> vec_s_gradphi(true);
+
+  // for boundary integrals
+  LINALG::Matrix<numfluxdof*piel,              1> vec_s_o_n_phi_minus_g(true);
+
+  //--------------------------------------------------
+  // get the required material information
+
+  RCP<MAT::Material> material = parent->Material();
+
+  // set density and diffusivity to 1.0
+  //  double dens = 1.0;
+  double diffus=1.0;
+
+  // get viscosity
+  if (material->MaterialType() == INPAR::MAT::m_scatra)
+  {
+    const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+
+    dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
+
+    // get constant diffusivity
+    diffus = actmat->Diffusivity();
+  }
+  else dserror("Material type is not supported");
+
+  //--------------------------------------------------
+  // get the condition information
+  RefCountPtr<DRT::Condition> hixhybdbc_cond
+    =
+    params.get<RefCountPtr<DRT::Condition> >("condition");
+  
+  // get value for boundary condition
+  const vector<double>* val = (*hixhybdbc_cond).Get<vector<double> >("val");
+
+  // find out whether we will use a time curve
+  const double time = params.get<double>("total time");
+
+  // find out whether we will use a time curve and get the factor
+  const vector<int>* curve  = (*hixhybdbc_cond).Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  
+  // assign boundary value
+  double dirichval=(*val)[0]*curvefac;
+
+  // get values and switches from the condition
+  // (assumed to be constant on element boundary)
+  const vector<int>* functions = (*hixhybdbc_cond).Get<vector<int> >   ("funct");
+
+
+  // --------------------------------------------------
+  // get phinp 
+
+  RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+  if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+  // extract local values from the global vectors for the parent(!) element
+  vector<double> myphinp(plm->size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
+
+  // create object for density and solution array
+  vector<LINALG::Matrix<piel,1> > ephinp(numscal_);
+
+  // insert into element arrays
+  for (int i=0;i<piel;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // split for each tranported scalar, insert into element arrays
+      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+    }
+  }
+
+  int k=0;
+
+  if(numscal_>1)
+  {
+    dserror("not implemented yet (only one species)\n");
+  }
+
+  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+         PART 1: Gaussloop for volume integrals of parent element
+    <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+  {
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::Matrix<piel,1>       pfunct(true);
+    LINALG::Matrix<nsd ,piel>    pderiv(true);
+
+    // get local node coordinates
+    LINALG::Matrix<nsd ,piel>    pxyze(true);
+    GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
+
+    //--------------------------------------------------
+    // Gaussian integration points
+    const DRT::UTILS::IntPointsAndWeights<nsd> 
+      pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
+
+    //--------------------------------------------------
+    // vectors/scalars for Gausspoint values
+
+    // perhaps phiint
+
+    // scalar at integration point
+    double phi = 0.0;
+
+    // gradient of current scalar value
+    LINALG::Matrix<nsd ,   1>    gradphi(true);
+
+    // global derivatives of shape functions w.r.t x,y,z
+    LINALG::Matrix<nsd ,piel>    pderxy(true);
+    // transposed jacobian "dx/ds"
+    LINALG::Matrix<nsd ,nsd >    pxjm(true);
+    // inverse of transposed jacobian "ds/dx"
+    LINALG::Matrix<nsd ,nsd >    pxji(true);
+      // coordinates of the current integration point
+    LINALG::Matrix<nsd ,   1>    pxsi(true);
+
+    
+    //--------------------------------------------------
+    // the actual loop
+    for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
+    {
+      // coordinates of the current integration point
+      const double* gpcoord = (pintpoints.IP().qxg)[iquad];
+      for (int idim=0;idim<nsd ;idim++)
+      {
+        pxsi(idim) = gpcoord[idim];
+      }
+      
+      // get parent elements shape functions
+      DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+      // get Jacobian matrix and determinant
+      // actually compute its transpose....
+      /*
+        +-            -+ T      +-            -+
+        | dx   dx   dx |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dr   dr   dr |
+        |              |        |              |
+        | dy   dy   dy |        | dx   dy   dz |
+        | --   --   -- |   =    | --   --   -- |
+        | dr   ds   dt |        | ds   ds   ds |
+        |              |        |              |
+        | dz   dz   dz |        | dx   dy   dz |
+        | --   --   -- |        | --   --   -- |
+        | dr   ds   dt |        | dt   dt   dt |
+        +-            -+        +-            -+
+      */
+      pxjm.MultiplyNT(pderiv,pxyze);
+      const double det = pxji.Invert(pxjm);
+
+      if (det < 1E-16)
+        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", 
+                parent->Id(), det);
+
+      // compute integration factor
+      const double fac = pintpoints.IP().qwgt[iquad]*det*timefac;
+
+      // compute global first derivates
+      pderxy.Multiply(pxji,pderiv);
+
+      // ---------------------------------------------------------------
+      // compute Gauss point values
+
+      phi = pfunct.Dot(ephinp[k]);
+      
+      // gradient of current scalar value
+      LINALG::Matrix<nsd ,   1>    gradphi(true);
+      gradphi.Multiply(pderxy,ephinp[k]);
+
+
+      // ---------------------------------------------------------------
+      /*
+                     /        \
+                1   |   h   h  |
+            - ----- |  s * q   |
+              kappa |          |
+                     \        / Omega
+      */
+      for(int A=0;A<piel;++A)
+      {
+        for(int B=0;B<piel;++B)
+        {
+          for(int i=0;i<numfluxdof;++i)
+          {
+            mat_s_q(A*numfluxdof+i,B*numfluxdof+i)-=fac*(1.0/diffus)*pfunct(A)*pfunct(B);
+          }
+        }
+      }
+
+
+      /*
+                     /                 \
+                    |  h        /   h\  |
+                  + | s * grad | phi  | |
+                    |           \    /  |
+                     \                 / Omega
+      */
+      for(int A=0;A<piel;++A)
+      {
+        for(int B=0;B<piel;++B)
+        {
+          for(int i=0;i<numfluxdof;++i)
+          {
+            mat_s_gradphi(A*numfluxdof+i,B)+=fac*pfunct(A)*pderxy(i,B);
+          }
+        }
+      }
+
+      for(int A=0;A<piel;++A)
+      {
+        for(int i=0;i<numfluxdof;++i)
+        {
+          vec_s_gradphi(numfluxdof*A+i)+=fac*pfunct(A)*gradphi(i);
+        }
+      }
+    }
+  }
+
+
+  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+         PART 2: Gaussloop for line integrals of boundary element
+    <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+  {
+    // allocate vector/matrix for shape functions and derivatives
+    LINALG::Matrix<siel   ,1>     funct(true);
+    LINALG::Matrix<bndynsd,siel>  deriv(true);
+
+    // allocate vector for parents shape functions and matrix for derivatives
+    LINALG::Matrix<piel,1>        pfunct(true);
+    LINALG::Matrix<nsd ,piel>     pderiv(true);
+
+    // get local node coordinates
+    LINALG::Matrix<nsd ,siel>    xyze(true);
+    GEO::fillInitialPositionArray<bndydistype,nsd ,LINALG::Matrix<nsd ,siel> >(surfele,xyze);
+
+    // get local node coordinates
+    LINALG::Matrix<nsd ,piel>    pxyze(true);
+    GEO::fillInitialPositionArray<pdistype,nsd ,LINALG::Matrix<nsd ,piel> >(parent,pxyze);
+
+    //--------------------------------------------------
+    // Gaussian integration points
+    const DRT::UTILS::IntPointsAndWeights<bndynsd> 
+      intpoints(SCATRA::DisTypeToOptGaussRule<bndydistype>::rule);
+
+    const DRT::UTILS::IntPointsAndWeights<nsd> 
+      pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
+
+    // coordinates of current integration point in reference coordinates
+    LINALG::Matrix<bndynsd,1>    xsi(true);
+    LINALG::Matrix<nsd    ,1>    pxsi(true);
+
+    Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
+
+    {
+      Epetra_SerialDenseMatrix gps(intpoints.IP().nquad,bndynsd);
+
+      // coordinates of the current integration point
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        const double* gpcoord = (intpoints.IP().qxg)[iquad];
+      
+        for (int idim=0;idim<bndynsd ;idim++)
+        {
+          gps(iquad,idim) = gpcoord[idim];
+        }
+      }
+      DRT::UTILS::BoundaryGPToParentGP<nsd>(pqxg     ,
+                                            gps,
+                                            pdistype   ,
+                                            bndydistype,
+                                            surfele->BeleNumber());
+    }
+
+
+    //--------------------------------------------------
+    // vectors/scalars for Gausspoint values
+
+    // the element's normal vector
+    LINALG::Matrix<nsd ,1>       unitnormal(true);
+
+    // scalar quantity at gausspoint
+    double phi = pfunct.Dot(ephinp[k]);
+
+    // transposed jacobian "dx/ds"
+    LINALG::Matrix<nsd ,nsd >    xjm(true);
+    // inverse of transposed jacobian "ds/dx"
+    LINALG::Matrix<nsd ,nsd >    xji(true);
+
+    // transposed jacobian "dx/ds" for parent
+    LINALG::Matrix<nsd ,nsd >    pxjm(true);
+    // inverse of transposed jacobian "ds/dx" for parent
+    LINALG::Matrix<nsd ,nsd >    pxji(true);
+
+
+    //--------------------------------------------------
+    // the actual loop
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+
+      // coordinates of the current integration point
+      const double* gpcoord = (intpoints.IP().qxg)[iquad];
+      for (int idim=0;idim<bndynsd ;idim++)
+      {
+        xsi(idim) = gpcoord[idim];
+      }
+      
+      DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
+      DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
+
+      for (int idim=0;idim<nsd ;idim++)
+      {
+        pxsi(idim) = pqxg(iquad,idim);
+      }
+
+      DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+      double drs=0.0;
+
+      // compute measure tensor for surface element and the infinitesimal
+      // area element drs for the integration
+      LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
+      
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,
+                                                                 deriv,
+                                                                 metrictensor,
+                                                                 drs,
+                                                                 &unitnormal);
+
+      // compute integration factor
+      const double fac = intpoints.IP().qwgt[iquad]*drs*timefac;
+
+      // ---------------------------------------------------------------
+      // compute Gauss point values
+
+      phi = pfunct.Dot(ephinp[k]);
+
+      // ------------------------------------------------
+      // factor given by spatial function
+      double functionfac=1.0;
+
+      // determine coordinates of current Gauss point
+      LINALG::Matrix<nsd,1> coordgp(true);
+
+      for (int A=0;A<siel;++A)
+      {
+        for(int j=0;j<nsd;++j)
+        {
+          coordgp(j)+=xyze(j,A)*funct(A);
+        }
+      }
+
+      
+#if 1
+
+      // determine coordinates of current Gauss point
+      LINALG::Matrix<nsd,1> check(true);
+      LINALG::Matrix<nsd,1> diff(true);
+
+      for (int A=0;A<piel;++A)
+      {
+        for(int j=0;j<nsd;++j)
+        {
+          check(j)+=pxyze(j,A)*pfunct(A);
+        }
+      }
+
+      diff=check;
+      diff-=coordgp;
+
+      const double norm=diff.Norm2();
+
+      if(norm>1e-9)
+      {
+        for(int j=0;j<nsd;++j)
+        {
+          printf("%12.5e %12.5e\n",check(j),coordgp(j));
+        }
+
+        dserror("Gausspoint matching error %12.5e\n",norm);
+      }
+
+#endif
+
+      int functnum = -1;
+
+      // factor given by spatial function
+      if (functions)
+      {
+        functnum = (*functions)[0];
+        if (functnum>0)
+        {
+          // evaluate function at current gauss point
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgp.A(),0.0,NULL);
+        }
+        else
+        {
+          functionfac = 1.0;
+        }
+      }
+    
+      /*
+                              /          \
+                             |  h   h     |
+                           - | w , q  o n |
+                             |            |
+                              \          / Gamma
+      */  
+      for(int A=0;A<piel;++A)
+      {
+        for(int B=0;B<piel;++B)
+        {
+          for(int i=0;i<numfluxdof;++i)
+          {
+            mat_w_q_o_n(A,B*numfluxdof+i)-=fac*pfunct(A)*pfunct(B)*unitnormal(i);
+          }
+        }
+      }
+
+      //--------------------------------------------------
+      // adjoint consistency term, flux part
+
+      /*
+                     /            \
+                    |  h         h |
+                  - | s o n , phi  |
+                    |              |
+                     \            / Gamma
+      */
+
+      for(int A=0;A<piel;++A)
+      {
+        for(int B=0;B<piel;++B)
+        {
+          for(int i=0;i<numfluxdof;++i)
+          {
+            mat_s_o_n_phi(A*numfluxdof+i,B)-=fac*pfunct(A)*unitnormal(i)*pfunct(B);
+          }
+        }
+      }
+
+      for(int A=0;A<piel;++A)
+      {
+        for(int i=0;i<numfluxdof;++i)
+        {
+          vec_s_o_n_phi_minus_g(A*numfluxdof+i)-=fac*pfunct(A)*unitnormal(i)*(phi-dirichval);
+        }
+      }
+    }
+  }
+
+  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+         PART 3: Local condensation (Matrix inversion etc)
+    <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+  {
+
+    // matrix inversion of flux-flux block
+    inv_s_q=mat_s_q;
+    
+    LINALG::FixedSizeSerialDenseSolver<numfluxdof*piel,numfluxdof*piel> solver;
+
+    solver.SetMatrix(inv_s_q);
+    solver.Invert();
+    
+    // computation of matrix-matrix and matrix vector products, local assembly
+    for(int A=0;A<piel;++A)
+    {
+      for(int B=0;B<piel;++B)
+      {   
+        for(int rr=0;rr<numfluxdof*piel;++rr)
+        {
+          for(int mm=0;mm<numfluxdof*piel;++mm)
+          {
+            elemat(A,B)
+              -=mat_w_q_o_n(A,rr)*inv_s_q(rr,mm)*(mat_s_gradphi(mm,B)+mat_s_o_n_phi(mm,B));
+          }
+        }
+      }
+    }
+
+    for(int A=0;A<piel;++A)
+    {
+      for(int rr=0;rr<numfluxdof*piel;++rr)
+      {
+        for(int mm=0;mm<numfluxdof*piel;++mm)
+        {
+          elevec(A)-=
+            mat_w_q_o_n(A,rr)
+            *
+            inv_s_q(rr,mm)
+            *
+            (-vec_s_o_n_phi_minus_g(mm)-vec_s_gradphi(mm));
+        }
+      }
+    }
+  }
+
+  return;
+}
+
 
 
 #endif // CCADISCRET

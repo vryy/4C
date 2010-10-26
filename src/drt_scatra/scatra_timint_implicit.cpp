@@ -1230,6 +1230,43 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
   discret_->ClearState();
 
+  //----------------------------------------------------------------------
+  // apply mixed/hybrid Dirichlet boundary conditions
+  //----------------------------------------------------------------------
+  {
+    ParameterList mhdbcparams;
+    
+    // set action for elements
+    mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+    mhdbcparams.set("isale",isale_);
+
+    mhdbcparams.set<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_condif);
+
+    AddSpecificTimeIntegrationParameters(mhdbcparams);
+
+    // evaluate all mixed hybrid Dirichlet boundary conditions
+    discret_->EvaluateConditionUsingParentData
+      (mhdbcparams          ,
+       sysmat_              ,
+       Teuchos::null        ,
+       residual_            ,
+       Teuchos::null        ,
+       Teuchos::null        ,
+       "LineMixHybDirichlet");
+
+    discret_->EvaluateConditionUsingParentData
+      (mhdbcparams          ,
+       sysmat_              ,
+       Teuchos::null        ,
+       residual_            ,
+       Teuchos::null        ,
+       Teuchos::null        ,
+       "SurfaceMixHybDirichlet");
+
+    // clear state
+    discret_->ClearState();
+  }
+
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
   // fine-scale subgrid-diffusivity matrix by subgrid diffusivity
   if (not incremental_ and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
