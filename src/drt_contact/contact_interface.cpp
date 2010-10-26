@@ -1146,7 +1146,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
           {
             int col = csnode->Dofs()[dimrow];
             double val = -(dik-dikold);
-            cnode->AddDerivJumpValue(dimrow,col,val);
+            if (abs(val)>1e-14)
+              cnode->AddDerivJumpValue(dimrow,col,val);
           }
         }
       }
@@ -1217,7 +1218,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
         {
             int col = cmnode->Dofs()[dimrow];
             double val = (mik-mikold);
-            cnode->AddDerivJumpValue(dimrow,col,val);
+            if (abs(val)>1e-14)
+              cnode->AddDerivJumpValue(dimrow,col,val);
         }
       }
 
@@ -1247,7 +1249,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
           {
             int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
             double val =-colcurr->second*(*xsmod)[locid];
-            cnode->AddDerivJumpValue(dim,col,val);
+            if (abs(val)>1e-14)
+              cnode->AddDerivJumpValue(dim,col,val);
           }
         }
       }
@@ -1278,7 +1281,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
           for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
             double val =colcurr->second*mxi[dimrow];
-            cnode->AddDerivJumpValue(dimrow,col,val);
+            if (abs(val)>1e-14)
+              cnode->AddDerivJumpValue(dimrow,col,val);
           }
         }
       }
@@ -3625,6 +3629,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
          {
             int col = colcurr->first;
+            
+            //cout << "val " << colcurr->second << endl;
+
             double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*colcurr->second;
             double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*colcurr->second;
 
