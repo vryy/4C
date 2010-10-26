@@ -474,20 +474,6 @@ public:
 
   //@}
 
-  //! @name Empty functions (contact or friction)
-
-  // All these functions only have functionality for contact or friction nodes, thus they
-  // are defined as empty here in the gerenal mortar node. They can be called whenever you like.
-
-  virtual void AddMechDissValue(double& val) {}
-  virtual void AddSNode(int node) {}
-  virtual void AddMNode(int node) {}
-  virtual void AddAValue (int& row, int& col, double& val) {}
-  virtual void AddANode (int node) {}
-  virtual void AddBValue (int& row, int& col, double& val) {}
-  virtual void AddBNode (int node) {}
-
-  //@}
 
 protected:
 

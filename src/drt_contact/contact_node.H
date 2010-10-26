@@ -485,6 +485,20 @@ public:
   
   //@}
 
+  //! @name Empty functions (friction only)
+
+  // All these functions only have functionality for friction nodes, thus they are
+  // defined as empty here in the general mortar node. They can be called whenever you like.
+
+  virtual void AddSNode(int node) {}
+  virtual void AddMNode(int node) {}
+  virtual void AddAValue (int& row, int& col, double& val) {}
+  virtual void AddANode (int node) {}
+  virtual void AddBValue (int& row, int& col, double& val) {}
+  virtual void AddBNode (int node) {}
+
+  //@}
+
 protected:
 
   bool            active_;         // true if cnode is in contact (active set strategy)

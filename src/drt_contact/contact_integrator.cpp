@@ -4729,7 +4729,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+  	CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
@@ -4747,7 +4747,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
       // loop over all slave nodes again ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -4821,7 +4821,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
   // loop over all slave int nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    MORTAR::MortarNode* sintnode = static_cast<MORTAR::MortarNode*>(sintnodes[slave]);
+    CONTACT::CoNode* sintnode = static_cast<CONTACT::CoNode*>(sintnodes[slave]);
     int sintndof = sintnode->NumDof();
 
     // only process slave int node rows that belong to this proc
@@ -4833,7 +4833,7 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
       // loop over all slave nodes ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -4875,7 +4875,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+    CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
 
     // only process slave node rows that belong to this proc
@@ -4893,7 +4893,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+      	CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -4946,7 +4946,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
   // loop over all slave int nodes
   for (int slave=0;slave<sintele.NumNode();++slave)
   {
-    MORTAR::MortarNode* sintnode = static_cast<MORTAR::MortarNode*>(sintnodes[slave]);
+  	CONTACT::CoNode* sintnode = static_cast<CONTACT::CoNode*>(sintnodes[slave]);
     int sintndof = sintnode->NumDof();
 
     // only process slave int node rows that belong to this proc
@@ -4958,7 +4958,7 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+      	CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -5121,7 +5121,7 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
   // loop over all slave nodes
   for (int slave=0;slave<sele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+  	CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(snodes[slave]);
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
@@ -5139,7 +5139,7 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
       // loop over all slave nodes again ("master nodes")
       for (int master=0;master<sele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+      	CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
@@ -5176,7 +5176,7 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
   // loop over all master nodes
   for (int slave=0;slave<mele.NumNode();++slave)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(mnodes[slave]);
+  	CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(mnodes[slave]);
     int sndof = snode->NumDof();
     
     // FIXGIT: not working in parallel yet
@@ -5195,7 +5195,7 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
       // loop over all master nodes again ("master nodes")
       for (int master=0;master<mele.NumNode();++master)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+      	CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
         const int* mdofs = mnode->Dofs();
         int mndof = mnode->NumDof();
 
