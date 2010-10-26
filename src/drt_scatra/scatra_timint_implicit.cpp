@@ -1886,6 +1886,41 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
     break;
   }
+  case INPAR::SCATRA::initfield_facing_flame_fronts:
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // get x1- and x2-coordinate
+      const double x1 = lnode->X()[0];
+      //const double x2 = lnode->X()[1];
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+        // evaluate component k of spatial function
+
+        double initialval;
+        if (x1 < 0.0) initialval = -(x1+0.75);
+        else initialval = x1-0.75;
+
+        phin_->ReplaceMyValues(1,&initialval,&doflid);
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initialval,&doflid);
+      }
+    }
+    break;
+  }
   default:
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)

@@ -2203,7 +2203,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "1D_DISCONTPV",
                                  "FLAME_VORTEX_INTERACTION",
                                  "RAYTAYMIXFRAC",
-                                 "L_shaped_domain"),
+                                 "L_shaped_domain",
+                                 "facing_flame_fronts"),
                                tuple<INPAR::SCATRA::InitialField>(
                                    INPAR::SCATRA::initfield_zero_field,
                                    INPAR::SCATRA::initfield_field_by_function,
@@ -2212,7 +2213,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::initfield_discontprogvar_1D,
                                    INPAR::SCATRA::initfield_flame_vortex_interaction,
                                    INPAR::SCATRA::initfield_raytaymixfrac,
-                                   INPAR::SCATRA::initfield_Lshapeddomain),
+                                   INPAR::SCATRA::initfield_Lshapeddomain,
+                                   INPAR::SCATRA::initfield_facing_flame_fronts),
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
