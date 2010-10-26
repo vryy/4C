@@ -899,10 +899,6 @@ void THR::TimIntImpl::AssembleA(LINALG::SparseMatrix& amatrix)
 void THR::TimIntImpl::AssembleB(LINALG::SparseMatrix& bmatrix)
 
 {
-  // FIXGIT: not working in parallel yet
-  if(Comm().MyPID()!= 0)
-    dserror("Error: AssembleB not working in parallel yet");
-    
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
@@ -939,29 +935,47 @@ void THR::TimIntImpl::AssembleB(LINALG::SparseMatrix& bmatrix)
       set<int> bnodes;
       int mastergid=0;
       set<int>::iterator mcurr;
-      int mastersize = 0;
+      int size = 0;
       vector<map<int,double> > bmap;
 
       bmap = cnode->GetB();
       bnodes = cnode->GetBNodes();
-      mastersize = bnodes.size();
-      mcurr = bnodes.begin();
+      size = bnodes.size();
       
-      // commiunicate number of master nodes
-      //Comm().Broadcast(&mastersize,1,cnode->Owner());
-
+      // flag if proc has B-matrix entries for this master node
+      bool hasentries = false;
+      if(size!=0)
+        hasentries=true;
+ 
+      if(hasentries)
+        mcurr = bnodes.begin();
+  
+      // sum all entries of size
+      int sizeglobal = 0;
+      Comm().SumAll(&size,&sizeglobal,1);
+      
+      // the node should have entries only from one proc
+      if(size!=sizeglobal)
+      {  
+        if (abs(size)>1e-12)
+          dserror ("Error in AssembleB: Entries from more than one proc");
+      }
+      
       // loop over all according master nodes
-      for (int l=0;l<mastersize;++l)
+      for (int l=0;l<sizeglobal;++l)
       {
-        if (Comm().MyPID()==cnode->Owner())
+        if (hasentries)
           mastergid=*mcurr;
+        
+        // global id of master node
+        int masterglobal = 0;
 
-        // communicate GID of masternode
-        //Comm().Broadcast(&mastergid,1,cnode->Owner());
-
-        DRT::Node* mnode = (interface[m]->Discret()).gNode(mastergid);
-        DRT::Node* mnodeges = discretstruct_->gNode(mastergid);
-
+        // sum all entries of mastergid
+        Comm().SumAll(&mastergid,&masterglobal,1);
+        
+        DRT::Node* mnode = (interface[m]->Discret()).gNode(masterglobal);
+        DRT::Node* mnodeges = discretstruct_->gNode(masterglobal);
+        
         // temperature and displacement dofs
         int coltemp = 0;
         int coldis = 0;
@@ -973,16 +987,25 @@ void THR::TimIntImpl::AssembleB(LINALG::SparseMatrix& bmatrix)
         }
 
         // communicate temperature and displacement dof
-        //Comm().Broadcast(&coltemp,1,mnode->Owner());
-        //Comm().Broadcast(&coldis,1,mnode->Owner());
+        Comm().Broadcast(&coltemp,1,mnode->Owner());
+        Comm().Broadcast(&coldis,1,mnode->Owner());
 
+        // value from procs
+        double val = 0;
+        
+        if(hasentries)
+          val = bmap[0][coldis];
+        
+        // communicate the value and sum in valglobal
+        double valglobal = 0;
+        Comm().SumAll(&val,&valglobal,1);
+         
         // do the assembly
-        if (Comm().MyPID()==cnode->Owner())
-        {
-          double val = bmap[0][coldis];
-          if (abs(val)>1e-12) bmatrix.Assemble(val, rowtemp, coltemp);
+        if (Comm().MyPID()==cnode->Owner() and (abs(valglobal)>1e-12) )
+          bmatrix.Assemble(valglobal, rowtemp, coltemp);
+        
+        if(hasentries)
           ++mcurr;
-        }
       }
     }
   }

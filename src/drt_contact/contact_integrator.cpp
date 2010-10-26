@@ -5179,16 +5179,6 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
   	CONTACT::CoNode* snode = static_cast<CONTACT::CoNode*>(mnodes[slave]);
     int sndof = snode->NumDof();
     
-    // FIXGIT: not working in parallel yet
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    // do not process slave side boundary nodes
-    // (their row entries would be zero anyway!)
-    if (snode->IsOnBound())
-      continue;
-
     // loop over all dofs of the slave node
     for (int sdof=0;sdof<sndof;++sdof)
     {

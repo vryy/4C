@@ -641,9 +641,6 @@ void CONTACT::CoInterface::Initialize()
       frinode->FriData().GetSNodes().clear();
       frinode->FriData().GetMNodes().clear();
 
-      // reset nodal mechanical dissipation
-      frinode->MechDiss() = 0.0;
-      
       // reset matrix A quantities
       frinode->FriData().GetANodes().clear();
       
