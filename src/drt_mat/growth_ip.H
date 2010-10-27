@@ -167,7 +167,8 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       double dt, ///< delta time
-      const double time ///< time
+      double time, ///< time
+      bool output ///< calculate stress for output
     );
 
     /// Return density

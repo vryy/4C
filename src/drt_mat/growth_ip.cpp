@@ -267,11 +267,17 @@ void MAT::Growth::Evaluate
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
   LINALG::Matrix<NUM_STRESS_3D,1> * stress,
   double dt,
-  const double time
+  double time,
+  bool output
 )
 {
   double eps = 1.0e-12;
   double endtime = params_->endtime_;
+
+  // when stress output is calculated the final parameters already exist
+  // we should not do another local Newton iteration, which uses eventually a wrong thetaold
+  if (output) time = endtime + dt;
+
   if (time > params_->starttime_ + eps && time <= endtime + eps) {
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
@@ -403,7 +409,7 @@ void MAT::Growth::Evaluate
     theta_->at(gp) = theta;
     mandel_->at(gp) = mandel;
 
-  } else if (time > endtime + eps) {  // turn off growth
+  } else if (time > endtime + eps) {  // turn off growth or calculate stresses for output
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
     double theta = theta_->at(gp);

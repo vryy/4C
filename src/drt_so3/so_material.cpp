@@ -400,8 +400,12 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     {
       MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
       double dt = params.get<double>("delta time",-1.0);
-      const double t = params.get<double>("total time",-1.0);
-      grow->Evaluate(glstrain,gp,cmat,stress,dt,t);
+      double t = params.get<double>("total time",-1.0);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      else if (action == "none") dserror("No action supplied to mat_sel");
+      grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = grow->Density();
       return;
       break;
