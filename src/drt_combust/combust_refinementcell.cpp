@@ -208,14 +208,14 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
   // TODO @Florian as soon as ModifyPhiVector() is activated, this function had to be commented out
   // tolerance for small G-function values
   // TODO @Ursula remove comment -4 für Tank -5 RT_march
-  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
-  {
-    if (fabs(gfuncvalues_[i])<1.0E-6) //-4 für Tank -5 RT_march
-    {
-      gfuncvalues_[i] = 0.0;
-      //std::cout << " G-Function value  reset to 0 " << std::endl;
-    }
-  }
+  //for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
+  //{
+  //  if (fabs(gfuncvalues_[i])<1.0E-6) //-4 für Tank -5 RT_march
+  //  {
+  //    gfuncvalues_[i] = 0.0;
+  //    //std::cout << " G-Function value  reset to 0 " << std::endl;
+  //  }
+  //}
 
   // reset booleans, just in case they have been modified by mistake
   bisected_ = false;

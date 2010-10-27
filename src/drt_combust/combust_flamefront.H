@@ -83,7 +83,8 @@ namespace COMBUST
     void UpdateFlameFront(
         const Teuchos::ParameterList& combustdyn,
         const Teuchos::RCP<const Epetra_Vector>& phin,
-        const Teuchos::RCP<const Epetra_Vector>& phinp
+        const Teuchos::RCP<const Epetra_Vector>& phinp,
+        bool ReinitModifyPhi = false
     );
 
     /// generate the interface geometry based on the G-function (level set field)
@@ -123,7 +124,7 @@ namespace COMBUST
     );
 
     /// modify the fluid phinp_ vector but not the originally scatra phi vector
-    void ModifyPhiVector(const Teuchos::ParameterList& combustdyn);
+    void ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi);
 
     /// call template of member function SmoothGradPhi() to compute smoothed gradient field of G-function
     void CallSmoothGradPhi(const Teuchos::ParameterList& combustdyn);

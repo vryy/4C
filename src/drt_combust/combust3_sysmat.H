@@ -78,7 +78,8 @@ namespace COMBUST
       const double                            surftenscoeff,
       const bool                              connected_interface,
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
-      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype
+      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
+      const bool                              smoothed_boundary_integration
   );
 
   /// get material parameters (constant within the domain integration cell)
@@ -344,14 +345,15 @@ namespace COMBUST
    *                                                                                 schott Jun 15, 2010
    */
   void callNitscheErrors(
-      ParameterList&                    eleparams,
-      const INPAR::COMBUST::NitscheError&  NitscheErrorType,
-      const XFEM::AssemblyType          assembly_type,
-      const DRT::ELEMENTS::Combust3*    ele,
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih,
-      const XFEM::ElementDofManager&    eleDofManager,
-      const DRT::ELEMENTS::Combust3::MyState& mystate,   ///< element state variables
-      Teuchos::RCP<const MAT::Material> material
+      ParameterList&                                         eleparams,
+      const INPAR::COMBUST::NitscheError&                    NitscheErrorType,
+      const XFEM::AssemblyType                               assembly_type,
+      const DRT::ELEMENTS::Combust3*                         ele,
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&   ih,
+      const XFEM::ElementDofManager&                         eleDofManager,
+      const DRT::ELEMENTS::Combust3::MyState&                mystate,   ///< element state variables
+      Teuchos::RCP<const MAT::Material>                      material,
+      const bool                                             smoothed_boundary_integration
   );
 
 }

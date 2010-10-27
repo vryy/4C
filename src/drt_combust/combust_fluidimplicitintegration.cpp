@@ -37,6 +37,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/startvalues.H"
+#include "../drt_xfem/enrichmentvalues.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
@@ -78,6 +79,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   surftensapprox_(Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
   surftenscoeff_(params_.sublist("COMBUSTION FLUID").get<double>("SURFTENSCOEFF")),
   connected_interface_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
+  smoothed_boundary_integration_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -137,6 +139,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // define approach for extra stress field (stress-based Lagrange Multiplier approach)
   physprob_.elementAnsatz_ = rcp(new COMBUST::CauchyStressAnsatz());
 #endif
+#else
+  physprob_.elementAnsatz_ = rcp(new COMBUST::TauPressureAnsatz());
 #endif
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
@@ -577,42 +581,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     LINALG::Export(*state_.veln_,*veln);
     oldColStateVectors.push_back(veln);
 
-    //    discret_->Comm().Barrier();
-    //    cout << "acceleration is " << *state_.accn_;
-    //    cout << "velocity is " << *state_.veln_;
-    //
-    //    map<int,set<XFEM::DofKey<XFEM::onNode> > > oldEnrNodalDofSet;
-    //    map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldEnrNodalDofDistrib;
-    //    vector<map<int,double> > oldEnrValues(stateVector.size());
-    //
-    //    {
-    ////      cout << "here1" << endl;
-    ////      for (map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>::const_iterator i=oldNodalDofColDistrib.begin();
-    ////          i != oldNodalDofColDistrib.end();i++)
-    ////        cout << i->first << ", " << i->second << endl;
-    //      dofswitch.extractEnrMapCombust(
-    //          stateVector,
-    //          olddofcolmap,
-    //          oldNodalDofColDistrib,
-    //          oldEnrNodalDofSet,
-    //          oldEnrNodalDofDistrib,
-    //          oldEnrValues
-    //      );
-    //    }
-
-    //    cout << "here2" << endl;
-    //    cout << "enrsizes are: ";
-    //    for (size_t i=0;i<oldEnrValues.size();i++)
-    //      cout << oldEnrValues[i].size() << ", ";
-    //    for (map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>::const_iterator i=oldEnrNodalDofDistrib.begin();
-    //        i != oldEnrNodalDofDistrib.end();
-    //        i++)
-    //      cout << i->first << ", " << i->second << endl;
-    //    for (map<int,double>::const_iterator i=oldEnrValues[3].begin();
-    //        i!=oldEnrValues[3].end();
-    //        i++)
-    //      cout << i->first << ", " << i->second << endl;
-
     // --------------------------------------------
     // switch state vectors to new dof distribution
     // --------------------------------------------
@@ -949,6 +917,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("surftensapprox",surftensapprox_);
       eleparams.set("surftenscoeff",surftenscoeff_);
       eleparams.set("connected_interface",connected_interface_);
+      
+      // smoothed normal vectors for boundary integration
+      eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -1146,7 +1117,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               LINALG::Matrix<3,1> frontcoords(frontnode->X());
               LINALG::Matrix<3,1> backcoords(backnode->X());
               
-              if ((frontcoords(0) != backcoords(0)) || (frontcoords(1) != backcoords(1)))
+              if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
               {
                 cout << *frontnode << endl;
                 cout << *backnode << endl;
@@ -1266,7 +1237,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             LINALG::Matrix<3,1> frontcoords(frontnode->X());
             LINALG::Matrix<3,1> backcoords(backnode->X());
             
-            if ((frontcoords(0) != backcoords(0)) || (frontcoords(1) != backcoords(1)))
+            if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
             {
               cout << *frontnode << endl;
               cout << *backnode << endl;
@@ -2133,6 +2104,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #ifdef COMBUST_SIGMA_BASED
         const COMBUST::CauchyStressAnsatz elementAnsatz;
 #endif
+#else
+        // just define a default element ansatz; it is not used anyway
+        const COMBUST::TauPressureAnsatz elementAnsatz;
 #endif
         const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
 
@@ -2801,7 +2775,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nitsche(INPAR::COMBUST::NitscheError& NitscheErrorType)
 {
-  // schott Jun 9, 2010
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",state_.velnp_);
@@ -2813,11 +2786,13 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   // create parameters for discretization
   ParameterList eleparams;
 
-  // schott May 26, 2010
   // a new ActionType in combust3.H:	"calc_nitsche_error"
   eleparams.set("action", "calc_nitsche_error");
   eleparams.set("Nitsche_Compare_Analyt", NitscheErrorType);
   // switch different test cases -> set "flowproblem" for elements
+  
+  // smoothed normal vectors for boundary integration terms
+  eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
 
 
   // set parameters for parts of the whole Nitsche-error (mesh-dependent norms), here norms not square rooted
@@ -2856,10 +2831,10 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   double VelJumpInterfErr 	= 0.0;
   double PresDomErr			= 0.0;
   double GradPresDomErr		= 0.0;
-  double WeightPresDomErr		= 0.0;
+  double WeightPresDomErr	= 0.0;
   double NitscheErr			= 0.0;
 
-  // TODO @Benedikt: check wether Comm() works also for interface integrals ?
+  // TODO @Benedikt: check wether Comm() works also for interface integrals ? Benedikt: seems so!
   discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1);			// sum over processors, each list (list of a processor) has length 1
   discret_->Comm().SumAll(&locGradVelDomErr,&GradVelDomErr,1);
   discret_->Comm().SumAll(&locViscInterfErr,&ViscInterfErr,1);
@@ -2874,18 +2849,17 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   VelDomErr 			= sqrt(VelDomErr);
   GradVelDomErr 		= sqrt(GradVelDomErr);
   ViscInterfErr 		= sqrt(ViscInterfErr);
-  VelJumpInterfErr 	= sqrt(VelJumpInterfErr);
+  VelJumpInterfErr 		= sqrt(VelJumpInterfErr);
   PresDomErr 			= sqrt(PresDomErr);
   GradPresDomErr		= sqrt(GradPresDomErr);
-  WeightPresDomErr 	= sqrt(WeightPresDomErr);
+  WeightPresDomErr 		= sqrt(WeightPresDomErr);
   NitscheErr 			= sqrt(NitscheErr);
 
-  //TODO: check if this output is after the right processor
   if (myrank_ == 0)
   {
     printf("\n======================================================================="
-        "\n======================= absolute Nitsche errors ======================="
-        "\n======= compare analytical solution with approximated solution=========");
+           "\n======================= absolute Nitsche errors ======================="
+           "\n======= compare analytical solution with approximated solution=========");
     printf("\n  || u-u_h ||_L2(Omega)\t\t\t\t\t%15.8e", 						VelDomErr);
     printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega1 U Omega2) \t%15.8e", 		GradVelDomErr);
     printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Interface) \t\t%15.8e",			ViscInterfErr);
@@ -2895,7 +2869,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
     printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",			WeightPresDomErr);
     printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",			NitscheErr);
     printf("\n======================================================================="
-        "\n=======================================================================\n");
+           "\n=======================================================================\n");
   }
 
   return;

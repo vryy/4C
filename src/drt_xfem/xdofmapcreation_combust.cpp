@@ -138,21 +138,6 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     
     if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
     
-//    const size_t nsd = 3;
-//    
-//    // distype_ not const!!!
-//    if(xfemele->Shape() != DRT::Element::hex8) dserror("calculate element diameter only for hex8 elements called");
-//    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-//    
-//    // get element diameter
-//    static LINALG::Matrix<nsd,numnode> xyze;
-//    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
-//    const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
-    
-    // get tolerance for refinement cell computation
-    // tolerance for which we change phi-values to zero and get touch points
-//    const double GfuncTOL = 1.0E-003;
-    
     for (int inode = 0; inode<numnodes; ++inode)
     {
       const int nodeid = nodeidptrs[inode];
@@ -261,7 +246,7 @@ bool XFEM::ApplyKinkEnrichment(
  * 
  * applies additional jump enrichments to physical field Pres
  * doesn't apply additional jump enrichments to physical field Velx,Vely,Velz -> standard FEM kinks across the interface automatically
- * needed for two-phase-flow with surface tension -> discontinuos in pressure, continuous (with kinks) in velocity
+ * needed for two-phase-flow with surface tension -> discontinuous in pressure, continuous (with kinks) in velocity
  */
 bool XFEM::ApplyKinkJumpEnrichmentToTouched(
     const COMBUST::InterfaceHandleCombust&    ih,
@@ -390,7 +375,6 @@ bool XFEM::ApplyKinkJumpEnrichment(
 //      {
       // jedes Feld Velx,Vely,Velz bekommet ein KinkEnrichment
       // das Druck-Feld bekommt jumps
-      // überschreibt das die alten Werte
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
         {
           // pressure fields gets jump enrichment
@@ -468,16 +452,8 @@ void XFEM::createDofMapCombust(
       //--------------------------------------------------------------------------------------------
       // find out whether an element is intersected or not by looking at number of integration cells
       //--------------------------------------------------------------------------------------------
-      // get vector of integration cells for this element (domain integration cells!!! => for !intersected! status Benedikt Schott)
-//      std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
-//      if (numcells > 1) // element intersected
-      // schott Aug 2, 2010
-      // get vector of integration cells for this element (boundary integration cells!!! => for !touched! status Benedikt Schott)
-//      std::size_t numBoundaryIntCells= ih.GetNumBoundaryIntCells(xfemele);
 
-      // get vector of integration cells for this element (domain integration cells!!! => for !intersected! status Benedikt Schott)
-      //std::size_t numcells= ih.GetNumDomainIntCells(xfemele);
-      //if (numcells > 1) // element intersected
+      // get vector of integration cells for this element (domain integration cells!!! => for !bisected! status Benedikt Schott)
       if (ih.ElementBisected(xfemele))
       {
         //std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
@@ -485,42 +461,41 @@ void XFEM::createDofMapCombust(
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {
-          case INPAR::COMBUST::combusttype_premixedcombustion:
-          {
-            // apply jump enrichments to all nodes of an intersected element
-            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        case INPAR::COMBUST::combusttype_premixedcombustion:
+        {
+          // apply jump enrichments to all nodes of a bisected element
+          skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
 
 #ifdef COMBUST_STRESS_BASED
-            // apply element stress enrichments to an intersected element
-            skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
+          // apply element stress enrichments to a bisected element
+          skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
 #endif
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflow:
-          {
-            // apply kink enrichments to all nodes of an intersected element
-            skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflow_surf:
-          {
-            // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
-            skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflowjump:
-          {
-            // schott May 14, 2010
-            // apply jump enrichments to all nodes of an intersected element
-            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-          }
-          break;
-          default:
-            dserror("unknown type of combustion problem");
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflow:
+        {
+          // apply kink enrichments to all nodes of a bisected element
+          skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflow_surf:
+        {
+          // apply kink enrichments to all nodes for velocity field and jumps to pressure field of a bisected element
+          skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflowjump:
+        {
+          // apply jump enrichments to all nodes of a bisected element
+          skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        }
+        break;
+        default:
+          dserror("unknown type of combustion problem");
         }
         if (skipped_node_enr) skipped_node_enr_count++;
         if (skipped_node_enr) skipped_node_enr_count++;
-/*
+        /*
         std::cout << "Enrichments des Elements" << std::endl;
         const int numnodes = xfemele->NumNode();
         const int* nodeidptrs = xfemele->NodeIds();
@@ -531,88 +506,64 @@ void XFEM::createDofMapCombust(
           for (std::set<XFEM::FieldEnr>::const_iterator nodeenr = nodeenrset.begin();nodeenr != nodeenrset.end();++nodeenr)
           std::cout << "Angereichertes Feld " << physVarToString(nodeenr->getField()) << "Anreicherungstyp " << nodeenr->getEnrichment().toString() <<  std::endl;
         }
-*/
+         */
       }
-//      else if (numcells == 1) // element not intersected
-//      {
-//        // nothing to do
-//        //std::cout << "Element "<< xfemele->Id() << " ist nicht geschnitten" << std::endl;
-//      }
-//      else // numcells == 0 or negative number
-//      {
-//        // no integration cell -> impossible, something went wrong!
-//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
-//      }
-
-//      else if (numBoundaryIntCells == 1 && numcells == 1) // element is touched // schott Aug 3, 2010
       else if( ih.ElementTouchedPlus(xfemele) ||
-               ih.ElementTouchedMinus(xfemele)   )
+          ih.ElementTouchedMinus(xfemele)   )
       {
-    	// REMARK:
-    	// only touched elements at plus side get boundary integration cells
-    	// but it is sufficient to marker and enrich the touched nodes (nodes with G=0.0, modified in ModifyPhiVector) only once, thus for the plus side
-    	
-        std::cout << "\n---  element "<< xfemele->Id() << " is touched and nodes with G=0.0 get additionally enriched";
+        std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
         const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {
-          case INPAR::COMBUST::combusttype_premixedcombustion:
-          {
-        	  // TODO: implementation of  additional degrees of freedom for touched elements for premixed combustion
-        	  
-            // apply jump enrichments to all nodes of an intersected element
-//            skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-        	  dserror(" apply enrichments for premixedcombustion with touched elements");
+        case INPAR::COMBUST::combusttype_premixedcombustion:
+        {
+          // TODO: implementation of  additional degrees of freedom for touched elements for premixed combustion STRESS BASED!!!
+
 #ifdef COMBUST_STRESS_BASED
-            // apply element stress enrichments to an intersected element
-            //skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
+          // apply element stress enrichments to an intersected element
+          //skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih, boundaryRatioLimit);
+          dserror(" apply enrichments for premixedcombustion with touched elements");
 #endif
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflow:
-          {
-            // no additional enrichments for touched elements necessary, standard FEM kinks across element faces automatically
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflow_surf:
-          {
-              // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
-        	  // schott May 14, 2010
-              // apply additional jump enrichments to all nodes with Gfunc = 0.0 of a touched element
-        	  skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-          }
-          break;
-          case INPAR::COMBUST::combusttype_twophaseflowjump:
-          {
-        	  // schott May 14, 2010
-              // apply additional jump enrichments for pressure to all nodes with Gfunc = 0.0 of a touched element
-        	  // additional kink enrichments for velocity not needed, standard FEM kinks across element faces automatically
-        	  skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
-          }
-          break;
-          default:
-            dserror("unknown type of combustion problem");
+#ifdef COMBUST_NITSCHE
+          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+#endif
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflow:
+        {
+          // no additional enrichments for touched elements necessary, standard FEM kinks across element faces automatically
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflow_surf:
+        {
+          // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
+          skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        }
+        break;
+        case INPAR::COMBUST::combusttype_twophaseflowjump:
+        {
+          // apply additional jump enrichments for pressure to all nodes with Gfunc = 0.0 of a touched element
+          skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, volumeRatioLimit, nodeDofMap);
+        }
+        break;
+        default:
+          dserror("unknown type of combustion problem");
         }
       }
-//      else // numcells == 0 or negative number
-//      {
-//        // no integration cell -> impossible, something went wrong!
-//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
-//      }
       else
       {
         // nothing to do, standard element
       }
-//      else if (numcells == 1 && numBoundaryIntCells == 0) // element not intersected and not touched
-//      {
-//        // nothing to do, standard element
-//      }
-//      else // numcells == 0 or negative number
-//      {
-//        // no integration cell -> impossible, something went wrong!
-//        dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
-//      }
+      //else if (numcells == 1 && numBoundaryIntCells == 0) // element not intersected and not touched
+      //{
+      //  // nothing to do, standard element
+      //}
+      //else // numcells == 0 or negative number
+      //{
+      //  // no integration cell -> impossible, something went wrong!
+      //  dserror ("There are no DomainIntCells for element %d ", xfemele->Id());
+      //}
     }
   }
 

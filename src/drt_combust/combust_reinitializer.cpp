@@ -80,11 +80,11 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
 {
   // get communicator (for output)
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-//  if (comm.MyPID()==0)
-//  {
-//    std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
-//    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
-//  }
+  if (comm.MyPID()==0)
+  {
+    std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
+    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+  }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
 
@@ -286,14 +286,16 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
   //           differ from an exact position on edges of patches (e.g. 1.0E-7 ~ 1.0E-8 -> 1.0E-6)
   //         - if this is not the case, the level set function can become tilted, since valid
   //           patches are ignored
+  double TOL= 1e-6;
+  
   switch(patch.Shape())
   {
   case DRT::Element::tri3:
   {
     // criteria for tri3 patch
-    if ((eta(0) > -1.0E-6) and (eta(0) < 1.0+1.0E-6) and
-        (eta(1) > -1.0E-6) and (eta(1) < 1.0+1.0E-6) and
-        (1.0-eta(0)-eta(1) > -1.0E-6) and (1.0-eta(0)-eta(1) < 1.0+1.0E-6) and
+    if ((eta(0) > -TOL) and (eta(0) < 1.0+TOL) and
+        (eta(1) > -TOL) and (eta(1) < 1.0+TOL) and
+        (1.0-eta(0)-eta(1) > -TOL) and (1.0-eta(0)-eta(1) < 1.0+TOL) and
         converged)
     {
       facenode = true;
@@ -305,8 +307,8 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
   case DRT::Element::quad4:
   {
     // criteria for quad4 patch
-    if ((eta(0) > -1.0-1.0E-6) and (eta(0) < 1.0+1.0E-6) and
-        (eta(1) > -1.0-1.0E-6) and (eta(1) < 1.0+1.0E-6) and
+    if ((eta(0) > -1.0-TOL) and (eta(0) < 1.0+TOL) and
+        (eta(1) > -1.0-TOL) and (eta(1) < 1.0+TOL) and
         converged)
     {
       facenode = true;

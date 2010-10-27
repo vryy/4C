@@ -23,6 +23,7 @@ Maintainer: Florian Henke
 #include "combust3_sysmat_premixed_nitsche.H"
 #include "combust3_sysmat_premixed_stress.H"
 #include "combust3_sysmat_twophaseflow.H"
+#include "combust3_error_analysis.H"
 #include "combust3_local_assembler.H"
 #include "combust3_utils.H"
 #include "combust3_interpolation.H"
@@ -392,7 +393,8 @@ void Sysmat(
     const double                      surftenscoeff,   ///<
     const bool                        connected_interface,
     const INPAR::COMBUST::VelocityJumpType veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype
+    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
+    const bool                        smoothed_boundary_integration
 )
 {
   // initialize element stiffness matrix and force vector
@@ -427,9 +429,14 @@ void Sysmat(
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
 #ifdef COMBUST_NITSCHE
+
+    double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
+    double ele_meas_minus = 0.0; // for different averages <> and {}
+
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele_meas_plus, ele_meas_minus);
 #endif
 #ifdef COMBUST_EPSPRES_BASED
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
@@ -444,12 +451,19 @@ void Sysmat(
 
 #ifndef COMBUST_DECOUPLEDXFEM
 #ifdef COMBUST_NITSCHE
-    // boundary integrals are only added for intersected elements (fully enriched elements)
-    if (ele->Intersected() == true)
+    // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
+    if (ele->Intersected() == true || ele->Touched_Plus() == true )
     {
+      // get smoothed gradient of phi for surface tension applications
+      LINALG::Matrix<3,numnode> egradphi;
+      egradphi.Clear();
+      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, material, timealgo, dt, theta, assembler,
-          flamespeed,nitschevel,nitschepres,surftensapprox,surftenscoeff);
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
+          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          normaltensionjumptype, smoothed_boundary_integration);
     }
 #endif
 #ifdef COMBUST_STRESS_BASED
@@ -478,37 +492,44 @@ void Sysmat(
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
   {
+    double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
+    double ele_meas_minus = 0.0; // for different averages <> and {}
+
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele_meas_plus, ele_meas_minus);
   }
   break;
   case INPAR::COMBUST::combusttype_twophaseflow_surf:
   {
-//      double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
-//      double ele_meas_minus = 0.0; // for different averages <> and {}
-//
-//      TPF::SysmatTwoPhaseFlow_Surf_Domain<DISTYPE,ASSTYPE,NUMDOF>(
-//        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, eepsilon,
-//        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler, ele_meas_plus, ele_meas_minus);
-//
-//      // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-//      if (ele->Intersected() == true || ele->Touched_Plus() == true )
-//      {
-//        // get smoothed gradient of phi for surface tension applications
-//        LINALG::Matrix<3,numnode> egradphi;
-//        fillElementGradPhi<DISTYPE>(mystate, egradphi);
-//
-//        TPF::SysmatTwoPhaseFlow_Surf_Boundary<DISTYPE,ASSTYPE,NUMDOF>(
-//            ele, ih, dofman, evelnp, eprenp, ephi, egradphi, eepsilon, material, timealgo, dt, theta, assembler,
-//            flamespeed,nitschevel,nitschepres, ele_meas_plus, ele_meas_minus,surftensapprox,surftenscoeff,connected_interface, veljumptype, normaltensionjumptype);
-//      }
+    double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
+    double ele_meas_minus = 0.0; // for different averages <> and {}
+
+    COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele_meas_plus, ele_meas_minus);
+
+    // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
+    if (ele->Intersected() == true || ele->Touched_Plus() == true )
+    {
+      // get smoothed gradient of phi for surface tension applications
+      LINALG::Matrix<3,numnode> egradphi;
+      egradphi.Clear();
+      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+
+      COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eprenp, ephi,egradphi, etensor,
+          material, timealgo, dt, theta, assembler,
+          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          normaltensionjumptype, smoothed_boundary_integration);
+    }
   }
   break;
   case INPAR::COMBUST::combusttype_twophaseflowjump:
   {
-#ifdef TWOPHASEFLOW_NITSCHE
-    // schott Jun 16, 2010
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
@@ -518,18 +539,20 @@ void Sysmat(
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    // TODO Das, oder das naechste
     if (ele->Intersected() == true || ele->Touched_Plus() == true )
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
+      egradphi.Clear();
       fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
-          flamespeed,nitschevel,nitschepres, ele_meas_plus, ele_meas_minus,surftensapprox,surftenscoeff,connected_interface, veljumptype, normaltensionjumptype);
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi,
+          material, timealgo, dt, theta, assembler,
+          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          normaltensionjumptype, smoothed_boundary_integration);
     }
-#endif
   }
   break;
   default:
@@ -590,7 +613,8 @@ void COMBUST::callSysmat(
     const double                                surftenscoeff,
     const bool                                  connected_interface,
     const INPAR::COMBUST::VelocityJumpType      veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype)
+    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
+    const bool                           smoothed_boundary_integration)
 {
   if (assembly_type == XFEM::standard_assembly)
   {
@@ -601,7 +625,7 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype,flamespeed,nitschevel,nitschepres,surftensapprox,surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype);
+          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -640,7 +664,7 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype);
+          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
@@ -686,10 +710,11 @@ void NitscheErrors(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&                       dofman,         ///< dofmanager of the current element
     const DRT::ELEMENTS::Combust3::MyState&              mystate, ///< element state variables
-    Teuchos::RCP<const MAT::Material>                    material       ///< fluid material
+    Teuchos::RCP<const MAT::Material>                    material,       ///< fluid material
+    const bool                                           smoothed_boundary_integration
 )
 {
-//  const int NUMDOF = 4;
+  const int NUMDOF = 4;
 
   // split velocity and pressure (and stress)
   const int shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -702,9 +727,6 @@ void NitscheErrors(
 
   //==============================================================================================================
   // fill velocity and pressure Arrays
-
-  //  fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp,
-  //      ephi, etensor, ediscpres);
 
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
@@ -738,23 +760,30 @@ void NitscheErrors(
   }
   for (size_t iparam=0; iparam<numparampres; ++iparam)
     eprenp(iparam) = mystate.velnp_[presdof[iparam]];
-  
+
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
     ephi(iparam) = mystate.phinp_[iparam];
-//=================================================================================================================
-//  double ele_meas_plus = 0.0;	// we need measure of element in plus domain and minus domain
-//  double ele_meas_minus = 0.0;	// for different averages <> and {}
-//
-//	  COMBUST::BuildDomainNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
-//	      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
-//
-//	  if (ele->Intersected() == true || ele->Touched_Plus() == true)
-//	  {
-//		  COMBUST::BuildBoundaryNitscheErrors<DISTYPE,ASSTYPE,NUMDOF>(
-//	        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
-//	  }
+
+  //=================================================================================================================
+  double ele_meas_plus = 0.0;	// we need measure of element in plus domain and minus domain
+  double ele_meas_minus = 0.0;	// for different averages <> and {}
+
+  COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
+
+  if (ele->Intersected() == true || ele->Touched_Plus() == true)
+  {
+    LINALG::Matrix<3,numnode> egradphi;
+    egradphi.Clear();
+    fillElementGradPhi<DISTYPE>(mystate, egradphi);
+
+    COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
+        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
+  }
+
+  return;
 }
 
 
@@ -768,7 +797,8 @@ void COMBUST::callNitscheErrors(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,     ///<
     const XFEM::ElementDofManager&              eleDofManager,    ///<
     const DRT::ELEMENTS::Combust3::MyState&     mystate,          ///< element state variables
-    Teuchos::RCP<const MAT::Material>           material          ///<
+    Teuchos::RCP<const MAT::Material>           material,          ///<
+    const bool                                  smoothed_boundary_integration
 )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -777,7 +807,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       NitscheErrors<DRT::Element::hex8,XFEM::standard_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -813,7 +843,7 @@ void COMBUST::callNitscheErrors(
     {
     case DRT::Element::hex8:
       NitscheErrors<DRT::Element::hex8,XFEM::xfem_assembly>(
-          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material);
+          eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(

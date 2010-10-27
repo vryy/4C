@@ -67,14 +67,16 @@ void SysmatTwoPhaseFlow(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
-    //const int                           step,        // for gmsh output of subgrid velocity
+    //const int                           step,        ///< for gmsh output of subgrid velocity
     const bool                          newton,        ///< full Newton or fixed-point-like
     const bool                          pstab,         ///< flag for stabilization
     const bool                          supg,          ///< flag for stabilization
     const bool                          cstab,         ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,       ///< stabilization parameter definition
     const bool                          instationary,  ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
+    double&                        ele_meas_plus,      ///< set measure of element in plus domain
+    double&                        ele_meas_minus      ///< set measure of element in minus domain
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat - domain");
@@ -180,6 +182,11 @@ void SysmatTwoPhaseFlow(
       {
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
+      
+      // schott
+      // set measure of element in plus and minus domain   
+      if(cell->getDomainPlus() == true)        {ele_meas_plus  += fac;}
+      else  {ele_meas_minus += fac;}
 
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
@@ -223,6 +230,11 @@ void SysmatTwoPhaseFlow(
       // the enrichment functions depend on the gauss point
       // therefore the comutation of the enrichment functions is called here
       // the gauss point is contained in funct!
+      
+      
+#if(0)
+      // Original version of Ursula
+      // here jump enrichments are called with level-set values
       const XFEM::ElementEnrichmentValues enrvals(
           *ele,
           dofman,
@@ -230,6 +242,20 @@ void SysmatTwoPhaseFlow(
           funct,
           derxy,
           derxy2);
+#else
+      // schott Sep 20, 2010
+      // new version of Benedikt
+      // kink enrichments are called with level-set values
+      // jump enrichments are called with domain cells!
+      const XFEM::ElementEnrichmentValues enrvals(
+          *ele,
+          dofman,
+          ephi,
+          *cell,
+          funct,
+          derxy,
+          derxy2);
+#endif
 
       const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 

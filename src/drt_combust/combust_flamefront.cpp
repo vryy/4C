@@ -75,30 +75,21 @@ COMBUST::FlameFront::~FlameFront()
 void COMBUST::FlameFront::UpdateFlameFront(
         const Teuchos::ParameterList& combustdyn,
         const Teuchos::RCP<const Epetra_Vector>& phin,
-        const Teuchos::RCP<const Epetra_Vector>& phinp
+        const Teuchos::RCP<const Epetra_Vector>& phinp,
+        bool ReinitModifyPhi
     )
 {
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
   // modify phi vectors nearly zero
-  //ModifyPhiVector(combustdyn);
+  ModifyPhiVector(combustdyn, ReinitModifyPhi);
+
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
   ProcessFlameFront(combustdyn, phinp_);
 
-  // TODO @Benedikt: bitte aufraeumen
   // compute smoothed gradient of G-function field
   // remark: must be called after ProcessFlameFront, since it relies on the new interface position
-  //  const INPAR::COMBUST::SurfaceTensionApprox smoothgradient = Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>
-  //      (combustdyn.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX");
-  //  if (smoothgradient == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
-  //    SmoothGradPhi();
-
-  //TODO: smoothing necessary for all types of surface tension approximation
-  //  const INPAR::COMBUST::SurfaceTensionApprox smoothgradient = Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>
-  //      (combustdyn.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX");
-  //  if (smoothgradient != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed)
-  //
 
   const INPAR::COMBUST::SmoothGradPhi smoothgradphi = Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>
       (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
@@ -307,16 +298,24 @@ void COMBUST::FlameFront::StorePhiVectors(
  | and ill conditioned matrices -> we need this implicit in xdofmapcreation_combust               |
  |                                                                        schott/winklmaier 08/10 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustdyn)
+void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi)
 {
   std::cout << "\n---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
+  
+if(ReinitModifyPhi==true)
+{
+  // Benedikt:
+  // this case shall circumvent the tetgen-problem only!
+  // when tetgen is not used any more, this case can be removed
 
-#if(1)  
   // get relative tolerance for which we modify G-function values in the fluid part
-  const double ModifyTOL = combustdyn.sublist("COMBUSTION FLUID").get<double>("PHI_MODIFY_TOL");
+  const double ModifyTOL = 1e-012;
+
+  cout << "\n \t -> ModifyTOL for G-func values is set to " << ModifyTOL << " (relative to element diameter) to handle problems with tetgen!" << endl;
 
   // count modified phi node values
   int modified_counter = 0;
+
 
   //========================================================================================
   // get an absolute tolerance for which we modify phi values with |phi(node)-0.0| < TOL
@@ -344,95 +343,75 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 
   for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
   {
-    // get node from fluid discretization 
+    // get node from fluid discretization
     const DRT::Node *actnode = fluiddis_->lRowNode(inode);
 
-    // get owner of the node to compare with my_rank
-    //    int node_owner = actnode->Owner();
+    // this processor has to modify the phi-value for the current node
+    // get local processor id of node
+    int nodeID = actnode->Id();
 
-    //cout << "modify values for node" << actnode->Id() << endl;
+    // get all adjacent elements of this row node -> we find these in a
+    int numberOfElements = actnode->NumElement();
+    const DRT::Element* const* elements = actnode->Elements();
 
-    // check wheather this node is a row node, compare with actual processor id
-    //    if (node_owner == fluiddis_->Comm().MyPID())
+    // initialize maximal element diameter to 0.0
+    double maxEleDiam = 0.0;
+
+    //==========================================================================
+    // loop over adjacent elements => set max eleDiam
+    for(int ele_current=0; ele_current<numberOfElements; ele_current++)
     {
-      // this processor has to modify the phi-value for the current node
-      // get local processor id of node
-      int nodeID = actnode->Id();
+      // get current element
+      const DRT::Element* ele_adj = elements[ele_current];
+
+      //-------------------------------------------------------------
+      // get element diameter for the current adjacent element
+      //-------------------------------------------------------------
+      if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
+
+      static LINALG::Matrix<nsd,numnode> xyze_adj;
+      GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+
+      // calculate element diameter
+      const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
 
-      // get all adjacent elements of this row node -> we find these in a
-      int numberOfElements = actnode->NumElement();
-      const DRT::Element* const* elements = actnode->Elements();
+      //-------------------------------------------------------------
+      // update maxEleDiam
+      //-------------------------------------------------------------
+      maxEleDiam = max(hk_current,maxEleDiam);
 
-      // initialize maximal element diameter to 0.0
-      double maxEleDiam = 0.0;
+    } // end loop over adjacent
+    //==========================================================================
 
-      //==========================================================================
-      // loop over adjacent elements => set max eleDiam
-      for(int ele_current=0; ele_current<numberOfElements; ele_current++)
-      {
-        // get current element
-        const DRT::Element* ele_adj = elements[ele_current];
+    // set TOL dependent on maxEleDiam
+    const double TOL = maxEleDiam * ModifyTOL;
 
-        //-------------------------------------------------------------
-        // get element diameter for the current adjacent element
-        //-------------------------------------------------------------
-        if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
 
-        static LINALG::Matrix<nsd,numnode> xyze_adj;
-        GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+    // get current phi-value
+    // lid is the local processor id of the current node
+    // phinp_ is a nodeColMap
+    const int lid = (*phinpTmp).Map().LID(nodeID);
+    if (lid<0)
+      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
+    double phinp_current = (*phinpTmp)[lid];
+    double phin_current = (*phinTmp)[lid];
 
-        //cout << xyze_adj << endl;
-
-        // calculate element diameter
-        const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
-
-        //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
-
-        //-------------------------------------------------------------
-        // update maxEleDiam
-        //-------------------------------------------------------------
-        maxEleDiam = max(hk_current,maxEleDiam);
-
-      } // end loop over adjacent
-      //==========================================================================
-
-      // set TOL dependent on maxEleDiam
-      const double TOL = maxEleDiam * ModifyTOL;
-
-      // REMARK: we have to modify phi_values to zero if we get ill conditioned element matrices,
-      // we get these especially if we have small absolute |phi(node) - 0.0| in large elements
-      // therefore we take maxEleDiam as reference for our modification
-
-      // get current phi-value
-      // lid is the local processor id of the current node
-      // phinp_ is a nodeColMap
-      const int lid = (*phinpTmp).Map().LID(nodeID);
-      if (lid<0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
-      double phinp_current = (*phinpTmp)[lid];
-      double phin_current = (*phinTmp)[lid];
-
-      // decide if modification to phi=0.0 is necessary
-      // reset small phi values to zero
-      if (fabs(phinp_current - 0.0) < TOL)
-      {
-        cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << std::endl;
-        (*phinpTmp)[lid] = 0.0;
-        modified_counter++;
-      }
-      if (fabs(phin_current - 0.0) < TOL)
-      {
-        (*phinTmp)[lid] = 0.0;
-        // no additional cout-comment here because this value has been
-        // modified in the timestep before and cout was created there
-      }
-
-    } // end if
-    //    else
+    // decide if modification to phi=0.0 is necessary
+    // reset small phi values to zero
+    if (fabs(phinp_current - 0.0) < TOL)
     {
-      // REMARK: all not row nodes are reconstructed by another processor!!!
+      cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << std::endl;
+      (*phinpTmp)[lid] = 0.0;
+      modified_counter++;
     }
+    if (fabs(phin_current - 0.0) < TOL)
+    {
+      (*phinTmp)[lid] = 0.0;
+      // no additional cout-comment here because this value has been
+      // modified in the timestep before and cout was created there
+    }
+
   } // end loop over nodes
 
   if(modified_counter > 0)
@@ -440,8 +419,9 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 
   LINALG::Export(*phinTmp,*phin_);
   LINALG::Export(*phinpTmp,*phinp_);
-#else
-
+}
+else // non-ReinitModifyPhi case (standard case)
+{
   //========================================================================================
   // get a tolerance for the main modify criterion: ModifyTOL
   // REMARK:
@@ -455,7 +435,6 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
   // get relative tolerance for which we modify G-function values ( done just in the fluid part )
   const double ModifyTOL = combustdyn.sublist("COMBUSTION FLUID").get<double>("PHI_MODIFY_TOL");
 
-
   //========================================================================================
   // get a tolerance for which we look for nodes which potentially get modified
   // REMARK:
@@ -464,9 +443,12 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
   // usually we choose SearchTOL = 0.1
   //========================================================================================
   const double SearchTOL = 0.1;
+  cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
 
   // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
   const double TOL_zero = 1e-14;
+
+  cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
 
 
   // number space dimensions for 3d combustion element
@@ -502,7 +484,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     int nodeID = actnode->Id();
 
 
-    // get all adjacent elements of this row node -> we find these in a
+    // get all adjacent elements of this row node
     int numberOfElements = actnode->NumElement();
     const DRT::Element* const* elements = actnode->Elements();
 
@@ -578,12 +560,12 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       bool inode_modified_np = false;
 
       // modify numerical zeros to 0.0 directly
-      if(fabs(phinp_current - 0.0) < TOL_zero)
+      if((fabs(phinp_current - 0.0) < TOL_zero) && (phinp_current!= 0.0))
       {
         inode_modified_np = true;
         cout << "\t\t -> a numerical zero is set to 0.0" << std::endl<< std::flush;
       }
-      if(fabs(phin_current - 0.0) < TOL_zero)  inode_modified_n = true;
+      if((fabs(phin_current - 0.0) < TOL_zero) && (phin_current!= 0.0))  inode_modified_n = true;
       //==========================================================================
       if((inode_modified_np == false) or (inode_modified_n == false))
       {
@@ -698,6 +680,11 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
                   dserror("impossible");
                 }
               } // end if inode_modified_np
+              else
+              {
+                // set critical value to 1.0
+                crit_adj_inode_np(jnode) = 1.0;
+              }
               if(modify_phin_pot ==true)
               {
                 double phi_n_i = ephin_adj(ID_param_space);
@@ -722,7 +709,11 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
                   dserror("impossible");
                 }
               } // end if inode_modified_n
-
+              else
+              {
+                // set critical value to 1.0
+                crit_adj_inode_n(jnode)  = 1.0;
+              }
             }
             else
             {
@@ -734,18 +725,10 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
             ele_critical_inode_np(ele_current) *= crit_adj_inode_np(jnode);
             ele_critical_inode_n(ele_current)  *= crit_adj_inode_n(jnode);
           }// end loop over nodes of current adjacent element
-          //		  cout << " element critical(np) values for ele: "<< ele_adj->Id() << " node: " << actnode->Id() << " is calculated to \n" << ele_critical_inode_np(ele_current) << endl;
-          //		  cout << " element critical(n)  values for ele: "<< ele_adj->Id() << " node: " << actnode->Id() << " is calculated to \n" << ele_critical_inode_n(ele_current) << endl;
-
         } // end loop over adjacent
 
-        // cout the element critical value for node inode
-        //		  cout << " element critical(np) values for node: " << actnode->Id() << " is calculated to \n" << ele_critical_inode_np << endl;
-        //		  cout << " element critical(n)  values for node: " << actnode->Id() << " is calculated to \n" << ele_critical_inode_n << endl;
-
         // ============== decide if the corresponding phi value of node inode gets modified ===========
-        //		  bool inode_modified_n = false;
-        //		  bool inode_modified_np = false;
+
         double minimal_crit_val_np = 1.0;
         double minimal_crit_val_n = 1.0;
 
@@ -762,20 +745,14 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
           minimal_crit_val_np = min(minimal_crit_val_np, fabs(ele_critical_inode_np(ele) - 0.0 ));
           minimal_crit_val_n = min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
         }
-        cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << std::endl<< std::flush;
-
+        if(inode_modified_np == true)
+          cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << std::endl<< std::flush;
+        if(inode_modified_n == true)
+          cout << "\t \t    minimal_crit_val_n was: " << minimal_crit_val_n << std::endl<< std::flush;
       } // end set inode_modifed_np status
       //==========================================================================
 
 
-      // get current phi-value
-      // lid is the local processor id of the current node
-      // phinp_ is a nodeColMap
-      //        const int lid = (*phinpTmp).Map().LID(nodeID);
-      //        if (lid<0)
-      //          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
-      //        double phinp_current = (*phinpTmp)[lid];
-      //        double phin_current = (*phinTmp)[lid];
 
       // decide if modification to phi=0.0 is necessary
       // reset small phi values to zero
@@ -785,7 +762,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         (*phinpTmp)[lid] = 0.0;
         modified_counter++;
       }
-      //else  cout << "\t \t -> not modified.(critical-value would be: " << minimal_crit_val_np << ")" << std::endl;
+
       if (inode_modified_n == true)
       {
         (*phinTmp)[lid] = 0.0;
@@ -794,30 +771,19 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       }
     } // end if SearchTOL
 
-    {
-      // REMARK: all not row nodes are reconstructed by another processor!!!
-    }
-
-
+    // REMARK: all not row nodes are reconstructed by another processor!!!
   } // end loop over nodes
-
-
 
 
   if(modified_counter > 0)
     std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done\n" << std::flush;
 
   LINALG::Export(*phinTmp,*phin_);
-  LINALG::Export(*phinpTmp,*phinp_);  
+  LINALG::Export(*phinpTmp,*phinp_);
 
+}
 
-
-
-
-
-#endif
-
-  return;
+return;
 }
 
 
@@ -956,9 +922,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     else if (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
       CurrTypeOfNodeReconst = INPAR::COMBUST::smooth_grad_phi_meanvalue;
     else if ( (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D  && numberOfElements < int(nsd_real)) ||
-        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx && numberOfElements < int(nsd_real)) ||
-        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy && numberOfElements < int(nsd_real)) ||
-        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz && numberOfElements < int(nsd_real))    )
+        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx && numberOfElements <= int(nsd_real)) ||
+        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy && numberOfElements <= int(nsd_real)) ||
+        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz && numberOfElements <= int(nsd_real))    )
     {
       CurrTypeOfNodeReconst = INPAR::COMBUST::smooth_grad_phi_meanvalue;
 
@@ -988,8 +954,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       {
         // get current element
         const DRT::Element* ele_adj = elements[ele_current];
-
-        // TODO: switch over element discretization!!!!!!!!!!!! ->template
 
         const int* ptToNodeIds_adj = ele_adj->NodeIds();
 
@@ -1031,7 +995,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
         // get derivatives of shapefunctions at node
         DRT::UTILS::shape_function_3D_deriv1(deriv3Dele,node_Xicoordinates(0),node_Xicoordinates(1),node_Xicoordinates(2),DISTYPE);
-#if(1) // reconstruct XYZ!-gradient
+
+        // reconstruct XYZ!-gradient
 
         // get node coordinates of this element
         static LINALG::Matrix<nsd,numnode> xyze_adj;
@@ -1055,19 +1020,10 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
         // get xyz-gradient
         nodal_grad_tmp.Multiply(deriv3Dele_xyz, ephi_adj);
-        //cout << "nodal_grad_tmp" << nodal_grad_tmp << endl;
+
         //===============================================================================
         // add to vector with smoothed vector
         // we dont need PHI_SMOOTHED(0,0)
-#else // reconstruct Xi!-gradient
-        //===============================================================================
-        // calculate gradient of phi at node for current element
-        static LINALG::Matrix<3,1> nodal_grad_tmp;
-        nodal_grad_tmp.Clear();
-
-        // get xi-gradient!!!
-        nodal_grad_tmp.Multiply(deriv3Dele, ephi_adj);
-#endif
 
         // full 3D reconstruction, also for 2D examples
         PHI_SMOOTHED_3D(0,0) += nodal_grad_tmp(0,0);
@@ -1075,23 +1031,55 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(2,0) += nodal_grad_tmp(2,0);
 
       }// end loop over all adjacent elements
-#ifdef FLAME_VORTEX
-          // special case for flame vortex interaction
-          // this is a node of an intersected element
-          // the element must be a boundary element!
-          // assume a continued interface across the domain boundary
-          if(numberOfElements == 2 || numberOfElements == 1)
-          {
-            // set two vectors in y-direction
-            PHI_SMOOTHED_3D(0,0) = 0.0;
-            PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
-            PHI_SMOOTHED_3D(2,0) = 0.0;
-
-            cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
-          }
-#endif
-
-
+#if(0)		  
+		  // special case for straight_bodyforce
+		  // this is a node of an intersected element 
+		  // the element must be a boundary element!
+		  // assume a continued interface across the domain boundary
+		  if(numberOfElements == 2)
+		  {
+		    // set two vectors in y-direction
+		    PHI_SMOOTHED_3D(0,0) = 1.0;
+		    PHI_SMOOTHED_3D(1,0) = 1.0;
+		    PHI_SMOOTHED_3D(2,0) = 0.0;
+		    
+		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+		  }
+#endif	       
+      
+#if(0)
+		  // special case for Rayleigh-Taylor
+		  // this is a node of an intersected element 
+		  // the element must be a boundary element!
+		  // assume a continued interface across the domain boundary
+		  if(numberOfElements == 2)
+		  {
+		    // set two vectors in y-direction
+		    PHI_SMOOTHED_3D(0,0) = 0.0;
+		    PHI_SMOOTHED_3D(1,0) = 2.0;
+		    PHI_SMOOTHED_3D(2,0) = 0.0;
+		    
+		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+		  }
+#endif	  
+		  
+#if(0)
+		  // special case for flame vortex interaction
+		  // this is a node of an intersected element 
+		  // the element must be a boundary element!
+		  // assume a continued interface across the domain boundary
+		  if(numberOfElements == 2 || numberOfElements == 1)
+		  {
+		    // set two vectors in y-direction
+		    PHI_SMOOTHED_3D(0,0) = 0.0;
+		    PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
+		    PHI_SMOOTHED_3D(2,0) = 0.0;
+		    
+		    cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
+		  }
+#endif	  
+      
+      
       // weight sum of nodal_grad_tmp 1/number_of_vectors to get an average value
       PHI_SMOOTHED_3D.Scale(1.0/numberOfElements);
     } // end of average (mean value) reconstruction
@@ -1172,7 +1160,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
         centerOfGravXYZ.Multiply(xyze_adj,funct);
 
-#if(1)	// reconstruct xyz-gradient
+        // reconstruct xyz-gradient
         // calculate vector from current node to point of gravity (direction for taylor)
         static LINALG::Matrix<nsd,1> direction;
         direction.Clear();
@@ -1186,97 +1174,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         // cancel out the 2D direction
         if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
 
-
-#else // reconstruct xi-gradient
-        // calculate vector from current node to point of gravity (direction for taylor)
-        static LINALG::Matrix<nsd,1> direction_tmp;
-        direction_tmp.Clear();
-
-        direction_tmp(0) = centerOfGravXYZ(0) - xyze_adj(0, ID_param_space);
-        direction_tmp(1) = centerOfGravXYZ(1) - xyze_adj(1, ID_param_space);
-        direction_tmp(2) = centerOfGravXYZ(2) - xyze_adj(2, ID_param_space);
-
-
-        // we want to reconstruct grad_xi => transform direction
-        // J^(-T)(node) * direction
-
-        // get Xi-coordinates of current node in current adjacent element
-        static LINALG::Matrix<nsd,1> node_Xicoordinates;
-        node_Xicoordinates.Clear();
-        node_Xicoordinates = DRT::UTILS::getNodeCoordinates(ID_param_space, DISTYPE);
-
-
-        // get derivatives of shapefunctions at node
-        static LINALG::Matrix<nsd,numnode> deriv_node;
-        deriv_node.Clear();
-        DRT::UTILS::shape_function_3D_deriv1(deriv_node,node_Xicoordinates(0),node_Xicoordinates(1),node_Xicoordinates(2),DISTYPE);
-
-
-        // get transposed of the jacobian matrix d x / d \xi
-        // xjm(i,j) = deriv(i,k)*xyze(j,k)
-        static LINALG::Matrix<nsd,nsd> xjm_node;
-        xjm_node.Clear();
-        xjm_node.MultiplyNT(deriv_node,xyze_adj);
-
-        static LINALG::Matrix<nsd,nsd> xji_node;
-        xji_node.Clear();
-        xji_node.Invert(xjm_node);
-
-        // get the xi-dim we have to cancel out for 2D case
-        // REMARK: xyz-dim is NOT!!! xi-dim
-        // define a xyz-unit vector in dimension we have to cancel out
-        static LINALG::Matrix<nsd,1> unit_vec;
-        unit_vec.Clear();
-
-        // set one dimension (xyz-dim) to zero for 2D LS-reconstruction
-        if(GradPhiReconstr == INPAR::COMBUST::Grad_phi_LeastSquares_2Dx){
-          direction_tmp(0) = 0.0;
-          unit_vec(0) =1.0;
-        }
-        if(GradPhiReconstr == INPAR::COMBUST::Grad_phi_LeastSquares_2Dy){
-          direction_tmp(1) = 0.0;
-          unit_vec(1) =1.0;
-        }
-        if(GradPhiReconstr == INPAR::COMBUST::Grad_phi_LeastSquares_2Dz){
-          direction_tmp(2) = 0.0;
-          unit_vec(2) =1.0;
-        }
-        // transform the unit vector in xyz-direction to xi-vector to get xi-dim we have to cancel out
-        static LINALG::Matrix<nsd,1> unit_vec_xi;
-        unit_vec_xi.Clear();
-        unit_vec_xi.MultiplyTN(xji_node,unit_vec);
-
-        // get the xi-dim
-        size_t xi_dim = -1;
-        for(size_t isd = 0; isd<nsd; isd++){
-          // we search for the dim with xi!=0.0
-
-          // if not set already
-          if(unit_vec_xi(isd)!=0.0 && xi_dim==-1) xi_dim = isd;
-          else if(unit_vec_xi(isd)!=0.0 && xi_dim!=-1)
-          {
-            // xi_dim already set and another unit_vec_xi dim is zero
-            // => Jacobi-Transform from xi to xyz cannot be a rotation!!!
-          }
-          dserror("xi-dimension which we must cancel out for 2D LeastSquaresReconstruction could not be found!");
-        }
-
-        // control if all elements have the same xi-dim which has to be cancelled out
-        if(xi_dim_control!=-1 && xi_dim_control!=xi_dim) dserror ("all the adjacent elements do not have the same 2D-xi-dimension!!!");
-
-        // (2D-modified) direction transformed J^(-T)(node) * direction
-        static LINALG::Matrix<nsd,1> direction;
-        direction.Clear();
-        direction.MultiplyTN(xji_node,direction_tmp);
-
-        //=> for 2D case we need to modify also the corresponding xi-direction
-        // cancel out xi-dim
-        if(xi_dim!=-1) direction(xi_dim)=0.0;
-        else dserror("unpossible xi_dim which we must cancel out for 2D LeastSquares reconstruction");
-
-        // get the xi-dim which we must set zero and corresponds to the xyz-dim we get from Grad_phi_LeastSquares_2Dxyz
-
-#endif
 
         // assemble direction into matrix A
 
@@ -1331,8 +1228,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       solver.SetMatrix(MAT);
       solver.SetVectors(PHI_SMOOTHED,RHS);
       solver.Solve();
-
-
+      
+//      cout << " node:" << (it_node->second)->Id() << endl;
+//      cout << "PHI_SMOOTHED" << PHI_SMOOTHED << endl;
       // set full 3D vector especially important for 2D leastsquares reconstruction
       if(CurrTypeOfNodeReconst == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D)
       {
@@ -1387,6 +1285,314 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   LINALG::Export(*gradphirow,*gradphi_);
 
   std::cout << "done" << std::endl;
+  
+  
+  
+//  
+//  //===================================== new 2-Ring version
+//  for(Reconstruct_iterator it_node = nodesToReconstruct.begin(); it_node!= nodesToReconstruct.end(); it_node++)
+//  {
+//    // define vector for smoothed values (Phi, grad_Phi) of current node
+//    static LINALG::Matrix<9,1> PHI_SMOOTHED; // for real reconstruction 2D or 3D
+//    PHI_SMOOTHED.Clear();
+//    static LINALG::Matrix<9,1> PHI_SMOOTHED_3D; // set whole 3D vector also for 2D examples
+//    PHI_SMOOTHED_3D.Clear();
+//
+//
+//    // get local processor id of current node and pointer to current node
+//    //int lid_node = it_node->first;
+//    const DRT::Node* ptToNode = it_node->second;
+////    cout << "node:" << (it_node->second)->Id();
+//
+//    int numberOfElements = ptToNode->NumElement();
+//
+//    if(true) // least squares reconstruction
+//    {
+//        // get all adjacent elements in a 2-Ring
+//        // get adjacent elements to current node actnode (1-Ring)
+//        const DRT::Element* const* elementsOneRing = ptToNode->Elements();
+//    	
+//        
+//        // map of pointers to nodes which must be reconstructed by this processor
+//        // key is the local id at processor
+//        std::map<int, const DRT::Element*> elesinTwoRing;
+//        elesinTwoRing.clear();
+//        
+//        // loop over adjacent elements (1-ring elements)
+//        for(int ele_current=0; ele_current<numberOfElements; ele_current++)
+//        {
+//          // get current element
+//          const DRT::Element* ele_adj = elementsOneRing[ele_current];
+//
+//          // these are global Ids
+//          const int* ptToNodeIds_adj = ele_adj->NodeIds();
+//          
+//          
+//          for(int currentNode = 0; currentNode < (int)numnode; currentNode++)
+//          {
+//        	  // get local ID
+//              int curr_GID = ptToNodeIds_adj[currentNode];
+//
+//              // get local processor id according to global node id
+//              const int curr_lid = (*phinp_).Map().LID(curr_GID);
+//
+//              if (curr_lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),curr_GID);
+//
+//        	  
+//        	  // get current Node, the local ID is needed
+//        	  const DRT::Node *actnode = fluiddis_->lColNode(curr_lid);
+//        	  
+//        	  // get pointer to all adjacent elements of this node actnode
+//              const DRT::Element* const* elementsTwoRing = actnode->Elements();
+//        	  
+//              int numberOfElementsTwoRing = actnode->NumElement();
+//              
+//        	  // get all elements of the 2-ring and insert these in a vector
+//              // loop over these elements, insert to map
+//              for(int ele_current_two_ring=0; ele_current_two_ring < numberOfElementsTwoRing; ele_current_two_ring++)
+//              {
+//                  // get current element
+//                  const DRT::Element* ele_Two_Ring = elementsTwoRing[ele_current_two_ring];
+//                  
+//                  // insert in map of all two-ring elements respect to one node
+//                  int lid = elementsTwoRing[ele_current_two_ring]->LID();
+//                  elesinTwoRing[lid] = ele_Two_Ring;
+//              } // end loop over elements in 2-ring
+//          } // end loop over nodes of 1-ring
+//        } // end loop over elements of 1-ring
+//    	
+//        // get node xyze-coordinates
+//        LINALG::Matrix<nsd,1> xyz_node(ptToNode->X());
+////        cout << "xyz_node" << xyz_node << endl;
+//        
+//        
+//    	const int numberOfTwoRingElements = elesinTwoRing.size();
+////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << endl;
+//      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
+//      Epetra_SerialDenseMatrix MAT_LS(numberOfTwoRingElements, 9);
+//
+//      // map iterator
+//      typedef std::map<int, const DRT::Element*> Map_EleOfTwoRing;
+//      typedef Map_EleOfTwoRing::iterator TwoRing_iterator;
+//      int element_counter = 0;
+//      
+//      
+////      cout << "=====================iterate over elements in two-ring==============" << endl;
+//      for(TwoRing_iterator it_ele = elesinTwoRing.begin(); it_ele!= elesinTwoRing.end(); it_ele++)
+//      {
+//    	  
+//          // get adjacent elements to current node actnode
+//          const DRT::Element* ele_Two_Ring= it_ele->second;
+//          
+//          // get pointer to NodeIds of current element (global Ids)
+//          const int* ptToNodeIds_adj = ele_Two_Ring->NodeIds();
+//          
+//          
+//          // get phi-values of current adjacent element ele_adj
+//          // create vector "ephinp" holding scalar phi values for this element
+//          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
+//
+////          cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << endl;
+//          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
+//          vector<int> nodeID_adj(numnode);
+//          for (size_t inode=0; inode < numnode; inode++){
+//            nodeID_adj[inode] = ptToNodeIds_adj[inode];
+////            cout << nodeID_adj[inode] << endl;
+//          }
+//
+//          // extract the phi-values of adjacent element with local ids from global vector *phinp
+//          // get pointer to vector holding G-function values at the fluid nodes
+//          DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
+//          LINALG::Matrix<numnode,1> ephi_adj(ephinp);
+//
+//
+//          // calculate center of gravity
+//          static LINALG::Matrix<numnode,1> funct;
+//          funct.Clear();
+//          static LINALG::Matrix<nsd,1> centerOfGravXi;
+//          centerOfGravXi.Clear();
+//
+//          // xi-coord = 0.0.0 for hex8
+//          if (DISTYPE != DRT::Element::hex8) dserror("center of gravity implemented only for hex8 elements");
+//          centerOfGravXi(0) = 0.0;
+//          centerOfGravXi(1) = 0.0;
+//          centerOfGravXi(2) = 0.0;
+//
+//
+//
+//          DRT::UTILS::shape_function_3D(funct,centerOfGravXi(0),centerOfGravXi(1),centerOfGravXi(2),DISTYPE);
+//
+//          // get node coordinates of this element
+//          static LINALG::Matrix<nsd,numnode> xyze_adj;
+//          GEO::fillInitialPositionArray<DISTYPE>(ele_Two_Ring, xyze_adj);
+//
+//          // interpolate center of gravity
+//          static LINALG::Matrix<nsd,1> centerOfGravXYZ;
+//          centerOfGravXYZ.Clear();
+//
+//          centerOfGravXYZ.Multiply(xyze_adj,funct);
+//
+//          // reconstruct xyz-gradient
+//          // calculate vector from current node to point of gravity (direction for taylor)
+//          static LINALG::Matrix<nsd,1> direction;
+//          direction.Clear();
+//
+//          direction(0) = centerOfGravXYZ(0) - xyz_node(0);
+//          direction(1) = centerOfGravXYZ(1) - xyz_node(1);
+//          direction(2) = centerOfGravXYZ(2) - xyz_node(2);
+//          
+////          cout << "direction" << direction << endl;
+//          
+//          // calculate ephi at point of gravity via interpolation
+//          static LINALG::Matrix<1,1> phi_adj;
+//          phi_adj.Clear();
+//          phi_adj.MultiplyTN(ephi_adj,funct);
+//
+////          cout << "phi_adj" << phi_adj << endl;
+//
+////          // cancel out the 2D direction
+////          if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
+//          // get the global id for current node
+//          int GID = ptToNode->Id();
+//
+//          // get local processor id according to global node id
+//          const int lid = (*phinp_).Map().LID(GID);
+//
+//          if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
+//
+//          double phi_node_value = (*phinp_)[lid];
+////          cout << "phi_node_value " << phi_node_value << endl;
+//          
+//          // set RHS and MAT for least squares method
+//
+//            RHS_LS(element_counter,0) = phi_adj(0,0) -phi_node_value;
+//            
+//            MAT_LS(element_counter,0) = direction(0);
+//            MAT_LS(element_counter,1) = direction(1);
+//            MAT_LS(element_counter,2) = direction(2);
+//            
+//            MAT_LS(element_counter,3) = 0.5*direction(0)*direction(0);
+//            MAT_LS(element_counter,4) = 0.5*direction(1)*direction(1);
+//            MAT_LS(element_counter,5) = 0.5*direction(2)*direction(2);
+//            
+//            MAT_LS(element_counter,6) = direction(0)*direction(1);
+//            MAT_LS(element_counter,7) = direction(0)*direction(2);
+//            MAT_LS(element_counter,8) = direction(1)*direction(2);
+////            MAT_LS(element_counter,0) = 1.0;
+////            MAT_LS(element_counter,1) = direction(0);
+////            MAT_LS(element_counter,2) = direction(1);
+////            MAT_LS(element_counter,3) = direction(2);
+////            
+////            MAT_LS(element_counter,4) = 0.5*direction(0)*direction(0);
+////            MAT_LS(element_counter,5) = 0.5*direction(1)*direction(1);
+////            MAT_LS(element_counter,6) = 0.5*direction(2)*direction(2);
+////            
+////            MAT_LS(element_counter,7) = direction(0)*direction(1);
+////            MAT_LS(element_counter,8) = direction(0)*direction(2);
+////            MAT_LS(element_counter,9) = direction(1)*direction(2);
+//            
+//            
+//            element_counter++;
+//      } // end loop over two-ring-elements
+//      
+////      cout << "MATLS" << endl;
+////      for(int row = 0; row < element_counter; row++)
+////      {
+////    	  for(int col = 0; col < 10; col++)
+////    	  {
+////    		  cout << MAT_LS(row, col) << "\t";
+////    	  }
+////    	  cout << endl;
+////      }
+////      cout << endl;
+//      
+//      // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
+//      // MAT_LS is not square
+//      // -> solve MAT_LS^T * MAT_LS * phi_smoothed = MAT_LS^T * RHS_LS
+//      Epetra_SerialDenseMatrix MAT_tmp(9,9);
+//      Epetra_SerialDenseMatrix RHS_tmp(9,1);
+//
+//      MAT_tmp.Multiply('T','N', 1.0, MAT_LS,MAT_LS, 0.0);
+//      RHS_tmp.Multiply('T','N', 1.0, MAT_LS,RHS_LS, 0.0);
+//
+//      // set LINALG-Matrix with fixed size
+//      // initialize element matrix for A^T*A and RHS-vector to solve Normalengleichung
+//
+//      LINALG::Matrix<9,9> MAT(MAT_tmp);
+//      LINALG::Matrix<9,1> RHS(RHS_tmp);
+//
+////      cout << "MAT" << MAT << endl;
+////      cout << "RHS" << RHS << endl;
+//      //=================solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)================
+//
+//      // solve the system for current node
+//      LINALG::FixedSizeSerialDenseSolver<9,9,1> solver; //1 is dimension of RHS
+//      solver.SetMatrix(MAT);
+//      solver.SetVectors(PHI_SMOOTHED,RHS);
+//      solver.Solve();
+//      
+////      cout << " node:" << (it_node->second)->Id() << endl;
+////      cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << endl;
+//      // set full 3D vector especially important for 2D leastsquares reconstruction
+////        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(1,0);
+////        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(2,0);
+////        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(3,0);
+////        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(4,0);
+////        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(5,0);
+////        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(6,0);
+////        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(7,0);
+////        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(8,0);
+////        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(9,0);
+//        
+//        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(0,0);
+//        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(1,0);
+//        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(2,0);
+//        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(3,0);
+//        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(4,0);
+//        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(5,0);
+//        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(6,0);
+//        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(7,0);
+//        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(8,0);
+//
+//    } // end of standard (Least_squares-) reconstruction case
+//
+//
+//    //=====================================================================================================
+//    // set the global vector gradphirow holding the new reconstructed values of gradient of phi in row!!! map
+//    //=====================================================================================================
+//
+//    // get the global id for current node
+//    int GID = (it_node->second)->Id();
+//
+//    // get local processor id according to global node id
+//    const int lid = (*gradphirow).Map().LID(GID);
+//
+//    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
+//
+//    const int numcol = (*gradphirow).NumVectors();
+////    if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not identically to nsd");
+//
+//    // loop over dimensions (= number of columns in multivector)
+//    for(int col=0; col< numcol; col++)
+//    {
+//      // get columns vector of multivector
+//      double* globalcolumn = (*gradphirow)[col];
+//
+//
+//      // set smoothed gradient entry of phi into column of global multivector
+////      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
+//      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
+//    }
+//
+//  }// ====================================== end loop over nodes ==========================================
+//
+//  // export NodeRowMap to NodeColMap gradphi_
+//  LINALG::Export(*gradphirow,*gradphi_);
+//
+//  std::cout << "done" << std::endl;
+//  
+//  
+  
 
   return;
 }

@@ -532,6 +532,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/dof_management.cpp
   src/drt_xfem/dof_management_element.cpp
   src/drt_xfem/enrichment.cpp
+  src/drt_xfem/enrichmentvalues.cpp
   src/drt_xfem/enrichment_utils.cpp
   src/drt_xfem/field_enriched.cpp
   src/drt_xfem/interface.cpp

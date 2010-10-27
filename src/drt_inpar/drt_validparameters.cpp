@@ -2650,7 +2650,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
-  setStringToIntegralParameter<INPAR::COMBUST::SmoothGradPhi>("SMOOTHGRADPHI","smooth_grad_phi_none","Type of smoothing for grad(phi)",
+  setStringToIntegralParameter<INPAR::COMBUST::SmoothGradPhi>("SMOOTHGRADPHI","smooth_grad_phi_meanvalue","Type of smoothing for grad(phi)",
       tuple<std::string>(
           "smooth_grad_phi_none",
           "smooth_grad_phi_meanvalue",
@@ -2689,13 +2689,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::NormalTension_Jump_SurfaceTension),
               &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
-  DoubleParameter("PHI_MODIFY_TOL",1.0E-3,"We modify GfuncValues near zero",&combustcontrolfluid);
+  DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
-  DoubleParameter("NITSCHE_VELOCITY",0.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
+  DoubleParameter("NITSCHE_VELOCITY",100.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
   DoubleParameter("SURFTENSCOEFF",0.0,"Surface tension coefficient",&combustcontrolfluid);
   setStringToIntegralParameter<int>("CONNECTED_INTERFACE","No","Turn refinement strategy for level set function on/off",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("SMOOTHED_BOUNDARY_INTEGRATION","No","Turn on/off type of boundary integration",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);

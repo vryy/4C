@@ -100,6 +100,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | interpolate field from element node values to cell node values based |
  | on a level-set field                                     henke 10/09 |
@@ -166,6 +167,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
   }
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | interpolate field from element node values to cell node values based |
@@ -241,6 +243,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | interpolate field from element node values to cell node values based |
  | on a level-set field                                 schott 05/17/10 |
@@ -282,8 +285,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
     const LINALG::Matrix<3,numnode> derxy(true);
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement> derxy2(true);
 
-    
-    const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi, field, funct);
+    const XFEM::ElementEnrichmentValues enrvals(ele, dofman, phi, cell, funct, derxy, derxy2);
     LINALG::SerialDenseVector enr_funct(numparam);
     enr_funct.Zero();
     
@@ -296,7 +298,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
     {
     // interpolate value
     for (size_t iparam = 0; iparam < numparam; ++iparam)
-    	cellvalues(0,inode) += elementvalues(0,iparam) * enr_funct(iparam);
+      cellvalues(0,inode) += elementvalues(0,iparam) * enr_funct(iparam);
     break;
     }
     // vector fields
@@ -313,8 +315,6 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
   }
   return;
 }
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -363,7 +363,6 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   }
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*

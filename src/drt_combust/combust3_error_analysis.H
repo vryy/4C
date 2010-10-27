@@ -47,6 +47,34 @@ namespace COMBUST
 {
 
 
+/*!
+  Transforms Gaussian point of cell from 3D-Eta-coordinates in 3D-XYZ-coordinates
+ */
+template <DRT::Element::DiscretizationType CELL_DISTYPE,
+          class M1, class M2>
+void GetGPinXYZ(
+    GEO::DomainIntCell          cell,
+    M1&                         pos_eta_domain,
+    M2&                         posGPinXYZ)
+{
+  const int nsd = 3;
+
+  // number of nodes of this cell
+  const size_t numnode3Dcell = DRT::UTILS::DisTypeToNumNodePerEle<CELL_DISTYPE>::numNodePerElement;
+
+  // cel 3D-shape functions
+  LINALG::Matrix<numnode3Dcell,1> funct3Dcell;
+  DRT::UTILS::shape_function_3D(funct3Dcell,pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),CELL_DISTYPE);
+
+  LINALG::SerialDenseMatrix xyze_cell_tmp = cell.CellNodalPosXYZ();
+  const LINALG::Matrix<nsd,numnode3Dcell> xyze_cell(xyze_cell_tmp);
+
+  posGPinXYZ.Multiply(xyze_cell,funct3Dcell);
+  return;
+}
+
+
+
 /*
  * author schott
  * May 27, 2010
@@ -162,8 +190,15 @@ void AnalyticalSol_shear(LINALG::Matrix<3,1>& posXYZgp, int matid,
     LINALG::Matrix<1,1>& analyt_pres,
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
+
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+y+0.05
+  /*
+   *    * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   * FLAGS:
+   * #define COMBUST_TESTCOUETTEFLOW
+   * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   *
+   * 	Levelset: x+y+0.05
    *
    * [|u|]:=5, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 20.0/0.6*y+10.0 |
@@ -180,10 +215,6 @@ void AnalyticalSol_shear(LINALG::Matrix<3,1>& posXYZgp, int matid,
    * gradp = 0.0
    *
    *
-   * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   * FLAGS:
-   * #define COMBUST_TESTCOUETTEFLOW
-   * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
    */
 
   double exact_levelset_gp = posXYZgp(0)+posXYZgp(1)+0.05;
@@ -903,7 +934,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class V2>
 void Nitsche_BuildDomainIntegratedErrors(
     ParameterList&                 eleparams,       /// list of parameters with actions to be calculated
-    const INPAR::COMBUST::NitscheCompareAnalyt&  NitscheErrorType, /// which solution is the reference
+    const INPAR::COMBUST::NitscheError&  NitscheErrorType, /// which solution is the reference
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
@@ -941,19 +972,19 @@ void Nitsche_BuildDomainIntegratedErrors(
 
   // set pointer to function which evaluates the analytical solution
 
-  if     (NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_static_bubble_nxnx1)
+  if     (NitscheErrorType == INPAR::COMBUST::nitsche_error_static_bubble_nxnx1)
     analytical = &AnalyticalSol_static_bubble_nxnx1;	// static bubble with n x n x 1 Elements
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_static_bubble_nxnxn)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_static_bubble_nxnxn)
     analytical = &AnalyticalSol_static_bubble_nxnxn;  // static bubble with n x n x n Elements
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_couette_20x20x1)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_couette_20x20x1)
     analytical = &AnalyticalSol_Couette_20x20x1_plain;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_shear)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_shear)
     analytical = &AnalyticalSol_shear;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_straight_bodyforce)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_straight_bodyforce)
     analytical = &AnalyticalSol_straight_bodyforce_inclined;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_ellipsoid_bubble_3D)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_ellipsoid_bubble_3D)
     analytical = &AnalyticalSol_ellipsoid_bubble_nxnxn_instat;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_ellipsoid_bubble_2D)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_ellipsoid_bubble_2D)
     analytical = &AnalyticalSol_ellipsoid_bubble_nxnx1_instat;
   else dserror("there is no analytical solution for 'flowproblem' stored in eleparams");
 
@@ -996,14 +1027,12 @@ void Nitsche_BuildDomainIntegratedErrors(
   const MAT::NewtonianFluid* mat_plus = static_cast<const MAT::NewtonianFluid*>(matptr_plus.get());
   const MAT::NewtonianFluid* mat_minus = static_cast<const MAT::NewtonianFluid*>(matptr_minus.get());
 
-  const double kinvisc_plus = mat_plus->Viscosity();
-  const double kinvisc_minus = mat_minus->Viscosity();
+  const double dynvisc_plus = mat_plus->Viscosity();
+  const double dynvisc_minus = mat_minus->Viscosity();
 
   const double densnp_plus = mat_plus->Density();
   const double densnp_minus = mat_minus->Density();
 
-  const double dynvisc_plus = kinvisc_plus * densnp_plus;
-  const double dynvisc_minus = kinvisc_minus * densnp_minus;
 
   const double dynvisc_max = max(dynvisc_plus,dynvisc_minus);
 
@@ -1024,7 +1053,6 @@ void Nitsche_BuildDomainIntegratedErrors(
     // check on which side of the interface the cell is located
     if(cell->getDomainPlus()) // cell belongs to burnt domain
     {
-
       // burnt material
       matid = 3;
       densnp = densnp_plus;
@@ -1032,7 +1060,6 @@ void Nitsche_BuildDomainIntegratedErrors(
     }
     else // cell belongs to unburnt domain
     {
-
       // unburnt material
       matid = 4;
       densnp = densnp_minus;
@@ -1061,115 +1088,6 @@ void Nitsche_BuildDomainIntegratedErrors(
     //------------------------------------------------------------------------------------------
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
-#ifdef BENEDIKT
-      const LINALG::Matrix<3,1> pos_eta_domain(intpoints.qxg[iquad]);
-      /*
-       * author schott
-       * May 7, 2010
-       */
-      double det_cell_EtaToXYZ = 0.0;
-      static LINALG::Matrix<numnode,1> funct3Dele;
-      static LINALG::Matrix<3,numnode> deriv3Dele_xyz;
-      static LINALG::Matrix<6,numnode> deriv3Dele_xyz_2nd;
-      static LINALG::Matrix<3,3> xji_ele_XiToXYZ;
-
-      switch (cell->Shape())
-      {
-      case DRT::Element::tet4:
-        COMBUST::GetDomainIntegrationFeatures<DISTYPE,DRT::Element::tet4,ASSTYPE>(
-            ele, pos_eta_domain,xyze, *cell, det_cell_EtaToXYZ, funct3Dele, deriv3Dele_xyz, deriv3Dele_xyz_2nd,xji_ele_XiToXYZ
-        );
-        break;
-      case DRT::Element::hex8:
-        COMBUST::GetDomainIntegrationFeatures<DISTYPE,DRT::Element::hex8,ASSTYPE>(
-            ele, pos_eta_domain,xyze, *cell, det_cell_EtaToXYZ, funct3Dele, deriv3Dele_xyz, deriv3Dele_xyz_2nd,xji_ele_XiToXYZ
-        );
-        break;
-      default:
-        dserror("cell distype not implemented yet");
-      }
-
-      double fac = 0.0;
-      fac = intpoints.qwgt[iquad] * det_cell_EtaToXYZ;
-      if (det_cell_EtaToXYZ < 0.0)
-      {
-        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det_cell_EtaToXYZ);
-      }
-
-      //--------------------------------------------------------------------------------------
-      // rearrange (enriched) shape functions and derivatives as approximation functions
-      //--------------------------------------------------------------------------------------
-      const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-      // (enriched) shape functions = approximation functions (P = N * \Psi)
-      static XFEM::ApproxFunc<2,shpVecSize> shp;
-#if 0
-      // comment missing
-      static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
-#endif
-      if (ASSTYPE == XFEM::xfem_assembly)
-      {
-        //cout << "this is a fully or partially enriched element" << endl;
-        // temporary arrays holding enriched shape functions (N * \Psi)
-        static LINALG::Matrix<shpVecSize,1> enr_funct;
-        enr_funct.Clear();
-        static LINALG::Matrix<3,shpVecSize> enr_derxy;
-        enr_derxy.Clear();
-        static LINALG::Matrix<6,shpVecSize> enr_derxy2;
-        enr_derxy2.Clear();
-
-        // shape functions and derivatives for nodal parameters (dofs)
-        enrvals.ComputeModifiedEnrichedNodalShapefunction(
-            Velx,
-            funct3Dele,
-            deriv3Dele_xyz,
-            deriv3Dele_xyz_2nd,
-            enr_funct,
-            enr_derxy,
-            enr_derxy2);
-
-        // fill approximation functions for XFEM
-        for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
-        {
-          shp.d0(iparam) = enr_funct(iparam);
-          shp.dx(iparam) = enr_derxy(0,iparam);
-          shp.dy(iparam) = enr_derxy(1,iparam);
-          shp.dz(iparam) = enr_derxy(2,iparam);
-          shp.dxdx(iparam) = enr_derxy2(0,iparam);
-          shp.dxdy(iparam) = enr_derxy2(3,iparam);
-          shp.dxdz(iparam) = enr_derxy2(4,iparam);
-          shp.dydx(iparam) = shp.dxdy(iparam);
-          shp.dydy(iparam) = enr_derxy2(1,iparam);
-          shp.dydz(iparam) = enr_derxy2(5,iparam);
-          shp.dzdx(iparam) = shp.dxdz(iparam);
-          shp.dzdy(iparam) = shp.dydz(iparam);
-          shp.dzdz(iparam) = enr_derxy2(2,iparam);
-        }
-      }
-      else // not xfem_assembly i.e. standard assembly
-      {
-        // fill approximation functions for standard FEM
-        // remark: numparamvelx == numnode, for standard FEM
-        for (size_t iparam = 0; iparam < numnode; ++iparam)
-        {
-          shp.d0(iparam) = funct3Dele(iparam);
-          shp.dx(iparam) = deriv3Dele_xyz(0,iparam);
-          shp.dy(iparam) = deriv3Dele_xyz(1,iparam);
-          shp.dz(iparam) = deriv3Dele_xyz(2,iparam);
-          shp.dxdx(iparam) = deriv3Dele_xyz_2nd(0,iparam);
-          shp.dxdy(iparam) = deriv3Dele_xyz_2nd(3,iparam);
-          shp.dxdz(iparam) = deriv3Dele_xyz_2nd(4,iparam);
-          shp.dydx(iparam) = shp.dxdy(iparam);
-          shp.dydy(iparam) = deriv3Dele_xyz_2nd(1,iparam);
-          shp.dydz(iparam) = deriv3Dele_xyz_2nd(5,iparam);
-          shp.dzdx(iparam) = shp.dxdz(iparam);
-          shp.dzdy(iparam) = shp.dydz(iparam);
-          shp.dzdz(iparam) = deriv3Dele_xyz_2nd(2,iparam);
-        }
-      }
-
-      //cout << shp.d0 << endl << endl;
-#else
       //--------------------------------------------------------------------------------------
       // transform coordinates of this Gaussian point
       //--------------------------------------------------------------------------------------
@@ -1211,8 +1129,6 @@ void Nitsche_BuildDomainIntegratedErrors(
       {
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
-
-
 
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
@@ -1309,11 +1225,9 @@ void Nitsche_BuildDomainIntegratedErrors(
           shp.dzdz(iparam) = derxy2(2,iparam);
         }
       }
-#endif
 
-      if(matid==3){ele_meas_plus += fac;}
-      else if(matid==4){ele_meas_minus += fac;}
-      else dserror("wrong matid");
+      if(cell->getDomainPlus()){ele_meas_plus += fac;}
+      else {ele_meas_minus += fac;}
 
       //--------------------------------------------------------------------------------------
       // get velocities of solution at integration point
@@ -1470,7 +1384,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           DRT::Element::DiscretizationType CELLDISTYPE,
           XFEM::AssemblyType ASSTYPE,
           size_t NUMDOF,
-          class M1, class M2, class V1, class V2>
+          class M1, class M2, class M3, class V1, class V2>
 void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     void (*analytical_Interface)( LINALG::Matrix<3,1>& posXYZgp,
                                   LINALG::Matrix<3,1>& analyt_vel_plus,
@@ -1489,13 +1403,15 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     const M1&                         evelnp,
     const V1&                         eprenp,
     const V2&                         ephi,
+    const M3&                         grad_ephi_smoothed,
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
     const XFEM::ElementEnrichmentValues&       enrvals_minus,
     const double&                              kappa_plus,    /// weights of average in plus domain
     const double&                              kappa_minus,    /// weights of average in minus domain
     const double&                              visc_plus,    /// viscosity in plus domain
     const double&                              visc_minus,   /// viscosity in minus domain
-    const size_t&                              numparamvelx
+    const size_t&                              numparamvelx,
+    const bool                                 smoothed_boundary_integration
 )
 {
   const size_t nsd =3;
@@ -1524,67 +1440,79 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
 
-    //      //--------------------------------------------------------------------------------------------
-    //      // transform coordinates of this Gaussian point
-    //      //--------------------------------------------------------------------------------------------
+    // new transformation for boundary integrals
+    // 1. define a coupled transformation x_3D(xi_3D(eta_2D)): transformation from 2D->3D
+    // 2. compute the corresponding Jacobian J_eta2D->x_3D and
+    // 3. the corresponding surface integral factor sqrt(det(J_eta2D->x_3D^T * J_eta2D->x_3D))
+    // 4. approximate integral with Gauss rule in eta coordinate system
+    // 5. evaluate the transformed integrand f(x(xi(eta)))
 
-    // 1. cell coordinates are stored in cellXYZDomain <nsd,numvertices>
+    const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
 
-    // 2. 2D-shape functions -> evaluate at each integration point
+    // jacobian for coupled transformation
+    // get derivatives dxi_3D/deta_2D
+    static LINALG::Matrix<2,numvertices> deriv_eta2D;
+    DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),CELLDISTYPE);
 
-    // coordinates of this integration point in boundary cell coordinates \eta^boundary
-    const LINALG::Matrix<2,1> posEtaBoundary(intpoints.qxg[iquad]);
-    double detXYZtoEta1Eta2 = 0.0;
-
-
-    // there should only be triangular boundary cells
-    static LINALG::Matrix<2,numvertices> deriv_boundary;
-    DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,posEtaBoundary(0,0),posEtaBoundary(1,0),CELLDISTYPE);
-
-    // det for surface integrals  ||  dxyz/deta1 x dxyz/deta2  ||
-    static LINALG::Matrix<3,2> dXYZdEta1Eta2;
-    dXYZdEta1Eta2.Clear();
-    for (int i = 0; i < 3; i++)
-      for (int j = 0; j < 2; j++)
+    // calculate dxi3Ddeta2D
+    static LINALG::Matrix<3,2> dXi3Ddeta2D;
+    dXi3Ddeta2D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 2; j++) // derivatives
         for (int k = 0; k < (int)numvertices; k++)
-          dXYZdEta1Eta2(i,j) += cellXYZDomain(i,k)*deriv_boundary(j,k);
+          dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
 
-    static LINALG::Matrix<3,1> tmp_vec;     // vector for dxyz/deta1 x dxyz/deta2
-    tmp_vec.Clear();
-    tmp_vec(0) = dXYZdEta1Eta2(1,0) * dXYZdEta1Eta2(2,1) - dXYZdEta1Eta2(2,0) * dXYZdEta1Eta2(1,1);
-    tmp_vec(1) = dXYZdEta1Eta2(2,0) * dXYZdEta1Eta2(0,1) - dXYZdEta1Eta2(0,0) * dXYZdEta1Eta2(2,1);
-    tmp_vec(2) = dXYZdEta1Eta2(0,0) * dXYZdEta1Eta2(1,1) - dXYZdEta1Eta2(1,0) * dXYZdEta1Eta2(0,1);
-
-    detXYZtoEta1Eta2 = tmp_vec.Norm2();
+    // transform Gauss point to xi3D space (element parameter space)
+    static LINALG::Matrix<nsd,1> gpinXi3D;
+    gpinXi3D.Clear();
+    // coordinates of this integration point in element coordinates \xi^domain
+    GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
 
-    // now map posEtaBoundary in 3D-Xi-coordinates
+    static LINALG::Matrix<3,numnode> deriv_xi3D;
+    DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
+
+
+    // calculate dx3Ddxi3D
+    static LINALG::Matrix<3,3> dX3DdXi3D;
+    dX3DdXi3D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 3; j++) // derivatives
+        for (int k = 0; k < (int)numnode; k++)
+          dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+    // get the coupled Jacobian dx3Ddeta2D
+    static LINALG::Matrix<3,2> dx3Ddeta2D;
+    dx3Ddeta2D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 2; j++) // derivatives
+        for (int k = 0; k < 3; k++)
+          dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+    // get deformation factor
+    static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+    Jac_tmp.Clear();
+    Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+    if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+
+    const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+    const double fac = intpoints.qwgt[iquad]*deform_factor;
+
+
+
+    LINALG::Matrix<2,1> posEtaBoundary;
+    posEtaBoundary.Clear();
+    for (int i= 0; i< 2; i++){
+      posEtaBoundary(i,0) = gpinEta2D(i,0);
+    }
+
     LINALG::Matrix<nsd,1> posXiDomain;
     posXiDomain.Clear();
-    // coordinates of this integration point in element coordinates \xi^domain
-
-
-    //TODO: check this transformation
-    // schott Apr 30, 2010
-    //GEO::mapEtaBToXiD(*cell, posEtaBoundary, posXiDomain);
-
-    // schott Apr 30, 2010
-    static LINALG::Matrix<nsd,1> posEtaBoundaryinXYZ;
-    posEtaBoundaryinXYZ.Clear();
-    static LINALG::Matrix<numvertices,1> shape_boundary;
-    DRT::UTILS::shape_function_2D(shape_boundary,posEtaBoundary(0,0),posEtaBoundary(1,0),CELLDISTYPE);
-    posEtaBoundaryinXYZ.Multiply(cellXYZDomain,shape_boundary);
-
-    //get Xi-coordinates of posEtaBoundary 3D -> 3D transformation in element, not in cell
-    COMBUST::MapXYZToXiDomain<DISTYPE>(xyze,posEtaBoundaryinXYZ,posXiDomain);
-    //        GEO::currentToVolumeElementCoordinates(DISTYPE, xyze, posEtaBoundaryinXYZ, posXiDomain);
-
-    //===============================================================================================
-    //--------------------------------------------------------------------------------------------
-    // compute integration factors
-    //--------------------------------------------------------------------------------------------
-    // compute spatial integration factor
-    const double fac = intpoints.qwgt[iquad]*detXYZtoEta1Eta2;
+    for (int i= 0; i< 3; i++){
+      posXiDomain(i,0) = gpinXi3D(i,0);
+    }
 
     //--------------------------------------------------------------------------------------------
     // compute normal vector (in physical coordinates)
@@ -1594,10 +1522,45 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     static LINALG::Matrix<nsd,1> normal(true);
     normal.Clear();
 
-    // here normal points from Omega^+ to Omega^-
-    GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
-    // but we need a normal vector pointing from Omega^- to Omega^+ -> Scale(-1.0) => n = n^- = -n^+
-    normal.Scale(-1.0);
+    // schott Sep 2, 2010
+    // call smoothed normals for an accurate evaluation of boundary integration terms
+    if(smoothed_boundary_integration == false)
+    {
+      // here normal points from Omega^+ to Omega^-
+      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
+      // but we need a normal vector pointing from Omega^- to Omega^+ -> Scale(-1.0) => n = n^- = -n^+
+      normal.Scale(-1.0);
+    }
+    else // smoothed_boundary_integration == true
+    {
+      // get shape functions at gaussian point
+      static LINALG::Matrix<numnode,1> funct_gp;
+      funct_gp.Clear();
+      DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+
+      normal.Clear();
+      LINALG::Matrix<nsd,1> grad_xi;
+      grad_xi.Clear();
+
+      // loop over nodes
+      for(size_t i = 0; i< numnode; i++)
+      {
+        LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
+        LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
+        nodal_grad_xyz_tmp.Clear();
+        nodal_grad_xi_tmp.Clear();
+
+
+        normal(0)+=grad_ephi_smoothed(0,i)*funct_gp(i);
+        normal(1)+=grad_ephi_smoothed(1,i)*funct_gp(i);
+        normal(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
+      }
+
+      // 4. normalize final gradient
+      if (normal.Norm2() == 0.0 ) dserror("normal norm is zero !!! ");
+      normal.Scale(1.0/normal.Norm2());
+    }
 
 
 
@@ -1621,12 +1584,12 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     xjm.MultiplyNT(deriv,xyze);
     // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
     const double detXtoXi = xjm.Determinant();
-    //#ifdef DEBUG
+
     if (detXtoXi < 0.0)
     {
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detXtoXi);
     }
-    //#endif
+
     // inverse of jacobian
     static LINALG::Matrix<nsd,nsd> xji;
     xji.Clear();
@@ -1686,9 +1649,7 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
     static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
-    //      static XFEM::ApproxFunc<1,shpVecSize> shp_mean;
     static XFEM::ApproxFunc<1,shpVecSize> shp_mean_visc;
-    //      static XFEM::ApproxFunc<2,shpVecSize> shp_jump_visc;
 
 
 #ifdef TPF_NITSCHE_LPS
@@ -1745,10 +1706,8 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
 
 
     // evaluate the analytical solution
-    static LINALG::Matrix<nsd,1> posGPinXYZ;
-    posGPinXYZ.Clear();
-
-
+    static LINALG::Matrix<nsd,1> posEtaBoundaryinXYZ;
+    posEtaBoundaryinXYZ.Multiply(xyze,funct);
 
     analytical_Interface(posEtaBoundaryinXYZ, analyt_vel_plus, analyt_vel_minus, analyt_deriv_plus, analyt_deriv_minus);
 
@@ -1835,8 +1794,8 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     // get {2*mu*E(v)-2*mu*E(v_h)}*n
     for (size_t i = 0; i< nsd; i++){
       err_visc2_vel_mean_normal(i,0) = err_deriv_vel_visc_mean(i,0)*normal(0)
-                                     + err_deriv_vel_visc_mean(i,1)*normal(1)
-                                     + err_deriv_vel_visc_mean(i,2)*normal(2);
+                                         + err_deriv_vel_visc_mean(i,1)*normal(1)
+                                         + err_deriv_vel_visc_mean(i,2)*normal(2);
     }
 
     // update element errors
@@ -1860,19 +1819,21 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class V1, class V2>
+          class M1, class M2, class V1, class V2>
 void Nitsche_BuildBoundaryIntegratedErrors(
     ParameterList&                 eleparams,       /// list of parameters with actions to be calculated
-    const INPAR::COMBUST::NitscheCompareAnalyt&  NitscheErrorType, /// which solution is the reference
+    const INPAR::COMBUST::NitscheError&  NitscheErrorType, /// which solution is the reference
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                      ephi,         ///< nodal G-function values for this element
+    const M2&                      grad_ephi_smoothed,
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
     double&                        ele_meas_plus,
-    double&                        ele_meas_minus
+    double&                        ele_meas_minus,
+    const bool                     smoothed_boundary_integration
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion Nitsche errors - boundary");
@@ -1898,19 +1859,19 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   analytical_Interface=NULL;
 
   // set pointer to function which evaluates the analytical solution
-  if     (NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_static_bubble_nxnx1)
+  if     (NitscheErrorType == INPAR::COMBUST::nitsche_error_static_bubble_nxnx1)
     analytical_Interface = &AnalyticalSol_static_bubble_nxnx1_Interface;	// static bubble with n x n x 1 Elements
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_static_bubble_nxnxn)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_static_bubble_nxnxn)
     analytical_Interface = &AnalyticalSol_static_bubble_nxnxn_Interface;  // static bubble with n x n x n Elements
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_couette_20x20x1)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_couette_20x20x1)
     analytical_Interface = &AnalyticalSol_Couette_20x20x1_plain_Interface;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_shear)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_shear)
     analytical_Interface = &AnalyticalSol_shear_Interface;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_straight_bodyforce)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_straight_bodyforce)
     analytical_Interface = &AnalyticalSol_straight_bodyforce_inclined_Interface;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_ellipsoid_bubble_3D)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_ellipsoid_bubble_3D)
     analytical_Interface = &AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface;
-  else if(NitscheErrorType == INPAR::COMBUST::Nitsche_Compare_ellipsoid_bubble_2D)
+  else if(NitscheErrorType == INPAR::COMBUST::nitsche_error_ellipsoid_bubble_2D)
     analytical_Interface = &AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface;
   else dserror("there is no analytical solution for 'flowproblem' stored in eleparams");
 
@@ -1945,13 +1906,9 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   // check if we really have a fluid material
   dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
   const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the kinematic viscosity \nu
-  const double kinvisc_plus = mat->Viscosity();
-  // get the density \rho
-  const double dens_plus = mat->Density();
-  //cout << "plus density: " << dens_plus << endl;
-  // compute dynamic viscosity \mu
-  const double visc_plus = kinvisc_plus * dens_plus;
+  // get the kinematic viscosity \mu
+  const double visc_plus = mat->Viscosity();
+
 
   // index minus = unburnt material
   const int matid_minus = 4;
@@ -1960,19 +1917,12 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   // check if we really have a fluid material
   dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
   mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the kinematic viscosity \nu
-  const double kinvisc_minus = mat->Viscosity();
-  // get the density \rho
-  const double dens_minus = mat->Density();
-  //cout << "minus density: " << dens_minus << endl;
-  // compute dynamic viscosity \mu
-  const double visc_minus = kinvisc_minus * dens_minus;
+  // get the dynamic viscosity \mu
+  const double visc_minus = mat->Viscosity();
+
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
-
-  //  // element diameter
-  //  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
 
   // calculate element diameter for Nitsche norms
   const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
@@ -1982,6 +1932,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
 
   double ele_meas = ele_meas_plus + ele_meas_minus;
+  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   double kappa_plus  = ele_meas_plus/ele_meas;
   double kappa_minus = ele_meas_minus/ele_meas;
 
@@ -2017,9 +1968,9 @@ void Nitsche_BuildBoundaryIntegratedErrors(
           analytical_Interface,
           eleViscInterfErr, eleVelJumpInterfErr, eleNitscheErr, hk_eleDiam,
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi,
+          evelnp, eprenp, ephi, grad_ephi_smoothed,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, visc_plus, visc_minus,
-          numparamvelx
+          numparamvelx,smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
@@ -2028,9 +1979,9 @@ void Nitsche_BuildBoundaryIntegratedErrors(
           analytical_Interface,
           eleViscInterfErr, eleVelJumpInterfErr, eleNitscheErr, hk_eleDiam,
           *cell, DRT::UTILS::intrule_quad_9point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi,
+          evelnp, eprenp, ephi, grad_ephi_smoothed,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, visc_plus, visc_minus,
-          numparamvelx
+          numparamvelx,smoothed_boundary_integration
       );
       break;
     default:

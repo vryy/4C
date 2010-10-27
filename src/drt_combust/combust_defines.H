@@ -26,7 +26,6 @@ Maintainer: Florian Henke
 #define COMBUST_STRESS_BASED
 #define COMBUST_EPSPRES_BASED
 //#define COMBUST_SIGMA_BASED
-//#define TWOPHASEFLOW_NITSCHE
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //------------------------------------------
 // combustion domain integral terms standard
@@ -64,6 +63,7 @@ Maintainer: Florian Henke
 #define COMBUST_NITSCHE_PRESADJCONSIST    // turn on/off pressure adjoint consistency term
 #define COMBUST_NITSCHE_FLUXJUMP          // turn on/off pressure/flux jump RHS term
 #define COMBUST_NITSCHE_NITSCHEVEL        // turn on/off Nitsche velocity terms
+#define COMBUST_NITSCHE_CONVSTAB             // turn on/off Nitsche velocity terms
 //#define COMBUST_NITSCHE_NITSCHEPRES       // turn on/off Nitsche pressure terms
 
 //----------------------------------------------------------
@@ -117,7 +117,7 @@ Maintainer: Florian Henke
 //-----------------------------
 // combustion test case options
 //-----------------------------
-//#define COMBUST_TESTCOUETTEFLOW          // modify Dirichlet boundary conditions manually for Couette flow test case
+#define COMBUST_TESTCOUETTEFLOW          // modify Dirichlet boundary conditions manually for Couette flow test case
 //#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
 //#define COLLAPSE_FLAME
 //#define FLAME_VORTEX
@@ -139,38 +139,12 @@ Maintainer: Florian Henke
 //#define SUGRVEL_OUTPUT
 //don't forget to transfer the time step
 
-//----------------
-// Benedikts flags
-//----------------
-//---------------------------------
-// TwoPhaseFlow jump-conditions
-//---------------------------------
-//#define TPF_COMPARE_to_ANALYT_Sol_Nitsche
-//---------------------------velocity jump ------------------------
-//#define TPF_NORMAL_VEL_JUMP_CONST 	                   // else zero jump in velocity
-//#define TPF_NORMAL_VEL_JUMP_PREMIXED_COMBUSTION          // else zero jump in velocity
-//---------------------------normal tension jump ------------------
-//#define TPF_NORMAL_TENSION_JUMP_CONST                    // else zero jump in normal tension
-//#define TPF_NORMAL_TENSION_JUMP_PREMIXED_COMBUSTION      // else zero jump in normal tension
-//#define TPF_SURFACETENSION // else zero jump in normal tension
-
-//---------------------------surface tension options---------------
-// => -----choose surface tension approximation type -----------------
-//#define TPF_SURFACETENSION_NOT_CONNECTED_INTERFACE
-
-//#define TPF_LAPLACE_BELTRAMI
-//#define TPF_LAPLACE_BELTRAMI_SMOOTHED 	//Vers.2 of Laplace-Beltrami surface tension for improved calculation of curvature
-//#define TPF_SURFACETENSION_CONST_CURVATURE
-//#define TPF_SURFACETENSION_DIVERGENCE
-
-//#define TPF_PHI_RECONSTRUCT
-
-
-//#define TPF_NITSCHE_LPS          // turn on/off Nitsche pressure_LPS_stabilization at the interface
-//#define TPF_NITSCHE_LPS_DOMAIN
-//#define BENEDIKT
-
-
+//-----------------------
+// Enrichment computation
+//-----------------------
+//#define ENR_FULL
+//#define ENR_VEL_JUMP_SCALAR
+//#define SET_FEW_ENR_VALUES
 
 
 #endif // #ifndef COMBUST_DEFINES_H

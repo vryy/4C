@@ -312,6 +312,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // surface tension coefficient
       const double surftenscoeff = params.get<double>("surftenscoeff");
       const bool connected_interface = params.get<bool>("connected_interface");
+      const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
@@ -329,7 +330,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype);
+          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -352,7 +353,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype);
+          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -370,7 +371,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype);
+          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
 #endif
     }
     break;
@@ -405,6 +406,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // surface tension coefficient
       const double surftenscoeff = params.get<double>("surftenscoeff");
       const bool connected_interface = params.get<bool>("connected_interface");
+      const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
       // stabilization terms
       const bool pstab = true;
@@ -442,7 +444,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype);
+          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -468,7 +470,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype);
+          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -485,7 +487,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype);
+          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
 #endif
 
 #if 0
@@ -597,6 +599,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         const bool instationary = false;
         // smoothed gradient of phi required (surface tension application)
         const bool gradphi = true;
+        const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
         const INPAR::COMBUST::NitscheError NitscheErrorType = params.get<INPAR::COMBUST::NitscheError>("Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
@@ -607,7 +610,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
             *eleDofManager_, NumNode(), NodeIds());
 
         // calculate Nitsche norms
-        COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_, mystate, material);
+        COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_, mystate, material,smoothed_boundary_integration);
       }
     }
     break;

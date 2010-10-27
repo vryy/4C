@@ -25,8 +25,6 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 #include "combust_interface.H"
 
-#include "combust_defines.H"
-
 namespace FLD
 {
 /*!
@@ -387,6 +385,9 @@ protected:
   // surface tension coefficient
   const double surftenscoeff_;
   const bool connected_interface_;
+  
+  // smoothed normal vectors for boudary integration
+  const bool smoothed_boundary_integration_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep
