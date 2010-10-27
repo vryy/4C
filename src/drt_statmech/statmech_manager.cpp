@@ -2517,9 +2517,11 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
 {
   double starttime = statmechparams_.get<double>("STARTTIME",0.0);
+  //period length of simulated box
+  double H = statmechparams_.get<double> ("PeriodLength", 0.0);
 
 	//only if period length >0 has been defined periodic boundary conditions are swithced on
-	if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
+	if (H > 0.0)
 		for (int i=0; i<discret_.NumMyRowNodes(); i++)
 		{
 			//get a pointer at i-th row node
@@ -2530,32 +2532,37 @@ void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, con
 
 			for (int j=ndim-1; j>-1; j--)
 			{
+				//current coordinate value
+				double xcurr = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
+
 				/*if node currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),
-				 *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) to lie again in the domain*/
-				if (node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])]> statmechparams_.get<double> ("PeriodLength", 0.0))
+				 *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) sufficiently often to lie again in the domain*/
+				if (xcurr > H)
 				{
-					disrow[discret_.DofRowMap()->LID(dofnode[j])] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+					disrow[discret_.DofRowMap()->LID(dofnode[j])] -= H*floor(xcurr/H);
 
 					/*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
-					 *may fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
+					 *may fixed by DBC. To avoid problems when nodes exit the domain through the upper z-surface and reenter through the lower
 					 *z-surface, the shear has to be substracted from nodal coordinates in that case */
 					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
 						disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] -= statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
 				}
-				/*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0)
+				/*if node currently has coordinate value smaller than zero, it is shifted by statmechparams_.get<double>("PeriodLength",0.0) sufficiently often
 				 *to lie again in the domain*/
-				if (node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])] < 0.0)
+				if (xcurr < 0.0)
 				{
-					disrow[discret_.DofRowMap()->LID(dofnode[j])] += statmechparams_.get<double> ("PeriodLength", 0.0);
+					disrow[discret_.DofRowMap()->LID(dofnode[j])] -= H*floor(xcurr/H);
 
 					/*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
-					 *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
+					 *may be fixed by DBC. To avoid problems when nodes exit the domain through the lower z-surface and reenter through the upper
 					 *z-surface, the shear has to be added to nodal coordinates in that case */
 					if (j == 2 && statmechparams_.get<int> ("CURVENUMBER", -1) >= 1 && time_ > starttime && fabs(time_-starttime)>dt/1e4)
 						disrow[discret_.DofRowMap()->LID(dofnode[statmechparams_.get<int> ("OSCILLDIR", -1)])] += statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0) * DRT::Problem::Instance()->Curve(statmechparams_.get<int> ("CURVENUMBER", -1) - 1).f(time_);
 				}
 			}
 		}
+
+	return;
 }
 
 /*------------------------------------------------------------------------*
