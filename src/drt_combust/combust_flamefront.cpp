@@ -1554,7 +1554,7 @@ void COMBUST::FlameFront::FindFlameFront(
       // node numbering in element has to match data structure in cell
       cell->SetGfuncValues(mygfuncvalues);
 
-      //TEST Einheitswürfel mit verschiedenen Schnitten
+      //TEST Einheitswürfel mit verschiedenen Schnitten (Hex8)
       //        vector<double> phis (8);
       //        phis[0]=-1;
       //        phis[1]=-1;
@@ -1628,6 +1628,30 @@ void COMBUST::FlameFront::FindFlameFront(
       //       phis[6]=3.0;
       //       phis[7]=-3.0;
       //        cell->SetGfuncValues(phis);
+
+      //TEST Einheitswürfel mit verschiedenen Schnitten (Hex20)
+//      vector<double> phis (20);
+//      phis[0]=-1;
+//      phis[1]=-1;
+//      phis[2]=3;
+//      phis[3]=3;
+//      phis[4]=-1;
+//      phis[5]=-1;
+//      phis[6]=3;
+//      phis[7]=3;
+//      phis[8]=-1;
+//      phis[9]=1;
+//      phis[10]=3;
+//      phis[11]=1;
+//      phis[12]=-1;
+//      phis[13]=-1;
+//      phis[14]=3;
+//      phis[15]=3;
+//      phis[16]=-1;
+//      phis[17]=1;
+//      phis[18]=3;
+//      phis[19]=1;
+//      cell->SetGfuncValues(phis);
 
       //Ausgabe
       //      for (int l=0;l<8;l++)
@@ -1746,6 +1770,8 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
   // temporary variable to store intersection points
   std::map<int,std::vector<double> > intersectionpoints;
+  // for double intersected lines of quadratic element a multimap is necessary
+  // std::multimap<int,std::vector<double> > intersectionpoints;
 
   //-------------------------------------------------
   // get vector of lines with corresponding vertices
@@ -1773,81 +1799,224 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
      * L11: 6 7
      * L12: 4 7
      */
+
+    //-------------------------------
+    // determine intersection points
+    //-------------------------------
+    // loop edges of refinement cell
+    for(std::size_t iline=0; iline<lines.size(); iline++)
+    {
+      // get G-function value of the two vertices defining an edge
+      double gfuncval1 = gfuncvalues[lines[iline][0]];
+      double gfuncval2 = gfuncvalues[lines[iline][1]];
+
+      std::vector<double> coordinates(3);
+
+      // check for change of sign along edge
+      if (gfuncval1*gfuncval2 < 0.0)
+      {
+        for (int dim = 0; dim < 3; dim++)
+        {
+          // vertices have one coordinate in common
+          if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
+          {
+            // intersection point has the same coordinate for that direction
+            coordinates[dim] = vertexcoord[lines[iline][0]][dim];
+          }
+          else // compute intersection point
+          {
+            // linear interpolation (for hex8)
+            // x = x1 + (phi(=0) - phi1)/(phi2 - phi1)*(x2 - x1)
+            // store intersection point coordinate (local element coordinates) for every component dim
+            coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
+            * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
+
+            // shift intersection point to vertex if it is very close
+            //if((fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4) or
+            //  (fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4))
+            //{
+            //  if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4)
+            //  {
+            //    cout << "coordinates shifted to vertex 1: " << coordinates[dim] << endl;
+            //    coordinates[dim] = vertexcoord[lines[iline][0]][dim];
+            //  }
+            //  else if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4)
+            //  {
+            //    cout << "coordinates shifted to vertex 2: " << coordinates[dim] << endl;
+            //    coordinates[dim] = vertexcoord[lines[iline][1]][dim];
+            //  }
+            //  else
+            //  {
+            //    dserror("impossible");
+            //  }
+            //}
+          }
+        }
+
+        // store coordinates of intersection point for each line
+        intersectionpoints[iline] = coordinates;
+      }
+      else
+      {
+        //do nothing and go to the next line
+      }
+    }
+
     break;
   }
   case DRT::Element::hex20:
-  {
-      dserror("This element type will be done next!");
-  }
   case DRT::Element::hex27:
   {
-    // more difficult, since we have quadratic functions along the edges -> check derivatives, too!
-    dserror("FindIntersectionPoints() does not support quadatic elements, yet!");
+      dserror("Hallo Kilian, ich habe noch einige Hinweise!");
+      // TODO @ Kilian:Kannst du, bevor du damit deine Level-Set-Beispiele
+      //        rechnest noch eine paar Testfaelle dafuer rechnen. Du kannst
+      //        von mir dazu ein Inputfile mit einem Hex20-Element haben.
+      //        Wenn das passt, dann sollte fuer einfache Faelle auch richtig
+      //        geschnitten werden und der Rest durchlaufen. Das hat zumindest
+      //        fuer meinen Testfall funktioniert. Dennoch solltest du dir folgende
+      //        Stellen nochmal anschauen:
+      //        - buildPLC(): * alle vom distype abhängigen Stellen
+      //                      * sich daraus ergebende Folgen fuer CallTetGen() und
+      //                        TransformIntegrationCell()
+      //        - buildFlameFrontSegments(): *bei den Faellen mit 3 bzw 4 Intersectionpoints
+      //                                      waere ich mal sehr vorsichtig
+      //        - darueberhinaus kann ein Blick in StoreDomainIntegrationCell() und
+      //          IdentifyPolygonOrientation() nicht schaden
+      //        - außerdem wuerde ich projectmidpoint in TriangulateFlameFront() erstmal rausnehmen
+      //        Und noch etwas: Ich habe mal zwei Gmsh-Output-Funktionen geschrieben:
+      //        RootCelltoGmsh() und FlamefronttoGmsh(). Vielleicht kannst du sie brauchen.
+      //        Bei Fragen einfach vorbeikommen.
+      //        Ursula
+
+      lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
+      // remark: vertices are assumed to be numbered in the same way the nodes are
+      //         convention documented in globalreport.pdf
+      /* L1:  0 1  8
+       * L2:  1 2  9
+       * L3:  2 3 10
+       * L4:  0 3 11
+       * L5:  0 4 12
+       * L6:  1 5 13
+       * L7:  2 6 14
+       * L8:  3 7 15
+       * L9:  4 5 16
+       * L10: 5 6 17
+       * L11: 6 7 18
+       * L12: 4 7 19
+       */
+
+      //-------------------------------
+      // determine intersection points
+      //-------------------------------
+      // loop edges of refinement cell
+      for(std::size_t iline=0; iline<lines.size(); iline++)
+      {
+        // get G-function value of the three nodes
+        double gfuncval1 = gfuncvalues[lines[iline][0]]; // left node
+        //std::cout << "1: " << gfuncval1 << std::endl;
+        double gfuncval2 = gfuncvalues[lines[iline][1]]; // right node
+        //std::cout << "2: " << gfuncval2 << std::endl;
+        double gfuncval3 = gfuncvalues[lines[iline][2]]; // node in the middle
+        //std::cout << "3: " << gfuncval3 << std::endl;
+
+        std::vector<double> coordinates1 (3);
+        std::vector<double> coordinates2 (3);
+
+        // ---------------------------------------
+        // reformulation of the curve of the g-function along the edge leads
+        // a*xi^2 + b*xi + c = 0
+        //----------------------------------------
+        double a = 0.5*gfuncval1 + 0.5*gfuncval2 - gfuncval3;
+        double b = 0.5*gfuncval2 - 0.5*gfuncval1;
+        double c = gfuncval3;
+
+        // check weather the curve is really quadratic
+        if (a != 0)
+        {
+          double determinant = b*b -4*a*c;
+          //std::cout << "Determinante betraegt: " <<determinant<<" \n" ;
+
+          // exclude complex solutions
+          if (determinant >= 0.0)
+          {
+              // compute intersectionpoints
+              double xi_1 = (-b + sqrt(determinant))/(2*a);
+              double xi_2 = (-b - sqrt(determinant))/(2*a);
+              //Test: Ausgabe der Schnittpunkte
+              std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+              std::cout << "Schnittpunkt2: " <<xi_2<<" \n" ;
+
+              // check weather intersection points are inside the element, i.e. they have to be in the interval ]-1.0;1.0[
+              if ((fabs(xi_1) < 1.0) or (fabs(xi_2) < 1.0))
+              {
+                // get coordinates
+                for (int dim = 0; dim < 3; dim++)
+                {
+                  // vertices have one coordinate in common
+                  if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
+                  {
+                    coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
+                    coordinates2[dim] = vertexcoord[lines[iline][0]][dim];
+                  }
+                  else // store coordinate of intersectionpoint
+                  {
+                    coordinates1[dim] = xi_1;
+                    coordinates2[dim] = xi_2;
+                  }
+                }
+
+                // at the moment the following intersection algorithm can only handle simple intersected elements
+                // i.e. it based on the assumption that each edge is intersected only once
+                if (fabs(xi_1)<1.0 and fabs(xi_2)<1.0 and (xi_2 != xi_1))
+                {
+                  std::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << std::endl;
+                  std::cout << "G-Function-Values of element:" << std::endl;
+                  for (std::size_t k=0;k<gfuncvalues.size();k++)
+                     std::cout << gfuncvalues[k] << std::endl;
+                  std::cout << "Adapt BuildFlameFrontSegements()!" << std::endl;
+                  dserror("Check this first!");
+                }
+
+                // store intersectionpoint if it is located in the interval ]-1.0;1.0[
+                if (fabs(xi_1) < 1.0)
+                  intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
+                if ((fabs(xi_2) < 1.0) and (xi_2 != xi_1))
+                  intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates2));
+              }
+          }
+        }
+        else //linear curve of g-function along the edge
+        {
+          if (b != 0)
+          {
+            // compute intersectionpoint
+            double xi_1 = -c/b;
+            std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+            // store intersectionpoint if it is located in the interval ]-1.0;1.0[
+            if (fabs(xi_1) < 1.0)
+            {
+              // get coordinates
+              for (int dim = 0; dim < 3; dim++)
+              {
+                // vertices have one coordinate in common
+                if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
+                {
+                  coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
+                }
+                else // store coordinates of intersectionpoint
+                {
+                  coordinates1[dim] = xi_1;
+                }
+              }
+              intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
+            }
+          }
+        }
+      }
+      break;
   }
   default:
     dserror("FindIntersectionPoints() does not support this element shape!");
-  }
-
-  //-------------------------------
-  // determine intersection points
-  //-------------------------------
-  // loop edges of refinement cell
-  for(std::size_t iline=0; iline<lines.size(); iline++)
-  {
-    // get G-function value of the two vertices defining an edge
-    double gfuncval1 = gfuncvalues[lines[iline][0]];
-    double gfuncval2 = gfuncvalues[lines[iline][1]];
-
-    std::vector<double> coordinates(3);
-
-    // check for change of sign along edge
-    if (gfuncval1*gfuncval2 < 0.0)
-    {
-      for (int dim = 0; dim < 3; dim++)
-      {
-        // vertices have one coordinate in common
-        if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
-        {
-          // intersection point has the same coordinate for that direction
-          coordinates[dim] = vertexcoord[lines[iline][0]][dim];
-        }
-        else // compute intersection point
-        {
-          // linear interpolation (for hex8)
-          // x = x1 + (phi(=0) - phi1)/(phi2 - phi1)*(x2 - x1)
-          // store intersection point coordinate (local element coordinates) for every component dim
-          coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
-          * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
-
-          // shift intersection point to vertex if it is very close
-          //if((fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4) or
-          //  (fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4))
-          //{
-          //  if(fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4)
-          //  {
-          //    cout << "coordinates shifted to vertex 1: " << coordinates[dim] << endl;
-          //    coordinates[dim] = vertexcoord[lines[iline][0]][dim];
-          //  }
-          //  else if(fabs(vertexcoord[lines[iline][1]][dim]-coordinates[dim]) < 1.0E-4)
-          //  {
-          //    cout << "coordinates shifted to vertex 2: " << coordinates[dim] << endl;
-          //    coordinates[dim] = vertexcoord[lines[iline][1]][dim];
-          //  }
-          //  else
-          //  {
-          //    dserror("impossible");
-          //  }
-          //}
-        }
-      }
-
-      // store coordinates of intersection point for each line
-      intersectionpoints[iline] = coordinates;
-    }
-    else
-    {
-      //do nothing and go to the next line
-    }
   }
 
   //TEST Ausgabe
@@ -1864,8 +2033,9 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   // store intersection points in refinement cell
   cell->intersectionpoints_ = intersectionpoints;
 
-// possible Gmsh output to visualize the rootcell and its intersectionpoints
-//  cell->RootCellToGmsh();
+  // possible Gmsh output to visualize the rootcell and its intersectionpoints
+  // cell->RootCellToGmsh();
+
   return;
 }
 
@@ -2535,6 +2705,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         }
       }
 
+#if 1
       //--------------------------------------------------------------------------------
       // perform Newton-Raphson method to project midpoint on level set zero iso-surface
       //--------------------------------------------------------------------------------
@@ -2588,6 +2759,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         for (int dim=0; dim<3; dim++)
           midpoint[dim] = projpoint(dim);
       }
+#endif
 
 #ifndef COMBUST_2D
       // add midpoint to list of points defining piecewise linear complex (interface surface)

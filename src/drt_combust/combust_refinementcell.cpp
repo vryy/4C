@@ -291,6 +291,177 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
 
   //std::cout << "Element " <<  ele_->Id() << " -- bisected status: " << bisected_ <<
   //                                  "\t" << " -- touched_ status: " << touched_  << std::endl;
+
+  if (distype_ == DRT::Element::hex20)
+    dserror("Read comment first!");
+  //-------------------------------------------------------------------------------------------
+  // Im urspruenglichen, ersten Teil werden nur die die Vorzeichen der Konten des Elements
+  // auf einen Vorzeichenwechsel hin ueberprueft. Das ist fuer Hex8 absolut ok, reicht aber fuer
+  // Hex20 nicht aus. Diese Kiterium reicht dann nicht, wenn alle Koten das gleiche Vorzeichen
+  // haben. Fuer diesen Fall ist es moegchlich, dass zwei Nullstellen zwischen einem der
+  // aeusseren Knoten und dem Mittelknoten liegen. Nur eine Nullstelle ist auch moeglich und
+  // entspricht dann einem Beruehren.
+  //
+  // Dazu wurde von einem Studenten ein zusaetzliches Kriterium implementiert. Das, was der
+  // Student hier gemacht hat, muss noch uberprueft werden.
+  //
+  // In den meisten Schnittfaellen (ich glaube in allen mit einem Interface je Element) sollte
+  // die obige Ueberpruefung des IntersectionStatus vollig ausreichend sein. Daher habe ich diesen
+  // Teil mal raus genommen.
+  //
+  // TODO: @Kilian: Ich glaube, du kannst das erstmal weglassen.
+  //-------------------------------------------------------------------------------------------
+# if 0
+  if ((distype_ == DRT::Element::hex20) and (bisected_ == false))
+  {
+    dserror("This part has been done by a student and should be check before use!");
+  // FARAH
+
+  std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
+  double D = 0;
+  int ecounter = 2;
+
+//  switch (cell->Ele()->Shape())		//???
+//  {
+//  case DRT::Element::hex8:
+//	  	{ecounter = 1;}
+//
+//  case DRT::Element::hex20:
+//  		{ecounter = 2;}
+//
+//  default:
+//	  dserror("IdentifyIntersectionStatus() does not support this element shape!");
+
+ // }
+
+ // 3 positive Werte auf kante
+  if ((intersected_ == false) and (distype_==DRT::Element::hex20))
+  {
+
+
+for (std::size_t iline=0; iline < lines.size(); iline++)
+{  int c = 0;
+
+
+	for (int b = 0; b <= ecounter; b++)
+		{
+
+
+		 if ( gfuncvalues_[lines[iline][b]] >0)
+			{
+			  c++;
+
+			}
+		 //else
+			// break;
+		}
+
+		 	if ( c == 3 )
+		 		// Diskriminante
+		 		{//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
+
+		 		 double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+		 		 double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
+		 		 double a3= gfuncvalues_[lines [iline][0]];
+		 				 D= a2*a2-4*a1*a3;
+		 		 if (D!=0)
+		 		 {
+		 		 double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
+		 		 double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
+
+
+		 			if ((D==0)and (0<=x1)and (2>=x1))
+		 				{touched_ = true;
+		 				//break;
+		 				}
+		 			if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
+		 				{intersected_ = true;
+		 				//break;
+		 				}
+		 		}
+		}
+
+}};
+// 3 negative Werte auf Kante
+if ((intersected_ == false) and (distype_==DRT::Element::hex20))
+{
+
+for (std::size_t iline=0; iline < lines.size(); iline++)
+{  int c = 0;
+
+	{for (int b = 0; b <= ecounter; b++)
+		{
+
+		 if (0 > gfuncvalues_[lines [iline][b]])
+			{
+			  c++;
+			}}
+		 //else
+			 //break;
+		//};
+
+		 	if ( c == ecounter )
+		 		//Diskriminante
+		 		{//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
+		 		 double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+		 		 double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
+		 		 double a3= gfuncvalues_[lines [iline][0]];
+		 				 D= a2*a2-4*a1*a3;
+		 		 if(D!=0)
+		 		 {
+		 		 double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
+		 		 double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
+
+
+		 			if ((D==0)and (0<=x1)and (2>=x1))
+		 				{touched_ = true;
+		 				//break;
+		 				}
+		 			if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
+		 				{intersected_ = true;
+		 				//break;
+		 				}
+		 		}}
+		}
+	}
+};
+
+// 1 Wert != 0 und alle anderen 0
+
+if (intersected_ == false)
+{
+
+		int counter2= 0;
+
+	  for(int counter1 = 0; counter1 < gfuncvalues_.size()-1; counter1++)
+	  {
+		  if(gfuncvalues_[counter1] != 0.0)
+		  {
+			  counter2++;
+		  }
+	  }
+
+	  if(counter2==1)
+		  {intersected_ = true;
+		  }
+}
+
+
+
+// Prüfe ob Nullstelle(n) auf kante liegen
+
+//double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+//double a2= 5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]];
+//double a3= gfuncvalues_[lines [iline][0]];
+//
+//double x1= (-a2+(a2*a2-4*a1*a3)^0,5)/(2*a1);
+//double x2= (-a2-(a2*a2-4*a1*a3)^0,5)/(2*a1);
+
+
+  //FARAH
+  }
+#endif
+
   return;
 }
 
