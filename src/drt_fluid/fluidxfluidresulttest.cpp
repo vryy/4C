@@ -29,8 +29,8 @@ Maintainer: Shadan Shahmiri
 /*----------------------------------------------------------------------*/
 FLD::FluidXFluidResultTest::FluidXFluidResultTest(FluidXFluidImplicitTimeInt& fluid)
 {
-    fluiddis_= fluid.discret_;
-    mysol_   = fluid.velnp_ ;
+    fluiddis_= fluid.fluiddis_;
+    mysol_   = fluid.fluidstate_.velnp_ ;
     mytraction_ = fluid.CalcStresses();
 }
 /*----------------------------------------------------------------------*/

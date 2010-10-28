@@ -33,6 +33,10 @@ Maintainer: Shadan Shahmiri
 #include "../drt_inpar/inpar_fluid.H"
 #include "fluid_utils_mapextractor.H" // should go away
 
+#include "../drt_xfem/dof_management.H"
+#include "../drt_io/io_ostream0.H"
+#include "../drt_io/io.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -78,7 +82,8 @@ public:
 
     */
   
-  FluidXFluidImplicitTimeInt(RCP<DRT::Discretization>  actdis,
+  FluidXFluidImplicitTimeInt(RCP<DRT::Discretization>  fluiddis,
+                             RCP<DRT::Discretization>  xfluiddis,
                              LINALG::Solver&           solver,
                              ParameterList&            params,
                              IO::DiscretizationWriter& output,
@@ -94,19 +99,25 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate();
+  void Integrate(
+      Teuchos::RCP<DRT::Discretization>  fluidxfluidboundarydis
+      );
 
   /*!
   \brief Do time integration (time loop)
 
    */
-  void TimeLoop();
+  void TimeLoop(
+      const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis     ///< surface discretization used to intersect fluid elements
+      );
 
   /*!
   \brief Solve stationary problem
   
   */
-  void SolveStationaryProblem();
+  void SolveStationaryProblem(
+      const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis   ///< surface discretization used to intersect fluid elements
+      );
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -116,7 +127,9 @@ public:
            Fixpoint iteration
 
   */
-  void NonlinearSolve();
+  void NonlinearSolve(
+      const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis
+      );
 
    /*!
    \brief Update the solution after convergence of the nonlinear
@@ -178,9 +191,9 @@ public:
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
-  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<Epetra_Vector> Velnp() { return fluidstate_.velnp_; }
+  Teuchos::RCP<Epetra_Vector> Velaf() { return fluidstate_.velaf_; }
+  Teuchos::RCP<Epetra_Vector> Veln() { return fluidstate_.veln_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
   /// provide access to the Dirichlet map
@@ -194,10 +207,10 @@ public:
   /// interface are prescribed by the other fields.
   void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-  Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
-  Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
+  Teuchos::RCP<Epetra_Vector> Dispnp() { return fluidstate_.dispnp_; }
+  Teuchos::RCP<Epetra_Vector> Dispn() { return fluidstate_.dispn_; }
   
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
  
   LINALG::MapExtractor& VelPresSplitter(){ return velpressplitter_;};
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
@@ -220,6 +233,12 @@ public:
   */
   const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
+  /// introduce surface split extractor object
+  /*!
+    This method must (and will) be called during setup with a properly
+    initialized extractor object iff we are on an ale mesh.
+   */
+  void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
  
   /// determine grid velocity
   void UpdateGridv();
@@ -235,7 +254,37 @@ public:
      Needed for Mortar coupling at the FSI interface
     */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+  
+  /// setup the variables to do a new time step
+  void PrepareTimeLoop(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
+  
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ComputeInterfaceAndSetDOFs(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
 
+  /*!
+  \brief give DOF information to elements
+  */
+  void TransferDofInformationToElements(
+      const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
+      const Teuchos::RCP<XFEM::DofManager> dofmanager
+      );
+  
+  /*!
+    * \brief plot a vector field to a Gmsh postprocessing file
+    *
+    * @param vectorfield      vector with solution values
+    * @param filestr          basic name of the output file
+    * @param name_in_gmsh     text that appears in the Gmsh window over the scale
+    * @param plot_to_gnuplot  plot some values to Gnuplot (debugging - will go away sooner or later)
+    */
+   void PlotVectorFieldToGmsh(
+       const Teuchos::RCP<const Epetra_Vector>   vectorfield,
+       const std::string filestr,
+       const std::string name_in_gmsh,
+       const bool plot_to_gnuplot,
+       const int step,
+       const double time
+       ) const;
+   
   protected:
 
    // don't want = operator and cctor
@@ -261,9 +310,12 @@ public:
   void GenAlphaUpdateAcceleration();
 
 
-    //! @name general algorithm parameters
-    //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  //! @name general algorithm parameters
+  //! fluid discretization
+  RCP<DRT::Discretization>      fluiddis_;
+  //! xfluid discretization
+  RCP<DRT::Discretization>      xfluiddis_;
+  
   LINALG::Solver&               solver_;
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                          project_;
@@ -272,6 +324,7 @@ public:
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
   ParameterList&                params_;
+  ParameterList&                xparams_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
   int                           myrank_;
@@ -349,8 +402,11 @@ public:
   double  dtfilter_;
   double  dtsolve_;
 
-  /// (standard) system matrix
-  RCP<LINALG::SparseOperator> sysmat_;
+  /// (standard) fluid system matrix 
+  RCP<LINALG::SparseOperator> fluidsysmat_;
+  
+  /// (standard) xfluid system matrix 
+  RCP<LINALG::SparseOperator> xfluidsysmat_;
 
   /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> dbcmaps_;
@@ -369,36 +425,22 @@ public:
 
   /// rhs: right hand side vector for linearised flow solution
   RCP<Epetra_Vector>    rhs_;
+  
+  Teuchos::RCP<Epetra_Vector>    fluidresidual_;
+  
+  Teuchos::RCP<Epetra_Vector>    xfluidresidual_;
+  
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RCP<Epetra_Vector>    trueresidual_;
+  
+  RCP<Epetra_Vector>    fluidtrueresidual_;
+  
+  RCP<Epetra_Vector>    xfluidtrueresidual_;
+
 
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
-
-  //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
-  RCP<Epetra_Vector>    accnp_;
-  RCP<Epetra_Vector>    accn_;
-  RCP<Epetra_Vector>    accam_;
-  //@}
-
-  //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
-  RCP<Epetra_Vector>    velnp_;
-  RCP<Epetra_Vector>    veln_;
-  RCP<Epetra_Vector>    velnm_;
-  RCP<Epetra_Vector>    velaf_;
-   //@}
-
-  //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-  RCP<Epetra_Vector>    scaaf_;
-  RCP<Epetra_Vector>    scaam_;
-  //@}
-
-  //! @name displacemets at time n+1, n and n-1
-  RCP<Epetra_Vector>    dispnp_;
-  RCP<Epetra_Vector>    dispn_;
-  RCP<Epetra_Vector>    dispnm_;
-  //@}
 
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
@@ -427,8 +469,87 @@ public:
 
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
 
-  //@}
+  // state of fluid
+  struct FluidState
+  {
+      
+    //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
+    RCP<Epetra_Vector>    accnp_;
+    RCP<Epetra_Vector>    accn_;
+    RCP<Epetra_Vector>    accam_;
+    //@}
 
+    //! @name  velocity and pressure at time n+1, n, n-1 and n+alpha_F
+    RCP<Epetra_Vector>    velnp_;
+    RCP<Epetra_Vector>    veln_;
+    RCP<Epetra_Vector>    velnm_;
+    RCP<Epetra_Vector>    velaf_;
+    //@}
+    
+    //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
+    RCP<Epetra_Vector>    scaaf_;
+    RCP<Epetra_Vector>    scaam_;
+    //@}
+
+    //! @name displacemets at time n+1, n and n-1
+    RCP<Epetra_Vector>    dispnp_;
+    RCP<Epetra_Vector>    dispn_;
+    RCP<Epetra_Vector>    dispnm_;
+    //@}
+    
+  } fluidstate_;
+  //@}
+  
+  //XFEM Stuff
+  
+  /// this struct holds information about degrees of freedom for the problem
+  struct PhysProb
+  {
+    std::set<XFEM::PHYSICS::Field> fieldset_; ///< which physical fields are used in this problem
+    RCP<XFEM::ElementAnsatz> elementAnsatz_;  ///< element dofs for this problem
+  } physprob_;
+    
+  //! store dof distribution information for output
+  Teuchos::RCP<XFEM::DofManager>      dofmanager_np_;
+  
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_n_;
+
+  Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_np_;
+  
+  // state of xfluid
+  struct XFluidState
+  {
+    /*! contains connection between nodal DofKey and a position in the global state arrays
+     *
+     *  should always fit to the current Epetra_Maps of this classes vectors
+     */
+    std::map<XFEM::DofKey<XFEM::onNode>, XFEM::DofGID>   nodalDofDistributionMap_;
+
+    /*! contains connection between elemental DofKey and a position in the global state arrays
+     *
+     *  should always fit to the current Epetra_Maps of this classes vectors
+     */
+    std::map<XFEM::DofKey<XFEM::onElem>, XFEM::DofGID>   elementalDofDistributionMap_;
+
+    //! @name accelerations
+    Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
+    Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
+    //@}
+
+    //! @name velocities and pressures
+    Teuchos::RCP<Epetra_Vector>    velnp_;  ///< velocities and pressures at time n+1
+    Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
+    Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
+    //@}
+
+  } xfluidstate_;
+
+  //! Extractor used for output
+  LINALG::MapExtractor      xfluidvelpressplitterForOutput_;
+  
+  //! store dofset for unintersected domain!!!!????
+  DRT::DofSet                xfluiddofset_out_;
+  
 }; // class FluidXFluidImplicitTimeInt
 
 }

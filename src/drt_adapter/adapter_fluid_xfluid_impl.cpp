@@ -19,19 +19,22 @@ Maintainer: Shadan Shahmiri
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
-        Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<DRT::Discretization> xfluiddis,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale,
         bool dirichletcond)
-  : fluid_(dis, *solver, *params, *output, isale),
-    fluiddis_(dis),
+  : fluid_(fluiddis, xfluiddis, *solver, *params, *output, isale),
+    fluiddis_(fluiddis),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  interface_.Setup(*dis);
+  
+  interface_.Setup(*fluiddis);
+  fluid_.SetSurfaceSplitter(&interface_);
 
   // build inner velocity map
   // dofs at the interface are excluded
@@ -47,6 +50,49 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
     // mark all interface velocities as dirichlet values
     fluid_.AddDirichCond(interface_.FSICondMap());
   }
+  
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("XFEMCoupling");
+  fluidxfluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(fluiddis_, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
+  if (fluidxfluidboundarydis_->NumGlobalNodes() == 0)
+  {
+    cout << "Empty fluidxfluidboundary discretization detected!" << endl;
+  }
+  
+  // Note: The nodal structure doesn't change, so we'll create the nodal maps in the constructor.
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map ffnoderowmap = *fluidxfluidboundarydis_->NodeRowMap();
+  const Epetra_Map ffelemrowmap = *fluidxfluidboundarydis_->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  // Create an allreduced Epetra_Map from the given Epetra_Map and give it to all processors
+  const Epetra_Map ffnodecolmap = *LINALG::AllreduceEMap(ffnoderowmap);
+  const Epetra_Map ffelemcolmap = *LINALG::AllreduceEMap(ffelemrowmap);
+
+  // redistribute nodes and elements to column (ghost) map
+  fluidxfluidboundarydis_->ExportColumnNodes(ffnodecolmap);
+  fluidxfluidboundarydis_->ExportColumnElements(ffelemcolmap);
+
+  const int err =  fluidxfluidboundarydis_->FillComplete();
+  if (err) dserror("FillComplete() returned err=%d",err);
+  
+  DRT::UTILS::PrintParallelDistribution(*fluidxfluidboundarydis_);
+
+  fluidxfluidboundaryoutput_ = rcp(new IO::DiscretizationWriter(fluidxfluidboundarydis_));
+  
+  // create fluid-xfluid-interface DOF vectors 
+  fxfidispnp_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfivelnp_     = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true); // physical fluid velocity
+  fxfitrueresnp_ = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfidispn_   = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfiveln_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfivelnm_   = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfiaccnp_   = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  fxfiaccn_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
+  
+  PrepareFluidXFluidBoundaryDis();
+  fluid_.PrepareTimeLoop(fluidxfluidboundarydis_);
+ 
 }
 
 
@@ -142,7 +188,7 @@ Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidXFluidImpl::GetDBCMapExtr
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFluidImpl::TimeLoop()
 {
-  fluid_.Integrate();
+  fluid_.Integrate(fluidxfluidboundarydis_);
 }
 
 
@@ -181,7 +227,7 @@ void ADAPTER::FluidXFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFluidImpl::NonlinearSolve()
 {
-  fluid_.NonlinearSolve();
+  fluid_.NonlinearSolve(fluidxfluidboundarydis_);
 }
 
 
@@ -387,7 +433,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFluidImpl::IntegrateInterfaceShape()
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFluidImpl::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::FluidXFluidResultTest(fluid_));
-  //return null;
 }
 
 
@@ -407,6 +452,19 @@ void ADAPTER::FluidXFluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialFi
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidXFluidImpl::PrepareFluidXFluidBoundaryDis()
+{
+  // put vectors into boundary discretization (SetState generates col vector automatically)
+  fluidxfluidboundarydis_->SetState("idispcolnp",fxfidispnp_);
+  fluidxfluidboundarydis_->SetState("idispcoln" ,fxfidispn_);
+  fluidxfluidboundarydis_->SetState("ivelcolnp" ,fxfivelnp_);
+  fluidxfluidboundarydis_->SetState("ivelcoln"  ,fxfiveln_);
+  fluidxfluidboundarydis_->SetState("ivelcolnm" ,fxfivelnm_);
+  fluidxfluidboundarydis_->SetState("iacccoln"  ,fxfiaccn_);
+}
 
 
 #endif
