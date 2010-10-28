@@ -686,12 +686,10 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
 			if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
 			{
-				std::ostringstream filename1;
-				std::ostringstream filename2;
+				std::ostringstream filename;
 
-				filename1 << "./GmshOutput/StruPolyCoords_Proc"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
-				filename2 <<"./GmshOutput/StruPolyCrslnks_Proc"<<discret_.Comm().MyPID()<<"_"<<std::setw(6) << setfill('0') << istep <<".dat";
-				StructPolymorphOutput(dis,filename1,filename2);
+				filename << "./GmshOutput/StruPolyFilamentOrientation_"<<std::setw(6) << setfill('0') << istep <<".dat";
+				StructPolymorphOutput(dis,filename);
 			}
 		}
 		break;
@@ -2019,170 +2017,71 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
 /*----------------------------------------------------------------------*
  | output for structural polymorphism             (public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2)
+void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
-	/* The following code is basically copied from GmshOutput() and therefore remains largely uncommented.
-	 * The output consists of a vector v E R³ for each element and the respective node coordinates C.
-	 * Since the output is redundant in the case of ghosted elements (parallel use), the GID of the
-	 * element is written, too. This ensures an easy adaption of the output for post-processing.
-	 *
-	 * columns of the output file: element-ID, filament-ID, v_x, v_y, v_z, C_0_x,  C_0_y, C_0_z, C_1_x, C_1_y, C_1_z
-	 * */
-
-	FILE* fp = NULL;
-
-	fp = fopen(filename1.str().c_str(), "w");
-
-	std::stringstream filamentcoords;
-
-	// get filament number conditions
-	vector<DRT::Condition*> filamentnumbers(0);
-	discret_.GetCondition("FilamentNumber", filamentnumbers);
-
-	for (int i=0; i<discret_.NumMyRowElements(); ++i)
-	{
-		DRT::Element* element = discret_.lRowElement(i);
-
-		// we only need filament elements, crosslinker elements are neglected with the help of their high element IDs
-		if (element->Id() > basisnodes_)
-			continue;
-
-		LINALG::SerialDenseMatrix coord(3, element->NumNode(), true);
-		// filament number
-		int filnumber = 0;
-		// a switch to avoid redundant search for filament number
-		bool done = false;
-
-		for (int j=0; j<3; j++)
-		{
-			for (int k=0; k<element->NumNode(); k++)
-			{
-				double referenceposition = ((element->Nodes())[k])->X()[j];
-				vector<int> dofnode = discret_.Dof((element->Nodes())[k]);
-				double displacement = disrow[discret_.DofRowMap()->LID(dofnode[j])];
-				coord(j,k) = referenceposition + displacement;
-
-				// get corresponding filament number
-				// loop over all filaments
-				if (!done)
-					for (int l = 0; l < (int) filamentnumbers.size(); l++)
-						for (int m = 0; m < (int) filamentnumbers[l]->Nodes()->size(); m++)
-							if (element->Nodes()[k]->Id() == filamentnumbers[l]->Nodes()->at(m))
-							{
-								filnumber = filamentnumbers[l]->Id();
-								done = true;
-							}
-			}
-		}
-
-		const DRT::ElementType & eot = element->ElementType();
-
-#ifdef D_BEAM3
-		if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-			for (int j=0; j<element->NumNode()-1; j++)
-				filamentcoords << element->Id() << " " << filnumber << "   "
-											 << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
-											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
-		else
-#endif
-#ifdef D_BEAM3II
-		if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
-		for(int j=0; j<element->NumNode()-1; j++)
-		filamentcoords<<element->Id()<<" "<<filnumber<<"   "<<std::scientific<<std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-									<< coord(0,j) << " " << coord(1,j) << " " << coord(2,j) << " "
-									<< coord(0,j+1) << " " << coord(1,j+1) << " " << coord(2,j+1)<<endl;
-		else
-#endif
-#ifdef D_TRUSS3
-		if (eot == DRT::ELEMENTS::Truss3Type::Instance())
-			for (int j=0; j<element->NumNode()-1; j++)
-				filamentcoords << element->Id() << " " << filnumber << "   "
-										   << std::scientific << std::setprecision(15)//<<coord(0,j+1)-coord(0,j) << " " <<coord(1,j+1)-coord(1,j) << " " <<coord(2,j+1)-coord(2,j)<<"   "
-											 << coord(0, j) << " " << coord(1, j) << " " << coord(2, j) << " "
-											 << coord(0, j + 1) << " " << coord(1, j + 1) << " " << coord(2, j+ 1) << endl;
-		else
-#endif
-		{
-		}
-	}
-	//write content into file and close it
-	fprintf(fp, filamentcoords.str().c_str());
-	fclose(fp);
-
-	/* A measure to quantify bundling, is hereafter established and written to a separate output file.
-	 * It works as follows:
-	 * 1) Specify all possible filament pairs P(i,j)
-	 * 2) n(i,j) counts the number of crosslinkers of P(i,j)
-	 * 3) n_av determines the average number of non-zero n(i,j) [e.g. n_av==1 indicates a perfectly
-	 *    homogenous isotropic network]
+	/* Output of filament element orientations (Proc 0 only):
+	 * format: filamentnumber    d_x  d_y  d_z
 	 */
 
-	//if(discret_.Comm().MyPID()==0)
-	//{
-	LINALG::SerialDenseMatrix ncross((int) filamentnumbers.size(), (int) filamentnumbers.size(), true);
-	// loop over all possible filament pairs and their nodes (wow!)
-	// filament i
-	for (int i=0; i<(int)filamentnumbers.size() - 1; i++)
+	// get column map displacements
+	Epetra_Vector discol(*(discret_.DofColMap()), true);
+	LINALG::Export(disrow, discol);
+
+	if(discret_.Comm().MyPID()==0)
 	{
-		// filament j
-		for (int j=i+1; j<(int)filamentnumbers.size(); j++)
+		FILE* fp = NULL;
+		fp = fopen(filename.str().c_str(), "w");
+
+		std::stringstream fileleorientation;
+
+		// get filament number conditions
+		vector<DRT::Condition*> filaments(0);
+		discret_.GetCondition("FilamentNumber", filaments);
+
+		double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
+
+		for(int fil=0; fil<(int)filaments.size(); fil++)
 		{
-			// number of crosslinkers of filament pair P(i,j)
-			int n_ij = 0;
-			// node k of filament i
-			for (int k=0; k<(int)filamentnumbers[i]->Nodes()->size(); k++)
+			// get next filament
+			DRT::Condition* currfilament = filaments[fil];
+			for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
 			{
-				// get node k of filament i if available on proc, else: next node in condition
-				if (discret_.HaveGlobalNode(filamentnumbers[i]->Nodes()->at(k)))
+				// obtain column map LIDs
+				int gid0 = currfilament->Nodes()->at(node-1);
+				int gid1 = currfilament->Nodes()->at(node);
+				int nodelid0 = discret_.NodeColMap()->LID(gid0);
+				int nodelid1 = discret_.NodeColMap()->LID(gid1);
+				DRT::Node* node0 = discret_.lColNode(nodelid0);
+				DRT::Node* node1 = discret_.lColNode(nodelid1);
+
+				// calculate directional vector between nodes
+				LINALG::Matrix<3, 1> dirvec;
+				for(int dof=0; dof<3; dof++)
 				{
-					//cout<<"Node_k="<<k<<",i="<<i<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
-					DRT::Node* node_ki = discret_.gNode(filamentnumbers[i]->Nodes()->at(k));
-					// node l of filament j
-					for (int l = 0; l < (int) filamentnumbers[j]->Nodes()->size(); l++)
-					{
-						// get node l of filament j if available on proc, else: next node in condition
-						if (discret_.HaveGlobalNode(filamentnumbers[j]->Nodes()->at(l)))
-						{
-							//cout<<"Node_l="<<l<<",j="<<j<<" is on Proc "<<discret_.Comm().MyPID()<<endl;
-							DRT::Node* node_lj = discret_.gNode(filamentnumbers[j]->Nodes()->at(l));
-							// identify any crosslinkers with nodes k and l
-							DRT::Element** adjelement_k = node_ki->Elements();
-							DRT::Element** adjelement_l = node_lj->Elements();
+					double poscomponent0 = node0->X()[dof]+discol[nodelid0];
+					double poscomponent1 = node1->X()[dof]+discol[nodelid1];
+					// check for periodic boundary shift and correct accordingly
+					if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+						poscomponent1 -= periodlength;
+					else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+						poscomponent1 += periodlength;
 
-							// loop over Elements adjacent to nodes k and l and increment n_ij if the element
-							// GIDs of element m and n match, i.e. the two filament share a crosslinker
-							for (int m = 0; m < node_ki->NumElement(); m++)
-							{
-								if (adjelement_k[m]->Id() > basisnodes_)
-									for (int n = 0; n < node_lj->NumElement(); n++)
-										if (adjelement_k[m]->Id() == adjelement_l[n]->Id())
-											n_ij++;
-							}
-						}
-					}
+					dirvec(dof) = poscomponent1-poscomponent0;
 				}
+				// normed vector
+				dirvec.Scale(1/dirvec.Norm2());
+				// normed direction (via dot product with normalized z-direction vector [d_x d_y d_z]*[0 0 1])
+				if(dirvec(2)<0.0)
+					dirvec.Scale(-1.0);
+				// write normed directional vector to stream
+				fileleorientation<<fil<<"    "<<std::setprecision(12)<<dirvec(0)<<" "<<dirvec(1)<<" "<<dirvec(2)<<endl;
 			}
-			// store the number of crosslinker of P(i,j) at the respective position in the matrix
-			ncross(i, j) = n_ij;
 		}
+
+		//write content into file and close it
+		fprintf(fp, fileleorientation.str().c_str());
+		fclose(fp);
 	}
-
-	// write the matrix ncross into a file via stream
-	fp = fopen(filename2.str().c_str(), "w");
-	std::stringstream crosslinkercount;
-
-	for (int i=0; i<ncross.M(); i++)
-	{
-		for (int j=0; j<ncross.N(); j++)
-			crosslinkercount << ncross(i, j) << "  ";
-		crosslinkercount << endl;
-	}
-
-	//write content into file and close it
-	fprintf(fp, crosslinkercount.str().c_str());
-	fclose(fp);
-	//}
 }// StatMechManager:StructPolymorphOutput()
 
 /*----------------------------------------------------------------------*

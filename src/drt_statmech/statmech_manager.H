@@ -185,10 +185,9 @@ protected:
 
   /*! \brief writes element orientation and coordinates of fiber elements to an output file
 			\param disrow     (in) displacement in row format
-			\param filename1  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
-			\param filename2  (in) filename for the second output file (matrix containing crosslinker numbers between filaments)
+			\param filename  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
 	 */
-	void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename1, const std::ostringstream& filename2);
+	void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
 
 	void DensityDensityCorrOutput(const std::ostringstream& filename);
 
