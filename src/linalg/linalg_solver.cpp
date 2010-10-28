@@ -1346,7 +1346,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("null space: add default vectors",false);
       mllist.set<double*>("null space: vectors",NULL);
 #if defined(PARALLEL) && defined(PARMETIS)
-      mllist.set("repartition: enable",0);
+      mllist.set("repartition: enable",1);
       mllist.set("repartition: partitioner","ParMETIS");
       mllist.set("repartition: max min ratio",1.3);
       mllist.set("repartition: min per proc",3000);
