@@ -94,7 +94,6 @@ REYNOLDS-STRESS       no_reynolds
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE       nonlinear
 TIMEINTEGR       Stationary
-ITEMAX           10
 WRITEFLUX        totalflux_boundary
 UPRES            1
 RESTARTEVRY      10
