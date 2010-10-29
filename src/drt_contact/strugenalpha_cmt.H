@@ -230,10 +230,16 @@ public:
   virtual void Output();
 
   /*!
-  \brief output linear+angular momentum and energies
+  \brief output of linear+angular momentum and energies
 
   */
   void OutputEnergyMomentum();
+
+  /*!
+  \brief output of solution error norms
+
+  */
+  void OutputErrorNorms();
   
   /*!
   \brief restart calculation from a given step

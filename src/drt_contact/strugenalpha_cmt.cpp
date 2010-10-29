@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "meshtying_defines.H"
 #include "meshtying_manager.H"
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -2905,6 +2906,9 @@ void CONTACT::CmtStruGenAlpha::Output()
   // output of energy and momentum quantities
   OutputEnergyMomentum();
 
+  // output of solution error norms
+  OutputErrorNorms();
+
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
@@ -3083,6 +3087,41 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
 
   return;
 } // CmtStruGenAlpha::OutputEnergyMomentum()
+
+/*----------------------------------------------------------------------*
+ |  output of solution error norms                            popp 10/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CmtStruGenAlpha::OutputErrorNorms()
+{
+  // get out of here if no output wanted
+  if (MORTARANALYTICALSOL==0) return;
+
+	// initialize variables
+	RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+	norms->Scale(0.0);
+
+	// call discretization to evaluate error norms
+  ParameterList p;
+  p.set("action", "calc_struct_errornorms");
+  discret_.ClearState();
+  discret_.SetState("displacement", disn_);
+  discret_.EvaluateScalars(p, norms);
+  discret_.ClearState();
+
+  // proc 0 writes output to screen
+  if (!myrank_)
+  {
+    printf("**********************************");
+    printf("\nSOLUTION ERROR NORMS:");
+    printf("\nL_2 norm:     %e",sqrt((*norms)(0)));
+    printf("\nH_1 norm:     %e",sqrt((*norms)(1)));
+    printf("\nEnergy norm:  %e",sqrt((*norms)(2)));
+    printf("\n**********************************\n\n");
+    fflush(stdout);
+  }
+
+  return;
+} // CmtStruGenAlpha::OutputErrorNorms()
 
 /*----------------------------------------------------------------------*
  |  nonlinear solution in one time step                      popp  03/10|

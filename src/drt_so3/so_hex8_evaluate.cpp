@@ -28,6 +28,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -79,6 +80,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_imrlike")                  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
   else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
+  else if (action=="calc_struct_errornorms")                      act = So_hex8::calc_struct_errornorms;
   else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
   else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
@@ -605,6 +607,200 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       }
       else
         dserror("ERROR: Internal energy for this material type has not been implemented yet.");
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_errornorms:
+    {
+    	// IMPORTANT NOTES (popp 10/2010):
+    	// - error norms are based on a small deformation assumption (linear elasticity)
+    	// - extension to finite deformations would be possible without difficulties,
+    	//   however analytical solutions are extremely rare in the nonlinear realm
+    	// - only implemented for purely displacement-based version, not yet for EAS
+    	// - only implemented for SVK material (relevant for energy norm only, L2 and
+    	//   H1 norms are of course valid for arbitrary materials)
+    	// - analytical solutions are currently stored in a repository in the MORTAR
+    	//   namespace, however they could (should?) be moved to a more general location
+
+      // check length of elevec1
+      if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+
+      // not yet implemented for EAS case
+      if (eastype_ != soh8_easnone) dserror("Error norms not yet implemented for EAS.");
+
+      // check material law
+      RCP<MAT::Material> mat = Material();
+
+      //******************************************************************
+      // only for St.Venant Kirchhoff material
+      //******************************************************************
+      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+      {
+        // declaration of variables
+        double l2norm = 0.0;
+        double h1norm = 0.0;
+        double energynorm = 0.0;
+
+        // shape functions, derivatives and integration weights
+        const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > vals = soh8_shapefcts();
+        const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+        const static std::vector<double> weights = soh8_weights();
+
+        // get displacements and extract values of this element
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state displacement vector");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+        // nodal displacement vector
+        LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
+        for (int i=0; i<NUMDOF_SOH8; ++i) nodaldisp(i,0) = mydisp[i];
+
+        // reference geometry (nodal positions)
+        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
+        DRT::Node** nodes = Nodes();
+        for (int i=0; i<NUMNOD_SOH8; ++i)
+        {
+          xrefe(i,0) = nodes[i]->X()[0];
+          xrefe(i,1) = nodes[i]->X()[1];
+          xrefe(i,2) = nodes[i]->X()[2];
+        }
+
+        // deformation gradient = identity tensor (geometrically linear case!)
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
+        for (int i=0;i<NUMDIM_SOH8;++i) defgrd(i,i) = 1;
+
+        //----------------------------------------------------------------
+        // loop over all Gauss points
+        //----------------------------------------------------------------
+        for (int gp=0; gp<NUMGPT_SOH8; gp++)
+        {
+          // Gauss weights and Jacobian determinant
+          double fac = detJ_[gp] * weights[gp];
+
+          // Gauss point in reference configuration
+          LINALG::Matrix<NUMDIM_SOH8,1> xgp(true);
+          for (int k=0;k<NUMDIM_SOH8;++k)
+          	for (int n=0;n<NUMNOD_SOH8;++n)
+              xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
+
+          //**************************************************************
+          // get analytical solution
+          LINALG::Matrix<NUMDIM_SOH8,1> uanalyt(true);
+          LINALG::Matrix<NUMSTR_SOH8,1> strainanalyt(true);
+          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivanalyt(true);
+
+          MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+          //**************************************************************
+
+          //--------------------------------------------------------------
+          // (1) L2 norm
+          //--------------------------------------------------------------
+
+          // compute displacements at GP
+          LINALG::Matrix<NUMDIM_SOH8,1> ugp(true);
+          for (int k=0;k<NUMDIM_SOH8;++k)
+          	for (int n=0;n<NUMNOD_SOH8;++n)
+              ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH8*n+k,0);
+
+          // displacement error
+					LINALG::Matrix<NUMDIM_SOH8,1> uerror(true);
+					for (int k=0;k<NUMDIM_SOH8;++k)
+						uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+					// compute GP contribution to L2 error norm
+					l2norm += fac * uerror.Dot(uerror);
+
+          //--------------------------------------------------------------
+          // (2) H1 norm
+          //--------------------------------------------------------------
+
+          // compute derivatives N_XYZ at GP w.r.t. material coordinates
+          // by N_XYZ = J^-1 * N_rst
+          LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ(true);
+          N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+
+          // compute partial derivatives at GP
+          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivgp(true);
+          for (int l=0;l<NUMDIM_SOH8;++l)
+          	for (int m=0;m<NUMDIM_SOH8;++m)
+          		for (int k=0;k<NUMNOD_SOH8;++k)
+          			derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH8*k+l,0);
+
+          // derivative error
+					LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> deriverror(true);
+					for (int k=0;k<NUMDIM_SOH8;++k)
+						for (int m=0;m<NUMDIM_SOH8;++m)
+							deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+          // compute GP contribution to H1 error norm
+          h1norm += fac * deriverror.Dot(deriverror);
+          h1norm += fac * uerror.Dot(uerror);
+
+          //--------------------------------------------------------------
+          // (3) Energy norm
+          //--------------------------------------------------------------
+
+          // compute linear B-operator
+          LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> bop;
+          for (int i=0; i<NUMNOD_SOH8; ++i)
+          {
+            bop(0,NODDOF_SOH8*i+0) = N_XYZ(0,i);
+            bop(0,NODDOF_SOH8*i+1) = 0.0;
+            bop(0,NODDOF_SOH8*i+2) = 0.0;
+            bop(1,NODDOF_SOH8*i+0) = 0.0;
+            bop(1,NODDOF_SOH8*i+1) = N_XYZ(1,i);
+            bop(1,NODDOF_SOH8*i+2) = 0.0;
+            bop(2,NODDOF_SOH8*i+0) = 0.0;
+            bop(2,NODDOF_SOH8*i+1) = 0.0;
+            bop(2,NODDOF_SOH8*i+2) = N_XYZ(2,i);
+
+            bop(3,NODDOF_SOH8*i+0) = N_XYZ(1,i);
+            bop(3,NODDOF_SOH8*i+1) = N_XYZ(0,i);
+            bop(3,NODDOF_SOH8*i+2) = 0.0;
+            bop(4,NODDOF_SOH8*i+0) = 0.0;
+            bop(4,NODDOF_SOH8*i+1) = N_XYZ(2,i);
+            bop(4,NODDOF_SOH8*i+2) = N_XYZ(1,i);
+            bop(5,NODDOF_SOH8*i+0) = N_XYZ(2,i);
+            bop(5,NODDOF_SOH8*i+1) = 0.0;
+            bop(5,NODDOF_SOH8*i+2) = N_XYZ(0,i);
+          }
+
+          // compute linear strain at GP
+          LINALG::Matrix<NUMSTR_SOH8,1> straingp(true);
+          straingp.Multiply(bop,nodaldisp);
+
+          // strain error
+          LINALG::Matrix<NUMSTR_SOH8,1> strainerror(true);
+          for (int k=0;k<NUMSTR_SOH8;++k)
+          	strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+
+          // compute stress vector and constitutive matrix
+          double density = 0.0;
+          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
+          LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
+          soh8_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+
+          // compute GP contribution to energy error norm
+          energynorm += fac * stress.Dot(strainerror);
+
+          //cout << "UAnalytical:      " << ugp << endl;
+          //cout << "UDiscrete:        " << uanalyt << endl;
+          //cout << "StrainAnalytical: " << strainanalyt << endl;
+          //cout << "StrainDiscrete:   " << straingp << endl;
+          //cout << "DerivAnalytical:  " << derivanalyt << endl;
+          //cout << "DerivDiscrete:    " << derivgp << endl;
+        }
+        //----------------------------------------------------------------
+
+        // return results
+        elevec1_epetra(0) = l2norm;
+        elevec1_epetra(1) = h1norm;
+        elevec1_epetra(2) = energynorm;
+      }
+      else
+        dserror("ERROR: Error norms only implemented for SVK material");
     }
     break;
 

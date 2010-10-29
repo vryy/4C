@@ -27,6 +27,7 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -100,6 +101,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
+  else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
@@ -393,6 +395,202 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     case calc_struct_linstiffmass:
       dserror("Case 'calc_struct_linstiffmass' not yet implemented");
     break;
+
+    //==================================================================================
+		case calc_struct_errornorms:
+		{
+			// IMPORTANT NOTES (popp 10/2010):
+			// - error norms are based on a small deformation assumption (linear elasticity)
+			// - extension to finite deformations would be possible without difficulties,
+			//   however analytical solutions are extremely rare in the nonlinear realm
+			// - 4 Gauss point rule is used for integration of error norms
+			// - only implemented for SVK material (relevant for energy norm only, L2 and
+			//   H1 norms are of course valid for arbitrary materials)
+			// - analytical solutions are currently stored in a repository in the MORTAR
+			//   namespace, however they could (should?) be moved to a more general location
+
+			// check length of elevec1
+			if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+
+			// check material law
+			RCP<MAT::Material> mat = Material();
+
+			//******************************************************************
+			// only for St.Venant Kirchhoff material
+			//******************************************************************
+			if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+			{
+				// declaration of variables
+				double l2norm = 0.0;
+				double h1norm = 0.0;
+				double energynorm = 0.0;
+
+				// use 4 Gauss points for integration, not only 1
+				int ngp = 4;
+
+				// shape functions, derivatives and integration weights
+				const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > vals = so_tet4_4gp_shapefcts();
+				const static std::vector<double> weights = so_tet4_4gp_weights();
+
+				// get displacements and extract values of this element
+				RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+				if (disp==null) dserror("Cannot get state displacement vector");
+				vector<double> mydisp(lm.size());
+				DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+				// nodal displacement vector
+				LINALG::Matrix<NUMDOF_SOTET4,1> nodaldisp;
+				for (int i=0; i<NUMDOF_SOTET4; ++i) nodaldisp(i,0) = mydisp[i];
+
+				// reference geometry (nodal positions)
+				LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
+				DRT::Node** nodes = Nodes();
+				for (int i=0; i<NUMNOD_SOTET4; ++i)
+				{
+					xrefe(i,0) = nodes[i]->X()[0];
+					xrefe(i,1) = nodes[i]->X()[1];
+					xrefe(i,2) = nodes[i]->X()[2];
+				}
+
+				// deformation gradient = identity tensor (geometrically linear case!)
+				LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(false);
+				for (int i=0;i<NUMDIM_SOTET4;++i) defgrd(i,i) = 1;
+
+				//----------------------------------------------------------------
+				// loop over all Gauss points
+				//----------------------------------------------------------------
+				for (int gp=0; gp<ngp; gp++)
+				{
+					// Gauss weights and Jacobian determinant
+					double fac = V_ * weights[gp];
+
+					// Gauss point in reference configuration
+					LINALG::Matrix<NUMDIM_SOTET4,1> xgp(true);
+					for (int k=0;k<NUMDIM_SOTET4;++k)
+						for (int n=0;n<NUMNOD_SOTET4;++n)
+							xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
+
+					//**************************************************************
+					// get analytical solution
+					LINALG::Matrix<NUMDIM_SOTET4,1> uanalyt(true);
+					LINALG::Matrix<NUMSTR_SOTET4,1> strainanalyt(true);
+					LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> derivanalyt(true);
+
+					MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+					//**************************************************************
+
+					//--------------------------------------------------------------
+					// (1) L2 norm
+					//--------------------------------------------------------------
+
+					// compute displacements at GP
+					LINALG::Matrix<NUMDIM_SOTET4,1> ugp(true);
+					for (int k=0;k<NUMDIM_SOTET4;++k)
+						for (int n=0;n<NUMNOD_SOTET4;++n)
+							ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOTET4*n+k,0);
+
+					// displacement error
+					LINALG::Matrix<NUMDIM_SOTET4,1> uerror(true);
+					for (int k=0;k<NUMDIM_SOTET4;++k)
+						uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+					// compute GP contribution to L2 error norm
+					l2norm += fac * uerror.Dot(uerror);
+
+					//--------------------------------------------------------------
+					// (2) H1 norm
+					//--------------------------------------------------------------
+
+					// compute derivatives N_XYZ at GP w.r.t. material coordinates
+					// (we have the transposed stored in nxyz_ and then switch indices)
+					LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> tr_N_XYZ(nxyz_); // copy!
+					LINALG::Matrix<NUMDIM_SOTET4,NUMNOD_SOTET4> N_XYZ(true);
+					for (int k=0;k<NUMNOD_SOTET4;++k)
+						for (int m=0;m<NUMDIM_SOTET4;++m)
+							N_XYZ(m,k) = tr_N_XYZ(k,m);
+
+					// compute partial derivatives at GP
+					LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> derivgp(true);
+					for (int l=0;l<NUMDIM_SOTET4;++l)
+						for (int m=0;m<NUMDIM_SOTET4;++m)
+							for (int k=0;k<NUMNOD_SOTET4;++k)
+								derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOTET4*k+l,0);
+
+					// derivative error
+					LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> deriverror(true);
+					for (int k=0;k<NUMDIM_SOTET4;++k)
+						for (int m=0;m<NUMDIM_SOTET4;++m)
+							deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+					// compute GP contribution to H1 error norm
+					h1norm += fac * deriverror.Dot(deriverror);
+					h1norm += fac * uerror.Dot(uerror);
+
+					//--------------------------------------------------------------
+					// (3) Energy norm
+					//--------------------------------------------------------------
+
+					// compute linear B-operator
+					LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
+					for (int i=0; i<NUMNOD_SOTET4; ++i)
+					{
+            bop(0,NODDOF_SOTET4*i+0) = N_XYZ(0,i);
+            bop(0,NODDOF_SOTET4*i+1) = 0.0;
+            bop(0,NODDOF_SOTET4*i+2) = 0.0;
+            bop(1,NODDOF_SOTET4*i+0) = 0.0;
+            bop(1,NODDOF_SOTET4*i+1) = N_XYZ(1,i);
+            bop(1,NODDOF_SOTET4*i+2) = 0.0;
+            bop(2,NODDOF_SOTET4*i+0) = 0.0;
+            bop(2,NODDOF_SOTET4*i+1) = 0.0;
+            bop(2,NODDOF_SOTET4*i+2) = N_XYZ(2,i);
+
+            bop(3,NODDOF_SOTET4*i+0) = N_XYZ(1,i);
+            bop(3,NODDOF_SOTET4*i+1) = N_XYZ(0,i);
+            bop(3,NODDOF_SOTET4*i+2) = 0.0;
+            bop(4,NODDOF_SOTET4*i+0) = 0.0;
+            bop(4,NODDOF_SOTET4*i+1) = N_XYZ(2,i);
+            bop(4,NODDOF_SOTET4*i+2) = N_XYZ(1,i);
+            bop(5,NODDOF_SOTET4*i+0) = N_XYZ(2,i);
+            bop(5,NODDOF_SOTET4*i+1) = 0.0;
+            bop(5,NODDOF_SOTET4*i+2) = N_XYZ(0,i);
+					}
+
+					// compute linear strain at GP
+					LINALG::Matrix<NUMSTR_SOTET4,1> straingp(true);
+					straingp.Multiply(bop,nodaldisp);
+
+					// strain error
+					LINALG::Matrix<NUMSTR_SOTET4,1> strainerror(true);
+					for (int k=0;k<NUMSTR_SOTET4;++k)
+						strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+
+					// compute stress vector and constitutive matrix
+					double density = 0.0;
+					LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
+					LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
+					so_tet4_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+
+					// compute GP contribution to energy error norm
+					energynorm += fac * stress.Dot(strainerror);
+
+					//cout << "UAnalytical:      " << ugp << endl;
+					//cout << "UDiscrete:        " << uanalyt << endl;
+					//cout << "StrainAnalytical: " << strainanalyt << endl;
+					//cout << "StrainDiscrete:   " << straingp << endl;
+					//cout << "DerivAnalytical:  " << derivanalyt << endl;
+					//cout << "DerivDiscrete:    " << derivgp << endl;
+				}
+				//----------------------------------------------------------------
+
+				// return results
+				elevec1_epetra(0) = l2norm;
+				elevec1_epetra(1) = h1norm;
+				elevec1_epetra(2) = energynorm;
+			}
+			else
+				dserror("ERROR: Error norms only implemented for SVK material");
+		}
+		break;
 
     default:
       dserror("Unknown type of action for so_tet4");

@@ -23,6 +23,7 @@ written by: Alexander Volf
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 //#include "Epetra_SerialDenseSolver.h"
 
@@ -65,6 +66,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = So_tet10::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = So_tet10::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = So_tet10::calc_struct_reset_istep;
+  else if (action=="calc_struct_errornorms")    act = So_tet10::calc_struct_errornorms;
   else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
   else dserror("Unknown type of action for So_tet10");
 
@@ -242,6 +244,11 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       ;// there is nothing to do here at the moment
     }
     break;
+
+		case calc_struct_errornorms: {
+			;// there is nothing to do here at the moment
+		}
+		break;
 
     default:
       dserror("Unknown type of action for Solid3");
