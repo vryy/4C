@@ -551,7 +551,7 @@ void MORTAR::MortarInterface::Redistribute()
 {
 	// we need PARALLEL and PARMETIS defined for this
 #if !defined(PARALLEL) || !defined(PARMETIS)
-	derror("ERROR: Redistribution of mortar interface needs PARMETIS");
+	dserror("ERROR: Redistribution of mortar interface needs PARMETIS");
 #endif
 
 	// make sure we are supposed to be here
