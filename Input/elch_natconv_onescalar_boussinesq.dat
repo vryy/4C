@@ -99,7 +99,6 @@ SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         10
 RESTARTEVRY                     10

@@ -47,7 +47,6 @@ INITFUNCNO   -1
 FSSUGRDIFF   No
 VELOCITYFIELD  function
 VELFUNCNO    1
-ITEMAX       1
 UPRES        1
 WRITEFLUX    No
 -------------------------------------------------------FSI DYNAMIC
