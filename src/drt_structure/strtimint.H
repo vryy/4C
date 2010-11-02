@@ -261,6 +261,9 @@ namespace STR
     //! Energy output
     void OutputEnergy();
 
+    //! Error norm output
+    void OutputErrorNorms();
+
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
     {

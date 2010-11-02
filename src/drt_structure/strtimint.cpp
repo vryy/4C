@@ -29,6 +29,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_contact/contact_defines.H"
@@ -759,6 +760,9 @@ void STR::TimInt::OutputStep()
   if (cmtman_ != Teuchos::null)
     cmtman_->GetStrategy().PrintActiveSet();
 
+  // print error norms
+  OutputErrorNorms();
+
   // what's next?
   return;
 }
@@ -1004,6 +1008,40 @@ void STR::TimInt::OutputEnergy()
 
   // in God we trust
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output solution error norms */
+void STR::TimInt::OutputErrorNorms()
+{
+	// get out of here if no output wanted
+	if (MORTARANALYTICALSOL==0) return;
+
+	// initialize variables
+	RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+	norms->Scale(0.0);
+
+	// call discretization to evaluate error norms
+	ParameterList p;
+	p.set("action", "calc_struct_errornorms");
+	discret_->ClearState();
+	discret_->SetState("displacement",(*dis_)(0));
+	discret_->EvaluateScalars(p, norms);
+	discret_->ClearState();
+
+	// proc 0 writes output to screen
+	if (!myrank_)
+	{
+		printf("**********************************");
+		printf("\nSOLUTION ERROR NORMS:");
+		printf("\nL_2 norm:     %e",sqrt((*norms)(0)));
+		printf("\nH_1 norm:     %e",sqrt((*norms)(1)));
+		printf("\nEnergy norm:  %e",sqrt((*norms)(2)));
+		printf("\n**********************************\n\n");
+		fflush(stdout);
+	}
+
+	return;
 }
 
 /*----------------------------------------------------------------------*/
