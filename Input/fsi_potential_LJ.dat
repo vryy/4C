@@ -265,7 +265,6 @@ TIMETYP                         Dynamic
 FSSUGRDIFF                      No
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field
-ITEMAX                          10
 MAXTIME                         1000
 NUMSTEP                         5
 RESTARTEVRY                     1

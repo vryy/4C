@@ -30,7 +30,6 @@ NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
 ------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -96,7 +95,6 @@ SOLVERTYPE       linear_full
 FSSUGRDIFF       No
 INITFUNCNO       3
 INITIALFIELD     field_by_function
-ITEMAX           1
 MAXTIME          350.0
 NUMSTEP          20
 RESTARTEVRY      2000
