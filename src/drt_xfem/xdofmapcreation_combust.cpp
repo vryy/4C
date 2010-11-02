@@ -51,24 +51,32 @@ bool XFEM::ApplyJumpEnrichment(
 //  if ( not almost_empty_element)
 //  {
 
-    // jump enrichments for all nodes of intersected element
-    // remark: jump enrichments are added to already existing standard enrichments
-    //         if jump enrichments already exist, nothing is added to set
-    const int numnodes = xfemele->NumNode();
-    const int* nodeidptrs = xfemele->NodeIds();
-    for (int inode = 0; inode<numnodes; ++inode)
+  // jump enrichments for all nodes of intersected element
+  // remark: jump enrichments are added to already existing standard enrichments
+  //         if jump enrichments already exist, nothing is added to set
+  const int numnodes = xfemele->NumNode();
+  const int* nodeidptrs = xfemele->NodeIds();
+  for (int inode = 0; inode<numnodes; ++inode)
+  {
+    const int nodeid = nodeidptrs[inode];
+    //      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+    //      if (not anothervoidenrichment_in_set)
+    //      {
+    for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      const int nodeid = nodeidptrs[inode];
-//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
-//      if (not anothervoidenrichment_in_set)
-//      {
-        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
-        {
-          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-//          std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
-        }
-//      }
-    };
+#ifdef COMBUST_NORMAL_ENRICHMENT
+      if ((*field == XFEM::PHYSICS::Veln) or
+          (*field == XFEM::PHYSICS::Pres))
+      {
+#endif
+        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+        //          std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
+#ifdef COMBUST_NORMAL_ENRICHMENT
+      }
+#endif
+    }
+    //      }
+  };
 
 //  }
 //  else skipped_element = true;
@@ -263,74 +271,75 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
   bool skipped_element = false;
 
-    // remark: already existing standard enrichments are overwritten, this might be inefficient
-    const int numnodes = xfemele->NumNode();
-    const int* nodeidptrs = xfemele->NodeIds();
-    
-    
-    // get phi values for nodes
-    // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
-    
-    // get pointer to vector holding G-function values at the fluid nodes
-    const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
-    std::vector<double> phinp_;
-    
-    // extract local (element level) G-function values from global vector
-    DRT::UTILS::ExtractMyNodeBasedValues(xfemele, phinp_, *phinp);
-    
-    if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
-    
-//    const size_t nsd = 3;
-//    
-//    // TODO: template this calculation
-//    // distype_ not const!!!
-//    if(xfemele->Shape() != DRT::Element::hex8) dserror("calculate element diameter only for hex8 elements called");
-//    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-//    
-//    // get element diameter
-//    static LINALG::Matrix<nsd,numnode> xyze;
-//    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
-//    const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
-//    
-//    // get tolerance for refinement cell computation
-//    // TODO get via input parameter
-//    // tolerance for which we change phi-values to zero and get touch points
-//    const double GfuncTOL = 1.0E-003;
-//    
-//    
-    
-    for (int inode = 0; inode<numnodes; ++inode)
+  // remark: already existing standard enrichments are overwritten, this might be inefficient
+  const int numnodes = xfemele->NumNode();
+  const int* nodeidptrs = xfemele->NodeIds();
+
+
+  // get phi values for nodes
+  // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
+
+  // get pointer to vector holding G-function values at the fluid nodes
+  const Teuchos::RCP<Epetra_Vector> phinp = ih.FlameFront()->Phinp();
+  std::vector<double> phinp_;
+
+  // extract local (element level) G-function values from global vector
+  DRT::UTILS::ExtractMyNodeBasedValues(xfemele, phinp_, *phinp);
+
+  if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
+
+  //    const size_t nsd = 3;
+  //
+  //    // TODO: template this calculation
+  //    // distype_ not const!!!
+  //    if(xfemele->Shape() != DRT::Element::hex8) dserror("calculate element diameter only for hex8 elements called");
+  //    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  //
+  //    // get element diameter
+  //    static LINALG::Matrix<nsd,numnode> xyze;
+  //    GEO::fillInitialPositionArray<DRT::Element::hex8>(xfemele, xyze);
+  //    const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
+  //
+  //    // get tolerance for refinement cell computation
+  //    // TODO get via input parameter
+  //    // tolerance for which we change phi-values to zero and get touch points
+  //    const double GfuncTOL = 1.0E-003;
+  //
+  //
+
+  for (int inode = 0; inode<numnodes; ++inode)
+  {
+    const int nodeid = nodeidptrs[inode];
+    // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
+    // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
+    // if (fabs(phinp_[inode]) < (hk_eleDiam * GfuncTOL))
+
+    // if phi-value is a numerical 0.0, maybe modified by FlameFront::ModifyPhiVector
+    // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
+    // the nodes with phi-value approximative 0.0
+
+    for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      const int nodeid = nodeidptrs[inode];
       // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
       // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
-     // if (fabs(phinp_[inode]) < (hk_eleDiam * GfuncTOL))
-      
-      // if phi-value is a numerical 0.0, maybe modified by FlameFront::ModifyPhiVector
-      // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
-      // the nodes with phi-value approximative 0.0
-      
-      for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
+      if (fabs(phinp_[inode]) < 1e-014)
       {
-          // if gfunc values are near to zero, same tolerance as in refinementcell.cpp FindIntersectionStatus
-          // nodes with abs(Gfunc)< tol * eleDiam => Gfunc is set to zero => touch point of touched face
-          if (fabs(phinp_[inode]) < 1e-014)
-          {
-	          // pressure fields gets jump enrichment
-	          if (*field == XFEM::PHYSICS::Pres){
-	              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-	          }
-	          else if(*field == XFEM::PHYSICS::Velx ||
-	        		  *field == XFEM::PHYSICS::Vely ||
-	        		  *field == XFEM::PHYSICS::Velz){
-	              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-	          }
-	          else {
-	        	  dserror ("ApplyKinkJumpEnrichmentToTouched called for wrong XFEM::PHYSICS:: - Field");
-	          }
-          }
-      } // end for fields
-    }; // end for nodes
+        // pressure fields gets jump enrichment
+        if (*field == XFEM::PHYSICS::Pres){
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+        }
+        else if(*field == XFEM::PHYSICS::Velx ||
+                *field == XFEM::PHYSICS::Vely ||
+                *field == XFEM::PHYSICS::Velz)
+        {
+          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+        }
+        else {
+          dserror ("ApplyKinkJumpEnrichmentToTouched called for wrong XFEM::PHYSICS:: - Field");
+        }
+      }
+    } // end for fields
+  }; // end for nodes
 
   return skipped_element;
 }
@@ -355,42 +364,43 @@ bool XFEM::ApplyKinkJumpEnrichment(
   const XFEM::Enrichment kinkenr(XFEM::Enrichment::typeKink, 0);
   const XFEM::Enrichment jumpenr(XFEM::Enrichment::typeJump, 0);
 
-//  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
-//  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
+  //  const double volumeratio = XFEM::DomainCoverageRatio(*xfemele,ih);
+  //  const bool almost_empty_element = (fabs(1.0-volumeratio) < volumeRatioLimit);
 
   bool skipped_element = false;
 
-//  if ( not almost_empty_element)
-//  {
+  //  if ( not almost_empty_element)
+  //  {
 
-    // kink enrichments for all nodes of intersected element for velcity fields
-    // remark: already existing standard enrichments are overwritten, this might be inefficient
-    const int numnodes = xfemele->NumNode();
-    const int* nodeidptrs = xfemele->NodeIds();
-    for (int inode = 0; inode<numnodes; ++inode)
+  // kink enrichments for all nodes of intersected element for velcity fields
+  // remark: already existing standard enrichments are overwritten, this might be inefficient
+  const int numnodes = xfemele->NumNode();
+  const int* nodeidptrs = xfemele->NodeIds();
+  for (int inode = 0; inode<numnodes; ++inode)
+  {
+    const int nodeid = nodeidptrs[inode];
+    //      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
+    //      if (not anothervoidenrichment_in_set)
+    //      {
+    // jedes Feld Velx,Vely,Velz bekommet ein KinkEnrichment
+    // das Druck-Feld bekommt jumps
+    for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-      const int nodeid = nodeidptrs[inode];
-//      const bool anothervoidenrichment_in_set = XFEM::EnrichmentInNodalDofSet(node_gid, enrtype, nodalDofSet);
-//      if (not anothervoidenrichment_in_set)
-//      {
-      // jedes Feld Velx,Vely,Velz bekommet ein KinkEnrichment
-      // das Druck-Feld bekommt jumps
-        for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
-        {
-          // pressure fields gets jump enrichment
-          if (*field == XFEM::PHYSICS::Pres){
-              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-          }
-          else if(*field == XFEM::PHYSICS::Velx ||
-        		  *field == XFEM::PHYSICS::Vely ||
-        		  *field == XFEM::PHYSICS::Velz){
-        	  nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-          }
-          else {
-        	  dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
-          }
-        }
-    };
+      // pressure fields gets jump enrichment
+      if (*field == XFEM::PHYSICS::Pres){
+        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
+      }
+      else if(*field == XFEM::PHYSICS::Velx ||
+              *field == XFEM::PHYSICS::Vely ||
+              *field == XFEM::PHYSICS::Velz)
+      {
+        nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
+      }
+      else {
+        dserror ("ApplyKinkJumpEnrichment called for wrong XFEM::PHYSICS:: - Field");
+      }
+    }
+  };
   return skipped_element;
 }
 
@@ -598,8 +608,15 @@ void XFEM::ApplyStandardEnrichmentCombust(
     //std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << endl;
     for (std::set<XFEM::PHYSICS::Field>::const_iterator fields = fieldset.begin();fields != fieldset.end();++fields)
     {
+#ifdef COMBUST_NORMAL_ENRICHMENT
+      if (*fields != XFEM::PHYSICS::Veln)
+      {
+#endif
       nodeDofMap[nodeid].insert(XFEM::FieldEnr(*fields, stdenr));
       //std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
+#ifdef COMBUST_NORMAL_ENRICHMENT
+      }
+#endif
     }
   };
 }

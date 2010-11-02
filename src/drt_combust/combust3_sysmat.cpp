@@ -65,6 +65,7 @@ void fillElementUnknownsArrays(
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
+#ifndef COMBUST_NORMAL_ENRICHMENT
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
@@ -72,16 +73,34 @@ void fillElementUnknownsArrays(
   const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz) and (numparamvelx == numparampres), "assumption violation");
+#else
+  // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+  //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
+  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
+  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+  dsassert((numparamvelx == 8) and (numparamvely == 8) and (numparamvelz == 8) and (numparamveln == 8), "assumption violation");
+#endif
   const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*numnode;
   if (numparamvelx > shpVecSize)
   {
     dserror("increase SizeFac for nodal unknowns");
   }
 
+#ifndef COMBUST_NORMAL_ENRICHMENT
   const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
   const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
+#else
+  const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+  const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+  const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+  const std::vector<int>& velndof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Veln>());
+  const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
+#endif
 
   for (size_t iparam=0; iparam<numparamvelx; ++iparam)
   {
@@ -113,6 +132,18 @@ void fillElementUnknownsArrays(
       eaccn( 2,iparam) = mystate.accn_[ velzdof[iparam]];
     }
   }
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  for (size_t iparam=0; iparam<numparamveln; ++iparam)
+  {
+    evelnp(0,iparam) = mystate.velnp_[velndof[iparam]];
+    if (mystate.instationary_)
+    {
+      eveln( 0,iparam) = mystate.veln_[ velndof[iparam]];
+      evelnm(0,iparam) = mystate.velnm_[velndof[iparam]];
+      eaccn( 0,iparam) = mystate.accn_[ velndof[iparam]];
+    }
+  }
+#endif
   for (size_t iparam=0; iparam<numparampres; ++iparam)
     eprenp(iparam) = mystate.velnp_[presdof[iparam]];
 
@@ -369,32 +400,32 @@ void COMBUST::GetMaterialParams(
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void Sysmat(
-    const DRT::ELEMENTS::Combust3*    ele,            ///< the element those matrix is calculated
+    const DRT::ELEMENTS::Combust3*          ele,             ///< the element those matrix is calculated
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< connection to the interface handler
-    const XFEM::ElementDofManager&    dofman,         ///< dofmanager of the current element
-    const DRT::ELEMENTS::Combust3::MyState&  mystate, ///< element state variables
-    Epetra_SerialDenseMatrix&         estif,          ///< element matrix to calculate
-    Epetra_SerialDenseVector&         eforce,         ///< element rhs to calculate
-    Teuchos::RCP<const MAT::Material> material,       ///< fluid material
-    const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
-    const double                      dt,             ///< delta t (time step size)
-    const double                      theta,          ///< factor for one step theta scheme
-    const bool                        newton,         ///< full Newton or fixed-point-like
-    const bool                        pstab,          ///< flag for stabilisation
-    const bool                        supg,           ///< flag for stabilisation
-    const bool                        cstab,          ///< flag for stabilisation
-    const INPAR::FLUID::TauType       tautype,        ///< stabilization parameter definition
-    const bool                        instationary,   ///< switch between stationary and instationary formulation
-    const INPAR::COMBUST::CombustionType combusttype, ///< switch for type of combusiton problem
-    const double                      flamespeed,     ///<
-    const double                      nitschevel,     ///<
-    const double                      nitschepres,    ///<
+    const XFEM::ElementDofManager&          dofman,          ///< dofmanager of the current element
+    const DRT::ELEMENTS::Combust3::MyState& mystate,         ///< element state variables
+    Epetra_SerialDenseMatrix&               estif,           ///< element matrix to calculate
+    Epetra_SerialDenseVector&               eforce,          ///< element rhs to calculate
+    Teuchos::RCP<const MAT::Material>       material,        ///< fluid material
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
+    const double                            dt,              ///< delta t (time step size)
+    const double                            theta,           ///< factor for one step theta scheme
+    const bool                              newton,          ///< full Newton or fixed-point-like
+    const bool                              pstab,           ///< flag for stabilisation
+    const bool                              supg,            ///< flag for stabilisation
+    const bool                              cstab,           ///< flag for stabilisation
+    const INPAR::FLUID::TauType             tautype,         ///< stabilization parameter definition
+    const bool                              instationary,    ///< switch between stationary and instationary formulation
+    const INPAR::COMBUST::CombustionType    combusttype,     ///< switch for type of combusiton problem
+    const double                            flamespeed,      ///<
+    const double                            nitschevel,      ///<
+    const double                            nitschepres,     ///<
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                      surftenscoeff,   ///<
-    const bool                        connected_interface,
-    const INPAR::COMBUST::VelocityJumpType veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
-    const bool                        smoothed_boundary_integration
+    const double                            surftenscoeff,   ///<
+    const bool                              connected_interface,
+    const INPAR::COMBUST::VelocityJumpType  veljumptype,
+    const INPAR::COMBUST::FluxJumpType      fluxjumptype,
+    const bool                              smoothed_boundary_integration
 )
 {
   // initialize element stiffness matrix and force vector
@@ -463,7 +494,7 @@ void Sysmat(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, surftenscoeff, connected_interface, veljumptype,
-          normaltensionjumptype, smoothed_boundary_integration);
+          fluxjumptype, smoothed_boundary_integration);
     }
 #endif
 #ifdef COMBUST_STRESS_BASED
@@ -524,7 +555,7 @@ void Sysmat(
           material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, surftenscoeff, connected_interface, veljumptype,
-          normaltensionjumptype, smoothed_boundary_integration);
+          fluxjumptype, smoothed_boundary_integration);
     }
   }
   break;
@@ -551,7 +582,7 @@ void Sysmat(
           material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, surftenscoeff, connected_interface, veljumptype,
-          normaltensionjumptype, smoothed_boundary_integration);
+          fluxjumptype, smoothed_boundary_integration);
     }
   }
   break;
@@ -610,11 +641,11 @@ void COMBUST::callSysmat(
     const double                         nitschevel,
     const double                         nitschepres,
     const INPAR::COMBUST::SurfaceTensionApprox  surftensapprox,
-    const double                                surftenscoeff,
-    const bool                                  connected_interface,
-    const INPAR::COMBUST::VelocityJumpType      veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
-    const bool                           smoothed_boundary_integration)
+    const double                           surftenscoeff,
+    const bool                             connected_interface,
+    const INPAR::COMBUST::VelocityJumpType veljumptype,
+    const INPAR::COMBUST::FluxJumpType     fluxjumptype,
+    const bool                             smoothed_boundary_integration)
 {
   if (assembly_type == XFEM::standard_assembly)
   {
@@ -624,8 +655,8 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype,flamespeed,nitschevel,nitschepres,surftensapprox,surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -663,8 +694,8 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(

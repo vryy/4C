@@ -71,7 +71,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   cout0_(discret_->Comm(), std::cout),
   combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   veljumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
-  normaltensionjumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::NormalTensionJumpType>(params_.sublist("COMBUSTION FLUID"),"NORMAL_TENSION_JUMP_TYPE")),
+  fluxjumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::FluxJumpType>(params_.sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
@@ -125,10 +125,13 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // prepare XFEM (initial degree of freedom management)
   //------------------------------------------------------------------------------------------------
   physprob_.xfemfieldset_.clear();
-  // declare physical fields to be enriched (discontinuous XFEM fields)
+  // declare physical fields of the problem (continuous fields and discontinuous XFEM fields)
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Veln);
+#endif
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
 #ifdef COMBUST_STRESS_BASED
 #ifdef COMBUST_EPSPRES_BASED
@@ -140,6 +143,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   physprob_.elementAnsatz_ = rcp(new COMBUST::CauchyStressAnsatz());
 #endif
 #else
+  // for the Nitsche method assign an arbitrary element ansatz to compile
   physprob_.elementAnsatz_ = rcp(new COMBUST::TauPressureAnsatz());
 #endif
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
@@ -907,7 +911,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // flag for type of combustion problem
       eleparams.set("combusttype",combusttype_);
       eleparams.set("veljumptype",veljumptype_);
-      eleparams.set("normaltensionjumptype",normaltensionjumptype_);
+      eleparams.set("fluxjumptype",fluxjumptype_);
       eleparams.set("flamespeed",flamespeed_);
       eleparams.set("nitschevel",nitschevel_);
       eleparams.set("nitschepres",nitschepres_);

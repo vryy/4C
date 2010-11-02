@@ -78,7 +78,7 @@ namespace COMBUST
       const double                            surftenscoeff,
       const bool                              connected_interface,
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
-      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
+      const INPAR::COMBUST::FluxJumpType      fluxjumptype,
       const bool                              smoothed_boundary_integration
   );
 

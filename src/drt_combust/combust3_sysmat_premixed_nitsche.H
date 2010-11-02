@@ -528,8 +528,8 @@ void Nitsche_SysmatBoundaryCell(
     const double                               surftenscoeff,   ///<
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
-    const bool                                  smoothed_boundary_integration
+    const INPAR::COMBUST::FluxJumpType         fluxjumptype,
+    const bool                                 smoothed_boundary_integration
 )
 {
   const size_t nsd =3;
@@ -560,9 +560,9 @@ void Nitsche_SysmatBoundaryCell(
   // and has intersection with domain boundary
   // no line integrals for not laplace-beltrami surface tension approximation types
   if(!connected_interface
-      && ( normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_SurfaceTension)
-      && (        surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami
-          || surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
+      && (   fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
+      && ( surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami ||
+           surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
   ) // only for laplace_beltrami approximation
   {
     COMBUST::RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche<DISTYPE,CELLDISTYPE,ASSTYPE,NUMDOF>(
@@ -636,8 +636,6 @@ void Nitsche_SysmatBoundaryCell(
 
     const double fac = intpoints.qwgt[iquad]*deform_factor;
 
-
-
     LINALG::Matrix<2,1> posEtaBoundary;
     posEtaBoundary.Clear();
     for (int i= 0; i< 2; i++){
@@ -664,21 +662,15 @@ void Nitsche_SysmatBoundaryCell(
     // call smoothed normals for an accurate evaluation of boundary integration terms
     if(smoothed_boundary_integration == false)
     {
-      // TODO: implement also normals based on nabla(phi)/|nabla(phi)| (interpolated), necessary for surface tension //Benedikt 04/26/2010
-      // here normal points from Omega^+ to Omega^-
+      // normal vector points from Omega^+ to Omega^- (n = n^+ = -n^-)
       GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
-      // but we need a normal vector pointing from Omega^- to Omega^+ -> Scale(-1.0) => n = n^- = -n^+
-      normal.Scale(-1.0);
     }
     else // smoothed_boundary_integration == true
     {
-
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
       funct_gp.Clear();
       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-
 
       normal.Clear();
 
@@ -693,10 +685,14 @@ void Nitsche_SysmatBoundaryCell(
         normal(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
       }
 
-
       // 4. normalize final gradient
-      if (normal.Norm2() == 0.0 ) dserror("normal norm is zero !!! ");
-      normal.Scale(1.0/normal.Norm2());
+      // remark: n = -grad(\phi)
+#ifdef COMBUST_2D
+      normal(2) = 0.0;
+#endif
+      const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+      if (norm == 0.0) dserror("norm of normal vector is zero!");
+      normal.Scale(-1.0/norm);
     }
 
     // jump in velocity
@@ -754,8 +750,8 @@ void Nitsche_SysmatBoundaryCell(
 
     // jump of traction vector (stress tensor * normal)
     LINALG::Matrix<nsd,1> jflux(true);
-    if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_Const ||
-        normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_PremixedCombustion)
+    if(fluxjumptype == INPAR::COMBUST::flux_jump_const ||
+       fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion)
     {
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
@@ -849,9 +845,9 @@ void Nitsche_SysmatBoundaryCell(
         enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
-    static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
-    static XFEM::ApproxFunc<1,shpVecSize> shp_mean_inv;
-    static XFEM::ApproxFunc<1,shpVecSize> shp_mean;
+    static XFEM::ApproxFunc<0,shpVecSize> shp_jump;      // [[ ]] notation
+    static XFEM::ApproxFunc<0,shpVecSize> shp_mean;      //  { }  notation
+    static XFEM::ApproxFunc<1,shpVecSize> shp_mean_inv;  //  < >  notation
     static XFEM::ApproxFunc<2,shpVecSize> shp_mean_visc;
     static XFEM::ApproxFunc<2,shpVecSize> shp_jump_visc;
 
@@ -859,14 +855,10 @@ void Nitsche_SysmatBoundaryCell(
     for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
     {
       shp_jump.d0(iparam) = enrfunct_minus(iparam) - enrfunct_plus(iparam);
-      // {}-average
-      shp_mean.d0(iparam) = kappa_plus * enrfunct_plus(iparam) + kappa_minus * enrfunct_minus(iparam);
-      // <>-average
-      shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
 
-      shp_mean.dx(iparam) = kappa_plus * enrderxy_plus(0,iparam) + kappa_minus * enrderxy_minus(0,iparam);
-      shp_mean.dy(iparam) = kappa_plus * enrderxy_plus(1,iparam) + kappa_minus * enrderxy_minus(1,iparam);
-      shp_mean.dz(iparam) = kappa_plus * enrderxy_plus(2,iparam) + kappa_minus * enrderxy_minus(2,iparam);
+      shp_mean.d0(iparam) = kappa_plus * enrfunct_plus(iparam) + kappa_minus * enrfunct_minus(iparam);
+
+      shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
 
       shp_mean_inv.dx(iparam) = kappa_minus * enrderxy_plus(0,iparam) + kappa_plus * enrderxy_minus(0,iparam);
       shp_mean_inv.dy(iparam) = kappa_minus * enrderxy_plus(1,iparam) + kappa_plus * enrderxy_minus(1,iparam);
@@ -1221,30 +1213,24 @@ void Nitsche_SysmatBoundaryCell(
 
 #ifdef COMBUST_NITSCHE_FLUXJUMP
 
-    if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_SurfaceTension)
+    if(fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
     {
-      //================================ SURFACE TENSION ASSEMBLY =================================
-      //---------------------assemble 2D surface integrals -------------------------
-      COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
-      //===========================================================================================
+      //------------------------------------------------
+      // assemble boundary integrals for surface tension
+      //------------------------------------------------
+      COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
+          xyze, grad_ephi_smoothed, normal, timefacfac, surftensapprox, surftenscoeff, assembler);
     }
-    else // all other normal tension jumps
+    else
     {
-      //-------------------------------------    |                 |
-      // surface tension (constant jump) term  - |  < v > , J_t >  |
-      //-------------------------------------    |                 |
-
-      //assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac*jflux(0));
-      //assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac*jflux(1));
-      //assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac*jflux(2));
-
       //---------------------------------------------------    |                 |
       // flux (traction/stress) jump (consistency) term RHS  - |  < v >, j_flux  |
       //---------------------------------------------------    |                 |
 
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac*jflux(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac*jflux(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac*jflux(2));
+      assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac*jflux(0));
+      assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac*jflux(1));
+      assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac*jflux(2));
+
 #if 0
       assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,0) + vderxy_jump_visc(0,0))*normal(0));
       assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,1) + vderxy_jump_visc(1,0))*normal(1));
@@ -1291,22 +1277,21 @@ void Nitsche_SysmatBoundaryCell(
 #endif
 
 #ifdef COMBUST_NITSCHE_CONVSTAB
-    // new convective statilization term
     //------------------------    |                                       |
     // Nitsche term (velocity)  + |  \alpha_u_conv || v ||*n, || Du ||*n  |
     //------------------------    |                                       |
 
-    assembler.template Matrix<Velx,Velx>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(0), shp_jump.d0);
-    assembler.template Matrix<Velx,Vely>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(1), shp_jump.d0);
-    assembler.template Matrix<Velx,Velz>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(2), shp_jump.d0);
+    assembler.template Matrix<Velx,Velx>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(0), shp_jump.d0);
+    assembler.template Matrix<Velx,Vely>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(1), shp_jump.d0);
+    assembler.template Matrix<Velx,Velz>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(2), shp_jump.d0);
 
-    assembler.template Matrix<Vely,Velx>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(0), shp_jump.d0);
-    assembler.template Matrix<Vely,Vely>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(1), shp_jump.d0);
-    assembler.template Matrix<Vely,Velz>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(2), shp_jump.d0);
+    assembler.template Matrix<Vely,Velx>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(0), shp_jump.d0);
+    assembler.template Matrix<Vely,Vely>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(1), shp_jump.d0);
+    assembler.template Matrix<Vely,Velz>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(2), shp_jump.d0);
 
-    assembler.template Matrix<Velz,Velx>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(0), shp_jump.d0);
-    assembler.template Matrix<Velz,Vely>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(1), shp_jump.d0);
-    assembler.template Matrix<Velz,Velz>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(2), shp_jump.d0);
+    assembler.template Matrix<Velz,Velx>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(0), shp_jump.d0);
+    assembler.template Matrix<Velz,Vely>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(1), shp_jump.d0);
+    assembler.template Matrix<Velz,Velz>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(2), shp_jump.d0);
 
 
     //    |                                        |
@@ -1367,6 +1352,7 @@ void Nitsche_SysmatBoundaryCell(
   return;
 }
 
+
 /*!
   Calculate boundary integrals in matrix and rhs for stationary combustion problem formulation
  */
@@ -1390,14 +1376,14 @@ void SysmatBoundaryNitsche(
     const double                               flamespeed,     ///<
     const double                               nitschevel,     ///<
     const double                               nitschepres,    ///<
-    const double                      ele_meas_plus,    /// measure of element in plus domain
-    const double                      ele_meas_minus,    /// measure of element in minus domain
+    const double                               ele_meas_plus,  ///< measure of element in plus domain
+    const double                               ele_meas_minus, ///< measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff,   ///<
+    const double                               surftenscoeff,  ///<
     const bool                                 connected_interface,
-    const INPAR::COMBUST::VelocityJumpType veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
-    const bool                                  smoothed_boundary_integration
+    const INPAR::COMBUST::VelocityJumpType     veljumptype,
+    const INPAR::COMBUST::FluxJumpType         fluxjumptype,
+    const bool                                 smoothed_boundary_integration
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
@@ -1428,31 +1414,21 @@ void SysmatBoundaryNitsche(
   dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
 #endif
 
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-  // index plus == burnt material
-  const int matid_plus = 3;
-  // get material from list of materials
-  Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid_plus);
-  // check if we really have a fluid material
-  dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-  const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the dynamic viscosity \mu
-  const double visc_plus = mat->Viscosity();
-  // get the density \rho
-  const double dens_plus = mat->Density();
-
-  // index minus = unburnt material
-  const int matid_minus = 4;
-  // get material from list of materials
-  matptr = matlist->MaterialById(matid_minus);
-  // check if we really have a fluid material
-  dsassert(matptr->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-  mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-  // get the dynamic viscosity \mu
-  const double visc_minus = mat->Viscosity();
-  // get the density \rho
-  const double dens_minus = mat->Density();
+  //---------------------------------------------------------------------------
+  // get material parameters for all boundary integration cells of this element
+  //---------------------------------------------------------------------------
+  // density \rho
+  double dens_plus = -1.0;
+  //cout << "plus density: " << dens_plus << endl;
+  // dynamic viscosity \mu
+  double dynvisc_plus = -1.0;
+  // density \rho
+  double dens_minus = -1.0;
+  //cout << "minus density: " << dens_minus << endl;
+  // dynamic viscosity \mu
+  double dynvisc_minus = -1.0;
+  // set density and dynamic viscosity
+  COMBUST::GetMaterialParams(material, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
 
   //-----------------------------
   // prepare interface conditions
@@ -1468,10 +1444,29 @@ void SysmatBoundaryNitsche(
   ju_nt(1,0) = 0.0;
   ju_nt(2,0) = 0.0;
 #else
-  const double ju_n = -mflux*(1.0/dens_minus - 1.0/dens_plus);
+  double ju_n = 0.0;
+  if (veljumptype == INPAR::COMBUST::vel_jump_premixed_combustion){
+    ju_n = -mflux*(1.0/dens_minus - 1.0/dens_plus);
+  }
+  else if(veljumptype == INPAR::COMBUST::vel_jump_const){
+    ju_n = 5.0;
+  }
+  else{
+    // velocity jump is zero
+  }
 #endif
-  // jump in normal stress
-  const double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+
+  // jump in flux (normal stress)
+  double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+  if(fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion){
+    jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+  }
+  else if(fluxjumptype == INPAR::COMBUST::flux_jump_const){
+    jflux_n = 3.0;
+  }
+  else{
+    // flux jump is zero
+  }
 
   //----------------------------------------
   // compute Nitsche stabilization patameter
@@ -1480,7 +1475,7 @@ void SysmatBoundaryNitsche(
   const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
 
   // get maximum of the viscosities of all fluid materials
-  const double dynvisc_max = max(visc_plus,visc_minus);
+  const double dynvisc_max = max(dynvisc_plus,dynvisc_minus);
 
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
@@ -1496,19 +1491,19 @@ void SysmatBoundaryNitsche(
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
   //-----------------------------------------------------------------------------------------
 
-    double ele_meas = ele_meas_plus + ele_meas_minus;
-    if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
-    double kappa_plus  = ele_meas_plus/ele_meas;
-    double kappa_minus = ele_meas_minus/ele_meas;
-    
-    if(ele->Touched_Plus() == true)
-    	{
-    	// weights are chosen inversly -> touched element as a limit case of an intersected element
-    	// with ele_meas_plus -> 0
-    	// remark: interface belongs to Omega(+) 
-    		kappa_plus = 0.0;
-    		kappa_minus= 1.0;
-    	}
+  double ele_meas = ele_meas_plus + ele_meas_minus;
+  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
+  double kappa_plus  = ele_meas_plus/ele_meas;
+  double kappa_minus = ele_meas_minus/ele_meas;
+
+  if(ele->Touched_Plus() == true)
+  {
+    // weights are chosen inversly -> touched element as a limit case of an intersected element
+    // with ele_meas_plus -> 0
+    // remark: interface belongs to Omega(+)
+    kappa_plus = 0.0;
+    kappa_minus= 1.0;
+  }
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -1527,41 +1522,6 @@ void SysmatBoundaryNitsche(
   const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi);
   const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi);
 
-  
-  //------------------------------------------------------------------------------------------------
-  // compute jump values
-  //------------------------------------------------------------------------------------------------
-  double jump_velocity_scalar = 0.0;
-  double jump_stresses_scalar = 0.0;
-
-  // velocity jump value
-  if(veljumptype == INPAR::COMBUST::Vel_Jump_Const)
-  {
-	  jump_velocity_scalar = 5.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
-  }
-  else if (veljumptype == INPAR::COMBUST::Vel_Jump_PremixedCombustion)
-  {
-	  double mflux = -1.0*flamespeed*dens_minus;
-	  jump_velocity_scalar = -1.0*mflux*(1.0/dens_plus - 1.0/dens_minus);
-  }
-  else{
-	  // velocity jump height is set to zero
-  }
-
-  // jump in normal tension with value jt
-  if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_Const)
-  {
-	  jump_stresses_scalar = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
-  }
-  else if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_PremixedCombustion)
-  {
-	  double mflux = -1.0*flamespeed*dens_minus;
-	  jump_stresses_scalar = -1.0*mflux*mflux*(1.0/dens_plus - 1.0/dens_minus);
-  }
-  else{
-	  // normal stresses jump height is set to zero
-  }
-
   //-------------------------------------
   // loop over boundary integration cells
   //-------------------------------------
@@ -1576,9 +1536,9 @@ void SysmatBoundaryNitsche(
           evelnp, eprenp, ephi, egradphi,
           ju_n, jflux_n,
           timefac, assembler,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, visc_plus, visc_minus,
+          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv,
-          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype,
+          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );
       break;
@@ -1589,9 +1549,9 @@ void SysmatBoundaryNitsche(
           evelnp, eprenp, ephi, egradphi,
           ju_n, jflux_n,
           timefac, assembler,
-          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, visc_plus, visc_minus,
+          enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv,
-          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype,
+          numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );
       break;

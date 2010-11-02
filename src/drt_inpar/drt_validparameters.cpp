@@ -2671,21 +2671,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "vel_jump_const",
           "vel_jump_premixed_combustion"),
           tuple<INPAR::COMBUST::VelocityJumpType>(
-              INPAR::COMBUST::Vel_Jump_None,
-              INPAR::COMBUST::Vel_Jump_Const,
-              INPAR::COMBUST::Vel_Jump_PremixedCombustion),
+              INPAR::COMBUST::vel_jump_none,
+              INPAR::COMBUST::vel_jump_const,
+              INPAR::COMBUST::vel_jump_premixed_combustion),
               &combustcontrolfluid);
-  setStringToIntegralParameter<INPAR::COMBUST::NormalTensionJumpType>("NORMAL_TENSION_JUMP_TYPE","normal_tension_jump_none","Type of velocity jump",
+  setStringToIntegralParameter<INPAR::COMBUST::FluxJumpType>("FLUX_JUMP_TYPE","flux_jump_none","Type of flux jump",
       tuple<std::string>(
-          "normal_tension_jump_none",
-          "normal_tension_jump_const",
-          "normal_tension_jump_premixed_combustion",
-          "normal_tension_jump_surface_tension"),
-          tuple<INPAR::COMBUST::NormalTensionJumpType>(
-              INPAR::COMBUST::NormalTension_Jump_None,
-              INPAR::COMBUST::NormalTension_Jump_Const,
-              INPAR::COMBUST::NormalTension_Jump_PremixedCombustion,
-              INPAR::COMBUST::NormalTension_Jump_SurfaceTension),
+          "flux_jump_none",
+          "flux_jump_const",
+          "flux_jump_premixed_combustion",
+          "flux_jump_surface_tension"),
+          tuple<INPAR::COMBUST::FluxJumpType>(
+              INPAR::COMBUST::flux_jump_none,
+              INPAR::COMBUST::flux_jump_const,
+              INPAR::COMBUST::flux_jump_premixed_combustion,
+              INPAR::COMBUST::flux_jump_surface_tension),
               &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
   DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);

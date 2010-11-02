@@ -532,8 +532,13 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
 const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& convel,
     const Teuchos::RCP<const DRT::DofSet>& dofset)
 {
-
-  // TODO @Martin brauchen wir das, es verschiebt alles um einen Zeitschritt
+  if((Teuchos::getIntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
+     (Teuchos::getIntegralValue<INPAR::COMBUST::InitialField>(combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD")
+         == INPAR::COMBUST::initfield_zero_field))
+  {
+    cout << "/!\\ warning === Compute an initial stationary fluid solution to avoid a non-zero initial flame velocity" << endl;
+  }
+#if(0)
   if(Step()==1)
   {
     cout << "\n--- \t no scalar transport! replace convel by convel:= 0.0 everywere" << endl;
@@ -569,11 +574,12 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
       }
     }
   }
-  else
-  {
+#endif
+
 #if(0)
-    // Benedikt Schott
-    // use the smoothed Phi-gradient (GradPhi) for calculation of the transport velocity
+    //-----------------------------------------------------------------------
+    // use smoothed Phi-gradient (GradPhi) for calculation of the flame speed
+    //-----------------------------------------------------------------------
 
     // get a pointer to the fluid discretization
     const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
@@ -686,8 +692,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
         convel->ReplaceMyValues(1,&flvelabs(icomp),&lids[icomp]);
       }
     }
-  }
-#else
+#endif
   // get a pointer to the fluid discretization
   const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
   // get G-function value vector on fluid NodeColMap
@@ -918,8 +923,6 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
   }
   gmshfilecontent.close();
   if (true) std::cout << " done" << endl;
-#endif
-} // if not Step==1
 #endif
 
 return convel;

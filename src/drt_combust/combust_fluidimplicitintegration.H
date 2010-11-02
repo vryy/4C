@@ -368,7 +368,7 @@ protected:
   /// switch for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
   INPAR::COMBUST::VelocityJumpType veljumptype_;
-  INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype_;
+  INPAR::COMBUST::FluxJumpType fluxjumptype_;
 
   // laminar flame speed
   const double flamespeed_;

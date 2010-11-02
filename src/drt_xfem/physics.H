@@ -39,6 +39,7 @@ enum Field
     Velx,               ///< x velocity
     Vely,               ///< y velocity
     Velz,               ///< z velocity
+    Veln,               ///< normal velocity
     Temp,               ///< temperature
     Pres,               ///< pressure
     DiscPres,           ///< discontinuous pressure on element level

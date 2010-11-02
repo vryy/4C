@@ -65,7 +65,7 @@ namespace INPAR
       surface_tension_approx_divgrad,
       surface_tension_approx_laplacebeltrami,
       surface_tension_approx_laplacebeltrami_smoothed
-    }; //schott
+    };
 
     /// type of surface tension approximation
     enum SmoothGradPhi
@@ -76,26 +76,24 @@ namespace INPAR
       smooth_grad_phi_leastsquares_2Dx,
       smooth_grad_phi_leastsquares_2Dy,
       smooth_grad_phi_leastsquares_2Dz
-    }; // schott
+    };
 
-    // TODO @Florian remove
     /// type of velocity jump
     enum VelocityJumpType
     {
-      Vel_Jump_None,
-      Vel_Jump_Const,
-      Vel_Jump_PremixedCombustion
-    }; // schott
+      vel_jump_none,
+      vel_jump_const,
+      vel_jump_premixed_combustion
+    };
 
-    // TODO @Florian remove
     /// type of velocity jump
-    enum NormalTensionJumpType
+    enum FluxJumpType
     {
-      NormalTension_Jump_None,
-      NormalTension_Jump_Const,
-      NormalTension_Jump_PremixedCombustion,
-      NormalTension_Jump_SurfaceTension
-    }; // schott
+      flux_jump_none,
+      flux_jump_const,
+      flux_jump_premixed_combustion,
+      flux_jump_surface_tension
+    };
 
     /// analyical solution for Nitsche
     enum NitscheError
@@ -108,7 +106,8 @@ namespace INPAR
       nitsche_error_straight_bodyforce,
       nitsche_error_ellipsoid_bubble_2D,
       nitsche_error_ellipsoid_bubble_3D
-    }; // schott
+    };
+
   }  // namespace COMBUST
 
 }  // namespace INPAR

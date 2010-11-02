@@ -417,6 +417,9 @@ void SysmatDomainStress(
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
+#endif
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert(numparamvelx == numparampres, "assumption violation");
 
@@ -1034,6 +1037,9 @@ void SysmatBoundaryStress(
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
+#endif
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert(numparamvelx == numparampres, "assumption violation");
 
@@ -1136,8 +1142,10 @@ void SysmatBoundaryStress(
       }
       normal.Scale(-1.0);
 #endif
+#ifdef COMBUST_2D
       normal(2) = 0.0;
-      double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+#endif
+      const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
       if (norm == 0.0) dserror("norm of normal vector is zero!");
       normal.Scale(1.0/norm);
 

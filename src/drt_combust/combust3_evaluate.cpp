@@ -281,7 +281,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype = params.get<INPAR::COMBUST::NormalTensionJumpType>("normaltensionjumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
 
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
@@ -330,7 +330,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -371,7 +371,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
     }
     break;
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype = params.get<INPAR::COMBUST::NormalTensionJumpType>("normaltensionjumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
       
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
@@ -444,7 +444,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
       else
@@ -470,7 +470,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -487,7 +487,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
-          connected_interface,veljumptype,normaltensionjumptype,smoothed_boundary_integration);
+          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
 
 #if 0

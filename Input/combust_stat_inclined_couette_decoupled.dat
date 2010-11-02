@@ -57,6 +57,8 @@ LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
 NITSCHE_VELOCITY                100000
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
+VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
+FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
 REINITFUNCNO                    2
@@ -115,7 +117,6 @@ SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
-ITEMAX                          10
 MAXTIME                         20.0
 NUMSTEP                         20
 RESTARTEVRY                     20

@@ -76,8 +76,8 @@ XFEM::ElementDofManager::ElementDofManager(
  *----------------------------------------------------------------------*/
 void XFEM::ElementDofManager::ComputeDependentInfo(
     const DRT::Element& ele,
-    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,
-    const std::set<XFEM::FieldEnr>& enrfieldset,
+    const map<int, const std::set<XFEM::FieldEnr> >& nodalDofSet,  ///< node dofs
+    const std::set<XFEM::FieldEnr>& enrfieldset,                   ///< element dofs
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz)
 {
   // count number of dofs for each node

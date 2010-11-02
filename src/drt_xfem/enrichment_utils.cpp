@@ -159,6 +159,9 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
       for (std::size_t iparam = 0; iparam < numparam; ++iparam)
         for (std::size_t isd = 0; isd < 3; ++isd)
           cellvalues(isd,inode) += elementvalues(isd,iparam) * enr_funct(iparam);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  cout << "Am Postprocessing muessen wir noch arbeiten!" << endl;
+#endif
       break;
     }
     default:

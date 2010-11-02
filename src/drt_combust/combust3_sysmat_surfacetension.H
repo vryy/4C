@@ -737,7 +737,8 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         }
 
         // normalize final gradient
-        normal_Phi.Scale(1.0/normal_Phi.Norm2());
+        // remark: n = -grad(\phi)
+        normal_Phi.Scale(-1.0/normal_Phi.Norm2());
 
 
         //--------------------------------------------------------------------------------------------
@@ -746,9 +747,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         //--------------------------------------------------------------------------------------------
         static LINALG::Matrix<nsd,1> normal_gamma;
         normal_gamma.Clear();
-        normal_gamma(0) = normal_Phi(1)*line(2) - normal_Phi(2)*line(1);
-        normal_gamma(1) = normal_Phi(2)*line(0) - normal_Phi(0)*line(2);
-        normal_gamma(2) = normal_Phi(0)*line(1) - normal_Phi(1)*line(0);
+        normal_gamma(0) = normal_Phi(2)*line(1) - normal_Phi(1)*line(2);
+        normal_gamma(1) = normal_Phi(0)*line(2) - normal_Phi(2)*line(0);
+        normal_gamma(2) = normal_Phi(1)*line(0) - normal_Phi(0)*line(1);
 
         normal_gamma.Scale(1.0/normal_gamma.Norm2());
 
@@ -1584,17 +1585,17 @@ void RHS_SurfaceTension2DIntegrals(
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_fixed_curvature)
   {
 
-    //----------------------------------------     |                                 |
-    // surface tension (constant jump) term      - |  < v > , surftens*Curv*n >      |
-    //----------------------------------------     |                                 |
+    //----------------------------------------   |                                 |
+    // surface tension (constant jump) term      |  < v > , surftens*Curv*n >      |
+    //----------------------------------------   |                                 |
     double rad_1 = 0.3;
     double rad_2 = 0.3;
     double curvature = 1.0/rad_1 + 1.0/rad_2;
 
 
-    assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(0) );
-    assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(1) );
-    assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(2) );
+    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
+    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
+    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
 
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad)
@@ -1754,9 +1755,9 @@ void RHS_SurfaceTension2DIntegrals(
                                            + normal_Phi(1)*normal_Phi(2)*( grad_phi2(5) + grad_phi2(8)) )
                 +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
 
-    assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(0) );
-    assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(1) );
-    assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac*curvature*surftenscoeff*normal(2) );
+    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
+    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
+    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_none){;}
   else dserror("warning: wrong type of surface tension approximation");
@@ -1794,7 +1795,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     const double                               surftenscoeff,   ///<
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType      veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
+    const INPAR::COMBUST::FluxJumpType fluxjumptype,
     const bool                                  smoothed_boundary_integration
 )
 {
@@ -1820,9 +1821,9 @@ void SysmatBoundarySurfaceTensionIntCell(
   // and has intersection with domain boundary
   // no line integrals for not laplace-beltrami surface tension approximation types
   if(!connected_interface
-      && ( normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_SurfaceTension)
-      && (        surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami
-          || surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
+      && (   fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
+      && ( surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami ||
+           surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
   ) // only for laplace_beltrami approximation
   {
     COMBUST::RHS_LaplaceBeltrami_1DLineIntegrals_TPF<DISTYPE,CELLDISTYPE,ASSTYPE,NUMDOF>(
@@ -1965,7 +1966,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     static LINALG::Matrix<nsd,1> jump_tension;
     jump_tension.Clear();
 
-    if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_Const)
+    if(fluxjumptype == INPAR::COMBUST::flux_jump_const)
     {
       // normal tension jump is set to jt
       jump_tension(0,0) = jt * normal(0);
@@ -2077,7 +2078,7 @@ void SysmatBoundarySurfaceTensionIntCell(
       shp_mean_inv.dz(iparam) = kappa_minus * enrderxy_plus_vel(2,iparam) + kappa_plus * enrderxy_minus_vel(2,iparam);
     }
 
-    if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_SurfaceTension)
+    if(fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
     {
       //================================ SURFACE TENSION ASSEMBLY =================================
       //---------------------assemble 2D surface integrals -------------------------
@@ -2132,9 +2133,9 @@ void SysmatBoundarySurfaceTension(
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
     const bool                                 connected_interface,
-    const INPAR::COMBUST::VelocityJumpType      veljumptype,
-    const INPAR::COMBUST::NormalTensionJumpType normaltensionjumptype,
-    const bool                                  smoothed_boundary_integration
+    const INPAR::COMBUST::VelocityJumpType     veljumptype,
+    const INPAR::COMBUST::FluxJumpType         fluxjumptype,
+    const bool                                 smoothed_boundary_integration
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
@@ -2194,7 +2195,7 @@ void SysmatBoundarySurfaceTension(
   double jt = 0.0;
 
   // jump in normal tension with value jt
-  if(normaltensionjumptype == INPAR::COMBUST::NormalTension_Jump_Const) jt = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
+  if(fluxjumptype == INPAR::COMBUST::flux_jump_const) jt = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
 
 
 
@@ -2214,7 +2215,7 @@ void SysmatBoundarySurfaceTension(
           jt,
           timefac, assembler,
           kappa_plus, kappa_minus,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype,smoothed_boundary_integration
+          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
@@ -2226,7 +2227,7 @@ void SysmatBoundarySurfaceTension(
           jt,
           timefac, assembler,
           kappa_plus, kappa_minus,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, normaltensionjumptype, smoothed_boundary_integration
+          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration
       );
       break;
     default:
