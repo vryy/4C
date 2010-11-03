@@ -4361,13 +4361,15 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	transfermap_    = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
 
 	// create density-density-correlation-function map with
-	std::vector<int> bins;
-	for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
-		bins.push_back(i);
-	ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
-	// create processor-specific density-density-correlation-function map
-	ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), 0, discret_.Comm()));
-
+	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+	{
+		std::vector<int> bins;
+		for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
+			bins.push_back(i);
+		ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
+		// create processor-specific density-density-correlation-function map
+		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), 0, discret_.Comm()));
+	}
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions
 	if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
