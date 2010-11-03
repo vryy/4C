@@ -2092,7 +2092,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 	/* Calculate the distances for all tuples of crosslink molecules.
 	 * Each processor calculates the distances between its row map molecules and column map molecules
 	 * Since we compare a set to itself, we just calculate one half of the matrix ( (n²-n)/2 calculations for n molecules)*/
-	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 0);
+	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	// number of overall independent combinations
 	int numcombinations = (statmechparams_.get<int>("N_crosslink", 0)*statmechparams_.get<int>("N_crosslink", 0)-statmechparams_.get<int>("N_crosslink", 0))/2;
 	// combinations on each processor
@@ -4362,9 +4362,9 @@ void StatMechManager::CrosslinkerMoleculeInit()
 
 	// create density-density-correlation-function map with
 	std::vector<int> bins;
-	for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 0); i++)
+	for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
 		bins.push_back(i);
-	ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 0), &bins[0], 0, discret_.Comm()));
+	ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
 	// create processor-specific density-density-correlation-function map
 	ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), 0, discret_.Comm()));
 
