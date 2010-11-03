@@ -1,7 +1,7 @@
 /*!
 \file startvalues.cpp
 
-\brief Semi Lagrangian algorithm for XFEM time integration
+\brief provides the Startvalues classes
 
 <pre>
 Maintainer: Florian Henke
@@ -13,13 +13,13 @@ Maintainer: Florian Henke
 
 #ifdef CCADISCRET
 
+#include "startvalues.H"
 #include "dof_management_element.H"
-#include "dof_management.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
+#include "../drt_combust/combust_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
-#include "startvalues.H"
 #include <iostream>
 
 
@@ -32,23 +32,21 @@ XFEM::Startvalues::Startvalues(
     vector<RCP<Epetra_Vector> > newVectors,
     const RCP<Epetra_Vector> veln,
     const RCP<COMBUST::FlameFront> flamefront,
-    const RCP<InterfaceHandle> ihold,
-    Epetra_Map olddofcolmap,
-    map<DofKey<onNode>, DofGID> oldNodalDofColDistrib,
-    Epetra_Map newdofrowmap,
-    map<DofKey<onNode>, DofGID> nodalDofRowDistrib
+    const Epetra_Map& olddofcolmap,
+    const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
+    const Epetra_Map& newdofrowmap,
+    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib
 ) :
   veln_(veln),
   oldVectors_(oldVectors),
   newVectors_(newVectors),
-  ih_old_(ihold),
   discret_(discret),
   olddofman_(olddofman),
   dofman_(dofman),
   olddofcolmap_(olddofcolmap),
   oldNodalDofColDistrib_(oldNodalDofColDistrib),
   newdofrowmap_(newdofrowmap),
-  nodalDofRowDistrib_(nodalDofRowDistrib),
+  newNodalDofRowDistrib_(newNodalDofRowDistrib),
   exporter_(discret_->Comm()),
   myrank_(discret_->Comm().MyPID()),
   numproc_(discret_->Comm().NumProc())
@@ -58,28 +56,12 @@ XFEM::Startvalues::Startvalues(
   phiOldCol_ = flamefront->Phin(); // last phi vector in column map
   phiNewCol_ = flamefront->Phinp(); // current phi vector in column map
   
-//  cout << "phioldCol is " << *phiOldCol_;
-//  cout << "phiNewCol is " << *phiNewCol_;
-//  discret_->Comm().Barrier();
-  
   // initialize empty structure vectors
   curr_.clear();
   next_.clear();
   done_.clear();
   failed_.clear();
   
-  // fill curr_ structure with the data for the nodes which changed interface side
-  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
-  {
-    // node on current processor which changed interface side
-    if ((discret_->lColNode(lnodeid)->Owner() == myrank_) &&
-        (interfaceSideCompareCombust((*phiNewCol_)[lnodeid],(*phiOldCol_)[lnodeid]) == false))
-    {
-      StartpointData curr(*discret_->lColNode(lnodeid),LINALG::Matrix<3,1>(true),0,
-          interfaceSideCombust((*phiNewCol_)[lnodeid]),1,0,-1,-1,INFINITY);
-      curr_.push_back(curr);
-    }
-  } // end loop over processor nodes
   
   for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
   {
@@ -95,19 +77,12 @@ XFEM::Startvalues::Startvalues(
         if (oldfieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
         {
           // not standard dof exists -> node enriched
-          oldEnrNodes_.insert(gid); // TODO one set for every interface side would be better
+          oldEnrNodes_.insert(gid);
           break;
         }
       }
     } // end if correct row processor
   } // end loop over processor nodes
-  
-//  cout << "number of enriched nodes at old timestep on proc " << myrank_ <<
-//      " is " << oldEnrNodes_.size() << endl;
-//  for (set<int>::const_iterator i=oldEnrNodes_.begin();
-//      i != oldEnrNodes_.end();i++)
-//    cout << "node " << *i << " was enriched at old timestep" << endl;
-//  discret_->Comm().Barrier();
   return;
 }
 
@@ -115,17 +90,12 @@ XFEM::Startvalues::Startvalues(
  * semi-lagrangian back-tracing method                                           winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::Startvalues::semiLagrangeBackTracking(
-    const Teuchos::RCP<COMBUST::FlameFront>& flamefront_,
     const double& dt
 )
 {
-  //TODO until now no attention to boundary conditions
-  // TODO global startwerte genauer machen über lokales verfahren:
-  //      phi = phi + dt * d(phi)/dt liefert O(dt^2) startnäherung statt O(dt)
   // TODO restart testen
   // TODO testen, ob fgiter>1 funzt
-	// TODO phi0 sollte verfügbar sein!
-  cout << " Computing new startdata for " << curr_.size() << " nodes..." << endl;
+  // TODO phi0 sollte verfügbar sein!
   
 /*------------------------*
  * Initialization         *
@@ -133,23 +103,26 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
   const int max_iter = 20;
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
   
+  // fill curr_ structure with the data for the nodes which changed interface side
+  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
+  {
+    // node on current processor which changed interface side
+    if ((discret_->lColNode(lnodeid)->Owner() == myrank_) &&
+        (interfaceSideCompareCombust((*phiNewCol_)[lnodeid],(*phiOldCol_)[lnodeid]) == false))
+    {
+      StartpointData curr(*discret_->lColNode(lnodeid),LINALG::Matrix<3,1>(true),0,
+          interfaceSideCombust((*phiNewCol_)[lnodeid]),1,0,-1,-1,INFINITY);
+      curr_.push_back(curr);
+    }
+  } // end loop over processor nodes
   
+  cout << " Computing new startdata for " << curr_.size() << " nodes..." << endl;
   
 /*--------------------------------------------------------*
  * first part: get a sensible and good start value for an *
  * interface changing node in a lagrangian point of view  *
  *--------------------------------------------------------*/
   startpoints(dt);
-  
-//  discret_->Comm().Barrier();
-//  cout << "after calling startValues - function on proc " <<
-//      myrank_ << " size is " << curr_.size() << endl;
-//  for (size_t i=0;i<curr_.size();i++)
-//    cout << "on proc " << myrank_ << " startpoint for "
-//        << curr_[i].movNode_ << " is " << curr_[i].startpoint_;
-//  cout << endl << endl << endl;
-//  discret_->Comm().Barrier();
-
   
 /*----------------------------------------------------*
  * second part: get the correct origin for the node   *
@@ -164,7 +137,6 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
   while (true)
   {
     next_.clear();
-//    cout << curr_.size() << " nodes on proc " << myrank_ << endl;
     counter += 1;
     
     // counter limit because maximal max_iter newton iterations with maximal
@@ -288,36 +260,23 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
             curr_[nodeid].startOwner_
         );
         failed_.push_back(failed);
-        cout << "WARNING! " << curr_[nodeid].movNode_ <<
-            "\nhas no sensible startpoint in an Lagrangian point of view" << endl;
+        //cout << "WARNING! " << curr_[nodeid].movNode_ <<
+        //    "\nhas no sensible startpoint in an Lagrangian point of view" << endl;
       }
     }
-    
-//    discret_->Comm().Barrier();
-//    cout << "before calling iter-export function on proc " << myrank_ << endl << endl << endl;
-//    discret_->Comm().Barrier();
     
 #ifdef PARALLEL
     // export nodes and according data for which
     // the startpoint isnt still found to next proc
     exportIterData(procfinished);
     
-//    cout << "after calling iter-export function on proc " << myrank_ << endl;
-//    discret_->Comm().Barrier();
-    
     // convergencecheck: procfinished == 1 just if all procs have finished
     // then the loop can stop because no more nodes to look for are left
     if (procfinished)
       break;
     
-//    cout << "on proc " << myrank_ << " after newton loop " << counter << endl;
   } // end while loop over searched nodes
 #endif
-  
-//  discret_->Comm().Barrier();
-//  cout << "after newton interation on proc " << myrank_ << endl << endl << endl;
-//  discret_->Comm().Barrier();
-  
   
 /*------------------------------------------------------*
  * third part: get sensible startvalues for nodes      *
@@ -342,71 +301,27 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
   
   curr_.clear(); // no more needed
   
-//  cout << "after final filling of failed on proc " << myrank_ << endl;
-  
-//  cout << "\n\nnow every node should be either in failed or in done vector!" << endl;
-//  for (size_t i=0;i<done_.size();i++)
-//    cout << "on proc " << myrank_ << " done node is " <<
-//        done_[i].movNode_ << "\nwith velocity " << done_[i].velValues_[3]
-//        << " and pressure " << done_[i].presValues_[3] << endl;
-//  for (size_t i=0;i<failed_.size();i++)
-//    cout << "on proc " << myrank_ << " failed node is "
-//        << failed_[i].movNode_ << "\nwith startGid " << failed_[i].startGid_ <<
-//         " and startOwner " << failed_[i].startOwner_ << endl;
-//  discret_->Comm().Barrier();
-  
   exportAlternativAlgoData();
-  
-//  cout << "exporting done!" << endl << endl;
-//  discret_->Comm().Barrier();
-//  for (size_t i=0;i<failed_.size();i++)
-//    cout << "on proc " << myrank_ << " failed node is "
-//        << failed_[i].movNode_ << "\nwith startGid " << failed_[i].startGid_ <<
-//         " and startOwner " << failed_[i].startOwner_ << endl;
-//  cout << "\n\n\n\n" << endl;
-//  discret_->Comm().Barrier();
-  
+
   getDataForNotConvergedNodes();
   failed_.clear(); // no more needed
 
-//  cout << "after handling failed nodes on proc " << myrank_ << endl;
-//  cout << "\n\nnow every node should be in done vector!" << endl;
-//  for (size_t i=0;i<done_.size();i++)
-//    cout << "on proc " << myrank_ << " done node is " << done_[i].movNode_ <<
-//        "\nwith velocity " << done_[i].velValues_[3] << " and pressure " <<
-//        done_[i].presValues_[3] << endl;
-//  discret_->Comm().Barrier();
-  
-  
-  
 /*-----------------------------------------------------------*
  * fifth part: set the computed values into the state vector *
  *-----------------------------------------------------------*/
   
 #ifdef PARALLEL
-//  cout << "before final exporting on proc " << myrank_ << endl;
-//  discret_->Comm().Barrier();
-  
   // send the computed startvalues for every node which needs
   // new start data to the processor where the node is
   exportFinalData();
-  
-//  cout << "after final exporting on proc " << myrank_ << endl;
-//  discret_->Comm().Barrier();
 #endif
-  
-//  cout << "\n\nnow every node should be in done vector on its own processor!" << endl;
-//  for (size_t i=0;i<done_.size();i++)
-//    cout << "on proc " << myrank_ << " done node is " << done_[i].movNode_ <<
-//        "\nwith velocity " << done_[i].velValues_[3] << " and pressure " <<
-//        done_[i].presValues_[3] << endl;
   
   // now every proc has the whole data for the nodes
   // and so the data can be set to the right place now
   setFinalData();
 //  cout << "setting done on proc " << myrank_ << endl;
 #ifdef DEBUG
-  if (counter > 8*numproc_) // too much loops shouldnt be if all this works
+  if (counter > 8*numproc) // too much loops shouldnt be if all this works
     cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
 #endif
 } // end semiLagrangeExtrapolation
@@ -474,7 +389,7 @@ void XFEM::Startvalues::startpoints(
             curr.startpoint_.Update(1.0,newNodeCoords,-dt,nodevel);
             curr.dMin_ = diff.Norm2();
             curr.startGid_ = *enrnode;
-            curr.startOwner_ = discret_->gNode(*enrnode)->Owner();
+            curr.startOwner_ = myrank_;
             currChanged = true;
           } // end if new best startvalue
           
@@ -499,20 +414,7 @@ void XFEM::Startvalues::startpoints(
     } // end loop over nodes which changed interface side
     
 #ifdef PARALLEL
-//    discret_->Comm().Barrier();
-//    cout << "before exporting on proc " << myrank_ << endl;
-//    discret_->Comm().Barrier();
-//    for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
-//      cout << "on proc " << myrank_ << curr_[nodeid].movNode_ <<
-//          " got startvalue " << curr_[nodeid].startpoint_ << endl;
-    
     exportStartData();
-//    discret_->Comm().Barrier();
-//    cout << "after exporting on proc " << myrank_ << endl;
-//    for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
-//      cout << "on proc " << myrank_ << curr_[nodeid].movNode_ <<
-//          " has startvalue " << curr_[nodeid].startpoint_ << endl;
-//    discret_->Comm().Barrier();
 #endif
     
   } // end loop over processors
@@ -522,12 +424,11 @@ void XFEM::Startvalues::startpoints(
   {
     if (!curr_[nodeid].changed_)
     {
-      cout << "WARNING! No point on one interface side found!\nThis indicates "
-          "that the whole area is at one side of the interface!" << endl;
+      dserror("WARNING! No point on one interface side found!\nThis indicates "
+          "that the whole area is at one side of the interface!");
       break;
     }
   } // end loop over nodes
-//  cout << "on proc " << myrank_ << " size is " << curr_.size() << endl;
 } // end startValuesFinder
 
 
@@ -626,9 +527,6 @@ void XFEM::Startvalues::elementAndLocalCoords(
     }
     else
       currele = discret_->lRowElement(ieleid);
-    
-    // get the element coordinates for the point x with help of a
-    // nonlinear solution in 3D element coordinates via Newton iteration
     
     // Initialization
     for (int elenodeid=0;elenodeid<currele->NumNode();elenodeid++)
@@ -730,7 +628,6 @@ void XFEM::Startvalues::elementAndLocalCoords(
     
     // get phivalue of point
     phi = nodephi.Dot(shapeFcn);
-//    cout << "node phivalues " << nodephi << "interpolated phivalue " << phi;
     
     // initialize nodal vectors
     LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
@@ -772,9 +669,6 @@ void XFEM::Startvalues::NewtonLoop(
   const size_t numnode = 8;  // 8 nodes for hex8
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
     
-  //cout << "Startwert\n" << curr.startpoint_ << endl;
-  //cout << "phiOrigSign " << curr.phiSign_ << endl;
-  //cout << "phiApprValue " << phi(0,0) << " und phiApprSign" << ((phi(0,0)>=0) ? 1 : -1) << endl;
   const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8; // only hex8 implemented
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
@@ -804,9 +698,9 @@ void XFEM::Startvalues::NewtonLoop(
     LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
     LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true); // dummy
     
-    LINALG::Matrix<nsd,1> residuum(true);          // residuum of the newton iteration
-    LINALG::Matrix<nsd,nsd> systemMatrix(true);      // matrix for the newton system
-    LINALG::Matrix<nsd,1> incr(true);              // increment of the newton system
+    LINALG::Matrix<nsd,1> residuum(true);             // residuum of the newton iteration
+    LINALG::Matrix<nsd,nsd> inversSystemMatrix(true); // matrix for the newton system
+    LINALG::Matrix<nsd,1> incr(true);                 // increment of the newton system
     
     const double relTolIncr = 1.0e-10;;  // tolerance for the increment
     const double relTolRes = 1.0e-10;    // tolerance for the residual
@@ -824,7 +718,7 @@ void XFEM::Startvalues::NewtonLoop(
     {
       curr.iter_ += 1;
       
-      { // build Matrix
+      { // build invers systemMatrix
         pointdataXFEM<nsd,numnode,DISTYPE>(
             fittingele,
             xi,
@@ -835,7 +729,6 @@ void XFEM::Startvalues::NewtonLoop(
             enrShapeXYVelDeriv1,
             enrShapeXYPresDeriv1
         );
-//        cout << "in newton enrshapexyvelderiv1 is " << enrShapeXYVelDeriv1 << endl;
         
         // initialize nodal vectors
         LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
@@ -843,15 +736,15 @@ void XFEM::Startvalues::NewtonLoop(
         
         elementsNodalData<nsd,numnode>(fittingele,nodevel,nodepres);
         
-        systemMatrix.MultiplyNT(dt,nodevel,enrShapeXYVelDeriv1); // v_nodes * dN/dx
+        inversSystemMatrix.MultiplyNT(dt,nodevel,enrShapeXYVelDeriv1); // v_nodes * dN/dx
         for (size_t i=0;i<nsd;i++)
-          systemMatrix(i,i) += 1.0; // I + dt*v_nodes*dN/dx
-        systemMatrix.Invert();
-      } // system Matrix built
+          inversSystemMatrix(i,i) += 1.0; // I + dt*v_nodes*dN/dx
+        inversSystemMatrix.Invert();
+      } // invers system Matrix built
       
       //solve Newton iteration
       incr.Clear();
-      incr.Multiply(-1.0,systemMatrix,residuum); // incr = -Systemmatrix^-1 * residuum
+      incr.Multiply(-1.0,inversSystemMatrix,residuum); // incr = -Systemmatrix^-1 * residuum
       
       // update iteration
       for (size_t i=0;i<nsd;i++)
@@ -863,8 +756,6 @@ void XFEM::Startvalues::NewtonLoop(
       
       if (elefound) // element of curr.startpoint_ at this processor
       {
-//        cout << " in ele " << *fittingele << " \nwith curr.startpoint_ "
-//            << curr.startpoint_ << "and xi " << xi;
         if (interfaceSideCompareCombust(curr.phiSign_,phi) == false)
         {
           
@@ -885,8 +776,6 @@ void XFEM::Startvalues::NewtonLoop(
           residuum.Clear();
           residuum.Update(dt, vel); // dt*v(curr.startpoint_)
           residuum.Update(1.0,curr.startpoint_,-1.0,origNodeCoords,+1.0);  // R = curr.startpoint_ - curr.movNode_ + dt*v(curr.startpoint_)
-//          cout << " and tols are " << incr.Norm2()/curr.startpoint_.Norm2()
-//              << " and " << residuum.Norm2()/curr.startpoint_.Norm2() << endl;
           
           // convergence criterion
           if (curr.startpoint_.Norm2()>1e-3)
@@ -1046,7 +935,6 @@ void XFEM::Startvalues::backTracking(
     
     if (denominator>1e-15) deltaT = numerator/denominator; // else deltaT = 0 as initialized
   }
-//  cout << "pseudo time step is " << deltaT << endl;
   
   vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
   vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
@@ -1060,14 +948,15 @@ void XFEM::Startvalues::backTracking(
 //    {
 //      cout << "for " << node << " vel was " << vel;
 //    }
+#ifndef NO_BACK_TRACKING
     LINALG::Matrix<nsd,nsd> velDeriv1(true); // first derivation of velocity data
     velDeriv1.MultiplyNT(nodeveldata[index],enrShapeXYVelDeriv1);
     vel.Multiply(deltaT,velDeriv1,transportVel,1.0); // vel = dt*velDeriv1*transportVel + vel
+#endif
     velValues[index]=vel;
 //    if (index == 3)
 //    {
-//      cout << " and became " << vel << "nodevels were " << nodeveldata[index]
-//          << " and shapefcns were " << enrShapeFcnVel;
+//      cout << " and became " << vel << endl;
 //    }
     
     LINALG::Matrix<1,1> pres(true); // pressure data
@@ -1076,14 +965,15 @@ void XFEM::Startvalues::backTracking(
 //    {
 //      cout << "pres was " << pres(0);
 //    }
+#ifndef NO_BACK_TRACKING
     LINALG::Matrix<1,nsd> presDeriv1(true); // first derivation of pressure data
     presDeriv1.MultiplyNT(nodepresdata[index],enrShapeXYPresDeriv1);
     pres.Multiply(deltaT,presDeriv1,transportVel,1.0); // pres = dt*presDeriv1*transportVel + pres
+#endif
     presValues[index] = pres(0); 
 //    if (index == 3)
 //    {
-//      cout << " and became " << pres(0) << "\nnodepressures were " <<
-//          nodepresdata[index] << " and shapefcns were " << enrShapeFcnPres;
+//      cout << " and became " << pres(0) << endl;
 //    }
   }
   
@@ -1114,9 +1004,7 @@ void XFEM::Startvalues::setFinalData(
         fieldenr != fieldenrset.end();++fieldenr)
     {
       const DofKey<onNode> newdofkey(gnodeid, *fieldenr);
-      const int newdofpos = nodalDofRowDistrib_.find(newdofkey)->second;
-//      cout << "dofkey to be set if enrichment type standard " <<
-//          newdofkey << "with dofpos " << newdofpos << endl;
+      const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
@@ -1124,8 +1012,8 @@ void XFEM::Startvalues::setFinalData(
         {
           for (size_t index=0;index<newVectors_.size();index++)
           {
-            if (index == 2)
-              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](0) << endl;
+//            if (index == 2)
+//              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](0) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](0);
           }
         }
@@ -1133,8 +1021,8 @@ void XFEM::Startvalues::setFinalData(
         {
           for (size_t index=0;index<newVectors_.size();index++)
           {
-            if (index == 2)
-              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](1) << endl;
+//            if (index == 2)
+//              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](1) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](1);
           }
         }
@@ -1142,8 +1030,8 @@ void XFEM::Startvalues::setFinalData(
         {
           for (size_t index=0;index<newVectors_.size();index++)
           {
-            if (index == 2)
-              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](2) << endl;
+//            if (index == 2)
+//              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[index](2) << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = velValues[index](2);
           }
         }
@@ -1151,290 +1039,15 @@ void XFEM::Startvalues::setFinalData(
         {
           for (size_t index=0;index<newVectors_.size();index++)
           {
-            if (index == 2)
-              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[index] << endl;
+//            if (index == 2)
+//              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[index] << endl;
             (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = presValues[index];
           }
         }
       }
     } // end loop over fieldenr
-//    cout << *discret_->gNode(gnodeid) << "\n gets velocity\n"
-//    << nodeVel << "and pressure " << pres[inode] << endl;
   } // end loop over nodes
 } // end setFinalData
-
-
-
-void XFEM::Startvalues::setEnrichmentValues(
-)
-{
-  // Initialization
-  const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-//  std::set<int> newEnrNodes;
-//  double halfJump = 0.0;
-  // TODO jump is also unknown for some fields in 3D (general everywhere...)
-  // TODO look if all works correct! sometimes enrichments get set but no nodes crossed the interface
-  
-  
-/*---------------------------------------------------------------*
- * fill enr_ structure with data about nodes which changed      *
- * interface side and identify all enriched nodes for later use  *
- *---------------------------------------------------------------*/
-  
-  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
-  {
-    if (discret_->lColNode(lnodeid)->Owner() == myrank_)
-    {
-    const DRT::Node* lnode = discret_->lColNode(lnodeid);
-    const int gid = lnode->Id();
-    
-    const set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(gid));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-        fieldenr != fieldenrset.end();++fieldenr)
-    {
-      const DofKey<onNode> newdofkey(gid, *fieldenr);
-//      const int newdofpos = nodalDofColDistrib_.find(newdofkey)->second;
-      
-      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-      {
-        map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
-        
-        // olddof found and on same side -> enrichment existed before and can be used
-        if ((olddof != oldNodalDofColDistrib_.end()) &&
-            (interfaceSideCompareCombust((*phiNewCol_)[lnodeid],(*phiOldCol_)[lnodeid]) == true))
-        {
-//          if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-//            halfJump = 0.5;
-//          else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-//            halfJump = 0.5;
-//          
-//          const double phiQuotient = (*phiNewRow_)[lnodeid]/(*phiOldRow_)[lnodeid]; // phi_n+1(x)/phi_n(x)
-//          
-//          for (size_t i=0;i<valueVector.size();i++)
-//          {
-//            cout << "normal enrichment value was " << (*valueVector[i])[newdofrowmap_.LID(newdofpos)];
-//            const double currOldEnr = (*valueVector[i])[newdofrowmap_.LID(newdofpos)];
-//            (*valueVector[i])[newdofrowmap_.LID(newdofpos)] = 
-//                halfJump + (currOldEnr-halfJump)*phiQuotient;
-//            cout << " and became " << (*valueVector[i])[newdofrowmap_.LID(newdofpos)] << endl;
-//            // new_enr = jump_size/2 + (old_enr-jump_size/2)*phi_new/phi_old
-//          }
-//          halfJump = 0.0;
-        // TODO uncomment if correct formula for new enrichment value is found
-        } // end if dof found
-        else // olddof not found or enrichment changed side -> new value needed
-        {
-          StartpointData enr(*lnode,interfaceSideCombust((*phiNewCol_)[lnodeid]),INFINITY,0.0,map<DofKey<onNode>,vector<double> >());
-          enr_.push_back(enr);
-          break;
-          // all other enrichments for this node will be handled later
-          // here the node should be added just one time, so loop should break
-        } // end if dof not found
-      } // end if jump enrichment
-    } // end loop over fieldenr
-    
-    
-//    const set<XFEM::FieldEnr>& newfieldenrset(dofman_->getNodeDofSet(gid));
-//    for (set<XFEM::FieldEnr>::const_iterator newfieldenr = newfieldenrset.begin();
-//        newfieldenr != newfieldenrset.end();
-//        newfieldenr++)
-//    {
-//      if (newfieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-//      {
-//        // not standard dof exists -> node enriched
-//        newEnrNodes.insert(gid); // TODO will be used later...
-//        break;
-//      }
-//    }
-    }
-  } // end loop over processor nodes
-  
-//  discret_->Comm().Barrier();
-//  cout << "number of points which need new enrichment values on proc " <<
-//      myrank_ << " is " << enr_.size() << endl;
-//  for (size_t i=0;i<enr_.size();i++)
-//    cout << enr_[i].movNode_ << endl;
-//  discret_->Comm().Barrier();
-//  cout << "number of enriched nodes at new timestep on proc " << myrank_ <<
-//      " is " << newEnrNodes.size() << endl;
-//  for (set<int>::const_iterator i=newEnrNodes.begin();
-//      i != newEnrNodes.end();i++)
-//    cout << "node " << *i << " is enriched at new timestep" << endl;
-//  discret_->Comm().Barrier();
-  
-  
-  
-/*--------------------------------------------------*
- * get the nearest node for the enriched nodes      *
- * which need a completely new enrichment value     *
- *--------------------------------------------------*/
-  
-  // loop over processors
-  for (int procid=0; procid<numproc_; procid++)
-  {
-    // loop over nodes with new enrichment
-    for (size_t nodeid=0;nodeid<enr_.size();nodeid++)
-    {
-      StartpointData enr = enr_[nodeid];
-      bool currChanged = false; // new nearest node on this proc?
-      LINALG::Matrix<nsd,1> newNodeCoords(enr.movNode_.X()); // coords of endpoint
-      const int movNodeGid = enr.movNode_.Id(); // global id of enriched node
-      
-//      cout << enr.movNode_ << " searches for a new nearest enriched node on proc "
-//          << myrank_ << " and has data:\nphisign " << enr.phiSign_ << ", dist " <<
-//          enr.dMin_ << " and phivalue " << enr.phiValue_<< endl;
-      
-      // loop over enriched nodes
-      for (std::set<int>::const_iterator inode=oldEnrNodes_.begin();
-          inode != oldEnrNodes_.end();
-          inode++)
-      {
-         DRT::Node* lnodeold = discret_->gNode(*inode);  // enriched node
-         
-         // just look at enriched nodes on same interface side
-        if (interfaceSideCompareCombust(enr.phiSign_,(*phiOldCol_)[lnodeold->LID()]) == true)
-        { // TODO enrichments with phi = 0 can be used by both sides and
-          // can be set by both sides because of the enrichments characteristics
-          LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
-          
-          LINALG::Matrix<nsd,1> diff(true);  // vector from old point at time n to new point at time n+1
-          diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
-          
-          if (diff.Norm2()<enr.dMin_)
-          {
-            enr.enrValues_.clear();
-            
-            // set new data
-            currChanged = true;
-            enr.dMin_ = diff.Norm2();
-            enr.phiValue_ = (*phiOldCol_)[lnodeold->LID()];
-            
-            const set<FieldEnr> fieldenrset = olddofman_->getNodeDofSet(*inode);
-            // loop over enrichments for this node
-            // remark: every field should have same number of enrichments
-            //         since they all should base on same map
-            for (set<FieldEnr>::const_iterator fieldenr=fieldenrset.begin();
-                fieldenr != fieldenrset.end();
-                fieldenr++)
-            {
-              if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-              {
-                const DofKey<onNode> olddofkey(*inode, *fieldenr);
-                const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
-                
-                // change gid of dofkeys of enrichment values to the moving node gid
-                // so it can be found later by the according value that has to be set
-                const DofKey<onNode> newdofkey(movNodeGid,*fieldenr);
-//                cout << "here with dof " << olddof->first << " and pos " << olddof->second << endl;
-                
-                vector<double> currEnrValues;
-                for (size_t i=0;i<oldVectors_.size();i++)
-                {
-                  currEnrValues.push_back((*oldVectors_[i])[olddofcolmap_.LID(olddofpos)]);
-//                  cout << "new size is " << currEnrValues.size() << endl;
-                }
-                enr.enrValues_.insert(make_pair(newdofkey,currEnrValues));
-              } // end if dofkey found
-            } // end loop over fieldenrset
-//            cout << "nearest, at old time enriched node is " << *lnodeold << "with enrvalues\n";
-//            for (map<DofKey<onNode>,vector<double> >::const_iterator i=enr.enrValues_.begin();
-//                i!=enr.enrValues_.end();
-//                i++)
-//              cout << i->second[3] << "    ";
-//            cout << endl;
-          } // end if new nearest enriched point
-        } // end loop over nodes of intersected element
-      } // end loop over enriched nodes
-      if (currChanged == true)
-      {
-        enr_[nodeid] = enr;
-//        cout << "new vel enr values are:" << endl;
-//        for (map<DofKey<onNode>,vector<double> >::const_iterator enrdata=enr.enrValues_.begin();
-//            enrdata != enr.enrValues_.end();enrdata++)
-//          cout << enrdata->second[3] << endl;
-      }
-    } // end loop over nodes with new enrichments
-    
-#ifdef PARALLEL
-//    discret_->Comm().Barrier();
-//    cout << "before exporting on proc " << myrank_ << endl;
-//    for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
-//      cout << "on proc " << myrank_ << curr_[nodeid].movNode_ <<
-//          " got startvalue " << curr_[nodeid].startpoint_ << endl;
-//    discret_->Comm().Barrier();
-//    cout << "here before exporting on proc " << myrank_ << endl;
-    
-    exportEnrichmentData();
-    
-//    discret_->Comm().Barrier();
-//    cout << "after exporting on proc " << myrank_ << endl;
-//    for (size_t nodeid=0;nodeid<curr_.size();nodeid++)
-//      cout << "on proc " << myrank_ << curr_[nodeid].movNode_ <<
-//          " has startvalue " << curr_[nodeid].startpoint_ << endl;
-//    cout << "here after exporting on proc " << myrank_ << endl;
-//    discret_->Comm().Barrier();
-#endif
-    
-  } // end loop over processors
-  
-//  discret_->Comm().Barrier();
-//  cout << "every node is on its own processor now and has a nearest enriched node" << endl;
-//  cout << "number of points with new enrichment values on proc " << myrank_ <<
-//      " is " << enr_.size() << endl;
-  
-  // now every node is on its own processor again and has a nearest enriched node
-  for (size_t inode=0;inode<enr_.size();inode++) // loop over newly enriched nodes
-  {
-    StartpointData enr = enr_[inode];
-    const int gid = enr.movNode_.Id();
-    
-    const set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(gid));
-    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-        fieldenr != fieldenrset.end();++fieldenr)
-    {
-      const DofKey<onNode> newdofkey(gid, *fieldenr);
-      const int newdofpos = nodalDofRowDistrib_.find(newdofkey)->second;
-//      cout << "dofkey to be set if enrichment type not standard " <<
-//          newdofkey << "with dofpos " << newdofpos << endl;
-      
-      // now nodes with new enrichments can be set
-      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-      {
-//        const double phiQuotient = (*phiNewRow_)[newdofrowmap_.LID(gid)]/enr.phiValue_; // phi_n+1(x)/phi_n(x_near)
-//        
-//        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-//          halfJump = 0.5;
-//        else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-//          halfJump = 0.5;
-        
-        // find dofkey in enrichment values map
-        std::map<DofKey<onNode>,vector<double> >::const_iterator currEnrValues = enr.enrValues_.find(newdofkey);
-        if (currEnrValues != enr.enrValues_.end())
-        {
-          for (size_t index=0;index<newVectors_.size();index++)
-          {
-            const double currOldEnr = currEnrValues->second[index];
-            if (index == 2)
-              cout << (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] << " became " << currOldEnr << endl;
-            (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = currOldEnr;
-//                halfJump + (currOldEnr-halfJump)*phiQuotient;
-            // new_enr = jump_size/2 + (old_enr-jump_size/2)*phi_new/phi_old
-          }
-        }
-        else
-        {
-          cout << newdofkey << "wasn't found!" << endl;
-//          for (std::map<DofKey<onNode>,vector<double> >::const_iterator i=enr.enrValues_.begin();
-//              i != enr.enrValues_.end();i++)
-//            cout << i->first << endl;
-          dserror("bug! It seems that no enrichments at old timestep are available but they should be!");
-        }
-//        halfJump = 0.0;
-      } // end if jump enrichment
-    } // end loop over fieldenr
-  } // end loop over newly enriched nodes
-} // end function setEnrichmentValues
-
 
 
 bool XFEM::Startvalues::interfaceSideCompareCombust(
@@ -1598,7 +1211,6 @@ void XFEM::Startvalues::pointdataXFEM(
   const XFEM::ElementEnrichmentValues enrvals(
       *element,*eleDofManager,nodephi,
       shapeFcn,shapeXYDeriv1,shapeXYDeriv2);
-//        cout << "2) deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
     
   // enriched shape functions and derivatives for nodal parameters (dofs)
   enrvals.ComputeModifiedEnrichedNodalShapefunction(
@@ -1674,6 +1286,9 @@ void XFEM::Startvalues::exportStartData()
   int data_tag = 4;
   MPI_Request req_data;
   exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+
+//  discret_->Comm().Barrier();
+
   // ... and receive data
   vector<char> dataRecv(lengthRecv[0]);
   exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -1732,18 +1347,6 @@ void XFEM::Startvalues::exportStartData()
         searchedProcs,iter,startGid,startOwner,dMin);
     curr_.push_back(curr);
   }
-  
-  // check if all sizes fit
-//  if (gids.size()!=numberOfNodes ||
-//      coords.size()!=numberOfNodes ||
-//      owners.size()!=numberOfNodes ||
-//      curr_.startpoints_.size()!=numberOfNodes ||
-//      dMin.size()!=numberOfNodes ||
-//      curr_.changed_.size()!=numberOfNodes ||
-//      curr_.phiSign_.size()!=numberOfNodes ||
-//      curr_.startGid_.size()!=numberOfNodes ||
-//      curr_.startOwner_.size()!=numberOfNodes)
-//    dserror( "sending of starting point data failed!");
 } // end exportStartData
 
 
@@ -1824,6 +1427,11 @@ void XFEM::Startvalues::exportAlternativAlgoData()
     int data_tag = 4;
     MPI_Request req_data;
     exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+
+//    discret_->Comm().Barrier();
+//    cout << "here2 with proc" << myrank_ << endl;
+//    discret_->Comm().Barrier();
+
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -1871,7 +1479,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
 void XFEM::Startvalues::exportIterData(
   bool& procfinished
 )
-{//TODO works sending a boolean variable
+{
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
   
   // Initialization
@@ -1888,16 +1496,16 @@ void XFEM::Startvalues::exportIterData(
   int size_one = 1;
   
   
-  
+//  cout << "starting procfinished on proc " << myrank_ << " is " << procfinished << endl;
 /*-------------------------*
  * convergence check first *
  *-------------------------*/
   for (int iproc=0;iproc<numproc_-1;iproc++)
   {
-    // packing the data
-    DRT::ParObject::AddtoPack(dataSend,procfinished);
+    DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procfinished));
     lengthSend[0] = dataSend.size();
-    
+//    cout << "starting converted procfinished on proc " << myrank_ << " is " << static_cast<int>(procfinished) << endl;
+
     // send length of the data to be received ...
     MPI_Request req_length_data;
     int length_tag = 0;
@@ -1911,6 +1519,11 @@ void XFEM::Startvalues::exportIterData(
     int data_tag = 4;
     MPI_Request req_data;
     exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+
+    discret_->Comm().Barrier();
+//    cout << "here3_1 with proc" << myrank_ << endl;
+    discret_->Comm().Barrier();
+
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -1918,13 +1531,19 @@ void XFEM::Startvalues::exportIterData(
     
     // unpacking the data
     size_t posinData = 0;
-    bool procfinishedNew;
+    int procfinishedNew;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,procfinishedNew);
     
     // setting converged
-    if (!procfinishedNew)
+    if (!static_cast<bool>(procfinishedNew))
       procfinished = false;
+//    cout << "procfinished on proc " << myrank_ << " is " << procfinished << endl;
+
+//    discret_->Comm().Barrier();
+//    if (myrank_ == 0) cout << endl << endl << endl;
   }
+//  cout << "global procfinished on proc " << myrank_ << " is " << procfinished << endl;
+
   
   if (!procfinished) // just send data if its needed
   {
@@ -1946,12 +1565,6 @@ void XFEM::Startvalues::exportIterData(
       DRT::ParObject::AddtoPack(dataSend,next.iter_);
       DRT::ParObject::AddtoPack(dataSend,next.startGid_);
       DRT::ParObject::AddtoPack(dataSend,next.startOwner_);
-      
-//      cout << "data on proc " << myrank_ << " before exporting:\n" << next.movNode_ <<
-//          " with startpoint " << next.startpoint_ << "changed " << next.changed_ <<
-//          ", phisign " << next.phiSign_ << ", searchedprocs " << next.searchedProcs_ <<
-//          ", iter " << next.iter_ << ", startgid " << next.startGid_ <<
-//          " and startowner " << next.startOwner_ << endl;
     }
     
     lengthSend[0] = dataSend.size();
@@ -1973,6 +1586,11 @@ void XFEM::Startvalues::exportIterData(
     int data_tag = 4;
     MPI_Request req_data;
     exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+
+//    discret_->Comm().Barrier();
+//    cout << "here3 with proc" << myrank_ << endl;
+//    discret_->Comm().Barrier();
+
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -2029,11 +1647,6 @@ void XFEM::Startvalues::exportIterData(
           movNode,startpoint,changed,phiSign,
           searchedProcs,iter,startGid,startOwner);
       curr_.push_back(curr);
-//      cout << "data on proc " << myrank_ << " after exporting:\n" << curr.movNode_ <<
-//          " with startpoint " << curr.startpoint_ << "changed " << curr.changed_ <<
-//          ", phisign " << curr.phiSign_ << ", searchedprocs " << curr.searchedProcs_ <<
-//          ", iter " << curr.iter_ << ", startgid " << curr.startGid_ <<
-//          " and startowner " << curr.startOwner_ << endl;
     } // end loop over number of points to get
   } // end if procfinished == false
 } // end exportIterData
@@ -2116,6 +1729,11 @@ void XFEM::Startvalues::exportFinalData()
     int data_tag = 4;
     MPI_Request req_data;
     exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+
+//    discret_->Comm().Barrier();
+//    cout << "here4 with proc" << myrank_ << endl;
+//    discret_->Comm().Barrier();
+
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -2147,176 +1765,6 @@ void XFEM::Startvalues::exportFinalData()
     } // end loop over number of nodes to get
   } // end loop over processors
 } // end exportfinalData
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * export enrichment data to neighbour proc                                           winklmaier 06/10 *
- *------------------------------------------------------------------------------------------------*/
-void XFEM::Startvalues::exportEnrichmentData()
-{
-  const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-  
-  // destination proc (the "next" one)
-  int dest = myrank_+1;
-  if(myrank_ == (numproc_-1))
-    dest = 0;
-  
-  // source proc (the "last" one)
-  int source = myrank_-1;
-  if(myrank_ == 0)
-    source = numproc_-1;
-  
-  // vector including all data that has to be send to the next proc
-  vector<char> dataSend;
-  
-  
-//  cout << "data that should be sent" << endl;
-  
-  // packing the data
-  DRT::ParObject::AddtoPack(dataSend,enr_.size());
-  for (size_t ipoint=0;ipoint<enr_.size();ipoint++)
-  {
-    StartpointData enr = enr_[ipoint];
-    
-//    cout << enr.movNode_ << "\nwith phisign " << enr.phiSign_ << ", dist " <<
-//        enr.dMin_ << ", phivalue " << enr.phiValue_ << " and enrvalues:" << endl;
-//    for (std::map<DofKey<onNode>,vector<double> >::const_iterator j = enr.enrValues_.begin();
-//        j != enr.enrValues_.end();j++)
-//      cout << j->first << " with values " << j->second[0] << " and " << j->second[2] << endl;
-    
-    DRT::ParObject::AddtoPack(dataSend,enr.movNode_.Id());
-    DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(enr.movNode_.X()));
-    DRT::ParObject::AddtoPack(dataSend,enr.movNode_.Owner());
-    DRT::ParObject::AddtoPack(dataSend,enr.phiSign_);
-    DRT::ParObject::AddtoPack(dataSend,enr.dMin_);
-    DRT::ParObject::AddtoPack(dataSend,enr.phiValue_);
-    DRT::ParObject::AddtoPack(dataSend,enr.enrValues_.size());
-
-    // add map to pack
-    for (std::map<DofKey<onNode>,vector<double> >::const_iterator currEnrVal = enr.enrValues_.begin();
-        currEnrVal != enr.enrValues_.end();
-        currEnrVal++)
-    {
-      vector<char> data;
-      data.clear();
-      currEnrVal->first.Pack(data);
-      
-      DRT::ParObject::AddtoPack(dataSend,data);
-      DRT::ParObject::AddtoPack(dataSend,currEnrVal->second);
-    }
-  }
-  
-  vector<int> lengthSend(1,0);
-  lengthSend[0] = dataSend.size();
-  int size_one = 1;
-  
-#ifdef DEBUG
-  cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
-#endif
-  
-  // send length of the data to be received ...
-  MPI_Request req_length_data;
-  int length_tag = 0;
-  exporter_.ISend(myrank_, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
-  // ... and receive length
-  vector<int> lengthRecv(1,0);
-  exporter_.Receive(source, length_tag, lengthRecv, size_one);
-  exporter_.Wait(req_length_data);
-
-  // send actual data ...
-  int data_tag = 4;
-  MPI_Request req_data;
-  exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
-  // ... and receive data
-  vector<char> dataRecv(lengthRecv[0]);
-  exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
-  exporter_.Wait(req_data);
-  
-#ifdef DEBUG
-  cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
-#endif
-  
-  
-  // pointer to current position of group of cells in global string (counts bytes)
-  size_t posinData = 0;
-  
-  // initialize temporary vectors that should be filled
-  size_t numberOfNodes = 0;
-  
-  // clear vector that should be filled
-  enr_.clear();
-  
-  // unpack received data
-  DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
-  for (size_t inode=0;inode<numberOfNodes;inode++)
-  {
-    int gid;
-    LINALG::Matrix<nsd,1> coords;
-    int owner;
-    int phiSign;
-    double dMin;
-    double phiValue;
-    size_t numEnr;
-    map<DofKey<onNode>,vector<double> > enrValues;
-//    cout << "here1 on proc " << myrank_ << endl;
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiSign);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,dMin);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,numEnr);
-//    cout << "here2 on proc " << myrank_ << endl;
-    // extract map-data
-    for (size_t currEnrVal = 0; currEnrVal < numEnr; currEnrVal++)
-    {
-      vector<char> data;
-      data.clear();
-      DRT::ParObject::ExtractfromPack(posinData,dataRecv,data);
-      DofKey<onNode> dofkey(data);
-      
-      vector<double> enrVals;
-      DRT::ParObject::ExtractfromPack(posinData,dataRecv,enrVals);
-      
-      enrValues.insert(make_pair(dofkey,enrVals));
-    }
-//    cout << "here4 on proc " << myrank_ << endl;
-    double coordinates[nsd];
-    for (size_t dim=0;dim<nsd;dim++)
-      coordinates[dim] = coords(dim);
-    
-    DRT::Node movNode(gid,coordinates,owner);
-    
-    StartpointData enr(movNode,phiSign,dMin,phiValue,enrValues);
-    enr_.push_back(enr);
-  }
-  
-//  discret_->Comm().Barrier();
-//  cout << "received data:" << endl;
-//  for (size_t ipoint=0;ipoint<enr_.size();ipoint++)
-//  {
-//    StartpointData enr = enr_[ipoint];
-//    cout << enr.movNode_ << "\nwith phisign " << enr.phiSign_ << ", dist " <<
-//        enr.dMin_ << ", phivalue " << enr.phiValue_ << " and enrvalues:" << endl;
-//    for (std::map<DofKey<onNode>,vector<double> >::const_iterator j = enr.enrValues_.begin();
-//        j != enr.enrValues_.end();j++)
-//      cout << j->first << " with values " << j->second[0] << " and " << j->second[2] << endl;
-//  }
-  
-  // check if all sizes fit
-//  if (gids.size()!=numberOfNodes ||
-//      coords.size()!=numberOfNodes ||
-//      owners.size()!=numberOfNodes ||
-//      curr_.startpoints_.size()!=numberOfNodes ||
-//      dMin.size()!=numberOfNodes ||
-//      curr_.changed_.size()!=numberOfNodes ||
-//      curr_.phiSign_.size()!=numberOfNodes ||
-//      curr_.startGid_.size()!=numberOfNodes ||
-//      curr_.startOwner_.size()!=numberOfNodes)
-//    dserror( "sending of starting point data failed!");
-} // end exportEnrichmentData
-  //TODO any barriers needed in exportfiles? (with more than 2 procs)
 
 #endif // parallel
 

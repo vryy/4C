@@ -182,7 +182,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
                   sysmat(1,1) += dmin(index)*dmin(index);
                 }
               }
-              sysmat(0,1) = sysmat(1,0);
+              sysmat(0,1) = -sysmat(1,0);
               sysmat.Scale(0.5);
 //              cout << "sysmat is " << sysmat << " and rhs is " << rhs << endl;
               
@@ -195,7 +195,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
             eleJumpAndKinks.push_back(currentJumpsAndKinks);
 //            cout << "jump and kinks are " << currentJumpsAndKinks;
           } // end loop over vectorfield size
-          cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[2] << endl;
+          //cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[2] << endl;
           eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
         } // end if element bisected
         else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
@@ -228,7 +228,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
             } // end loop over enrichment number
             eleJumpAndKinks.push_back(currentJumpsAndKinks);
           } // end loop over vectorfield size
-          cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[2] << endl;
+          //cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[2] << endl;
           eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
         } // end if element touchedminus
 #else
@@ -275,7 +275,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
                 rhspres(1) -= enrValues[field](nsd,index)*dmin(index);
               }
             }
-            sysmat(0,1) = sysmat(1,0);
+            sysmat(0,1) = -sysmat(1,0);
             sysmat.Scale(0.5);
 //              cout << "sysmat is " << sysmat << " and rhs is " << rhs << endl;
             
@@ -290,7 +290,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
               
             eleJumpAndKinks.push_back(currentJumpsAndKinks);
           } // end loop over vectorfield size
-          cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[2] << endl;
+          //cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[2] << endl;
           eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
         } // end if element bisected
         else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
@@ -338,7 +338,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
             
             eleJumpAndKinks.push_back(currentJumpsAndKinks);
           } // end loop over vectorfield size
-          cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[2] << endl;
+          //cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[2] << endl;
           eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
         } // end if element touchedminus
 #endif
@@ -404,26 +404,26 @@ void XFEM::Enrichmentvalues::computeNewEnrichments(
 #ifndef ENR_VEL_JUMP_SCALAR
               for (int entry=0;entry<nsd+1;entry++)
                 finalEnrichmentValues[ivector](entry) += 
-                   -0.5*averageJumpsAndKinks[ivector](0,entry); // -0.5*jump
-//                   +0.5*dist*averageJumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
+                   -0.5*averageJumpsAndKinks[ivector](0,entry) // -0.5*jump
+                   +0.5*dist*averageJumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
 #else
               // velocity entries
               for (int entry=0;entry<nsd;entry++)
                 finalEnrichmentValues[ivector](entry) += 
-                   -normal(entry)*(-0.5)*averageJumpsAndKinks[ivector](0,0); // -0.5*jump
-//                   +0.5*dist*averageJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
+                   -normal(entry)*((-0.5)*averageJumpsAndKinks[ivector](0,0) // -0.5*jump
+                   +0.5*dist*averageJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
               
               // pressure entry
               finalEnrichmentValues[ivector](nsd) += 
-                 -0.5*averageJumpsAndKinks[ivector](0,1); // -0.5*jump
-//                 +0.5*dist*averageJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
+                 -0.5*averageJumpsAndKinks[ivector](0,1) // -0.5*jump
+                 +0.5*dist*averageJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
 #endif
             } // end loop over vector size
           } // end if element bisected
         } // end loop over elements containing the node
         for (size_t ivector=0;ivector<newVectors_.size();ivector++)
           finalEnrichmentValues[ivector].Scale(1.0/static_cast<double>(numNewIntersectedEle));
-        cout << *currnode << " has final enr values in std case are " << finalEnrichmentValues[2] << endl;
+        //cout << *currnode << " has final enr values in std case are " << finalEnrichmentValues[2] << endl;
         
         
         int i=0; // index which entry has to be used
@@ -582,19 +582,19 @@ void XFEM::Enrichmentvalues::handleFailedNodes(
 #ifndef ENR_VEL_JUMP_SCALAR
           for (int entry=0;entry<nsd+1;entry++)
             finalEnrichmentValues[ivector](entry) += 
-               -0.5*currJumpsAndKinks[ivector](0,entry); // -0.5*jump
-//               +0.5*dist*currJumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
+               -0.5*currJumpsAndKinks[ivector](0,entry) // -0.5*jump
+               +0.5*dist*currJumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
 #else
               // velocity entries
               for (int entry=0;entry<nsd;entry++)
                 finalEnrichmentValues[ivector](entry) += 
-                   -normal(entry)*(-0.5)*currJumpsAndKinks[ivector](0,0); // -0.5*jump
-//                   +0.5*dist*currJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
+                   -normal(entry)*(-0.5)*currJumpsAndKinks[ivector](0,0) // -0.5*jump
+                   +0.5*dist*currJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
               
               // pressure entry
               finalEnrichmentValues[ivector](nsd) += 
-                 -0.5*currJumpsAndKinks[ivector](0,1); // -0.5*jump
-//                 +0.5*dist*currJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
+                 -0.5*currJumpsAndKinks[ivector](0,1) // -0.5*jump
+                 +0.5*dist*currJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
 #endif
         }
       } // end loop over vector size
@@ -604,7 +604,7 @@ void XFEM::Enrichmentvalues::handleFailedNodes(
     {
       finalEnrichmentValues[ivector].Scale(1.0/static_cast<double>(numNewIntersectedEle));
     }
-    cout << *currnode << " has final enrichment values in alternative case are " << finalEnrichmentValues[2] << endl;
+    //cout << *currnode << " has final enrichment values in alternative case are " << finalEnrichmentValues[2] << endl;
     
     int i=0; // index which entry has to be used
     const std::set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(currnode->Id()));
@@ -1402,7 +1402,7 @@ void XFEM::Enrichmentvalues::exportEnrichmentData()
   MPI_Request req_length_data;
   int length_tag = 0;
   exporter_.ISend(myrank_, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
-  cout << "here1" << endl;// ... and receive length
+  // ... and receive length
   vector<int> lengthRecv(1,0);
   exporter_.Receive(source, length_tag, lengthRecv, size_one);
   exporter_.Wait(req_length_data);

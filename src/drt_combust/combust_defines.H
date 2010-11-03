@@ -122,6 +122,7 @@ Maintainer: Florian Henke
 //#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
 //#define COLLAPSE_FLAME
 //#define FLAME_VORTEX
+//#define COMBUST_TWO_FLAME_FRONTS
 //#define COMBUST_XVELFREE // free Dirichlet boundary conditions x-component manually
 //#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
 //#define COMBUST_PRESFREE
@@ -145,6 +146,7 @@ Maintainer: Florian Henke
 //#define ENR_FULL
 //#define ENR_VEL_JUMP_SCALAR
 //#define SET_FEW_ENR_VALUES
+//#define NO_BACK_TRACKING
 
 
 #endif // #ifndef COMBUST_DEFINES_H

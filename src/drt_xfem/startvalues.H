@@ -14,6 +14,7 @@ Maintainer: Florian Henke
 #ifndef STARTVALUES_H_
 #define STARTVALUES_H_
 
+#include "dof_management.H"
 #include "../drt_lib/drt_exporter.H"
 
 namespace XFEM
@@ -36,14 +37,10 @@ namespace XFEM
         vector<RCP<Epetra_Vector> > newVectors,
         const RCP<Epetra_Vector> veln,
         const RCP<COMBUST::FlameFront> flamefront,
-        const RCP<XFEM::InterfaceHandle> ihold,
-        Epetra_Map olddofcolmap,
-        map<DofKey<onNode>, DofGID> oldNodalDofColDistrib,
-        Epetra_Map newdofrowmap,
-        map<DofKey<onNode>, DofGID> nodalDofRowDistrib
-//        map<int,set<XFEM::DofKey<XFEM::onNode> > > oldEnrNodalDofSet,
-//        map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldEnrNodalDofDistrib,
-//        map<int,double> oldEnrValues
+        const Epetra_Map& olddofcolmap,
+        const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
+        const Epetra_Map& newdofrowmap,
+        const map<DofKey<onNode>, DofGID>& nodalDofRowDistrib
     );
     
     //! destructor
@@ -54,11 +51,7 @@ namespace XFEM
     
     //! get startvalues in timestep for nodes which changed interface-side
     void semiLagrangeBackTracking(
-        const Teuchos::RCP<COMBUST::FlameFront>& flamefront_,
         const double& dt
-    );
-    
-    void setEnrichmentValues(
     );
     
   private:
@@ -157,7 +150,10 @@ namespace XFEM
         phiValue_(phiValue),
         enrValues_(enrValues)
       {return;}
-          
+      
+      ~StartpointData() // destructor
+      {return;}
+      
       DRT::Node movNode_; // node according to startpoint
       LINALG::Matrix<3,1> startpoint_; // startpoint approximation
       int changed_; // changed = 0 means that node hasn't changed somehow
@@ -174,7 +170,7 @@ namespace XFEM
                 
     private:
       
-      StartpointData(); // don't want copy constructor
+      explicit StartpointData(); // don't want default constructor
       
     }; // end class StartpointData
     
@@ -280,15 +276,12 @@ namespace XFEM
 # endif 
     
     // data
-    RCP<Epetra_Vector> phiNewRow_;
     RCP<Epetra_Vector> phiNewCol_;
-    RCP<Epetra_Vector> phiOldRow_;
     RCP<Epetra_Vector> phiOldCol_;
     RCP<Epetra_Vector> veln_;
     set<int> oldEnrNodes_; // elements intersected by old interface at time n
     vector<RCP<Epetra_Vector> > oldVectors_;
     vector<RCP<Epetra_Vector> > newVectors_;
-    const RCP<InterfaceHandle> ih_old_;
     
     
     // data accessing
@@ -298,7 +291,7 @@ namespace XFEM
     Epetra_Map olddofcolmap_;
     map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
     Epetra_Map newdofrowmap_;
-    map<DofKey<onNode>, DofGID> nodalDofRowDistrib_;
+    map<DofKey<onNode>, DofGID> newNodalDofRowDistrib_;
     
     // stuff for parallel communication
     DRT::Exporter exporter_;
