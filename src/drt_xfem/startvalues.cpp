@@ -321,7 +321,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
   setFinalData();
 //  cout << "setting done on proc " << myrank_ << endl;
 #ifdef DEBUG
-  if (counter > 8*numproc) // too much loops shouldnt be if all this works
+  if (counter > 8*numproc_) // too much loops shouldnt be if all this works
     cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
 #endif
 } // end semiLagrangeExtrapolation
