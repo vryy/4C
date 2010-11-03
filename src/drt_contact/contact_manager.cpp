@@ -595,6 +595,12 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 {
   // evaluate contact tractions
   GetStrategy().OutputStresses();
+  
+  // *********************************************************************
+  // contact tractions
+  // *********************************************************************
+  
+  // problem row map  
   RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
 
   // normal direction
@@ -606,12 +612,51 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
   RCP<Epetra_Vector> tangentialstressesexp = rcp(new Epetra_Vector(*problem));
   LINALG::Export(*tangentialstresses, *tangentialstressesexp);
-
+  
   // write to output
+  // contact tractions in normal and tangential direction
   output.WriteVector("norcontactstress",normalstressesexp);
   output.WriteVector("tancontactstress",tangentialstressesexp);
 
-  return;
+#ifdef CONTACTFORCEOUTPUT  
+
+  // *********************************************************************
+  // contact forces on slave non master side,
+  // in normal and tangential direction
+  // *********************************************************************
+ 
+  // vectors for contact forces
+  RCP<Epetra_Vector> fcslavenor = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  RCP<Epetra_Vector> fcslavetan = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+  RCP<Epetra_Vector> fcmasternor = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  RCP<Epetra_Vector> fcmastertan = rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+  
+  // vectors with problemrowmap
+  RCP<Epetra_Vector> fcslavenorexp = rcp(new Epetra_Vector(*problem));
+  RCP<Epetra_Vector> fcslavetanexp = rcp(new Epetra_Vector(*problem));
+  RCP<Epetra_Vector> fcmasternorexp = rcp(new Epetra_Vector(*problem));
+  RCP<Epetra_Vector> fcmastertanexp = rcp(new Epetra_Vector(*problem));
+
+  // multiplication
+  GetStrategy().DMatrix()->Multiply(true, *normalstresses, *fcslavenor);
+  GetStrategy().DMatrix()->Multiply(true, *tangentialstresses, *fcslavetan);
+  GetStrategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
+  GetStrategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
+
+  // export  
+  LINALG::Export(*fcslavenor,*fcslavenorexp);
+  LINALG::Export(*fcslavetan,*fcslavetanexp);
+  LINALG::Export(*fcmasternor,*fcmasternorexp);
+  LINALG::Export(*fcmastertan,*fcmastertanexp);
+
+  // contact forces on slave and master side
+  output.WriteVector("norslaveforce",fcslavenorexp);
+  output.WriteVector("tanslaveforce",fcslavetanexp);
+  output.WriteVector("normasterforce",fcmasternorexp);
+  output.WriteVector("tanmasterforce",fcmastertanexp);
+#endif
+  
+ return;
 }
 
 #endif  // #ifdef CCADISCRET

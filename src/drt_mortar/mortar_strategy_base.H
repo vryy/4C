@@ -173,6 +173,7 @@ class StrategyBase
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void InterfaceForces(bool output = false) = 0;
+    virtual RCP<Epetra_Vector> LagrMult() = 0; 
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
     virtual RCP<LINALG::SparseMatrix> MMatrix() = 0;
