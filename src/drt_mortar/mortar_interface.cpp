@@ -2299,7 +2299,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
 				{
 					// this is a middle node
 					middlenode = true;
-					theta = 1.0/12.0;
+					theta = 1.0/5.0;
 				}
 				break;
 			}
