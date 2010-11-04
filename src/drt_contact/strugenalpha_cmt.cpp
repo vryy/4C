@@ -1322,6 +1322,15 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     //-----------------------------transform to local coordinate systems
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
 
+    //-----------------------------------check symmetry of system matrix
+  	//RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_);
+  	//RCP<LINALG::SparseMatrix> test = rcp(new LINALG::SparseMatrix(kteffmatrix->RowMap(),81,true,false,kteffmatrix->GetMatrixtype()));
+    //test->Add(*kteffmatrix, false, 1.0, 1.0);
+    //test->Add(*kteffmatrix, true, -1.0, 1.0);
+    //test->Complete();
+    //double cnorm = test->NormInf();
+    //cout << "\n***\nKTEFFInfNorm: " << cnorm << "\n***\n" << endl;
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
