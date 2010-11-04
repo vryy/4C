@@ -289,7 +289,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
       InitEvalInterface();
       Comm().Barrier();
       const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-      if (Comm().MyPID()==0) cout << "    -->Interfac:\t" << t_end2 << " seconds (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
+      if (Comm().MyPID()==0)
+      {
+      	cout << "    -->Interfac:\t" << t_end2 << " seconds";
+      	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0) cout << "\n";
+      	else cout << " (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
+      }
 
       Comm().Barrier();
       const double t_start3 = Teuchos::Time::wallTime();
