@@ -34,7 +34,13 @@ namespace PATSPEC
 
   void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
 
+  void ComputeEleLocalRadius(DRT::Discretization& dis);
+
   void GetILTDistance(const int eleid, 
+                      Teuchos::ParameterList& params, 
+                      DRT::Discretization& dis);
+
+  void GetLocalRadius(const int eleid, 
                       Teuchos::ParameterList& params, 
                       DRT::Discretization& dis);
 

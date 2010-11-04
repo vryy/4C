@@ -16,6 +16,12 @@ Maintainer: Michael Gee
 #include "patspec.H"
 #include "../drt_mat/material.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/global_inp_control2.H"
+#include <iostream>
+
+
+using namespace std;
+
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
@@ -37,7 +43,12 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
   {
     INPAR::MAT::MaterialType type = dis.lRowElement(i)->Material()->MaterialType();
-    if (type==INPAR::MAT::m_aaagasser)
+    if (type == INPAR::MAT::m_aaagasser)
+    {
+      lfoundit = 1;
+      break;
+    }
+    if (type == INPAR::MAT::m_aaa_mixedeffects)
     {
       lfoundit = 1;
       break;
@@ -48,7 +59,8 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   if (gfoundit)
   {
     if (!dis.Comm().MyPID())
-      cout << "Detected Gasser ILT material, computing distance function...\n";
+      cout << "Computing distance functions...\n";
+    PATSPEC::ComputeEleLocalRadius(dis);
     PATSPEC::ComputeEleNormalizedLumenDistance(dis);
   }
   //-------------------------------------------------------------------------
@@ -232,6 +244,112 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
 }
 
 
+
+/*----------------------------------------------------------------------*
+ |                                                           maier 11/10|
+ *----------------------------------------------------------------------*/
+void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
+{
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  string filename = pslist.get<string>("CENTERLINEFILE");
+  //cout << filename << endl;
+  if (filename=="name.txt") dserror("No centerline file provided");
+  ifstream file (filename.c_str());
+  if (file == NULL) dserror ("Error opening centerline file");
+  string sLine;
+  char buffer[1000];
+  vector<double> clcoords;
+  while (getline(file, sLine))
+  {
+    if (sLine.size() != 0) 
+    {
+      strcpy(buffer,sLine.c_str());
+      char * pEnd;
+    //only get values if first occurence of line is double number
+      if (strtod(buffer, &pEnd) != 0.0)
+      {
+	//store x,y,z corrdinates
+	clcoords.push_back(strtod(buffer, &pEnd));
+	clcoords.push_back(strtod(pEnd, &pEnd));
+	clcoords.push_back(strtod(pEnd, NULL));
+      }
+    }
+  }
+  //  for (int i=0; i<(clcoords.size()/3); ++i) cout << clcoords[i*3] << " " << clcoords[i*3+1] << " " << clcoords[i*3+2] << " " << endl;
+
+  // measure time as there is a brute force search in here
+  Epetra_Time timer(dis.Comm());
+  timer.ResetStartTime();
+
+  // compute distance of all of my nodes to the clpoints
+  // create vector for nodal values of ilt thickness
+  // WARNING: This is a brute force expensive minimum distance search!
+  const Epetra_Map* nrowmap = dis.NodeRowMap();
+  RCP<Epetra_Vector> localrad = LINALG::CreateVector(*nrowmap,true);
+  for (int i=0; i<nrowmap->NumMyElements(); ++i)
+  {
+    const double* x = dis.gNode(nrowmap->GID(i))->X();
+    // loop nodes from the condition and find minimum distance
+    double mindist = 1.0e12;
+    for (int j=0; j<(int)(clcoords.size()/3); ++j)
+    {
+      double* xcl = &clcoords[j*3];
+      double dist = sqrt( (x[0]-xcl[0])*(x[0]-xcl[0]) + 
+                          (x[1]-xcl[1])*(x[1]-xcl[1]) + 
+                          (x[2]-xcl[2])*(x[2]-xcl[2]) );
+      if (dist<mindist) mindist = dist;
+    }
+    (*localrad)[i] = mindist;
+  }
+  clcoords.clear();
+  // max local rad just for information purpose:
+  double maxlocalrad;
+  localrad->MaxValue(&maxlocalrad);
+  if (!dis.Comm().MyPID())
+    printf("Max local radius %10.5e\n",maxlocalrad);
+  
+  // export nodal distances to column map
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.NodeColMap()),true);
+  LINALG::Export(*localrad,*tmp);
+  localrad = tmp;
+  
+  // compute element-wise mean distance from nodal distance
+  RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+  for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
+  {
+    DRT::Element* actele = dis.gElement(dis.ElementRowMap()->GID(i));
+    double mean = 0.0;
+    for (int j=0; j<actele->NumNode(); ++j)
+      mean += (*localrad)[localrad->Map().LID(actele->Nodes()[j]->Id())];
+    mean /= actele->NumNode();
+    (*locradele)[i] = mean;
+  }
+  tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+  LINALG::Export(*locradele,*tmp);
+  locradele = tmp;
+
+  // put this column vector of element local radius in a condition and store in
+  // discretization
+  Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp(
+    new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
+  cond->Add("local radius",*locradele);
+
+  //const Epetra_Vector* bla = cond->Get<Epetra_Vector>("local radius");
+  //cout << *bla;
+
+  // check whether discretization has been filled before putting ocndition to dis
+  bool filled = dis.Filled();
+  dis.SetCondition("PatientSpecificData",cond);
+  if (filled && !dis.Filled()) dis.FillComplete();
+    
+  
+  if (!dis.Comm().MyPID())
+    printf("Local radii computed in %10.5e sec\n",timer.ElapsedTime());
+  
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
@@ -249,6 +367,28 @@ void PATSPEC::GetILTDistance(const int eleid,
   
   double meaniltthick = (*fool)[fool->Map().LID(eleid)];
   params.set("iltthick meanvalue",meaniltthick);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                           maier 11/10|
+ *----------------------------------------------------------------------*/
+void PATSPEC::GetLocalRadius(const int eleid, 
+                             Teuchos::ParameterList& params, 
+                             DRT::Discretization& dis)
+{
+  DRT::Condition* patspec = dis.GetCondition("PatientSpecificData");
+  if (!patspec) return;
+
+  const Epetra_Vector* fool = patspec->Get<Epetra_Vector>("local radius");
+  if (!fool) return;
+  
+  if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
+  
+  double meanlocalrad = (*fool)[fool->Map().LID(eleid)];
+  params.set("localrad meanvalue",meanlocalrad);
 
   return;
 }

@@ -38,6 +38,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/aaagasser.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/aaa_mixedeffects.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/yeoh.H"
@@ -127,6 +128,16 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
       return;
       break;
     }
@@ -490,6 +501,16 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage */
     {
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
@@ -677,6 +698,16 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
       return;
       break;
     }
@@ -896,6 +927,16 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
@@ -1101,6 +1142,16 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_logneohooke: /*-- logarithmic neo-Hookean material */
     {
       MAT::LogNeoHooke* logneo = static_cast <MAT::LogNeoHooke*>(mat.get());
@@ -1226,6 +1277,16 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
       gasser->Evaluate(*glstrain,*cmat,*stress, normdist);
       *density = gasser->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaa_mixedeffects: /*-- AAA mixed effect model */
+    {
+      MAT::AAA_mixedeffects* aaamixedeffects = static_cast<MAT::AAA_mixedeffects*>(mat.get());
+      double localrad = params.get("localrad meanvalue",-999.0);
+      if (localrad==-999.0) dserror("Aneurysm local radii not found");
+      aaamixedeffects->Evaluate(*glstrain,*cmat,*stress, localrad);
+      *density = aaamixedeffects->Density();
       return;
       break;
     }

@@ -373,6 +373,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
 
+  setNumericStringParameter("CENTERLINEFILE","name.txt",
+                            "filename of file containing centerline points",
+                            &ps);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");

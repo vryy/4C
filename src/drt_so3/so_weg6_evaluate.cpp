@@ -78,6 +78,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
+  PATSPEC::GetLocalRadius(Id(),params,discretization);
 
   // what should the element do
   switch(act)

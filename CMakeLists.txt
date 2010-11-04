@@ -106,7 +106,7 @@ if (BINIO)
   add_definitions("-DBINIO")
 endif(BINIO)
 
-option (QHULL "needed for XFEM simulations" ON)
+option (QHULL "needed for XFEM simulations" OFF)
 if (QHULL)
   find_package(Qhull REQUIRED)
   if (QHULL_FOUND)
@@ -159,7 +159,7 @@ if (DSERROR_DUMP)
   add_definitions("-DDSERROR_DUMP")
 endif(DSERROR_DUMP)
 
-option (TRAP_FE "crash ccarat if a nan of inf occurs" OFF)
+option (TRAP_FE "crash ccarat if a nan of inf occurs" ON)
 if (TRAP_FE)
   add_definitions("-DTRAP_FE")
 endif(TRAP_FE)
@@ -407,6 +407,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaagasser.cpp
   src/drt_mat/aaaneohooke.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
+  src/drt_mat/aaa_mixedeffects.cpp
   src/drt_mat/anisotropic_balzani.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp

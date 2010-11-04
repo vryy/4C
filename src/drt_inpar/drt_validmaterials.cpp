@@ -474,6 +474,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*--------------------------------------------------------------------*/
+  // aneurysm wall material SEF according  to Raghavan and Vorp [2000],
+  // parameters according to mixed effects model
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAA_MixedEffects",
+                                            "aneurysm wall material according to Mixed Effects Model",
+                                            INPAR::MAT::m_aaa_mixedeffects));
+
+    AddNamedReal(m,"AGE","age");
+    AddNamedReal(m,"REFDIA","subrenal diameter");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
   /*--------------------------------------------------------------------*/
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {

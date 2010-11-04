@@ -109,6 +109,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
 
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
+  PATSPEC::GetLocalRadius(Id(),params,discretization);
 
   // get the material law
   Teuchos::RCP<MAT::Material> actmat = Material();
