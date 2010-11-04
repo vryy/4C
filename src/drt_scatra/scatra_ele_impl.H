@@ -642,6 +642,8 @@ public:
     bool migrationintau_;
     //! use migration velocity in the stabilization operator (ELCH)
     bool migrationstab_;
+    //! use migration velocity in residual of strong form (ELCH)
+    bool migrationinresidual_;
 
   };
 

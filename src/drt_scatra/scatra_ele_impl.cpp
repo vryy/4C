@@ -46,7 +46,7 @@ Maintainer: Georg Bauer
 //#include "../drt_io/io_gmsh.H"
 //#include "../drt_geometry/integrationcell_coordtrafo.H"
 
-//#define supi
+//#define SUBSCALE_ENC
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
 // use effective diffusion coefficient for stabilization
@@ -279,7 +279,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
     betterconsistency_(false),
     tauderpot_(numscal_),
     migrationintau_(true),
-    migrationstab_(true)
+    migrationstab_(true),
+    migrationinresidual_(true)
 {
   return;
 }
@@ -1152,8 +1153,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       {
         std::vector<int> indices_twoions = SCATRA::GetIndicesBinaryElectrolyte(valence_);
         resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,indices_twoions);
-        migrationstab_=false;
-        migrationintau_=false;
+#ifdef ACTIVATEBINARYELECTROLYTE
+       migrationstab_=false;
+       migrationintau_=false;
+#endif
       }
     }
 
@@ -1224,8 +1227,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           std::vector<int> indices_twoions = SCATRA::GetIndicesBinaryElectrolyte(valence_);
           resdiffus = SCATRA::CalResDiffCoeff(valence_,diffus_,indices_twoions);
-          migrationstab_=false;
-          migrationintau_=false;
+#ifdef ACTIVATEBINARYELECTROLYTE
+        migrationstab_=false;
+        migrationintau_=false;
+#endif
         }
 
         for (int k = 0;k<numscal_;++k) // loop of each transported scalar
@@ -2707,7 +2712,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         h *= 0.5; // for quadratic shape functions h = 0.5* elementlength
 #endif
       // get Euclidean norm of (weighted) velocity at element center
-      double vel_norm;
+      double vel_norm(0.0);
 
       if (iselch_ and migrationintau) // ELCH
       {
@@ -4580,6 +4585,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   double timefacfac;
   double timetaufac;
 
+#ifdef SUBSCALE_ENC
+  int ilcs(0);
+  for (int l=0; l < numscal_; l++)
+  {
+    if (abs(valence_[l]) > EPS12)
+      ilcs = l;
+  }
+#endif
+
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
     // get values of all transported scalars at integration point
@@ -4670,8 +4684,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // not implemented
 
         /* 1) convective stabilization */
-#ifdef supi
-if (k != (numscal_-2))
+#ifdef SUBSCALE_ENC
+if (k != ilcs)
 {
 #endif
         /* convective term */
@@ -4679,12 +4693,14 @@ if (k != (numscal_-2))
         // convective stabilization of convective term
         emat(fvi, fui) += timetaufac*conv_eff_vi*conv_(ui);
         // migration convective stabilization of convective term
+        if (migrationinresidual_)
         emat(fvi, fui) += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
         // partial derivative w.r.t potential
 
         // linearization w.r.t potential phi
         // convective stabilization of migration term (checked!!!)
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
+        if (migrationinresidual_)
         emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
 
         if (migrationintau_)
@@ -4704,18 +4720,29 @@ if (k != (numscal_-2))
           emat(fvi,ui*numdofpernode_+numscal_) -= 2.0*frt*myval*diffus_valence_k*val_ui;
         }
 
-#ifdef supi
-        if (abs(valence_[k]) >0.1) // only for ions
+#ifdef SUBSCALE_ENC
+  const int row = ui*numdofpernode_+ilcs;
+  const double myfactor = (-valence_[k]/valence_[ilcs]);
+  emat(row, ui*numdofpernode_+ilcs) += 0.0*myfactor*timetaufac*conv_eff_vi*conv_(ui);
+  emat(row, ui*numdofpernode_+ilcs) += 0.0*myfactor*timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
+  emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor*timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+  if (migrationintau_)
   {
-    // index of last charged species (typically equals numscal_-1, but can be different)
-    const int ilcs = numscal_-3;
-  const int row = ui*numdofpernode_+ilcs; // contribution to last scalar as well
-  const double myfactor = (valence_[k]/valence_[numscal_-2]);
-  emat(row, ui*numdofpernode_+k) += myfactor*timetaufac*conv_eff_vi*conv_(ui);
-  emat(row, ui*numdofpernode_+k) += myfactor*timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
-  emat(row,ui*numdofpernode_+numscal_) -= myfactor*timetaufac*conv_eff_vi*diffus_valence_k*val_ui;
+    // derivative of tau (Bazilevs) with respect to electric potential
+    const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
+    const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
+    const double tauderiv_ui = ((tauderpot_[k])(ui,0));
+    emat(row,ui*numdofpernode_+numscal_) += 0.0*myfactor*timefacfac*conv_eff_vi*tauderiv_ui*(conv_ephinp_k + Dkzk_mig_ephinp_k);
   }
-}
+  if (migrationstab_)
+  {
+    // migration convective stabilization of convective term
+    emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor*timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+    // migration convective stabilization of migration term
+    double myval = timetaufac*diffus_valence_k*migconv_(vi);
+    emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor *2.0*frt*myval*diffus_valence_k*val_ui;
+  }
+} // if (k != ilcs)
 #endif
 
 } // for ui
@@ -4788,7 +4815,9 @@ if (k != (numscal_-2))
     double taufacresidual(0.0);
 if ( not betterconsistency_)
 {
-  //  taufacresidual = taufac*rhsint - timetaufac*conv_ephinp_k;// (conv_eff_k - diff_ephinp_k + migrea_k);
+  if (not migrationinresidual_)
+    taufacresidual = taufac*rhsint - timetaufac*conv_ephinp_k;// (conv_eff_k - diff_ephinp_k + migrea_k);
+  else
     taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
 #if 0
     cout<<"taufacresidual = "<<taufacresidual<<endl;
@@ -4810,7 +4839,7 @@ else
     cout<<"taufacresidual (classical)   = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
     }
 #endif
-    }
+    } // betterconsistency
     if (!is_stationary_) // add transient term to the residual
       taufacresidual -= taufac*funct_ephinp_k;
 
@@ -4869,8 +4898,8 @@ else
 #endif
 
       // 1) convective stabilization
-#ifdef supi
-      if (k != (numscal_-2))
+#ifdef SUBSCALE_ENC
+      if (k != ilcs)
       {
 #endif
       erhs[fvi] += conv_(vi)* taufacresidual *adjust;
@@ -4878,12 +4907,15 @@ else
       {
         erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
       }
-#ifdef supi
-      if (abs(valence_[k]) >0.1)
+#ifdef SUBSCALE_ENC
+      const double myfactor = (-valence_[k]/valence_[ilcs]);
+      // valence_[k] prevents undesired influence on neutral species automatically
+      erhs[vi*numdofpernode_+ilcs] += myfactor*conv_(vi)* taufacresidual *adjust; // last scalar
+      if (migrationstab_)
       {
-        erhs[vi*numdofpernode_+numscal_-2] += (valence_[k]/valence_[numscal_-2])*conv_(vi)* taufacresidual *adjust; // last scalar
+        erhs[vi*numdofpernode_+ilcs] += myfactor*diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
       }
-      } // if (k != (numscal_-3))
+      } // if       if (k != ilcs)
 #endif
 
     } // for vi
