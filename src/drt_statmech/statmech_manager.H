@@ -106,38 +106,29 @@ public:
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
-  /*!\brief check whether element is "broken" due to periodic boundary conditions
-    \param coord  (in)  set of nodal coordinates
-		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
-		\param broken (in/out)  continuous==false, broken==true
-		\date 03/10
-  */
-  void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
-
-  /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
-		 \param element (in) 	   an element
-		 \param dis		  (in)	   current displacement vector
-		 \param coord	  (in/out) current node coordinates of element
-		 \param lids		(in/out) nodal DOF LIDs of the element
-  */
-  void GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids=NULL);
-
-  /*!\brief update locations of force sensors
-     \param sensornodes   (in) vector holding the GIDs of the sensor nodes
-     \param oscdir        (in) direction (DOF) of oscillation
-   */
-  void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
-
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
+
+  /*! \brief adjusted DBC evaluation for periodic case
+   *  \param params					 a parameter list*/
+  void EvaluateDirichletPeriodic(ParameterList& params,
+																RCP<Epetra_Vector> disn,
+																RCP<Epetra_Vector> dirichtoggle,
+																RCP<Epetra_Vector> invtoggle);
+
+  /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
+   *  \param nodeids				 vector containing DBC Node IDs
+   *  \param onoff					 vector containing onoff values for DOFs*/
+  void DoDirichletConditionPeriodic(vector<int>*								nodeids,
+																		vector<int>*								onoff,
+																		RCP<Epetra_Vector> disn,
+																		RCP<Epetra_Vector> dirichtoggle,
+																		RCP<Epetra_Vector> invtoggle,
+																		Epetra_Vector& deltadbc);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
-  //! \brief return initial number of elements
-  virtual int BasisElements(){return basiselements_;}
-  //! \brief return initial number of nodes
-  virtual int BasisNodes(){return basisnodes_;}
   //! \brief current simulation time
   double time_;
 
@@ -147,6 +138,22 @@ protected:
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
 
+  /*!\brief check whether element is "broken" due to periodic boundary conditions
+    \param coord  (in)  set of nodal coordinates
+		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
+		\param broken (in/out)  continuous==false, broken==true*/
+  void CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut, bool *broken);
+
+  /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
+		 \param element (in) 	   an element
+		 \param dis		  (in)	   current displacement vector
+		 \param coord	  (in/out) current node coordinates of element
+		 \param lids		(in/out) nodal DOF LIDs of the element*/
+  void GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, vector<int>* lids=NULL);
+  /*!\brief update locations of force sensors
+     \param sensornodes   (in) vector holding the GIDs of the sensor nodes
+     \param oscdir        (in) direction (DOF) of oscillation*/
+  void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
   void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
@@ -231,9 +238,6 @@ protected:
 	 * 	\param currentpositions			(in) 			column map node positions
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
 	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
-
-	//! \brief initialization
-	bool isinit_;
 
   //! \brief switch between different on and off-rates
   bool konswitch_;
@@ -329,7 +333,7 @@ protected:
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
 	// \brief a vector holding indices used in DensityDensityCorrOutput()
-	std::vector<std::vector<int> > startindex_;
+	std::vector<int> startindex_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/

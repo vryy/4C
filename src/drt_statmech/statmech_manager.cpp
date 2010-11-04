@@ -50,7 +50,6 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
-isinit_(false),
 konswitch_(false),
 nsearch_(0),
 starttimeoutput_(-1.0),
@@ -2099,60 +2098,6 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
 	int remainder = numcombinations%combinationsperproc;
 
-	// get starting index tuples for later use
-	if(!isinit_)
-	{
-		// first entry
-		startindex_.push_back(std::vector<int>(2,0));
-		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
-		{
-			std::vector<int> start(2,0);
-			bool continueloop = false;
-			bool quitloop = false;
-			int counter = 0;
-			int appendix = 0;
-			if(mypid==discret_.Comm().NumProc()-1)
-				appendix = remainder;
-
-			// loop over crosslinker pairs
-			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
-			{
-				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
-				{
-					if(i==startindex_[mypid][0] && j==startindex_[mypid][1])
-						continueloop = true;
-					if(j>i && continueloop)
-					{
-						if(counter<combinationsperproc+appendix)
-							counter++;
-						else
-						{
-							// new start index j
-							if(j==crosslinkermap_->NumMyElements()-1)
-								start[1] = 0;
-							else
-								start[1] = j;
-							quitloop = true;
-							break;
-						}
-					}
-				}
-				if(quitloop)
-				{
-					// new start index i
-					if(start[1]==0)
-						start[0] = i+1;
-					else
-						start[0] = i;
-					// new start tuple
-					startindex_.push_back(start);
-					break;
-				}
-			}
-		}
-		isinit_ = true;
-	}
-
 	int combicount = 0;
 	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
 	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
@@ -2171,7 +2116,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 				{
 					// start adding crosslink from here
-					if(i==startindex_[mypid][0] && j==startindex_[mypid][1])
+					if(i==startindex_[2*mypid] && j==startindex_[2*mypid+1])
 						continueloop = true;
 					// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
 					if(j>i && continueloop)
@@ -2324,7 +2269,23 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 			/*/ debugging cout
 			for(int j=0; j<(int)currpos.M(); j++)
 				if(currpos(j)<0.0 || currpos(j)>statmechparams_.get<double>("PeriodLength", 0.0))
-					cout<<"Proc "<<discret_.Comm().MyPID()<<": currpos(discol["<<i<<"] = "<<currpos<<endl;*/
+					cout<<"Proc "<<discret_.Comm().MyPID()<<": currpos(discol["<<i<<"] = "<<currpos<<endl;
+
+			if(node->Id()==4496 || node->Id()==2146)
+			{
+				std::cout<<"\n\noutput for currpos:\n";
+
+				std::cout<<"\ncurrpos in Id = "<<node->Id()<<": "<<currpos;
+				std::cout<<"\nnode->X() in Id = "<<node->Id()<<":";
+				for(int zz=0; zz<3; zz++)
+					std::cout<<"  "<<node->X()[zz];
+
+				std::cout<<"\ndiscol[discret_.DofColMap()->LID(dofnode[0])] in Id = "<<node->Id()<<":";
+				for(int zz=0; zz<3; zz++)
+					std::cout<<"  "<<discol[discret_.DofColMap()->LID(dofnode[zz])];
+
+				std::cout<<"\n\n";
+			}*/
 
 			currentpositions[node->LID()] = currpos;
 			currentrotations[node->LID()] = currrot;
@@ -4363,13 +4324,72 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// create density-density-correlation-function map with
 	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 	{
+		int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 		std::vector<int> bins;
-		for(int i=0; i<discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1); i++)
+		for(int i=0; i<discret_.Comm().NumProc()*numbins; i++)
 			bins.push_back(i);
-		ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), &bins[0], 0, discret_.Comm()));
+		ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
 		// create processor-specific density-density-correlation-function map
-		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*statmechparams_.get<int>("HISTOGRAMBINS", 1), 0, discret_.Comm()));
+		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
+
+		// calculation of start indices for each processor
+		// number of overall independent combinations
+		int numcombinations = (statmechparams_.get<int>("N_crosslink", 0)*statmechparams_.get<int>("N_crosslink", 0)-statmechparams_.get<int>("N_crosslink", 0))/2;
+		// combinations on each processor
+		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+		int remainder = numcombinations%combinationsperproc;
+
+		// get starting index tuples for later use
+		startindex_.assign(2*discret_.Comm().NumProc(), 0);
+		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+		{
+			std::vector<int> start(2,0);
+			bool continueloop = false;
+			bool quitloop = false;
+			int counter = 0;
+			int appendix = 0;
+			if(mypid==discret_.Comm().NumProc()-1)
+				appendix = remainder;
+
+			// loop over crosslinker pairs
+			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+			{
+				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+				{
+					if(i==startindex_[2*mypid] && j==startindex_[2*mypid+1])
+						continueloop = true;
+					if(j>i && continueloop)
+					{
+						if(counter<combinationsperproc+appendix)
+							counter++;
+						else
+						{
+							// new start index j
+							if(j==crosslinkermap_->NumMyElements()-1)
+								start[1] = 0;
+							else
+								start[1] = j;
+							quitloop = true;
+							break;
+						}
+					}
+				}
+				if(quitloop)
+				{
+					// new start index i
+					if(start[1]==0)
+						start[0] = i+1;
+					else
+						start[0] = i;
+					// new start tuple
+					startindex_[2*mypid] = start[0];
+					startindex_[2*mypid+1] = start[1];
+					break;
+				}
+			}
+		}
 	}
+
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions
 	if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
@@ -4422,4 +4442,327 @@ void StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& cross
 	return;
 }// StatMechManager::CrosslinkerPeriodicBoundaryShift
 
+/*----------------------------------------------------------------------*
+ |  Evaluate DBCs in case of periodic BCs (public)         mueller  2/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
+																							  RCP<Epetra_Vector> disn,
+																							  RCP<Epetra_Vector> dirichtoggle,
+																							  RCP<Epetra_Vector> invtoggle)
+/*The idea behind EvaluateDirichletPeriodic() is simple:
+ * Give Dirichlet values to nodes of an element that is broken in
+ * z-direction due to the application of periodic boundary conditions.
+ * The motion of the node close to z=0.0 in the cubic volume of edge
+ * length l (==PeriodLength in this case) is inhibited in direction of the
+ * oscillatory motion. The oscillation is imposed on the node close to z=l.
+ * This method is triggered in case of PeriodLength>0.0 (i.e. Periodic BCs
+ * exist). Since the DBC setup happens dynamically by checking element
+ * positions with each new time step, the static definition of DBCs in the input
+ * file is only used to get the direction of the oscillatory motion as well as
+ * the time curve. Therefore, only one DBC needs to be specified.
+ *
+ * How it works:
+ * Each time this method is called, the system vector and the toggle vector are
+ * modified to fit the current geometric situation.
+ * DOFs holdings Dirichlet values are marked by setting the corresponding toggle
+ * vector component to 1.0. In case of an element which was broken the step before
+ * and is now whole again,just the toggle vector components in question are
+ * reset to 0.0.
+ * A position vector deltadbc is needed in order to calculate the correct Dirichlet
+ * values to be imposed on nodes of an element which has drifted over the boundaries
+ * and thus has been broken.
+ * These positions are used to calculate the zero position of the oscillation which then can
+ * be added to the time curve value in DoDirichletConditionPeriodic().
+ */
+{
+#ifdef MEASURETIME
+  const double t_start = Teuchos::Time::wallTime();
+#endif // #ifdef MEASURETIME
+
+	if (!(discret_.Filled())) dserror("FillComplete() was not called");
+	if (!(discret_.HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+
+//----------------------------------- some variables
+	// indicates broken element
+	bool broken;
+	// time trigger
+	bool usetime = true;
+	// to avoid redundant or wrong actions when filling vectors or deleting the last element of the free nodes vector
+	bool alreadydone = false;
+	// store node Id of previously handled node
+  int tmpid = -1;
+  // store LIDs of element nodes
+  vector<int>	lids;
+  // vectors to manipulate DBC properties
+  vector<int> oscillnodes;
+  vector<int> fixednodes;
+  vector<int> freenodes;
+
+	// get the apmlitude of the oscillation
+	double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
+	// retrieve direction of oscillatory motion
+	int oscdir = statmechparams_.get<int>("OSCILLDIR",-1);
+	// retrieve number of time curve that is to be applied
+	int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
+
+	if(oscdir!=0 && oscdir!=1 && oscdir!=2)
+		dserror("Please define the StatMech Parameter OSCILLDIR correctly");
+
+  // get the current time
+	const double time = params.get<double>("total time", 0.0);
+	double dt = params.get<double>("delta time", 0.01);
+	double starttime = statmechparams_.get<double>("STARTTIME",-1.0);
+	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
+	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
+		return;
+	if (time<0.0)
+		usetime = false;
+
+//---------------------------------------------------------- loop over elements
+	// increment vector for dbc values
+	Epetra_Vector deltadbc(*(discret_.DofRowMap()), true);
+
+  // loop over row elements
+	for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
+	{
+		// An element used to browse through local Row Elements
+	  DRT::Element* element = discret_.lRowElement(lid);
+
+	  // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
+	  if(element->Id() > basisnodes_ || element->Id() >= statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
+	  	continue;
+
+	  // number of translational DOFs (not elegant but...ah well...!)
+	  int numdof = 3;
+	  // positions of nodes of an element with n nodes
+	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
+	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
+	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
+//-------------------------------- obtain nodal coordinates of the current element
+	  // get nodal coordinates and LIDs of the nodal DOFs
+	  GetElementNodeCoords(element, disn, coord, &lids);
+//-----------------------detect broken/fixed/free elements and fill position vector
+	  // determine existence and location of broken element
+	  CheckForBrokenElement(coord, cut, &broken);
+
+	  // loop over number of cuts (columns)
+	  for(int n=0; n<cut.N(); n++)
+	  {
+	  	// case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+			if(broken && cut(2,n)==1.0)
+			{
+				// indicates beginning of a new filament (in the very special case that this is needed)
+				bool newfilament = false;
+				// check for case: last element of filament I as well as first element of filament I+1 broken
+				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+				{
+					// in this case, reset alreadydone...
+					alreadydone = false;
+					// ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
+					newfilament = true;
+				}
+				// add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+				if(!alreadydone)
+					fixednodes.push_back(element->Nodes()[n]->Id());
+				// add GID of oscillating node to osc.-nodes-vector
+				oscillnodes.push_back(element->Nodes()[n+1]->Id());
+				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
+				 * displacement in one particular direction (oscdir), another which oscillates in the same direction.
+				 * The following code section calculates increments for both node types and stores this increment in
+				 * a vector deltadbc. This increment is later added to the nodes' displacement of the preceding time step.
+				 */
+				// the new displacement increments
+				// incremental displacement for a fixed node...(all DOFs = 0.0)
+				for(int i=0; i<numdof; i++)
+					if(i==oscdir)
+						deltadbc[lids.at(numdof*n+i)] = 0.0;
+				// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
+				// time step size
+				double dt = params.get<double>("delta time" ,-1.0);
+				// time curve increment
+				double tcincrement = 0.0;
+				if(curvenumber>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+				deltadbc[lids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
+				// delete last Id of freenodes if it was previously and falsely added
+				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+					freenodes.pop_back();
+				// store gid of the "n+1"-node to avoid overwriting during the following iteration,
+				// e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
+				tmpid = element->Nodes()[n+1]->Id();
+				// Set to true to initiate certain actions if the following element is also broken.
+				// If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
+				alreadydone=true;
+			}// end of case 1
+
+			// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+			if(broken && cut(2,n)==2.0)
+			{
+				bool newfilament = false;
+				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+				{
+					alreadydone = false;
+					newfilament = true;
+				}
+				if(!alreadydone)
+					oscillnodes.push_back(element->Nodes()[n]->Id());
+				fixednodes.push_back(element->Nodes()[n+1]->Id());
+				// oscillating node
+				double dt = params.get<double>("delta time" ,-1.0);
+				double tcincrement = 0.0;
+				if(curvenumber>-1)
+					tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+												DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+				deltadbc[lids.at(numdof*n+oscdir)] = amp*tcincrement;
+				// fixed node
+				for(int i=0; i<numdof; i++)
+					if(i==oscdir)
+						deltadbc[lids.at(numdof*(n+1)+i)] = 0.0;
+				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+					freenodes.pop_back();
+				tmpid = element->Nodes()[n+1]->Id();
+				alreadydone = true;
+			} // end of case 2
+
+			// case 3: unbroken element or broken in another than z-direction
+			if(cut(2,n)==0.0)
+			{
+				if(element->Nodes()[n]->Id()!=tmpid)
+				{
+					freenodes.push_back(element->Nodes()[n]->Id());
+					freenodes.push_back(element->Nodes()[n+1]->Id());
+				}
+				else
+					freenodes.push_back(element->Nodes()[n+1]->Id());
+				tmpid=element->Nodes()[n+1]->Id();
+				// set to false to handle annoying special cases
+				alreadydone = false;
+			}
+	  }
+	}
+
+//---------check/set force sensors anew for each time step
+  if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+  	// add DOF LID where a force sensor is to be set
+  	UpdateForceSensors(oscillnodes, oscdir);
+  //cout<<"\n=========================================="<<endl;
+  //cout<<"UpdateForceSensors: "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  //cout<<"==========================================\n"<<endl;
+
+//------------------------------------set Dirichlet values
+	// preliminary
+  DRT::Node* node = discret_.gNode(discret_.NodeRowMap()->GID(0));
+	int numdof = (int)discret_.Dof(node).size();
+	vector<int>  	 addonoff(numdof, 0);
+
+  // set condition for oscillating nodes
+	// inhibit all DOFs (for now, testing)
+	for(int i=0; i<numdof; i++)
+		if(i==oscdir)
+			addonoff.at(i) = 1;
+
+  // do not do anything if vector is empty
+  if(!oscillnodes.empty())
+  	DoDirichletConditionPeriodic(&oscillnodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+
+  // set condition for fixed nodes
+	if(!fixednodes.empty())
+  	DoDirichletConditionPeriodic(&fixednodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+
+  // set condition for free or recently set free nodes
+  for(int i=0; i<numdof; i++)
+  	if(i==oscdir)
+  		addonoff.at(i) = 0;
+
+	if(!freenodes.empty())
+  	DoDirichletConditionPeriodic(&freenodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+
+#ifdef MEASURETIME
+  const double t_end = Teuchos::Time::wallTime();
+  if(!discret_.Comm().MyPID())
+  	cout<<"DBC Evaluation time: "<<t_end-t_start<<endl;
+#endif // #ifdef MEASURETIME
+
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  fill system vector and toggle vector (public)          mueller  3/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::DoDirichletConditionPeriodic(vector<int>* nodeids,
+																									 vector<int>* onoff,
+																									 RCP<Epetra_Vector> disn,
+																									 RCP<Epetra_Vector> dirichtoggle,
+																									 RCP<Epetra_Vector> invtoggle,
+																									 Epetra_Vector& deltadbc)
+/*
+ * This basically does the same thing as DoDirichletCondition() (to be found in drt_discret_evaluate.cpp),
+ * but with the slight difference of taking current displacements into account.
+ * Time curve values aren't added to the reference position(s) of the discretization as usual,
+ * but to the latest known 0-position(s). These positions are calculated using the deltadbc
+ * vector holding the latest incremental Dirichlet displacement. It is added to the displacement
+ * at the end of the preceding time step.
+ */
+{
+	/*/ "condition output"
+	cout<<"Node Ids: ";
+	for(int i=0; i<(int)nodeids->size(); i++)
+		cout<<nodeids->at(i)<<" ";
+	cout<<"onoff: ";
+	for(int i=0; i<(int)discret_.Dof(0,discret_.gNode(nodeids->at(0))).size(); i++)
+		cout<<onoff->at(i)<<" ";
+	cout<<endl;*/
+
+	// some checks for errors
+	if (!nodeids) dserror("No Node IDs were handed over!");
+
+	// get the condition properties
+	const int nnode = nodeids->size();
+
+	// loop over all nodes in condition
+	for (int i=0; i<nnode; ++i)
+	{
+		// do only nodes in my row map
+		if (!discret_.NodeRowMap()->MyGID(nodeids->at(i))) continue;
+		DRT::Node* actnode = discret_.gNode(nodeids->at(i));
+		if (!actnode) dserror("Cannot find global node %d",nodeids->at(i));
+		// call explicitly the main dofset, i.e. the first column
+		vector<int> dofs = discret_.Dof(0,actnode);
+		const unsigned numdf = dofs.size();
+
+		// loop over DOFs
+		for (unsigned j=0; j<numdf; ++j)
+		{
+			// get the LID of the currently handled DOF
+			const int lid = (*disn).Map().LID(dofs[j]);
+
+			// if DOF in question is not subject to DBCs (anymore)
+      if (onoff->at(j)==0)
+      {
+        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+        if (dirichtoggle!=Teuchos::null)
+        {
+        	// turn off application of Dirichlet value
+          (*dirichtoggle)[lid] = 0.0;
+          // in addition, modify the inverse vector (needed for manipulation of the residual vector)
+          (*invtoggle)[lid] = 1.0;
+        }
+        continue;
+      }
+//---------------------------------------------Dirichlet Value Assignment
+	    // assign value
+	    if (lid<0) dserror("Global id %d not on this proc in system vector", dofs[j]);
+	    if (disn != Teuchos::null)
+	    	(*disn)[lid] += deltadbc[lid];
+	    // set toggle vector and the inverse vector
+	    if (dirichtoggle != Teuchos::null)
+	    {
+	      (*dirichtoggle)[lid] = 1.0;
+	      (*invtoggle)[lid] = 0.0;
+	    }
+	  }  // loop over nodal DOFs
+	}  // loop over nodes
+	return;
+}
 #endif  // #ifdef CCADISCRET

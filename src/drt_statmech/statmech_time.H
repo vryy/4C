@@ -94,18 +94,6 @@ protected:
 
   //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations
   int   unconvergedsteps_;
-
-private:
-	// variables needed for EvaluateDirichletPeriodic()
-	bool 												isinit_;
-	// \brief incremental displacement which is to be added to the displacement in DoDirichletConditionPeriodic()
-	RCP<Epetra_Vector> 					deltadbc_;
-	// \brief direction of oscillation, extracted from discretization
-	int 												oscdir_;
-	// \brief amplitude of oscillation, extracted from discretization
-	double											amp_;
-	// \brief curve number, extracted from discretization
-	int 												curvenumber_;
 }; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H
