@@ -609,8 +609,8 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
-			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0)
+			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
+			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("NUMSTEP", 0))
 			{
 				//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
 				FILE* fp = NULL;
@@ -2116,7 +2116,7 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 				{
 					// start adding crosslink from here
-					if(i==startindex_[2*mypid] && j==startindex_[2*mypid+1])
+					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
 						continueloop = true;
 					// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
 					if(j>i && continueloop)
@@ -4340,7 +4340,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		int remainder = numcombinations%combinationsperproc;
 
 		// get starting index tuples for later use
-		startindex_.assign(2*discret_.Comm().NumProc(), 0);
+		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
 		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
 		{
 			std::vector<int> start(2,0);
@@ -4356,7 +4356,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 			{
 				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 				{
-					if(i==startindex_[2*mypid] && j==startindex_[2*mypid+1])
+					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
 						continueloop = true;
 					if(j>i && continueloop)
 					{
@@ -4382,8 +4382,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
 					else
 						start[0] = i;
 					// new start tuple
-					startindex_[2*mypid] = start[0];
-					startindex_[2*mypid+1] = start[1];
+					(*startindex_)[2*mypid] = (double)(start[0]);
+					(*startindex_)[2*mypid+1] = (double)(start[1]);
 					break;
 				}
 			}

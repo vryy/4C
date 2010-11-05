@@ -333,7 +333,7 @@ protected:
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
 	// \brief a vector holding indices used in DensityDensityCorrOutput()
-	std::vector<int> startindex_;
+	RCP<std::vector<double> > startindex_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
