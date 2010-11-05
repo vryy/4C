@@ -167,7 +167,7 @@ void StatMechTime::Integrate()
     if(!discret_.Comm().MyPID())
     {
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
-      std::cout<<"\nNumber of unconverged steps "<<unconvergedsteps_<<"\n";
+      std::cout<<"\nNumber of unconverged steps since start / last restart: "<<unconvergedsteps_<<"\n";
     }
 
 			//time_ is time at the end of this time step
