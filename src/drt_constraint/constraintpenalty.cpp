@@ -29,14 +29,16 @@ Constraint(discr,conditionname)
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
       vector<double> mypenalties=*(constrcond_[i]->Get<vector<double> >("penalty"));
+      vector<double> myrhos=*(constrcond_[i]->Get<vector<double> >("rho"));
       int condID=constrcond_[i]->GetInt("ConditionID");
-      if (mypenalties.size())
+      if (mypenalties.size() and myrhos.size())
       {
         penalties_.insert(pair<int,double>(condID,mypenalties[0]));
+        rho_.insert(pair<int,double>(condID,myrhos[0]));
       }
       else
       {
-        dserror("you should not turn up in penalty controlled constraint!");
+        dserror("you should not turn up in penalty controlled constraint without penalty parameter and rho!");
       }
     }
     int nummyele=0;
@@ -52,6 +54,7 @@ Constraint(discr,conditionname)
     errorimport_ = rcp (new Epetra_Import(*rederrormap_,*errormap_));
     acterror_=rcp(new Epetra_Vector(*rederrormap_));
     initerror_=rcp(new Epetra_Vector(*rederrormap_));
+    lagrvalues_=rcp(new Epetra_Vector(*rederrormap_));
   }
   else
   {
@@ -221,7 +224,9 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       if (curvenum>=0 )
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-
+      double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
+      
+      (*lagrvalues_)[condID-1]+=rho_[condID]*diff;
       // elements might need condition
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
@@ -249,6 +254,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
         elematrix1.Shape(eledim,eledim);
+        
         elevector1.Size(eledim);
         elevector3.Size(1);
 
@@ -257,20 +263,9 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
             elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
         
-        
-        
-       // loadcurve business
-        const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-        int curvenum = -1;
-        if (curve) curvenum = (*curve)[0];
-        double curvefac = 1.0;
-        bool usetime = true;
-        if (time<0.0) usetime = false;
-        if (curvenum>=0 && usetime)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        
-        double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
-        
+        elematrix2=elematrix1;
+        elevector2=elevector1;     
+    
         // assembly
         int eid = curr->second->Id();        
         
@@ -279,11 +274,16 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         for(int i=0; i<eledim; i++)
           for(int j=0; j<eledim; j++)
             elematrix1(i,j) += elevector1(i)*elevector1(j);
-        elematrix1.Scale(2.*scStiff*penalties_[condID]);
-          
+        elematrix1.Scale(scStiff*penalties_[condID]);
+        elematrix2.Scale((*lagrvalues_)[condID-1]*scStiff);
+        
         systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        elevector1.Scale(2.*penalties_[condID]*diff);
+        systemmatrix1->Assemble(eid,elematrix2,lm,lmowner);
+        
+        elevector1.Scale(penalties_[condID]*diff);
+        elevector2.Scale((*lagrvalues_)[condID-1]);
         LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+        LINALG::Assemble(*systemvector1,elevector2,lm,lmowner);
         
       }
     }
@@ -355,13 +355,14 @@ void UTILS::ConstraintPenalty::EvaluateError(
         constrowner.push_back(curr->second->Owner());
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
       }
-      // remember next time, that this condition is already initialized, i.e. active
-      activecons_.find(condID)->second=true;
 
       if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+        cout << "Encountered a new active penalty condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
+      
+      // remember next time, that this condition is already initialized, i.e. active
+      activecons_.find(condID)->second=true;
     }
 
   }

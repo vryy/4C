@@ -427,7 +427,7 @@ void UTILS::Constraint::InitializeConstraint(
 
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+        cout << "Encountered a new active Lagrange condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
     }
 

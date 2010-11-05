@@ -1410,6 +1410,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   volumeconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   volumeconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   volumeconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("penalty")));
+  volumeconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("rho")));
   volumeconstraintpen->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
       Teuchos::tuple<std::string>("none","xy","yz","xz"),
       Teuchos::tuple<std::string>("none","xy","yz","xz"),
@@ -1449,6 +1450,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   areaconstraintpen->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   areaconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
   areaconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("penalty")));
+  areaconstraintpen->AddComponent(Teuchos::rcp(new RealConditionComponent("rho")));
   areaconstraintpen->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
       Teuchos::tuple<std::string>("none","xy","yz","xz"),
       Teuchos::tuple<std::string>("none","xy","yz","xz"),

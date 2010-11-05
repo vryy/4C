@@ -94,13 +94,16 @@ namespace UTILS
 
   protected:
 
-    map<int,double>  penalties_; ///< map with times at which constraint is supposed to become active
-    RCP<Epetra_Export> errorexport_;
-    RCP<Epetra_Import> errorimport_;
-    RCP<Epetra_Map> rederrormap_;
-    RCP<Epetra_Map> errormap_;
-    RCP<Epetra_Vector> initerror_;  /// initial value of bc  
-    RCP<Epetra_Vector> acterror_;  /// current value of bc
+    map<int,double>  penalties_; ///< map containing penalty values
+    map<int,double>  rho_; ///< map containing rhos for augmented Lagrange 
+    RCP<Epetra_Export> errorexport_;  ///< exporter for redundant and non-overlapping maps
+    RCP<Epetra_Import> errorimport_;  ///< importer for redundant and non-overlapping maps
+    RCP<Epetra_Map> rederrormap_;  ///< redundant map of errors
+    RCP<Epetra_Map> errormap_;  ///< non-overlapping map of errors
+    RCP<Epetra_Vector> initerror_;  ///< initial value of bc  
+    RCP<Epetra_Vector> acterror_;  ///< current value of bc
+    RCP<Epetra_Vector> lagrvalues_; ///< value of Lagrange multiplier in augmented Lagrange
+   
 
   private:
 
