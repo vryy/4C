@@ -55,6 +55,12 @@ public:
   //! \brief saving all necessary class variables for restart
   void StatMechWriteRestart(IO::DiscretizationWriter& output);
 
+  //! \brief write restart information for fully overlapping Epetra_Multivector with name "name"
+  void WriteRestartRedundantMultivector(IO::DiscretizationWriter& output,const string name, RCP<Epetra_MultiVector> multivector);
+
+  //! \brief read restart information for fully overlapping Epetra_Multivector with name "name"
+  void ReadRestartRedundantMultivector(IO::DiscretizationReader& reader,const string name, RCP<Epetra_MultiVector> multivector);
+
   //! \brief reading all necessary information after a restart
   void StatMechReadRestart(IO::DiscretizationReader& reader);
 
@@ -68,6 +74,9 @@ public:
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void StatMechInitOutput(const int ndim, const double& dt);
+
+  //! \brief seed all random generators of this object properly
+  void SeedRandomGenerators(const int seedparameter);
 
 	//! \brief write output for Gmsh postprocessing
 	void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);

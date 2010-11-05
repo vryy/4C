@@ -62,17 +62,8 @@ outputfilenumber_(-1),
 normalgen_(0,1),
 discret_(discret)
 {
-  //if input flag FIXEDSEED == YES: use same random numbers in each program start based on input variable INITIALSEED
-	int seedvariable = 0;
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
-  	seedvariable = statmechparams_.get<int>("INITIALSEED", 0);
-  //else set seed according to system time and different for each processor
-  else
-  	seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
-
-	normalgen_.seed( (unsigned int)seedvariable );
-	uniformclosedgen_.seed( (unsigned int)seedvariable );
-	uniformclosedopengen_.seed( (unsigned int)seedvariable );
+  //initialize random generators
+  SeedRandomGenerators(0);
 
 
   /*setting and deleting dynamic crosslinkers needs a special code structure for parallel search trees
@@ -275,6 +266,35 @@ discret_(discret)
 	}//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 	return;
 }// StatMechManager::StatMechManager
+
+
+/*----------------------------------------------------------------------*
+ | seed all random generators of this object with fixed seed if given and|
+ | with system time otherwise; seedparameter is used only in the first   |
+ | case to calculate the actual seed variable based on some given fixed  |
+ | seed value; note that seedparameter may be any integer, but has to be |
+ | been set in a deterministic way so that it for a certain call of this |
+ | method at a certain point in the program always the same number       |
+ | whenever the program is used                               cyron 11/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::SeedRandomGenerators(const int seedparameter)
+{
+  //integer for seeding all random generators
+  int seedvariable = 0;
+
+  /*if input flag FIXEDSEED == YES: use same random numbers in each program start;
+   *to this end compute seedvariable from given parameter FIXEDSEED and some other
+   *deterministic parameter seedparameter given to this method at runtime*/
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+    seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_.Comm().MyPID() + 1);
+  //else set seed according to system time and different for each processor (pseudo-random seed)
+  else
+    seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
+
+  normalgen_.seed( (unsigned int)seedvariable );
+  uniformclosedgen_.seed( (unsigned int)seedvariable );
+  uniformclosedopengen_.seed( (unsigned int)seedvariable );
+}
 
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
@@ -3964,13 +3984,62 @@ void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
 	output.WriteDouble("endtoendref", endtoendref_);
 	output.WriteInt("basisnodes", basisnodes_);
 	output.WriteInt("outputfilenumber", outputfilenumber_);
+  //note: beginold_,endold_,sumdispmiddle_ not considered; related methods not restartable
+	output.WriteInt("nsearch", nsearch_);
+	output.WriteInt("konswitch", int(konswitch_));
+	output.WriteInt("basiselements", basiselements_);
+	output.WriteInt("currentelements", currentelements_);
+	output.WriteDouble("sumsquareincpar", sumsquareincpar_);
+	output.WriteDouble("sumsquareincort", sumsquareincort_);
+	output.WriteDouble("sumrotmiddle", sumrotmiddle_);
+	output.WriteDouble("sumsquareincmid", sumsquareincmid_);
+	output.WriteDouble("sumsquareincrot", sumsquareincrot_);
+  /*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
+   * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
 
-	/*note: the variable crosslinkerpartner_  is not saved here; this means
-	 * that for crosslinked networks restarts are not possible in general;
-	 * However, not saving crosslinkerpartner_ makes a reasonable restart impossible*/
+	output.WriteVector("crosslinkerpartner",crosslinkerpartner_,IO::DiscretizationWriter::nodevector);
+	output.WriteVector("numcrosslinkerpartner",numcrosslinkerpartner_,IO::DiscretizationWriter::nodevector);
+	output.WriteVector("numcrossnodes",numcrossnodes_,IO::DiscretizationWriter::nodevector);
+  output.WriteRedundantDoubleVector("startindex",startindex_);
+
+  WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
+  WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
+  WriteRestartRedundantMultivector(output,"numbond",numbond_);
+  WriteRestartRedundantMultivector(output,"crosslinkonsamefilament",crosslinkonsamefilament_);
+  WriteRestartRedundantMultivector(output,"visualizepositions",visualizepositions_);
+  WriteRestartRedundantMultivector(output,"searchforneighbours",searchforneighbours_);
+
 
 	return;
 } // StatMechManager::StatMechWriteRestart()
+
+/*----------------------------------------------------------------------------*
+ | (public) write restart information for fully redundant   Epetra_Multivector|
+ | with name "name"                                                cyron 11/10|
+ *----------------------------------------------------------------------------*/
+void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter& output, const string name, RCP<Epetra_MultiVector> multivector)
+{
+  /*as Epetra_Multivector is assumed to be fully redundant (all elements on all processors)
+   *restart information has to be written only be processor 0*/
+  if(discret_.Comm().MyPID() == 0)
+  {
+    //create stl vector to store information in multivector
+    RCP<vector<double> > stlvector = rcp(new vector<double>);
+    stlvector->resize(multivector->MyLength()*multivector->NumVectors());
+
+    for (int i=0; i<multivector->MyLength(); i++)
+      for (int j=0; j<multivector->NumVectors(); j++)
+        (*stlvector)[i + j*multivector->MyLength()] = (*multivector)[j][i];
+
+    //write information to output file
+    output.WriteRedundantDoubleVector(name,stlvector);
+
+  }
+
+  return;
+} // StatMechManager::WriteRestartRedundantMultivector()
+
+
 
 /*----------------------------------------------------------------------*
  |read restart information for statistical mechanics (public)cyron 12/08|
@@ -3983,9 +4052,58 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 	endtoendref_ = reader.ReadDouble("endtoendref");
 	basisnodes_ = reader.ReadInt("basisnodes");
 	outputfilenumber_ = reader.ReadInt("outputfilenumber");
+	//note: beginold_,endold_,sumdispmiddle_ not considered; related methods not restartable
+	nsearch_ = reader.ReadInt("nsearch");
+	konswitch_ = bool(reader.ReadInt("konswitch"));
+	basiselements_ = reader.ReadInt("basiselements");
+	currentelements_ = reader.ReadInt("currentelements");
+	sumsquareincpar_ = reader.ReadDouble("sumsquareincpar");
+	sumsquareincort_ = reader.ReadDouble("sumsquareincort");
+	sumrotmiddle_ = reader.ReadDouble("sumrotmiddle");
+	sumsquareincmid_ = reader.ReadDouble("sumsquareincmid");
+	sumsquareincrot_ = reader.ReadDouble("sumsquareincrot");
+	/*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
+	 * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
+	reader.ReadMultiVector(crosslinkerpartner_,"crosslinkerpartner");
+	reader.ReadMultiVector(numcrosslinkerpartner_,"numcrosslinkerpartner");
+	reader.ReadMultiVector(numcrossnodes_,"numcrossnodes");
+	reader.ReadRedundantDoubleVector(startindex_,"startindex");
+
+	ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
+	ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
+	ReadRestartRedundantMultivector(reader,"numbond",numbond_);
+	ReadRestartRedundantMultivector(reader,"crosslinkonsamefilament",crosslinkonsamefilament_);
+	ReadRestartRedundantMultivector(reader,"visualizepositions",visualizepositions_);
+	ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
 
 	return;
 }// StatMechManager::StatMechReadRestart()
+
+/*----------------------------------------------------------------------------*
+ | (public) write restart information for fully redundant   Epetra_Multivector|
+ | with name "name"                                                cyron 11/10|
+ *----------------------------------------------------------------------------*/
+void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
+{
+  //restart information first read on processor 0
+  if(discret_.Comm().MyPID() == 0)
+  {
+    /*we assume that information was stored like for a redundant stl vector,
+     *whose last element indicates the number of vectors in the multivector;
+     *thus we first create a stlvector and read the stored in information*/
+    RCP<vector<double> > stlvector = rcp(new vector<double>);
+    stlvector->resize(multivector->MyLength()*multivector->NumVectors());
+
+    reader.ReadRedundantDoubleVector(stlvector,name);
+
+    //transfer data from stlvector to Epetra_Multivector
+    for (int i=0; i<multivector->MyLength(); i++)
+      for (int j=0; j<multivector->NumVectors(); j++)
+         (*multivector)[j][i] = (*stlvector)[i + j*multivector->MyLength()];
+  }
+
+  return;
+} // StatMechManager::WriteRestartRedundantMultivector()
 
 /*----------------------------------------------------------------------*
  | check for broken element                        (public) mueller 3/10|

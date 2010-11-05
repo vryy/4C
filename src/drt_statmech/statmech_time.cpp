@@ -158,6 +158,9 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
+    //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
+    statmechmanager_->SeedRandomGenerators(i);
+
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
     if(i == 0)
