@@ -1231,17 +1231,19 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->ClearState();
 
   //----------------------------------------------------------------------
-  // apply mixed/hybrid Dirichlet boundary conditions
+  // apply weak Dirichlet boundary conditions
   //----------------------------------------------------------------------
   {
     ParameterList mhdbcparams;
-    
+
     // set action for elements
-    mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+    mhdbcparams.set("action","WeakDirichlet");
+    mhdbcparams.set("incremental solver",incremental_);
     mhdbcparams.set("isale",isale_);
 
     mhdbcparams.set<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_condif);
 
+    AddMultiVectorToParameterList(mhdbcparams,"velocity field",convel_);
     AddSpecificTimeIntegrationParameters(mhdbcparams);
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
@@ -1252,7 +1254,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
        residual_            ,
        Teuchos::null        ,
        Teuchos::null        ,
-       "LineMixHybDirichlet");
+       "LineWeakDirichlet");
 
     discret_->EvaluateConditionUsingParentData
       (mhdbcparams          ,
@@ -1261,7 +1263,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
        residual_            ,
        Teuchos::null        ,
        Teuchos::null        ,
-       "SurfaceMixHybDirichlet");
+       "SurfaceWeakDirichlet");
 
     // clear state
     discret_->ClearState();

@@ -233,26 +233,26 @@ public:
         Epetra_SerialDenseVector&             erhs,
         const double                          timefac,
         const double                          alphaF);
-  
+
     /*!
-    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
+    \brief Evaluate weak Dirichlet boundary conditions
 
     \param params (in)        : ParameterList for communication between control routine
     \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
+    \param material (in)      : material of this element
     \param elemat1 (out)      : matrix to be filled by element.
     \param elevec1 (out)      : vector to be filled by element.
 
     */
-    template <DRT::Element::DiscretizationType bndydistype,DRT::Element::DiscretizationType pdistype>
-    void MixHybDirichlet(DRT::ELEMENTS::TransportBoundary* surfele,
-                         ParameterList&                    params,
-                         DRT::Discretization&              discretization,
-                         vector<int>&                      lm,
-                         Epetra_SerialDenseMatrix&         elemat_epetra,
-                         Epetra_SerialDenseVector&         elevec_epetra);
+    template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
+    void WeakDirichlet(DRT::ELEMENTS::TransportBoundary*  ele,
+                       ParameterList&                     params,
+                       DRT::Discretization&               discretization,
+                       Teuchos::RCP<const MAT::Material>  material,
+                       Epetra_SerialDenseMatrix&          elemat_epetra,
+                       Epetra_SerialDenseVector&          elevec_epetra);
 
-    //! number of dof per node
+     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
     const int numscal_;

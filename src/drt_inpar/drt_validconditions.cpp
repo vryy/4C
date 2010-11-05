@@ -575,7 +575,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"),
         Teuchos::tuple<std::string>("adjoint-consistent","diffusive-optimal"))));
 
-  // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
+  // weak DBCs can be imposed in all directions or only in normal direction
+  // (SCATRA: not checked, only in all_directions so far)
   weakDirichletcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
@@ -583,8 +584,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"),
         Teuchos::tuple<std::string>("all_directions","only_in_normal_direction"))));
 
-  // the penalty parameter could be computed dynamically (using Spaldings
-  // law of the wall) or using a fixed value
+  // FLUID: penalty parameter either computed dynamically (using Spaldings law of
+  // the wall) or by a fixed value; SCATRA: not checked, only constant value so far
   weakDirichletcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
@@ -592,13 +593,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("constant","Spalding"),
         Teuchos::tuple<std::string>("constant","Spalding"))));
 
-  // scaling factor for penalty parameter tauB
+  // scaling factor for penalty parameter tauB or
+  // stabilization parameter alpha for Nitsche term
+  // (SCATRA: if stabilization parameter negative -> mixed-hybrid formulation)
   weakDirichletcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TauBscaling")));
 
   // linearisation strategies --- the linearisation (i.e. the matrix
   // contribution) of the convective term on the inflow could be
   // suppressed, since the flux is a kink function and including this one
   // might result in even worse convergence behaviour
+  // (SCATRA: not checked)
   weakDirichletcomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
