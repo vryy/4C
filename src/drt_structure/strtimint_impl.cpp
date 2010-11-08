@@ -582,7 +582,7 @@ bool STR::TimIntImpl::Converged()
 
   // check constraint
   bool cc = true;
-  if (conman_->HaveConstraint())
+  if (conman_->HaveConstraintLagr())
   {
     cc = normcon_ < tolcon_;
   }
@@ -1449,7 +1449,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   }
 
   // add constraint norm
-  if (conman_->HaveConstraint())
+  if (conman_->HaveConstraintLagr())
   {
     oss << std::setw(18)<< "abs-constr-norm";
   }
@@ -1541,7 +1541,7 @@ void STR::TimIntImpl::PrintNewtonIterText
   }
 
   // add constraint norm
-  if (conman_->HaveConstraint())
+  if (conman_->HaveConstraintLagr())
   {
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normcon_;
   }
