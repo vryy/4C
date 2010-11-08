@@ -4022,22 +4022,16 @@ void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
  *----------------------------------------------------------------------------*/
 void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter& output, const string name, RCP<Epetra_MultiVector> multivector)
 {
-  /*as Epetra_Multivector is assumed to be fully redundant (all elements on all processors)
-   *restart information has to be written only be processor 0*/
-  if(discret_.Comm().MyPID() == 0)
-  {
-    //create stl vector to store information in multivector
-    RCP<vector<double> > stlvector = rcp(new vector<double>);
-    stlvector->resize(multivector->MyLength()*multivector->NumVectors());
+  //create stl vector to store information in multivector
+  RCP<vector<double> > stlvector = rcp(new vector<double>);
+  stlvector->resize(multivector->MyLength()*multivector->NumVectors());
 
-    for (int i=0; i<multivector->MyLength(); i++)
-      for (int j=0; j<multivector->NumVectors(); j++)
-        (*stlvector)[i + j*multivector->MyLength()] = (*multivector)[j][i];
+  for (int i=0; i<multivector->MyLength(); i++)
+    for (int j=0; j<multivector->NumVectors(); j++)
+      (*stlvector)[i + j*multivector->MyLength()] = (*multivector)[j][i];
 
-    //write information to output file
-    output.WriteRedundantDoubleVector(name,stlvector);
-
-  }
+  //write information to output file; note that WriteRedundantDoubleVector is active on proc 0 only
+  output.WriteRedundantDoubleVector(name,stlvector);
 
   return;
 } // StatMechManager::WriteRestartRedundantMultivector()
@@ -4070,8 +4064,9 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 	reader.ReadMultiVector(crosslinkerpartner_,"crosslinkerpartner");
 	reader.ReadMultiVector(numcrosslinkerpartner_,"numcrosslinkerpartner");
 	reader.ReadMultiVector(numcrossnodes_,"numcrossnodes");
-	reader.ReadRedundantDoubleVector(startindex_,"startindex");
 
+	//Read redundant Epetra_Multivectors and STL vectors
+	reader.ReadRedundantDoubleVector(startindex_,"startindex");
 	ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
 	ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
 	ReadRestartRedundantMultivector(reader,"numbond",numbond_);
@@ -4083,27 +4078,24 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 }// StatMechManager::StatMechReadRestart()
 
 /*----------------------------------------------------------------------------*
- | (public) write restart information for fully redundant   Epetra_Multivector|
+ | (public) read restart information for fully redundant Epetra_Multivector   |
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
 void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, RCP<Epetra_MultiVector> multivector)
 {
-  //restart information first read on processor 0
-  if(discret_.Comm().MyPID() == 0)
-  {
-    /*we assume that information was stored like for a redundant stl vector,
-     *whose last element indicates the number of vectors in the multivector;
-     *thus we first create a stlvector and read the stored in information*/
+    //we assume that information was stored like for a redundant stl vector
     RCP<vector<double> > stlvector = rcp(new vector<double>);
     stlvector->resize(multivector->MyLength()*multivector->NumVectors());
 
+    /*ReadRedundantDoubleVector reads information of stlvector on proc 0 and distributes
+     *this information then to all other processors so that after the following line
+     *the variable stlvector has the same information on all procs*/
     reader.ReadRedundantDoubleVector(stlvector,name);
 
     //transfer data from stlvector to Epetra_Multivector
     for (int i=0; i<multivector->MyLength(); i++)
       for (int j=0; j<multivector->NumVectors(); j++)
          (*multivector)[j][i] = (*stlvector)[i + j*multivector->MyLength()];
-  }
 
   return;
 } // StatMechManager::WriteRestartRedundantMultivector()
