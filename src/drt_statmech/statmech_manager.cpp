@@ -630,7 +630,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("NUMSTEP", 0))
+			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5) || fabs(time-starttime)<1e-8)
 			{
 				//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
 				FILE* fp = NULL;
@@ -1009,14 +1009,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 				}
 			}
 		}
-		/*for(int i=0;i<coord.M(); i++)
-		 {
-		 for(int j=0; j<coord.N(); j++)
-		 if(coord(i,j)-unshift(i,j)>0.0)
-		 cout<<"shift++ : "<<coord(i,j) - unshift(i,j)<<endl;
-		 else if(coord(i,j)-unshift(i,j)<0.0)
-		 cout<<"shift-- : "<<coord(i,j) - unshift(i,j)<<endl;
-		 }*/
 
 		// write special output for broken elements
 		for (int i=0; i<cut.N(); i++)
@@ -1065,6 +1057,17 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 							lambda1 = (statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i + 1)) / dir(dof);
 					}
 				}
+
+				/*if(element->ElementType().Name() == "Beam3Type")
+				{
+					double l = sqrt((unshift(0,1)-unshift(0,0))*(unshift(0,1)-unshift(0,0)) +
+													(unshift(1,1)-unshift(1,0))*(unshift(1,1)-unshift(1,0)) +
+													(unshift(2,1)-unshift(2,0))*(unshift(2,1)-unshift(2,0)));
+					cout<<"Crosslinker Element "<<element->Id()<<endl;
+					if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
+					  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
+					cout<<"Proc "<<discret_.Comm().MyPID()<<": long crosslink detected: GID="<<eleid<<", l="<<l<<endl;
+				}*/
 
 				//writing element by nodal coordinates as a scalar line
 				gmshfilecontent << "SL(" << scientific;
