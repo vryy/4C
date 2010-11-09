@@ -48,6 +48,8 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
       lfoundit = 1;
       break;
     }
+
+
     if (type == INPAR::MAT::m_aaa_mixedeffects)
     {
       lfoundit = 1;
@@ -60,8 +62,9 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   {
     if (!dis.Comm().MyPID())
       cout << "Computing distance functions...\n";
-    PATSPEC::ComputeEleLocalRadius(dis);
     PATSPEC::ComputeEleNormalizedLumenDistance(dis);
+    PATSPEC::ComputeEleLocalRadius(dis);
+
   }
   //-------------------------------------------------------------------------
   
@@ -253,7 +256,31 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   string filename = pslist.get<string>("CENTERLINEFILE");
   //cout << filename << endl;
-  if (filename=="name.txt") dserror("No centerline file provided");
+  if (filename=="name.txt") 
+  {
+    cout << "No centerline file provided" << endl;
+    // set element-wise mean distance to zero
+    RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+     RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+    LINALG::Export(*locradele,*tmp);
+    locradele = tmp;
+
+    // put this column vector of element local radius in a condition and store in
+    // discretization
+    Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp( new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
+    cond->Add("local radius",*locradele);
+
+    // check whether discretization has been filled before putting ocndition to dis
+    bool filled = dis.Filled();
+    dis.SetCondition("PatientSpecificData",cond);
+    if (filled && !dis.Filled()) dis.FillComplete();
+
+    if (!dis.Comm().MyPID())
+      printf("No local radii computed\n");
+  
+    return;
+  }
+
   ifstream file (filename.c_str());
   if (file == NULL) dserror ("Error opening centerline file");
   string sLine;
@@ -324,6 +351,7 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
     mean /= actele->NumNode();
     (*locradele)[i] = mean;
   }
+
   tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
   LINALG::Export(*locradele,*tmp);
   locradele = tmp;
@@ -334,15 +362,11 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
     new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
   cond->Add("local radius",*locradele);
 
-  //const Epetra_Vector* bla = cond->Get<Epetra_Vector>("local radius");
-  //cout << *bla;
-
   // check whether discretization has been filled before putting ocndition to dis
   bool filled = dis.Filled();
   dis.SetCondition("PatientSpecificData",cond);
   if (filled && !dis.Filled()) dis.FillComplete();
-    
-  
+
   if (!dis.Comm().MyPID())
     printf("Local radii computed in %10.5e sec\n",timer.ElapsedTime());
   
@@ -357,10 +381,11 @@ void PATSPEC::GetILTDistance(const int eleid,
                              Teuchos::ParameterList& params, 
                              DRT::Discretization& dis)
 {
-  DRT::Condition* patspec = dis.GetCondition("PatientSpecificData");
-  if (!patspec) return;
+  vector<DRT::Condition*> mypatspeccond;
+  dis.GetCondition("PatientSpecificData", mypatspeccond);
+  if (!mypatspeccond.size()) return;
 
-  const Epetra_Vector* fool = patspec->Get<Epetra_Vector>("normalized ilt thickness");
+  const Epetra_Vector* fool = mypatspeccond[0]->Get<Epetra_Vector>("normalized ilt thickness");
   if (!fool) return;
   
   if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
@@ -379,10 +404,11 @@ void PATSPEC::GetLocalRadius(const int eleid,
                              Teuchos::ParameterList& params, 
                              DRT::Discretization& dis)
 {
-  DRT::Condition* patspec = dis.GetCondition("PatientSpecificData");
-  if (!patspec) return;
+  vector<DRT::Condition*> mypatspeccond;
+  dis.GetCondition("PatientSpecificData", mypatspeccond);
+  if (!mypatspeccond.size()) return;
 
-  const Epetra_Vector* fool = patspec->Get<Epetra_Vector>("local radius");
+  const Epetra_Vector* fool = mypatspeccond[1]->Get<Epetra_Vector>("local radius");
   if (!fool) return;
   
   if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
