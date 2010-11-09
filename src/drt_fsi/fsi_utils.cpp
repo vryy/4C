@@ -789,6 +789,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
 )
 {
 
+#ifdef D_SOLID3 
   Teuchos::RCP<Epetra_Vector> idispn = structure.ExtractInterfaceDispn();
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
   Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispnp();
@@ -904,7 +905,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
   idispms_ -> Import(*iprojdispale,*slimpo,Add);
 
   iprojhist_->Update(1.0,*iprojdispale,0.0);
-
+#endif
   return;
 }
 
