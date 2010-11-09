@@ -4501,6 +4501,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// crosslinker column and row map
 	crosslinkermap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int> ("N_crosslink", 0), &gids[0], 0, discret_.Comm()));
 	transfermap_    = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
+	startindex_ = rcp(new std::vector<double>);
 
 	// create density-density-correlation-function map with
 	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
@@ -4521,7 +4522,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		int remainder = numcombinations%combinationsperproc;
 
 		// get starting index tuples for later use
-		startindex_ = rcp(new std::vector<double>);
 		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
 		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
 		{
