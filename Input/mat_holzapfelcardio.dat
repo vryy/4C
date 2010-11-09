@@ -17,17 +17,12 @@ NODES    	512
 DIM      	3
 MATERIALS	1
 NUMDF    	6
---------------------------------------------------------ALE DYNAMIC
----------------------------------------------------------ALE SOLVER
 ----------------------------------------------------CONDITION NAMES
 -----------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
-------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------------FLUID SOLVER
---------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
@@ -52,7 +47,7 @@ NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Static
+TIMETYP                         Dynamic
 ------------------------------------------------------------STATIC
 //NONLINEAR
 //KINTYP       Tot_Lagr
@@ -69,12 +64,61 @@ RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  20
 //
+-------------------------------------------------STRUCTURAL DYNAMIC
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+ADAPTERDRIVE                    No
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+CONTROLNODE                     -1 -1 -1
+CONTROLTYPE                     load
+CONV_CHECK                      AbsRes_And_AbsDis
+DAMPING                         No
+DELTA                           0.25
+DIVERCONT                       No
+DYNAMICTYP                      Statics
+EIGEN                           0
+GAMMA                           0.5
+ITERATION                       full
+ITERNORM                        L2
+ITWANT                          0
+K_DAMP                          0.5
+LOADLIN                         no
+MAXDT                           0
+MAXITER                         50
+MAXTIME                         5
+MINITER                         0
+M_DAMP                          0.5
+NLNSOL                          fullnewton
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+NUMSTEP                         1
+PREDICT                         ConstDis
+RESEVRYDISP                     1
+RESEVRYERGY                     0
+RESEVRYSTRS                     1
+RESTARTEVRY                     0
+RESULTDT                        0
+TIMEADAPT                       0
+TIMESTEP                        0.5
+TOLCONSTR                       1e-08
+TOLDISP                         1e-10
+TOLINCO                         1e-08
+TOLPRE                          1e-08
+TOLRES                          1e-08
+UZAWAALGO                       direct
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
 ------------------------------------------------------STRUCT SOLVER
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
--------------------------------------------------STRUCTURAL DYNAMIC
-----------------------------------------------------THERMAL DYNAMIC
--------------------------------------------------------XFEM GENERAL
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_HOLZAPFELCARDIO KAPPA 0.833 MUE 0.385 DENS 1.0 K1 1.0 K2 1.0 GAMMA 35.0 MINSTRETCH 1.0 INIT 1
 -------------------------------------------------------LOAD CURVES

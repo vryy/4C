@@ -117,6 +117,10 @@ void MAT::HumphreyCardio::Pack(vector<char>& data) const
     AddtoPack(data,ca2_->at(gp));
     AddtoPack(data,ca3_->at(gp));
     AddtoPack(data,ca4_->at(gp));
+    AddtoPack(data,olda1_->at(gp));
+    AddtoPack(data,olda2_->at(gp));
+    AddtoPack(data,olda3_->at(gp));
+    AddtoPack(data,olda4_->at(gp));
   }
   return;
 }
@@ -169,6 +173,10 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
   ca2_ = rcp(new vector<vector<double> >(numgp));
   ca3_ = rcp(new vector<vector<double> >(numgp));
   ca4_ = rcp(new vector<vector<double> >(numgp));
+  olda1_ = rcp(new vector<vector<double> >(numgp));
+  olda2_ = rcp(new vector<vector<double> >(numgp));
+  olda3_ = rcp(new vector<vector<double> >(numgp));
+  olda4_ = rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
@@ -188,6 +196,14 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
     ca3_->at(gp) = a;
     ExtractfromPack(position,data,a);
     ca4_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    olda1_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    olda2_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    olda3_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    olda4_->at(gp) = a;
   }
 
   if (position != data.size())
@@ -214,6 +230,26 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
   ca2_ = rcp(new vector<vector<double> > (numgp));
   ca3_ = rcp(new vector<vector<double> > (numgp));
   ca4_ = rcp(new vector<vector<double> > (numgp));
+  olda1_ = rcp(new vector<vector<double> >(numgp));
+  olda2_ = rcp(new vector<vector<double> >(numgp));
+  olda3_ = rcp(new vector<vector<double> >(numgp));
+  olda4_ = rcp(new vector<vector<double> >(numgp));
+
+  for (int gp = 0; gp < numgp; gp++) {
+    a1_->at(gp).resize(3);
+    a2_->at(gp).resize(3);
+    a3_->at(gp).resize(3);
+    a4_->at(gp).resize(3);
+    ca1_->at(gp).resize(3);
+    ca2_->at(gp).resize(3);
+    ca3_->at(gp).resize(3);
+    ca4_->at(gp).resize(3);
+    olda1_->at(gp).resize(3);
+    olda2_->at(gp).resize(3);
+    olda3_->at(gp).resize(3);
+    olda4_->at(gp).resize(3);
+  }
+
   int initflag = params_->init_;
 
   if (initflag==0){
@@ -221,17 +257,9 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
     LINALG::Matrix<3,3> id(true);
     // basis is identity
     for (int i=0; i<3; ++i) id(i,i) = 1.0;
-    for (int gp = 0; gp < numgp; ++gp) {
-      a1_->at(gp).resize(3);
-      a2_->at(gp).resize(3);
-      a3_->at(gp).resize(3);
-      a4_->at(gp).resize(3);
-      ca1_->at(gp).resize(3);
-      ca2_->at(gp).resize(3);
-      ca3_->at(gp).resize(3);
-      ca4_->at(gp).resize(3);
-      EvaluateFiberVecs(gp,id,id);
-    }
+
+    for (int gp = 0; gp < numgp; ++gp) EvaluateFiberVecs(gp,id,id);
+
   } else if (initflag==1){
     // read local (cylindrical) cosy-directions at current element
     vector<double> rad;
@@ -256,30 +284,23 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
 
     LINALG::Matrix<3,3> Id(true);
     for (int i = 0; i < 3; i++) Id(i,i) = 1.0;
-    for (int gp = 0; gp < numgp; gp++) {
-      a1_->at(gp).resize(3);
-      a2_->at(gp).resize(3);
-      a3_->at(gp).resize(3);
-      a4_->at(gp).resize(3);
-      ca1_->at(gp).resize(3);
-      ca2_->at(gp).resize(3);
-      ca3_->at(gp).resize(3);
-      ca4_->at(gp).resize(3);
-      EvaluateFiberVecs(gp,locsys,Id);
-    }
+
+    for (int gp = 0; gp < numgp; gp++) EvaluateFiberVecs(gp,locsys,Id);
+
   } else if (initflag==3){
     // start with isotropic computation, thus fiber directions are set to zero
-    for (int gp = 0; gp < numgp; ++gp) {
-      a1_->at(gp).resize(3);
-      a2_->at(gp).resize(3);
-      a3_->at(gp).resize(3);
-      a4_->at(gp).resize(3);
-      ca1_->at(gp).resize(3);
-      ca2_->at(gp).resize(3);
-      ca3_->at(gp).resize(3);
-      ca4_->at(gp).resize(3);
-    }
+    // nothing has to be done
   } else dserror("INIT type not implemented");
+
+  // at Setup the old fiber directions have to be the same as the actual ones
+  for (int gp = 0; gp < numgp; gp++) {
+    for (int i = 0; i < 3; i++) {
+      olda1_->at(gp)[i] = a1_->at(gp)[i];
+      olda2_->at(gp)[i] = a2_->at(gp)[i];
+      olda3_->at(gp)[i] = a3_->at(gp)[i];
+      olda4_->at(gp)[i] = a4_->at(gp)[i];
+    }
+  }
 
   isinit_ = true;
   return;
@@ -338,7 +359,8 @@ void MAT::HumphreyCardio::Evaluate
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress
+  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
+  bool output
 )
 {
   const double mue = params_->mue_;
@@ -350,6 +372,27 @@ void MAT::HumphreyCardio::Evaluate
   const double phie = params_->phie_;
   const double phic = params_->phic_;
   const double phim = params_->phim_;
+
+  // here one can make a difference between output and normal call of material
+  LINALG::Matrix<3,1> a1(true);
+  LINALG::Matrix<3,1> a2(true);
+  LINALG::Matrix<3,1> a3(true);
+  LINALG::Matrix<3,1> a4(true);
+  if (output) {
+    for (int i = 0; i < 3; i++) {
+      a1(i) = olda1_->at(gp)[i];
+      a2(i) = olda2_->at(gp)[i];
+      a3(i) = olda3_->at(gp)[i];
+      a4(i) = olda4_->at(gp)[i];
+    }
+  } else {
+    for (int i = 0; i < 3; i++) {
+      a1(i) = a1_->at(gp)[i];
+      a2(i) = a2_->at(gp)[i];
+      a3(i) = a3_->at(gp)[i];
+      a4(i) = a4_->at(gp)[i];
+    }
+  }
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
@@ -390,15 +433,15 @@ void MAT::HumphreyCardio::Evaluate
   LINALG::Matrix<NUM_STRESS_3D,1>  A3;
   LINALG::Matrix<NUM_STRESS_3D,1>  A4;
   for (int i = 0; i < 3; i++) {
-    A1(i) = a1_->at(gp)[i]*a1_->at(gp)[i];
-    A2(i) = a2_->at(gp)[i]*a2_->at(gp)[i];
-    A3(i) = a3_->at(gp)[i]*a3_->at(gp)[i];
-    A4(i) = a4_->at(gp)[i]*a4_->at(gp)[i];
+    A1(i) = a1(i)*a1(i);
+    A2(i) = a2(i)*a2(i);
+    A3(i) = a3(i)*a3(i);
+    A4(i) = a4(i)*a4(i);
   }
-  A1(3) = a1_->at(gp)[0]*a1_->at(gp)[1]; A1(4) = a1_->at(gp)[1]*a1_->at(gp)[2]; A1(5) = a1_->at(gp)[0]*a1_->at(gp)[2];
-  A2(3) = a2_->at(gp)[0]*a2_->at(gp)[1]; A2(4) = a2_->at(gp)[1]*a2_->at(gp)[2]; A2(5) = a2_->at(gp)[0]*a2_->at(gp)[2];
-  A3(3) = a3_->at(gp)[0]*a3_->at(gp)[1]; A3(4) = a3_->at(gp)[1]*a3_->at(gp)[2]; A3(5) = a3_->at(gp)[0]*a3_->at(gp)[2];
-  A4(3) = a4_->at(gp)[0]*a4_->at(gp)[1]; A4(4) = a4_->at(gp)[1]*a4_->at(gp)[2]; A4(5) = a4_->at(gp)[0]*a4_->at(gp)[2];
+  A1(3) = a1(0)*a1(1); A1(4) = a1(1)*a1(2); A1(5) = a1(0)*a1(2);
+  A2(3) = a2(0)*a2(1); A2(4) = a2(1)*a2(2); A2(5) = a2(0)*a2(2);
+  A3(3) = a3(0)*a3(1); A3(4) = a3(1)*a3(2); A3(5) = a3(0)*a3(2);
+  A4(3) = a4(0)*a4(1); A4(4) = a4(1)*a4(2); A4(5) = a4(0)*a4(2);
 
   // modified (fiber-) invariants J_{4,6,8,10} = J^{-2/3}*I_{4,6,8,10}
   // trace(AB) =  a11 b11 + 2 a12 b12 + 2 a13 b13 + a22 b22 + 2 a23 b23 + a33 b33
@@ -517,7 +560,7 @@ void MAT::HumphreyCardio::Evaluate
 
   // isotropic fiber part
   //---------------------
-  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+  if (a1(0)==0 && a1(1)==0 && a1(2)==0){
     // isotropic fiber part for initial iteration step
     // W=(k1~/(2.0*k2~))*(exp(k2~*pow((Ibar_1 - 3.0),2)-1.0));
     // the stress which is computed until now in the anisotropic part is zero
@@ -581,72 +624,10 @@ void MAT::HumphreyCardio::Evaluate
 
   // 2nd step: anisotropic part
   //===========================
-  // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
-
-  // collagen fiber families
-  //------------------------
-  const double delta7bar1 = 4.*(k1c_fib1*exp1 + 2.*k1c_fib1*k2c_fib1*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
-  const double delta7bar2 = 4.*(k1c_fib2*exp2 + 2.*k1c_fib2*k2c_fib2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
-  const double delta7bar3 = 4.*(k1c_fib3*exp3 + 2.*k1c_fib3*k2c_fib3*(J8-1.)*(J8-1.)*exp3); // 4 d^2Wf/dJ8dJ8
-  const double delta7bar4 = 4.*(k1c_fib4*exp4 + 2.*k1c_fib4*k2c_fib4*(J10-1.)*(J10-1.)*exp4); // 4 d^2Wf/dJ10dJ10
-
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib1; // isochoric elastic C from Fib1
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib2; // isochoric elastic C from Fib2
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib3; // isochoric elastic C from Fib3
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib4; // isochoric elastic C from Fib4
-
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
-      double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv
-      double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);  //       = J^(-2/3)*PP:A1 has no physical meaning
-      double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
-      double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
-      double A3iso_i = incJ*A3(i)-third*J8*Cinv(i);  // A3iso = J^{-2/3} A3 - 1/3 J8 Cinv
-      double A3iso_j = incJ*A3(j)-third*J8*Cinv(j);
-      double A4iso_i = incJ*A4(i)-third*J10*Cinv(i);  // A4iso = J^{-2/3} A4 - 1/3 J10 Cinv
-      double A4iso_j = incJ*A4(j)-third*J10*Cinv(j);
-      Caniso_fib1(i,j) = delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
-                        + 2.*third*incJ*traceCSfbar1 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar1 C) Psl
-                        - 2.*third* (Cinv(i) * Saniso_fib1(j) + Cinv(j) * Saniso_fib1(i)); // -2/3 (Cinv x Sfiso1 + Sfiso1 x Cinv)
-      Caniso_fib2(i,j) = delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
-                        + 2.*third*incJ*traceCSfbar2 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar2 C) Psl
-                        - 2.*third* (Cinv(i) * Saniso_fib2(j) + Cinv(j) * Saniso_fib2(i)); // -2/3 (Cinv x Sfiso2 + Sfiso2 x Cinv)
-      Caniso_fib3(i,j) = delta7bar3 * A3iso_i * A3iso_j  // delta7bar3 A3iso x A3iso
-                        + 2.*third*incJ*traceCSfbar3 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar3 C) Psl
-                        - 2.*third* (Cinv(i) * Saniso_fib3(j) + Cinv(j) * Saniso_fib3(i)); // -2/3 (Cinv x Sfiso3 + Sfiso3 x Cinv)
-      Caniso_fib4(i,j) = delta7bar4 * A4iso_i * A4iso_j  // delta7bar4 A4iso x A4iso
-                        + 2.*third*incJ*traceCSfbar4 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar4 C) Psl
-                        - 2.*third* (Cinv(i) * Saniso_fib4(j) + Cinv(j) * Saniso_fib4(i)); // -2/3 (Cinv x Sfiso4 + Sfiso4 x Cinv)
-    }
-  }
-
-  (*cmat) += Caniso_fib1;
-  (*cmat) += Caniso_fib2;
-  (*cmat) += Caniso_fib3;
-  (*cmat) += Caniso_fib4;
-
-  // smooth muscle fiber family
-  //---------------------------
-  const double delta7barm = 4.*(k1m*exp1 + 2.*k1m*k2m*(J4-1.)*(J4-1.)*expm); // 4 d^2Wm/dJ4dJ4
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Cm_fib; // isochoric elastic C from Fib1
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
-      double A1isom_i = incJ*A1(i)-third*J4*Cinv(i);  // A1isom = J^{-2/3} A1 - 1/3 J4 Cinv
-      double A1isom_j = incJ*A1(j)-third*J4*Cinv(j);  //       = J^(-2/3)*PP:A1 has no physical meaning
-      Cm_fib(i,j) = delta7barm * A1isom_i * A1isom_j  // delta7barm A1isom x A1isom
-                   + 2.*third*incJ*traceCSmbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Smbar C) Psl
-                   - 2.*third* (Cinv(i) * Sm_fib(j) + Cinv(j) * Sm_fib(i)); // -2/3 (Cinv x Smiso + Smiso x Cinv)
-    }
-  }
-
-  (*cmat) += Cm_fib;
-
-  // isotropic fiber part
-  //---------------------
-  if (a1_->at(gp)[0]==0 && a1_->at(gp)[1]==0 && a1_->at(gp)[2]==0){
+  // check wether an initial isotropic step is needed
+  if (a1(0)==0 && a1(1)==0 && a1(2)==0){
     // isotropic fiber part for initial iteration step
     // W=(k1~/(2.0*k2~))*(exp(k2~*pow((Ibar_1 - 3.0),2)-1.0));
-    // cmat which is computed until now in the anisotropic part is zero
     double k1isoc = k1c*phic; // *2 ??k1c
     double k2isoc = k2c;
     const double expisoc = exp(k2isoc*(I1*incJ-3.)*(I1*incJ-3.));
@@ -675,6 +656,64 @@ void MAT::HumphreyCardio::Evaluate
              + delta7isom * Aiso_i * Aiso_j;       // part with 4 d^2W/dC^2
       }
     }
+  } else {
+    // Elasticity fiber part in splitted formulation, see Holzapfel p. 255 and 272
+
+    // collagen fiber families
+    //------------------------
+    const double delta7bar1 = 4.*(k1c_fib1*exp1 + 2.*k1c_fib1*k2c_fib1*(J4-1.)*(J4-1.)*exp1); // 4 d^2Wf/dJ4dJ4
+    const double delta7bar2 = 4.*(k1c_fib2*exp2 + 2.*k1c_fib2*k2c_fib2*(J6-1.)*(J6-1.)*exp2); // 4 d^2Wf/dJ6dJ6
+    const double delta7bar3 = 4.*(k1c_fib3*exp3 + 2.*k1c_fib3*k2c_fib3*(J8-1.)*(J8-1.)*exp3); // 4 d^2Wf/dJ8dJ8
+    const double delta7bar4 = 4.*(k1c_fib4*exp4 + 2.*k1c_fib4*k2c_fib4*(J10-1.)*(J10-1.)*exp4); // 4 d^2Wf/dJ10dJ10
+
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib1; // isochoric elastic C from Fib1
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib2; // isochoric elastic C from Fib2
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib3; // isochoric elastic C from Fib3
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Caniso_fib4; // isochoric elastic C from Fib4
+
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+        double A1iso_i = incJ*A1(i)-third*J4*Cinv(i);  // A1iso = J^{-2/3} A1 - 1/3 J4 Cinv
+        double A1iso_j = incJ*A1(j)-third*J4*Cinv(j);  //       = J^(-2/3)*PP:A1 has no physical meaning
+        double A2iso_i = incJ*A2(i)-third*J6*Cinv(i);  // A2iso = J^{-2/3} A2 - 1/3 J6 Cinv
+        double A2iso_j = incJ*A2(j)-third*J6*Cinv(j);
+        double A3iso_i = incJ*A3(i)-third*J8*Cinv(i);  // A3iso = J^{-2/3} A3 - 1/3 J8 Cinv
+        double A3iso_j = incJ*A3(j)-third*J8*Cinv(j);
+        double A4iso_i = incJ*A4(i)-third*J10*Cinv(i);  // A4iso = J^{-2/3} A4 - 1/3 J10 Cinv
+        double A4iso_j = incJ*A4(j)-third*J10*Cinv(j);
+        Caniso_fib1(i,j) = delta7bar1 * A1iso_i * A1iso_j  // delta7bar1 A1iso x A1iso
+                          + 2.*third*incJ*traceCSfbar1 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar1 C) Psl
+                          - 2.*third* (Cinv(i) * Saniso_fib1(j) + Cinv(j) * Saniso_fib1(i)); // -2/3 (Cinv x Sfiso1 + Sfiso1 x Cinv)
+        Caniso_fib2(i,j) = delta7bar2 * A2iso_i * A2iso_j  // delta7bar2 A2iso x A2iso
+                          + 2.*third*incJ*traceCSfbar2 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar2 C) Psl
+                          - 2.*third* (Cinv(i) * Saniso_fib2(j) + Cinv(j) * Saniso_fib2(i)); // -2/3 (Cinv x Sfiso2 + Sfiso2 x Cinv)
+        Caniso_fib3(i,j) = delta7bar3 * A3iso_i * A3iso_j  // delta7bar3 A3iso x A3iso
+                          + 2.*third*incJ*traceCSfbar3 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar3 C) Psl
+                          - 2.*third* (Cinv(i) * Saniso_fib3(j) + Cinv(j) * Saniso_fib3(i)); // -2/3 (Cinv x Sfiso3 + Sfiso3 x Cinv)
+        Caniso_fib4(i,j) = delta7bar4 * A4iso_i * A4iso_j  // delta7bar4 A4iso x A4iso
+                          + 2.*third*incJ*traceCSfbar4 * Psl(i,j)  // 2/3 J^{-2/3} trace(Sfbar4 C) Psl
+                          - 2.*third* (Cinv(i) * Saniso_fib4(j) + Cinv(j) * Saniso_fib4(i)); // -2/3 (Cinv x Sfiso4 + Sfiso4 x Cinv)
+      }
+    }
+    (*cmat) += Caniso_fib1;
+    (*cmat) += Caniso_fib2;
+    (*cmat) += Caniso_fib3;
+    (*cmat) += Caniso_fib4;
+
+    // smooth muscle fiber family
+    //---------------------------
+    const double delta7barm = 4.*(k1m*exp1 + 2.*k1m*k2m*(J4-1.)*(J4-1.)*expm); // 4 d^2Wm/dJ4dJ4
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> Cm_fib; // isochoric elastic C from Fib1
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+        double A1isom_i = incJ*A1(i)-third*J4*Cinv(i);  // A1isom = J^{-2/3} A1 - 1/3 J4 Cinv
+        double A1isom_j = incJ*A1(j)-third*J4*Cinv(j);  //       = J^(-2/3)*PP:A1 has no physical meaning
+        Cm_fib(i,j) = delta7barm * A1isom_i * A1isom_j  // delta7barm A1isom x A1isom
+                     + 2.*third*incJ*traceCSmbar * Psl(i,j)  // 2/3 J^{-2/3} trace(Smbar C) Psl
+                     - 2.*third* (Cinv(i) * Sm_fib(j) + Cinv(j) * Sm_fib(i)); // -2/3 (Cinv x Smiso + Smiso x Cinv)
+      }
+    }
+    (*cmat) += Cm_fib;
   }
 
   return;
@@ -695,6 +734,11 @@ void MAT::HumphreyCardio::EvaluateFiberVecs
   const double gamma = (45*PI)/180.; //angle for diagonal fibers
 
   for (int i = 0; i < 3; i++) {
+    // store old fiber directions
+    olda1_->at(gp)[i] = a1_->at(gp)[i];
+    olda2_->at(gp)[i] = a2_->at(gp)[i];
+    olda3_->at(gp)[i] = a3_->at(gp)[i];
+    olda4_->at(gp)[i] = a4_->at(gp)[i];
     // a1 = e3, circumferential direction, used for collagen and smooth muscle
     ca1_->at(gp)[i] = locsys(i,2);
     // a2 = e2

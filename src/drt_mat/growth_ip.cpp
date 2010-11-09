@@ -308,7 +308,7 @@ void MAT::Growth::Evaluate
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
+    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,output);
 
     // trace of elastic Mandel stress Mdach = Cdach Sdach
     double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -357,7 +357,7 @@ void MAT::Growth::Evaluate
         glstraindach.Scale(0.5);
         cmatelastic.Scale(0.0);
         Sdach.Scale(0.0);
-        EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
+        EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,output);
 
         // trace of mandel stress
         mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -432,7 +432,7 @@ void MAT::Growth::Evaluate
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach);
+    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,output);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
     LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
@@ -449,7 +449,7 @@ void MAT::Growth::Evaluate
     mandel_->at(gp) = mandel;
 
   } else {
-    EvaluateElastic(glstrain,gp,cmat,stress);
+    EvaluateElastic(glstrain,gp,cmat,stress,output);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
@@ -471,7 +471,8 @@ void MAT::Growth::EvaluateElastic
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress
+  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
+  bool output
 )
 {
   if (matelastic_->MaterialType() == INPAR::MAT::m_logneohooke) {
@@ -479,10 +480,10 @@ void MAT::Growth::EvaluateElastic
     log->Evaluate(*glstrain, *cmat, *stress);
   } else if (matelastic_->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
     MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(matelastic_.get());
-    holz->Evaluate(glstrain, gp, cmat, stress);
+    holz->Evaluate(glstrain, gp, cmat, stress, output);
   } else if (matelastic_->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
     MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(matelastic_.get());
-    hum->Evaluate(glstrain, gp, cmat, stress);
+    hum->Evaluate(glstrain, gp, cmat, stress, output);
   } else if (matelastic_->MaterialType() == INPAR::MAT::m_aaaneohooke){
     MAT::AAAneohooke* aaaneo = static_cast <MAT::AAAneohooke*>(matelastic_.get());
     aaaneo->Evaluate(*glstrain, *cmat, *stress);

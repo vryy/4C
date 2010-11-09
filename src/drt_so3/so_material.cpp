@@ -392,7 +392,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      holzcard->Evaluate(glstrain,gp,cmat,stress,output);
       //holzcard->UpdateFiberDirs(gp,defgrd);
       *density = holzcard->Density();
       return;
@@ -401,7 +404,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      humcard->Evaluate(glstrain,gp,cmat,stress,output);
       //humcard->UpdateFiberDirs(gp,defgrd);
       *density = humcard->Density();
       return;
@@ -415,7 +421,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       string action = params.get<string>("action","none");
       bool output = false;
       if (action == "calc_struct_stress") output = true;
-      else if (action == "none") dserror("No action supplied to mat_sel");
       grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = grow->Density();
       return;
@@ -580,7 +585,10 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      holzcard->Evaluate(glstrain,gp,cmat,stress,output);
       *density = holzcard->Density();
       return;
       break;
@@ -588,7 +596,10 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      humcard->Evaluate(glstrain,gp,cmat,stress,output);
       *density = humcard->Density();
       return;
       break;
@@ -848,7 +859,8 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for hex27, thus no distinction between output or not
+      holzcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = holzcard->Density();
       return;
       break;
@@ -856,7 +868,8 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for hex27, thus no distinction between output or not
+      humcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = humcard->Density();
       return;
       break;
@@ -1074,7 +1087,8 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for hex20, thus no distinction between output or not
+      holzcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = holzcard->Density();
       return;
       break;
@@ -1082,7 +1096,8 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for hex20, thus no distinction between output or not
+      humcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = humcard->Density();
       return;
       break;
@@ -1325,7 +1340,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      holzcard->Evaluate(glstrain,gp,cmat,stress,output);
       *density = holzcard->Density();
       return;
       break;
@@ -1333,7 +1351,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      humcard->Evaluate(glstrain,gp,cmat,stress,output);
       *density = humcard->Density();
       return;
       break;
@@ -1431,7 +1452,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     case INPAR::MAT::m_holzapfelcardiovascular: /*------- Anisotropic Fiber Material for arteries */
     {
       MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holzcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for tet10, thus no distinction between output or not
+      holzcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = holzcard->Density();
       return;
       break;
@@ -1439,7 +1461,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     case INPAR::MAT::m_humphreycardiovascular: /*------- Anisotropic Material for arteries cf Humphrey */
     {
       MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-      humcard->Evaluate(glstrain,gp,cmat,stress);
+      // remodeling not available for tet10, thus no distinction between output or not
+      humcard->Evaluate(glstrain,gp,cmat,stress,false);
       *density = humcard->Density();
       return;
       break;

@@ -163,12 +163,12 @@ namespace MAT
     void Evaluate
     (
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,   ///< current Gauss point
+      const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      double dt, ///< delta time
-      double time, ///< time
-      bool output ///< calculate stress for output
+      double dt,  ///< delta time
+      double time,  ///< time
+      bool output  ///< calculate stress for output
     );
 
     /// Return density
@@ -208,7 +208,8 @@ namespace MAT
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       const int gp,   ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      bool output  ///< calculate stress for output
     );
 
     /// Evaluate growth law
