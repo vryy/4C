@@ -287,8 +287,12 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
    *deterministic parameter seedparameter given to this method at runtime*/
   if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
     seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_.Comm().MyPID() + 1);
-  //else set seed according to system time and different for each processor (pseudo-random seed)
-  else
+  /*else set seed according to system time and different for each processor
+   *(pseudo-random seed) if seedparameter == 0 (this allows for conveniently
+   *using a random seed only at certain points in the program, e.g. only once
+   *in the beginning; one has just to make sure that seedparameter == 0 does
+   *not happen at any other point in the program*/
+  else if(seedparameter == 0)
     seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
 
   normalgen_.seed( (unsigned int)seedvariable );
