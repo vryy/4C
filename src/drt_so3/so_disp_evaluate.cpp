@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -58,6 +59,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = SoDisp::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = SoDisp::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = SoDisp::calc_struct_reset_istep;
+  else if (action=="calc_struct_errornorms")    act = SoDisp::calc_struct_errornorms;
   else if (action=="calc_init_vol")             act = SoDisp::calc_init_vol;
   else dserror("Unknown type of action for SoDisp");
 
@@ -151,6 +153,221 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       ;// there is nothing to do here at the moment
     }
     break;
+
+    //==================================================================================
+		case calc_struct_errornorms:
+		{
+			// IMPORTANT NOTES (popp 11/2010):
+			// - error norms are based on a small deformation assumption (linear elasticity)
+			// - extension to finite deformations would be possible without difficulties,
+			//   however analytical solutions are extremely rare in the nonlinear realm
+			// - only implemented for SVK material (relevant for energy norm only, L2 and
+			//   H1 norms are of course valid for arbitrary materials)
+			// - analytical solutions are currently stored in a repository in the MORTAR
+			//   namespace, however they could (should?) be moved to a more general location
+
+			// check length of elevec1
+			if (elevec1.Length() < 3) dserror("The given result vector is too short.");
+
+			// check material law
+			RCP<MAT::Material> mat = Material();
+
+			//******************************************************************
+			// only for St.Venant Kirchhoff material
+			//******************************************************************
+			if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+			{
+				// declaration of variables
+				double l2norm = 0.0;
+				double h1norm = 0.0;
+				double energynorm = 0.0;
+
+				// shape functions, derivatives and integration weights
+				vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
+				vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
+				vector<double> weights(numgpt_disp_);
+				sodisp_shapederiv(shapefcts,derivs,weights);
+
+				// get displacements and extract values of this element
+				RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+				if (disp==null) dserror("Cannot get state displacement vector");
+				vector<double> mydisp(lm.size());
+				DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+				// nodal displacement vector
+				Epetra_SerialDenseVector nodaldisp(numdof_disp_);
+				for (int i=0; i<numdof_disp_; ++i) nodaldisp[i] = mydisp[i];
+
+				// reference geometry (nodal positions)
+				Epetra_SerialDenseMatrix xrefe(numnod_disp_,NUMDIM_DISP);
+				DRT::Node** nodes = Nodes();
+				for (int i=0; i<numnod_disp_; ++i)
+				{
+					xrefe(i,0) = nodes[i]->X()[0];
+					xrefe(i,1) = nodes[i]->X()[1];
+					xrefe(i,2) = nodes[i]->X()[2];
+				}
+
+				//----------------------------------------------------------------
+				// loop over all Gauss points
+				//----------------------------------------------------------------
+				for (int gp=0; gp<numgpt_disp_; gp++)
+				{
+					/* compute the Jacobian matrix which looks like:
+					**         [ x_,r  y_,r  z_,r ]
+					**     J = [ x_,s  y_,s  z_,s ]
+					**         [ x_,t  y_,t  z_,t ]
+					*/
+					Epetra_SerialDenseMatrix jac(NUMDIM_DISP,NUMDIM_DISP);
+					jac.Multiply('N','N',1.0,derivs[gp],xrefe,1.0);
+
+					// compute determinant of Jacobian by Sarrus' rule
+					double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+										 + jac(0,1) * jac(1,2) * jac(2,0)
+										 + jac(0,2) * jac(1,0) * jac(2,1)
+										 - jac(0,0) * jac(1,2) * jac(2,1)
+										 - jac(0,1) * jac(1,0) * jac(2,2)
+										 - jac(0,2) * jac(1,1) * jac(2,0);
+					if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+					else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
+					// Gauss weights and Jacobian determinant
+					double fac = detJ * weights[gp];
+
+					// Gauss point in reference configuration
+					LINALG::Matrix<NUMDIM_DISP,1> xgp(true);
+					for (int k=0;k<NUMDIM_DISP;++k)
+						for (int n=0;n<numnod_disp_;++n)
+							xgp(k,0) += (shapefcts[gp])(n) * xrefe(n,k);
+
+					//**************************************************************
+					// get analytical solution
+					LINALG::Matrix<NUMDIM_DISP,1> uanalyt(true);
+					LINALG::Matrix<NUMSTR_DISP,1> strainanalyt(true);
+					LINALG::Matrix<NUMDIM_DISP,NUMDIM_DISP> derivanalyt(true);
+
+					MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+					//**************************************************************
+
+					//--------------------------------------------------------------
+					// (1) L2 norm
+					//--------------------------------------------------------------
+
+					// compute displacements at GP
+					LINALG::Matrix<NUMDIM_DISP,1> ugp(true);
+					for (int k=0;k<NUMDIM_DISP;++k)
+						for (int n=0;n<numnod_disp_;++n)
+							ugp(k,0) += (shapefcts[gp])(n) * nodaldisp(NODDOF_DISP*n+k,0);
+
+					// displacement error
+					LINALG::Matrix<NUMDIM_DISP,1> uerror(true);
+					for (int k=0;k<NUMDIM_DISP;++k)
+						uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+					// compute GP contribution to L2 error norm
+					l2norm += fac * uerror.Dot(uerror);
+
+					//--------------------------------------------------------------
+					// (2) H1 norm
+					//--------------------------------------------------------------
+
+					/* compute derivatives N_XYZ at gp w.r.t. material coordinates
+					** by solving   Jac . N_XYZ = N_rst   for N_XYZ
+					** Inverse of Jacobian is therefore not explicitly computed
+					*/
+					Epetra_SerialDenseMatrix N_XYZ(NUMDIM_DISP,numnod_disp_);
+					Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
+					solve_for_inverseJac.SetMatrix(jac);            // set A=jac
+					solve_for_inverseJac.SetVectors(N_XYZ,derivs.at(gp));// set X=N_XYZ, B=deriv_gp
+					solve_for_inverseJac.FactorWithEquilibration(true);
+					int err2 = solve_for_inverseJac.Factor();
+					int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
+					if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
+
+					// compute partial derivatives at GP
+					LINALG::Matrix<NUMDIM_DISP,NUMDIM_DISP> derivgp(true);
+					for (int l=0;l<NUMDIM_DISP;++l)
+						for (int m=0;m<NUMDIM_DISP;++m)
+							for (int k=0;k<numnod_disp_;++k)
+								derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_DISP*k+l,0);
+
+					// derivative error
+					LINALG::Matrix<NUMDIM_DISP,NUMDIM_DISP> deriverror(true);
+					for (int k=0;k<NUMDIM_DISP;++k)
+						for (int m=0;m<NUMDIM_DISP;++m)
+							deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+					// compute GP contribution to H1 error norm
+					h1norm += fac * deriverror.Dot(deriverror);
+					h1norm += fac * uerror.Dot(uerror);
+
+					//--------------------------------------------------------------
+					// (3) Energy norm
+					//--------------------------------------------------------------
+
+					// compute linear B-operator
+					Epetra_SerialDenseMatrix bop(NUMSTR_DISP,numdof_disp_);
+					for (int i=0; i<numnod_disp_; ++i)
+					{
+						bop(0,NODDOF_DISP*i+0) = N_XYZ(0,i);
+						bop(0,NODDOF_DISP*i+1) = 0.0;
+						bop(0,NODDOF_DISP*i+2) = 0.0;
+						bop(1,NODDOF_DISP*i+0) = 0.0;
+						bop(1,NODDOF_DISP*i+1) = N_XYZ(1,i);
+						bop(1,NODDOF_DISP*i+2) = 0.0;
+						bop(2,NODDOF_DISP*i+0) = 0.0;
+						bop(2,NODDOF_DISP*i+1) = 0.0;
+						bop(2,NODDOF_DISP*i+2) = N_XYZ(2,i);
+
+						bop(3,NODDOF_DISP*i+0) = N_XYZ(1,i);
+						bop(3,NODDOF_DISP*i+1) = N_XYZ(0,i);
+						bop(3,NODDOF_DISP*i+2) = 0.0;
+						bop(4,NODDOF_DISP*i+0) = 0.0;
+						bop(4,NODDOF_DISP*i+1) = N_XYZ(2,i);
+						bop(4,NODDOF_DISP*i+2) = N_XYZ(1,i);
+						bop(5,NODDOF_DISP*i+0) = N_XYZ(2,i);
+						bop(5,NODDOF_DISP*i+1) = 0.0;
+						bop(5,NODDOF_DISP*i+2) = N_XYZ(0,i);
+					}
+
+					// compute linear strain at GP
+					Epetra_SerialDenseVector straingptmp(NUMSTR_DISP);
+					bop.Multiply(false,nodaldisp,straingptmp);
+		      LINALG::Matrix<NUMSTR_DISP,1> straingp(true);
+					for (int k=0;k<NUMSTR_DISP;++k) straingp(k,0) = straingptmp[k];
+
+					// strain error
+					LINALG::Matrix<NUMSTR_DISP,1> strainerror(true);
+					for (int k=0;k<NUMSTR_DISP;++k)
+						strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+
+					// compute stress vector and constitutive matrix
+					double density = 0.0;
+					LINALG::Matrix<NUMSTR_DISP,NUMSTR_DISP> cmat(true);
+					LINALG::Matrix<NUMSTR_DISP,1> stress(true);
+					sodisp_mat_sel(&stress,&cmat,&density,&strainerror,params);
+
+					// compute GP contribution to energy error norm
+					energynorm += fac * stress.Dot(strainerror);
+
+					//cout << "UAnalytical:      " << ugp << endl;
+					//cout << "UDiscrete:        " << uanalyt << endl;
+					//cout << "StrainAnalytical: " << strainanalyt << endl;
+					//cout << "StrainDiscrete:   " << straingp << endl;
+					//cout << "DerivAnalytical:  " << derivanalyt << endl;
+					//cout << "DerivDiscrete:    " << derivgp << endl;
+				}
+				//----------------------------------------------------------------
+
+				// return results
+				elevec1(0) = l2norm;
+				elevec1(1) = h1norm;
+				elevec1(2) = energynorm;
+			}
+			else
+				dserror("ERROR: Error norms only implemented for SVK material");
+		}
+		break;
 
     default:
       dserror("Unknown type of action for Solid3");
