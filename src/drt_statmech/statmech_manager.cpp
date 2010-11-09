@@ -1117,16 +1117,15 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 			{
 				if (!kinked)
 				{
-					/*if(element->Id()>basisnodes_)
+					if(element->Id()>basisnodes_ && eleid!=0)
 					{
-						cout<<"elementid="<<discret_.gElement(0)->Id()<<endl;
-						double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
+						/*double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
 														(coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0)) +
 														(coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
 						if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
 						  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
-							cout<<"Proc "<<discret_.Comm().MyPID()<<": incorrect crosslink detected: GID="<<eleid<<", element->Id()="<<element->Id()<<", l="<<l<<endl;
-					}*/
+							cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;*/
+					}
 
 					// filament or crosslink between two filaments
 					//writing element by nodal coordinates as a scalar line
@@ -2885,6 +2884,15 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 	 *
 	 * After having found a match in the next component, we exit the loop to avoid unnecessary computational cost
 	 */
+	Epetra_MultiVector crosslinkerbond(*transfermap_, 2, true);
+	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+	Epetra_Export crosslinkimporter(*crosslinkermap_, *transfermap_);
+	if(discret_.Comm().MyPID()!=0)
+		crosslinkerbond_->PutScalar(0.0);
+	// forth...
+	crosslinkerbond.Export(*crosslinkerbond_, crosslinkexporter, Add);
+	//...and back
+	crosslinkerbond_->Import(crosslinkerbond, crosslinkimporter, Insert);
 
 	std::vector<std::vector<int> > neighbournodes(crosslinkpartitions.MyLength(), std::vector<int>());
 
@@ -2930,11 +2938,30 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 													const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
 													// calculate distance crosslinker-node
 													LINALG::Matrix<3, 1> difference;
-													for (int l=0; l<(int)difference.M(); l++)
-														difference(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
+													/*TEST_START/ get node gid of one-bonded crosslink
+													int nodelid = -1;
+													// numbond = 0
+													if(numbond[part]<0.1)TEST_END*/
+														for (int l=0; l<(int)difference.M(); l++)
+															difference(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
+													/*TEST_START/ numbond = 1
+													else if(numbond[part]>0.9 && numbond[part]<1.9)
+													{
+														for(int l=0; l<crosslinkerbond.NumVectors(); l++)
+															if(crosslinkerbond[l][part]>-0.9)
+																nodelid = discret_.NodeColMap()->LID((int)crosslinkerbond[l][part]);
+
+														const map<int, LINALG::Matrix<3, 1> >::const_iterator neighbor = currentpositions.find(nodelid);
+														for (int l=0; l<(int)difference.M(); l++)
+															difference(l) = (neighbor->second)(l)-(nodepos->second)(l);
+													}TEST_END*/
 													// only nodes within the search volume are stored
 													if(difference.Norm2()<rmax && difference.Norm2()>rmin)
+													{
+														/*if(numbond[part]>0.1)
+															cout<<"numbond="<<numbond[part]<<", nodegids="<<discret_.NodeColMap()->GID(tmplid)<<","<<discret_.NodeColMap()->GID(nodelid)<<", length="<<difference.Norm2()<<endl;*/
 														neighbournodes[part].push_back(tmplid);
+													}
 													// exit loop immediately
 													break;
 												}
@@ -2955,7 +2982,6 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 	// copy information to Epetra_MultiVector for communication
 	RCP<Epetra_MultiVector> neighbourslidtrans = rcp(new Epetra_MultiVector(*transfermap_, maxneighboursglobal, false));
 
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	/* assign "-2" (also to distinguish between 'empty' and passive crosslink molecule "-1"
 	 * to be able to determine entries which remain "empty" due to number of LIDs < maxneighboursglobal*/
 	neighbourslidtrans->PutScalar(-2.0);
@@ -3333,6 +3359,16 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 						rotrefe[k+3] = (rot0->second)(k);
 					}
 				}
+				/*/ test cout of the length
+				LINALG::Matrix<3,1> length;
+				cout<<"xrefe="<<endl;
+				for(int k=0; k<3; k++)
+				{
+					length(k) = xrefe[k+3]-xrefe[k];
+					cout<<xrefe[k]<<","<<xrefe[k+3]<<endl;
+				}
+				cout<<"SetNSearch: length = "<<length.Norm2()<<endl;*/
+
 				if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
 				{
 					crosslinkerids.push_back(newcrosslinkerGID);
@@ -4485,6 +4521,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		int remainder = numcombinations%combinationsperproc;
 
 		// get starting index tuples for later use
+		startindex_ = rcp(new std::vector<double>);
 		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
 		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
 		{
