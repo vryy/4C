@@ -192,6 +192,98 @@ nodeset 5 vertex 1 2
 nodeset 5 name "corners"
 \end{verbatim} \end{small}
 
+When Cubit version 12.0 (\texttt{/lnm/programs/cubit12/cubit}) is used for 
+creating geometry and mesh, you have to use the following commands instead,
+since numbering of entities changed between Cubit versions!
+
+\begin{small} \begin{verbatim}
+$***********************
+$ preliminaries
+$***********************
+reset
+set geometry engine acis
+$***********************
+$ create geometry
+$***********************
+$ define geometric parameters
+$ in cm
+# {fluid_length = 4.0} $ x-direction
+# {fluid_width = 2.0} $ y-direction
+# {cyl_radius = 0.08}
+# {cyl_offset = 1.0}
+$ create domain
+create vertex {-cyl_offset} {fluid_width/2.0} 0
+create vertex {-cyl_offset} {-fluid_width/2.0} 0
+create vertex {fluid_length-cyl_offset} {fluid_width/2.0} 0
+create vertex {fluid_length-cyl_offset} {-fluid_width/2.0} 0
+create vertex 0 0 0
+create vertex {cyl_offset} {fluid_width/2.0} 0
+create vertex {cyl_offset} {-fluid_width/2.0} 0
+create curve vertex 1 vertex 5
+create curve vertex 5 vertex 6
+create curve vertex 6 vertex 1
+create curve vertex 10 vertex 2
+create curve vertex 2 vertex 8
+create curve vertex 12 vertex 7
+create curve vertex 7 vertex 13
+create curve vertex 15 vertex 9
+create curve vertex 18 vertex 3
+create curve vertex 3 vertex 4
+create curve vertex 4 vertex 17
+create surface curve 3 1 2
+create  surface curve 1 4 5
+create  surface curve 5 6 7
+create  surface curve 7 8 2
+create  surface curve 8 9 10 11
+create vertex 0 0 0
+create vertex 0 {cyl_radius} 0
+create vertex {cyl_radius} 0 0
+create curve arc center vertex 33 34 35 {cyl_radius} full
+create surface curve 17
+delete vertex 33 34 35
+subtract volume 6 from volume 1 2 3 4
+imprint volume all
+merge volume all
+$***********************
+$ create mesh
+$***********************
+# {numele_past_x = 37}
+# {numele_past_y = 34}
+# {numele_cyl_x = 30}
+# {numele_inflow = 22}
+# {numele_radial = 50}
+group "radial" add curve 19 20 23 26
+curve  9 scheme equal interval {numele_past_x}
+curve  10 scheme equal interval {numele_past_y}
+curve  in group radial scheme equal interval {numele_radial}
+curve  3 6 scheme equal interval {numele_cyl_x}
+curve  4 scheme equal interval {numele_inflow}
+$ apply bias for better mesh
+curve 19 scheme bias factor 0.9 start vertex 1 interval {numele_radial}
+propagate curve bias volume all
+curve 20 scheme bias factor 0.9 start vertex 6 interval {numele_radial}
+propagate curve bias volume all
+curve 23 scheme bias factor 0.9 start vertex 2 interval {numele_radial}
+propagate curve bias volume all
+curve 26 scheme bias factor 0.9 start vertex 7 interval {numele_radial}
+propagate curve bias volume all
+mesh surface all
+$***********************
+$ boundary conditions
+$***********************
+reset block
+block 1 surface all
+nodeset 1 curve 4
+nodeset 1 name "inflow"
+nodeset 2 curve 3 9
+nodeset 2 name "top"
+nodeset 3 curve 6 11
+nodeset 3 name "bottom"
+nodeset 4 curve 18 21 24 27
+nodeset 4 name "cylinder"
+nodeset 5 vertex 1 2
+nodeset 5 name "corners"
+\end{verbatim} \end{small}
 
 \section{Working with \prexo and \baci{}}
 
