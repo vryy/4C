@@ -124,6 +124,15 @@ unconvergedsteps_(0)
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
+  //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
+  if( Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendlog ||
+      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendconst ||
+      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_orientationcorrelation ||
+      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_anisotropic)
+  {
+    params_.set("print to screen",false);
+  }
+
   return;
 } // StatMechTime::StatMechTime
 
@@ -167,7 +176,7 @@ void StatMechTime::Integrate()
       statmechmanager_->StatMechInitOutput(ndim,dt);
 
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
-    if(!discret_.Comm().MyPID())
+    if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
     {
       std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
       std::cout<<"\nNumber of unconverged steps since start / last restart: "<<unconvergedsteps_<<"\n";
@@ -229,7 +238,7 @@ void StatMechTime::Integrate()
 
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 
-      if(!discret_.Comm().MyPID())
+      if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
       	cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 
       if (time>=maxtime) break;
@@ -962,7 +971,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   {
     isconverged_ = 0;
     unconvergedsteps_++;
-    if(discret_.Comm().MyPID()==0)
+    if(discret_.Comm().MyPID()==0 and printscreen)
       std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("FullNewton unconverged in %d iterations",numiter);
   }
@@ -977,7 +986,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
   params_.set<int>("num iterations",numiter);
 
-  if(!discret_.Comm().MyPID())
+  if(!discret_.Comm().MyPID() and printscreen)
   std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
 
   return;
