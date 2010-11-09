@@ -766,6 +766,33 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 		 * this command is followed by the name of that view displayed during it's shown in the video; in the following example
 		 * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
 		 * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
+		gmshfileheader <<"General.BackgroundGradient = 1;\n";
+		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
+		gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+		gmshfileheader <<"View.LineType = 1;\n";
+		gmshfileheader <<"View.LineWidth = 1.4;\n";
+		gmshfileheader <<"View.PointType = 1;\n";
+		gmshfileheader <<"View.PointSize = 3;\n";
+		gmshfileheader <<"General.ColorScheme = 1;\n";
+		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
+		gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+		gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
+		gmshfileheader <<"General.Color.Text = {0,0,0};\n";
+		gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
+		gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
+		gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
+		gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
+		gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
+		gmshfileheader <<"View.ColormapAlpha = 1;\n";
+		gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
+		gmshfileheader <<"View.ColormapBeta = 0;\n";
+		gmshfileheader <<"View.ColormapBias = 0;\n";
+		gmshfileheader <<"View.ColormapCurvature = 0;\n";
+		gmshfileheader <<"View.ColormapInvert = 0;\n";
+		gmshfileheader <<"View.ColormapNumber = 2;\n";
+		gmshfileheader <<"View.ColormapRotation = 0;\n";
+		gmshfileheader <<"View.ColormapSwap = 0;\n";
+		gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
 		gmshfileheader << "View \" Step " << step << " \" {" << endl;
 
 		//write content into file and close it
@@ -1062,17 +1089,6 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					}
 				}
 
-				/*if(element->ElementType().Name() == "Beam3Type")
-				{
-					double l = sqrt((unshift(0,1)-unshift(0,0))*(unshift(0,1)-unshift(0,0)) +
-													(unshift(1,1)-unshift(1,0))*(unshift(1,1)-unshift(1,0)) +
-													(unshift(2,1)-unshift(2,0))*(unshift(2,1)-unshift(2,0)));
-					cout<<"Crosslinker Element "<<element->Id()<<endl;
-					if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
-					  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
-					cout<<"Proc "<<discret_.Comm().MyPID()<<": long crosslink detected: GID="<<eleid<<", l="<<l<<endl;
-				}*/
-
 				//writing element by nodal coordinates as a scalar line
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << coord(0, i) << "," << coord(1, i) << "," << coord(2,i) << ","
@@ -1101,6 +1117,17 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 			{
 				if (!kinked)
 				{
+					/*if(element->Id()>basisnodes_)
+					{
+						cout<<"elementid="<<discret_.gElement(0)->Id()<<endl;
+						double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
+														(coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0)) +
+														(coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
+						if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
+						  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
+							cout<<"Proc "<<discret_.Comm().MyPID()<<": incorrect crosslink detected: GID="<<eleid<<", element->Id()="<<element->Id()<<", l="<<l<<endl;
+					}*/
+
 					// filament or crosslink between two filaments
 					//writing element by nodal coordinates as a scalar line
 					gmshfilecontent << "SL(" << scientific;
@@ -2866,6 +2893,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 
 	for(int part=0; part<crosslinkpartitions.MyLength(); part++)
 	{
+		// i.e. numbond==2.0
 		if(crosslinkpartitions[0][part]<-0.9)
 			continue;
 		// determine search radius in accordance to bonding status
