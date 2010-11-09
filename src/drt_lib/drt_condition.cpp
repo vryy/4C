@@ -192,6 +192,9 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==RedAirwayPrescribedCond)       os << "Reduced d airway prescribed boundary condition";
   else if (Type()==RedLungAcinusCond)             os << "Reduced dimensional lung acinus boundary condition";
   else if (Type()==PatientSpecificData)           os << "Various Geometric Patient Specific Data";
+  else if (Type()==VolumetricSurfaceFlowCond)     os << "Volumetric Surface Flow Profile";
+  else if (Type()==VolumetricFlowBorderNodes)     os << "Border Nodes of the volumetric flow Surface";
+    
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

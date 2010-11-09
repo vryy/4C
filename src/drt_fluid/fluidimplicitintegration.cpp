@@ -35,6 +35,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_condition_utils.H"
 #include "fluid_utils.H"
 #include "fluidimpedancecondition.H"
+#include "fluid_volumetric_surfaceFlow_condition.H"
 #include "dyn_smag.H"
 #include "turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
@@ -282,6 +283,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
+  // create the volumetric-surface-flow condition
+#ifdef D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispn_);
+  }
+#endif
+  vol_surf_flow_bc_     = rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, output_, dta_) );
+
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
 
@@ -294,6 +304,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
 
+    // evaluate the map of te womersley bcs
+    vol_surf_flow_bc_->EvaluateCondMap(vol_surf_flow_bcmaps_);
+    
 #ifdef D_ARTNET
     // -----------------------------------------------------------------
     // Initialize the reduced models
@@ -321,7 +334,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     }
 #endif //D_ARTNET
 
-#ifdef D_RED_AIRWAYS
+#if 0 //def D_RED_AIRWAYS
     airway_imp_timeInt_ = dyn_red_airways_drt(true);
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)
@@ -343,6 +356,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
     }
 #endif // D_RED_AIRWAYS
+
+    // Evaluate the womersley velocities
+    vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+      
 
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -833,6 +850,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
         coupled3D_redDbc_airways_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
       }
 #endif //D_RED_AIRWAYS
+      
+      // Evaluate the womersley velocities
+      vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
 
     discret_->ClearState();
 
@@ -1537,7 +1557,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
-
+    {
+      // apply the womersley velocity profile as a dirichlet bc
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+    }
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
@@ -1788,12 +1811,15 @@ void FLD::FluidImplicitTimeInt::LinearSolve()
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
   //velnp_->PutScalar(0.0);
-
   {
     // time measurement: application of dbc
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,*(dbcmaps_->CondMap()));
+  }
+  {
+    // apply the womersley velocity profile as a dirichlet bc
+    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,*(vol_surf_flow_bcmaps_));
   }
 
   //-------solve for total new velocities and pressures
@@ -1947,6 +1973,10 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     {
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
+    {
+      // apply the womersley velocity profile as a dirichlet bc
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
     }
 
     // -------------------------------------------------------------------
@@ -2618,6 +2648,10 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     // apply Dirichlet conditions to a non-diagonal matrix
     // (The Dirichlet rows will become all zero, no diagonal one.)
     shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+
+    
+    // apply the womersley bc as a dirichlet bc
+    shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bcmaps_),false);
   }
 
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
@@ -2626,7 +2660,12 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // residual displacements are supposed to be zero at boundary
   // conditions
   incvel_->PutScalar(0.0);
+
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+  // apply Womersley as a Dirichlet BC
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+
 }
 
 
@@ -2939,6 +2978,8 @@ void FLD::FluidImplicitTimeInt::Output()
       Wk_optimization_->WriteRestart(output_);
     }
 
+    vol_surf_flow_bc_->Output(output_);
+
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ != 0 && step_%uprestart_ == 0)
@@ -2981,6 +3022,7 @@ void FLD::FluidImplicitTimeInt::Output()
     impedancebc_->WriteRestart(output_);
 
     Wk_optimization_->WriteRestart(output_);
+    vol_surf_flow_bc_->Output(output_);
   }
 
   // write reduced model problem
@@ -3054,6 +3096,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   Wk_optimization_->ReadRestart(reader);
 
+  vol_surf_flow_bc_->ReadRestart(reader);
 
 #ifdef D_ARTNET
   // Check if one-dimensional artery network problem exist
@@ -3210,6 +3253,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // apply DBC to system matrix
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+  // apply Womersley as a Dirichlet BC
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
 
   // get scale-separation matrix
   {
@@ -3973,6 +4019,9 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
 #endif // D_RED_AIRWAYS
       discret_->ClearState();
 
+      // Evaluate the womersley velocities
+      vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
 
@@ -4328,6 +4377,9 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     dirichletlines_ = Teuchos::null;
     dirichletlines_ = SystemMatrix()->ExtractDirichletRows(*(dbcmaps_->CondMap()));
     sysmat_->ApplyDirichlet(*(dbcmaps_->CondMap()));
+
+    // apply Womersley as a Dirichlet BC
+    sysmat_->ApplyDirichlet(*(vol_surf_flow_bcmaps_));
   }
 
   // No, we do not want to have any rhs. There cannot be any.
@@ -4345,7 +4397,11 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   //          residual displacements are supposed to be zero at
   //          boundary conditions
   incvel_->PutScalar(0.0);
+
   LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(dbcmaps_->CondMap()));
+
+  // apply Womersley as a Dirichlet BC
+  LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bcmaps_));
 
   //-------solve for residual displacements to correct incremental displacements
   solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,not inrelaxation_,not inrelaxation_);

@@ -196,6 +196,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::calc_Neumann_inflow;
     else if (action == "calculate integrated pressure")
         act = Fluid3Boundary::integ_pressure_calc;
+    else if (action == "center of mass calculation")
+        act = Fluid3Boundary::center_of_mass_calc;
     else dserror("Unknown type of action for Fluid3_Boundary: %s",action.c_str());
 
     // get status of Ale
@@ -405,6 +407,13 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
       vector<double> mycurvature;
 
       ElementSurfaceTension(ele,params,discretization,lm,elevec1,mydispnp,mynormals,mycurvature);
+      break;
+    }
+    case center_of_mass_calc:
+    {
+      // evaluate center of mass
+      if(ele->Owner() == discretization.Comm().MyPID())
+        CenterOfMassCalculation(ele, params,discretization,lm);
       break;
     }
     default:
@@ -1845,6 +1854,124 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   params.set<double>("Inlet integrated pressure", pressure);
 #endif
 }//DRT::ELEMENTS::Fluid3Surface::IntegratedPressureParameterCalculation
+
+
+/*----------------------------------------------------------------------*
+ |                                                        ismail 10/2010|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
+  DRT::ELEMENTS::Fluid3Boundary*    ele,
+  ParameterList&                    params,
+  DRT::Discretization&              discretization,
+  vector<int>&                      lm)
+{
+
+  //------------------------------------------------------------------
+  // This calculates the integrated the pressure from the
+  // the actual pressure values
+  //------------------------------------------------------------------
+#if 1
+  // allocate vector for shape functions and for derivatives
+  LINALG::Matrix<iel,1> funct(true);
+  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+
+  // global node coordinates
+  LINALG::Matrix<nsd_,iel> xyze(true);
+
+  // coordinates of current integration point in reference coordinates
+  LINALG::Matrix<bdrynsd_,1> xsi(true);
+
+  // normal vector
+  LINALG::Matrix<nsd_,1> unitnormal(true);
+
+
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<iel;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+#endif // D_ALE_BFLOW
+
+  // first evaluate the area of the surface element
+  params.set<double>("Area calculation",0.0);
+  this->AreaCaculation(ele, params, discretization,lm);
+  
+  // get the surface element area
+  const double elem_area = params.get<double>("Area calculation");
+
+  LINALG::Matrix<(nsd_),1>  xyzGe(true);
+
+  for (int i = 0; i< nsd_;i++)
+  {
+    //const IntegrationPoints2D  intpoints(gaussrule);
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    {
+      // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+      // Computation of the unit normal vector at the Gauss points
+      // Computation of nurb specific stuff is not activated here
+      double drs = 0.0;
+      EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
+      
+      // global coordinates of gausspoint
+      LINALG::Matrix<(nsd_),1>  coordgp(true);
+
+      // determine coordinates of current Gauss point
+      coordgp.Multiply(xyze,funct);
+
+      //Compute elment center of gravity
+      xyzGe(i) += intpoints.IP().qwgt[gpid]*coordgp(i)*drs;
+
+    }  // end Gauss loop
+    xyzGe(i) /= elem_area;
+  }
+
+  // Get the center of mass of the already calculate surface elements
+  RCP<std::vector<double> > xyzG  = params.get<RCP<std::vector<double> > >("center of mass");
+
+  RCP<std::vector<double> > normal  = params.get<RCP<std::vector<double> > >("normal");
+
+  // Get the area of the of the already calculate surface elements
+  double area = params.get<double>("total area");
+
+  for (int i = 0; i<nsd_;i++)
+  {
+    (*xyzG)  [i] = ((*xyzG)[i]*area   + xyzGe(i)     *elem_area)/(area+elem_area);
+    (*normal)[i] = ((*normal)[i]*area + unitnormal(i)*elem_area)/(area+elem_area);
+  }
+
+  // set new center of mass
+  params.set("total area", area+elem_area);
+
+#endif
+}//DRT::ELEMENTS::Fluid3Surface::CenterOfMassCalculation
+
 
 
 /*----------------------------------------------------------------------*

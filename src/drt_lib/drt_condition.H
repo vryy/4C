@@ -198,7 +198,9 @@ public:
     WindkesselOptimCond,
     RedAirwayPrescribedCond,
     RedLungAcinusCond,
-    PatientSpecificData
+    PatientSpecificData,
+    VolumetricSurfaceFlowCond,
+    VolumetricFlowBorderNodes
   };
 
   /*!

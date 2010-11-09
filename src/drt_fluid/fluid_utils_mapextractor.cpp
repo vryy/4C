@@ -25,6 +25,7 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,genprob.ndim)));
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,genprob.ndim)));
   mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,genprob.ndim)));
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,genprob.ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
@@ -33,12 +34,15 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
+  Teuchos::RCP<std::set<int> > condelements  = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
   Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FREESURFCoupling");
   Teuchos::RCP<std::set<int> > condelements3 = DRT::UTILS::ConditionedElementMap(dis,"StructAleCoupling");
+  Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"VolumetricSurfaceFlowCond");
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements3->begin(),condelements3->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements4->begin(),condelements4->end(),
             std::inserter(*condelements,condelements->begin()));
   return condelements;
 }

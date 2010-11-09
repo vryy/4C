@@ -91,6 +91,7 @@ namespace UTILS
   class KSPMapExtractor;
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
+  class FluidVolumetricSurfaceFlowWrapper;
 #ifdef D_ARTNET
   class Fluid_couplingWrapperBase;
   template <class red_D_time_int>
@@ -617,6 +618,9 @@ protected:
   /// bio related special (outflow) optimization of boundaries
   RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
 
+  /// bio related special (in/outflow) boudaries
+  RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+
 #ifdef D_ARTNET
   /// bio related, 3D to redued-D coupling
   RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
@@ -641,6 +645,9 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> dirichletlines_;
 
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
+
+  /// maps for womersley flow profile which is applied as a Dirichlet condition
+  RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
 
   //@}
 

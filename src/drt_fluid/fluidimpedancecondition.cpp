@@ -903,7 +903,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   }
   if (myrank_ == 0)
   {
-    cout << "Impedance condition Id: " << condid << " Flowrate = " << parflowrate <<"\t time: "<<time<< endl;
+    printf("Impedance condition Id: %d Flowrate = %f \t time: %f",condid,parflowrate, time);
   }
 
 #if 0 // This is kept for some minor debugging purposes

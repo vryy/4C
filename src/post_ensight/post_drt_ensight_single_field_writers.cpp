@@ -87,6 +87,9 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("border_radii", "border_radii",nodebased, 1);
+  EnsightWriter::WriteResult("radii", "radii", nodebased, 1);
+  EnsightWriter::WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());

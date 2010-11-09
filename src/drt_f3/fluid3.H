@@ -1075,7 +1075,8 @@ private:
     mixed_hybrid_dbc,
     conservative_outflow_bc,
     calc_Neumann_inflow,
-    integ_pressure_calc
+    integ_pressure_calc,
+    center_of_mass_calc
   };
 
   // don't want = operator

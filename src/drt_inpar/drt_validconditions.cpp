@@ -2116,6 +2116,85 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(acinus_bc);
 
+  /*--------------------------------------------------------------------*/
+  // Volumetric surface flow profile condition
+  Teuchos::RCP<ConditionDefinition> volumetric_surface_flow_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF VOLUMETRIC FLOW CONDITIONS",
+                                         "VolumetricSurfaceFlowCond",
+                                         "volumetric surface flow condition",
+                                         DRT::Condition::VolumetricSurfaceFlowCond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > inflownormalcomponents;
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("ConditionType", "WOMERSLEY",
+                                                                                       Teuchos::tuple<std::string>("WOMERSLEY","POLYNOMIAL"),
+                                                                                       Teuchos::tuple<std::string>("WOMERSLEY","POLYNOMIAL"),
+                                                                                       true)));
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("FlowType", "InFlow",
+                                                                                       Teuchos::tuple<std::string>("InFlow","OutFlow"),
+                                                                                       Teuchos::tuple<std::string>("InFlow","OutFlow"),
+                                                                                       true)));
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CorrectionFlag", "WithOutCorrection",
+                                                                                       Teuchos::tuple<std::string>("WithOutCorrection","WithCorrection"),
+                                                                                       Teuchos::tuple<std::string>("WithOutCorrection","WithCorrection"),
+                                                                                       true)));
+  AddNamedReal(volumetric_surface_flow_cond,"Period");
+  AddNamedInt (volumetric_surface_flow_cond,"Order");
+  AddNamedInt (volumetric_surface_flow_cond,"Harmonics");
+
+  std::vector<Teuchos::RCP<ConditionComponent> > inflowprofilecomponents;
+  inflowprofilecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  inflowprofilecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<inflowprofilecomponents.size(); ++i)
+    volumetric_surface_flow_cond->AddComponent(inflowprofilecomponents[i]);
+
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "self_evaluate_normal",
+                                                                                       Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+                                                                                       Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+                                                                                       true)));
+
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n3")));
+
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "self_evaluate_center_of_mass",
+                                                                                       Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+                                                                                       Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+                                                                                       true)));
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c3")));
+
+  condlist.push_back(volumetric_surface_flow_cond);
+
+
+
+  /*--------------------------------------------------------------------*/
+  // Volumetric flow border nodes condition
+
+  Teuchos::RCP<ConditionDefinition> volumetric_border_nodes_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE VOLUMETRIC FLOW BORDER NODES",
+                                         "VolumetricFlowBorderNodesCond",
+                                         "volumetric flow border nodes condition",
+                                         DRT::Condition::VolumetricFlowBorderNodes,
+                                         true,
+                                         DRT::Condition::Line));
+
+  volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+
+  condlist.push_back(volumetric_border_nodes_cond);
+
 
   return vc;
 
