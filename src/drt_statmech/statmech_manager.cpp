@@ -767,16 +767,15 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 		 * this command is followed by the name of that view displayed during it's shown in the video; in the following example
 		 * this name is for the 100th time step: Step00100; then the data to be presented within this view is written within { ... };
 		 * in the following example this data consists of scalar lines defined by the coordinates of their end points*/
-		gmshfileheader <<"General.BackgroundGradient = 1;\n";
-		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
-		gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+		gmshfileheader <<"General.BackgroundGradient = 0;\n";
 		gmshfileheader <<"View.LineType = 1;\n";
 		gmshfileheader <<"View.LineWidth = 1.4;\n";
 		gmshfileheader <<"View.PointType = 1;\n";
 		gmshfileheader <<"View.PointSize = 3;\n";
 		gmshfileheader <<"General.ColorScheme = 1;\n";
 		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
-		gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+		gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
+		//gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
 		gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
 		gmshfileheader <<"General.Color.Text = {0,0,0};\n";
 		gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
@@ -1690,6 +1689,202 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 	// debug couts
 	//cout<<*visualizepositions_<<endl;
 }//GmshPrepareVisualization
+
+/*----------------------------------------------------------------------*
+ | wedge output for two-noded beams                        mueller 11/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GMSH_2_noded(const int& n,
+                                          const Epetra_SerialDenseMatrix& coord,
+		                                      const DRT::ELEMENTS::Beam3* thisele,
+		                                      std::stringstream& gmshfilecontent)
+{
+  // some local variables
+	Epetra_SerialDenseMatrix prism(3,6);
+  Epetra_SerialDenseVector axis(3);
+  Epetra_SerialDenseVector radiusvec1(3);
+  Epetra_SerialDenseVector radiusvec2(3);
+  Epetra_SerialDenseVector auxvec(3);
+  Epetra_SerialDenseVector theta(3);
+  Epetra_SerialDenseMatrix R(3,3);
+  double color = 1.0;
+  // get radius of element
+  const double radius = sqrt(sqrt(4 * (thisele->Izz()) / M_PI));
+
+  // compute three dimensional angle theta
+  for (int j=0;j<theta.Length();++j)
+  	axis[j] = coord(j,1) - coord(j,0);
+  double norm_axis = axis.Norm2();
+  for (int j=0;j<axis.Length();++j)
+  	theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+
+  // Compute rotation matirx R
+  TransformAngleToTriad(theta,R);
+
+  // Now the first prism will be computed via two radiusvectors, that point from each of
+  // the nodes to two points on the beam surface. Further prisms will be computed via a
+  // for-loop, where the second node of the previous prism is used as the first node of the
+  // next prism, whereas the central points (=nodes) stay  identic for each prism. The
+  // second node will be computed by a rotation matrix and a radiusvector.
+
+  // compute radius vector for first surface node of first prims
+  for (int j=0;j<3;++j) auxvec[j] = coord(j,0) + norm_axis;
+
+  // radiusvector for point on surface
+  radiusvec1[0] = auxvec[1]*axis[2] - auxvec[2]*axis[1];
+  radiusvec1[1] = auxvec[2]*axis[0] - auxvec[0]*axis[2];
+  radiusvec1[2] = auxvec[0]*axis[1] - auxvec[1]*axis[0];
+
+  // initialize all prism points to nodes
+  for (int j=0;j<3;++j)
+  {
+  	prism(j,0) = coord(j,0);
+   	prism(j,1) = coord(j,0);
+		prism(j,2) = coord(j,0);
+		prism(j,3) = coord(j,1);
+		prism(j,4) = coord(j,1);
+		prism(j,5) = coord(j,1);
+  }
+
+  // get first point on surface for node1 and node2
+  for (int j=0;j<3;++j)
+  {
+  	prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * radius;
+  	prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * radius;
+  }
+
+  // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+  radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+
+  // get second point on surface for node1 and node2
+  for(int j=0;j<3;j++)
+  {
+  	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+  	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+  }
+
+  // now first prism is built -> put coordinates into filecontent-stream
+  // Syntax for gmsh input file
+	// SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,	 x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
+	// SI( coordinates of the six corners ){colors}
+  gmshfilecontent << "SI("<<scientific;
+  gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
+  gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
+  gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
+  gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
+  gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
+  gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
+  gmshfilecontent << "){" << scientific;
+  gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+
+  // now the other prisms will be computed
+  for (int sector=0;sector<n-1;++sector)
+  {
+		// initialize for next prism
+		// some nodes of last prims can be taken also for the new next prism
+		for (int j=0;j<3;++j)
+	  {
+	  	prism(j,1)=prism(j,2);
+	  	prism(j,4)=prism(j,5);
+	  	prism(j,2)=prism(j,0);
+	  	prism(j,5)=prism(j,3);
+	  }
+
+		// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+		for (int j=0;j<3;++j)
+		{
+			radiusvec1[j] = radiusvec2[j];
+			radiusvec2[j] = 0.0;
+		}
+
+		// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+		radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+
+		// get second point on surface for node1 and node2
+	  for (int j=0;j<3;++j)
+	  {
+	   	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	   	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	  }
+
+	  // put coordinates into filecontent-stream
+	  // Syntax for gmsh input file
+	  // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,	 x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
+	  // SI( coordinates of the six corners ){colors}
+	  gmshfilecontent << "SI("<<scientific;
+	  gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
+	  gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
+	  gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
+	  gmshfilecontent << prism(0,3) << "," << prism(1,3) << "," << prism(2,3) << ",";
+	  gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
+	  gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
+	  gmshfilecontent << "){" << scientific;
+	  gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+	}
+
+	return;
+}//GMSH_2_noded
+
+/*----------------------------------------------------------------------*
+ |  Compute rotation matrix R                                cyron 01/09|
+ *----------------------------------------------------------------------*/
+void StatMechManager::TransformAngleToTriad(Epetra_SerialDenseVector& theta,
+		                                        Epetra_SerialDenseMatrix& R)
+{
+	// compute spin matrix according to Crisfield Vol. 2, equation (16.8)
+  Epetra_SerialDenseMatrix spin(3,3);
+	ComputeSpin(spin,theta);
+
+	// nompute norm of theta
+	double theta_abs = theta.Norm2();
+
+	// build an identity matrix
+	Epetra_SerialDenseMatrix identity(3,3);
+	for(int i=0;i<3;i++) identity(i,i) = 1.0;
+
+	// square of spin matrix
+	Epetra_SerialDenseMatrix spin2(3,3);
+	for (int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			for(int k=0;k<3;k++)
+				spin2(i,k) += spin(i,j) * spin(j,k);
+
+
+	// compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
+
+	return;
+}
+/*----------------------------------------------------------------------*
+ |  Compute spin (private)	 																 cyron 01/09|
+ *----------------------------------------------------------------------*/
+void StatMechManager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
+                                         Epetra_SerialDenseVector& rotationangle)
+{
+	// initialization
+	const double spinscale = 1.0;
+	for (int i=0;i<rotationangle.Length();++i)
+		rotationangle[i] *= spinscale;
+
+	// initialize spin with zeros
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			spin(i,j) = 0;
+
+	// fill spin with values (see Crisfield Vol. 2, equation (16.8))
+	spin(0,0) = 0;
+	spin(0,1) = -rotationangle[2];
+	spin(0,2) = rotationangle[1];
+	spin(1,0) = rotationangle[2];
+	spin(1,1) = 0;
+	spin(1,2) = -rotationangle[0];
+	spin(2,0) = -rotationangle[1];
+	spin(2,1) = rotationangle[0];
+	spin(2,2) = 0;
+
+	return;
+}
 
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
