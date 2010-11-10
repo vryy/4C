@@ -29,6 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_geometry/geo_intersection.H"
 #include "enrichment_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
@@ -78,8 +79,12 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   if(cutterdis_->NumMyColElements()!=0)
   {
 #ifdef QHULL
+#ifdef NEWINTERSECTION
+    GEO::computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleGIDs);
+#else
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
     is->computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleGIDs);
+#endif
 #else
     dserror("you have to compile with the QHULL flag!");
 #endif

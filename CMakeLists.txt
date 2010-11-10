@@ -696,6 +696,7 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
   src/drt_geometry/intersection_service.cpp
+  src/drt_geometry/geo_intersection.cpp
   src/drt_geometry/position_array.cpp
   src/drt_geometry/searchtree.cpp
   src/drt_geometry/searchtree_geometry_service.cpp
@@ -1203,6 +1204,21 @@ set(OBJS_DRT_STK
   src/drt_stk/stk_fluid.cpp
   src/drt_stk/stk_fluidresulttest.cpp
   src/drt_stk/stk_gmsh.cpp
+)
+set(OBJS_DRT_CUT
+  src/drt_cut/cut_boundingbox.cpp
+  src/drt_cut/cut_edge.cpp
+  src/drt_cut/cut_element.cpp
+  src/drt_cut/cut_facet.cpp
+  src/drt_cut/cut_line.cpp
+  src/drt_cut/cut_linesegment.cpp
+  src/drt_cut/cut_mesh.cpp
+  src/drt_cut/cut_meshintersection.cpp
+  src/drt_cut/cut_node.cpp
+  src/drt_cut/cut_point.cpp
+  src/drt_cut/cut_pointcycle.cpp
+  src/drt_cut/cut_pointpool.cpp
+  src/drt_cut/cut_side.cpp
 )
 ###------------------------------------------------------------------ Element flags
 
