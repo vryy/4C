@@ -1520,24 +1520,24 @@ if (STKADAPTIVE)
 
   # Test programs based on stk
 
-  add_library(stk_test_utils src/stk_test/stk_test_utils.cpp)
+  add_library(stk_test_utils tests/stk_test/stk_test_utils.cpp)
 
-  add_executable(stk_test_change_owner src/stk_test/stk_test_change_owner.cpp)
+  add_executable(stk_test_change_owner tests/stk_test/stk_test_change_owner.cpp)
   target_link_libraries(stk_test_change_owner stk_test_utils ${LIBRARIES})
 
-  add_executable(stk_test_corner1 src/stk_test/stk_test_corner1.cpp)
+  add_executable(stk_test_corner1 tests/stk_test/stk_test_corner1.cpp)
   target_link_libraries(stk_test_corner1 stk_test_utils ${LIBRARIES})
 
-  add_executable(stk_test_corner2 src/stk_test/stk_test_corner2.cpp)
+  add_executable(stk_test_corner2 tests/stk_test/stk_test_corner2.cpp)
   target_link_libraries(stk_test_corner2 stk_test_utils ${LIBRARIES})
 
-  add_executable(stk_test_ghosttoshared src/stk_test/stk_test_ghosttoshared.cpp)
+  add_executable(stk_test_ghosttoshared tests/stk_test/stk_test_ghosttoshared.cpp)
   target_link_libraries(stk_test_ghosttoshared stk_test_utils ${LIBRARIES})
 
-  add_executable(stk_test_ownership src/stk_test/stk_test_ownership.cpp)
+  add_executable(stk_test_ownership tests/stk_test/stk_test_ownership.cpp)
   target_link_libraries(stk_test_ownership stk_test_utils ${LIBRARIES})
 
-  add_executable(stk_test_ownership2 src/stk_test/stk_test_ownership2.cpp)
+  add_executable(stk_test_ownership2 tests/stk_test/stk_test_ownership2.cpp)
   target_link_libraries(stk_test_ownership2 stk_test_utils ${LIBRARIES})
 
 #  add_executable (stk_test
