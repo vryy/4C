@@ -633,8 +633,9 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
+			cout<<"nstep="<<params.get<int>("nstep",5)<<endl;
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5) || fabs(time-starttime)<1e-8)
+			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
 			{
 				//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
 				FILE* fp = NULL;
