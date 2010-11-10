@@ -175,12 +175,22 @@ void StatMechTime::Integrate()
     if(i == 0)
       statmechmanager_->StatMechInitOutput(ndim,dt);
 
+    //set and delete crosslinkers compared to converged configuration of last time step
+    const double t_admin = Teuchos::Time::wallTime();
+    statmechmanager_->StatMechUpdate(i, dt, *dis_, stiff_,ndim);
+
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
     {
-      std::cout<<"\nNumber of elements at the beginning of time step "<<i<<" : "<<discret_.NumGlobalElements()<<"\n";
+      std::cout<<"\nStatmech Output for time step "<<i+1<<":";
+      std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
+      std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
       std::cout<<"\nNumber of unconverged steps since start / last restart: "<<unconvergedsteps_<<"\n";
     }
+
+
+
+
 
 			//time_ is time at the end of this time step
       double time = params_.get<double>("total time",0.0);
@@ -229,17 +239,10 @@ void StatMechTime::Integrate()
       }
       while(isconverged_ == 0);
 
-      const double t_admin = Teuchos::Time::wallTime();
       UpdateandOutput();
 
-      /*special update for statistical mechanics; this output has to be handled separately from the time integration scheme output
-       * as it may take place independently on writing geometric output data in a specific time step or not*/
-      statmechmanager_->StatMechUpdate(i, dt, *dis_, stiff_,ndim);
-
+      //special output for statistical mechanics
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
-
-      if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
-      	cout << "\n***\ntotal administration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 
       if (time>=maxtime) break;
   }
