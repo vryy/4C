@@ -454,7 +454,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
 				}
 
 				// deformation gradient = identity tensor (geometrically linear case!)
-				LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(false);
+				LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(true);
 				for (int i=0;i<NUMDIM_SOTET4;++i) defgrd(i,i) = 1;
 
 				//----------------------------------------------------------------
