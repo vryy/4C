@@ -93,7 +93,7 @@ bool Position<elementtype,numNodesElement>::Compute()
     // solve
 
     dx = 0;
-    double det = gaussElimination<true, 3>( A, b, dx );
+    double det = LINALG::gaussElimination<true, 3>( A, b, dx );
     if ( fabs( det ) < LINSOLVETOL )
     {
       return false;
