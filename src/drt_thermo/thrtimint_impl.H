@@ -290,10 +290,12 @@ namespace THR
     // apply B matrix for nodes in contact
     void AssembleB(LINALG::SparseMatrix& bmatrix);
 
-    
-    // assemble mechanical dissipation
-    void AssembleMechDissRate(Epetra_Vector& mechdissrate);
+    // assemble mechanical dissipation for master nodes
+    void AssembleMechDissMaster(Epetra_Vector& mechdissrate);
 
+    // assemble mechanical dissipation for slave nodes
+    void AssembleMechDissSlave(Epetra_Vector& mechdissrate);
+    
     // assemble thermal contact condition
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,

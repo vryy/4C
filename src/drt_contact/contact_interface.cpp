@@ -1076,6 +1076,10 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
       set <int> mnodescurrent = cnode->FriData().GetMNodes();
       set <int> mnodesold = cnode->FriData().GetMNodesOld();
 
+      // check if there are entries in the M map
+      if(mmap.size()< 1)
+        dserror("Error in Interface::EvaluateRelMov(): No M-Map!");
+      
       // check if there are entries in the old M map
       if(mmapold.size()< 1)
         dserror("Error in Interface::EvaluateRelMov(): No old M-Map!");

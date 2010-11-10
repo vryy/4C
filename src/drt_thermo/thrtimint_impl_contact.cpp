@@ -128,7 +128,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     //double dt = GetTimeStepSize();
     
     double beta = heattranss*heattransm/(heattranss+heattransm);
-    //double delta = heattranss/(heattranss+heattransm);
+    double delta = heattranss/(heattranss+heattransm);
 
     // assemble Matrix B in addition to D and M
     RCP<LINALG::SparseMatrix> bmatrix = rcp(new LINALG::SparseMatrix(*mdofs,10));
@@ -136,6 +136,14 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   
     // Fill Complete
     bmatrix->Complete();
+    
+    // assemble mechanical dissipation for master side
+    RCP<Epetra_Vector> mechdissratemaster = LINALG::CreateVector(*mdofs,true);
+    AssembleMechDissMaster(*mechdissratemaster);
+    
+    // assemble mechanical dissipation for slave side
+    RCP<Epetra_Vector> mechdissrateslave = LINALG::CreateVector(*adofs,true);
+    AssembleMechDissSlave(*mechdissrateslave);
 
     // modify left hand side --------------------------------------------- 
     tangnew->UnComplete();
@@ -154,7 +162,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     // already finished
     tangnew->Complete();
     
-    // modify right hand side --------------------------------------------- 
+    // modify right hand side -------------------------------------------- 
     // slave and master temperature vectors  
     RCP<Epetra_Vector> fa, fm;
     LINALG::SplitVector(*problemrowmap,*tempn_,adofs,fa,mdofs,fm);
@@ -190,6 +198,16 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     LINALG::Export(*DdotTemp,*DdotTempexp);
     feffnew->Update(+beta,*DdotTempexp,1.0);
     
+    // mechanical dissipation master side
+    RCP<Epetra_Vector> mechdissratemasterexp = rcp(new Epetra_Vector(*problemrowmap));
+    LINALG::Export(*mechdissratemaster,*mechdissratemasterexp);
+    feffnew->Update(-(1-delta),*mechdissratemasterexp,1.0);
+
+    // mechanical dissipation slave side
+    RCP<Epetra_Vector> mechdissrateslaveexp = rcp(new Epetra_Vector(*problemrowmap));
+    LINALG::Export(*mechdissrateslave,*mechdissrateslaveexp);
+    feffnew->Update(-delta,*mechdissrateslaveexp,1.0);
+    
     // already finished
   }
   else
@@ -224,9 +242,9 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     thermcontLM->Complete(*sdofs,*adofs);
     thermcontTEMP->Complete(*smdofs,*adofs);
     
-    // assemble mechanical dissipation
+    // assemble mechanical dissipation for master side
     RCP<Epetra_Vector> mechdissrate = LINALG::CreateVector(*mdofs,true);
-    AssembleMechDissRate(*mechdissrate);
+    AssembleMechDissMaster(*mechdissrate);
   
     /**********************************************************************/
     /* Modification of the stiff matrix and rhs towards thermo contact    */
@@ -1016,7 +1034,7 @@ void THR::TimIntImpl::AssembleB(LINALG::SparseMatrix& bmatrix)
  | assemble mechanical dissipation for master nodes            mgit 08/10|
  *----------------------------------------------------------------------*/
 
-void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
+void THR::TimIntImpl::AssembleMechDissMaster(Epetra_Vector& mechdissrate)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -1066,7 +1084,7 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
       if(mechdissproc!=mechdissglobal)
       {  
         if (abs(mechdissproc)>1e-12)
-          dserror ("Error in AssembleMechDissRate: Entries from more than one proc");
+          dserror ("Error in AssembleMechDissMaster: Entries from more than one proc");
       }
       
       // owner of master node does the assembly
@@ -1087,6 +1105,61 @@ void THR::TimIntImpl::AssembleMechDissRate(Epetra_Vector& mechdissrate)
         if(abs(mechdissiprate(0))>1e-12)
           LINALG::Assemble(mechdissrate, mechdissiprate, dof, owner);
       }
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | assemble mechanical dissipation for slave nodes            mgit 11/10|
+ *----------------------------------------------------------------------*/
+
+void THR::TimIntImpl::AssembleMechDissSlave(Epetra_Vector& mechdissrate)
+{
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
+  
+  // time step size
+  double dt = GetTimeStepSize();
+
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+     // slave nodes
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
+    {
+      int gid = slavenodes->GID(i);
+      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+      DRT::Node* nodeges = discretstruct_->gNode(gid);
+
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+
+      // row dof of temperature
+      int rowtemp = discretstruct_->Dof(1,nodeges)[0];
+
+      Epetra_SerialDenseVector mechdissiprate(1);
+      vector<int> dof(1);
+      vector<int> owner(1);
+
+      mechdissiprate(0) = 1/dt*cnode->MechDiss();
+      dof[0] = rowtemp;
+      owner[0] = cnode->Owner();
+
+      // do assembly
+      if(abs(mechdissiprate(0))>1e-12)
+        LINALG::Assemble(mechdissrate, mechdissiprate, dof, owner);
     }
   }
   return;

@@ -474,6 +474,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
     dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
+
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==true)
+    dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // *********************************************************************
   // not (yet) implemented combinations

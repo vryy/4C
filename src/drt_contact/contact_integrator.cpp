@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_integrator.H"
 #include "contact_node.H"
 #include "contact_element.H"
@@ -1891,6 +1892,15 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   bool tsi = false;
     if (DRT::Problem::Instance()->ProblemType()=="tsi") tsi=true;
 
+  // thermal contact with or without LM  
+  bool thermolagmult = true;
+  if(tsi)
+  {
+    const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+    if (Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
+      thermolagmult = false;
+  }
+
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
@@ -2105,7 +2115,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     
     // evaluate matrix A for thermo-structure-interaction
-    if (tsi)
+    // in the case of using thermal lagrange multipliers
+    if (tsi and thermolagmult == true)
     {
       // loop over all aseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -2129,7 +2140,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           }
         }
       } // nrow*ndof loop
-      
+    }
+
+    // evaluate matrix B for thermo-structure-interaction
+    // in the case of NOT using thermal lagrange multipliers
+    if (tsi and thermolagmult == false)
+    {
       // loop over all bseg matrix entries
       // !!! nrow represents the master shape functions     !!!
       // !!! ncol represents the dofs                       !!!
@@ -2446,7 +2462,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       // nrow represents the slave side dofs !!!
       for (int j=0;j<nrow;++j)
       {
-        double prod = lmval[j]*mechdiss;
+        double prod;
+        if(thermolagmult==true) prod = lmval[j]*mechdiss;
+        else                    prod =  sval[j]*mechdiss;
       
         // add current Gauss point's contribution to mdisssegs
         (*mdisssegs)(j) += prod*jac*wgt;
