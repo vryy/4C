@@ -665,14 +665,12 @@ protected:
     const INPAR::STR::StrainType iostrain  // strain output option
     );
 
-  //! Calculate linear stiffness and mass matrix with temperature fraction
-  virtual void soh8_linstiffmasstemp(
+  //! Calculate temperature coupling term for the internal force
+  virtual void soh8_finttemp(
     DRT::Element::LocationArray& la,  // location array
     vector<double>& disp,  // current displacements
     vector<double>& residual,  // current residual displ
     vector<double>& temp, // current temperature
-    LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP

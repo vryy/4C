@@ -113,11 +113,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
-      // the coupling stiffness matrix (3nx1)
-      LINALG::Matrix<NUMDOF_SOH8,1> elemat1(elemat1_epetra.A(),true);
-
-      // calculate the THERMOmechanical solution
-      soh8_linstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
 
@@ -171,10 +168,8 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
       // build the current temperature vector
       LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
-      // the coupling stiffness matrix (3nx1)
-      LINALG::Matrix<NUMDOF_SOH8,1> elemat1(elemat1_epetra.A(),true);
-      // calculate the THERMOmechanical solution
-      soh8_linstiffmasstemp(la,mydisp,myres,mytempnp,&elemat1,&elemat2,&elevec1,
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
         NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
   }
@@ -245,9 +240,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
         // get the temperature dependent stress
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stresstemp;
-        // calculate the THERMOmechanical solution: temperature stresses
-        soh8_linstiffmasstemp(la,mydisp,myres,mytempnp,NULL,NULL,NULL,
-                              &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
+        // calculate the THERMOmechanical term for fint: temperature stresses
+        soh8_finttemp(la,mydisp,myres,mytempnp,NULL,
+                      &stresstemp,NULL,params,iostress,INPAR::STR::strain_none);
 
         // total stress
         // add stresstemp to the mechanical stress
@@ -609,13 +604,11 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmass(
  | evaluate only the temperature fraction for the element    dano 05/10 |
  | originally by maf 04/07  (private)                                   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_linstiffmasstemp(
+void DRT::ELEMENTS::So_hex8::soh8_finttemp(
   DRT::Element::LocationArray& la,  // location array
   vector<double>& disp,  // current displacements
   vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
-  LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
-  LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
@@ -784,30 +777,17 @@ void DRT::ELEMENTS::So_hex8::soh8_linstiffmasstemp(
     }
 
     double detJ_w = detJ*gpweights[gp];
-    if (force != NULL && tempstiffmatrix != NULL)
+    if (force != NULL)
     {
       // integrate internal force vector f = f + (B^T . sigma_temp) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stresstemp, 1.0);
-
-      //-----------------------------------------------------------------------
-      // integrate `initial-displacement-temperature' stiffness matrix  02/10
-      // update the stiffness part depending of the temperature
-      // k_theta += 1.0 * k_theta + detJ * w(gp) * (B^T . C_Theta . N_Theta)
-      //-----------------------------------------------------------------------
-      LINALG::Matrix<NUMSTR_SOH8,1> cn; // 6x1 = 6x1n
-      // extract the shapefunctions on the gp_i and multiply it with cn
-      for (int stresscomp=0; stresscomp<NUMSTR_SOH8; ++stresscomp)
-      {
-        cn.Multiply(ctemp,Ntemp); // (6x1) = (6x1)(1x1)
-      }
-      tempstiffmatrix->MultiplyTN(detJ_w,bop,cn,1.0); // [(3nx6)(6x1)=(3nx1)] (24x6)(6x1)=(24x1)
     }
-
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+
   return;
-} // DRT::ELEMENTS::So_hex8::soh8_linstiffmasstemp
+} // DRT::ELEMENTS::So_hex8::soh8_finttemp
 
 
 /*----------------------------------------------------------------------*/
