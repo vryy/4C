@@ -1220,6 +1220,13 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
 )
+set(OBJS_CUT_TEST
+  tests/cut_test/cut_test_intersection.cpp
+  tests/cut_test/cut_test_main.cpp
+  tests/cut_test/cut_test_simple.cpp
+  tests/cut_test/cut_test_utils.cpp
+  tests/cut_test/drt_dserror.cpp
+)
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -1531,6 +1538,13 @@ if (D_EXODUS)
   add_executable (pre_exodus ${OBJS_PRE_EXODUS})
   target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 endif (D_EXODUS)
+
+###------------------------------------------------------------------ Unit Tests
+
+if (QHULL)
+  add_executable(cut_test ${OBJS_CUT_TEST})
+  target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
+endif (QHULL)
 
 if (STKADAPTIVE)
 
