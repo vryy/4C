@@ -385,14 +385,20 @@ void PATSPEC::GetILTDistance(const int eleid,
   dis.GetCondition("PatientSpecificData", mypatspeccond);
   if (!mypatspeccond.size()) return;
 
-  const Epetra_Vector* fool = mypatspeccond[0]->Get<Epetra_Vector>("normalized ilt thickness");
-  if (!fool) return;
+  for(unsigned int i=0; i<mypatspeccond.size(); ++i)
+  {
+    const Epetra_Vector* fool = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
+    if (fool)
+    {
+      if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
   
-  if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
-  
-  double meaniltthick = (*fool)[fool->Map().LID(eleid)];
-  params.set("iltthick meanvalue",meaniltthick);
+      double meaniltthick = (*fool)[fool->Map().LID(eleid)];
+      params.set("iltthick meanvalue",meaniltthick);
+      return;
+    }
+  }
 
+  // if ilt thickness not found in condition just return
   return;
 }
 
@@ -408,15 +414,22 @@ void PATSPEC::GetLocalRadius(const int eleid,
   dis.GetCondition("PatientSpecificData", mypatspeccond);
   if (!mypatspeccond.size()) return;
 
-  const Epetra_Vector* fool = mypatspeccond[1]->Get<Epetra_Vector>("local radius");
-  if (!fool) return;
+  for(unsigned int i=0; i<mypatspeccond.size(); ++i)
+  {
+    const Epetra_Vector* fool = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
+    if (fool)
+    {
+      if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
   
-  if (!fool->Map().MyGID(eleid)) dserror("I do not have this element");
+      double meanlocalrad = (*fool)[fool->Map().LID(eleid)];
+      params.set("localrad meanvalue",meanlocalrad);
+      return;
+    }
+  }
   
-  double meanlocalrad = (*fool)[fool->Map().LID(eleid)];
-  params.set("localrad meanvalue",meanlocalrad);
-
+  // if local radius not found in condition just return
   return;
+  
 }
 
 
