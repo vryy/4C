@@ -1410,6 +1410,7 @@ add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
+add_library(drt_lib_cut ${OBJS_DRT_CUT})
 
 add_library(stk_refine ${OBJS_STK_REFINE})
 add_library(stk_drt_lib ${OBJS_STK_LIB})
@@ -1511,6 +1512,7 @@ target_link_libraries (${baciname}
   ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
   drt_lib_utils
+  drt_lib_cut
   linalg
   ${LIBRARIES})
 
@@ -1521,6 +1523,7 @@ set(FILTER_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
+  drt_lib_cut
   linalg
   filter_common
   ${LIBRARIES})
