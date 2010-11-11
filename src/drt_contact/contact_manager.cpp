@@ -412,9 +412,10 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
-  // read parameter list from DRT::Problem
+  // read parameter list and problemtype from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  std::string problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = psize.get<int>("DIM");
 
   // *********************************************************************
@@ -471,14 +472,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                      input.get<double>("MAX_BALANCE") <  1.0)
     dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
   
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
-      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
-    dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
-
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==true)
-    dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
-  
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -519,9 +512,23 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
   
+  // *********************************************************************
+  // thermal-structure-interaction contact
+  // *********************************************************************
+  
+  if (problemtype=="tsi" &&
+      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
+      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
+    dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
+
+  if (problemtype=="tsi" &&
+      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==true)
+    dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
+  
   // no parallel redistribution in for thermal-structure-interaction
-  if(DRT::Problem::Instance()->ProblemType()=="tsi" and 
-    Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  if(probtype=="tsi" and 
+     Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
