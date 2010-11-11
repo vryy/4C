@@ -42,6 +42,9 @@ namespace LARGEROTATIONS
   //!computing quaternion q from rotation angle theta, Crisfield, Vol. 2, equation (16.67)
   void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
   
+  //!computing rotation matrix R from angle theta, Crisfield Vol. 2, equation (16.22)
+  void angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,3>& R);
+
   //!computing rotation angle vector theta from quaternion q, Crisfield, Vol. 2, equation (16.67)
   void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
   

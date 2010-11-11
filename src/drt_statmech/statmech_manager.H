@@ -223,10 +223,9 @@ protected:
 
 	//! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
 	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent);
-  //! \brief Gmsh wedge output for filament and crosslinkers
-	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, const DRT::ELEMENTS::Beam3* thisele, std::stringstream& gmshfilecontent);
-	void TransformAngleToTriad(Epetra_SerialDenseVector& theta, Epetra_SerialDenseMatrix& R);
-	void ComputeSpin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle);
+
+	//! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
+	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
 
 	/*! \brief Handles Crosslinker diffusion

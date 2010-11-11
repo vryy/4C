@@ -160,6 +160,42 @@ void LARGEROTATIONS::angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG:
   return;
 }//LARGEROTATIONS::angletoquaternion
 
+/*----------------------------------------------------------------------*
+ | Compute rotation matrix R from angle theta                cyron 11/10|
+ *----------------------------------------------------------------------*/
+void LARGEROTATIONS::angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,3>& R)
+{
+  // compute spin matrix according to Crisfield Vol. 2, equation (16.8)
+  LINALG::Matrix<3,3> spin;
+  computespin(spin,theta);
+
+  // nompute norm of theta
+  double theta_abs = theta.Norm2();
+
+  // build an identity matrix
+  LINALG::Matrix<3,3> identity;
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+    {
+      if(i==j)
+        identity(i,j) = 1.0;
+      else
+        identity(i,j) = 0.0;
+    }
+
+  // square of spin matrix
+  LINALG::Matrix<3,3> spin2;
+  spin2.Multiply(spin,spin);
+
+
+  // compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
+  for(int i=0;i<3;i++)
+    for(int j=0;j<3;j++)
+      R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
+
+  return;
+}
+
 
 /*---------------------------------------------------------------------------*
  |computes a quaternion q from a rotation matrix R; all operations are      |

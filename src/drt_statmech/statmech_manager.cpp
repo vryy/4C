@@ -42,6 +42,9 @@ Maintainer: Christian Cyron
 #include <cstdio>
 #include <math.h>
 
+//namespace with utility functions for operations with large rotations used
+using namespace LARGEROTATIONS;
+
 //MEASURETIME activates measurement of computation time for certain parts of the code
 //#define MEASURETIME
 
@@ -1704,31 +1707,45 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
  | wedge output for two-noded beams                        mueller 11/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::GMSH_2_noded(const int& n,
-                                          const Epetra_SerialDenseMatrix& coord,
-		                                      const DRT::ELEMENTS::Beam3* thisele,
-		                                      std::stringstream& gmshfilecontent)
+                                  const Epetra_SerialDenseMatrix& coord,
+                                  DRT::Element* thisele,
+                                  std::stringstream& gmshfilecontent)
 {
+  //if this element is a line element capable of providing its radius get that radius
+  const DRT::ElementType & eot = thisele->ElementType();
+  double radius = 0;
+
+#ifdef D_BEAM3II
+#ifdef D_BEAM3
+  if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+    radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
+  else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+    radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
+  else
+    dserror("thisele is not a line element providing its radius.");
+#endif
+#endif
+
   // some local variables
-	Epetra_SerialDenseMatrix prism(3,6);
-  Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);
-  Epetra_SerialDenseVector radiusvec2(3);
-  Epetra_SerialDenseVector auxvec(3);
-  Epetra_SerialDenseVector theta(3);
-  Epetra_SerialDenseMatrix R(3,3);
+  LINALG::Matrix<3,6> prism;
+	LINALG::Matrix<3,1> axis;
+	LINALG::Matrix<3,1> radiusvec1;
+	LINALG::Matrix<3,1> radiusvec2;
+  LINALG::Matrix<3,1> auxvec;
+  LINALG::Matrix<3,1> theta;
+  LINALG::Matrix<3,3> R;
   double color = 1.0;
-  // get radius of element
-  const double radius = sqrt(sqrt(4 * (thisele->Izz()) / M_PI));
+
 
   // compute three dimensional angle theta
-  for (int j=0;j<theta.Length();++j)
-  	axis[j] = coord(j,1) - coord(j,0);
+  for (int j=0;j<3;++j)
+  	axis(j) = coord(j,1) - coord(j,0);
   double norm_axis = axis.Norm2();
-  for (int j=0;j<axis.Length();++j)
-  	theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+  for (int j=0;j<3;++j)
+  	theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
 
-  // Compute rotation matirx R
-  TransformAngleToTriad(theta,R);
+  // Compute rotation matirx R from rotation angle theta
+  angletotriad(theta,R);
 
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
@@ -1737,12 +1754,12 @@ void StatMechManager::GMSH_2_noded(const int& n,
   // second node will be computed by a rotation matrix and a radiusvector.
 
   // compute radius vector for first surface node of first prims
-  for (int j=0;j<3;++j) auxvec[j] = coord(j,0) + norm_axis;
+  for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
 
   // radiusvector for point on surface
-  radiusvec1[0] = auxvec[1]*axis[2] - auxvec[2]*axis[1];
-  radiusvec1[1] = auxvec[2]*axis[0] - auxvec[0]*axis[2];
-  radiusvec1[2] = auxvec[0]*axis[1] - auxvec[1]*axis[0];
+  radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+  radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+  radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
 
   // initialize all prism points to nodes
   for (int j=0;j<3;++j)
@@ -1758,18 +1775,18 @@ void StatMechManager::GMSH_2_noded(const int& n,
   // get first point on surface for node1 and node2
   for (int j=0;j<3;++j)
   {
-  	prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * radius;
-  	prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * radius;
+  	prism(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+  	prism(j,4) += radiusvec1(j) / radiusvec1.Norm2() * radius;
   }
 
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-  radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+  radiusvec2.Multiply(R,radiusvec1);
 
   // get second point on surface for node1 and node2
   for(int j=0;j<3;j++)
   {
-  	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-  	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+  	prism(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+  	prism(j,5) += radiusvec2(j) / radiusvec2.Norm2() * radius;
   }
 
   // now first prism is built -> put coordinates into filecontent-stream
@@ -1802,18 +1819,19 @@ void StatMechManager::GMSH_2_noded(const int& n,
 		// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
 		for (int j=0;j<3;++j)
 		{
-			radiusvec1[j] = radiusvec2[j];
-			radiusvec2[j] = 0.0;
+			radiusvec1(j) = radiusvec2(j);
+			radiusvec2(j) = 0.0;
 		}
 
 		// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-		radiusvec2.Multiply('N','N',1,R,radiusvec1,0);
+		radiusvec2.Multiply(R,radiusvec1);
+
 
 		// get second point on surface for node1 and node2
 	  for (int j=0;j<3;++j)
 	  {
-	   	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-	   	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	   	prism(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+	   	prism(j,5) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 	  }
 
 	  // put coordinates into filecontent-stream
@@ -1834,67 +1852,6 @@ void StatMechManager::GMSH_2_noded(const int& n,
 	return;
 }//GMSH_2_noded
 
-/*----------------------------------------------------------------------*
- |  Compute rotation matrix R                                cyron 01/09|
- *----------------------------------------------------------------------*/
-void StatMechManager::TransformAngleToTriad(Epetra_SerialDenseVector& theta,
-		                                        Epetra_SerialDenseMatrix& R)
-{
-	// compute spin matrix according to Crisfield Vol. 2, equation (16.8)
-  Epetra_SerialDenseMatrix spin(3,3);
-	ComputeSpin(spin,theta);
-
-	// nompute norm of theta
-	double theta_abs = theta.Norm2();
-
-	// build an identity matrix
-	Epetra_SerialDenseMatrix identity(3,3);
-	for(int i=0;i<3;i++) identity(i,i) = 1.0;
-
-	// square of spin matrix
-	Epetra_SerialDenseMatrix spin2(3,3);
-	for (int i=0;i<3;i++)
-		for(int j=0;j<3;j++)
-			for(int k=0;k<3;k++)
-				spin2(i,k) += spin(i,j) * spin(j,k);
-
-
-	// compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
-	for(int i=0;i<3;i++)
-		for(int j=0;j<3;j++)
-			R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
-
-	return;
-}
-/*----------------------------------------------------------------------*
- |  Compute spin (private)	 																 cyron 01/09|
- *----------------------------------------------------------------------*/
-void StatMechManager::ComputeSpin(Epetra_SerialDenseMatrix& spin,
-                                         Epetra_SerialDenseVector& rotationangle)
-{
-	// initialization
-	const double spinscale = 1.0;
-	for (int i=0;i<rotationangle.Length();++i)
-		rotationangle[i] *= spinscale;
-
-	// initialize spin with zeros
-	for(int i=0;i<3;i++)
-		for(int j=0;j<3;j++)
-			spin(i,j) = 0;
-
-	// fill spin with values (see Crisfield Vol. 2, equation (16.8))
-	spin(0,0) = 0;
-	spin(0,1) = -rotationangle[2];
-	spin(0,2) = rotationangle[1];
-	spin(1,0) = rotationangle[2];
-	spin(1,1) = 0;
-	spin(1,2) = -rotationangle[0];
-	spin(2,0) = -rotationangle[1];
-	spin(2,1) = rotationangle[0];
-	spin(2,2) = 0;
-
-	return;
-}
 
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
