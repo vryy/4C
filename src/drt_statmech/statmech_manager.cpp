@@ -286,18 +286,28 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
    *to this end compute seedvariable from given parameter FIXEDSEED and some other
    *deterministic parameter seedparameter given to this method at runtime*/
   if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+  {
     seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_.Comm().MyPID() + 1);
-  /*else set seed according to system time and different for each processor
+
+    normalgen_.seed( (unsigned int)seedvariable );
+    uniformclosedgen_.seed( (unsigned int)seedvariable );
+    uniformclosedopengen_.seed( (unsigned int)seedvariable );
+  }
+   /*else set seed according to system time and different for each processor
    *(pseudo-random seed) if seedparameter == 0 (this allows for conveniently
    *using a random seed only at certain points in the program, e.g. only once
    *in the beginning; one has just to make sure that seedparameter == 0 does
    *not happen at any other point in the program*/
   else if(seedparameter == 0)
+  {
     seedvariable = time(0)*(discret_.Comm().MyPID() + 1);
 
-  normalgen_.seed( (unsigned int)seedvariable );
-  uniformclosedgen_.seed( (unsigned int)seedvariable );
-  uniformclosedopengen_.seed( (unsigned int)seedvariable );
+    normalgen_.seed( (unsigned int)seedvariable );
+    uniformclosedgen_.seed( (unsigned int)seedvariable );
+    uniformclosedopengen_.seed( (unsigned int)seedvariable );
+  }
+
+
 }
 
 /*----------------------------------------------------------------------*
