@@ -29,7 +29,7 @@ class Point
 {
 public:
 
-  Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint );
+  Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side );
 
   void AddEdge( Edge* e );
 
@@ -92,9 +92,7 @@ public:
 
   unsigned Pid() const { return pid_; }
 
-  bool NodalPoint() const { return nodalpoint_; }
-
-  void NodalPoint( bool nodalpoint ) { nodalpoint_ = nodalpoint; }
+  bool NodalPoint( const std::vector<Node*> & nodes ) const;
 
   void Intersection( std::set<Side*> & sides );
 
@@ -117,8 +115,6 @@ private:
   std::set<Edge*> cut_edges_;
   std::set<Side*> cut_sides_;
   std::set<Element*> cut_elements_;
-
-  bool nodalpoint_;
 
   std::set<Line*> lines_;
 };

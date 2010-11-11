@@ -113,6 +113,10 @@ public:
 
 private:
 
+  bool FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other );
+
+  bool FindCutLines( Mesh & mesh, LinearSide & side, LinearSide & other );
+
   std::set<Side*> cut_faces_;
 
   std::set<Facet*> facets_;

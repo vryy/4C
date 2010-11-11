@@ -1,16 +1,7 @@
 
 #include "../drt_geometry/intersection_templates.H"
 
-#ifdef QHULL
-#undef PI
-#ifdef TETGENINCLUDED
-#include "../tetgen/tetgen.h"
-#else
-#include <tetgen.h>
-#endif
-#undef DOT
-#endif
-
+#include "cut_tetgen.H"
 #include "cut_position.H"
 #include "cut_position2d.H"
 #include "cut_intersection.H"
@@ -46,153 +37,123 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   return NULL;
 }
 
-bool GEO::CUT::LinearSide::Cut( Mesh & mesh, Side & side, Element * element )
+bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & other )
 {
-  // see if the cut is already there
-  bool found_cut = false;
-  for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
+  bool cut = false;
+  const std::vector<Edge*> & edges = Edges();
+  for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
-    Line* cut_line = *i;
-    if ( cut_line->IsCut( this, &side ) )
+    ConcreteEdge<DRT::Element::line2> * e = dynamic_cast<ConcreteEdge<DRT::Element::line2>*>( *i );
+    if ( e->FindCutPoints( mesh, element, *this, other ) )
     {
-      cut_line->AddSide( this );
-      cut_line->AddSide( &side );
-      cut_line->AddElement( element );
-      AddLine( cut_line );
-      side.AddLine( cut_line );
-      found_cut = true;
+      cut = true;
     }
   }
-  if ( found_cut )
+  return cut;
+}
+
+bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, LinearSide & other )
+{
+  bool cut = false;
+  for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
+  {
+    Line * l = *i;
+    if ( l->IsCut( this, &other ) )
+    {
+      l->AddElement( &element );
+      other.AddLine( l );
+      cut = true;
+    }
+  }
+  if ( cut )
   {
     return true;
   }
 
-  // look at edges for cut
-  std::set<Point*, PointPidLess> cuts;
-  EdgeCuts( mesh, side, cuts );
+  std::set<Point*> cuts;
+  GetCutPoints( element, other, cuts );
 
-  // if edges are cut, create cut line
-  if ( cuts.size()>0 )
+  switch ( cuts.size() )
   {
-    if ( cuts.size()==1 )
+  case 0:
+    return false;
+  case 1:
+  {
+    std::set<Point*> reverse_cuts;
+    other.GetCutPoints( element, *this, reverse_cuts );
+    reverse_cuts.erase( *cuts.begin() );
+    if ( reverse_cuts.size()==1 )
     {
-      // a partial cut with the cut side ending inside the cutted element
-      // there could (should?) be a reverse cut
-      std::set<Point*, PointPidLess> reverse_cuts;
-      side.EdgeCuts( mesh, *this, reverse_cuts );
-      reverse_cuts.erase( *cuts.begin() );
-      if ( reverse_cuts.size()==1 )
-      {
-        Line* cut_line = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &side, element );
-        AddLine( cut_line );
-        side.AddLine( cut_line );
-        return true;
-      }
-      else if ( reverse_cuts.size()==0 )
-      {
-        // Touch of two edges. No lines to create?!
-        return false;
-      }
-      else
-      {
-        throw std::runtime_error( "most peculiar cut" );
-      }
-    }
-    else if ( cuts.size()==2 )
-    {
-      // The normal case. A straight cut.
-      std::vector<Point*> c( cuts.begin(), cuts.end() );
-      Line* cut_line = mesh.NewLine( c[0], c[1], this, &side, element );
-      AddLine( cut_line );
-      side.AddLine( cut_line );
+      Line * l = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, &element );
+      AddLine( l );
+      other.AddLine( l );
       return true;
     }
-#if 0
-    else if ( cuts.size()==3 )
+    else if ( reverse_cuts.size()==0 )
     {
-      // A touch between two elements. There are already some lines. But with
-      // tree points there is no question, we need three lines. So lets just
-      // create them.
-      std::vector<Point*> c( cuts.begin(), cuts.end() );
-
-      Line* cut_line = mesh.NewLine( c[0], c[1], this, &side, element );
-      AddLine( cut_line );
-      side.AddLine( cut_line );
-
-      cut_line = mesh.NewLine( c[0], c[2], this, &side, element );
-      AddLine( cut_line );
-      side.AddLine( cut_line );
-
-      cut_line = mesh.NewLine( c[1], c[2], this, &side, element );
-      AddLine( cut_line );
-      side.AddLine( cut_line );
-
-      return true;
+      // Touch of two edges. No lines to create?!
+      return false;
     }
-#endif
     else
     {
-      // If all nodes are catched and nothing else, the cut surface has hit
-      // this surface exactly. No need to cut anything. However, the surface
-      // might be required for integration.
-
-      bool allonnode = true;
-      for ( std::set<Point*, PointPidLess>::iterator i=cuts.begin();
-            i!=cuts.end();
-            ++i )
-      {
-        Point * p = *i;
-        if ( not p->NodalPoint() )
-        {
-          allonnode = false;
-          break;
-        }
-      }
-      if ( allonnode )
-      {
-        if ( cuts.size()==Nodes().size() )
-        {
-          for ( unsigned i=0; i<Nodes().size(); ++i )
-          {
-            unsigned j = ( i+1 ) % Nodes().size();
-            Line* cut_line = mesh.NewLine( Nodes()[i]->point(), Nodes()[j]->point(), this, &side, element );
-            AddLine( cut_line );
-            side.AddLine( cut_line );
-          }
-          return true;
-        }
-        else
-        {
-          //throw std::runtime_error( "Only nodes touched, but not all nodes covered? How very particular." );
-          //
-          // Not a cut of this side?!
-        }
-      }
-      else
-      {
-        // Now we have more than two cuts on the surface. This is a touch, but
-        // one that should have been tracked already. I do not have a way to
-        // construct all lines here. It is not known which points are to be
-        // connected.
-        //
-        // There should be some lines already. Otherwise we would not get so
-        // many cuts between two sides. And thus the line segment
-        // reconstruction will recover the line path later on.
-        //
-        // Maybe this case do never happen at all.
-      }
+      throw std::runtime_error( "most peculiar cut" );
     }
   }
-  return false;
+  case 2:
+  {
+    // The normal case. A straight cut.
+    std::vector<Point*> c( cuts.begin(), cuts.end() );
+    Line * l = mesh.NewLine( c[0], c[1], this, &other, &element );
+    AddLine( l );
+    other.AddLine( l );
+    return true;
+  }
+  default:
+  {
+    // More that two cut points shows a touch.
+    //
+    // If all nodes are catched and nothing else, the cut surface has hit this
+    // surface exactly. No need to cut anything. However, the surface might be
+    // required for integration.
+
+    const std::vector<Node*> & nodes = Nodes();
+    if ( cuts.size()==nodes.size() and AllOnNodes( cuts ) )
+    {
+      for ( unsigned i=0; i<nodes.size(); ++i )
+      {
+        unsigned j = ( i+1 ) % nodes.size();
+        Line* l = mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, &element );
+        AddLine( l );
+        other.AddLine( l );
+      }
+      return true;
+    }
+    return false;
+  }
+  }
 }
 
-void GEO::CUT::Side::EdgeCuts( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts )
+bool GEO::CUT::LinearSide::AllOnNodes( const std::set<Point*> & points )
 {
-  for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+  const std::vector<Node*> & nodes = Nodes();
+  for ( std::set<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
-    Edge & edge = **i;
-    edge.Cut( mesh, side, cuts );
+    Point * p = *i;
+    if ( not p->NodalPoint( nodes ) )
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+void GEO::CUT::LinearSide::GetCutPoints( Element & element, Side & other, std::set<Point*> & cuts )
+{
+  const std::vector<Edge*> & edges = Edges();
+  for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+  {
+    ConcreteEdge<DRT::Element::line2> * e = dynamic_cast<ConcreteEdge<DRT::Element::line2>*>( *i );
+    e->GetCutPoints( element, *this, other, cuts );
   }
 }
 
@@ -635,18 +596,6 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad9>::FillComplete( Mesh & mesh )
 }
 
 
-bool GEO::CUT::QuadraticSide::Cut( Mesh & mesh, Side & side, Element * element )
-{
-  bool success = false;
-  for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
-  {
-    Side * s = *i;
-    if ( s->Cut( mesh, side, element ) )
-      success = true;
-  }
-  return success;
-}
-
 void GEO::CUT::QuadraticSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   throw std::runtime_error( "not supposed to end up here" );
@@ -726,3 +675,4 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG
 //   }
   rst = pos.LocalCoordinates();
 }
+

@@ -1,16 +1,7 @@
 
 #include "../drt_geometry/intersection_templates.H"
 
-#ifdef QHULL
-#undef PI
-#ifdef TETGENINCLUDED
-#include "../tetgen/tetgen.h"
-#else
-#include <tetgen.h>
-#endif
-#undef DOT
-#endif
-
+#include "cut_tetgen.H"
 #include "cut_intersection.H"
 #include "cut_position.H"
 #include "cut_facet.H"
@@ -32,20 +23,42 @@ void GEO::CUT::Element::FillComplete( Mesh & mesh )
 void GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
 {
   bool cut = false;
-  for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
+  const std::vector<Side*> & sides = Sides();
+
+  for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
-    Side & myside = **i;
-    if ( myside.Cut( mesh, side, this ) or
-         side.Cut( mesh, myside, this ) )
+    LinearSide * s = dynamic_cast<LinearSide*>( *i );
+    FindCutPoints( mesh, *s, side );
+  }
+
+  for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+  {
+    LinearSide * s = dynamic_cast<LinearSide*>( *i );
+    if ( FindCutLines( mesh, *s, side ) )
     {
       cut = true;
     }
   }
+
   if ( cut )
   {
     side.CreateLineSegment( mesh, this );
     cut_faces_.insert( &side );
   }
+}
+
+bool GEO::CUT::LinearElement::FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other )
+{
+  bool cut = side.FindCutPoints( mesh, *this, other );
+  bool reverse_cut = other.FindCutPoints( mesh, *this, side );
+  return cut or reverse_cut;
+}
+
+bool GEO::CUT::LinearElement::FindCutLines( Mesh & mesh, LinearSide & side, LinearSide & other )
+{
+  bool cut = side.FindCutLines( mesh, *this, other );
+  bool reverse_cut = other.FindCutLines( mesh, *this, side );
+  return cut or reverse_cut;
 }
 
 void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
@@ -195,12 +208,13 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, CellGenerator * gener
 
 bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
 {
+  const std::vector<Node*> & nodes = Nodes();
   for ( std::vector<Point*>::const_iterator i=facet_points.begin();
         i!=facet_points.end();
         ++i )
   {
     Point * p = *i;
-    if ( not p->NodalPoint() )
+    if ( not p->NodalPoint( nodes ) )
     {
       return false;
     }

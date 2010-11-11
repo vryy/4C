@@ -11,16 +11,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#ifdef QHULL
-#undef PI
-#ifdef TETGENINCLUDED
-#include "../tetgen/tetgen.h"
-#else
-#include <tetgen.h>
-#endif
-#undef DOT
-#endif
-
+#include "cut_tetgen.H"
 #include "cut_point.H"
 #include "cut_line.H"
 

@@ -11,6 +11,8 @@ namespace GEO
 namespace CUT
 {
   class Mesh;
+  class LinearElement;
+  class LinearSide;
 
 template <DRT::Element::DiscretizationType edgetype>
 class ConcreteEdge;
@@ -102,8 +104,6 @@ public:
 
   virtual void FillComplete( Mesh & mesh ) = 0;
 
-  virtual bool Cut( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts ) = 0;
-
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts ) = 0;
 
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts ) = 0;
@@ -193,7 +193,6 @@ public:
 
   //virtual bool HasPoint( Point * p ) { return p->IsCut( this ) and cut_points_.count( p )>0; }
 
-  virtual bool Cut( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
 
@@ -207,6 +206,10 @@ public:
 
   void Coordinates( LINALG::Matrix<3, 2> & xyze_lineElement )
   { Edge::Coordinates( xyze_lineElement.A() ); }
+
+  bool FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & side, LinearSide & other );
+
+  void GetCutPoints( Element & element, Side & side, Side & other, std::set<Point*> & cuts );
 
 private:
 
@@ -233,7 +236,6 @@ public:
 
   //virtual bool HasPoint( Point * p );
 
-  virtual bool Cut( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
 

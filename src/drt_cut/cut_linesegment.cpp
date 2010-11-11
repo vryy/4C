@@ -105,8 +105,8 @@ bool GEO::CUT::LineSegment::ClosedOnEdge( Mesh & mesh, Element * element, Side *
     throw std::runtime_error( "no edges here!" );
   }
 
-  if ( ( not begin->NodalPoint() and begin_edges.size()>1 ) or
-       ( not end  ->NodalPoint() and   end_edges.size()>1 ) )
+  if ( ( not begin->NodalPoint( side->Nodes() ) and begin_edges.size()>1 ) or
+       ( not end  ->NodalPoint( side->Nodes() ) and   end_edges.size()>1 ) )
   {
     throw std::runtime_error( "edge must be unique" );
   }

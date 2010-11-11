@@ -200,7 +200,7 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz )
   if ( xyz==NULL )
     throw std::runtime_error( "cannot create node without coordinates" );
 
-  Point * p = NewPoint( xyz, NULL, NULL, true );
+  Point * p = NewPoint( xyz, NULL, NULL );
   Node * n = new Node( nid, p );
   nodes_[nid] = Teuchos::rcp( n );
   return n;
@@ -492,9 +492,9 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
   return e;
 }
 
-GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint )
+GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
 {
-  return pp_->NewPoint( x, cut_edge, cut_side, nodalpoint );
+  return pp_->NewPoint( x, cut_edge, cut_side );
 }
 
 GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element )

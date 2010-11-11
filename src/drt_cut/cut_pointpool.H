@@ -23,7 +23,7 @@ class OctTreeNode
 {
 public:
 
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint );
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
   unsigned size() const { return points_.size(); }
 
@@ -37,9 +37,9 @@ public:
 
 private:
 
-  Teuchos::RCP<Point> GetPoint( const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint );
+  Teuchos::RCP<Point> GetPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
-  Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint );
+  Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side );
 
   OctTreeNode* Leaf( const double * x );
 
@@ -58,8 +58,8 @@ class PointPool
 {
 public:
 
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint )
-  { return tree_.NewPoint( x, cut_edge, cut_side, nodalpoint ); }
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
+  { return tree_.NewPoint( x, cut_edge, cut_side ); }
 
   unsigned size() const { return tree_.size(); }
 

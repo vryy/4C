@@ -47,10 +47,6 @@ public:
 
   virtual void FillComplete( Mesh & mesh );
 
-  virtual bool Cut( Mesh & mesh, Side & side, Element * element ) = 0;
-
-  void EdgeCuts( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts );
-
   void Coordinates( double * xyze )
   {
     double * x = xyze;
@@ -124,8 +120,6 @@ public:
     }
   }
 
-  virtual bool Cut( Mesh & mesh, Side & side, Element * element );
-
   virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
@@ -143,7 +137,15 @@ public:
 
   Teuchos::RCP<LineSegment> CreateLineSegment( Mesh & mesh, Element * element );
 
+  bool FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & other );
+
+  bool FindCutLines( Mesh & mesh, LinearElement & element, LinearSide & other );
+
+  void GetCutPoints( Element & element, Side & other, std::set<Point*> & cuts );
+
 protected:
+
+  bool AllOnNodes( const std::set<Point*> & points );
 
   void CreateLineSegmentList( Mesh & mesh,
                               Element * element,
@@ -167,8 +169,6 @@ public:
   {}
 
   //virtual void FillComplete( Mesh & mesh );
-
-  virtual bool Cut( Mesh & mesh, Side & side, Element * element );
 
   virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 

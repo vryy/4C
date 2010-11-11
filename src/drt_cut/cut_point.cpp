@@ -7,25 +7,22 @@
 #include "cut_side.H"
 #include "cut_line.H"
 
-GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint )
-  : pid_( pid ),
-    nodalpoint_( nodalpoint )
+GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side )
+  : pid_( pid )
 {
   std::copy( x, x+3, x_ );
 
-  if ( not nodalpoint )
+  if ( cut_edge!=NULL )
   {
-    if ( cut_edge==NULL or cut_side==NULL )
-    {
-      //throw std::runtime_error( "not a valid cut point" );
-      return;
-    }
     cut_edges_.insert( cut_edge );
-    cut_sides_.insert( cut_side );
 
     // copy all sides at the edge to the set of cutted sides
     std::copy( cut_edge->Sides().begin(), cut_edge->Sides().end(),
                std::inserter( cut_sides_, cut_sides_.begin() ) );
+  }
+  if ( cut_side==NULL )
+  {
+    cut_sides_.insert( cut_side );
   }
 }
 
@@ -138,4 +135,17 @@ void GEO::CUT::Point::Intersection( std::set<Side*> & sides )
                          sides.begin(), sides.end(),
                          std::inserter( intersection, intersection.begin() ) );
   std::swap( sides, intersection );
+}
+
+bool GEO::CUT::Point::NodalPoint( const std::vector<Node*> & nodes ) const
+{
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    if ( n->point()==this )
+    {
+      return true;
+    }
+  }
+  return false;
 }

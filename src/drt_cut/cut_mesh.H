@@ -15,16 +15,7 @@
 
 #include "../drt_lib/drt_element.H"
 
-#ifdef QHULL
-#undef PI
-#ifdef TETGENINCLUDED
-#include "../tetgen/tetgen.h"
-#else
-#include <tetgen.h>
-#endif
-#undef DOT
-#endif
-
+#include "cut_tetgen.H"
 #include "cut_boundingbox.H"
 
 namespace GEO
@@ -93,7 +84,7 @@ public:
 
   Side * CreateQuad9( int sid, const std::vector<int> & nids );
 
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, bool nodalpoint=false );
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
   Line* NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 

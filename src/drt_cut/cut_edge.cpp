@@ -1,16 +1,7 @@
 
 #include "../drt_geometry/intersection_templates.H"
 
-#ifdef QHULL
-#undef PI
-#ifdef TETGENINCLUDED
-#include "../tetgen/tetgen.h"
-#else
-#include <tetgen.h>
-#endif
-#undef DOT
-#endif
-
+#include "cut_tetgen.H"
 #include "cut_position.H"
 #include "cut_intersection.H"
 #include "cut_facet.H"
@@ -25,41 +16,63 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::FillComplete( Mesh & mesh )
 {
 }
 
-bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::Cut( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts )
+
+bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
+                                                                 LinearElement & element,
+                                                                 LinearSide & side,
+                                                                 LinearSide & other )
 {
-#if 0
-  // see if the cut is already there
-  // this shadows double cuts since the cuts are shared between sides
-  bool found_cut = false;
+  bool cut = false;
   for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
-    Point* cut_point = *i;
-    if ( cut_point->IsCut( &side ) )
+    Point * p = *i;
+    if ( p->IsCut( &other ) )
     {
-      cuts.insert( cut_point );
-      found_cut = true;
+      cut = true;
+      p->AddElement( &element );
     }
   }
-  if ( found_cut )
+  if ( cut )
   {
     return true;
   }
-#endif
 
   // test for the cut of edge and side
 
   std::set<Point*, PointPidLess> cut_points;
-  side.Cut( mesh, *this, cut_points );
+  other.Cut( mesh, *this, cut_points );
   for ( std::set<Point*, PointPidLess>::iterator i=cut_points.begin();
         i!=cut_points.end();
         ++i )
   {
-    Point * cut_point = *i;
-    cut_point->AddEdge( this );
-    cuts.insert( cut_point );
+    Point * p = *i;
+
+    p->AddEdge( this );
+    p->AddElement( &element );
+
+    // These adds are implicitly done, but for documentation do them all explicitly.
+
+    p->AddSide( &side );
+    p->AddSide( &other );
+    AddPoint( p );
   }
 
   return cut_points.size()>0;
+}
+
+void GEO::CUT::ConcreteEdge<DRT::Element::line2>::GetCutPoints( Element & element,
+                                                                Side & side,
+                                                                Side & other,
+                                                                std::set<Point*> & cuts )
+{
+  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  {
+    Point * p = *i;
+    if ( p->IsCut( &other ) )
+    {
+      cuts.insert( p );
+    }
+  }
 }
 
 
@@ -148,7 +161,6 @@ GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other
   }
   if ( p==other or not element->PointInside( p ) )
   {
-    //throw std::runtime_error( "no node inside element" );
     return NULL;
   }
   return p;
@@ -171,13 +183,6 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line3>::FillComplete( Mesh & mesh )
 {
   subedge1_ = mesh.GetEdge( BeginNode(), MiddleNode() );
   subedge2_ = mesh.GetEdge( MiddleNode(), EndNode() );
-}
-
-bool GEO::CUT::ConcreteEdge<DRT::Element::line3>::Cut( Mesh & mesh, Side & side, std::set<Point*, PointPidLess> & cuts )
-{
-  bool cut1 = subedge1_->Cut( mesh, side, cuts );
-  bool cut2 = subedge1_->Cut( mesh, side, cuts );
-  return cut1 or cut2;
 }
 
 void GEO::CUT::ConcreteEdge<DRT::Element::line3>::Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts )

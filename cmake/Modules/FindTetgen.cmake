@@ -16,7 +16,7 @@ FIND_PATH(TETGEN_INCLUDE_DIR tetgen.h
   /usr/include
 )
 
-FIND_LIBRARY(TETGEN_LIBRARY libtet.a
+FIND_LIBRARY(TETGEN_LIBRARY tetgen libtet.a
   ${LIB_INSTALL_DIR}
   /usr/local/lib
   /usr/lib

@@ -19,6 +19,7 @@ namespace GEO
 namespace CUT
 {
 
+/// find a cut point between side and edge
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
@@ -57,10 +58,12 @@ public:
 
 private:
 
+  /// add cut point that is a node to all edges and sides it touches
   void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts, const LINALG::Matrix<3,1> & xsi )
   {
     Point * p = n->point();
-    for ( std::set<Edge*>::const_iterator i=n->Edges().begin(); i!=n->Edges().end(); ++i )
+    const std::set<Edge*> & edges = n->Edges();
+    for ( std::set<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
     {
       Edge * e = *i;
       p->AddEdge( e );
@@ -71,6 +74,7 @@ private:
     cuts.insert( p );
   }
 
+  /// test if we are on any edge of the cut side and add those edges
   void TestSideEdges( Point * p, const LINALG::Matrix<3,1> & xsi )
   {
     if ( AtEdge() )

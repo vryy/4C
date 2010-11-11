@@ -1326,6 +1326,7 @@ void test_hex8_quad4_touch7()
   hex8->GenerateTetgen( mesh, NULL );
 }
 
+#if 0
 void test_quad4_quad4_simple()
 {
   GEO::CUT::Mesh mesh;
@@ -1374,6 +1375,7 @@ void test_quad4_quad4_simple()
 
   mesh.Status();
 }
+#endif
 
 void test_hex8_quad4_mesh()
 {
