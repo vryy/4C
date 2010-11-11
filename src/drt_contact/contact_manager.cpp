@@ -527,8 +527,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // no parallel redistribution in for thermal-structure-interaction
-  if(probtype=="tsi" and 
-     Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+  if (problemtype=="tsi" && 
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
