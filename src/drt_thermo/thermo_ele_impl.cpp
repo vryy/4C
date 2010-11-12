@@ -552,48 +552,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       &etempgrad
       );
 
-    // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if (la.Size()>1)
-    {
-      // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) ||
-           (discretization.HasState(1,"velocity"))
-         )
-      {
-        vector<double> mydisp((la[1].lm_).size());
-        // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp
-          = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
-          dserror("Cannot get state vectors 'displacement'");
-        // extract the displacements
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
-
-        vector<double> myvel((la[1].lm_).size());
-        // get the velocities
-        Teuchos::RCP<const Epetra_Vector> vel
-          = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
-          dserror("Cannot get state vectors 'velocity'");
-        // extract the velocities
-        DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
-
-        // if there is a strucutural vector available go on here
-        // --> calculate coupling
-        CouplCalculateFintCondCapa(
-          ele,
-          time,
-          mydisp,
-          myvel,
-          &etang,
-          NULL,
-          &efint,
-          NULL,
-          NULL,
-          NULL
-          );
-      } // end coupling
-    } // end la.Size()>1
+    // scale the heatflux with (-1)
+    // for the calculation the heatflux enters as positive value, but
+    // q = -k * (grad T)
+    eheatflux.Scale(-1);
 
     // store in
     ParObject::AddtoPack(*heatfluxdata, eheatflux);
@@ -609,12 +571,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     std::string heatfluxtype = params.get<std::string>("heatfluxtype","ndxyz");
     const int gid = ele->Id();
     LINALG::Matrix<nquad_,nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(),true);  // view only!
-
-//    // 26.08.10 code of Uli for post_drt_monitor (TSI: output heatflux does not fit!!)
-//    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator i = gpheatfluxmap->find(gid);
-//    if ( i==gpheatfluxmap->end() )
-//    dserror("gid %d not found in gpheatfluxmap", gid);
-//    LINALG::Matrix<nquad_,nsd_> gpheatflux(i->second->A(),true);  // view only!
 
     // set views to components
     LINALG::Matrix<nen_*numdofpernode_,1> efluxx(elevec1_epetra,true);  // view only!
@@ -632,6 +588,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       // extrapolate heatfluxes/temperature gradients at Gauss points to nodes
       // and store results in
       ExtrapolateFromGaussPointsToNodes(ele, gpheatflux, efluxx, efluxy, efluxz);
+      // method only applicable if number GP == number nodes
     }
 
     // centered
@@ -871,6 +828,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
         (*etempgrad)(iquad,idim) = gradtemp_(idim);
 
     // call material law => cmat_,heatflux_
+    // negative q is used for balance equation: -q = -(-k gradtemp)= k * gradtemp
     Materialize(ele);
     // store heatflux
     if (eheatflux != NULL)
@@ -889,7 +847,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     {
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
-      // heatflux q = C * B
+      // -q = C * B
       aop.MultiplyNN(cmat_,derxy_); //(1x1)(3x8)
       etang->MultiplyTN(fac_,derxy_,aop,1.0); //(8x8)=(8x3)(3x8)
     }
@@ -956,8 +914,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
       thrstvk->SetupCthermo(ctemp);
     }
-
-    // ask the structure element about his kintype_ to decide which defgrd is used
   }
   // END OF COUPLING
 
@@ -974,35 +930,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
   }
 
   // build the deformation gradient w.r.t material configuration
-  // decide if problem is geometric nonlinear or linear
-//  if (kintype_== DRT::ELEMENTS::So_hex8::soh8_geolin)
-//  {
-    // 21.05.10 first step is LINEAR B-operator, so set F == I
-    // true==setzero: filled with zeros, otherwise it is left uninitialized
-    LINALG::Matrix<nsd_,nsd_> defgrd(true);
-//  }
-  // build the nonlinear deformation gradient (total Lagrangean approach)
-  // NONLINEAR:
-//  else if (kintype_== DRT::ELEMENTS::So_hex8::soh8_totlag)
-//  {
-//    // update element geometry
-//    LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
-//    LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
-//
-//    DRT::Node** nodes = ele->Nodes();
-//    for (int i=0; i<nen_; ++i)
-//    {
-//      const double* x = nodes[i]->X();
-//      xrefe(i,0) = x[0];
-//      xrefe(i,1) = x[1];
-//      xrefe(i,2) = x[2];
-//
-//      xcurr(i,0) = xrefe(i,0) + disp[i*nsd_+0];
-//      xcurr(i,1) = xrefe(i,1) + disp[i*nsd_+1];
-//      xcurr(i,2) = xrefe(i,2) + disp[i*nsd_+2];
-//    }
-//  LINALG::Matrix<nsd_,nsd_> defgrd(false);
-//  }
+  LINALG::Matrix<nsd_,nsd_> defgrd(true);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -1024,17 +952,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
     // set to initial state as test to receive a linear solution
     // GEOMETRIC LINEAR problem:
-//    if (kintype_== DRT::ELEMENTS::So_hex8::soh8_geolin)
-//    {
-      for (int i=0; i<3; ++i) defgrd(i,i) = 1;
-//    }
-//    else if (kintype_== DRT::ELEMENTS::So_hex8::soh8_totlag)
-//    {
-      // GEOMETRIC NONLINEAR problem:
-      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    // CAUTION: defgrd lin ist auskommentiert!!!
-//      defgrd.MultiplyTT(xcurr,derxy_);
-//    }
+    for (int i=0; i<3; ++i) defgrd(i,i) = 1;
 
    /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
