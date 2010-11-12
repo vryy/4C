@@ -1097,15 +1097,18 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 
 
 				//define output coordinates for broken elements, first segment
-				LINALG::SerialDenseMatrix coordout(coord);
+				LINALG::SerialDenseMatrix coordout = coord;
 				for(int j=0 ;j<coordout.M(); j++)
-			   coordout(j,i)=lambda0*dir(j);
+			   coordout(j,i+1) = coordout(j,i)+lambda0*dir(j);
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
 				//define output coordinates for broken elements, second segment
 				coordout = coord;
 				for(int j=0 ;j<coordout.M(); j++)
-			   coordout(j,i+1)=lambda1*dir(j);
+				{
+					coordout(j,i) = coordout(j,i+1);
+			  	coordout(j,i+1) = coordout(j,i)+lambda1*dir(j);
+			  }
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
 
