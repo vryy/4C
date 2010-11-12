@@ -19,19 +19,28 @@ namespace GEO
 {
 namespace CUT
 {
-
+class LinearElement;
 class Mesh;
 
 class Facet
 {
 public:
 
-  Facet( Mesh & mesh, const std::vector<Point*> & points, int splitpos, Side * side )
+  Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
     : points_( points ),
-      splitpos_( splitpos ),
       parentside_( side ),
-      planar_( IsPlanar( mesh, points ) )
+      planar_( IsPlanar( mesh, points ) ),
+      position_( cutsurface ? Point::oncutsurface : Point::undecided )
   {
+    for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+    {
+      Point * p = *i;
+      if ( cutsurface )
+      {
+        p->Position( Point::oncutsurface );
+      }
+      p->Register( this );
+    }
   }
 
   void Print()
@@ -51,7 +60,7 @@ public:
   void GetPoints( std::set<Point*, PointPidLess> & points );
 
 #ifdef QHULL
-  void GenerateTetgen( Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
+  void GenerateTetgen( LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
 #endif
 
   void AddHole( const std::vector<Point*> & hole )
@@ -73,12 +82,27 @@ public:
     }
   }
 
-  void ExchangeSide( Side * side )
+  void ExchangeSide( Side * side, bool cutsurface )
   {
     parentside_ = side;
+    if ( cutsurface )
+    {
+      Position( Point::oncutsurface );
+      for ( std::vector<Point*>::const_iterator i=points_.begin(); i!=points_.end(); ++i )
+      {
+        Point * p = *i;
+        p->Position( Point::oncutsurface );
+      }
+    }
   }
 
   bool Equals( const std::vector<Point*> & facet_points );
+
+  bool IsCutSide( Side * side );
+
+  Point::PointPosition Position() const { return position_; }
+
+  void Position( Point::PointPosition p );
 
 private:
 
@@ -100,11 +124,11 @@ private:
 
   std::vector<std::vector<Point*> > triangulation_;
 
-  int splitpos_;
-
   Side* parentside_;
 
   bool planar_;
+
+  Point::PointPosition position_;
 };
 
 

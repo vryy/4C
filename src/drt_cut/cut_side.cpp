@@ -275,7 +275,7 @@ void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, 
       // Just a normal side. There might be cut points at the edges that do
       // not concern this side. We have to copy them anyway.
 
-      facets_.push_back( mesh.NewFacet( facet_points, facet_points.size(), this ) );
+      facets_.push_back( mesh.NewFacet( facet_points, this, false ) );
     }
   }
 
@@ -354,7 +354,7 @@ void GEO::CUT::LinearSide::MakeInternalFacets( Mesh & mesh, Element * element, s
     Facet * f = s->FindFacet( facet_points );
     if ( f!=NULL )
     {
-      f->ExchangeSide( this );
+      f->ExchangeSide( this, true );
     }
     else
     {
@@ -365,7 +365,7 @@ void GEO::CUT::LinearSide::MakeInternalFacets( Mesh & mesh, Element * element, s
   {
     // insert new internal facet
     const std::vector<Point*> & facet_points = ls.Points();
-    Facet * f = mesh.NewFacet( facet_points, 0, this );
+    Facet * f = mesh.NewFacet( facet_points, this, true );
     facets.insert( f );
   }
 }
@@ -452,14 +452,14 @@ bool GEO::CUT::LinearSide::IsCut()
   return false;
 }
 
-void GEO::CUT::LinearSide::ExchangeFacetSide( Side * side )
-{
-  for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    f->ExchangeSide( side );
-  }
-}
+// void GEO::CUT::LinearSide::ExchangeFacetSide( Side * side, bool cutsurface )
+// {
+//   for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+//   {
+//     Facet * f = *i;
+//     f->ExchangeSide( side, cutsurface );
+//   }
+// }
 
 
 void GEO::CUT::ConcreteSide<DRT::Element::tri6>::FillComplete( Mesh & mesh )
@@ -629,50 +629,50 @@ bool GEO::CUT::QuadraticSide::IsCut()
 void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  if ( not pos.Compute() )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri6> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  if ( not pos.Compute() )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  if ( not pos.Compute() )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad8> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  if ( not pos.Compute() )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad9> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  if ( not pos.Compute() )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 

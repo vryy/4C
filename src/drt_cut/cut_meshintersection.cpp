@@ -58,6 +58,10 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
   cut_mesh_.Status();
 
   mesh_.MakeFacets();
+
+  mesh_.DumpGmsh( "mesh" );
+  cut_mesh_.DumpGmsh( "cut_mesh" );
+
   mesh_.GenerateTetgen( generator );
 }
 

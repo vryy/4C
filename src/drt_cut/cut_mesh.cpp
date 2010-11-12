@@ -494,6 +494,7 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
 
 GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
 {
+  bb_.AddPoint( x );
   return pp_->NewPoint( x, cut_edge, cut_side );
 }
 
@@ -527,9 +528,9 @@ GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1,
   return line;
 }
 
-GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, int splitpos, Side * side )
+GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface )
 {
-  Facet* f = new Facet( *this, points, splitpos, side );
+  Facet* f = new Facet( *this, points, side, cutsurface );
   facets_.push_back( Teuchos::rcp( f ) );
   return f;
 }
@@ -580,6 +581,13 @@ void GEO::CUT::Mesh::MakeFacets()
   {
     Element & e = *i->second;
     e.MakeFacets( *this );
+  }
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    e.FindNodePositions();
   }
 }
 
@@ -666,6 +674,96 @@ void GEO::CUT::Mesh::PrintFacets()
   }
 }
 
+void GEO::CUT::Mesh::DumpGmsh( std::string name )
+{
+  std::ofstream file( name.c_str() );
+  file << "View \"" << name << "\" {\n";
+  if ( elements_.size() > 0 )
+  {
+    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+          i!=elements_.end();
+          ++i )
+    {
+      Element & e = *i->second;
+      //e.DumpGmsh( file );
+      LinearElement * le = dynamic_cast<LinearElement*>( &e );
+      if ( le!=NULL )
+      {
+        const std::vector<Node*> & nodes = e.Nodes();
+        char elementtype;
+        switch ( nodes.size() )
+        {
+        case 8:
+          elementtype = 'H';
+          break;
+        case 4:
+          elementtype = 'S';
+          break;
+        case 6:
+          elementtype = 'I';
+          break;
+        default:
+          throw std::runtime_error( "unknown element type" );
+        }
+        DumpGmsh( file, nodes, elementtype );
+      }
+    }
+  }
+  else
+  {
+    for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+          i!=sides_.end();
+          ++i )
+    {
+      Side & s = *i->second;
+      LinearSide * ls = dynamic_cast<LinearSide*>( &s );
+      if ( ls!=NULL )
+      {
+        const std::vector<Node*> & nodes = ls->Nodes();
+        char elementtype;
+        switch ( nodes.size() )
+        {
+        case 3:
+          elementtype = 'T';
+          break;
+        case 4:
+          elementtype = 'Q';
+          break;
+        default:
+          throw std::runtime_error( "unknown element type" );
+        }
+        DumpGmsh( file, nodes, elementtype );
+      }
+    }
+  }
+  file << "};\n";
+}
+
+void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype )
+{
+  file << "S" << elementtype
+       << "(";
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    double x[3];
+    n->Coordinates( x );
+    if ( i!=nodes.begin() )
+      file << ",";
+    file << x[0] << "," << x[1] << "," << x[2];
+  }
+  file << "){";
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    Point * p = n->point();
+    if ( i!=nodes.begin() )
+      file << ",";
+    file << p->Position();
+  }
+  file << "};\n";
+}
+
 void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
@@ -679,5 +777,5 @@ void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
 
 bool GEO::CUT::Mesh::WithinBB( const Epetra_SerialDenseMatrix & xyz )
 {
-  return pp_->WithinBB( xyz );
+  return bb_.Within( xyz );
 }

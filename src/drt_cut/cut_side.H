@@ -74,7 +74,7 @@ public:
 
   bool OnEdge( Line * line );
 
-  virtual void ExchangeFacetSide( Side * side ) = 0;
+//   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;
 
   virtual void AddLine( Line* cut_line ) = 0;
 
@@ -128,7 +128,7 @@ public:
 
   virtual bool IsCut();
 
-  virtual void ExchangeFacetSide( Side * side );
+//   virtual void ExchangeFacetSide( Side * side, bool cutsurface );
 
   // add cut_line to cut_lines_ if not yet included
   virtual void AddLine( Line* cut_line );
@@ -178,8 +178,8 @@ public:
 
   virtual bool IsCut();
 
-  virtual void ExchangeFacetSide( Side * side )
-  { throw std::runtime_error( "not supposed to end up here" ); }
+//   virtual void ExchangeFacetSide( Side * side, bool cutsurface )
+//   { throw std::runtime_error( "not supposed to end up here" ); }
 
   virtual void AddLine( Line* cut_line )
   { throw std::runtime_error( "not supposed to end up here" ); }

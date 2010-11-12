@@ -88,7 +88,7 @@ public:
 
   Line* NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 
-  Facet* NewFacet( const std::vector<Point*> & points, int splitpos, Side * side );
+  Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
   void Cut( Mesh & mesh );
 
@@ -99,6 +99,8 @@ public:
   void Status();
 
   void PrintFacets();
+
+  void DumpGmsh( std::string name );
 
   void GenerateTetgen( CellGenerator * generator=NULL );
 
@@ -122,6 +124,8 @@ public:
 
 private:
 
+  void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
+
   Edge* GetEdge( const std::set<int> & nids,
                  const std::vector<Node*> & nodes,
                  const CellTopologyData & edge_topology );
@@ -132,6 +136,7 @@ private:
                  const CellTopologyData & side_topology );
 
   Teuchos::RCP<PointPool> pp_;
+  BoundingBox bb_;
   bool cutmesh_;
 
   //std::list<Teuchos::RCP<Point> > points_;

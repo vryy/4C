@@ -151,7 +151,7 @@ void GEO::CUT::PointCycle::CreateFacets( Mesh & mesh, Side * side, std::vector<F
   else
   {
     if ( facet_points_.size() > 2 )
-      facets.push_back( mesh.NewFacet( facet_points_, 0, side ) );
+      facets.push_back( mesh.NewFacet( facet_points_, side, false ) );
   }
 }
 

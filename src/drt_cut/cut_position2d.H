@@ -32,6 +32,8 @@ public:
 
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
+  double Distance() const { return xsi_( 2, 0 ); }
+
 private:
   LINALG::Matrix<3,1> px_;
 

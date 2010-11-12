@@ -6,9 +6,11 @@
 #include "cut_edge.H"
 #include "cut_side.H"
 #include "cut_line.H"
+#include "cut_facet.H"
 
 GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side )
-  : pid_( pid )
+  : pid_( pid ),
+    position_( undecided )
 {
   std::copy( x, x+3, x_ );
 
@@ -148,4 +150,23 @@ bool GEO::CUT::Point::NodalPoint( const std::vector<Node*> & nodes ) const
     }
   }
   return false;
+}
+
+void GEO::CUT::Point::Position( Point::PointPosition pos )
+{
+  if ( position_ != pos )
+  {
+    position_ = pos;
+    if ( pos==Point::outside or pos==Point::inside )
+    {
+      for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      {
+        Facet * f = *i;
+        if ( f->Position()!=pos )
+        {
+          f->Position( pos );
+        }
+      }
+    }
+  }
 }

@@ -83,6 +83,62 @@ void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
   }
 }
 
+void GEO::CUT::LinearElement::FindNodePositions()
+{
+  LINALG::Matrix<3,1> xyz;
+  LINALG::Matrix<3,1> rst;
+
+  const std::vector<Node*> & nodes = Nodes();
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    Point * p = n->point();
+    if ( p->Position()==Point::undecided )
+    {
+      bool done = false;
+      const std::set<Facet*> & facets = p->Facets();
+      for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+      {
+        Facet * f = *i;
+        for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+        {
+          Side * s = *i;
+          if ( f->IsCutSide( s ) )
+          {
+            p->Coordinates( xyz.A() );
+            s->LocalCoordinates( xyz, rst );
+            double d = rst( 2, 0 );
+            if ( fabs( d ) > MINIMALTOL )
+            {
+              if ( d > 0 )
+              {
+                p->Position( Point::outside );
+              }
+              else
+              {
+                p->Position( Point::inside );
+              }
+            }
+            else
+            {
+              p->Position( Point::oncutsurface );
+            }
+            done = true;
+            break;
+          }
+        }
+        if ( done )
+          break;
+      }
+      if ( p->Position()==Point::undecided )
+      {
+        // Still undecided! No facets with cut side attached! Will be set in a
+        // minute.
+      }
+    }
+  }
+}
+
 bool GEO::CUT::LinearElement::IsCut()
 {
   if ( cut_faces_.size()>0 )
@@ -133,7 +189,7 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, CellGenerator * gener
   }
 
   in.pointmarkerlist = new int[in.numberofpoints];
-  std::fill( in.pointmarkerlist, in.pointmarkerlist+in.numberofpoints, 3 );
+  std::fill( in.pointmarkerlist, in.pointmarkerlist+in.numberofpoints, 0 );
 
   in.numberoffacets = 0;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -236,7 +292,6 @@ bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
   return false;
 }
 
-
 void GEO::CUT::QuadraticElement::Cut( Mesh & mesh, LinearSide & side )
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
@@ -252,6 +307,15 @@ void GEO::CUT::QuadraticElement::MakeFacets( Mesh & mesh )
   {
     Element * e = *i;
     e->MakeFacets( mesh );
+  }
+}
+
+void GEO::CUT::QuadraticElement::FindNodePositions()
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->FindNodePositions();
   }
 }
 

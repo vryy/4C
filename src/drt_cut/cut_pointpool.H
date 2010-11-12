@@ -31,8 +31,6 @@ public:
 
   void AddPoint( const double * x, Teuchos::RCP<Point> p );
 
-  bool WithinBB( const Epetra_SerialDenseMatrix & xyz ) { return bb_.Within( xyz ); }
-
   void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements );
 
 private:
@@ -62,8 +60,6 @@ public:
   { return tree_.NewPoint( x, cut_edge, cut_side ); }
 
   unsigned size() const { return tree_.size(); }
-
-  bool WithinBB( const Epetra_SerialDenseMatrix & xyz ) { return tree_.WithinBB( xyz ); }
 
   void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements )
   { tree_.CollectElements( sidebox, elements ); }

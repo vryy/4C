@@ -14,7 +14,7 @@ int GEO::CUT::Facet::SideId()
 }
 
 #ifdef QHULL
-void GEO::CUT::Facet::GenerateTetgen( Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist )
+void GEO::CUT::Facet::GenerateTetgen( LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist )
 {
   f.numberofpolygons = 1 + holes_.size();
   f.polygonlist = new tetgenio::polygon[f.numberofpolygons];
@@ -43,13 +43,29 @@ void GEO::CUT::Facet::GenerateTetgen( Element * element, tetgenio::facet & f, in
     GeneratePolygon( f.polygonlist[0], triangulation_[num], pointlist, x );
   }
 
-  if ( element->OwnedSide( parentside_ ) )
+  switch ( position_ )
   {
+  case Point::undecided:
+    // There is no node (point) without cut side in this facet. There are no
+    // dofs anyway, so assume this is on the inside.
+    marker = -2;
+    break;
+  case Point::inside:
+    marker = -2;
+    break;
+  case Point::outside:
     marker = -1;
-  }
-  else
-  {
-    marker = parentside_->Id();
+    break;
+  case Point::oncutsurface:
+    if ( element->OwnedSide( parentside_ ) )
+    {
+      throw std::runtime_error( "cannot have facet on cut side without cut side" );
+    }
+    else
+    {
+      marker = parentside_->Id();
+    }
+    break;
   }
 }
 #endif
@@ -149,7 +165,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
     b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
     b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
 
-    if ( fabs( b3.Norm2() ) > TOLERANCE )
+    if ( b3.Norm2() > MINIMALTOL )
     {
       found = true;
       break;
@@ -297,5 +313,45 @@ bool GEO::CUT::Facet::Equals( const std::vector<Point*> & facet_points )
     }
   }
   return true;
+}
+
+bool GEO::CUT::Facet::IsCutSide( Side * side )
+{
+  if ( parentside_==side )
+    return false;
+
+  int count = 0;
+  for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
+  {
+    Point * p = *i;
+    if ( p->IsCut( side ) )
+    {
+      count += 1;
+      if ( count > 1 )
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void GEO::CUT::Facet::Position( Point::PointPosition pos )
+{
+  if ( position_ != pos )
+  {
+    position_ = pos;
+    if ( pos==Point::outside or pos==Point::inside )
+    {
+      for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
+      {
+        Point * p = *i;
+        if ( p->Position()==Point::undecided )
+        {
+          p->Position( pos );
+        }
+      }
+    }
+  }
 }
 

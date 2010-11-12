@@ -24,12 +24,25 @@ class Side;
 class Element;
 
 class Line;
+class Facet;
 
 class Point
 {
 public:
 
+  enum PointPosition
+  {
+    undecided,
+    inside,
+    outside,
+    oncutsurface
+  };
+
   Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side );
+
+  PointPosition Position() const { return position_; }
+
+  void Position( PointPosition p );
 
   void AddEdge( Edge* e );
 
@@ -55,6 +68,11 @@ public:
   void Register( Line * line )
   {
     lines_.insert( line );
+  }
+
+  void Register( Facet * facet )
+  {
+    facets_.insert( facet );
   }
 
   Line * CommonLine( Point * other );
@@ -98,6 +116,8 @@ public:
 
   const std::set<Element*> & Elements() const { return cut_elements_; }
 
+  const std::set<Facet*> & Facets() const { return facets_; }
+
 private:
 
   // find the unique line that matches the filter criteria
@@ -108,6 +128,7 @@ private:
   void Find( Filter & filter, std::set<Line*> & cut_lines );
 
   unsigned pid_;
+  PointPosition position_;
 
   double x_[3];
   std::map<Edge*, double> t_;
@@ -117,6 +138,7 @@ private:
   std::set<Element*> cut_elements_;
 
   std::set<Line*> lines_;
+  std::set<Facet*> facets_;
 };
 
 inline std::ostream & operator<<( std::ostream & stream, Point & point )

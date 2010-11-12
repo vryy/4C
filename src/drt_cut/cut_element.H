@@ -45,6 +45,8 @@ public:
 
   virtual void MakeFacets( Mesh & mesh ) = 0;
 
+  virtual void FindNodePositions() = 0;
+
   virtual bool IsCut() = 0;
 
   virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator ) = 0;
@@ -105,6 +107,8 @@ public:
 
   virtual void MakeFacets( Mesh & mesh );
 
+  virtual void FindNodePositions();
+
   virtual bool IsCut();
 
   virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator );
@@ -136,6 +140,8 @@ public:
   virtual void Cut( Mesh & mesh, LinearSide & side );
 
   virtual void MakeFacets( Mesh & mesh );
+
+  virtual void FindNodePositions();
 
   virtual bool IsCut();
 

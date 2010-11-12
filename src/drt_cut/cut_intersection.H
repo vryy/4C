@@ -71,6 +71,7 @@ private:
     p->AddEdge( &edge_ );
     p->AddSide( &side_ );
     TestSideEdges( p, xsi );
+    p->Position( Point::oncutsurface );
     cuts.insert( p );
   }
 
@@ -148,6 +149,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
         else
         {
           Point * p = mesh_.NewPoint( x_.A(), &edge_, &side_ );
+          p->Position( Point::oncutsurface );
           p->t( &edge_, xsi_( 2, 0 ) );
           TestSideEdges( p, xsi_ );
           cuts.insert( p );
