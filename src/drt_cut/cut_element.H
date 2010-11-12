@@ -113,6 +113,8 @@ public:
 
   virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator );
 
+  void GenerateTetgen( Mesh & mesh, Element * parent, CellGenerator * generator );
+
   virtual bool OnSide( const std::vector<Point*> & facet_points );
 
 private:

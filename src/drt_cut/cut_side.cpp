@@ -1,5 +1,5 @@
 
-#include "../drt_geometry/intersection_templates.H"
+//#include "../drt_geometry/intersection_templates.H"
 
 #include "cut_tetgen.H"
 #include "cut_position.H"
@@ -629,7 +629,8 @@ bool GEO::CUT::QuadraticSide::IsCut()
 void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }
@@ -639,7 +640,8 @@ void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG:
 void GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri6> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }
@@ -649,7 +651,8 @@ void GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG:
 void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }
@@ -659,7 +662,8 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG
 void GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad8> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }
@@ -669,7 +673,8 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG
 void GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad9> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }

@@ -149,7 +149,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
 
   b1.Update( 1, x2, -1, x1, 0 );
 
-  if ( b1.Norm2()==0 )
+  if ( b1.Norm2() < std::numeric_limits<double>::min() )
     throw std::runtime_error( "same point in facet not supported" );
 
   bool found = false;
@@ -225,7 +225,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
 
         b1.Update( 1, x2, -1, x1, 0 );
 
-        if ( b1.Norm2()==0 )
+        if ( b1.Norm2() < std::numeric_limits<double>::min() )
           throw std::runtime_error( "same point in facet not supported" );
 
         for ( ; pos<pts.size(); ++pos )

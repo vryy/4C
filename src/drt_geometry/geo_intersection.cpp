@@ -116,12 +116,6 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
 
 void GEO::CellGenerator::Generate( GEO::CUT::Element* element, const tetgenio & out )
 {
-  DRT::Element * ele = dis_.gElement( element->Id() );
-  if ( ele==NULL )
-  {
-    dserror( "element %d not found", element->Id() );
-  }
-
   if ( out.numberoftetrahedra==0 )
     dserror( "cut element without cut cells" );
 

@@ -1,5 +1,5 @@
 
-#include "../drt_geometry/intersection_templates.H"
+//#include "../drt_geometry/intersection_templates.H"
 
 #include "cut_tetgen.H"
 #include "cut_intersection.H"
@@ -158,11 +158,11 @@ bool GEO::CUT::LinearElement::IsCut()
 
 void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, CellGenerator * generator )
 {
-  MakeFacets( mesh );
+  GenerateTetgen( mesh, this, generator );
+}
 
-  if ( not IsCut() )
-    return;
-
+void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, CellGenerator * generator )
+{
 #ifdef QHULL
   const int dim = 3;
   tetgenio in;
@@ -248,7 +248,7 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, CellGenerator * gener
 
   if ( generator!=NULL )
   {
-    generator->Generate( this, out );
+    generator->Generate( parent, out );
   }
   else
   {
@@ -334,8 +334,8 @@ void GEO::CUT::QuadraticElement::GenerateTetgen( Mesh & mesh, CellGenerator * ge
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
-    Element * e = *i;
-    e->GenerateTetgen( mesh, generator );
+    LinearElement * e = dynamic_cast<LinearElement*>( *i );
+    e->GenerateTetgen( mesh, this, generator );
   }
 }
 
@@ -745,7 +745,8 @@ bool GEO::CUT::ConcreteElement<DRT::Element::tet10>::PointInside( Point* p )
 void GEO::CUT::ConcreteElement<DRT::Element::tet4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::tet4> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
     throw std::runtime_error( "global point not within element" );
   }
@@ -755,7 +756,8 @@ void GEO::CUT::ConcreteElement<DRT::Element::tet4>::LocalCoordinates( const LINA
 void GEO::CUT::ConcreteElement<DRT::Element::hex8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::hex8> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
     throw std::runtime_error( "global point not within element" );
   }
@@ -765,7 +767,8 @@ void GEO::CUT::ConcreteElement<DRT::Element::hex8>::LocalCoordinates( const LINA
 void GEO::CUT::ConcreteElement<DRT::Element::wedge6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::wedge6> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
     throw std::runtime_error( "global point not within element" );
   }
@@ -775,7 +778,8 @@ void GEO::CUT::ConcreteElement<DRT::Element::wedge6>::LocalCoordinates( const LI
 void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::pyramid5> pos( *this, xyz );
-  if ( not pos.Compute() )
+  bool success = pos.Compute();
+  if ( not success )
   {
     throw std::runtime_error( "global point not within element" );
   }
@@ -785,30 +789,33 @@ void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const 
 void GEO::CUT::ConcreteElement<DRT::Element::hex20>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::hex20> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  bool success = pos.Compute();
+  if ( not success )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteElement<DRT::Element::hex27>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::hex27> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  bool success = pos.Compute();
+  if ( not success )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 
 void GEO::CUT::ConcreteElement<DRT::Element::tet10>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::tet10> pos( *this, xyz );
-//   if ( not pos.Compute() )
-//   {
+  bool success = pos.Compute();
+  if ( not success )
+  {
 //     throw std::runtime_error( "global point not within element" );
-//   }
+  }
   rst = pos.LocalCoordinates();
 }
 

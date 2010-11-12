@@ -357,7 +357,8 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     double solres = xsi_.Norm2();
     double residual = b.Norm2();
 
-    if ( ( solres != 0 and fabs( residual / solres ) < LINSOLVETOL ) or
+    if ( ( fabs( solres ) > std::numeric_limits<double>::min() and
+           fabs( residual / solres ) < LINSOLVETOL ) or
          fabs( residual ) < LINSOLVETOL )
     {
       return true;

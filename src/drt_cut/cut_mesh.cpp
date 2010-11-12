@@ -708,6 +708,29 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
         DumpGmsh( file, nodes, elementtype );
       }
     }
+    for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+          i!=shadow_elements_.end();
+          ++i )
+    {
+      Element & e = **i;
+      const std::vector<Node*> & nodes = e.Nodes();
+      char elementtype;
+      switch ( nodes.size() )
+      {
+      case 8:
+        elementtype = 'H';
+        break;
+      case 4:
+        elementtype = 'S';
+        break;
+      case 6:
+        elementtype = 'I';
+        break;
+      default:
+        throw std::runtime_error( "unknown element type" );
+      }
+      DumpGmsh( file, nodes, elementtype );
+    }
   }
   else
   {
@@ -771,7 +794,10 @@ void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
         ++i )
   {
     Element & e = *i->second;
-    e.GenerateTetgen( *this, generator );
+    if ( e.IsCut() )
+    {
+      e.GenerateTetgen( *this, generator );
+    }
   }
 }
 
