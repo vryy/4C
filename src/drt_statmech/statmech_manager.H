@@ -115,6 +115,9 @@ public:
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
+  //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
+  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
+
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
 
@@ -186,9 +189,6 @@ protected:
 													  Epetra_MultiVector& crosslinkerpositions,
 													  Epetra_MultiVector& crosslinkpartitions,
 														RCP<Epetra_MultiVector>& neighboursLID);
-
-  //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
-  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();

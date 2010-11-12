@@ -242,6 +242,9 @@ void StatMechTime::Integrate()
 
       UpdateandOutput();
 
+      //periodic shift of configuration at the end of the time step in order to avoid improper output
+      statmechmanager_->PeriodicBoundaryShift(*dis_, ndim, dt);
+
       //special output for statistical mechanics
       statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
 

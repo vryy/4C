@@ -646,7 +646,6 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
-			cout<<"nstep="<<params.get<int>("nstep",5)<<endl;
 			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
 			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
 			{
@@ -860,7 +859,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 					color = 0.5;
 
 				//if no periodic boundary conditions are to be applied, we just plot the current element
-				if (statmechparams_.get<double> ("PeriodLength", 0.0) == 0)
+				if (statmechparams_.get<double> ("PeriodLength", 0.0) == 0.0)
 				{
 					// check whether the kinked visualization is to be applied
 					bool kinked = CheckForKinkedVisual(element->Id());
@@ -1094,24 +1093,19 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					}
 				}
 
-
-
 				//define output coordinates for broken elements, first segment
-				LINALG::SerialDenseMatrix coordout = coord;
+				LINALG::SerialDenseMatrix coordout=coord;
 				for(int j=0 ;j<coordout.M(); j++)
-			   coordout(j,i+1) = coordout(j,i)+lambda0*dir(j);
+					coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
 				//define output coordinates for broken elements, second segment
-				coordout = coord;
-				for(int j=0 ;j<coordout.M(); j++)
+				for(int j=0; j<coordout.M(); j++)
 				{
-					coordout(j,i) = coordout(j,i+1);
-			  	coordout(j,i+1) = coordout(j,i)+lambda1*dir(j);
-			  }
+					coordout(j,i) = coord(j,i+1);
+					coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
+				}
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
-
-
 
 
 				// crosslink molecules with one bond
@@ -1137,10 +1131,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 							cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;
 					}*/
 
-
-					//define output coordinates for non-broken elements
 					GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
-
 
 					if (ignoreeleid)
 					{
@@ -2403,22 +2394,7 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 	/*first we modify the displacement vector so that current nodal position at the end of current time step complies with
 	 * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
 
-	Epetra_Vector disrowpre = disrow;
-	//cout<<"disrow.MyLength()"<<disrow.MyLength()<<endl;
-	PeriodicBoundaryShift(disrow, ndim, dt);
 
-	// debuggin cout
-	/*for(int i=0; i<discret_.NumMyRowNodes(); i++)
-	{
-		DRT::Node* node = discret_.lRowNode(i);
-		std::vector<int> dofnode = discret_.Dof(node);
-		for(int j=0; j<3; j++)
-			if(node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<0.0 || node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]>statmechparams_.get<double>("PeriodLength", 0.0))
-			{
-				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrowpre entry, node "<<i<<", dof "<<dofnode[j]<<", Numele "<<node->NumElement()<<": "<<node->X()[j]+disrowpre[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
-				cout<<"Proc "<<discret_.Comm().MyPID()<<": disrow entry   , node "<<i<<", dof "<<dofnode[j]<<", Numele "<<node->NumElement()<<": "<<node->X()[j]+disrow[discret_.DofRowMap()->LID(dofnode[j])]<<endl;
-			}
-	}*/
 
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
 	if (Teuchos::getIntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
