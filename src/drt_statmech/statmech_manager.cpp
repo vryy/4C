@@ -1092,12 +1092,14 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 							lambda1 = (statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i + 1)) / dir(dof);
 					}
 				}
-
 				//define output coordinates for broken elements, first segment
 				LINALG::SerialDenseMatrix coordout=coord;
 				for(int j=0 ;j<coordout.M(); j++)
 					coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
-				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+				if(!ignoreeleid)
+					GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+				else
+					GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
 				//define output coordinates for broken elements, second segment
 				for(int j=0; j<coordout.M(); j++)
@@ -1105,8 +1107,10 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					coordout(j,i) = coord(j,i+1);
 					coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
 				}
-				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
-
+				if(!ignoreeleid)
+					GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+				else
+					GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
 				// crosslink molecules with one bond
 				if (ignoreeleid)
@@ -1130,8 +1134,10 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 						  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
 							cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;
 					}*/
-
-					GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
+					if(!ignoreeleid)
+						GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
+					else
+						GMSH_2_noded(nline,coord,element,gmshfilecontent,color,true);
 
 					if (ignoreeleid)
 					{
@@ -1694,12 +1700,14 @@ void StatMechManager::GMSH_2_noded(const int& n,
                                   const Epetra_SerialDenseMatrix& coord,
                                   DRT::Element* thisele,
                                   std::stringstream& gmshfilecontent,
-                                  const double color)
+                                  const double color,
+                                  bool ignoreeleid)
 {
   //if this element is a line element capable of providing its radius get that radius
-  const DRT::ElementType & eot = thisele->ElementType();
-  double radius = 0;
-
+	double radius = 0;
+	if(!ignoreeleid)
+	{
+	const DRT::ElementType & eot = thisele->ElementType();
 #ifdef D_BEAM3II
 #ifdef D_BEAM3
   if(eot == DRT::ELEMENTS::Beam3Type::Instance())
@@ -1710,7 +1718,9 @@ void StatMechManager::GMSH_2_noded(const int& n,
     dserror("thisele is not a line element providing its radius.");
 #endif
 #endif
-
+	}
+	else
+		radius = 5e-3;
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
 
@@ -1733,7 +1743,6 @@ void StatMechManager::GMSH_2_noded(const int& n,
 
   // Compute rotation matirx R from rotation angle theta
   angletotriad(theta,R);
-
 
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
