@@ -1252,6 +1252,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
   //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
+  DoubleParameter("PlotFactorThick",1.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
                                yesnotuple,yesnovalue,&statmech);

@@ -1720,6 +1720,9 @@ void StatMechManager::GMSH_2_noded(const int& n,
 #endif
 #endif
 
+  //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
+  radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
+
   // some local variables
   LINALG::Matrix<3,6> prism;
 	LINALG::Matrix<3,1> axis;
