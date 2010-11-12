@@ -131,6 +131,7 @@ unconvergedsteps_(0)
       Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_anisotropic)
   {
     params_.set("print to screen",false);
+    std::cout<<"\n\nPay Attention: from no on regular output to screen suppressed !!!\n\n";
   }
 
   return;
@@ -182,7 +183,7 @@ void StatMechTime::Integrate()
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
     {
-      std::cout<<"\nStatmech Output for time step "<<i+1<<":";
+      std::cout<<"\nbegin time step "<<i+1<<":";
       std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
       std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
       std::cout<<"\nNumber of unconverged steps since start / last restart: "<<unconvergedsteps_<<"\n";
