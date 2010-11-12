@@ -200,8 +200,7 @@ void GEO::CUT::LinearSide::CreateLineSegmentList( Mesh & mesh,
   }
 }
 
-Teuchos::RCP<GEO::CUT::LineSegment> GEO::CUT::LinearSide::CreateLineSegment( Mesh & mesh,
-                                                                             Element * element )
+void GEO::CUT::LinearSide::CreateLineSegment( Mesh & mesh, Element * element )
 {
   std::vector<Teuchos::RCP<LineSegment> > segments;
 
@@ -226,16 +225,12 @@ Teuchos::RCP<GEO::CUT::LineSegment> GEO::CUT::LinearSide::CreateLineSegment( Mes
     }
   }
 
+#if 0
   std::vector<Teuchos::RCP<LineSegment> >::iterator i
     = std::remove_if( segments.begin(), segments.end(),
                       std::bind2nd( std::equal_to<Teuchos::RCP<LineSegment> >(), Teuchos::null ) );
   segments.erase( i, segments.end() );
-
-  if ( segments.size()!=1 )
-  {
-    throw std::runtime_error( "expect one segment" );
-  }
-  return segments[0];
+#endif
 }
 
 void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
@@ -331,42 +326,45 @@ void GEO::CUT::LinearSide::MakeInternalFacets( Mesh & mesh, Element * element, s
   std::vector<Teuchos::RCP<LineSegment> > segments;
   CreateLineSegmentList( mesh, element, segments, false );
 
-  if ( segments.size()!=1 )
+  for ( unsigned i=0; i<segments.size(); ++i )
   {
-    throw std::runtime_error( "expect one closed cut" );
-  }
+    LineSegment & ls = *segments[i];
 
-  LineSegment & ls = *segments[0];
-
-  if ( not ls.IsClosed() )
-  {
-    //throw std::runtime_error( "expect one closed cut" );
-
-    // Assume this is a cut along one of our edges. So this side is not
-    // responsible.
-    return;
-  }
-
-  Side * s = ls.OnSide( element );
-  if ( s!=NULL )
-  {
-    const std::vector<Point*> & facet_points = ls.Points();
-    Facet * f = s->FindFacet( facet_points );
-    if ( f!=NULL )
+    if ( not ls.IsClosed() )
     {
-      f->ExchangeSide( this, true );
+      //throw std::runtime_error( "expect one closed cut" );
+
+      // Assume this is a cut along one of our edges. So this side is not
+      // responsible.
+      return;
+    }
+
+    Side * s = ls.OnSide( element );
+    if ( s!=NULL )
+    {
+      const std::vector<Point*> & facet_points = ls.Points();
+      Facet * f = s->FindFacet( facet_points );
+      if ( f!=NULL )
+      {
+        f->ExchangeSide( this, true );
+      }
+      else
+      {
+        //throw std::runtime_error( "must have matching facet on side" );
+
+        // multiple facets on one cut side within one elemenet: this is a
+        // levelset case
+        Facet * f = mesh.NewFacet( facet_points, this, true );
+        facets.insert( f );
+      }
     }
     else
     {
-      throw std::runtime_error( "must have matching facet on side" );
+      // insert new internal facet
+      const std::vector<Point*> & facet_points = ls.Points();
+      Facet * f = mesh.NewFacet( facet_points, this, true );
+      facets.insert( f );
     }
-  }
-  else
-  {
-    // insert new internal facet
-    const std::vector<Point*> & facet_points = ls.Points();
-    Facet * f = mesh.NewFacet( facet_points, this, true );
-    facets.insert( f );
   }
 }
 

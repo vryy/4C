@@ -13,6 +13,7 @@ namespace CUT
   class Mesh;
   class LinearElement;
   class LinearSide;
+  class LevelSetSide;
 
 template <DRT::Element::DiscretizationType edgetype>
 class ConcreteEdge;
@@ -108,6 +109,8 @@ public:
 
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts ) = 0;
 
+  virtual void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts ) = 0;
+
   virtual void AddPoint( Point* cut_point ) = 0;
 
   void Coordinates( double * xyze )
@@ -195,6 +198,7 @@ public:
 
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
+  virtual void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts );
 
   virtual void AddPoint( Point* cut_point );
 
@@ -238,6 +242,7 @@ public:
 
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
   virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
+  virtual void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts );
 
   virtual void AddPoint( Point* cut_point );
 

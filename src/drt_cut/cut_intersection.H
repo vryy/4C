@@ -59,20 +59,9 @@ public:
 private:
 
   /// add cut point that is a node to all edges and sides it touches
-  void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts, const LINALG::Matrix<3,1> & xsi )
+  void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts )
   {
-    Point * p = n->point();
-    const std::set<Edge*> & edges = n->Edges();
-    for ( std::set<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
-    {
-      Edge * e = *i;
-      p->AddEdge( e );
-    }
-    p->AddEdge( &edge_ );
-    p->AddSide( &side_ );
-    TestSideEdges( p, xsi );
-    p->Position( Point::oncutsurface );
-    cuts.insert( p );
+    cuts.insert( Point::InsertCut( &edge_, &side_, n ) );
   }
 
   /// test if we are on any edge of the cut side and add those edges
@@ -116,8 +105,10 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
     ComputeDistance( edge_.EndNode()->point() );
     if ( fabs( xsi_( 2, 0 ) ) < TOLERANCE and SurfaceWithinLimits() )
     {
-      InsertCut( edge_.BeginNode(), cuts, begin_xsi );
-      InsertCut( edge_.EndNode()  , cuts, xsi_ );
+      InsertCut( edge_.BeginNode(), cuts );
+      InsertCut( edge_.EndNode()  , cuts );
+      TestSideEdges( edge_.BeginNode()->point(), begin_xsi );
+      TestSideEdges( edge_.EndNode()  ->point(), xsi_ );
       return true;
     }
   }
@@ -130,12 +121,14 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
 
       if ( fabs( xsi_( 2, 0 )+1 ) < TOLERANCE )
       {
-        InsertCut( edge_.BeginNode(), cuts, xsi_ );
+        InsertCut( edge_.BeginNode(), cuts );
+        TestSideEdges( edge_.BeginNode()->point(), xsi_ );
         return true;
       }
       else if ( fabs( xsi_( 2, 0 )-1 ) < TOLERANCE )
       {
-        InsertCut( edge_.EndNode(), cuts, xsi_ );
+        InsertCut( edge_.EndNode(), cuts );
+        TestSideEdges( edge_.EndNode()->point(), xsi_ );
         return true;
       }
       else
@@ -143,14 +136,13 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
         Node * n = side_.OnNode( x_ );
         if ( n!=NULL )
         {
-          InsertCut( n, cuts, xsi_ );
+          InsertCut( n, cuts );
+          TestSideEdges( n->point(), xsi_ );
           return true;
         }
         else
         {
-          Point * p = mesh_.NewPoint( x_.A(), &edge_, &side_ );
-          p->Position( Point::oncutsurface );
-          p->t( &edge_, xsi_( 2, 0 ) );
+          Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2, 0 ), &edge_, &side_ );
           TestSideEdges( p, xsi_ );
           cuts.insert( p );
           return true;

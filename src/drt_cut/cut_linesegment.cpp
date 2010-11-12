@@ -102,6 +102,15 @@ bool GEO::CUT::LineSegment::ClosedOnEdge( Mesh & mesh, Element * element, Side *
       return false;
     }
 
+    // If both points belong to the same element side, we can assume a
+    // straight line between those points. This is a level set case with two
+    // cuts at the same side.
+    if ( begin->CutSide( side, end ) != NULL )
+    {
+      CloseGap( mesh, element, side, end );
+      return true;
+    }
+
     throw std::runtime_error( "no edges here!" );
   }
 

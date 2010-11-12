@@ -7,6 +7,30 @@
 #include "cut_side.H"
 #include "cut_line.H"
 #include "cut_facet.H"
+#include "cut_mesh.H"
+
+GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side )
+{
+  Point * p = mesh.NewPoint( x, cut_edge, cut_side );
+  p->Position( Point::oncutsurface );
+  p->t( cut_edge, t );
+  return p;
+}
+
+GEO::CUT::Point * GEO::CUT::Point::InsertCut( Edge * cut_edge, Side * cut_side, Node * n )
+{
+  Point * p = n->point();
+  const std::set<Edge*> & edges = n->Edges();
+  for ( std::set<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+  {
+    Edge * e = *i;
+    p->AddEdge( e );
+  }
+  p->AddEdge( cut_edge );
+  p->AddSide( cut_side );
+  p->Position( Point::oncutsurface );
+  return p;
+}
 
 GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side )
   : pid_( pid ),
@@ -169,4 +193,25 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
       }
     }
   }
+}
+
+GEO::CUT::Side * GEO::CUT::Point::CutSide( Side * side, Point * other )
+{
+  Side * found_side = NULL;
+  for ( std::set<Side*>::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
+  {
+    Side * s = *i;
+    if ( s != side and other->IsCut( s ) )
+    {
+      if ( found_side==NULL )
+      {
+        found_side = s;
+      }
+      else
+      {
+        throw std::runtime_error( "side not unique" );
+      }
+    }
+  }
+  return found_side;
 }

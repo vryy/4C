@@ -135,7 +135,7 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  Teuchos::RCP<LineSegment> CreateLineSegment( Mesh & mesh, Element * element );
+  void CreateLineSegment( Mesh & mesh, Element * element );
 
   bool FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & other );
 

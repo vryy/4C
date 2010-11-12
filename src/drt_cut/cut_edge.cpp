@@ -11,6 +11,7 @@
 #include <stack>
 
 #include "cut_edge.H"
+#include "cut_levelsetside.H"
 
 void GEO::CUT::ConcreteEdge<DRT::Element::line2>::FillComplete( Mesh & mesh )
 {
@@ -179,6 +180,40 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::Cut( Mesh & mesh, ConcreteSide
   inter.Intersect( cuts );
 }
 
+void GEO::CUT::ConcreteEdge<DRT::Element::line2>::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts )
+{
+  double blsv = BeginNode()->LSV();
+  double elsv = EndNode()  ->LSV();
+
+  if ( ( blsv < 0.0 and elsv > 0.0 ) or
+       ( blsv > 0.0 and elsv < 0.0 ) )
+  {
+    double t = blsv / ( blsv-elsv );
+
+    LINALG::Matrix<3,1> x1;
+    LINALG::Matrix<3,1> x2;
+    BeginNode()->Coordinates( x1.A() );
+    EndNode()  ->Coordinates( x2.A() );
+
+    LINALG::Matrix<3,1> x;
+    x.Update( -1., x1, 1., x2, 0. );
+    x.Update( 1., x1, t );
+    Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side );
+    cuts.insert( p );
+  }
+  else
+  {
+    if ( blsv == 0.0 )
+    {
+      cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
+    }
+    if ( elsv == 0.0 )
+    {
+      cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
+    }
+  }
+}
+
 void GEO::CUT::ConcreteEdge<DRT::Element::line3>::FillComplete( Mesh & mesh )
 {
   subedge1_ = mesh.GetEdge( BeginNode(), MiddleNode() );
@@ -196,6 +231,11 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line3>::Cut( Mesh & mesh, ConcreteSide
 {
   //subedge1_->Cut( mesh, side, cuts );
   //subedge2_->Cut( mesh, side, cuts );
+  throw std::runtime_error( "not supposed to end up here" );
+}
+
+void GEO::CUT::ConcreteEdge<DRT::Element::line3>::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts )
+{
   throw std::runtime_error( "not supposed to end up here" );
 }
 

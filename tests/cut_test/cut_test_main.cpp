@@ -51,6 +51,10 @@ void test_hex20_quad9_moved();
 void test_tet10_quad9_simple();
 void test_tet10_quad9_moved();
 
+void test_ls_hex8_simple();
+void test_ls_hex8_simple2();
+void test_ls_hex8_simple3();
+
 int main( int argc, char ** argv )
 {
   typedef void ( *testfunct )();
@@ -97,6 +101,10 @@ int main( int argc, char ** argv )
   functable["hex20_quad9_moved"] = test_hex20_quad9_moved;
   functable["tet10_quad9_simple"] = test_tet10_quad9_simple;
   functable["tet10_quad9_moved"] = test_tet10_quad9_moved;
+
+  functable["ls_hex8_simple"] = test_ls_hex8_simple;
+  functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
+  functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
 
   Teuchos::CommandLineProcessor clp( false );
 

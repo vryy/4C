@@ -1210,6 +1210,8 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
   src/drt_cut/cut_facet.cpp
+  src/drt_cut/cut_levelsetintersection.cpp
+  src/drt_cut/cut_levelsetside.cpp
   src/drt_cut/cut_line.cpp
   src/drt_cut/cut_linesegment.cpp
   src/drt_cut/cut_mesh.cpp
@@ -1222,6 +1224,7 @@ set(OBJS_DRT_CUT
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_intersection.cpp
+  tests/cut_test/cut_test_levelset.cpp
   tests/cut_test/cut_test_main.cpp
   tests/cut_test/cut_test_simple.cpp
   tests/cut_test/cut_test_utils.cpp

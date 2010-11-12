@@ -16,7 +16,7 @@ class Node
 {
 public:
 
-  Node( int nid, Point * point ) : nid_( nid ), point_( point ) {}
+  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ) {}
 
   int Id() const { return nid_; }
 
@@ -41,10 +41,13 @@ public:
 
   Point * point() { return point_; }
 
+  double LSV() const { return lsv_; }
+
 private:
 
   int nid_;
   Point* point_;
+  double lsv_;
 
   std::set<Edge*> edges_;
 };

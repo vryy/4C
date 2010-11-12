@@ -26,6 +26,8 @@ class Element;
 class Line;
 class Facet;
 
+class Mesh;
+
 class Point
 {
 public:
@@ -37,6 +39,10 @@ public:
     outside,
     oncutsurface
   };
+
+  static Point * NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side );
+
+  static Point * InsertCut( Edge * cut_edge, Side * cut_side, Node * n );
 
   Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side );
 
@@ -86,6 +92,8 @@ public:
   //std::vector<Edge*> CutEdges( Point * other );
 
   const std::set<Side*> & CutSides() { return cut_sides_; }
+
+  Side * CutSide( Side * side, Point * other );
 
   void CutEdge( Side * side, Line * other_line, std::vector<Edge*> & matches );
 

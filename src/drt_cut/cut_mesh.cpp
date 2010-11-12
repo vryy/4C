@@ -14,6 +14,7 @@
 #include "cut_side.H"
 #include "cut_element.H"
 #include "cut_facet.H"
+#include "cut_levelsetside.H"
 
 GEO::CUT::Mesh::Mesh( Teuchos::RCP<PointPool> pp, bool cutmesh )
   : pp_( pp ),
@@ -190,7 +191,7 @@ GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad9( int sid, const std::vector<int> & 
   return GetSide( sid, nids, top_data );
 }
 
-GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz )
+GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv )
 {
   std::map<int, Teuchos::RCP<Node> >::iterator i = nodes_.find( nid );
   if ( i != nodes_.end() )
@@ -201,7 +202,7 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz )
     throw std::runtime_error( "cannot create node without coordinates" );
 
   Point * p = NewPoint( xyz, NULL, NULL );
-  Node * n = new Node( nid, p );
+  Node * n = new Node( nid, p, lsv );
   nodes_[nid] = Teuchos::rcp( n );
   return n;
 }
@@ -573,6 +574,17 @@ void GEO::CUT::Mesh::Cut( LinearSide & side )
   }
 }
 
+void GEO::CUT::Mesh::Cut( LevelSetSide & side )
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    e.Cut( *this, side );
+  }
+}
+
 void GEO::CUT::Mesh::MakeFacets()
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
@@ -582,6 +594,10 @@ void GEO::CUT::Mesh::MakeFacets()
     Element & e = *i->second;
     e.MakeFacets( *this );
   }
+}
+
+void GEO::CUT::Mesh::FindNodePositions()
+{
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )

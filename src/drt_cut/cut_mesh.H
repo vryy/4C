@@ -27,6 +27,7 @@ class Node;
 class Edge;
 class Side;
 class LinearSide;
+class LevelSetSide;
 class Element;
 
 class PointPool;
@@ -94,7 +95,11 @@ public:
 
   void Cut( LinearSide & side );
 
+  void Cut( LevelSetSide & side );
+
   void MakeFacets();
+
+  void FindNodePositions();
 
   void Status();
 
@@ -104,7 +109,7 @@ public:
 
   void GenerateTetgen( CellGenerator * generator=NULL );
 
-  Node* GetNode( int nid, const double * xyz );
+  Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
 
   Node* GetNode( const std::set<int> & nids, const double * xyz );
 
