@@ -769,6 +769,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 	// do output to file in c-style
 	FILE* fp = NULL;
 
+	//number of solid elements by which a round line is depicted
+	const int nline = 8;
+
 	// first processor starts by opening the file and writing the header, other processors have to wait
 	if (discret_.Comm().MyPID() == 0)
 	{
@@ -864,20 +867,23 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 
 					const DRT::ElementType & eot = element->ElementType();
 #ifdef D_BEAM3
-					if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+#ifdef D_BEAM3II
+					if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
+					    eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
+					    eot == DRT::ELEMENTS::Truss3Type::Instance())
 					{
 						if (!kinked)
 						{
 							for (int j=0; j<element->NumNode() - 1; j++)
 							{
-								//writing element by nodal coordinates as a scalar line
-								gmshfilecontent << "SL(" << scientific;
-								gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j) << "," << coord(0, j + 1) << "," << coord(1,j + 1) << "," << coord(2, j + 1);
-								/*note: colors are chosen by values between 0.0 and 1.0. These values refer to a color vector which
-								 * is given in a .geo-setup-file. If, for example, 5 colors are given(either in X11 color expressions or RGB),
-								 * possible values are 0.0, 0.25, 0.5, 0.75, 1.0.
-								 */
-								gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+                //define output coordinates
+                LINALG::SerialDenseMatrix coordout(3,2);
+                for(int m=0; m<3; m++)
+                  for(int n=0; n<2; n++)
+                    coordout(m,n)=coord(m,j+n);
+
+                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+
 							}
 						}
 						else
@@ -885,23 +891,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 					}
 					else
 #endif
-#ifdef D_BEAM3II
-					if(eot==DRT::ELEMENTS::Beam3iiType::Instance())
-					{
-						if(!kinked)
-						{
-							for(int j=0; j<element->NumNode()-1; j++)
-							{
-								gmshfilecontent << "SL(" << scientific;
-								gmshfilecontent<< coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << ","
-															 << coord(0,j+1) << "," << coord(1,j+1) << "," << coord(2,j+1);
-								gmshfilecontent<< ")" << "{" << scientific << color << "," << color << "};" << endl;
-							}
-						}
-						else
-							GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
-					}
-					else
 #endif
 #ifdef D_TRUSS3
 					if (eot == DRT::ELEMENTS::Truss3Type::Instance())
