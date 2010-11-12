@@ -34,7 +34,7 @@ theory: implementation of a strain-invariant finite element for statics and dyna
 namespace LARGEROTATIONS
 {
   //!computing spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation (16.8)
-  void computespin(LINALG::Matrix<3,3>& S, LINALG::Matrix<3,1> theta);
+  void computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,1>& theta);
   
   //!computing rotation matrix R from quaternion q, Crisfield, Vol. 2, equation (16.70)
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);

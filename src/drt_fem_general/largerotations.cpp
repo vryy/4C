@@ -87,7 +87,7 @@ void LARGEROTATIONS::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Mat
 /*---------------------------------------------------------------------------*
  |computes a spin matrix out of a rotation vector        (public)cyron02/09|
  *---------------------------------------------------------------------------*/
-void LARGEROTATIONS::computespin(LINALG::Matrix<3,3>& S, LINALG::Matrix<3,1> theta)
+void LARGEROTATIONS::computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,1>& theta)
 {
   //function based on Crisfield Vol. 2, Section 16 (16.8)
   S(0,0) = 0;
@@ -186,7 +186,6 @@ void LARGEROTATIONS::angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matr
   // square of spin matrix
   LINALG::Matrix<3,3> spin2;
   spin2.Multiply(spin,spin);
-
 
   // compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
   for(int i=0;i<3;i++)

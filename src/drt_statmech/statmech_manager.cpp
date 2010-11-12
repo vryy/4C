@@ -1106,15 +1106,16 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 				}
 
 
+
 				//define output coordinates for broken elements, first segment
 				LINALG::SerialDenseMatrix coordout(coord);
-				for(int j=0 ;i<coordout.M(); i++)
+				for(int j=0 ;j<coordout.M(); j++)
 			   coordout(j,i)=lambda0*dir(j);
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
 				//define output coordinates for broken elements, second segment
 				coordout = coord;
-				for(int j=0 ;i<coordout.M(); i++)
+				for(int j=0 ;j<coordout.M(); j++)
 			   coordout(j,i+1)=lambda1*dir(j);
 				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
@@ -1746,6 +1747,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
 
   // Compute rotation matirx R from rotation angle theta
   angletotriad(theta,R);
+
 
   // Now the first prism will be computed via two radiusvectors, that point from each of
   // the nodes to two points on the beam surface. Further prisms will be computed via a
