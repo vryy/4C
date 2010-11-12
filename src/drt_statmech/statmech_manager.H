@@ -225,7 +225,7 @@ protected:
 	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent);
 
 	//! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
-	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent);
+	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color);
 
 
 	/*! \brief Handles Crosslinker diffusion

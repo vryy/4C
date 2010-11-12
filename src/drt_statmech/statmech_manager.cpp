@@ -1704,12 +1704,13 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 }//GmshPrepareVisualization
 
 /*----------------------------------------------------------------------*
- | wedge output for two-noded beams                        mueller 11/10|
+ | wedge output for two-noded beams                        cyron   11/10|
  *----------------------------------------------------------------------*/
 void StatMechManager::GMSH_2_noded(const int& n,
                                   const Epetra_SerialDenseMatrix& coord,
                                   DRT::Element* thisele,
-                                  std::stringstream& gmshfilecontent)
+                                  std::stringstream& gmshfilecontent,
+                                  const double color)
 {
   //if this element is a line element capable of providing its radius get that radius
   const DRT::ElementType & eot = thisele->ElementType();
@@ -1734,7 +1735,6 @@ void StatMechManager::GMSH_2_noded(const int& n,
   LINALG::Matrix<3,1> auxvec;
   LINALG::Matrix<3,1> theta;
   LINALG::Matrix<3,3> R;
-  double color = 1.0;
 
 
   // compute three dimensional angle theta
