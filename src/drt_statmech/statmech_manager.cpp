@@ -974,6 +974,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
 {
+	//number of solid elements by which a round line is depicted
+	const int nline = 8;
+
 	//number of spatial dimensions
 	const int ndim = 3;
 	// get Element Type of the first Element to determine the graphics output
@@ -1102,20 +1105,21 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 					}
 				}
 
-				//writing element by nodal coordinates as a scalar line
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << coord(0, i) << "," << coord(1, i) << "," << coord(2,i) << ","
-												<< coord(0, i) + lambda0 * dir(0) << ","<< coord(1, i)+ lambda0 * dir(1) << "," << coord(2, i) + lambda0 * dir(2);
-				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-				 * interpolating these two colors between the nodes*/
-				gmshfilecontent << ")" << "{" << scientific << color << "," << color<< "};" << endl;
-				//writing element by nodal coordinates as a scalar line
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << coord(0, i + 1) << "," << coord(1, i + 1) << "," << coord(2, i + 1) << ","
-												<< coord(0, i + 1) + lambda1 * dir(0)<< "," << coord(1, i + 1) + lambda1 * dir(1) << "," << coord(2, i + 1) + lambda1 * dir(2);
-				/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-				 * interpolating these two colors between the nodes*/
-				gmshfilecontent << ")" << "{" << scientific << color << "," << color << "};" << endl;
+
+				//define output coordinates for broken elements, first segment
+				LINALG::SerialDenseMatrix coordout(coord);
+				for(int j=0 ;i<coordout.M(); i++)
+			   coordout(j,i)=lambda0*dir(j);
+				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+
+				//define output coordinates for broken elements, second segment
+				coordout = coord;
+				for(int j=0 ;i<coordout.M(); i++)
+			   coordout(j,i+1)=lambda1*dir(j);
+				GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+
+
+
 
 				// crosslink molecules with one bond
 				if (ignoreeleid)
@@ -1130,24 +1134,20 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 			{
 				if (!kinked)
 				{
-					if(element->Id()>basisnodes_ && eleid!=0)
+					/*if(element->Id()>basisnodes_ && eleid!=0)
 					{
-						/*double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
+						double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
 														(coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0)) +
 														(coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
 						if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
 						  (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
-							cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;*/
-					}
+							cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;
+					}*/
 
-					// filament or crosslink between two filaments
-					//writing element by nodal coordinates as a scalar line
-					gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << coord(0, i) << "," << coord(1, i) << "," << coord(2, i) << ","
-												  << coord(0, i + 1) << "," << coord(1, i + 1) << ","<< coord(2, i + 1);
-					/*note: for each node there is one color variable for gmsh and gmsh finally plots the line
-					 * interpolating these two colors between the nodes*/
-					gmshfilecontent << ")" << "{" << scientific << color << "," << color<< "};" << endl;
+
+					//define output coordinates for non-broken elements
+					GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
+
 
 					if (ignoreeleid)
 					{
