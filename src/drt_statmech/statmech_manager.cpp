@@ -646,50 +646,60 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
 		break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
-			//output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-			if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
-			{
-				//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-				FILE* fp = NULL;
-
-				//content to be written into the output file
-				std::stringstream filecontent;
-
-				//name of file into which output is written
-				std::ostringstream outputfilename;
-				outputfilename << "ViscoElOutputProc" << discret_.Comm().MyPID()<< ".dat";
-
-				fp = fopen(outputfilename.str().c_str(), "a");
-
-				/*the output to be written consists of internal forces at exactly those degrees of freedom
-				 * marked in *forcesensor_ by a one entry*/
-
-				filecontent << scientific << setprecision(10) << time;//changed
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
+      if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
+      {
 
 #ifdef DEBUG
-				if (forcesensor_ == null)
-					dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
+        if (forcesensor_ == null)
+          dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
 #endif  // #ifdef DEBUG
-				double f = 0;//mean value of force
-				double d = 0;//Displacement
-				int count = 0;
+        double f = 0;//mean value of force
+        double d = 0;//Displacement
+        int count = 0;
 
-				for(int i=0; i<forcesensor_->MyLength(); i++)//changed
+        for(int i=0; i<forcesensor_->MyLength(); i++)//changed
+          if((*forcesensor_)[i]>0.9)
+          {
+            count++;
+            f += fint[i];
+            d = dis[i];
+          }
 
-				{
-					if((*forcesensor_)[i]>0.9)
-					{
-						count++;
-						f += fint[i];
-						d = dis[i];
-					}
-				}
-				//Putting time, displacement, meanforce  in Filestream
-				filecontent << "   "<< d << "   " << f << "   " << discret_.NumMyRowElements() << endl; //changed
-				//writing filecontent into output file and closing it
-				fprintf(fp,filecontent.str().c_str());
-				fclose(fp);
-			}
+        //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
+        double fglob = 0;
+        discret_.Comm().SumAll(&f,&fglob,1);
+
+
+
+        if(!discret_.Comm().MyPID())
+        {
+
+          //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+          FILE* fp = NULL;
+
+          //content to be written into the output file
+          std::stringstream filecontent;
+
+          //name of file into which output is written
+          std::ostringstream outputfilename;
+          outputfilename << "ViscoElOutputProc.dat";
+
+          fp = fopen(outputfilename.str().c_str(), "a");
+
+          /*the output to be written consists of internal forces at exactly those degrees of freedom
+           * marked in *forcesensor_ by a one entry*/
+
+          filecontent << scientific << setprecision(10) << time;//changed
+
+          //Putting time, displacement, meanforce  in Filestream
+          filecontent << "   "<< d << "   " << fglob << "   " << discret_.NumGlobalElements() << endl; //changed
+          //writing filecontent into output file and closing it
+          fprintf(fp,filecontent.str().c_str());
+          fclose(fp);
+        }
+      }
+
 		}
 		break;
 		//writing data for generating a Gmsh video of the simulation
@@ -2198,24 +2208,27 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
     break;
 		case INPAR::STATMECH::statout_viscoelasticity:
 		{
-			//pointer to file into which each processor writes the output related with the dof of which it is the row map owner
-			FILE* fp = NULL;
+			if(!discret_.Comm().MyPID())
+			{
+        //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+        FILE* fp = NULL;
 
-			//content to be written into the output file
-			std::stringstream filecontent;
+        //content to be written into the output file
+        std::stringstream filecontent;
 
-			//defining name of output file related to processor Id
-			std::ostringstream outputfilename;
-			outputfilename.str("");
-			outputfilename << "ViscoElOutputProc" << discret_.Comm().MyPID()<< ".dat";
+        //defining name of output file related to processor Id
+        std::ostringstream outputfilename;
+        outputfilename.str("");
+        outputfilename << "ViscoElOutputProc.dat";
 
-			fp = fopen(outputfilename.str().c_str(), "w");
+        fp = fopen(outputfilename.str().c_str(), "w");
 
-			//filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
+        //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_.Comm().MyPID() << endl;
 
-			// move temporary stringstream to file and close it
-			fprintf(fp, filecontent.str().c_str());
-			fclose(fp);
+        // move temporary stringstream to file and close it
+        fprintf(fp, filecontent.str().c_str());
+        fclose(fp);
+			}
 		}
 			break;
 		case INPAR::STATMECH::statout_none:
