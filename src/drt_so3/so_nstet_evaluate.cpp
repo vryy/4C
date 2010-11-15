@@ -232,6 +232,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         }
         
         //------------------------------------------------- add stress from MIS nodes
+#ifndef PUSOSOLBERG
         Teuchos::RCP<Epetra_MultiVector> mis_stress = ElementType().pstab_nstress_;
         Teuchos::RCP<Epetra_MultiVector> mis_strain = ElementType().pstab_nstrain_;
         map<int,vector<int> >::iterator ele = ElementType().pstab_cid_mis_.find(Id());
@@ -259,6 +260,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         } // for (int i=0; i<nummis; ++i)
         //printf("Proc %d Ele %d TotWeight %15.10e\n",Owner(),Id(),totweight);
         //cout << stresstest;
+#endif
         
         //----------------------------------------------- add final stress to storage
         AddtoPack(*stressdata, stress);
@@ -392,10 +394,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       const INPAR::STR::StrainType     iostrain)       // type of strain
 {
   //--------------------------------------------------- geometry update
-  LINALG::Matrix<3,3> defgrd(false);
-  for (int i=0; i<3; ++i)
-    for (int j=0; j<3; ++j)
-      defgrd(i,j) = F()(i,j).val();
+  LINALG::Matrix<3,3>& defgrd = F();
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
   LINALG::Matrix<3,3> cauchygreen;

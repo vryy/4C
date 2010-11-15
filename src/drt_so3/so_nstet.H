@@ -37,15 +37,19 @@ using namespace Teuchos;
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_SerialDenseMatrix.hpp>
+#include "Epetra_Time.h"
 
-//#define PRINT_NSTET            ///< printout of setup option
+//#define PRINT_NSTET            ///< printout of setup
+//#define NSTET_TIMINGS            ///< printout timings
 #define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
 #define MIS_MIN_PATCHSIZE 1      ///< minimum MIS patch size required
 
 // stabilization approach & parameters
 //#define PUSOSOLBERG              ///< run the Puso&Solberg tet
 #define ALPHA_NSTET       0.20   ///< stabilization parameter for vol-dev split stabilization
-#define BETA_NSTET        0.8    ///< stabilization parameter for MIS-pressure stabilization
+#define BETA_NSTET        0.9    ///< stabilization parameter for MIS-pressure stabilization
+
+// make sure beta is off for puso tet
 #ifdef PUSOSOLBERG
 #undef  BETA_NSTET
 #define BETA_NSTET        0.0    ///< beta has to be zero in puso&solberg tet
@@ -543,7 +547,7 @@ protected:
   LINALG::Matrix<4,3>                                      nxyz_;
 
   //! element's def-gradient
-  Teuchos::SerialDenseMatrix<int,FAD>                      F_;
+  LINALG::Matrix<3,3>                                      F_;
   
   // internal calculation methods
 
@@ -554,7 +558,18 @@ protected:
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
   protected:
   
-  inline Teuchos::SerialDenseMatrix<int,FAD>& F() { return F_; }
+  inline LINALG::Matrix<3,3>& F() { return F_; }
+
+  static LINALG::Matrix<3,3> BuildF(LINALG::Matrix<4,3>& xdisp,
+                                    LINALG::Matrix<4,3>& nxyz)
+  {
+    LINALG::Matrix<3,3> F(false);
+    F.MultiplyTN(xdisp,nxyz);
+    F(0,0) += 1.0;
+    F(1,1) += 1.0;
+    F(2,2) += 1.0;
+    return F;
+  }
 
   template<typename T> 
   static Teuchos::SerialDenseMatrix<int,T> BuildF(
