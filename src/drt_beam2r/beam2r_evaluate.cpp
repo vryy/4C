@@ -518,9 +518,9 @@ void DRT::ELEMENTS::Beam2r::nlnstiffmass( ParameterList& params,
   LINALG::Matrix<3,1> force_loc_gp; //keeps the same dimension for different order of shapefunctions
 
   //declaration of material parameters
-  double ym; //Young's modulus
-  double sm; //shear modulus
-  double density; //density
+  double ym = 0; //Young's modulus
+  double sm = 0; //shear modulus
+  double density = 0; //density
 
   //Inserting current configuration into xcurr
   for (int k=0; k<nnode; ++k)

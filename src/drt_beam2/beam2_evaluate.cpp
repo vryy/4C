@@ -448,9 +448,9 @@ void DRT::ELEMENTS::Beam2::nlnstiffmass(ParameterList& params,
   //declaration of local internal forces
   LINALG::Matrix<3,1> force_loc;
   //declaration of material parameters
-  double ym; //Young's modulus
-  double sm; //shear modulus
-  double density; //density
+  double ym = 0; //Young's modulus
+  double sm = 0; //shear modulus
+  double density = 0; //density
 
   //calculating refenrence configuration xrefe and current configuration xcurr
   for (int k=0; k<iel; ++k)

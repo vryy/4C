@@ -465,7 +465,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag( vector<double>& disp,
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
-  double sm = 0;
   double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss

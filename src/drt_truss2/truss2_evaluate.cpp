@@ -347,7 +347,6 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
-  double sm = 0;
   double density = 0;
 
   //assignment of material parameters; only St.Venant material is accepted for this truss 
@@ -357,7 +356,6 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
     {
       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
       ym = actmat->Youngs();
-      sm = ym / (2*(1 + actmat->PoissonRatio()));
       density = actmat->Density();
     }
     break;
