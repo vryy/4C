@@ -506,6 +506,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
    * are of the same machine*/
+	GmshPrepareVisualization(disrow);
 
   //we need displacements also of ghost nodes and hence export displacment vector to column map format
   Epetra_Vector discol(*(discret_.DofColMap()), true);
@@ -627,7 +628,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
                   for(int n=0; n<2; n++)
                     coordout(m,n)=coord(m,j+n);
 
-                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
 
               }
             }
@@ -673,7 +674,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
         }
         //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
         else
-          GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id());
+          GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
       }
       //write content into file and close it (this way we make sure that the output is written serially)
       fprintf(fp, gmshfilecontent.str().c_str());
@@ -843,7 +844,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         for(int j=0 ;j<coordout.M(); j++)
           coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
         else
           GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
@@ -854,7 +855,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
         }
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
         else
           GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
@@ -873,7 +874,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
               cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;
           }*/
           if(!ignoreeleid)
-            GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
+            GMSH_2_noded(nline,coord,element,gmshfilecontent,color,false);
           else
             GMSH_2_noded(nline,coord,element,gmshfilecontent,color,true);
 
@@ -996,7 +997,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
       {
         switch ((int) (*numbond_)[i])
         {
-          // crosslink molecule - filament node pair
+          // crosslink molecule with one bond
           case 1:
           {
             // determine position of nodeGID entry
@@ -1019,11 +1020,13 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
               //length += (coord(j,1)-coord(j,0))*(coord(j,1)-coord(j,0));
             }
 
-            double beadcolor = 2*color;
+            double beadcolor = 2*color; //blue
             // in case of periodic boundary conditions
             if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
             {
-              GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, 0, true);
+            	// get arbitrary element (we just need it to properly visualize)
+            	DRT::Element* tmpelement=discret_.lRowElement(0);
+              GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, tmpelement->Id(), true);
               // visualization of "real" crosslink molecule positions
               //beadcolor = 0.0; //black
               //gmshfilebonds << "SP(" << scientific;
@@ -1080,7 +1083,9 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
               // in case of periodic boundary conditions
               if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
               {
-                GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, 0, true);
+              	// get arbitrary element (we just need it to properly visualize)
+              	DRT::Element* tmpelement=discret_.lRowElement(0);
+                GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, tmpelement->Id(), true);
                 // visualization of "real" crosslink molecule positions
                 //beadcolor = 0.0; //black
                 //gmshfilebonds << "SP(" << scientific;
@@ -1436,8 +1441,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
 {
   //if this element is a line element capable of providing its radius get that radius
   double radius = 0;
-  if(!ignoreeleid)
-  {
+
   const DRT::ElementType & eot = thisele->ElementType();
 #ifdef D_BEAM3II
 #ifdef D_BEAM3
@@ -1449,9 +1453,6 @@ void StatMechManager::GMSH_2_noded(const int& n,
     dserror("thisele is not a line element providing its radius.");
 #endif
 #endif
-  }
-  else
-    radius = 5e-3;
 
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
@@ -1589,19 +1590,23 @@ void StatMechManager::GMSH_2_noded(const int& n,
     gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
     gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-
-    // crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
+    /*/ crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
     if(ignoreeleid)
     {
       double beadcolor = color;
       gmshfilecontent << "SP(" << scientific;
       gmshfilecontent << coord(0,1) << "," << coord(1,1) << ","<< coord(2,1);
       gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
-    }
-
-
+    }*/
   }
-
+  // crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
+  if(ignoreeleid)
+  {
+    double beadcolor = color;
+    gmshfilecontent << "SP(" << scientific;
+    gmshfilecontent << coord(0,1) << "," << coord(1,1) << ","<< coord(2,1);
+    gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+  }
   return;
 }//GMSH_2_noded
 

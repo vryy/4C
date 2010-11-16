@@ -444,9 +444,6 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 			SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
 			discret_.CheckFilledGlobally();
 			discret_.FillComplete(true, false, false);
-			if (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_gmsh &&
-					istep % statmechparams_.get<int>("OUTPUTINTERVALS",1)==0)
-					GmshPrepareVisualization(disrow);
 		}
 
 		/*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
