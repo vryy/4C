@@ -141,7 +141,7 @@ class PointCycleList
 {
 public:
 
-  PointCycleList( Element * element,
+  PointCycleList( const PointLineFilter & filter,
                   Side * side,
                   const std::vector<Point*> & facet_points,
                   const std::set<Point*, PointPidLess> & cut_points );

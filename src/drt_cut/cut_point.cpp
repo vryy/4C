@@ -46,7 +46,7 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
     std::copy( cut_edge->Sides().begin(), cut_edge->Sides().end(),
                std::inserter( cut_sides_, cut_sides_.begin() ) );
   }
-  if ( cut_side==NULL )
+  if ( cut_side!=NULL )
   {
     cut_sides_.insert( cut_side );
   }
@@ -100,16 +100,53 @@ void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*
   }
 }
 
-void GEO::CUT::Point::CutLines( Side * side, std::set<Line*> & cut_lines )
+GEO::CUT::Line * GEO::CUT::Point::CutLine( const PointLineFilter & filter, bool unique )
+{
+  Line * line_found = NULL;
+  for ( std::set<Line*>::iterator i=lines_.begin(); i!=lines_.end(); ++i )
+  {
+    Line * line = *i;
+    if ( filter( line ) )
+    {
+      if ( line_found==NULL )
+      {
+        line_found = line;
+        if ( not unique )
+        {
+          break;
+        }
+      }
+      else
+      {
+        throw std::runtime_error( "not unique" );
+      }
+    }
+  }
+  return line_found;
+}
+
+GEO::CUT::Line * GEO::CUT::Point::CutLine( Line * line, const PointLineFilter & filter, bool unique )
+{
+  ExcludeLineFilter f( line, filter );
+  return CutLine( f, unique );
+}
+
+void GEO::CUT::Point::CutLines( const PointLineFilter & filter, std::set<Line*> & cut_lines )
 {
   for ( std::set<Line*>::iterator i=lines_.begin(); i!=lines_.end(); ++i )
   {
     Line * line = *i;
-    if ( line->IsInternalCut( side ) )
+    if ( filter( line ) )
     {
       cut_lines.insert( line );
     }
   }
+}
+
+void GEO::CUT::Point::CutLines( Side * side, std::set<Line*> & cut_lines )
+{
+  SideCutFilter filter( side );
+  CutLines( filter, cut_lines );
 }
 
 double GEO::CUT::Point::t( Edge* edge )
@@ -176,6 +213,24 @@ bool GEO::CUT::Point::NodalPoint( const std::vector<Node*> & nodes ) const
   return false;
 }
 
+GEO::CUT::Node * GEO::CUT::Point::CutNode()
+{
+  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  {
+    Edge * e = *i;
+    const std::vector<Node*> & nodes = e->Nodes();
+    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+    {
+      Node * n = *i;
+      if ( n->point()==this )
+      {
+        return n;
+      }
+    }
+  }
+  return NULL;
+}
+
 void GEO::CUT::Point::Position( Point::PointPosition pos )
 {
   if ( position_ != pos )
@@ -186,10 +241,7 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
       for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
       {
         Facet * f = *i;
-        if ( f->Position()!=pos )
-        {
-          f->Position( pos );
-        }
+        f->Position( pos );
       }
     }
   }
@@ -215,3 +267,33 @@ GEO::CUT::Side * GEO::CUT::Point::CutSide( Side * side, Point * other )
   }
   return found_side;
 }
+
+bool GEO::CUT::SideCutFilter::operator()( Line * line ) const
+{
+  return line->IsInternalCut( side_ );
+}
+
+bool GEO::CUT::SideElementCutFilter::operator()( Line * line ) const
+{
+  //return line->IsCut( side_ ) and line->IsCut( element_ );
+  return line->IsInternalCut( side_ ) and line->IsCut( element_ );
+}
+
+bool GEO::CUT::SideSideCutFilter::operator()( Line * line ) const
+{
+  return line->IsCut( side1_ ) and line->IsCut( side2_ );
+}
+
+GEO::CUT::Edge * GEO::CUT::Point::CommonCutEdge( Side * side )
+{
+  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  {
+    Edge * e = *i;
+    if ( e->IsCut( side ) )
+    {
+      return e;
+    }
+  }
+  return NULL;
+}
+

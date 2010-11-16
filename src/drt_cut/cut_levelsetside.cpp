@@ -11,14 +11,14 @@ void GEO::CUT::LevelSetSide::EdgeAt( double r, double s, std::vector<Edge*> & ed
   throw std::runtime_error( "no edges on level set cut surface" );
 }
 
-void GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   throw std::runtime_error( "no local coordinates on level set cut surface" );
 }
 
-void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
-  LinearSide::MakeOwnedSideFacets( mesh, element, facets );
+  LinearSide::MakeOwnedSideFacets( mesh, filter, facets );
 }
 
 void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )

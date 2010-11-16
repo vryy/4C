@@ -49,15 +49,15 @@ void GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
 
 bool GEO::CUT::LinearElement::FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other )
 {
-  bool cut = side.FindCutPoints( mesh, *this, other );
-  bool reverse_cut = other.FindCutPoints( mesh, *this, side );
+  bool cut = side.FindCutPoints( mesh, this, other );
+  bool reverse_cut = other.FindCutPoints( mesh, this, side );
   return cut or reverse_cut;
 }
 
 bool GEO::CUT::LinearElement::FindCutLines( Mesh & mesh, LinearSide & side, LinearSide & other )
 {
-  bool cut = side.FindCutLines( mesh, *this, other );
-  bool reverse_cut = other.FindCutLines( mesh, *this, side );
+  bool cut = side.FindCutLines( mesh, this, other );
+  bool reverse_cut = other.FindCutLines( mesh, this, side );
   return cut or reverse_cut;
 }
 
@@ -68,7 +68,8 @@ void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
     for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
     {
       Side & side = **i;
-      side.MakeOwnedSideFacets( mesh, this, facets_ );
+      SideElementCutFilter filter( &side, this );
+      side.MakeOwnedSideFacets( mesh, filter, facets_ );
     }
     for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
     {
@@ -93,7 +94,8 @@ void GEO::CUT::LinearElement::FindNodePositions()
   {
     Node * n = *i;
     Point * p = n->point();
-    if ( p->Position()==Point::undecided )
+    Point::PointPosition pos = p->Position();
+    if ( pos==Point::undecided )
     {
       bool done = false;
       const std::set<Facet*> & facets = p->Facets();
@@ -103,25 +105,38 @@ void GEO::CUT::LinearElement::FindNodePositions()
         for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
         {
           Side * s = *i;
-          if ( f->IsCutSide( s ) )
+
+          // Only take a side that belongs to one of this points facets and
+          // shares a cut edge with this point. If there are multiple cut
+          // sides within the element (facets), only the close one will always
+          // give the right direction.
+          if ( f->IsCutSide( s ) and p->CommonCutEdge( s )!=NULL )
           {
-            p->Coordinates( xyz.A() );
-            s->LocalCoordinates( xyz, rst );
-            double d = rst( 2, 0 );
-            if ( fabs( d ) > MINIMALTOL )
+            if ( p->IsCut( s ) )
             {
-              if ( d > 0 )
-              {
-                p->Position( Point::outside );
-              }
-              else
-              {
-                p->Position( Point::inside );
-              }
+              p->Position( Point::oncutsurface );
             }
             else
             {
-              p->Position( Point::oncutsurface );
+              p->Coordinates( xyz.A() );
+              s->LocalCoordinates( xyz, rst );
+              double d = rst( 2, 0 );
+              if ( fabs( d ) > MINIMALTOL )
+              {
+                if ( d > 0 )
+                {
+                  p->Position( Point::outside );
+                }
+                else
+                {
+                  p->Position( Point::inside );
+                }
+              }
+              else
+              {
+                // within the cut plane but not cut by the side
+                break;
+              }
             }
             done = true;
             break;
@@ -134,6 +149,18 @@ void GEO::CUT::LinearElement::FindNodePositions()
       {
         // Still undecided! No facets with cut side attached! Will be set in a
         // minute.
+      }
+    }
+    else if ( pos==Point::outside or pos==Point::inside )
+    {
+      // The nodal position is already known. Set it to my facets. If the
+      // facets are already set, this will not have much effect anyway. But on
+      // multiple cuts we avoid unset facets this way.
+      const std::set<Facet*> & facets = p->Facets();
+      for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+      {
+        Facet * f = *i;
+        f->Position( pos );
       }
     }
   }
@@ -171,7 +198,7 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, Cel
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet & f = **i;
-    f.GetPoints( points );
+    f.GetPoints( mesh, points );
   }
 
   // allocate pointlist
@@ -195,7 +222,7 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, Cel
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet & facet = **i;
-    in.numberoffacets += facet.NumTetgenFacets();
+    in.numberoffacets += facet.NumTetgenFacets( mesh );
   }
   in.facetlist = new tetgenio::facet[in.numberoffacets];
   in.facetmarkerlist = new int[in.numberoffacets];
@@ -209,11 +236,12 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, Cel
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet & facet = **i;
-    for ( int j=0; j<facet.NumTetgenFacets(); ++j )
+    int numtets = facet.NumTetgenFacets( mesh );
+    for ( int j=0; j<numtets; ++j )
     {
       tetgenio::facet & f = in.facetlist[pos];
 
-      facet.GenerateTetgen( this, f, j, in.facetmarkerlist[pos], pointlist );
+      facet.GenerateTetgen( mesh, this, f, j, in.facetmarkerlist[pos], pointlist );
 
       pos += 1;
     }
@@ -698,6 +726,58 @@ void GEO::CUT::ConcreteElement<DRT::Element::hex27>::FillComplete( Mesh & mesh )
   }
 }
 
+#ifdef QHULL
+void GEO::CUT::ConcreteElement<DRT::Element::tet4>::FillTetgen( tetgenio & out )
+{
+  const int dim = 3;
+
+  out.numberofpoints = 4;
+  out.pointlist = new REAL[out.numberofpoints * dim];
+  out.pointmarkerlist = new int[out.numberofpoints];
+  std::fill( out.pointmarkerlist, out.pointmarkerlist+out.numberofpoints, 0 );
+
+  out.numberoftrifaces = 4;
+  out.trifacemarkerlist = new int[out.numberoftrifaces];
+  out.trifacelist = new int[out.numberoftrifaces * dim];
+
+  out.numberoftetrahedra = 1;
+  out.tetrahedronlist = new int[out.numberoftetrahedra * 4];
+  //out.tetrahedronmarkerlist = new int[out.numberoftetrahedra];
+  //std::fill( out.tetrahedronmarkerlist, out.tetrahedronmarkerlist+out.numberoftetrahedra, 0 );
+
+  const std::vector<Node*> & nodes = Nodes();
+  for ( int i=0; i<4; ++i )
+  {
+    Node * n = nodes[i];
+    n->Coordinates( &out.pointlist[i*dim] );
+    out.pointmarkerlist[i] = n->point()->Position();
+    out.tetrahedronlist[i] = i;
+  }
+
+  const std::vector<Side*> & sides = Sides();
+  for ( int i=0; i<4; ++i )
+  {
+    Side * s = sides[i];
+    const std::vector<Node*> & side_nodes = s->Nodes();
+
+    for ( int j=0; j<3; ++j )
+    {
+      out.trifacelist[i*dim+j] = std::find( nodes.begin(), nodes.end(), side_nodes[j] ) - nodes.begin();
+    }
+
+    int sid = s->Id();
+    if ( sid < 0 )
+    {
+      for ( int j=0; j<3; ++j )
+      {
+        sid = std::min( sid, out.pointmarkerlist[out.trifacelist[i*dim+j]] );
+      }
+    }
+    out.trifacemarkerlist[i] = sid;
+  }
+
+}
+#endif
 
 bool GEO::CUT::ConcreteElement<DRT::Element::tet4>::PointInside( Point* p )
 {

@@ -27,6 +27,13 @@ GEO::CUT::BoundingBox::BoundingBox( Element & element )
   AddPoints( nodes );
 }
 
+void GEO::CUT::BoundingBox::Assign( Side & side )
+{
+  empty_ = true;
+  const std::vector<Node*> & nodes = side.Nodes();
+  AddPoints( nodes );
+}
+
 void GEO::CUT::BoundingBox::Assign( Element & element )
 {
   empty_ = true;
@@ -90,3 +97,8 @@ bool GEO::CUT::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz ) const
   return Within( bb );
 }
 
+bool GEO::CUT::BoundingBox::Within( Element & element ) const
+{
+  BoundingBox bb( element );
+  return Within( bb );
+}

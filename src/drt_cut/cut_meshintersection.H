@@ -3,6 +3,10 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
+
 #include "../drt_lib/drt_element.H"
 
 #include "cut_mesh.H"
@@ -21,26 +25,41 @@ class MeshIntersection
 {
 public:
 
-  MeshIntersection()
+  explicit MeshIntersection( int numcutmesh=1 )
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( pp_, false ),
-      cut_mesh_( pp_, true )
-  {}
+      mesh_( pp_, false )
+  {
+    cut_mesh_.reserve( numcutmesh );
+    for ( int i=0; i<numcutmesh; ++i )
+    {
+      cut_mesh_.push_back( Teuchos::rcp( new Mesh( pp_, true ) ) );
+    }
+  }
 
   void AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
 
-  void AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
+  void AddCutSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype, int mi=0 );
+
+  void AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
   void Cut( CellGenerator * generator=NULL );
 
-  GEO::CUT::Side * GetCutSides( int sid );
+  void SelfCut();
+
+  GEO::CUT::Side * GetCutSides( int sid, int mi=0 );
+
+  void Status();
+
+  Mesh & NormalMesh() { return mesh_; }
+
+  Mesh & CutMesh( int i=0 ) { return *cut_mesh_[i]; }
 
 private:
 
   Teuchos::RCP<PointPool> pp_;
 
   Mesh mesh_;
-  Mesh cut_mesh_;
+  std::vector<Teuchos::RCP<Mesh> > cut_mesh_;
 };
 
 }

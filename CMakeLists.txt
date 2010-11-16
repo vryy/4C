@@ -1222,8 +1222,11 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_pointcycle.cpp
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
+  src/drt_cut/cut_tetcutgenerator.cpp
 )
 set(OBJS_CUT_TEST
+  tests/cut_test/cut_test_double.cpp
+  tests/cut_test/cut_test_generator.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
   tests/cut_test/cut_test_main.cpp

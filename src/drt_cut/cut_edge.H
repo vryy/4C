@@ -150,6 +150,8 @@ public:
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line ) = 0;
 
+  virtual bool IsCut( Side * side ) = 0;
+
   Node* BeginNode() { return nodes_.front(); }
 
   Node* MiddleNode()
@@ -208,12 +210,14 @@ public:
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
+  virtual bool IsCut( Side * side );
+
   void Coordinates( LINALG::Matrix<3, 2> & xyze_lineElement )
   { Edge::Coordinates( xyze_lineElement.A() ); }
 
-  bool FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & side, LinearSide & other );
+  bool FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & side, LinearSide & other );
 
-  void GetCutPoints( Element & element, Side & side, Side & other, std::set<Point*> & cuts );
+  void GetCutPoints( Element * element, Side & side, Side & other, std::set<Point*> & cuts );
 
 private:
 
@@ -251,6 +255,8 @@ public:
   virtual void CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points );
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
+
+  virtual bool IsCut( Side * side );
 
   void Coordinates( LINALG::Matrix<3, 3> & xyze_lineElement )
   { Edge::Coordinates( xyze_lineElement.A() ); }

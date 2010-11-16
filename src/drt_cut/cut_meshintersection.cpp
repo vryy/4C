@@ -1,35 +1,57 @@
 
 #include "cut_meshintersection.H"
+#include "cut_tetcutgenerator.H"
 
 void GEO::CUT::MeshIntersection::AddElement( int eid,
                                              const std::vector<int> & nids,
                                              const Epetra_SerialDenseMatrix & xyz,
                                              DRT::Element::DiscretizationType distype )
 {
-  if ( cut_mesh_.WithinBB( xyz ) )
+  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+        i!=cut_mesh_.end();
+        ++i )
   {
-    int numnode = nids.size();
-    if ( numnode != xyz.N() )
+    Mesh & cut_mesh = **i;
+    if ( cut_mesh.WithinBB( xyz ) )
     {
-      throw std::runtime_error( "node coordiante number mismatch" );
-    }
+      int numnode = nids.size();
+      if ( numnode != xyz.N() )
+      {
+        throw std::runtime_error( "node coordiante number mismatch" );
+      }
 
-    // make sure all nodes are there
-    for ( int i=0; i<numnode; ++i )
-    {
-      mesh_.GetNode( nids[i], &xyz( 0, i ) );
-    }
+      // make sure all nodes are there
+      for ( int i=0; i<numnode; ++i )
+      {
+        mesh_.GetNode( nids[i], &xyz( 0, i ) );
+      }
 
-    // create element
-    mesh_.CreateElement( eid, nids, distype );
+      // create element
+      mesh_.CreateElement( eid, nids, distype );
+
+      return;
+    }
   }
 }
 
 void GEO::CUT::MeshIntersection::AddCutSide( int sid,
                                              const std::vector<int> & nids,
-                                             const Epetra_SerialDenseMatrix & xyz,
-                                             DRT::Element::DiscretizationType distype )
+                                             DRT::Element::DiscretizationType distype,
+                                             int mi )
 {
+  // create side
+  Mesh & cut_mesh = CutMesh( mi );
+  cut_mesh.CreateSide( sid, nids, distype );
+}
+
+void GEO::CUT::MeshIntersection::AddCutSide( int sid,
+                                             const std::vector<int> & nids,
+                                             const Epetra_SerialDenseMatrix & xyz,
+                                             DRT::Element::DiscretizationType distype,
+                                             int mi )
+{
+  Mesh & cut_mesh = CutMesh( mi );
+
   int numnode = nids.size();
   if ( numnode != xyz.N() )
   {
@@ -39,36 +61,50 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
   // make sure all nodes are there
   for ( int i=0; i<numnode; ++i )
   {
-    cut_mesh_.GetNode( nids[i], &xyz( 0, i ) );
+    cut_mesh.GetNode( nids[i], &xyz( 0, i ) );
   }
 
   // create side
-  cut_mesh_.CreateSide( sid, nids, distype );
+  cut_mesh.CreateSide( sid, nids, distype );
 }
 
 void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
 {
-  cut_mesh_.FillComplete();
+  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+        i!=cut_mesh_.end();
+        ++i )
+  {
+    Mesh & cut_mesh = **i;
+    cut_mesh.FillComplete();
+  }
   mesh_.FillComplete();
 
-  // loop cut sides and cut against elements at the same position in space
-  cut_mesh_.Cut( mesh_ );
+  std::vector<Teuchos::RCP<CellGenerator> > cutgens;
+  for ( int i=cut_mesh_.size()-1; i>0; --i )
+  {
+    cutgens.push_back( Teuchos::rcp( new TetCutGenerator( *this, generator, CutMesh( i ), pp_ ) ) );
+    generator = &*cutgens.back();
+  }
 
-  mesh_.Status();
-  cut_mesh_.Status();
+  // loop cut sides and cut against elements at the same position in space
+  CutMesh().Cut( mesh_ );
 
   mesh_.MakeFacets();
   mesh_.FindNodePositions();
 
-  mesh_.DumpGmsh( "mesh" );
-  cut_mesh_.DumpGmsh( "cut_mesh" );
+  Status();
 
   mesh_.GenerateTetgen( generator );
 }
 
-GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSides( int sid )
+void GEO::CUT::MeshIntersection::SelfCut()
 {
-  const std::vector<GEO::CUT::Side*> & cut_sides = cut_mesh_.GetSides( sid );
+  CutMesh().SelfCut();
+}
+
+GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSides( int sid, int mi )
+{
+  const std::vector<GEO::CUT::Side*> & cut_sides = CutMesh( mi ).GetSides( sid );
   if ( cut_sides.size()==1 )
   {
     return cut_sides[0];
@@ -80,4 +116,29 @@ GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSides( int sid )
     return cut_sides[0];
   }
   throw std::runtime_error( "no such side" );
+}
+
+void GEO::CUT::MeshIntersection::Status()
+{
+  mesh_.Status();
+  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+        i!=cut_mesh_.end();
+        ++i )
+  {
+    Mesh & cut_mesh = **i;
+    cut_mesh.Status();
+  }
+
+  mesh_.DumpGmsh( "mesh" );
+  int count = 0;
+  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+        i!=cut_mesh_.end();
+        ++i )
+  {
+    Mesh & cut_mesh = **i;
+    std::stringstream str;
+    str << "cut_mesh" << count;
+    cut_mesh.DumpGmsh( str.str().c_str() );
+    count++;
+  }
 }

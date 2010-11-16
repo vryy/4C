@@ -4,6 +4,7 @@
 #include "cut_node.H"
 #include "cut_edge.H"
 #include "cut_side.H"
+#include "cut_tetgen.H"
 
 namespace GEO
 {
@@ -50,6 +51,11 @@ public:
   virtual bool IsCut() = 0;
 
   virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator ) = 0;
+
+#ifdef QHULL
+  virtual void FillTetgen( tetgenio & out )
+  { throw std::runtime_error( "not supported" ); }
+#endif
 
   virtual bool OnSide( const std::vector<Point*> & facet_points ) = 0;
 
@@ -174,6 +180,10 @@ public:
 
   void Coordinates( LINALG::Matrix<3, 4> & xyze )
   { Element::Coordinates( xyze.A() ); }
+
+#ifdef QHULL
+  virtual void FillTetgen( tetgenio & out );
+#endif
 
 };
 

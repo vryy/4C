@@ -155,7 +155,7 @@ void GEO::CUT::PointCycle::CreateFacets( Mesh & mesh, Side * side, std::vector<F
   }
 }
 
-GEO::CUT::PointCycleList::PointCycleList( Element * element,
+GEO::CUT::PointCycleList::PointCycleList( const PointLineFilter & filter,
                                           Side * side,
                                           const std::vector<Point*> & facet_points,
                                           const std::set<Point*, PointPidLess> & cut_points )
@@ -208,7 +208,7 @@ GEO::CUT::PointCycleList::PointCycleList( Element * element,
             point = line->OtherPoint( point ) )
       {
         ip.push_back( point );
-        line = point->CutLine( line, side, element );
+        line = point->CutLine( line, filter );
         if ( line==NULL )
         {
           throw std::runtime_error( "no cut line found on side" );

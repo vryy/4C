@@ -43,7 +43,7 @@ public:
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges ) = 0;
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
   virtual void FillComplete( Mesh & mesh );
 
@@ -58,7 +58,7 @@ public:
     }
   }
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets ) = 0;
+  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets ) = 0;
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets ) = 0;
 
@@ -73,6 +73,8 @@ public:
   bool OnEdge( Point * point );
 
   bool OnEdge( Line * line );
+
+  bool HaveCommonEdge( Side & side );
 
 //   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;
 
@@ -120,7 +122,7 @@ public:
     }
   }
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
@@ -137,11 +139,11 @@ public:
 
   void CreateLineSegment( Mesh & mesh, Element * element );
 
-  bool FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & other );
+  bool FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & other );
 
-  bool FindCutLines( Mesh & mesh, LinearElement & element, LinearSide & other );
+  bool FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other );
 
-  void GetCutPoints( Element & element, Side & other, std::set<Point*> & cuts );
+  void GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts );
 
 protected:
 
@@ -170,7 +172,7 @@ public:
 
   //virtual void FillComplete( Mesh & mesh );
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
@@ -218,7 +220,7 @@ public:
     if ( fabs( r     ) < TOLERANCE ) edges.push_back( Edges()[2] );
   }
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 3> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
@@ -251,7 +253,7 @@ public:
     if ( fabs( r+1 ) < TOLERANCE ) edges.push_back( Edges()[3] );
   }
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 4> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
@@ -279,7 +281,7 @@ public:
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   { throw std::runtime_error( "not supposed to end up here" ); }
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 6> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
@@ -307,7 +309,7 @@ public:
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   { throw std::runtime_error( "not supposed to end up here" ); }
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 8> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
@@ -335,7 +337,7 @@ public:
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   { throw std::runtime_error( "not supposed to end up here" ); }
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 9> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }

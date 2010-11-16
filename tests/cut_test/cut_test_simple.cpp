@@ -3,52 +3,6 @@
 #include "../drt_cut/cut_element.H"
 #include "cut_test_utils.H"
 
-GEO::CUT::Element* create_hex8( GEO::CUT::Mesh & mesh, double dx=0, double dy=0, double dz=0 )
-{
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
-
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
-
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
-
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
-
-  xyze( 0, 3 ) = 0;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = 0;
-
-  xyze( 0, 4 ) = 0;
-  xyze( 1, 4 ) = 0;
-  xyze( 2, 4 ) = 1;
-
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = 0;
-  xyze( 2, 5 ) = 1;
-
-  xyze( 0, 6 ) = 1;
-  xyze( 1, 6 ) = 1;
-  xyze( 2, 6 ) = 1;
-
-  xyze( 0, 7 ) = 0;
-  xyze( 1, 7 ) = 1;
-  xyze( 2, 7 ) = 1;
-
-  for ( int i=0; i<8; ++i )
-  {
-    xyze( 0, i ) += dx;
-    xyze( 1, i ) += dy;
-    xyze( 2, i ) += dz;
-  }
-
-  return create_hex8( mesh, xyze );
-}
-
 GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
 {
   Epetra_SerialDenseMatrix xyze( 3, 4 );
@@ -107,8 +61,8 @@ void test_hex8_simple()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -143,8 +97,8 @@ void test_tet4_simple()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -183,8 +137,8 @@ void test_pyramid5_simple()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -227,8 +181,8 @@ void test_wedge6_simple()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -245,8 +199,8 @@ void test_hex8_fullside()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -262,8 +216,8 @@ void test_hex8_diagonal()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
-  //mesh.PrintFacets();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -272,6 +226,28 @@ void test_hex8_tet4()
   GEO::CUT::Mesh mesh;
   GEO::CUT::Element * hex8 = create_hex8( mesh );
   GEO::CUT::Element * tet4 = create_tet4( mesh );
+
+  Epetra_SerialDenseMatrix xyze( 3, 4 );
+
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) = -0.1;
+  xyze( 1, 0 ) =  0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  1.1;
+  xyze( 1, 1 ) =  0.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) =  1.1;
+  xyze( 1, 2 ) = -0.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
   mesh.Status();
 
@@ -284,11 +260,12 @@ void test_hex8_tet4()
     hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
   }
 
+  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+
   mesh.Status();
 
   hex8->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8->FindNodePositions();
 
   hex8->GenerateTetgen( mesh, NULL );
 }
@@ -313,8 +290,7 @@ void test_hex8_hex8()
   mesh.Status();
 
   hex8_1->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8_1->FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
@@ -339,8 +315,7 @@ void test_hex8_touch()
   mesh.Status();
 
   hex8_1->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8_1->FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
@@ -365,8 +340,7 @@ void test_hex8_touch2()
   mesh.Status();
 
   hex8_1->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8_1->FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
@@ -403,6 +377,7 @@ void test_hex8_schraeg()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -431,6 +406,26 @@ void test_hex8_tet4_touch()
 
   GEO::CUT::Element * tet4 = create_tet4( mesh, xyze );
 
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) = -0.1;
+  xyze( 1, 0 ) =  0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  1.1;
+  xyze( 1, 1 ) =  0.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) =  1.1;
+  xyze( 1, 2 ) = -0.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+
   mesh.Status();
 
   for ( std::vector<GEO::CUT::Side*>::const_iterator i=tet4->Sides().begin();
@@ -442,9 +437,12 @@ void test_hex8_tet4_touch()
     hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
   }
 
+  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -487,6 +485,7 @@ void test_hex8_tet4_touch2()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -504,7 +503,8 @@ void test_hex8_mesh()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -522,7 +522,8 @@ void test_hex8_double()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -543,7 +544,8 @@ void test_hex8_multiple()
     mesh.Status();
   }
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -610,7 +612,8 @@ void test_hex8_bad1()
   e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
 
   mesh.Status();
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -677,7 +680,8 @@ void test_hex8_bad2()
   e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
 
   mesh.Status();
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -744,7 +748,8 @@ void test_hex8_bad3()
   e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
 
   mesh.Status();
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -793,7 +798,8 @@ void test_hex8_bad4()
   e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
 
   mesh.Status();
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 
@@ -842,6 +848,7 @@ void test_hex8_wedge6()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -877,6 +884,7 @@ void test_hex8_quad4_touch()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -912,6 +920,7 @@ void test_hex8_quad4_touch2()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -947,6 +956,7 @@ void test_hex8_quad4_touch3()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -982,6 +992,7 @@ void test_hex8_quad4_cut()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1026,6 +1037,7 @@ void test_hex8_quad4_gedreht()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1070,6 +1082,26 @@ void test_hex8_hex8_durchstoss()
 
   GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
 
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) = -0.1;
+  xyze( 1, 0 ) =  0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  1.1;
+  xyze( 1, 1 ) =  0.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) =  1.1;
+  xyze( 1, 2 ) = -0.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+
   mesh.Status();
 
   for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
@@ -1081,11 +1113,12 @@ void test_hex8_hex8_durchstoss()
     hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
   }
 
+  hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+
   mesh.Status();
 
   hex8_1->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8_1->FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
@@ -1131,6 +1164,26 @@ void test_hex8_hex8_onside()
 
   GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
 
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) = -0.1;
+  xyze( 1, 0 ) =  0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  1.1;
+  xyze( 1, 1 ) =  0.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) =  1.1;
+  xyze( 1, 2 ) = -0.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+
   mesh.Status();
 
   for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
@@ -1142,11 +1195,12 @@ void test_hex8_hex8_onside()
     hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
   }
 
+  hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+
   mesh.Status();
 
   hex8_1->MakeFacets( mesh );
-  //mesh.PrintFacets();
-  //mesh.GenerateTetgen();
+  hex8_1->FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
@@ -1183,6 +1237,7 @@ void test_hex8_quad4_schnitt()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1218,6 +1273,7 @@ void test_hex8_quad4_touch4()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1253,6 +1309,7 @@ void test_hex8_quad4_touch5()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1281,13 +1338,35 @@ void test_hex8_quad4_touch6()
 
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) =  0.1;
+  xyze( 1, 0 ) = -0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  0.1;
+  xyze( 1, 1 ) =  1.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) = -0.1;
+  xyze( 1, 2 ) =  1.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  GEO::CUT::Side* quad4_2 = create_quad4( mesh, xyze );
+
   mesh.Status();
 
   hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4_2 ) );
 
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1323,6 +1402,7 @@ void test_hex8_quad4_touch7()
   mesh.Status();
 
   hex8->MakeFacets( mesh );
+  hex8->FindNodePositions();
   hex8->GenerateTetgen( mesh, NULL );
 }
 
@@ -1396,7 +1476,8 @@ void test_hex8_quad4_mesh()
 
   mesh.Status();
 
-  mesh.MakeFacets(); mesh.FindNodePositions();
+  mesh.MakeFacets();
+  mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
 

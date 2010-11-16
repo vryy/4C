@@ -54,6 +54,10 @@ void test_tet10_quad9_moved();
 void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
+void test_ls_hex8_simple4();
+
+void test_quad4_surface_mesh_cut();
+void test_hex8_quad4_double_cut();
 
 int main( int argc, char ** argv )
 {
@@ -105,6 +109,10 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
+  functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
+
+  functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
+  functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
 
   Teuchos::CommandLineProcessor clp( false );
 
@@ -136,6 +144,7 @@ int main( int argc, char ** argv )
   {
     for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
     {
+      std::cout << "Testing " << i->first << " ...\n";
       ( *i->second )();
     }
   }

@@ -43,6 +43,8 @@ public:
 
   virtual ~CellGenerator() {}
 
+  virtual void NonCut( Element* element ) {}
+
 #ifdef QHULL
   virtual void Generate( Element* element, const tetgenio & out ) = 0;
 #endif
@@ -91,6 +93,8 @@ public:
 
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
+  void SelfCut();
+
   void Cut( Mesh & mesh );
 
   void Cut( LinearSide & side );
@@ -117,6 +121,8 @@ public:
 
   const std::vector<GEO::CUT::Side*> & GetSides( int sid );
 
+  Side* GetSide( const std::set<int> & nids );
+
   Side* GetSide( int sid,
                  const std::vector<int> & nids,
                  const CellTopologyData * top_data );
@@ -126,6 +132,8 @@ public:
                        const CellTopologyData & top_data );
 
   bool WithinBB( const Epetra_SerialDenseMatrix & xyz );
+
+  bool WithinBB( Element & element );
 
 private:
 

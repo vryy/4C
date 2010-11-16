@@ -21,9 +21,9 @@ public:
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );
 
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 

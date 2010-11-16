@@ -37,7 +37,7 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   return NULL;
 }
 
-bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement & element, LinearSide & other )
+bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & other )
 {
   bool cut = false;
   const std::vector<Edge*> & edges = Edges();
@@ -52,7 +52,7 @@ bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement & element, 
   return cut;
 }
 
-bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, LinearSide & other )
+bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other )
 {
   bool cut = false;
   for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
@@ -60,7 +60,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, L
     Line * l = *i;
     if ( l->IsCut( this, &other ) )
     {
-      l->AddElement( &element );
+      l->AddElement( element );
       other.AddLine( l );
       cut = true;
     }
@@ -84,7 +84,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, L
     reverse_cuts.erase( *cuts.begin() );
     if ( reverse_cuts.size()==1 )
     {
-      Line * l = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, &element );
+      Line * l = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, element );
       AddLine( l );
       other.AddLine( l );
       return true;
@@ -103,7 +103,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, L
   {
     // The normal case. A straight cut.
     std::vector<Point*> c( cuts.begin(), cuts.end() );
-    Line * l = mesh.NewLine( c[0], c[1], this, &other, &element );
+    Line * l = mesh.NewLine( c[0], c[1], this, &other, element );
     AddLine( l );
     other.AddLine( l );
     return true;
@@ -122,7 +122,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement & element, L
       for ( unsigned i=0; i<nodes.size(); ++i )
       {
         unsigned j = ( i+1 ) % nodes.size();
-        Line* l = mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, &element );
+        Line* l = mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, element );
         AddLine( l );
         other.AddLine( l );
       }
@@ -147,7 +147,7 @@ bool GEO::CUT::LinearSide::AllOnNodes( const std::set<Point*> & points )
   return true;
 }
 
-void GEO::CUT::LinearSide::GetCutPoints( Element & element, Side & other, std::set<Point*> & cuts )
+void GEO::CUT::LinearSide::GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts )
 {
   const std::vector<Edge*> & edges = Edges();
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
@@ -233,7 +233,7 @@ void GEO::CUT::LinearSide::CreateLineSegment( Mesh & mesh, Element * element )
 #endif
 }
 
-void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
   if ( facets_.size()==0 )
   {
@@ -262,7 +262,7 @@ void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, 
 
     if ( cut_points.size()>0 )
     {
-      PointCycleList pcl( element, this, facet_points, cut_points );
+      PointCycleList pcl( filter, this, facet_points, cut_points );
       pcl.CreateFacets( mesh, this, facets_ );
     }
     else
@@ -406,6 +406,20 @@ bool GEO::CUT::Side::OnEdge( Line * line )
   {
     Edge * e = *i;
     if ( line->OnEdge( e ) )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool GEO::CUT::Side::HaveCommonEdge( Side & side )
+{
+  const std::vector<Edge*> & other_edges = side.Edges();
+  for ( std::vector<Edge*>::const_iterator i=edges_.begin(); i!=edges_.end(); ++i )
+  {
+    Edge * e = *i;
+    if ( std::find( other_edges.begin(), other_edges.end(), e )!=other_edges.end() )
     {
       return true;
     }
@@ -594,7 +608,7 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad9>::FillComplete( Mesh & mesh )
 }
 
 
-void GEO::CUT::QuadraticSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::QuadraticSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
   throw std::runtime_error( "not supposed to end up here" );
 //   for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
@@ -624,7 +638,7 @@ bool GEO::CUT::QuadraticSide::IsCut()
   throw std::runtime_error( "not supposed to end up here" );
 }
 
-void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
   bool success = pos.Compute();
@@ -633,9 +647,10 @@ void GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG:
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+  return success;
 }
 
-void GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri6> pos( *this, xyz );
   bool success = pos.Compute();
@@ -644,9 +659,10 @@ void GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG:
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+  return success;
 }
 
-void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
   bool success = pos.Compute();
@@ -655,9 +671,10 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+  return success;
 }
 
-void GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad8> pos( *this, xyz );
   bool success = pos.Compute();
@@ -666,9 +683,10 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+  return success;
 }
 
-void GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+bool GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad9> pos( *this, xyz );
   bool success = pos.Compute();
@@ -677,5 +695,6 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+  return success;
 }
 

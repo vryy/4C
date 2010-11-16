@@ -50,8 +50,7 @@ public:
 
   bool operator()( Line * line )
   {
-    //return line!=line_ and line->IsInternalCut( side_ ) and line->IsCut( element_ );
-    return line!=line_ and line->IsCut( side_ ) and line->IsCut( element_ );
+    return line!=line_ and line->IsCut( side_ ) and ( element_==NULL or line->IsCut( element_ ) );
   }
 
 private:

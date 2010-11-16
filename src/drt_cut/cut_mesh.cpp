@@ -163,7 +163,7 @@ GEO::CUT::Element * GEO::CUT::Mesh::CreateHex27( int eid, const std::vector<int>
 
 GEO::CUT::Side * GEO::CUT::Mesh::CreateTri3( int sid, const std::vector<int> & nids )
 {
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<6> >();
+  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<3> >();
   return GetSide( sid, nids, top_data );
 }
 
@@ -268,6 +268,16 @@ const std::vector<GEO::CUT::Side*> & GEO::CUT::Mesh::GetSides( int sid )
     return i->second;
   }
   throw std::runtime_error( "no side with given id" );
+}
+
+GEO::CUT::Side* GEO::CUT::Mesh::GetSide( const std::set<int> & nids )
+{
+  std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
+  if ( i != sides_.end() )
+  {
+    return &*i->second;
+  }
+  return NULL;
 }
 
 GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid, const std::vector<int> & nids, const CellTopologyData * top_data )
@@ -536,6 +546,79 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
   return f;
 }
 
+void GEO::CUT::Mesh::SelfCut()
+{
+  std::set<Facet*> facets;
+  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+        i!=sides_.end();
+        ++i )
+  {
+    Side & side = *i->second;
+    LinearSide * ls1 = dynamic_cast<LinearSide*>( &side );
+    if ( ls1!=NULL )
+    {
+      BoundingBox sidebox( side );
+      std::set<Side*> sides;
+      pp_->CollectSides( sidebox, sides );
+      sides.erase( ls1 );
+      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); )
+      {
+        Side * s = *i;
+        if ( ls1->HaveCommonEdge( *s ) )
+        {
+          sides.erase( i++ );
+        }
+        else
+        {
+          ++i;
+        }
+      }
+      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      {
+        Side * s = *i;
+        LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
+        if ( ls2!=NULL )
+        {
+          ls1->FindCutPoints( *this, NULL, *ls2 );
+          ls2->FindCutPoints( *this, NULL, *ls1 );
+        }
+      }
+      bool cut = false;
+      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      {
+        Side * s = *i;
+        LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
+        if ( ls2!=NULL )
+        {
+          bool normal_cut  = ls1->FindCutLines( *this, NULL, *ls2 );
+          bool reverse_cut = ls2->FindCutLines( *this, NULL, *ls1 );
+          if ( normal_cut or reverse_cut )
+            cut = true;
+        }
+      }
+      if ( cut )
+      {
+        for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+        {
+          Side * s = *i;
+          LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
+          if ( ls2!=NULL )
+          {
+            SideSideCutFilter filter( ls1, ls2 );
+            ls1->MakeOwnedSideFacets( *this, filter, facets );
+          }
+        }
+        ls1->MakeSideCutFacets( *this, NULL, facets );
+      }
+    }
+  }
+  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    f->CreateLinearElements( *this );
+  }
+}
+
 void GEO::CUT::Mesh::Cut( Mesh & mesh )
 {
 //   int count = 0;
@@ -598,6 +681,11 @@ void GEO::CUT::Mesh::MakeFacets()
 
 void GEO::CUT::Mesh::FindNodePositions()
 {
+  // On multiple cuts former outside positions can become inside
+  // positions. Thus reset all outside positions.
+  pp_->ResetOutsidePoints();
+
+  // get nodal positions from elements
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -814,10 +902,22 @@ void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
     {
       e.GenerateTetgen( *this, generator );
     }
+    else
+    {
+      if ( generator!=NULL )
+      {
+        generator->NonCut( &e );
+      }
+    }
   }
 }
 
 bool GEO::CUT::Mesh::WithinBB( const Epetra_SerialDenseMatrix & xyz )
 {
   return bb_.Within( xyz );
+}
+
+bool GEO::CUT::Mesh::WithinBB( Element & element )
+{
+  return bb_.Within( element );
 }

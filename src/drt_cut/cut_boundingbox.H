@@ -28,6 +28,8 @@ public:
 
   explicit BoundingBox( Element & element );
 
+  void Assign( Side & side );
+
   void Assign( Element & element );
 
   double operator()( int i, int j ) const { return box_( i, j ); }
@@ -46,6 +48,8 @@ public:
   bool Within( const double * x ) const;
 
   bool Within( const Epetra_SerialDenseMatrix & xyz ) const;
+
+  bool Within( Element & element ) const;
 
 private:
 

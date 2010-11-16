@@ -2,6 +2,7 @@
 #include "cut_test_utils.H"
 #include "../drt_cut/cut_mesh.H"
 #include "../drt_cut/cut_element.H"
+#include "../drt_cut/cut_meshintersection.H"
 
 int numnode;
 int numele;
@@ -123,6 +124,52 @@ GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & 
   return mesh.CreateQuad9( numele++, nids );
 }
 
+GEO::CUT::Element* create_hex8( GEO::CUT::Mesh & mesh, double dx, double dy, double dz )
+{
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = 0;
+  xyze( 1, 0 ) = 0;
+  xyze( 2, 0 ) = 0;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = 0;
+  xyze( 2, 1 ) = 0;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = 0;
+
+  xyze( 0, 3 ) = 0;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = 0;
+
+  xyze( 0, 4 ) = 0;
+  xyze( 1, 4 ) = 0;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = 0;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = 0;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  for ( int i=0; i<8; ++i )
+  {
+    xyze( 0, i ) += dx;
+    xyze( 1, i ) += dy;
+    xyze( 2, i ) += dz;
+  }
+
+  return create_hex8( mesh, xyze );
+}
+
 void create_hex8_mesh( GEO::CUT::Mesh & mesh, int rows, int cols, int depth )
 {
   for (int i=0; i<rows+1; ++i)
@@ -207,4 +254,46 @@ void create_quad4_mesh( GEO::CUT::Mesh & mesh, int rows, int cols, std::vector<G
   }
 
   numnode += (rows+1)*(cols+1);
+}
+
+void create_quad4_cylinder_mesh( GEO::CUT::MeshIntersection & intersection, double x, double y, int rows, int cols )
+{
+  double r = 1.;
+
+  int rownodes = rows+1;
+  int colnodes = cols+1;
+
+  for (int i=0; i<rownodes; ++i)
+  {
+    for (int j=0; j<colnodes; ++j)
+    {
+      int id = i+j*rownodes;
+      double coord[3];
+
+      double alpha = static_cast<double>( i ) / rows;
+
+      coord[0] = x + r*cos( 2*M_PI*alpha );
+      coord[1] = y + r*sin( 2*M_PI*alpha );
+      coord[2] = static_cast<double>( j ) / cols;
+
+      intersection.CutMesh().GetNode( numnode+id, coord );
+    }
+  }
+
+  for (int i=0; i<rows+1; ++i)
+  {
+    for (int j=0; j<cols; ++j)
+    {
+      std::vector<int> nids;
+      nids.reserve( 4 );
+      nids.push_back( numnode+( ( i   )%( rows ) )+    j*rownodes );
+      nids.push_back( numnode+( ( i+1 )%( rows ) )+    j*rownodes );
+      nids.push_back( numnode+( ( i+1 )%( rows ) )+(j+1)*rownodes );
+      nids.push_back( numnode+( ( i   )%( rows ) )+(j+1)*rownodes );
+
+      intersection.AddCutSide( numele++, nids, DRT::Element::quad4 );
+    }
+  }
+
+  numnode += rownodes*colnodes;
 }

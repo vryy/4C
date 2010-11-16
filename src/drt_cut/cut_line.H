@@ -23,7 +23,10 @@ public:
 
   void AddElement( Element * cut_element )
   {
-    cut_elements_.insert( cut_element );
+    if ( cut_element!=NULL )
+    {
+      cut_elements_.insert( cut_element );
+    }
   }
 
   bool IsCut( Side* s1, Side* s2 )
@@ -39,6 +42,9 @@ public:
   bool IsCut( Side * side )
   {
     return cut_sides_.count( side ) > 0;
+//     return ( cut_sides_.count( side ) > 0 and
+//              BeginPoint()->IsCut( side ) and
+//              EndPoint()->IsCut( side ) );
   }
 
   bool IsInternalCut( Side * side );

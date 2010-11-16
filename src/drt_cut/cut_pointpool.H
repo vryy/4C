@@ -31,7 +31,11 @@ public:
 
   void AddPoint( const double * x, Teuchos::RCP<Point> p );
 
+  void CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides );
+
   void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements );
+
+  void ResetOutsidePoints();
 
 private:
 
@@ -61,8 +65,14 @@ public:
 
   unsigned size() const { return tree_.size(); }
 
+  void CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides )
+  { tree_.CollectSides( sidebox, sides ); }
+
   void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements )
   { tree_.CollectElements( sidebox, elements ); }
+
+  void ResetOutsidePoints()
+  { tree_.ResetOutsidePoints(); }
 
 private:
 

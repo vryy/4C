@@ -26,22 +26,7 @@ class Facet
 {
 public:
 
-  Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
-    : points_( points ),
-      parentside_( side ),
-      planar_( IsPlanar( mesh, points ) ),
-      position_( cutsurface ? Point::oncutsurface : Point::undecided )
-  {
-    for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-    {
-      Point * p = *i;
-      if ( cutsurface )
-      {
-        p->Position( Point::oncutsurface );
-      }
-      p->Register( this );
-    }
-  }
+  Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface );
 
   void Print()
   {
@@ -57,20 +42,22 @@ public:
 
   int SideId();
 
-  void GetPoints( std::set<Point*, PointPidLess> & points );
+  void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
 #ifdef QHULL
-  void GenerateTetgen( LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
+  void GenerateTetgen( Mesh & mesh, LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
 #endif
+
+  void CreateLinearElements( Mesh & mesh );
 
   void AddHole( const std::vector<Point*> & hole )
   {
     holes_.insert( hole );
   }
 
-  int NumTetgenFacets()
+  int NumTetgenFacets( Mesh & mesh )
   {
-    if ( planar_ )
+    if ( IsPlanar( mesh ) )
     {
       return 1;
     }
@@ -116,7 +103,13 @@ private:
                         LINALG::Matrix<3,1> & mid );
 #endif
 
+  bool IsPlanar( Mesh & mesh );
+
   bool IsPlanar( Mesh & mesh, const std::vector<Point*> & points );
+
+  void CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points );
+
+  void GetNodalIds( Mesh & mesh, const std::vector<Point*> & points, std::vector<int> & nids );
 
   std::vector<Point*> points_;
 
@@ -127,6 +120,8 @@ private:
   Side* parentside_;
 
   bool planar_;
+
+  bool planar_known_;
 
   Point::PointPosition position_;
 };

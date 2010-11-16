@@ -19,7 +19,7 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::FillComplete( Mesh & mesh )
 
 
 bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
-                                                                 LinearElement & element,
+                                                                 LinearElement * element,
                                                                  LinearSide & side,
                                                                  LinearSide & other )
 {
@@ -30,7 +30,7 @@ bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
     if ( p->IsCut( &other ) )
     {
       cut = true;
-      p->AddElement( &element );
+      p->AddElement( element );
     }
   }
   if ( cut )
@@ -49,7 +49,7 @@ bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
     Point * p = *i;
 
     p->AddEdge( this );
-    p->AddElement( &element );
+    p->AddElement( element );
 
     // These adds are implicitly done, but for documentation do them all explicitly.
 
@@ -61,7 +61,7 @@ bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
   return cut_points.size()>0;
 }
 
-void GEO::CUT::ConcreteEdge<DRT::Element::line2>::GetCutPoints( Element & element,
+void GEO::CUT::ConcreteEdge<DRT::Element::line2>::GetCutPoints( Element * element,
                                                                 Side & side,
                                                                 Side & other,
                                                                 std::set<Point*> & cuts )
@@ -108,11 +108,12 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::CutPoint( Node* edge_start, No
 
 void GEO::CUT::ConcreteEdge<DRT::Element::line2>::CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points )
 {
+  SideCutFilter filter( side );
   for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     std::set<Line*> cut_lines;
-    p->CutLines( side, cut_lines );
+    p->CutLines( filter, cut_lines );
     if ( cut_lines.size()>0 )
     {
       cut_points.insert( p );
@@ -151,6 +152,19 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::CutPointsBetween( Point* begin
       throw std::runtime_error( "different points at the same place" );
     }
   }
+}
+
+bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::IsCut( Side * side )
+{
+  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  {
+    Point * p = *i;
+    if ( p->IsCut( side ) )
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other )
@@ -203,11 +217,11 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line2>::LevelSetCut( Mesh & mesh, Leve
   }
   else
   {
-    if ( blsv == 0.0 )
+    if ( fabs( blsv ) < std::numeric_limits<double>::min() )
     {
       cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
     }
-    if ( elsv == 0.0 )
+    if ( fabs( elsv ) < std::numeric_limits<double>::min() )
     {
       cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
     }
@@ -255,6 +269,11 @@ void GEO::CUT::ConcreteEdge<DRT::Element::line3>::CutPoints( Side * side, std::s
 }
 
 void GEO::CUT::ConcreteEdge<DRT::Element::line3>::CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line )
+{
+  throw std::runtime_error( "not supposed to end up here" );
+}
+
+bool GEO::CUT::ConcreteEdge<DRT::Element::line3>::IsCut( Side * side )
 {
   throw std::runtime_error( "not supposed to end up here" );
 }
