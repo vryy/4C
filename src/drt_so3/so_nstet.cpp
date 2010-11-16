@@ -1038,7 +1038,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   //----------------------------------------------------------------------
   // build parallel maximum independent set of nodes (MIS-nodes)
   // this is done in pseudo-serial, as a true parallel MIS algorithm ispretty difficult
-  
+#ifndef PUSOSOLBERG
   map<int,int> misnodesmap;
   map<int,DRT::Node*> rnodes = noderids_; // working copy of row nodes
   InitMISnode(misnodesmap,rnodes,myrank,numproc,dis);
@@ -1051,7 +1051,6 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
   // they are taken by a greedy algorithm in a second phase
 
   //----------------------------------------------------------------------
-
   map<int,DRT::ELEMENTS::NStet*> elecids = elecids_;
   InitMISpatchesGreedyI(misnodesmap,pstab_adjele_,pstab_cid_mis_,pstab_cid_mis_weight_,
                         elecids,elecids_,noderids_,myrank,numproc,dis);
@@ -1107,6 +1106,7 @@ int DRT::ELEMENTS::NStetType::Initialize(DRT::Discretization& dis)
       dserror("Element %d did not find its MIS node",ele->first);
     }
   }
+#endif
 
   //----------------------------------------------------------------------
   // have to build adjnode and adjlm arrays for the patches
