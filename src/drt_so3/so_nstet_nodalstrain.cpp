@@ -119,6 +119,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::PreEvaluate");
 
+#ifdef NSTET_TIMINGS
+  const int myrank = dis.Comm().MyPID();
+#endif
+
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
   string& action = p.get<string>("action","none");
@@ -159,12 +163,14 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   //-------------------------------------- construct F for each NStet
   //AutoDiffDemo();
   //AutoDiffDemo(dis);
+#ifdef NSTET_TIMINGS
   Epetra_Time timer(dis.Comm());
   double t0 = timer.ElapsedTime();
+#endif
   ElementDeformationGradient(dis);
-  double t1 = timer.ElapsedTime();
 #ifdef NSTET_TIMINGS
-  printf("Time %15.10e ElementDeformationGradient()\n",t1-t0);
+  double t1 = timer.ElapsedTime();
+  if (!myrank) printf("Time %15.10e ElementDeformationGradient()\n",t1-t0);
 #endif
 
   //-----------------------------------------------------------------
@@ -175,7 +181,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   RCP<Epetra_FECrsMatrix> stifftmp;
   RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
-  if (systemmatrix != null and systemmatrix->Filled())
+  if (systemmatrix != null && systemmatrix->Filled())
     stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
   else
     stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,rmap,256,false));
@@ -189,11 +195,13 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   RCP<const Epetra_Vector> disp = dis.GetState("displacement");
 
   //================================================== do nodal stiffness
+#ifdef NSTET_TIMINGS
   double t2 = timer.ElapsedTime();
   double tmis = 0.0;
   double tnode = 0.0;
   double tassemble = 0.0;
   double tassemblemis = 0.0;
+#endif
   std::map<int,DRT::Node*>::iterator node;
   for (node=noderids_.begin(); node != noderids_.end(); ++node)
   {
@@ -227,22 +235,30 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       // do nodal integration of stiffness and internal force
       stiff.LightShape(ndofperpatch,ndofperpatch);
       force.LightSize(ndofperpatch);
+#ifdef NSTET_TIMINGS
       double t4 = timer.ElapsedTime();
+#endif
       NodalIntegration(&stiff,&force,adjnode,adjele,lm,*disp,dis,
                        NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+#ifdef NSTET_TIMINGS
       double t5 = timer.ElapsedTime();
       tnode += (t5-t4);
+#endif
 
 #ifndef PUSOSOLBERG
       if (mis)
       {
+#ifdef NSTET_TIMINGS
         double t4 = timer.ElapsedTime();
+#endif
         mis_stiff.LightShape(mis_ndofperpatch,mis_ndofperpatch); // put in Light once values are present
         mis_force.LightSize(mis_ndofperpatch);                   // put in Light once values are present
         MISNodalIntegration(&mis_stiff,&mis_force,*mis_adjnode,*mis_adjele,*mis_weight,*mis_lm,*disp,dis,
                             NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
+#ifdef NSTET_TIMINGS
         double t5 = timer.ElapsedTime();
         tmis += (t5-t4);
+#endif
       } // mis
 #endif
     }
@@ -252,11 +268,15 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
+#ifdef NSTET_TIMINGS
       double t4 = timer.ElapsedTime();
+#endif
       NodalIntegration(NULL,NULL,adjnode,adjele,lm,*disp,dis,
                        &nodalstress,&nodalstrain,iostress,iostrain);
+#ifdef NSTET_TIMINGS
       double t5 = timer.ElapsedTime();
       tnode += (t5-t4);
+#endif
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
       if (lid==-1) dserror("Cannot find local id for row node");
@@ -271,11 +291,15 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       {
         vector<double> mis_nodalstress(6);
         vector<double> mis_nodalstrain(6);
+#ifdef NSTET_TIMINGS
         double t4 = timer.ElapsedTime();
+#endif
         MISNodalIntegration(NULL,NULL,*mis_adjnode,*mis_adjele,*mis_weight,*mis_lm,*disp,dis,
                             &mis_nodalstress,&mis_nodalstrain,iostress,iostrain);
+#ifdef NSTET_TIMINGS
         double t5 = timer.ElapsedTime();
         tmis += (t5-t4);
+#endif
       
         for (int i=0; i<6; ++i)
         {
@@ -292,51 +316,116 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     // (note: this is non-standard-baci assembly and therefore a do it all yourself version!)
     if (assemblemat1)
     {
+#ifdef NSTET_TIMINGS
       double t4 = timer.ElapsedTime();
+#endif
+      const Epetra_Map& dofrowmap = systemmatrix->RowMap();
+      vector<int> lrlm(ndofperpatch);
+      for (int i=0; i<ndofperpatch; ++i)
+        lrlm[i] = dofrowmap.LID(lm[i]);
+      
       for (int i=0; i<ndofperpatch; ++i)
       {
-        const int rgid = lm[i];
-        for (int j=0; j<ndofperpatch; ++j)
+        if (lrlm[i]==-1) // off-processor row
         {
-          const int cgid = lm[j];
-          int errone = stifftmp->SumIntoGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
-          if (errone>0)
+          for (int j=0; j<ndofperpatch; ++j)
           {
-            int errtwo = stifftmp->InsertGlobalValues(1,&rgid,1,&cgid,&stiff(i,j));
-            if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+            int errone = stifftmp->SumIntoGlobalValues(1,&lm[i],1,&lm[j],&stiff(i,j));
+            if (errone>0)
+            {
+              int errtwo = stifftmp->InsertGlobalValues(1,&lm[i],1,&lm[j],&stiff(i,j));
+              if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+            }
+            else if (errone) dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
           }
-          else if (errone)
-            dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+        }
+        else // local row
+        {
+          if (systemmatrix != null && systemmatrix->Filled())
+          {
+            Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+            const Epetra_Map& dofcolmap = matrix.ColMap();
+            vector<int> lclm(ndofperpatch);
+            for (int j=0; j<ndofperpatch; ++j)
+              lclm[j] = dofcolmap.LID(lm[j]);
+
+            for (int j=0; j<ndofperpatch; ++j)
+            {
+              int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
+              if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+            }
+          }
+          else
+          {
+            for (int j=0; j<ndofperpatch; ++j)
+              systemmatrix1->Assemble(stiff(i,j),lm[i],lm[j]);
+          }
         }
       }
+#ifdef NSTET_TIMINGS
       double t5 = timer.ElapsedTime();
       tassemble += (t5-t4);
+#endif
+      
 #ifndef PUSOSOLBERG
       if (mis)
       {
+#ifdef NSTET_TIMINGS
         double t4 = timer.ElapsedTime();
+#endif
+        lrlm.resize(mis_ndofperpatch);
+        for (int i=0; i<mis_ndofperpatch; ++i)
+          lrlm[i] = dofrowmap.LID((*mis_lm)[i]);
+        
         for (int i=0; i<mis_ndofperpatch; ++i)
         {
-          const int rgid = (*mis_lm)[i];
-          for (int j=0; j<mis_ndofperpatch; ++j)
+          if (lrlm[i]==-1) // off processor row
           {
-            const int cgid = (*mis_lm)[j];
-            int errone = stifftmp->SumIntoGlobalValues(1,&rgid,1,&cgid,&mis_stiff(i,j));
-            if (errone>0)
+            for (int j=0; j<mis_ndofperpatch; ++j)
             {
-              int errtwo = stifftmp->InsertGlobalValues(1,&rgid,1,&cgid,&mis_stiff(i,j));
-              if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+              int errone = stifftmp->SumIntoGlobalValues(1,&(*mis_lm)[i],1,&(*mis_lm)[j],&mis_stiff(i,j));
+              if (errone>0)
+              {
+                int errtwo = stifftmp->InsertGlobalValues(1,&(*mis_lm)[i],1,&(*mis_lm)[j],&mis_stiff(i,j));
+                if (errtwo<0) dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+              }
+              else if (errone)
+                dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
             }
-            else if (errone)
-              dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+          }
+          else
+          {
+            if (systemmatrix != null && systemmatrix->Filled())
+            {
+              Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+              const Epetra_Map& dofcolmap = matrix.ColMap();
+              vector<int> lclm(mis_ndofperpatch);
+              for (int j=0; j<mis_ndofperpatch; ++j)
+                lclm[j] = dofcolmap.LID((*mis_lm)[j]);
+              
+              for (int j=0; j<mis_ndofperpatch; ++j)
+              {
+                int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
+                if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+              }
+              
+            }
+            else
+            {
+              for (int j=0; j<mis_ndofperpatch; ++j)
+                systemmatrix1->Assemble(mis_stiff(i,j),(*mis_lm)[i],(*mis_lm)[j]);
+            }
           }
         }
+#ifdef NSTET_TIMINGS
         double t5 = timer.ElapsedTime();
         tassemblemis += (t5-t4);
+#endif
       } // mis
 #endif      
     }
     
+    //-----------------------------------------------------------------------------------
     if (assemblevec1)
     {
       for (int i=0; i<ndofperpatch; ++i)
@@ -362,13 +451,16 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   //=========================================================================
   } // for (node=noderids_.begin(); node != noderids_.end(); ++node)
-  double t3 = timer.ElapsedTime();
 #ifdef NSTET_TIMINGS
-  printf("Time %15.10e node integration\n",tnode);
-  printf("Time %15.10e mis  integration\n",tmis);
-  printf("Time %15.10e node assemble\n",tassemble);
-  printf("Time %15.10e mis assemble\n",tassemblemis);
-  printf("Time %15.10e Total nodal loop\n",t3-t2);
+  double t3 = timer.ElapsedTime();
+  if (!myrank)
+  {
+    printf("Time %15.10e node integration\n",tnode);
+    printf("Time %15.10e mis  integration\n",tmis);
+    printf("Time %15.10e node assemble\n",tassemble);
+    printf("Time %15.10e mis assemble\n",tassemblemis);
+    printf("Time %15.10e Total nodal loop\n",t3-t2);
+  }
 #endif
   
   //-------------------------------------------------------------------------
@@ -399,8 +491,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   // need to export forcetmp to systemvector1 and insert stiffnesses from stifftmp
   // into systemmatrix1
   // Note that fillComplete is never called on stifftmp
+#ifdef NSTET_TIMINGS
   double tglobalassemble = 0.0;
   double tassemble2 = 0.0;
+#endif
   if (assemblevec1)
   {
     Epetra_Vector tmp(systemvector1->Map(),false);
@@ -411,19 +505,22 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   }
   if (assemblemat1)
   {
+#ifdef NSTET_TIMINGS
     double t4 = timer.ElapsedTime();
+#endif
     int err = stifftmp->GlobalAssemble(dmap,rmap,false);
+    if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
+#ifdef NSTET_TIMINGS
     double t5 = timer.ElapsedTime();
     tglobalassemble += (t5-t4);
-
     t4 = timer.ElapsedTime();
-    if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
+#endif
     const Epetra_Map& cmap = stifftmp->ColMap();
     for (int lrow=0; lrow<stifftmp->NumMyRows(); ++lrow)
     {
       int numentries;
       double* values;
-      if (not stifftmp->Filled())
+      if (!stifftmp->Filled())
       {
         const int grow = stifftmp->RowMap().GID(lrow);
         int* gindices;
@@ -437,16 +534,13 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         int* lindices;
         int err = stifftmp->ExtractMyRowView(lrow,numentries,values,lindices);
         if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d",err);
-        if (systemmatrix != null and systemmatrix->Filled())
+        if (systemmatrix != null && systemmatrix->Filled())
         {
           Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
           for (int j=0; j<numentries; ++j)
           {
             int err = matrix.SumIntoMyValues(lrow,1,&values[j],&lindices[j]);
-            if (err!=0)
-            {
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
-            }
+            if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
           }
         }
         else
@@ -457,13 +551,18 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         }
       }
     }
+#ifdef NSTET_TIMINGS
     t5 = timer.ElapsedTime();
     tassemble2 += (t5-t4);
+#endif
   }
 #ifdef NSTET_TIMINGS
-  printf("Time %15.10e GlobalAssemble\n",tglobalassemble);
-  printf("Time %15.10e FeCrs to Crs assemble\n",tassemble2);
-  printf("----------------------------------------\n");
+  if (!myrank)
+  {
+    printf("Time %15.10e GlobalAssemble\n",tglobalassemble);
+    printf("Time %15.10e FeCrs to Crs assemble\n",tassemble2);
+    printf("----------------------------------------\n");
+  }
 #endif  
 
 
