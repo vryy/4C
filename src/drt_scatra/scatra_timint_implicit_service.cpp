@@ -1597,7 +1597,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         ostringstream temp;
         temp << condid;
         const std::string fname
-        = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+temp.str()+".txt";
+        = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
 
         std::ofstream f;
         if (Step() <= 1)
