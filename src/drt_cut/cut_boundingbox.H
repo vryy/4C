@@ -51,7 +51,25 @@ public:
 
   bool Within( Element & element ) const;
 
+  void Print();
+
+  double minx() const { return box_( 0, 0 ); }
+  double miny() const { return box_( 1, 0 ); }
+  double minz() const { return box_( 2, 0 ); }
+
+  double maxx() const { return box_( 0, 1 ); }
+  double maxy() const { return box_( 1, 1 ); }
+  double maxz() const { return box_( 2, 1 ); }
+
+  void CornerPoint( int i, double * x );
+
 private:
+
+  bool InBetween( double smin, double smax, double omin, double omax ) const
+  {
+    return ( ( omax > smin - 1e-7 and omin < smax + 1e-7 ) or
+             ( smax > omin - 1e-7 and smin < omax + 1e-7 ) );
+  }
 
   bool empty_;
   LINALG::Matrix<3,2> box_;

@@ -54,6 +54,7 @@ bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement * element, 
 
 bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other )
 {
+#if 1
   bool cut = false;
   for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
   {
@@ -69,6 +70,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
   {
     return true;
   }
+#endif
 
   std::set<Point*> cuts;
   GetCutPoints( element, other, cuts );

@@ -8,10 +8,12 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_e
   if ( p==Teuchos::null )
   {
     p = CreatePoint( points_.size(), x, cut_edge, cut_side );
-    if ( points_.size()%100 == 0 )
+#if 1
+    if ( points_.size()%1000 == 0 )
     {
-      Split();
+      Split( 0 );
     }
+#endif
   }
   return &*p;
 }
@@ -91,9 +93,12 @@ GEO::CUT::OctTreeNode* GEO::CUT::OctTreeNode::Leaf( const double * x )
   return &*nodes_[idx];
 }
 
-void GEO::CUT::OctTreeNode::Split()
+void GEO::CUT::OctTreeNode::Split( int level )
 {
-  if ( points_.size()>20 )
+  // We must not end up with a OctTreeNode that holds just nodes from the
+  // cutter mesh. However, there is no real way to test this right now.
+
+  if ( points_.size()>125 )
   {
     LINALG::Matrix<3,1> x;
     bool first = true;
@@ -120,6 +125,18 @@ void GEO::CUT::OctTreeNode::Split()
       nodes_[i] = Teuchos::rcp( new OctTreeNode() );
     }
 
+    // avoid empty room (room not covered by boundary boxes)
+    for ( int i=0; i<8; ++i )
+    {
+      // always have the split point in all boxes
+      nodes_[i]->bb_.AddPoint( splitpoint_ );
+
+      // always have the outmost point in each box
+      double x[3];
+      bb_.CornerPoint( i, x );
+      Leaf( x )->bb_.AddPoint( x );
+    }
+
     for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Teuchos::RCP<Point> p = *i;
@@ -130,7 +147,7 @@ void GEO::CUT::OctTreeNode::Split()
 
     for ( int i=0; i<8; ++i )
     {
-      nodes_[i]->Split();
+      nodes_[i]->Split( level+1 );
     }
   }
 }
@@ -143,32 +160,32 @@ void GEO::CUT::OctTreeNode::AddPoint( const double * x, Teuchos::RCP<Point> p )
 
 void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides )
 {
-  if ( bb_.Within( sidebox ) )
+  if ( not IsLeaf() )
   {
-    if ( not IsLeaf() )
+    if ( sidebox.Within( bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
         nodes_[i]->CollectSides( sidebox, sides );
       }
     }
-    else
+  }
+  else
+  {
+    BoundingBox sbox;
+    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
-      BoundingBox sbox;
-      for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+      Point * p = &**i;
+      const std::set<Side*> & sds = p->CutSides();
+      for ( std::set<Side*>::iterator i=sds.begin(); i!=sds.end(); ++i )
       {
-        Point * p = &**i;
-        const std::set<Side*> & sds = p->CutSides();
-        for ( std::set<Side*>::iterator i=sds.begin(); i!=sds.end(); ++i )
+        Side * s = *i;
+        if ( sides.count( s )==0 )
         {
-          Side * s = *i;
-          if ( sides.count( s )==0 )
+          sbox.Assign( *s );
+          if ( sbox.Within( sidebox ) )
           {
-            sbox.Assign( *s );
-            if ( sbox.Within( sidebox ) )
-            {
-              sides.insert( s );
-            }
+            sides.insert( s );
           }
         }
       }
@@ -178,32 +195,32 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<
 
 void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements )
 {
-  if ( bb_.Within( sidebox ) )
+  if ( not IsLeaf() )
   {
-    if ( not IsLeaf() )
+    if ( sidebox.Within( bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
         nodes_[i]->CollectElements( sidebox, elements );
       }
     }
-    else
+  }
+  else
+  {
+    BoundingBox elementbox;
+    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
-      BoundingBox elementbox;
-      for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+      Point * p = &**i;
+      const std::set<Element*> & els = p->Elements();
+      for ( std::set<Element*>::iterator i=els.begin(); i!=els.end(); ++i )
       {
-        Point * p = &**i;
-        const std::set<Element*> & els = p->Elements();
-        for ( std::set<Element*>::iterator i=els.begin(); i!=els.end(); ++i )
+        Element * e = *i;
+        if ( elements.count( e )==0 )
         {
-          Element * e = *i;
-          if ( elements.count( e )==0 )
+          elementbox.Assign( *e );
+          if ( elementbox.Within( sidebox ) )
           {
-            elementbox.Assign( *e );
-            if ( elementbox.Within( sidebox ) )
-            {
-              elements.insert( e );
-            }
+            elements.insert( e );
           }
         }
       }

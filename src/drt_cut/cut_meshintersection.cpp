@@ -79,6 +79,8 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
   }
   mesh_.FillComplete();
 
+  //Status();
+
   std::vector<Teuchos::RCP<CellGenerator> > cutgens;
   for ( int i=cut_mesh_.size()-1; i>0; --i )
   {
@@ -92,7 +94,7 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
   mesh_.MakeFacets();
   mesh_.FindNodePositions();
 
-  Status();
+  //Status();
 
   mesh_.GenerateTetgen( generator );
 }

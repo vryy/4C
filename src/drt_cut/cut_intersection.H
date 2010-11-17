@@ -46,8 +46,6 @@ public:
 
   bool ComputeCurveSurfaceIntersection();
 
-  bool ComputeDistance( Point * p );
-
   bool AtEdge();
 
   bool SurfaceWithinLimits();
@@ -57,6 +55,8 @@ public:
   LINALG::Matrix<3,1> & FinalPoint();
 
 private:
+
+  bool ComputeDistance( Point * p );
 
   /// add cut point that is a node to all edges and sides it touches
   void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts )
@@ -368,6 +368,9 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     // update
 
     xsi_ += dx;
+
+    if ( not SurfaceWithinLimits() )
+      return false;
   }
   throw std::runtime_error( "Newton scheme did not converge" );
 }

@@ -23,6 +23,7 @@ bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
                                                                  LinearSide & side,
                                                                  LinearSide & other )
 {
+#if 1
   bool cut = false;
   for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
@@ -37,6 +38,7 @@ bool GEO::CUT::ConcreteEdge<DRT::Element::line2>::FindCutPoints( Mesh & mesh,
   {
     return true;
   }
+#endif
 
   // test for the cut of edge and side
 

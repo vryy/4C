@@ -45,7 +45,7 @@ private:
 
   OctTreeNode* Leaf( const double * x );
 
-  void Split();
+  void Split( int level );
 
   Teuchos::RCP<OctTreeNode> nodes_[8];
 

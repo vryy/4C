@@ -4,6 +4,6 @@
 #define MINIMALTOL  1e-6
 #define RELAXEDTOL  1e-8
 #define TOLERANCE   1e-12
-#define LINSOLVETOL 1e-13
+#define LINSOLVETOL 1e-12
 
 #endif
