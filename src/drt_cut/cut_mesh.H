@@ -105,6 +105,8 @@ public:
 
   void FindNodePositions();
 
+  void FindLSNodePositions();
+
   void Status();
 
   void PrintFacets();

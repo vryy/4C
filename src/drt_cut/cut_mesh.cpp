@@ -695,6 +695,33 @@ void GEO::CUT::Mesh::FindNodePositions()
   }
 }
 
+void GEO::CUT::Mesh::FindLSNodePositions()
+{
+  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+        i!=nodes_.end();
+        ++i )
+  {
+    Node * n = &*i->second;
+    Point * p = n->point();
+    if ( p->Position()==Point::undecided )
+    {
+      double lsv = n->LSV();
+      if ( lsv > 0 )
+      {
+        p->Position( Point::outside );
+      }
+      else if ( lsv < 0 )
+      {
+        p->Position( Point::inside );
+      }
+      else
+      {
+        throw std::runtime_error( "undecided nodal point on levelset surface" );
+      }
+    }
+  }
+}
+
 void GEO::CUT::Mesh::Status()
 {
   std::cout << "#points:    " << pp_->size() << "\n"
