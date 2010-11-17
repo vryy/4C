@@ -19,7 +19,6 @@ GEO::CUT::TetCutGenerator::TetCutGenerator( GEO::CUT::MeshIntersection & interse
 
 void GEO::CUT::TetCutGenerator::NonCut( Element* element )
 {
-  std::cout << "uncut element!\n";
 }
 
 #ifdef QHULL
@@ -33,40 +32,7 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
 
     Mesh mesh( pp_, false );
 
-    // need to copy surface markers via side id
-    for ( int i=0; i<out.numberoftrifaces; ++i )
-    {
-      if ( out.trifacemarkerlist[i] > -1 )
-      {
-        //GEO::CUT::Side * cut_side = intersection_.GetCutSides( out.trifacemarkerlist[i] );
-        std::vector<int> nids;
-        nids.reserve( 3 );
-        for ( int j=0; j<3; ++j )
-        {
-          int pointidx = out.trifacelist[i*3+j] * 3;
-          Node* n = mesh.GetNode( pointidx, &out.pointlist[pointidx] );
-          nids.push_back( pointidx );
-        }
-        Side * side = mesh.CreateTri3( out.trifacemarkerlist[i], nids );
-      }
-    }
-
-    //const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(
-    //DRT::Element::tet4 );
-    const int numTetNodes = 4;
-
-    for ( int i=0; i<out.numberoftetrahedra; ++i )
-    {
-      std::vector<int> nids;
-      nids.reserve( numTetNodes );
-      for ( int j=0; j<numTetNodes; ++j )
-      {
-        int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
-        Node* n = mesh.GetNode( pointidx, &out.pointlist[pointidx] );
-        nids.push_back( pointidx );
-      }
-      Element * e = mesh.CreateTet4( i, nids );
-    }
+    mesh.AddTetgen( out );
 
     cut_mesh_.Cut( mesh );
 
@@ -77,8 +43,13 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
 
     if ( parent_ != NULL )
     {
-      TetCutConverter converter( parent_, element );
+      Mesh resultmesh( pp_, false );
+      TetCutConverter converter( resultmesh );
       mesh.GenerateTetgen( &converter );
+
+      tetgenio result;
+      resultmesh.ExtractTetgen( result );
+      parent_->Generate( element, result );
     }
   }
   else
@@ -91,9 +62,8 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
 }
 #endif
 
-GEO::CUT::TetCutConverter::TetCutConverter( CellGenerator * parent, Element * element )
-  : parent_( parent ),
-    element_( element )
+GEO::CUT::TetCutConverter::TetCutConverter( Mesh & mesh )
+  : mesh_( mesh )
 {
 }
 
@@ -102,15 +72,14 @@ void GEO::CUT::TetCutConverter::NonCut( Element* element )
 #ifdef QHULL
   tetgenio out;
   element->FillTetgen( out );
-  Generate( element, out );
+  mesh_.AddTetgen( out );
 #endif
 }
 
 #ifdef QHULL
 void GEO::CUT::TetCutConverter::Generate( Element* e, const tetgenio & out )
 {
-  // set original element
-  parent_->Generate( element_, out );
+  mesh_.AddTetgen( out );
 }
 #endif
 

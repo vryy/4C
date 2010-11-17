@@ -35,7 +35,7 @@ class TetCutConverter : public CellGenerator
 {
 public:
 
-  TetCutConverter( CellGenerator * parent, Element * element );
+  TetCutConverter( Mesh & mesh );
 
   virtual void NonCut( Element* element );
 
@@ -44,8 +44,7 @@ public:
 #endif
 
 private:
-  CellGenerator * parent_;
-  Element * element_;
+  Mesh & mesh_;
 };
 
   }

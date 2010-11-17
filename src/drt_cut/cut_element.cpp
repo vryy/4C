@@ -775,7 +775,6 @@ void GEO::CUT::ConcreteElement<DRT::Element::tet4>::FillTetgen( tetgenio & out )
     }
     out.trifacemarkerlist[i] = sid;
   }
-
 }
 #endif
 

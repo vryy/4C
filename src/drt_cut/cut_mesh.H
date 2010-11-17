@@ -57,6 +57,14 @@ public:
 
   explicit Mesh( Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
+#ifdef QHULL
+
+  void AddTetgen( const tetgenio & out );
+
+  void ExtractTetgen( tetgenio & out );
+
+#endif
+
   void FillComplete();
 
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );

@@ -26,6 +26,159 @@ GEO::CUT::Mesh::Mesh( Teuchos::RCP<PointPool> pp, bool cutmesh )
   }
 }
 
+#ifdef QHULL
+
+void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
+{
+  std::map<int, int> nodeidmap;
+
+  // need to copy surface markers via side id
+  for ( int i=0; i<out.numberoftrifaces; ++i )
+  {
+    std::vector<int> nids;
+    nids.reserve( 3 );
+    for ( int j=0; j<3; ++j )
+    {
+      int nid;
+      int pointidx = out.trifacelist[i*3+j] * 3;
+      std::map<int, int>::iterator ni = nodeidmap.find( pointidx );
+      if ( ni==nodeidmap.end() )
+      {
+        nid = nodes_.size();
+        if ( nodes_.find( nid )!=nodes_.end() )
+        {
+          throw std::runtime_error( "node ids not consecutive" );
+        }
+        Node* n = GetNode( nid, &out.pointlist[pointidx] );
+        nodeidmap[pointidx] = nid;
+      }
+      else
+      {
+        nid = ni->second;
+      }
+      nids.push_back( nid );
+    }
+    Side * side = CreateTri3( out.trifacemarkerlist[i], nids );
+  }
+
+  const int numTetNodes = 4;
+
+  for ( int i=0; i<out.numberoftetrahedra; ++i )
+  {
+    std::vector<int> nids;
+    nids.reserve( numTetNodes );
+    for ( int j=0; j<numTetNodes; ++j )
+    {
+      int nid;
+      int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
+      std::map<int, int>::iterator ni = nodeidmap.find( pointidx );
+      if ( ni==nodeidmap.end() )
+      {
+        nid = nodes_.size();
+        if ( nodes_.find( nid )!=nodes_.end() )
+        {
+          throw std::runtime_error( "node ids not consecutive" );
+        }
+        Node* n = GetNode( nid, &out.pointlist[pointidx] );
+        nodeidmap[pointidx] = nid;
+      }
+      else
+      {
+        nid = ni->second;
+      }
+      nids.push_back( nid );
+    }
+    int eid = elements_.size();
+    if ( elements_.find( eid )!=elements_.end() )
+    {
+      throw std::runtime_error( "element ids not consecutive" );
+    }
+    Element * e = CreateTet4( eid, nids );
+  }
+}
+
+void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
+{
+  const int dim = 3;
+
+  out.numberofpoints = nodes_.size();
+  out.pointlist = new REAL[out.numberofpoints * dim];
+  out.pointmarkerlist = new int[out.numberofpoints];
+
+  out.numberoftrifaces = sides_.size();
+  out.trifacemarkerlist = new int[out.numberoftrifaces];
+  out.trifacelist = new int[out.numberoftrifaces * 3];
+
+  out.numberoftetrahedra = elements_.size();
+  out.tetrahedronlist = new int[out.numberoftetrahedra * 4];
+
+  std::map<int, int> nodeidmap;
+
+  int count = 0;
+  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+        i!=nodes_.end();
+        ++i )
+  {
+    Node * n = &*i->second;
+    n->Coordinates( &out.pointlist[count*dim] );
+    out.pointmarkerlist[count] = n->point()->Position();
+    nodeidmap[n->Id()] = count;
+    count += 1;
+  }
+
+  count = 0;
+  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+        i!=sides_.end();
+        ++i )
+  {
+    Side * s = &*i->second;
+    const std::vector<Node*> & side_nodes = s->Nodes();
+
+    if ( side_nodes.size()!=3 )
+    {
+      throw std::runtime_error( "side not a tri3" );
+    }
+
+    for ( int j=0; j<3; ++j )
+    {
+      out.trifacelist[count*3+j] = nodeidmap[side_nodes[j]->Id()];
+    }
+
+    int sid = s->Id();
+    if ( sid < 0 )
+    {
+      for ( int j=0; j<3; ++j )
+      {
+        sid = std::min( sid, out.pointmarkerlist[out.trifacelist[count*3+j]] );
+      }
+    }
+    out.trifacemarkerlist[count] = sid;
+    count += 1;
+  }
+
+  count = 0;
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element * e = &*i->second;
+    const std::vector<Node*> & element_nodes = e->Nodes();
+
+    if ( element_nodes.size()!=4 )
+    {
+      throw std::runtime_error( "element not a tet4" );
+    }
+
+    for ( int j=0; j<4; ++j )
+    {
+      out.tetrahedronlist[count*4+j] = nodeidmap[element_nodes[j]->Id()];
+    }
+    count += 1;
+  }
+}
+
+#endif
+
 void GEO::CUT::Mesh::FillComplete()
 {
   // make a local copy of me list of elements since the main list might change
