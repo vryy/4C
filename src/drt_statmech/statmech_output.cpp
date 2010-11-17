@@ -615,8 +615,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
           if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
-              eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
-              eot == DRT::ELEMENTS::Truss3Type::Instance())
+              eot==DRT::ELEMENTS::Beam3iiType::Instance())
           {
             if (!kinked)
             {
