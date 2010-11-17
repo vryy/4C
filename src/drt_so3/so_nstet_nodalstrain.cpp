@@ -357,12 +357,15 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
           if (systemmatrix != null && systemmatrix->Filled())
           {
             Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+#if 0
             int length;
             double* values;
             int* indices;
             matrix.ExtractMyRowView(lrlm[i],length,values,indices);
+#endif
             for (int j=0; j<ndofperpatch; ++j)
             {
+#if 0
               int* loc = std::lower_bound(indices,indices+length,lclm[j]);
 #ifdef DEBUG
               if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
@@ -371,8 +374,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
               values[pos++] += stiff(i,j++);
               values[pos++] += stiff(i,j++);
               values[pos]   += stiff(i,j);
-              //int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
-              //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#else
+              int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
+              if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif              
             }
           }
           else
@@ -422,12 +427,15 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
             if (systemmatrix != null && systemmatrix->Filled())
             {
               Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+#if 0
               int length;
               double* values;
               int* indices;
               matrix.ExtractMyRowView(lrlm[i],length,values,indices);
+#endif
               for (int j=0; j<mis_ndofperpatch; ++j)
               {
+#if 0
                 int* loc = std::lower_bound(indices,indices+length,lclm[j]);
 #ifdef DEBUG
                 if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
@@ -436,8 +444,10 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
                 values[pos++] += mis_stiff(i,j++);
                 values[pos++] += mis_stiff(i,j++);
                 values[pos]   += mis_stiff(i,j);
-                //int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
-                //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#else
+                int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
+                if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif                
               }
             }
             else
