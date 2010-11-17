@@ -879,7 +879,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 
         }
         else
-          GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
+          GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
       }
     }
   }
@@ -1078,13 +1078,13 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
                 coord(j, 1) = (*visualizepositions_)[j][i];
               }
 
-              double beadcolor = color;
+              double beadcolor = 3*color;
               // in case of periodic boundary conditions
               if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
               {
               	// get arbitrary element (we just need it to properly visualize)
               	DRT::Element* tmpelement=discret_.lRowElement(0);
-                GmshOutputPeriodicBoundary(coord, color, gmshfilebonds, tmpelement->Id(), true);
+                GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
                 // visualization of "real" crosslink molecule positions
                 //beadcolor = 0.0; //black
                 //gmshfilebonds << "SP(" << scientific;
@@ -1095,7 +1095,7 @@ void StatMechManager::GmshOutputCrosslinkDiffusion(double color, const std::ostr
               {
                 gmshfilebonds << "SL(" << scientific;
                 gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-                gmshfilebonds << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+                gmshfilebonds << ")" << "{" << scientific << 3*color << ","<< 3*color << "};" << endl;
                 gmshfilebonds << "SP(" << scientific;
                 gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
                 gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
