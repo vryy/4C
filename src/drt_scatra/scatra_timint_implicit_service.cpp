@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // for AVM3 solver:
@@ -1233,9 +1234,24 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux()
     {
       DRT::Node* actnode = discret_->lRowNode(i);
       int dofgid = discret_->Dof(actnode,k-1);
-      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
+      // get value for each component of flux vector
+      double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
+      double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];
+      double zvalue = ((*flux)[2])[(flux->Map()).LID(dofgid)];
+      // care for the slave nodes of rotationally symm. periodic boundary conditions
+      double rotangle(0.0); //already converted to radians
+      bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
+      if (havetorotate)
+      {
+        double xvalue_rot = (xvalue*cos(rotangle)) - (yvalue*sin(rotangle));
+        double yvalue_rot = (xvalue*sin(rotangle)) + (yvalue*(cos(rotangle)));
+        xvalue = xvalue_rot;
+        yvalue = yvalue_rot;
+      }
+      // insert values
+      fluxk->ReplaceMyValue(i,0,xvalue);
+      fluxk->ReplaceMyValue(i,1,yvalue);
+      fluxk->ReplaceMyValue(i,2,zvalue);
     }
     if (numscal_==1)
       output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
@@ -1541,13 +1557,23 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
             // compute integral value for every degree of freedom
             normfluxintegral[idof] += (*trueresidual_)[doflid];
 
-            // for visualization, we plot the normal flux with
-            // outward pointing normal vector
-            for (int idim = 0; idim < 3; idim++)
+            // care for the slave nodes of rotationally symm. periodic boundary conditions
+            double rotangle(0.0);
+            bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(actnode,rotangle);
+
+            // do not insert slave node values here, since they would overwrite the
+            // master node values owning the same dof
+            // (rotation of slave node vectors is performed later during output)
+            if (not havetorotate)
             {
-              Epetra_Vector* normalcomp = (*normals_)(idim);
-              double normalveccomp =(*normalcomp)[lnodid];
-              flux->ReplaceMyValue(doflid,idim,normflux*normalveccomp);
+              // for visualization, we plot the normal flux with
+              // outward pointing normal vector
+              for (int idim = 0; idim < 3; idim++)
+              {
+                Epetra_Vector* normalcomp = (*normals_)(idim);
+                double normalveccomp =(*normalcomp)[lnodid];
+                flux->ReplaceMyValue(doflid,idim,normflux*normalveccomp);
+              }
             }
           }
         }
