@@ -1130,7 +1130,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
 
 	//probability with which a crosslinker is established between crosslink molecule and neighbour node
-	double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+	double plink = 1.0 - exp( -dt*kon );
 	//probability with which a crosslinker blocks two binding spots on the same filament (self-binding)
 	double pself = 1.0 - exp( -dt*statmechparams_.get<double>("K_ON_SELF", 0.0) );
 
@@ -1549,7 +1549,7 @@ void StatMechManager::SetCrosslinkers(const double& dt, const Epetra_Map& nodero
 	}
 
 	//probability with which a crosslinker is established between neighbouring nodes
-	double plink = 1.0 - exp( -dt*kon*statmechparams_.get<double>("C_CROSSLINKER",0.0) );
+	double plink = 1.0 - exp( -dt*kon );
 
 	//create Epetra_MultiVector which saves on proc 0 for each col map node to which nodes (GID) crosslinker is to be set
 	Epetra_MultiVector crosslinkstobeadded(nodecolmap,statmechparams_.get<int>("N_CROSSMAX",0),true);

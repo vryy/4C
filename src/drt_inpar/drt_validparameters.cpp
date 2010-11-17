@@ -1232,8 +1232,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
   DoubleParameter("DeltaR_LINK",0.0,"Absolute value of difference between maximal/minimal and mean cross linker length",&statmech);
-  //Reading double parameter for concentration of crosslinking protein
-  DoubleParameter("C_CROSSLINKER",0.0,"Molar concentration of crosslinking protein",&statmech);
   //Edge length of cube for periodic boundary conditions problem
   DoubleParameter("PeriodLength",0.0,"Edge length of cube for periodic boundary conditions problem",&statmech);
   // upper bound of the interval within which uniformly distributed random numbers are generated
