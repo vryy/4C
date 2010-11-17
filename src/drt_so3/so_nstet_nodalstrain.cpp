@@ -187,6 +187,14 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,rmap,256,false));
 
   //-----------------------------------------------------------------
+  // make some tests for fast assembly
+  if (systemmatrix != null && systemmatrix->Filled())
+  {
+    Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
+    if (!matrix.StorageOptimized()) dserror("Matrix must be StorageOptimized() when Filled()");
+  }
+
+  //-----------------------------------------------------------------
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp1(*dis.DofColMap(),true);
 
@@ -320,9 +328,14 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       double t4 = timer.ElapsedTime();
 #endif
       const Epetra_Map& dofrowmap = systemmatrix->RowMap();
+      const Epetra_Map& dofcolmap = systemmatrix->ColMap();
       vector<int> lrlm(ndofperpatch);
+      vector<int> lclm(ndofperpatch);
       for (int i=0; i<ndofperpatch; ++i)
+      {
         lrlm[i] = dofrowmap.LID(lm[i]);
+        lclm[i] = dofcolmap.LID(lm[i]);
+      }
       
       for (int i=0; i<ndofperpatch; ++i)
       {
@@ -344,15 +357,22 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
           if (systemmatrix != null && systemmatrix->Filled())
           {
             Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
-            const Epetra_Map& dofcolmap = matrix.ColMap();
-            vector<int> lclm(ndofperpatch);
-            for (int j=0; j<ndofperpatch; ++j)
-              lclm[j] = dofcolmap.LID(lm[j]);
-
+            int length;
+            double* values;
+            int* indices;
+            matrix.ExtractMyRowView(lrlm[i],length,values,indices);
             for (int j=0; j<ndofperpatch; ++j)
             {
-              int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
-              if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+              int* loc = std::lower_bound(indices,indices+length,lclm[j]);
+#ifdef DEBUG
+              if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
+#endif
+              int pos = loc-indices;
+              values[pos++] += stiff(i,j++);
+              values[pos++] += stiff(i,j++);
+              values[pos]   += stiff(i,j);
+              //int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
+              //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
             }
           }
           else
@@ -374,8 +394,12 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         double t4 = timer.ElapsedTime();
 #endif
         lrlm.resize(mis_ndofperpatch);
+        lclm.resize(mis_ndofperpatch);
         for (int i=0; i<mis_ndofperpatch; ++i)
+        {
           lrlm[i] = dofrowmap.LID((*mis_lm)[i]);
+          lclm[i] = dofcolmap.LID((*mis_lm)[i]);
+        }
         
         for (int i=0; i<mis_ndofperpatch; ++i)
         {
@@ -398,17 +422,23 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
             if (systemmatrix != null && systemmatrix->Filled())
             {
               Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
-              const Epetra_Map& dofcolmap = matrix.ColMap();
-              vector<int> lclm(mis_ndofperpatch);
-              for (int j=0; j<mis_ndofperpatch; ++j)
-                lclm[j] = dofcolmap.LID((*mis_lm)[j]);
-              
+              int length;
+              double* values;
+              int* indices;
+              matrix.ExtractMyRowView(lrlm[i],length,values,indices);
               for (int j=0; j<mis_ndofperpatch; ++j)
               {
-                int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
-                if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+                int* loc = std::lower_bound(indices,indices+length,lclm[j]);
+#ifdef DEBUG
+                if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
+#endif
+                int pos = loc-indices;
+                values[pos++] += mis_stiff(i,j++);
+                values[pos++] += mis_stiff(i,j++);
+                values[pos]   += mis_stiff(i,j);
+                //int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
+                //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
               }
-              
             }
             else
             {
