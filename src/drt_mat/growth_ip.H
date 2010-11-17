@@ -59,6 +59,8 @@ namespace MAT
       const double starttime_;
       // stop growth after endtime
       const double endtime_;
+      // tolerance for local Newton iteration
+      const double abstol_;
       // growth law parameter kthetaplus
       const double kthetaplus_;
       // growth law parameter mthetaplus
@@ -172,13 +174,13 @@ namespace MAT
     );
 
     /// Return density
-    double Density() const {return params_->density_;};
+    double Density() const {return params_->density_;}
 
     /// Return theta
-    RCP<vector<double> > Gettheta() const {return theta_;};
+    RCP<vector<double> > Gettheta() const {return theta_;}
 
     /// Return mandel stress
-    RCP<vector<double> > Getmandel() const {return mandel_;};
+    RCP<vector<double> > Getmandel() const {return mandel_;}
 
     /// Return elastic material
     Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }

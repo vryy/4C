@@ -1383,6 +1383,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
     AddNamedReal(m,"STARTTIME","start growth after this time");
     AddNamedReal(m,"ENDTIME","end growth after this time");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");

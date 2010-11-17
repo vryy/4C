@@ -159,7 +159,7 @@ THETA                           0.5
 --------------------------------------------------------TSI DYNAMIC
 -------------------------------------------------------XFEM GENERAL
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_GROWTH DENS 0.0001 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0 KPLUS 1.0 MPLUS 2.0 KMINUS 2.0 MMINUS 3.0 
+MAT 1 MAT_GROWTH DENS 0.0001 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0 TOL 1.0E-10 KPLUS 1.0 MPLUS 2.0 KMINUS 2.0 MMINUS 3.0 
 MAT 2 MAT_Struct_LogNeoHooke YOUNG 1.0 NUE 0.3 DENS 1.0 MODEL 0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1

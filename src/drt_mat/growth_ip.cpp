@@ -29,6 +29,7 @@ Maintainer: Susanna Tinkl
 #include "holzapfelcardiovascular.H"
 #include "humphreycardiovascular.H"
 #include "aaaneohooke.H"
+#include "neohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils.H"  // for function Factory in Unpack
@@ -48,6 +49,7 @@ MAT::PAR::Growth::Growth(
   idmatelastic_(matdata->GetInt("IDMATELASTIC")),
   starttime_(matdata->GetDouble("STARTTIME")),
   endtime_(matdata->GetDouble("ENDTIME")),
+  abstol_(matdata->GetDouble("TOL")),
   kthetaplus_(matdata->GetDouble("KPLUS")),
   mthetaplus_(matdata->GetDouble("MPLUS")),
   kthetaminus_(matdata->GetDouble("KMINUS")),
@@ -324,7 +326,7 @@ void MAT::Growth::Evaluate
     int localistep = 0;
     double thetaquer = 0.0;
     int maxstep = 30;
-    double abstol = 1.0E-10;
+    double abstol = params_->abstol_;
 
     // local Newton iteration to obtain exact theta
     while (abs(residual) > abstol && localistep < maxstep)
@@ -487,6 +489,9 @@ void MAT::Growth::EvaluateElastic
   } else if (matelastic_->MaterialType() == INPAR::MAT::m_aaaneohooke){
     MAT::AAAneohooke* aaaneo = static_cast <MAT::AAAneohooke*>(matelastic_.get());
     aaaneo->Evaluate(*glstrain, *cmat, *stress);
+  } else if (matelastic_->MaterialType() == INPAR::MAT::m_neohooke){
+    MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(matelastic_.get());
+    neo->Evaluate(*glstrain, *cmat, *stress);
   } else dserror("material not implemented for growth");
 
 }
