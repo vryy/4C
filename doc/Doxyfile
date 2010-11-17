@@ -608,6 +608,7 @@ INPUT                  = index.doc \
                          ../src/drt_geometry \
                          ../src/drt_mortar \
                          ../src/drt_beamcontact \
+                         ../src/drt_cut \
                          ../src/drt_stk
 
 # This tag can be used to specify the character encoding of the source files 

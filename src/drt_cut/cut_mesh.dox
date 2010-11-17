@@ -1,0 +1,84 @@
+
+/// Collection of general purpose geometry manipulation tools
+namespace GEO
+{
+
+/// Cut of volume elements by surface elements or levelset functions
+/*!
+
+\section Preamble
+
+The cut package is meant to be independent of any external mesh
+management. Thus, neither DRT::Discretization nor the stk library are used
+here. Instead an internal mesh implementation is used. The classes
+GEO::CUT::MeshIntersection and GEO::CUT::LevelSetIntersection are interfaces
+to the cut package for surface mesh cuts and levelset cuts, respectively. The
+final tetrahedralization is communicated to the caller using a user-provided
+callback object that is derived from GEO::CUT::CellGenerator.
+
+\section Scope
+
+The cut package supports
+
+- Cuts of linear or quadratic elements, where quadratic elements are
+  subdivided by linear elements first. The actual cut is always performed with
+  linear elements.
+
+- Cuts of volume elements by a surface mesh of a levelset function
+
+- Multiple cuts with intersecting surface meshes
+
+For element tetrahedralization the tetgen package is used.
+
+\section Design
+
+There are definite steps to a mesh cut.
+
+- find cut points between sides and edges
+- find cut lines between sides
+- find facets on sides
+- find nodal position with respect to the cut surface
+- tetrahedralize
+
+Internally, the cut package holds a mesh consisting of a GEO::CUT::Mesh object
+and its GEO::CUT::Element, GEO::CUT::Side, GEO::CUT::Edge, GEO::CUT::Node
+objects. The mesh objects collect all cut information. In particular
+
+- each cut point creates a GEO::CUT::Point object
+- each cut line creates a GEO::CUT::Line object
+- each facet is represented by a GEO::CUT::Facet object
+
+These objects know their relations as well as their relations to the mesh
+objects. This way the cut mesh can be queried for cut information at all
+times.
+
+The cut surface is represented by a GEO::CUT::Mesh object as well.
+
+If there are multiple intersecting cut surfaces, multiple cut meshes can be
+defined in GEO::CUT::MeshIntersection. If the cut surfaces are not
+intersecting, one cut mesh is sufficient.
+
+Multiple cuts are implemented by the special GEO::CUT::TetCutGenerator
+callback.
+
+All meshes share one GEO::CUT::PointPool object. The GEO::CUT::PointPool
+object owns all points and creates new ones. There must never be multiple
+points object with the same coordinates. This point sharing between meshes
+links the meshes internally.
+
+The levelset cut does not have a cut mesh but uses a special
+GEO::CUT::LevelSetSide object. Using this pseudo-side the genreal cut
+algorithm is used for levelset as well.
+
+The geometry information is found at a low level by GEO::CUT::Intersection,
+GEO::CUT::Position or GEO::CUT::Position2d. However, topology information is
+prefered over geometry tests whenever possible.
+
+\author u.kue
+\date 11/10
+*/
+namespace CUT
+{
+
+}
+}
