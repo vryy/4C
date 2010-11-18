@@ -22,6 +22,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -237,24 +238,34 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for plastic material
-			RCP<MAT::Material> mat = Material();
-			if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-			{
-				MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-				plastic->Update();
-			}
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
     }
     break;
 
     case calc_struct_update_imrlike:
     {
-    	// Update of history for plastic material
-			RCP<MAT::Material> mat = Material();
-			if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-			{
-				MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-				plastic->Update();
-			}
+      // Update of history for plastic material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
     }
     break;
 

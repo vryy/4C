@@ -15,6 +15,7 @@ Maintainer: Alexander Popp
 
 #include "so_hex8fbar.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
@@ -33,6 +34,11 @@ bool DRT::ELEMENTS::So_hex8fbar::ReadElement(const std::string& eletype,
   {
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
+  }
+  else if (Material()->MaterialType() == INPAR::MAT::m_growth)
+  {
+    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+    grow->Setup(NUMGPT_SOH8, linedef);
   }
 
   // temporary variable for read-in
