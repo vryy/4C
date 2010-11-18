@@ -6,6 +6,150 @@
 #include "../drt_cut/cut_meshintersection.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+void test_hex8_quad8_mesh_many()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids;
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  nids.clear();
+  nids.push_back(0);
+  quad4_xyze(0,0) = 0.666276;
+  quad4_xyze(1,0) = 0.828602;
+  quad4_xyze(2,0) = 0.02525;
+  nids.push_back(1);
+  quad4_xyze(0,1) = 0.673325;
+  quad4_xyze(1,1) = 0.847231;
+  quad4_xyze(2,1) = 0.02525;
+  nids.push_back(2);
+  quad4_xyze(0,2) = 0.673325;
+  quad4_xyze(1,2) = 0.847231;
+  quad4_xyze(2,2) = -0.02525;
+  nids.push_back(3);
+  quad4_xyze(0,3) = 0.666276;
+  quad4_xyze(1,3) = 0.828602;
+  quad4_xyze(2,3) = -0.02525;
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nids.clear();
+  nids.push_back(4);
+  quad4_xyze(0,0) = 0.680311;
+  quad4_xyze(1,0) = 0.86595;
+  quad4_xyze(2,0) = 0.02525;
+  nids.push_back(5);
+  quad4_xyze(0,1) = 0.68731;
+  quad4_xyze(1,1) = 0.884695;
+  quad4_xyze(2,1) = 0.02525;
+  nids.push_back(6);
+  quad4_xyze(0,2) = 0.68731;
+  quad4_xyze(1,2) = 0.884695;
+  quad4_xyze(2,2) = -0.02525;
+  nids.push_back(7);
+  quad4_xyze(0,3) = 0.680311;
+  quad4_xyze(1,3) = 0.86595;
+  quad4_xyze(2,3) = -0.02525;
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nids.clear();
+  nids.push_back(1);
+  quad4_xyze(0,0) = 0.673325;
+  quad4_xyze(1,0) = 0.847231;
+  quad4_xyze(2,0) = 0.02525;
+  nids.push_back(4);
+  quad4_xyze(0,1) = 0.680311;
+  quad4_xyze(1,1) = 0.86595;
+  quad4_xyze(2,1) = 0.02525;
+  nids.push_back(7);
+  quad4_xyze(0,2) = 0.680311;
+  quad4_xyze(1,2) = 0.86595;
+  quad4_xyze(2,2) = -0.02525;
+  nids.push_back(2);
+  quad4_xyze(0,3) = 0.673325;
+  quad4_xyze(1,3) = 0.847231;
+  quad4_xyze(2,3) = -0.02525;
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nids.clear();
+  nids.push_back(6);
+  quad4_xyze(0,0) = 0.68731;
+  quad4_xyze(1,0) = 0.884695;
+  quad4_xyze(2,0) = -0.02525;
+  nids.push_back(5);
+  quad4_xyze(0,1) = 0.68731;
+  quad4_xyze(1,1) = 0.884695;
+  quad4_xyze(2,1) = 0.02525;
+  nids.push_back(8);
+  quad4_xyze(0,2) = 0.702923;
+  quad4_xyze(1,2) = 0.878831;
+  quad4_xyze(2,2) = 0.02525;
+  nids.push_back(9);
+  quad4_xyze(0,3) = 0.702923;
+  quad4_xyze(1,3) = 0.878831;
+  quad4_xyze(2,3) = -0.02525;
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nids.clear();
+  nids.push_back(9);
+  quad4_xyze(0,0) = 0.702923;
+  quad4_xyze(1,0) = 0.878831;
+  quad4_xyze(2,0) = -0.02525;
+  nids.push_back(8);
+  quad4_xyze(0,1) = 0.702923;
+  quad4_xyze(1,1) = 0.878831;
+  quad4_xyze(2,1) = 0.02525;
+  nids.push_back(10);
+  quad4_xyze(0,2) = 0.718519;
+  quad4_xyze(1,2) = 0.87295;
+  quad4_xyze(2,2) = 0.02525;
+  nids.push_back(11);
+  quad4_xyze(0,3) = 0.718519;
+  quad4_xyze(1,3) = 0.87295;
+  quad4_xyze(2,3) = -0.02525;
+
+  intersection.AddCutSide( 5, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 0.707126021;
+  hex8_xyze(1,0) = 0.885084629;
+  hex8_xyze(2,0) = -0.0250000004;
+  hex8_xyze(0,1) = 0.669295728;
+  hex8_xyze(1,1) = 0.88072747;
+  hex8_xyze(2,1) = -0.0250000004;
+  hex8_xyze(0,2) = 0.669837534;
+  hex8_xyze(1,2) = 0.831363618;
+  hex8_xyze(2,2) = -0.0250000004;
+  hex8_xyze(0,3) = 0.713419497;
+  hex8_xyze(1,3) = 0.846297681;
+  hex8_xyze(2,3) = -0.0250000004;
+  hex8_xyze(0,4) = 0.707126021;
+  hex8_xyze(1,4) = 0.885084629;
+  hex8_xyze(2,4) = 0.0250000004;
+  hex8_xyze(0,5) = 0.669295728;
+  hex8_xyze(1,5) = 0.88072747;
+  hex8_xyze(2,5) = 0.0250000004;
+  hex8_xyze(0,6) = 0.669837534;
+  hex8_xyze(1,6) = 0.831363618;
+  hex8_xyze(2,6) = 0.0250000004;
+  hex8_xyze(0,7) = 0.713419497;
+  hex8_xyze(1,7) = 0.846297681;
+  hex8_xyze(2,7) = 0.0250000004;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Cut( NULL );
+}
+
 void test_hex27_quad9_simple()
 {
   GEO::CUT::MeshIntersection intersection;

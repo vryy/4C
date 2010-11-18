@@ -255,17 +255,20 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   points[1]->Coordinates( x2.A() );
 
   b1.Update( 1, x2, -1, x1, 0 );
+  b1.Scale( 1./b1.Norm2() );
 
   if ( b1.Norm2() < std::numeric_limits<double>::min() )
     throw std::runtime_error( "same point in facet not supported" );
 
   bool found = false;
-  for ( unsigned i=2; i<points.size(); ++i )
+  unsigned i=2;
+  for ( ; i<points.size(); ++i )
   {
     Point * p = points[i];
     p->Coordinates( x3.A() );
 
     b2.Update( 1, x3, -1, x1, 0 );
+    b2.Scale( 1./b2.Norm2() );
 
     // cross product to get the normal at the point
     b3( 0 ) = b1( 1 )*b2( 2 ) - b1( 2 )*b2( 1 );
@@ -284,6 +287,8 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
     return true;
   }
 
+  b3.Scale( 1./b3.Norm2() );
+
   LINALG::Matrix<3,3> A;
   std::copy( b1.A(), b1.A()+3, A.A() );
   std::copy( b2.A(), b2.A()+3, A.A()+3 );
@@ -292,7 +297,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   //std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
   //std::cout << "\n";
 
-  for ( unsigned i=2; i<points.size(); ++i )
+  for ( ++i; i<points.size(); ++i )
   {
     Point * p = points[i];
     p->Coordinates( x3.A() );

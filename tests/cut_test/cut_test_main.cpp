@@ -45,6 +45,7 @@ void test_hex8_quad4_touch7();
 void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 
+void test_hex8_quad8_mesh_many();
 void test_hex27_quad9_simple();
 void test_hex20_quad9_simple();
 void test_hex20_quad9_moved();
@@ -100,6 +101,7 @@ int main( int argc, char ** argv )
   //functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
 
+  functable["hex8_quad8_mesh_many"] = test_hex8_quad8_mesh_many;
   functable["hex27_quad9_simple"] = test_hex27_quad9_simple;
   functable["hex20_quad9_simple"] = test_hex20_quad9_simple;
   functable["hex20_quad9_moved"] = test_hex20_quad9_moved;
