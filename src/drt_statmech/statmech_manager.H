@@ -88,12 +88,8 @@ public:
 		 *  \param eleid 						(in)
 		 *  \param crosslinkdiff		(in) determines the visualization mode (actual elements vs. crosslink molecule representations)
 		 */
-		void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
+	void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
 
-  //! \brief set crosslinker if two nodes are close enough and probability check is passed
-  void SetCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-                       const std::map<int,LINALG::Matrix<3,1> >& currentpositions,const std::map<int,
-                       LINALG::Matrix<3,1> >& currentrotations, Epetra_MultiVector& crosslinkerneighbours);
 
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
   void SearchAndSetCrosslinkers(const int& istep,
@@ -166,15 +162,11 @@ protected:
      \param sensornodes   (in) vector holding the GIDs of the sensor nodes
      \param oscdir        (in) direction (DOF) of oscillation*/
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
-  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void DelCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
   void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
-  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
-  void SearchNeighbours(const std::map<int,LINALG::Matrix<3,1> > currentpositions, RCP<Epetra_MultiVector>& crosslinkerneighbours);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
    *  \param currentpositions 		(in) column map node positions
