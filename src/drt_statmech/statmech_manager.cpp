@@ -1179,9 +1179,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 				// current neighbour LID
 				int nodeLID = (int)(*neighbourslid)[index][irandom];
-				//continue in case of N_CROSSMAX crosslinkers at the current node
-				if((*numcrossnodes_)[nodeLID]>=statmechparams_.get<int>("N_CROSSMAX",0))
-					continue;
+				//continue in case of N_CROSSMAX crosslinkers at the current node (only if nodeLID>-1, i.e. no passive crosslinker)
+				if(nodeLID>-1)
+					if((*numcrossnodes_)[nodeLID]>=statmechparams_.get<int>("N_CROSSMAX",0))
+						continue;
 
 				// flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
 				bool bondestablished = false;
