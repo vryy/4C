@@ -16,11 +16,7 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "combust_refinementcell.H"
-#ifdef QHULL
-#define TETLIBRARY
-#undef PI
-#include <tetgen.h>
-#endif
+#include "../drt_cut/cut_tetgen.H"
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"

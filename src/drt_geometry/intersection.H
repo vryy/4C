@@ -16,9 +16,7 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
-#define TETLIBRARY
-#undef PI
-#include <tetgen.h>
+#include "../drt_cut/cut_tetgen.H"
 #include "../drt_geometry/intersection_interfacepoint.H"
 #include "../drt_geometry/intersection_templates.H"
 #include "../drt_geometry/intersection_service.H"
