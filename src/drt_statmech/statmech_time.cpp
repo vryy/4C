@@ -1177,8 +1177,8 @@ void StatMechTime::Output()
  *----------------------------------------------------------------------*/
 void StatMechTime::ReadRestart(int step)
 {
-  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
-  rcpdiscret.release();
+  double dt = params_.get<double>("delta time",0.01);
+  RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
