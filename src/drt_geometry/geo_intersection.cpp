@@ -46,6 +46,14 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
   {
     DRT::Element* ele = cutterdis->lColElement( k );
 
+    std::map<int,int>::const_iterator k = labelPerElementId.find( ele->Id() );
+    if ( k==labelPerElementId.end() )
+    {
+      dserror( "no label for cutter element %d", ele->Id() );
+    }
+    if ( k->second < 1 )
+      continue;
+
     const int numnode = ele->NumNode();
     const DRT::Node * const * nodes = ele->Nodes();
 
@@ -54,7 +62,14 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
     for ( int i=0; i < numnode; ++i )
     {
       const DRT::Node & node = *nodes[i];
-      std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
+      //std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
+      std::map<int,LINALG::Matrix<3,1> >::const_iterator j = currentcutterpositions.find( node.Id() );
+      if ( j==currentcutterpositions.end() )
+      {
+        dserror( "no positions to node %d", node.Id() );
+      }
+      const LINALG::Matrix<3,1> & x = j->second;
+      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
 
     std::vector<int> nids( ele->NodeIds(), ele->NodeIds()+numnode );
