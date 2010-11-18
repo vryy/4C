@@ -837,7 +837,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::tet4>::LocalCoordinates( const LINA
   bool success = pos.Compute();
   if ( not success )
   {
-    throw std::runtime_error( "global point not within element" );
+//     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
 }
@@ -848,7 +848,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::hex8>::LocalCoordinates( const LINA
   bool success = pos.Compute();
   if ( not success )
   {
-    throw std::runtime_error( "global point not within element" );
+//     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
 }
@@ -859,7 +859,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::wedge6>::LocalCoordinates( const LI
   bool success = pos.Compute();
   if ( not success )
   {
-    throw std::runtime_error( "global point not within element" );
+//     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
 }
@@ -870,7 +870,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const 
   bool success = pos.Compute();
   if ( not success )
   {
-    throw std::runtime_error( "global point not within element" );
+//     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
 }
