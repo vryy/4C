@@ -29,22 +29,13 @@ namespace INPAR
 namespace TSI
 {
 
-//  /// Type of partitioned coupling for TSI problems
-//  enum PartitionedCouplingMethod
-//  {
-//    // 23.11.09 check which method to use!!!
-//    DirichletNeumann,
-//    RobinNeumann,
-//    DirichletRobin,
-//    RobinRobin
-//  };
-
-  /// Type of partitioned coupling for TSI problems
-  enum PartitionedCouplingMethod
+  /// Type of coupling strategy for TSI problems
+  enum SolutionSchemeOverFields
   {
     OneWay,
     SequStagg,
-    IterStagg
+    IterStagg,
+    Monolithic
   };
 
 

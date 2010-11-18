@@ -90,6 +90,16 @@ namespace TSI
 
     //! @name Time loop building blocks
 
+    /// take current results for converged and save for next time step
+    virtual void Update();
+
+    /// write output
+    virtual void Output();
+
+    //@}
+
+    //! @name Solve
+
     // one-way coupling
 
     /// solve tempterature equations for current time step
@@ -136,16 +146,8 @@ namespace TSI
 
     //@}
 
-    /// take current results for converged and save for next time step
-    virtual void Update();
-
-    /// write output
-    virtual void Output();
-
-    /// convergence check for natural convection solver
+    /// convergence check for iterative staggered TSI solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
-
-    //@}
 
     /// maximum iteration steps
     int itmax_;

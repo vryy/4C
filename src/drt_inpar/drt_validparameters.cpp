@@ -1082,10 +1082,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&scontact);
   IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&scontact);
-  
+
   DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&scontact);
   DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&scontact);
-  
+
   setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
                                yesnotuple,yesnovalue,&scontact);
 
@@ -1449,18 +1449,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      "Partitioned TSI solver with various coupling methods"
      );
 
-   setStringToIntegralParameter<INPAR::TSI::PartitionedCouplingMethod>(
-                                "PARTITIONED","tsi_iterstagg",
+   // Coupling strategy for (partitioned and monolithic) TSI solvers
+   setStringToIntegralParameter<INPAR::TSI::SolutionSchemeOverFields>(
+                                "COUPALGO","tsi_iterstagg",
+//                                "PARTITIONED","tsi_iterstagg",
+//                                "Coupling strategies for TSI solvers",
                                 "Coupling strategies for partitioned TSI solvers",
                                 tuple<std::string>(
                                   "tsi_oneway",
                                   "tsi_sequstagg",
-                                  "tsi_iterstagg"
+                                  "tsi_iterstagg",
+                                  "tsi_monolithic"
                                   ),
-                                tuple<INPAR::TSI::PartitionedCouplingMethod>(
+                                tuple<INPAR::TSI::SolutionSchemeOverFields>(
                                   INPAR::TSI::OneWay,
                                   INPAR::TSI::SequStagg,
-                                  INPAR::TSI::IterStagg
+                                  INPAR::TSI::IterStagg,
+                                  INPAR::TSI::Monolithic
                                   ),
                                 &tsidyn);
 

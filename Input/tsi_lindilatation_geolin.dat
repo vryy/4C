@@ -203,11 +203,11 @@ PARTITION                       Cut_Elements
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
+COUPALGO                        tsi_oneway  // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
 COUPVARIABLE                    Temperature  // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         200
-PARTITIONED                     tsi_oneway  // tsi_iterstagg, tsi_oneway
 RESTARTEVRY                     1
 TIMESTEP                        0.01
 UPRES                           1

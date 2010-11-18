@@ -240,7 +240,7 @@ SOLVER                          UMFPACK
 MAXTIME                         1.5
 NUMSTEP                         15
 RESTARTEVRY                     1
-PARTITIONED                     tsi_oneway
+COUPALGO                        tsi_oneway
 TIMESTEP                        0.1
 UPRES                           1
 CONVTOL                         1e-06 // 11.02.10

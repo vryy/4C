@@ -43,9 +43,7 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
-TSI::Algorithm::Algorithm(
-  Epetra_Comm& comm
-  )
+TSI::Algorithm::Algorithm(Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
     ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()),
@@ -61,8 +59,8 @@ TSI::Algorithm::Algorithm(
   ittol_ = tsidyn.get<double>("CONVTOL"); // default: =1e-6
 
   // decide if one-way coupling or full coupling
-  INPAR::TSI::PartitionedCouplingMethod method =
-    Teuchos::getIntegralValue<INPAR::TSI::PartitionedCouplingMethod>(tsidyn,"PARTITIONED");
+  INPAR::TSI::SolutionSchemeOverFields method =
+    Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   // coupling variable
   displacementcoupling_
     = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -140,7 +138,7 @@ TSI::Algorithm::Algorithm(
 
 
 /*----------------------------------------------------------------------*
- | destructor (public)                                      dano 12/09 |
+ | destructor (public)                                       dano 12/09 |
  *----------------------------------------------------------------------*/
 TSI::Algorithm::~Algorithm()
 {
@@ -161,7 +159,7 @@ void TSI::Algorithm::ReadRestart(int step)
 
 
 /*----------------------------------------------------------------------*
- | Timeloop                                                  dano 12/09 |
+ | time loop                                                 dano 12/09 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoop()
 {
@@ -185,8 +183,8 @@ void TSI::Algorithm::TimeLoop()
       = DRT::Problem::Instance()->TSIDynamicParams();
 
     // decide if apply one-way coupling or full coupling
-    INPAR::TSI::PartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPAR::TSI::PartitionedCouplingMethod>(tsidyn,"PARTITIONED");
+    INPAR::TSI::SolutionSchemeOverFields method =
+      Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
     // switch TSI algorithm (synchronous)
     // only the coupling field knows the 2nd (coupling) field
@@ -244,7 +242,7 @@ void TSI::Algorithm::TimeLoop()
   }
 
   // ==================================================================
-  
+
 }
 
 
@@ -265,61 +263,29 @@ void TSI::Algorithm::TimeLoopOneWay()
       // predict the structure field without influence of temperatures
       StructureField().PrepareTimeStep();
 
-      // Begin Nonlinear Solver / Outer Iteration ******************************
+      // get current displacement due to Solve Structure Step
+      const Teuchos::RCP<Epetra_Vector> dispnp = DoStructureStep();
 
-      // iterate between the two fields
-      int  itnum = 0;
-      bool stopnonliniter = false;
-
-      // Outer Iteration loop starts
-      if (Comm().MyPID()==0)
+      // extract the velocities of the current solution
+      Teuchos::RCP<Epetra_Vector> velnp;
+      // major switch to different time integrators
+      if (quasistatic_)
       {
-        cout<<"\n";
-        cout<<"**************************************************************\n";
-        cout<<"      OUTER ITERATION LOOP \n";
-        printf("      Time Step %3d/%3d \n",ThermoField().GetTimeStep(),
-          ThermoField().GetTimeNumStep());
-        cout<<"**************************************************************\n";
+        // the displacement -> velocity conversion
+        // Use this kind of calculation for quasi-static structure calculation
+        velnp = CalcVelocity(dispnp);
+      }
+      else
+      {
+        velnp = StructureField().ExtractVelnp();
       }
 
-      // Start OUTER ITERATION
-      while (stopnonliniter == false)
-      {
-        itnum ++;
-
-        // store temperature from first solution for convergence check
-        tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
-
-        // get current displacement due to Solve Structure Step
-        const Teuchos::RCP<Epetra_Vector> dispnp = DoStructureStep();
-
-        // extract the velocities of the current solution
-        Teuchos::RCP<Epetra_Vector> velnp;
-        // major switch to different time integrators
-        if (quasistatic_)
-        {
-          // the displacement -> velocity conversion
-          // Use this kind of calculation for quasi-static structure calculation
-          velnp = CalcVelocity(dispnp);
-        }
-        else
-        {
-          velnp = StructureField().ExtractVelnp();
-        }
-
-        // solve thermo system
-        // and therefore use the u-solution calculated in DoStructureStep
-        // including: - ApplyDisplacements()
-        //            - PrepareTimeStep()
-        //            - Solve()
-        DoThermoStep(dispnp, velnp);
-
-        // check convergence of temperature field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-
-      } // end OUTER ITERATION
-
-      // End Nonlinear Solver **************************************
+      // solve thermo system
+      // and therefore use the u-solution calculated in DoStructureStep
+      // including: - ApplyDisplacements()
+      //            - PrepareTimeStep()
+      //            - Solve()
+      DoThermoStep(dispnp, velnp);
 
       // update all single field solvers
       Update();
@@ -335,47 +301,15 @@ void TSI::Algorithm::TimeLoopOneWay()
       // predict the thermal field without influence of structure
       ThermoField().PrepareTimeStep();
 
-      // Begin Nonlinear Solver / Outer Iteration ******************************
+      // get current temperatures due to Solve ThermoStep
+      const Teuchos::RCP<Epetra_Vector> tempnp = DoThermoStep();
 
-      // iterate between the two fields
-      int  itnum = 0;
-      bool stopnonliniter = false;
-
-      // Outer Iteration loop starts
-      if (Comm().MyPID()==0)
-      {
-        cout<<"\n";
-        cout<<"**************************************************************\n";
-        cout<<"      OUTER ITERATION LOOP \n";
-        printf("      Time Step %3d/%3d \n",ThermoField().GetTimeStep(),
-          ThermoField().GetTimeNumStep());
-        cout<<"**************************************************************\n";
-      }
-
-      // Start OUTER ITERATION
-      while (stopnonliniter == false)
-      {
-        itnum ++;
-
-        // store temperature from first solution for convergence check
-        tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
-
-        // get current temperatures due to Solve ThermoStep
-        const Teuchos::RCP<Epetra_Vector> tempnp = DoThermoStep();
-
-        // solve structure system
-        // and therefore use the temperature solution calculated in DoThermoStep
-        // including: - ApplyTemperatures()
-        //            - PrepareTimeStep()
-        //            - Solve()
-        DoStructureStep(tempnp);
-
-        // check convergence of temperature field for "partitioned scheme"
-        stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-
-      } // end OUTER ITERATION
-
-      // End Nonlinear Solver **************************************
+      // solve structure system
+      // and therefore use the temperature solution calculated in DoThermoStep
+      // including: - ApplyTemperatures()
+      //            - PrepareTimeStep()
+      //            - Solve()
+      DoStructureStep(tempnp);
 
       // update all single field solvers
       Update();
@@ -512,8 +446,6 @@ void TSI::Algorithm::TimeLoopFull()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::OuterIterationLoop()
 {
-  // Begin Nonlinear Solver / Outer Iteration ******************************
-
   // iterate between the two fields
   int  itnum = 0;
   bool stopnonliniter = false;
@@ -577,7 +509,7 @@ void TSI::Algorithm::OuterIterationLoop()
       else
         veln_ = StructureField().ExtractVelnp();
 
-      // check convergence of temperature field for "partitioned scheme"
+      // check convergence of both field for "partitioned scheme"
       stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
 
     } // end OUTER ITERATION
@@ -627,7 +559,7 @@ void TSI::Algorithm::OuterIterationLoop()
 
       // End Nonlinear Solver **************************************
 
-      // check convergence of temperature field for "partitioned scheme"
+      // check convergence of both field for "partitioned scheme"
       stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
 
     } // end OUTER ITERATION
