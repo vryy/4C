@@ -176,7 +176,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  const Epetra_Map& rmap = *dis.DofRowMap();
+  const Epetra_Map& rmap = systemmatrix1->OperatorRangeMap();
   const Epetra_Map& dmap = rmap;
 
   RCP<Epetra_FECrsMatrix> stifftmp;
@@ -322,7 +322,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
     //---------------------- do assembly of stiffness and internal force
     // (note: this is non-standard-baci assembly and therefore a do it all yourself version!)
-    // there is no guarantee that systemmatrix exists (e.g. if systemmatrix1 is actually a BlockSparseMatrix)
+    // there is no guarantee that systemmatrix exists 
+    // (e.g. if systemmatrix1 is actually a BlockSparseMatrix)
     bool fastassemble = false;
     if (systemmatrix != null) fastassemble = true;
 
