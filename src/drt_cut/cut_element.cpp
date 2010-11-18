@@ -20,7 +20,7 @@ void GEO::CUT::Element::FillComplete( Mesh & mesh )
   }
 }
 
-void GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
+bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
 {
   bool cut = false;
   const std::vector<Side*> & sides = Sides();
@@ -44,6 +44,11 @@ void GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
   {
     side.CreateLineSegment( mesh, this );
     cut_faces_.insert( &side );
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
@@ -320,13 +325,18 @@ bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
   return false;
 }
 
-void GEO::CUT::QuadraticElement::Cut( Mesh & mesh, LinearSide & side )
+bool GEO::CUT::QuadraticElement::Cut( Mesh & mesh, LinearSide & side )
 {
+  bool cut = false;
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
     Element * e = *i;
-    e->Cut( mesh, side );
+    if ( e->Cut( mesh, side ) )
+    {
+      cut = true;
+    }
   }
+  return cut;
 }
 
 void GEO::CUT::QuadraticElement::MakeFacets( Mesh & mesh )

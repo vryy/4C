@@ -88,8 +88,16 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
     generator = &*cutgens.back();
   }
 
+  std::set<Element*> elements_done;
+
   // loop cut sides and cut against elements at the same position in space
-  CutMesh().Cut( mesh_ );
+  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+        i!=cut_mesh_.end();
+        ++i )
+  {
+    Mesh & cut_mesh = **i;
+    cut_mesh.Cut( mesh_, elements_done );
+  }
 
   mesh_.MakeFacets();
   mesh_.FindNodePositions();

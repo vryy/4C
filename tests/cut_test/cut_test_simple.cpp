@@ -499,7 +499,9 @@ void test_hex8_mesh()
 
   mesh.Status();
 
-  mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  std::set<GEO::CUT::Element*> done;
+  std::set<GEO::CUT::Element*> elements_done;
+  mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( s ), done, elements_done );
 
   mesh.Status();
 
@@ -1471,7 +1473,9 @@ void test_hex8_quad4_mesh()
   for ( std::vector<GEO::CUT::Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     GEO::CUT::Side* quad4 = *i;
-    mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+    std::set<GEO::CUT::Element*> done;
+    std::set<GEO::CUT::Element*> elements_done;
+    mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ), done, elements_done );
   }
 
   mesh.Status();
@@ -1480,24 +1484,3 @@ void test_hex8_quad4_mesh()
   mesh.FindNodePositions();
   mesh.GenerateTetgen();
 }
-
-/*
- * Offending data: Element 1908
- *
- * 1.0000001199999999, 0, 0,
- * 1.0000001199999999, 0.055555555999999999, 3.4050724500000002e-19,
- * 1, 0, 0.050000000699999998,
- * 1, 0.055555555999999999, 0.050000000699999998,
- * 1.05555558, 0, 0.050000000699999998,
- * 1.05555558, 0, -6.5560350099999996e-19,
- * 1.05555558, 0.055555555999999999, 7.4809625200000005e-19,
- * 1.05555558, 0.055555555999999999, 0.050000000699999998
- *
- * {0, 5, 4, 2}
- * {1, 6, 5, 0}
- * {3, 7, 6, 1}
- * {4, 7, 3, 2}
- * {3, 1, 0, 2}
- * {5, 6, 7, 4}
- * {0, 1, 3, 2}
- */

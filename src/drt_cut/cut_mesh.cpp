@@ -772,10 +772,10 @@ void GEO::CUT::Mesh::SelfCut()
   }
 }
 
-void GEO::CUT::Mesh::Cut( Mesh & mesh )
+void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
 {
-//   int count = 0;
-//   std::cout << "\n";
+  std::set<Element*> my_elements_done;
+
   for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
@@ -784,20 +784,16 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh )
     LinearSide * ls = dynamic_cast<LinearSide*>( &side );
     if ( ls!=NULL )
     {
-      mesh.Cut( *ls );
-
-//       std::cout << "." << std::flush;
-//       count += 1;
-//       if ( count % 64 == 0 )
-//         std::cout << "\n";
-//       else if ( count % 8 == 0 )
-//         std::cout << " " << std::flush;
+      mesh.Cut( *ls, elements_done, my_elements_done );
     }
   }
-//   std::cout << "\n";
+
+  std::copy( my_elements_done.begin(),
+             my_elements_done.end(),
+             std::inserter( elements_done, elements_done.begin() ) );
 }
 
-void GEO::CUT::Mesh::Cut( LinearSide & side )
+void GEO::CUT::Mesh::Cut( LinearSide & side, const std::set<Element*> & done, std::set<Element*> & elements_done )
 {
   BoundingBox sidebox( side );
   std::set<Element*> elements;
@@ -806,7 +802,13 @@ void GEO::CUT::Mesh::Cut( LinearSide & side )
   for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
-    e->Cut( *this, side );
+    if ( done.count( e )==0 )
+    {
+      if ( e->Cut( *this, side ) )
+      {
+        elements_done.insert( e );
+      }
+    }
   }
 }
 

@@ -34,7 +34,8 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
 
     mesh.AddTetgen( out );
 
-    cut_mesh_.Cut( mesh );
+    std::set<Element*> elements_done;
+    cut_mesh_.Cut( mesh, elements_done );
 
     mesh.MakeFacets();
     mesh.FindNodePositions();

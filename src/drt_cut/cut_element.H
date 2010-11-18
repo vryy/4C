@@ -42,7 +42,7 @@ public:
 
   virtual void FillComplete( Mesh & mesh );
 
-  virtual void Cut( Mesh & mesh, LinearSide & side ) = 0;
+  virtual bool Cut( Mesh & mesh, LinearSide & side ) = 0;
 
   virtual void MakeFacets( Mesh & mesh ) = 0;
 
@@ -109,7 +109,7 @@ public:
     }
   }
 
-  virtual void Cut( Mesh & mesh, LinearSide & side );
+  virtual bool Cut( Mesh & mesh, LinearSide & side );
 
   virtual void MakeFacets( Mesh & mesh );
 
@@ -145,7 +145,7 @@ public:
     : Element( eid, sides, nodes )
   {}
 
-  virtual void Cut( Mesh & mesh, LinearSide & side );
+  virtual bool Cut( Mesh & mesh, LinearSide & side );
 
   virtual void MakeFacets( Mesh & mesh );
 

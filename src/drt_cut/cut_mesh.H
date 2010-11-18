@@ -103,9 +103,9 @@ public:
 
   void SelfCut();
 
-  void Cut( Mesh & mesh );
+  void Cut( Mesh & mesh, std::set<Element*> & elements_done );
 
-  void Cut( LinearSide & side );
+  void Cut( LinearSide & side, const std::set<Element*> & done, std::set<Element*> & elements_done );
 
   void Cut( LevelSetSide & side );
 
