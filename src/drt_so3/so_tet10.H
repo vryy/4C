@@ -2,12 +2,10 @@
 \file so_tet10.H
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Jonas Biehler
+            biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
-written by: Alexander Volf
-			alexander.volf@mytum.de
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -40,10 +38,11 @@ using namespace Teuchos;
 #define NUMNOD_SOTET10      10      ///< number of nodes
 #define NODDOF_SOTET10       3      ///< number of dofs per node
 #define NUMDOF_SOTET10      30      ///< total dofs per element
-#define NUMSTR_SOTET10       6      ///< number of strains/stresses 	/****/
-#define NUMGPT_SOTET10       4      ///< total gauss points per element	/****/
-#define NUMDIM_SOTET10       3      ///< number of dimensions 			/****/
-#define NUMCOORD_SOTET10     4      ///< number of shape function cooordinates (ksi1-ksi4)
+#define NUMSTR_SOTET10       6      ///< number of strains/stresses
+#define NUMGPT_SOTET10       4      ///< number gauss points per element for stiffness integration
+#define NUMGPT_MASS_SOTET10  11      ///< number gauss points per element for mass integration
+#define NUMDIM_SOTET10       3      ///< number of dimensions
+#define NUMCOORD_SOTET10     4      ///< number of shape function coordinates (ksi1-ksi4)
 #define NUMNOD_SOTET10_FACE  6	    ///< number of nodes on a TET10 face (which is a TRI6)
 #define NUMGPT_SOTET10_FACE  3      ///< number of GP    on a TET10 face (which is a TRI6)
 
@@ -71,6 +70,8 @@ public:
                                              const int owner );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+  
+  virtual int Initialize(DRT::Discretization& dis);
 
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
@@ -86,16 +87,18 @@ private:
 /*!
 \brief A C++ version of the 10-node tet solid element
 
-\author Alexander Volf (alexander.volf@mytum.de)
+a structural 10-node tetrahedral solid displacement element 
+\author biehler
 */
 
 class So_tet10 : public DRT::Element
 {
 public:
 
-  //! @name Friends
+	 //! @name Friends
+	  friend class So_tet10Type;
 
-  //@}
+	  //@}
   //! @name Constructors and destructors and related methods
 
   /*!
@@ -249,13 +252,9 @@ public:
     names.insert(pair<string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
     names.insert(pair<string,int>("StressesXYZ",6));
-  \endcode
+  \endcode*/
 
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
- */
-  virtual void VisNames(map<string,int>& names);
+  virtual void VisNames(map<string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -268,11 +267,12 @@ public:
 
   \warning The method must not change size of data
 
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
- */
-  virtual bool VisData(const string& name, vector<double>& data);
-
+  */
+  virtual bool VisData
+  (
+    const string& name, ///< Name of data that is currently processed for visualization
+    vector<double>& data   ///<d ata to be filled by element if element recognizes the name
+  );
   //@}
 
   //! @name Input and Creation
@@ -298,35 +298,19 @@ public:
 
   Evaluate so_tet10 element stiffness, mass, internal forces, etc.
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param discretization : pointer to discretization for de-assembly
-  \param lm (in)        : location matrix for de-assembly
-  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
-               DRT::Discretization&      discretization,
-               vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+  int Evaluate
+  (
+    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+    vector<int>&              lm, ///< location matrix for de-assembly
+    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
+    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
+    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
+    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
+  );
 
 
   /*!
@@ -343,13 +327,17 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+  virtual int EvaluateNeumann
+  (
+    ParameterList& params,
+    DRT::Discretization&      discretization,
+    DRT::Condition&           condition,
+    vector<int>&              lm,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1 = NULL
+  );
 
+  //@}
 
 protected:
 
@@ -374,37 +362,28 @@ protected:
     postprocess_stress
   };
 
-  //! kinematic types of so_tet10
+  //! kinematic types of so_tet10 but yet only total-lagrangian is implemented
   enum KinematicType
   {
     so_tet10_geolin,
     so_tet10_totlag,
     so_tet10_updlag
   };
-  enum StressType//###################
-  {
-    so_tet10_stress_none,
-    so_tet10_stress_gpxyz,
-    so_tet10_stress_gprst,
-    so_tet10_stress_gp123,
-    so_tet10_stress_ndxyz,
-    so_tet10_stress_ndrst,
-    so_tet10_stress_nd123
-  };
+
 
   //! kinematic type
-  KinematicType                                            kintype_;
-  //! type of stress evaluation
-  StressType                                               stresstype_;
-  //! no. gaussian points in each spatial dimension
-  int                                                      ngp_[3];
-  //! number of the material law
-  int                                                      material_;
-
-  DRT::Container                                           data_;
-  //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >                      mat_;
-
+  KinematicType                                          			  kintype_;
+   //! container containing all kind of solid3 thisandthat
+  DRT::Container      												  data_;
+  //! vector of inverses of the jacobian in material frame
+  vector<LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> >              invJ_;
+  // determinant of Jacobian in material frame
+  vector<double>                                                      detJ_;
+  //stuff consistent mass matrix
+  //! vector of inverses of the jacobian in material frame
+  vector<LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> >              invJ_mass_;
+  //! determinant of Jacobian in material frame
+  vector<double>                                                      detJ_mass_;
 
 
 
@@ -412,17 +391,23 @@ protected:
 
   // don't want = operator
   So_tet10& operator = (const So_tet10& old);
-  virtual void so_tet10_nlnstiffmass(vector<int>&          lm,
-                                     vector<double>&           disp,
-                                     vector<double>&           residual,
-                                     LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,
-                                     LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,
-                                     LINALG::Matrix<NUMDOF_SOTET10,1>* force,
-                                     LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* stresses,
-                                     LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,
-                                     Teuchos::RCP<const MAT::Material> material,
-                                     const INPAR::STR::StressType iostress,
-                                     const INPAR::STR::StrainType iostrain);
+  
+  //! init the inverse of the jacobian and its determinant in the material configuration
+  virtual void InitJacobianMapping();
+  
+  //! Calculate nonlinear stiffness and mass matrix
+  virtual void so_tet10_nlnstiffmass(
+       vector<int>&              lm,             ///< location matrix
+       vector<double>&           disp,           ///< current displacements
+       vector<double>&           residual,       ///< current residual displ
+       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    ///< element stiffness matrix
+       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     ///< element mass matrix
+       LINALG::Matrix<NUMDOF_SOTET10,1>* force,          ///< element internal force vector
+       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      ///< stresses at GP
+       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      ///< strains at GP
+       ParameterList&            params,         ///< algorithmic parameters e.g. time
+       const INPAR::STR::StressType   iostress,  ///< stress output option
+       const INPAR::STR::StrainType   iostrain); ///< strain output option
 
   //! lump mass matrix (bborn 07/08)
   void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass);
@@ -436,97 +421,21 @@ protected:
 
   // These functions are basically copied from the So_integrator,
   // along with the rather inconsitent matrix sizes.
+  
   //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& so_tet10_4gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> > so_tet10_4gp_shapefcts();
   //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& so_tet10_4gp_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_4gp_derivs();
   //! Evaluate Tet10 Weights at 4 gausspoints to keep them static
   const vector<double>&so_tet10_4gp_weights();
 
   //! Evaluate Tet10 Shapefcts at 10 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& so_tet10_10gp_shapefcts();
+  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& so_tet10_11gp_shapefcts();
   //! Evaluate Tet10 Derivs at 10 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_10gp_derivs();
+  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_11gp_derivs();
   //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
-  const vector<double>& so_tet10_10gp_weights();
+  const vector<double>& so_tet10_11gp_weights();
 
-//   void so_tet10_stress(Teuchos::RCP<const MAT::Material> material,
-//                    vector<double>& mydisp,
-//                    Epetra_SerialDenseMatrix* stresses);
-
-/*!
-\brief A general class agregating all necessery data for discrete integration
-
-<h3>Purpose</h3>
-The class offers a standard interface for discrete integration, mainly the agregated
-shape functions and shape function derivatives, it is a purely general class and
-does NOT own cnstructor. For use constructors of derived classes. It has however
-a destructor (not virtual!(to save on vtable* pointers)), that should be the same
-for all derived classes. Derived classes are not supposed to add extra attriutes,
- they may however add extra methods.
-
-pointer to (static) array of shape function stored in Epetra_Vectors
-evaluated at each gp , for each node it may look like this:
-
-shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]
-
-pointer to (static) array of shape function derivatives stored in
-Epetra_Matrices evaluated at each gp, for xsi1-4(or 1-3) it may look like this:
-													    |
-               [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]
-deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)
-               [    |           |           |          |     ]
-               [  NX_,xsi1   NX_,xsi2    NX_,xsi3   NX_,xsi4 ]
-
-NOTE: X stands for the number of NODES (and shape functions) in a element
-
-
-\author a.vlf
-*/
-
-  class Discrete_integrator
-  {
-	public:
-		Epetra_SerialDenseVector* shapefct_gp;
-      	Epetra_SerialDenseMatrix* deriv_gp;
-      	Epetra_SerialDenseVector weights;
-      	int num_gp;
-      	int num_nodes;
-      	int num_coords;
-      	~Discrete_integrator();
-  };
- /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_4point 	                        	vlf 09/07   |
-  |																	|
-  | a special class for quadratic 10-node tetrahedra using a 4 point quadrature 	|
-  |	it is exaxt for linear and quadratic polynomials								|
-  |																					|
-  *---------------------------------------------------------------------------------*/
-  class Tet_integrator_4point : public Discrete_integrator
-  {
-  	public:
-  		Tet_integrator_4point(void);
-  };
-
-  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_14point										vlf 09/07   |
-  |																					|
-  | a special class for quadratic 10-node tetrahedra using a 14 point quadrature   	|
-  |	it is exaxt for 0-4th order polynomials											|
-  |																					|
-  *---------------------------------------------------------------------------------*/
-
-  class Tet_integrator_14point : public Discrete_integrator
-  {
-  	public:
-  		Tet_integrator_14point(void);
-  };
-
-  /// became obsolete
-  void so_tet10_shapederiv(
-  	  Epetra_SerialDenseVector** shapefct_ptr,
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,
-      Epetra_SerialDenseVector** weights);
 
   void so_tet10_mat_sel(
                       LINALG::Matrix<6,1>* stress,

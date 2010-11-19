@@ -3,12 +3,10 @@
 \brief quadratic nonlinear tetrahedron
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Jonas Biehler
+            biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
-written by: Alexander Volf
-			alexander.volf@mytum.de
+            089 - 289-15276
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -25,15 +23,15 @@ written by: Alexander Volf
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
-//#include "Epetra_SerialDenseSolver.h"
+#include "Epetra_SerialDenseSolver.h"
 
-//#define VERBOSE_OUTPUT
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                              vlf 06/07|
+ |  evaluate the element (public)                              			|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
@@ -48,6 +46,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec2(elevec2_epetra.A(),true);
+  
   // start with "none"
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
 
@@ -70,8 +69,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
   else dserror("Unknown type of action for So_tet10");
 
-  // get the material law
-  Teuchos::RCP<MAT::Material> actmat = Material();
+
 
   // what should the element do
   switch(act) {
@@ -83,7 +81,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);//*
 
     }
@@ -100,7 +98,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* matptr = NULL;
+      if (elemat1.IsInitialized()) matptr = &elemat1;
+      
+      so_tet10_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -117,8 +118,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); // set to zero
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); 
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -140,7 +141,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) so_tet10_lumpmass(&elemat2);
@@ -168,54 +169,60 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
         LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> strain;
         INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
-        so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+        so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);
       }
     }
     break;
 
-    // postprocess stresses/strains at gauss points
+	// postprocess stresses/strains at gauss points
 
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
+	// note that in the following, quantities are always referred to as
+	// "stresses" etc. although they might also apply to strains
+	// (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-          params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
         if (gpstressmap==null)
           dserror("no gp stress/strain map available for postprocessing");
         string stresstype = params.get<string>("stresstype","ndxyz");
         int gid = Id();
         LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> gpstress(((*gpstressmap)[gid])->A(),true);
 
-        RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-        if (poststress==null)
+        Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",null);
+        if (poststress==Teuchos::null)
           dserror("No element stress/strain vector available");
 
-        if (stresstype=="ndxyz") {
+        if (stresstype=="ndxyz") 
+        {
           // extrapolate stresses/strains at Gauss points to nodes
-          so_tet10_expol(gpstress, *poststress);
+          so_tet10_expol(gpstress,*poststress);
         }
-        else if (stresstype=="cxyz") {
+        else if (stresstype=="cxyz") 
+        {
           const Epetra_BlockMap elemap = poststress->Map();
           int lid = elemap.LID(Id());
-          if (lid!=-1) {
-            for (int i = 0; i < NUMSTR_SOTET10; ++i) {
-              double& s = (*((*poststress)(i)))[lid];
+          if (lid!=-1) 
+          {
+            for (int i = 0; i < NUMSTR_SOTET10; ++i) 
+            {
+              double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
               s = 0.;
-              for (int j = 0; j < NUMGPT_SOTET10; ++j) {
+              for (int j = 0; j < NUMGPT_SOTET10; ++j) 
+              {
                 s += gpstress(j,i);
               }
               s *= 1.0/NUMGPT_SOTET10;
             }
           }
         }
-        else {
+        else 
+        {
           dserror("unknown type of stress/strain output on element level");
         }
       }
@@ -230,35 +237,226 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: {
+    case calc_struct_update_istep: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_update_imrlike: {
+    case calc_struct_update_imrlike:
+	{
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_reset_istep: {
+    case calc_struct_reset_istep:
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-		case calc_struct_errornorms: {
-			;// there is nothing to do here at the moment
+	case calc_struct_errornorms:
+	{
+		// IMPORTANT NOTES (popp 10/2010):
+		// - error norms are based on a small deformation assumption (linear elasticity)
+		// - extension to finite deformations would be possible without difficulties,
+		//   however analytical solutions are extremely rare in the nonlinear realm
+		// - only implemented for SVK material (relevant for energy norm only, L2 and
+		//   H1 norms are of course valid for arbitrary materials)
+		// - analytical solutions are currently stored in a repository in the MORTAR
+		//   namespace, however they could (should?) be moved to a more general location
+
+		// check length of elevec1
+		if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+
+		// check material law
+		RCP<MAT::Material> mat = Material();
+
+		//******************************************************************
+		// only for St.Venant Kirchhoff material
+		//******************************************************************
+		if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+		{
+			// declaration of variables
+			double l2norm = 0.0;
+			double h1norm = 0.0;
+			double energynorm = 0.0;
+
+			// shape functions, derivatives and integration weights
+			const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > vals = so_tet10_11gp_shapefcts();
+			const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_11gp_derivs();
+			const static std::vector<double> weights = so_tet10_11gp_weights();
+
+			// get displacements and extract values of this element
+			RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+			if (disp==null) dserror("Cannot get state displacement vector");
+			vector<double> mydisp(lm.size());
+			DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+			// nodal displacement vector
+			LINALG::Matrix<NUMDOF_SOTET10,1> nodaldisp;
+			for (int i=0; i<NUMDOF_SOTET10; ++i) nodaldisp(i,0) = mydisp[i];
+
+			// reference geometry (nodal positions)
+			LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;
+			DRT::Node** nodes = Nodes();
+			for (int i=0; i<NUMNOD_SOTET10; ++i)
+			{
+				xrefe(i,0) = nodes[i]->X()[0];
+				xrefe(i,1) = nodes[i]->X()[1];
+				xrefe(i,2) = nodes[i]->X()[2];
+			}
+
+			// deformation gradient = identity tensor (geometrically linear case!)
+			LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(false);
+			for (int i=0;i<NUMDIM_SOTET10;++i) defgrd(i,i) = 1;
+
+			// use of 11 GP for the errornorm computation
+
+			//----------------------------------------------------------------
+			// loop over all Gauss points
+			//----------------------------------------------------------------
+			for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
+			{
+				// Gauss weights and Jacobian determinant
+				double fac = detJ_mass_[gp] * weights[gp];
+
+				// Gauss point in reference configuration
+				LINALG::Matrix<NUMDIM_SOTET10,1> xgp(true);
+				for (int k=0;k<NUMDIM_SOTET10;++k)
+					for (int n=0;n<NUMNOD_SOTET10;++n)
+						xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
+
+				//**************************************************************
+				// get analytical solution
+				LINALG::Matrix<NUMDIM_SOTET10,1> uanalyt(true);
+				LINALG::Matrix<NUMSTR_SOTET10,1> strainanalyt(true);
+				LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> derivanalyt(true);
+
+				MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+				//**************************************************************
+
+				//--------------------------------------------------------------
+				// (1) L2 norm
+				//--------------------------------------------------------------
+
+				// compute displacements at GP
+				LINALG::Matrix<NUMDIM_SOTET10,1> ugp(true);
+				for (int k=0;k<NUMDIM_SOTET10;++k)
+					for (int n=0;n<NUMNOD_SOTET10;++n)
+						ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOTET10*n+k,0);
+
+				// displacement error
+				LINALG::Matrix<NUMDIM_SOTET10,1> uerror(true);
+				for (int k=0;k<NUMDIM_SOTET10;++k)
+					uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+				// compute GP contribution to L2 error norm
+				l2norm += fac * uerror.Dot(uerror);
+
+				//--------------------------------------------------------------
+				// (2) H1 norm
+				//--------------------------------------------------------------
+
+				// compute derivatives N_XYZ at GP w.r.t. material coordinates
+				// by N_XYZ = J^-1 * N_rst
+				LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> N_XYZ(true);
+				N_XYZ.Multiply(invJ_mass_[gp],derivs[gp]);
+
+				// compute partial derivatives at GP
+				LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> derivgp(true);
+				for (int l=0;l<NUMDIM_SOTET10;++l)
+					for (int m=0;m<NUMDIM_SOTET10;++m)
+						for (int k=0;k<NUMNOD_SOTET10;++k)
+							derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOTET10*k+l,0);
+
+				// derivative error
+				LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> deriverror(true);
+				for (int k=0;k<NUMDIM_SOTET10;++k)
+					for (int m=0;m<NUMDIM_SOTET10;++m)
+						deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+				// compute GP contribution to H1 error norm
+				h1norm += fac * deriverror.Dot(deriverror);
+				h1norm += fac * uerror.Dot(uerror);
+
+				//--------------------------------------------------------------
+				// (3) Energy norm
+				//--------------------------------------------------------------
+
+				// compute linear B-operator
+				LINALG::Matrix<NUMSTR_SOTET10,NUMDOF_SOTET10> bop;
+				for (int i=0; i<NUMNOD_SOTET10; ++i)
+				{
+					bop(0,NODDOF_SOTET10*i+0) = N_XYZ(0,i);
+					bop(0,NODDOF_SOTET10*i+1) = 0.0;
+					bop(0,NODDOF_SOTET10*i+2) = 0.0;
+					bop(1,NODDOF_SOTET10*i+0) = 0.0;
+					bop(1,NODDOF_SOTET10*i+1) = N_XYZ(1,i);
+					bop(1,NODDOF_SOTET10*i+2) = 0.0;
+					bop(2,NODDOF_SOTET10*i+0) = 0.0;
+					bop(2,NODDOF_SOTET10*i+1) = 0.0;
+					bop(2,NODDOF_SOTET10*i+2) = N_XYZ(2,i);
+
+					bop(3,NODDOF_SOTET10*i+0) = N_XYZ(1,i);
+					bop(3,NODDOF_SOTET10*i+1) = N_XYZ(0,i);
+					bop(3,NODDOF_SOTET10*i+2) = 0.0;
+					bop(4,NODDOF_SOTET10*i+0) = 0.0;
+					bop(4,NODDOF_SOTET10*i+1) = N_XYZ(2,i);
+					bop(4,NODDOF_SOTET10*i+2) = N_XYZ(1,i);
+					bop(5,NODDOF_SOTET10*i+0) = N_XYZ(2,i);
+					bop(5,NODDOF_SOTET10*i+1) = 0.0;
+					bop(5,NODDOF_SOTET10*i+2) = N_XYZ(0,i);
+				}
+
+				// compute linear strain at GP
+				LINALG::Matrix<NUMSTR_SOTET10,1> straingp(true);
+				straingp.Multiply(bop,nodaldisp);
+
+				// strain error
+				LINALG::Matrix<NUMSTR_SOTET10,1> strainerror(true);
+				for (int k=0;k<NUMSTR_SOTET10;++k)
+					strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+
+				// compute stress vector and constitutive matrix
+				double density = 0.0;
+				LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
+				LINALG::Matrix<NUMSTR_SOTET10,1> stress(true);
+				so_tet10_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp);
+
+				// compute GP contribution to energy error norm
+				energynorm += fac * stress.Dot(strainerror);
+
+				//cout << "UAnalytical:      " << ugp << endl;
+				//cout << "UDiscrete:        " << uanalyt << endl;
+				//cout << "StrainAnalytical: " << strainanalyt << endl;
+				//cout << "StrainDiscrete:   " << straingp << endl;
+				//cout << "DerivAnalytical:  " << derivanalyt << endl;
+				//cout << "DerivDiscrete:    " << derivgp << endl;
+			}
+			//----------------------------------------------------------------
+
+			// return results
+			elevec1_epetra(0) = l2norm;
+			elevec1_epetra(1) = h1norm;
+			elevec1_epetra(2) = energynorm;
 		}
-		break;
+		else
+			dserror("ERROR: Error norms only implemented for SVK material");
+
+		;// there is nothing to do here at the moment
+	}
+	break;
 
     default:
-      dserror("Unknown type of action for Solid3");
+      dserror("Unknown type of action for So_tet10");
   }
   return 0;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
+ |  Integrate a Volume Neumann boundary condition (public)     			|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -288,99 +486,125 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
   // **
 
-/* =============================================================================*
- * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
- * =============================================================================*/
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& shapefcts = so_tet10_4gp_shapefcts();
-  const vector<double>& gpweights = so_tet10_4gp_weights();
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
+** ============================================================================*/
+  const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts = so_tet10_4gp_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_4gp_derivs();
+  const static vector<double> gpweights = so_tet10_4gp_weights();
 /* ============================================================================*/
 
-/* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
-    // get submatrix of deriv at actual gp
+  // update element geometry
+   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<NUMNOD_SOTET10; ++i){
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+  }
 
-    /* get the matrix of the coordinates of edges needed to compute the volume,
-    ** which is used here as detJ in the quadrature rule.
-    ** ("Jacobian matrix") for the quadrarture rule:
-    **             [  1    1    1    1  ]
-    ** jac_coord = [ x_1  x_2  x_3  x_4 ]
-    **             [ y_1  y_2  y_3  y_4 ]
-    **		   [ z_1  z_2  z_3  z_4 ]
-    */
-    LINALG::Matrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac_coord;
-    for (int i=0; i<4; i++) jac_coord(0,i)=1;
-    for (int col=0;col<4;col++)
-    {
-      const double* x = Nodes()[col]->X();
-      for (int row=0;row<3;row++)
-          jac_coord(row+1,col)= x[row];
-    }
+  /* ================================================= Loop over Gauss Points */
+  for (int gp=0; gp<NUMGPT_SOTET10; ++gp) {
 
-    // compute determinant of Jacobian with own algorithm
-    // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
-    // but rather the volume of the tetrahedara
-    double detJ=jac_coord.Determinant();
+    // compute the Jacobian matrix
+    LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> jac;
+    jac.Multiply(derivs[gp],xrefe);
+
+    // compute determinant of Jacobian
+    const double detJ = jac.Determinant();
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     double fac = gpweights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
-    for(int dim=0; dim<NUMDIM_SOTET10; dim++) {
+      for(int dim=0; dim<NUMDIM_SOTET10; dim++) {
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
       for (int nodid=0; nodid<NUMNOD_SOTET10; ++nodid) {
-        elevec1(nodid*NUMDIM_SOTET10+dim) += (shapefcts[gp])(nodid) * dim_fac;
+        elevec1[nodid*NUMDIM_SOTET10+dim] += shapefcts[gp](nodid) * dim_fac;
       }
     }
+
   }/* ==================================================== end of Loop over GP */
 
   return 0;
 } // DRT::ELEMENTS::So_tet10::EvaluateNeumann
 
 
+/*----------------------------------------------------------------------*
+ |  init the element jacobian mapping (protected)                       |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
+{
+  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs4gp = so_tet10_4gp_derivs();
+  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs11gp = so_tet10_11gp_derivs();
+
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;
+  for (int i=0; i<NUMNOD_SOTET10; ++i)
+  {
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  //Initialize for stiffness integration with 4 GPs
+  invJ_.resize(NUMGPT_SOTET10);
+  detJ_.resize(NUMGPT_SOTET10);
+  for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
+  {
+    invJ_[gp].Multiply(derivs4gp[gp],xrefe);
+    detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] == 0.0)
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ_[gp] < 0.0)
+      dserror("NEGATIVE JACOBIAN DETERMINANT");
+  }
+  //Initialize for mass integration with 10 GPs
+
+   invJ_mass_.resize(NUMGPT_MASS_SOTET10);
+   detJ_mass_.resize(NUMGPT_MASS_SOTET10);
+   for (int gp=0; gp<NUMGPT_MASS_SOTET10; ++gp)
+     {
+	   invJ_mass_[gp].Multiply(derivs11gp[gp],xrefe);
+       detJ_mass_[gp] = invJ_mass_[gp].Invert();
+       if (detJ_mass_[gp] == 0.0)
+         dserror("ZERO JACOBIAN DETERMINANT");
+       else if (detJ_mass_[gp] < 0.0)
+         dserror("NEGATIVE JACOBIAN DETERMINANT");
+     }
+  return;
+}
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (private)                            vlf 06/07 |
+ |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residual displ
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    // element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     // element mass matrix
-      LINALG::Matrix<NUMDOF_SOTET10,1>* force,          // element internal force vector
-      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      // stresses at GP
-      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      // strains at GP
-      Teuchos::RCP<const MAT::Material>              material,       // element material data
-      const INPAR::STR::StressType                   iostress,       // stress output option
-      const INPAR::STR::StrainType                   iostrain)       // strain output option
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix, // element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,  // element mass matrix
+      LINALG::Matrix<NUMDOF_SOTET10,1>* force,                 // element internal force vector
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,   // stresses at GP
+      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,   // strains at GP
+      ParameterList&            params,         // algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,  // stress output option
+      const INPAR::STR::StrainType   iostrain)  // strain output option
 {
-/* =============================================================================*
-** CONST DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
-** =============================================================================*/
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& derivs = so_tet10_4gp_derivs();
-  const vector<double>& gpweights = so_tet10_4gp_weights();
-/* =============================================================================*/
-  double density; //forward declaration for mass matrix
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
+** ============================================================================*/
+  const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_4gp = so_tet10_4gp_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_4gp = so_tet10_4gp_derivs();
+  const static vector<double> gpweights_4gp = so_tet10_4gp_weights();
+/* ============================================================================*/
+  double density; 
+  
   // update element geometry
   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
-  /* structure of xrefe:
-    **             [  X_1   Y_1   Z_1  ]
-    **     xrefe = [  X_2   Y_2   Z_2  ]
-    **             [   |     |     |   ]
-    **             [  X_10  Y_10  Z_10 ]
-    */
   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xcurr;  // current  coord. of element
-  /* structure of xcurr:
-    **             [  x_1   y_1   z_1  ]
-    **     xcurr = [  x_2   y_2   z_2  ]
-    **             [   |     |     |   ]
-    **             [  x_10  y_10  z_10 ]
-    */
-  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xdisp;  // current  coord. of element
-
   DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOTET10; ++i){
+  for (int i=0; i<NUMNOD_SOTET10; ++i)
+  {
     const double* x = nodes[i]->X();
     xrefe(i,0) = x[0];
     xrefe(i,1) = x[1];
@@ -390,170 +614,37 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOTET10+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOTET10+2];
 
-    xdisp(i,0) = disp[i*NODDOF_SOTET10+0];
-    xdisp(i,1) = disp[i*NODDOF_SOTET10+1];
-    xdisp(i,2) = disp[i*NODDOF_SOTET10+2];
   }
-
-  /* get the matrix of the coordinates of edges needed to compute the volume,
-  ** which is used here as detJ in the quadrature rule.
-  ** ("Jacobian matrix") for the quadrarture rule:
-  **             [  1    1    1    1  ]
-  ** jac_coord = [ X_1  X_2  X_3  X_4 ]
-  **             [ Y_1  Y_2  Y_3  Y_4 ]
-  **             [ Z_1  Z_2  Z_3  Z_4 ]
-  */
-  // compute determinant of Jacobian with own algorithm
-  // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
-  // but rather the volume of
-
-  LINALG::Matrix<NUMCOORD_SOTET10,NUMCOORD_SOTET10> jac; // this was jac_coord
-  for (int i=0; i<4; i++)  jac(0,i)=1;
-  for (int row=0;row<3;row++)
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  // in case of prestressing, build defgrd wrt to last stored configuration
+  LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(false);
+  for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
   {
-    for (int col=0;col<4;col++)
-      jac(row+1,col)= xrefe(col,row);
-  }
 
-  double detJ=jac.Determinant()/6;    //volume of a tetrahedra
-  if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-  else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-
-
-
-  /* =========================================================================*/
-  /* ============================================== Loop over Gauss Points ===*/
-  /* =========================================================================*/
-  LINALG::Matrix<NUMCOORD_SOTET10-1,NUMCOORD_SOTET10> jac_temp;
-  //Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET10,NUMCOORD_SOTET10);
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
-
-    /* compute the Jacobian matrix which looks like this:
-    **         [  1        1        1  	     1      ]
-    **   jac = [ X_,xsi1  X_,xsi2  X_,xsi3  X_,xsi4 ]
-    **         [ Y_,xsi1  Y_,xsi2  Y_,xsi3  Y_,xsi4 ]
-    **         [ Z_,xsi1  Z_,xsi2  Z_,xsi3  Z_,xsi4 ]
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
     */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],derivs_4gp[gp]);
+    double detJ = detJ_[gp];
 
-    jac_temp.MultiplyTN(xrefe,derivs[gp]);
-    //multiply<NUMCOORD_SOTET10-1,NUMNOD_SOTET10,NUMCOORD_SOTET10,'T','N'>
-    //(jac_temp,xrefe,tet10_dis.deriv_gp[gp]);
-
-    for (int i=0; i<4; i++) jac(0,i)=1;
-    for (int row=0;row<3;row++)
-    {
-      for (int col=0;col<4;col++)
-    	jac(row+1,col)=jac_temp(row,col);
-    }
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "jac\n" << jac;
-    cout << "xrefe\n" << xrefe;
-    #endif //VERBOSE_OUTPUT
-
-    /* compute partial derivatives at gp xsi_1, xsi_2, xsi_3, xsi_4 material coordinates
-    ** by solving   Jac . partials = I_aug   for partials
-    ** Inverse of Jacobian is therefore not explicitly computed
-    */
-    /* structure of partials:
-    **             [  dxsi_1   dxsi_1   dxsi_1  ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    **             [     |        |        |    ]
-    ** partials =  [                            ]
-    **             [  dxsi_4   dxsi_4   dxsi_4  ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    */
-
-    LINALG::Matrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> I_aug(true);
-    LINALG::Matrix<NUMCOORD_SOTET10,NUMDIM_SOTET10> partials;
-    LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> N_XYZ;
-    I_aug(1,0)=1;
-    I_aug(2,1)=1;
-    I_aug(3,2)=1;
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "jac\n" << jac;
-    #endif //VERBOSE_OUTPUT
-
-    // solve A.X=B
-    LINALG::FixedSizeSerialDenseSolver<NUMCOORD_SOTET10,NUMCOORD_SOTET10,NUMDIM_SOTET10> solve_for_inverseJac;
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(partials,I_aug);// set X=partials, B=I_aug
-    solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();
-    int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
-    if ((err != 0) || (err2!=0)){
-    	dserror("Inversion of Jacobian failed");
-    }
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "I_aug\n" << I_aug;
-    cout << "partials\n" << partials;
-    cout << "deriv_gp\n" << derivs[gp];
-    #endif //VERBOSE_OUTPUT
-
-    N_XYZ.Multiply(derivs[gp],partials); //N_XYZ = N_xsi_k*partials
-    //multiply<NUMNOD_SOTET10,NUMCOORD_SOTET10,NUMDIM_SOTET10,'N','N'>(N_XYZ,tet10_dis.deriv_gp[gp],partials);
-
-    /* structure of N_XYZ:
-    **             [   dN_1     dN_1     dN_1   ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    **    N_XYZ =  [     |        |        |    ]
-    **             [                            ]
-    **             [   dN_10    dN_10    dN_10  ]
-    **             [  -------  -------  ------- ]
-    **             [    dX       dY       dZ    ]
-    */
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "N_XYZ\n" << N_XYZ;
-    #endif //VERBOSE_OUTPUT
-    //                                      d xcurr
-    // (material) deformation gradient F = --------- = xcurr^T * N_XYZ^T
-    //                                      d xrefe
-
-    /*structure of F
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dX       dX    ]
-    **             [                            ]
-    **      F   =  [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dY       dY       dY    ]
-    **             [                            ]
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dZ       dZ       dZ    ]
-    */
-
-    LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> defgrd(true);
-    defgrd.MultiplyTN(xdisp,N_XYZ);
-    //multiply<NUMDIM_SOTET10,NUMNOD_SOTET10,NUMDIM_SOTET10,'T','N'>(defgrd,xdisp,N_XYZ);
-    defgrd(0,0)+=1;
-    defgrd(1,1)+=1;
-    defgrd(2,2)+=1;
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "defgr\n " << defgrd;
-    #endif //VERBOSE_OUTPUT
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchygreen;
-
     cauchygreen.MultiplyTN(defgrd,defgrd);
-    //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'T','N'>(cauchygreen,defgrd,defgrd);
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "cauchygreen\n" << cauchygreen;
-    getchar();
-    #endif //VERBOSE_OUTPUT
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET10);
+    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOTET10);
     LINALG::Matrix<NUMSTR_SOTET10,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
@@ -562,39 +653,57 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    #ifdef VERBOSE_OUTPUT
-    cout << "glstrain\n" << glstrain;
-    #endif //VERBOSE_OUTPUT
-
-    // return gp strains if necessary
+    // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
     case INPAR::STR::strain_gl:
     {
-      if (elestrain == NULL) dserror("no strain data available");
-      for (int i = 0; i < 3; ++i) {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
         (*elestrain)(gp,i) = glstrain(i);
-      }
-      for (int i = 3; i < 6; ++i) {
+      for (int i = 3; i < 6; ++i)
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
-      }
     }
     break;
     case INPAR::STR::strain_ea:
-      dserror("no Euler-Almansi strains available for tet10");
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
+
+      // inverse of deformation gradient
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> invdefgrd;
+      invdefgrd.Invert(defgrd);
+
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
+      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
     break;
     case INPAR::STR::strain_none:
       break;
     default:
-      dserror("requested strain option not available");
+      dserror("requested strain type not available");
     }
 
-    /*----------------------------------------------------------------------*
-      the B-operator used is equivalent to the one used in hex8, this needs
-      to be checked if it is ok, but from the mathematics point of view, the only
-      thing that needed to be changed is tho NUMDOF       vlf 07/07
-      ----------------------------------------------------------------------*/
-    /* non-linear B-operator (may be so called, meaning
+    /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
     **
@@ -614,31 +723,29 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-
     LINALG::Matrix<NUMSTR_SOTET10,NUMDOF_SOTET10> bop;
-    #ifdef VERBOSE_OUTPUT
-    cout << bop;
-    cout << defgrd;
-    cout << N_XYZ;
-    #endif //VERBOSE_OUTPUT
-
-    for (int numnode=0; numnode<NUMNOD_SOTET10; numnode++) {
-      for (int numdof=0; numdof<NODDOF_SOTET10; numdof++) {
-      	bop(0,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*N_XYZ(numnode,0);
-      	bop(1,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*N_XYZ(numnode,1);
-      	bop(2,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*N_XYZ(numnode,2);
-      	bop(3,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*N_XYZ(numnode,1) + \
-                                               defgrd(numdof,1)*N_XYZ(numnode,0);
-      	bop(4,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*N_XYZ(numnode,2) + \
-                                               defgrd(numdof,2)*N_XYZ(numnode,1);
-      	bop(5,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*N_XYZ(numnode,0) + \
-                                               defgrd(numdof,0)*N_XYZ(numnode,2);
-      }
+    for (int i=0; i<NUMNOD_SOTET10; ++i)
+    {
+      bop(0,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(0,i);
+      bop(1,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(1,i);
+      bop(2,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(2,i);
+      /* ~~~ */
+      bop(3,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+      bop(4,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+      bop(5,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
     }
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "bop\n" << bop;
-    #endif //VERBOSE_OUTPUT
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -648,30 +755,25 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
     LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
     LINALG::Matrix<NUMSTR_SOTET10,1> stress(true);
-
-    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
-    #ifdef VERBOSE_OUTPUT
-    cout << "material input\n";
-    #endif //VERBOSE_OUTPUT
+    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    // return gp stresses if necessary
+    // return gp stresses
     switch (iostress)
     {
     case INPAR::STR::stress_2pk:
     {
-      if (elestress == NULL) dserror("no stress data available");
-      for (int i = 0; i < NUMSTR_SOTET10; ++i) {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOTET10; ++i)
         (*elestress)(gp,i) = stress(i);
-      }
     }
     break;
     case INPAR::STR::stress_cauchy:
     {
-      if (elestress == NULL) dserror("no stress data available");
-      double detF = defgrd.Determinant();
+      if (elestress == NULL) dserror("stress data not available");
+      const double detF = defgrd.Determinant();
 
-      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> pkstress;
+      LINALG::Matrix<3,3> pkstress;
       pkstress(0,0) = stress(0);
       pkstress(0,1) = stress(3);
       pkstress(0,2) = stress(5);
@@ -682,12 +784,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       pkstress(2,1) = pkstress(1,2);
       pkstress(2,2) = stress(2);
 
-      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> temp;
-      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress,0.);
-      //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','N'>(0.0,temp,1.0/detF,defgrd,pkstress);
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
+      temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
       cauchystress.MultiplyNT(temp,defgrd);
-      //multiply<NUMDIM_SOTET10,NUMDIM_SOTET10,NUMDIM_SOTET10,'N','T'>(cauchystress,temp,defgrd);
 
       (*elestress)(gp,0) = cauchystress(0,0);
       (*elestress)(gp,1) = cauchystress(1,1);
@@ -700,308 +800,92 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     case INPAR::STR::stress_none:
       break;
     default:
-      dserror("requested stress option not available");
+      dserror("requested stress type not available");
     }
 
-    if (force != NULL && stiffmatrix != NULL) {
-      double detJ_w = detJ * gpweights[gp];
+    double detJ_w = detJ*gpweights_4gp[gp];
+    if (force != NULL && stiffmatrix != NULL)
+    {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w,bop,stress,1.0);
-      //multiply<NUMDOF_SOTET10,NUMSTR_SOTET10,1,'T','N'>(1.0,*force,detJ_w,bop,stress);
-
+      force->MultiplyTN(detJ_w, bop, stress, 1.0);
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<NUMSTR_SOTET10,NUMDOF_SOTET10> cb;
-      cb.Multiply(cmat,bop);          // temporary C . B
-      //multiply<NUMSTR_SOTET10,NUMSTR_SOTET10,NUMDOF_SOTET10,'N','N'>(cb,cmat,bop);
+      LINALG::Matrix<6,NUMDOF_SOTET10> cb;
+      cb.Multiply(cmat,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
-      //multiply<NUMDOF_SOTET10,NUMSTR_SOTET10,NUMDOF_SOTET10,'T','N'>
-      //  (1.0,*stiffmatrix,detJ_w,bop,cb);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::Matrix<NUMSTR_SOTET10,1> sfac; // auxiliary integrated stress
-      sfac.Update(detJ_w,stress); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      vector<double> SmB_L(NUMDIM_SOTET10);     // intermediate Sm.B_L
+      LINALG::Matrix<6,1> sfac(stress); // auxiliary integrated stress
+      sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<NUMNOD_SOTET10; ++inod){
-        SmB_L[0] = sfac(0) * N_XYZ(inod,0) + sfac(3) * N_XYZ(inod,1) + sfac(5) * N_XYZ(inod,2);
-        SmB_L[1] = sfac(3) * N_XYZ(inod,0) + sfac(1) * N_XYZ(inod,1) + sfac(4) * N_XYZ(inod,2);
-        SmB_L[2] = sfac(5) * N_XYZ(inod,0) + sfac(4) * N_XYZ(inod,1) + sfac(2) * N_XYZ(inod,2);
-        for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod){
-          double bopstrbop = 0.0;            // intermediate value
-          for (int idim=0; idim<NUMDIM_SOTET10; ++idim) bopstrbop += N_XYZ(jnod,idim)* SmB_L[idim];
-          (*stiffmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += bopstrbop;
+      for (int inod=0; inod<NUMNOD_SOTET10; ++inod) {
+        SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+            + sfac(5) * N_XYZ(2, inod);
+        SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+            + sfac(4) * N_XYZ(2, inod);
+        SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+            + sfac(2) * N_XYZ(2, inod);
+        for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod) {
+          double bopstrbop = 0.0; // intermediate value
+          for (int idim=0; idim<NUMDIM_SOTET10; ++idim)
+            bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
+          (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
+          (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
+          (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
         }
-      } // end of intergrate `geometric' stiffness ******************************
+      } // end of integrate `geometric' stiffness******************************
     }
-   /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
-   /* =========================================================================*/
-   	//Epetra_SerialDenseVector L((*stiffmatrix).N());
- //  cout << (*stiffmatrix).N() << endl;
-  // LINALG::SymmetricEigen((*stiffmatrix),L, (*stiffmatrix).N());
-   //cout << L;
-   //getchar();
-   	//my personal output routine, identifies a
-	/*static DRT::Element* my_static = this;
-	static int is_static=0;
-	static int my_I=0;
-	if (is_static!=0)
-	for (int x=0;x<6;x++){
-		if (Nodes()[x]->X()[1]== 1){
-			 my_static = this;
-			 is_static=1;
-			 my_I=x;
-		}
-	}
 
-    if(this ==my_static ) {
-    	cout << disp[my_I*NODDOF_SOTET10+0] << " ";
-    	cout << disp[my_I*NODDOF_SOTET10+1] << " ";
-    	cout << disp[my_I*NODDOF_SOTET10+2] << endl << endl;
-    }
-  */
-/* =============================================================================*
-** CONST SHAPE FUNCTIONS and WEIGHTS for TET_10 with 10 GAUSS POINTS            *
-** =============================================================================*/
-  const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& shapefcts10gp = so_tet10_10gp_shapefcts();
-  const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& derivs10gp = so_tet10_10gp_derivs();
-  const vector<double>& gpweights10gp = so_tet10_10gp_weights();
-/* ============================================================================*/
-  if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
-    for (int gp=0; gp<10; gp++) {
-      //integrate concistent mass matrix
-      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> jac;
-      jac.Multiply(derivs10gp[gp],xrefe);
-      //multiply<NUMDIM_SOTET10,NUMNOD_SOTET10,NUMDIM_SOTET10,'N','N'>(jac,tet10_mass.deriv_gp[gp],xrefe);
+    /* ============================================================================*
+    ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 11 GAUSS POINTS*
+    ** ============================================================================*/
+      const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_11gp = so_tet10_11gp_shapefcts();
+      const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_11gp = so_tet10_11gp_derivs();
+      const static vector<double> gpweights_11gp = so_tet10_11gp_weights();
+    /* ============================================================================*/
 
-      // compute determinant of Jacobian by Sarrus' rule
-      double detJ2= jac.Determinant();
-      if (abs(detJ2) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
-      else if (detJ2 < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-      double factor = density * detJ2 * gpweights10gp[gp];
-      double ifactor, massfactor;
-      for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
-      {
-        ifactor = (shapefcts10gp[gp])(inod) * factor;
-        for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod)
-        {
-          massfactor = (shapefcts10gp[gp])(jnod) * ifactor;    // intermediate factor
-          (*massmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += massfactor;
-        }
-      }
-    }
-//    double masssum = 0.0;
-//    for (int i=0; i<NUMDOF_SOTET10; ++i){
-//      for (int j=0; j<NUMDOF_SOTET10; ++j) {
-//        masssum += (*massmatrix)(i,j);
-//      }
-//    }
-//    cout << "masssum: " << masssum << endl;
-  } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-  #ifdef VERBOSE_OUTPUT
-  cout << (*stiffmatrix);
-  #endif //VERBOSE_OUTPUT
+    if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
+    {
+    	//consistent mass matrix evaluated using a 11-point rule
+    	for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
+    	{
+    		// integrate consistent mass matrix
+    		double detJ_mass = detJ_mass_[gp];
+    		double detJ_mass_w = detJ_mass*gpweights_11gp[gp];
+    		const double factor = detJ_mass_w * density;
+    		double ifactor, massfactor;
+    		for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
+			{
+    			ifactor = shapefcts_11gp[gp](inod) * factor;
+    			for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod)
+    			{
+					massfactor = shapefcts_11gp[gp](jnod) * ifactor;     // intermediate factor
+					(*massmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += massfactor;
+					(*massmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += massfactor;
+					(*massmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += massfactor;
+    			}
+			}
+    	 }
+
+    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+  if (force != NULL && stiffmatrix != NULL)
+  {
+
+  }
   return;
-} // DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass
+} // DRT::ELEMENTS::So_tet10::SOTET10_nlnstiffmass
+
+
+
+
 
 /*----------------------------------------------------------------------*
- |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
- *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
-{
-  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
-  static bool shapefcts_done = false;
-  if (shapefcts_done) return shapefcts;
-
-  const double gploc_alpha    = (5.0 + 3.0*sqrt(5.0))/20.0;    // gp sampling point value for quadr. fct
-  const double gploc_beta     = (5.0 - sqrt(5.0))/20.0;
-
-  // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
-  const double xsi1[NUMGPT_SOTET10] = {gploc_alpha, gploc_beta , gploc_beta , gploc_beta };
-  const double xsi2[NUMGPT_SOTET10] = {gploc_beta , gploc_alpha, gploc_beta , gploc_beta };
-  const double xsi3[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_alpha, gploc_beta };
-  const double xsi4[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_beta , gploc_alpha};
-
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
-    (shapefcts[gp])(0) = xsi1[gp] * (2*xsi1[gp] -1);
-    (shapefcts[gp])(1) = xsi2[gp] * (2*xsi2[gp] -1);
-    (shapefcts[gp])(2) = xsi3[gp] * (2*xsi3[gp] -1);
-    (shapefcts[gp])(3) = xsi4[gp] * (2*xsi4[gp] -1);
-    (shapefcts[gp])(4) = 4 * xsi1[gp] * xsi2[gp];
-    (shapefcts[gp])(5) = 4 * xsi2[gp] * xsi3[gp];
-    (shapefcts[gp])(6) = 4 * xsi3[gp] * xsi1[gp];
-    (shapefcts[gp])(7) = 4 * xsi1[gp] * xsi4[gp];
-    (shapefcts[gp])(8) = 4 * xsi2[gp] * xsi4[gp];
-    (shapefcts[gp])(9) = 4 * xsi3[gp] * xsi4[gp];
-  }
-  shapefcts_done = true;
-
-  return shapefcts;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate Tet10 Shape fct derivs at 4 Gauss Points                   |
- *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOTET10,NUMCOORD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
-{
-  static vector<LINALG::Matrix<NUMNOD_SOTET10, NUMCOORD_SOTET10> > derivs(NUMGPT_SOTET10);
-  static bool derivs_done = false;
-  if (derivs_done) return derivs;
-
-  const double gploc_alpha    = (5.0 + 3.0*sqrt(5.0))/20.0;    // gp sampling point value for quadr. fct
-  const double gploc_beta     = (5.0 - sqrt(5.0))/20.0;
-
-  // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
-  const double xsi1[NUMGPT_SOTET10] = {gploc_alpha, gploc_beta , gploc_beta , gploc_beta };
-  const double xsi2[NUMGPT_SOTET10] = {gploc_beta , gploc_alpha, gploc_beta , gploc_beta };
-  const double xsi3[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_alpha, gploc_beta };
-  const double xsi4[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_beta , gploc_alpha};
-
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
-    (derivs[gp])(0,0) = 4 * xsi1[gp]-1;
-    (derivs[gp])(1,0) = 0;
-    (derivs[gp])(2,0) = 0;
-    (derivs[gp])(3,0) = 0;
-
-    (derivs[gp])(4,0) = 4 * xsi2[gp];
-    (derivs[gp])(5,0) = 0;
-    (derivs[gp])(6,0) = 4 * xsi3[gp];
-    (derivs[gp])(7,0) = 4 * xsi4[gp];
-    (derivs[gp])(8,0) = 0;
-    (derivs[gp])(9,0) = 0;
-
-    (derivs[gp])(0,1) = 0;
-    (derivs[gp])(1,1) = 4 * xsi2[gp] - 1;
-    (derivs[gp])(2,1) = 0;
-    (derivs[gp])(3,1) = 0;
-
-    (derivs[gp])(4,1) = 4 * xsi1[gp];
-    (derivs[gp])(5,1) = 4 * xsi3[gp];
-    (derivs[gp])(6,1) = 0;
-    (derivs[gp])(7,1) = 0;
-    (derivs[gp])(8,1) = 4 * xsi4[gp];
-    (derivs[gp])(9,1) = 0;
-
-    (derivs[gp])(0,2) = 0;
-    (derivs[gp])(1,2) = 0;
-    (derivs[gp])(2,2) = 4 * xsi3[gp] - 1;
-    (derivs[gp])(3,2) = 0;
-
-    (derivs[gp])(4,2) = 0;
-    (derivs[gp])(5,2) = 4 * xsi2[gp];
-    (derivs[gp])(6,2) = 4 * xsi1[gp];
-    (derivs[gp])(7,2) = 0;
-    (derivs[gp])(8,2) = 0;
-    (derivs[gp])(9,2) = 4 * xsi4[gp];
-
-    (derivs[gp])(0,3) = 0;
-    (derivs[gp])(1,3) = 0;
-    (derivs[gp])(2,3) = 0;
-    (derivs[gp])(3,3) = 4 * xsi4[gp] - 1;
-
-    (derivs[gp])(4,3) = 0;
-    (derivs[gp])(5,3) = 0;
-    (derivs[gp])(6,3) = 0;
-    (derivs[gp])(7,3) = 4 * xsi1[gp];
-    (derivs[gp])(8,3) = 4 * xsi2[gp];
-    (derivs[gp])(9,3) = 4 * xsi3[gp];
-  }
-  derivs_done = true;
-
-  return derivs;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate Tet10 Weights at 4 Gauss Points                            |
- *----------------------------------------------------------------------*/
-const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
-{
-  static vector<double> weights(NUMGPT_SOTET10);
-  static bool weights_done = false;
-  if (weights_done) return weights;
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++)
-    weights[gp] = 0.25;
-  weights_done = true;
-
-  return weights;
-}
-
-// This is copied from the Integrator_tet10_14point, but it uses only
-// 10 gauss points for calculation, so I changed the name.
-/*----------------------------------------------------------------------*
- |  Evaluate Tet10 Shape fcts at 10 Gauss Points                        |
- *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_shapefcts()
-{
-  const int num_gp = 10;
-  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(num_gp);
-  static bool shapefcts_done = false;
-  if (shapefcts_done) return shapefcts;
-
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int gp=0; gp<num_gp; gp++) {
-    const double r = intpoints.qxg[gp][0];
-    const double s = intpoints.qxg[gp][1];
-    const double t = intpoints.qxg[gp][2];
-
-    DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, DRT::Element::tet10);
-  }
-  shapefcts_done = true;
-
-  return shapefcts;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate Tet10 Shape fct derivs at 10 Gauss Points                  |
- *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_10gp_derivs()
-{
-  const int num_gp = 10;
-  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(num_gp);
-  static bool derivs_done = false;
-  if (derivs_done) return derivs;
-
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int gp=0; gp<num_gp; gp++) {
-    const double r = intpoints.qxg[gp][0];
-    const double s = intpoints.qxg[gp][1];
-    const double t = intpoints.qxg[gp][2];
-
-    DRT::UTILS::shape_function_3D_deriv1(derivs[gp], r, s, t, DRT::Element::tet10);
-  }
-  derivs_done = true;
-
-  return derivs;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate Tet10 Weights at 10 Gauss Points                           |
- *----------------------------------------------------------------------*/
-const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_10gp_weights()
-{
-  const int num_gp = 10;
-  static vector<double> weights(num_gp);
-  static bool weights_done = false;
-  if (weights_done) return weights;
-
-  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
-  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  for (int gp=0; gp<num_gp; gp++)
-    weights[gp] = intpoints.qwgt[gp];
-  weights_done = true;
-
-  return weights;
-}
-
-/*----------------------------------------------------------------------*
- |  lump mass matrix                                         bborn 07/08|
+ |  lump mass matrix                                         			|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass)
 {
@@ -1022,6 +906,149 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NU
   }
 }
 
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
+ *----------------------------------------------------------------------*/
+const vector<LINALG::Matrix<NUMNOD_SOTET10,1> > DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
+{
+  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
+  static bool shapefcts_done = false;
+  if (shapefcts_done) return shapefcts;
 
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
+    const double r = intpoints.qxg[gp][0];
+    const double s = intpoints.qxg[gp][1];
+    const double t = intpoints.qxg[gp][2];
+
+    DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, DRT::Element::tet10);
+  }
+  shapefcts_done = true;
+
+  return shapefcts;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Shape fct derivs at 4 Gauss Points                   |
+ *----------------------------------------------------------------------*/
+const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
+{
+  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_SOTET10);
+  static bool derivs_done = false;
+  if (derivs_done) return derivs;
+
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
+    const double r = intpoints.qxg[gp][0];
+    const double s = intpoints.qxg[gp][1];
+    const double t = intpoints.qxg[gp][2];
+
+    DRT::UTILS::shape_function_3D_deriv1(derivs[gp], r, s, t, DRT::Element::tet10);
+  }
+  derivs_done = true;
+
+  return derivs;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Weights at 4 Gauss Points                            |
+ *----------------------------------------------------------------------*/
+const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
+{
+	static vector<double> weights(NUMGPT_SOTET10);
+	static bool weights_done = false;
+	if (weights_done) return weights;
+
+	const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+	const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+	for (int gp=0; gp<NUMGPT_SOTET10; gp++)
+		weights[gp] = intpoints.qwgt[gp];
+	weights_done = true;
+
+	return weights;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Shape fcts at 10 Gauss Points                        |
+ *----------------------------------------------------------------------*/
+const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_shapefcts()
+{
+  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_MASS_SOTET10);
+  static bool shapefcts_done = false;
+  if (shapefcts_done) return shapefcts;
+
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++) {
+    const double r = intpoints.qxg[gp][0];
+    const double s = intpoints.qxg[gp][1];
+    const double t = intpoints.qxg[gp][2];
+
+    DRT::UTILS::shape_function_3D(shapefcts[gp], r, s, t, DRT::Element::tet10);
+  }
+  shapefcts_done = true;
+
+  return shapefcts;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Shape fct derivs at 10 Gauss Points                  |
+ *----------------------------------------------------------------------*/
+const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_derivs()
+{
+  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_MASS_SOTET10);
+  static bool derivs_done = false;
+  if (derivs_done) return derivs;
+
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++) {
+    const double r = intpoints.qxg[gp][0];
+    const double s = intpoints.qxg[gp][1];
+    const double t = intpoints.qxg[gp][2];
+
+    DRT::UTILS::shape_function_3D_deriv1(derivs[gp], r, s, t, DRT::Element::tet10);
+  }
+  derivs_done = true;
+
+  return derivs;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Tet10 Weights at 10 Gauss Points                           |
+ *----------------------------------------------------------------------*/
+const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_11gp_weights()
+{
+  static vector<double> weights(NUMGPT_MASS_SOTET10);
+  static bool weights_done = false;
+  if (weights_done) return weights;
+
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_11point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
+    weights[gp] = intpoints.qwgt[gp];
+  weights_done = true;
+
+  return weights;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_tet10Type::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_tet10* failed");
+    actele->InitJacobianMapping();
+  }
+  return 0;
+}
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3
