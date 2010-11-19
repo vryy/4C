@@ -1499,7 +1499,11 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   // Boussinesq approximation: Calculation of delta rho
   else if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
   {
-	  const double density_0 = actmat->Density();
+    const double density_0 = actmat->Density();
+
+    if(escaaf(0) < EPS12)
+      dserror("Boussinesq approximation: density in escaaf is zero");
+
 	  deltadens_ =  (funct_.Dot(escaaf)- density_0)/ density_0;
   }
 }
