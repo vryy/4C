@@ -53,9 +53,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create( const int id,
 
 void DRT::ELEMENTS::So_hex8fbarType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
-//   numdf = 3;
-//   dimns = 6;
-//   nv = 3;
+   numdf = 3;
+   dimns = 6;
+   nv = 3;
+   np = 0;
 }
 
 void DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
