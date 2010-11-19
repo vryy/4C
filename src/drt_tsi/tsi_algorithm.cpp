@@ -170,7 +170,15 @@ void TSI::Algorithm::TimeLoop()
   veln_ = StructureField().ExtractVeln();
 
   // ==================================================================
+  
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn
+    = DRT::Problem::Instance()->TSIDynamicParams();
 
+  // decide if apply one-way coupling or full coupling
+  INPAR::TSI::SolutionSchemeOverFields method =
+    Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  
   // get active nodes from structural contact simulation
   RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
 
@@ -178,14 +186,6 @@ void TSI::Algorithm::TimeLoop()
   // only tsi
   if (cmtman == Teuchos::null)
   {
-    // call the TSI parameter list
-    const Teuchos::ParameterList& tsidyn
-      = DRT::Problem::Instance()->TSIDynamicParams();
-
-    // decide if apply one-way coupling or full coupling
-    INPAR::TSI::SolutionSchemeOverFields method =
-      Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
-
     // switch TSI algorithm (synchronous)
     // only the coupling field knows the 2nd (coupling) field
     if (method == INPAR::TSI::OneWay)
@@ -205,15 +205,6 @@ void TSI::Algorithm::TimeLoop()
     // time loop
     while (NotFinished())
     {
-      //****************************************************************//
-      // this algorithm consists of two parts within one time step      //
-      // 1) solution of nonlinear structural system without influence   //
-      //    of temperature.                                             //
-      // 2) solution of temperature problem                             //
-      //    with heat transfer over the contacting surface (as a result //
-      //    from the structural problem).                               //
-      //******************************************************************
-
       // only for frictional contact so far
       // as information are needed from the friction node
       if((cmtman->GetStrategy().Friction())==false)
@@ -223,16 +214,77 @@ void TSI::Algorithm::TimeLoop()
       IncrementTimeAndStep();
       PrintHeader();
 
-      // predict and solve structural system
-      StructureField().PrepareTimeStep();
-      StructureField().Solve();
+      //****************************************************************//
+      // this algorithm consists of two parts within one time step      //
+      // 1) solution of nonlinear structural system without influence   //
+      //    of temperature.                                             //
+      // 2) solution of temperature problem                             //
+      //    with heat transfer over the contacting surface (as a result //
+      //    from the structural problem).                               //
+      //******************************************************************
+      if(method == INPAR::TSI::OneWay)
+      {
+        // predict and solve structural system
+        StructureField().PrepareTimeStep();
+        StructureField().Solve();
+  
+        // initialize contact manager of thermo field
+        ThermoField().SetStructContact(cmtman,StructureField().Discretization());
+  
+        ThermoField().PrepareTimeStep();
+        ThermoField().Solve();
+      }
+      //****************************************************************//
+      // this algorithm consists of the iteration between the           //   
+      // two single fields until convergence is achieved. The two fields// 
+      // influence each other:                                          //   
+      // 1) The thermal field is influenced by the structural field with// 
+      //    the contact surface (mortar matrices, active nodes....) and //
+      //    frictional heating.                                         // 
+      // 2) The structural field is influenced by the thermal field     //   
+      //    with a temperature dependent material law.                  //
+      //******************************************************************
+      else if (method == INPAR::TSI::IterStagg)
+      {
+        // prepare time step
+        ThermoField().PrepareTimeStep();
+        StructureField().PrepareTimeStep();
+        
+        // iterate between the two fields
+        int  itnum = 0;
+        bool stopnonliniter = false;
+        
+        while (stopnonliniter == false)
+        {
+          itnum ++;
+              
+          // store temperature from first solution for convergence check (like in
+          // elch_algorithm: use current values)
+          tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
+          dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+        
+          // initialize contact manager of thermo field
+          ThermoField().SetStructContact(cmtman,StructureField().Discretization());
+        
+          ThermoField().PrepareTimeStep();
+          ThermoField().Solve();
 
-      // initialize contact manager of thermo field
-      ThermoField().SetStructContact(cmtman,StructureField().Discretization());
+          // extract current temperature field
+          const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField().ExtractTempnp();
+          
+          // apply current temperatur field
+          StructureField().ApplyTemperatures(tempnp);
+          
+          // solve structure system
+          StructureField().Solve();
 
-      ThermoField().PrepareTimeStep();
-      ThermoField().Solve();
-
+          // check convergence of temperature field for "partitioned scheme"
+          stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
+        }
+      }
+      else
+        dserror("No sequential staggered coupling algorithm with contact");
+ 
       // update all single field solvers
       Update();
 

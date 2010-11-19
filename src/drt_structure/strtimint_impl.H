@@ -84,6 +84,14 @@ namespace STR
     //! Predict target solution and identify residual
     void Predict();
 
+    //! Identify residual
+    //! This method does not predict the target solution but 
+    //! evaluates the residual and the stiffness matrix.
+    //! In partitioned solution schemes, it is better to keep the current
+    //! solution instead of evaluating the initial guess (as the predictor)
+    //! does.
+    void PreparePartitionStep();
+    
     //! Predict constant displacements, velocities and accelerations,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs

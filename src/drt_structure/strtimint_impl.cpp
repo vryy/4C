@@ -260,6 +260,71 @@ void STR::TimIntImpl::Predict()
 }
 
 /*----------------------------------------------------------------------*/
+/* prepare partiton step */
+void STR::TimIntImpl::PreparePartitionStep()
+{
+
+  // set iteration step to 0 
+  iter_ = 0;
+
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
+
+  // compute residual forces fres_ and stiffness stiff_
+  // (hand in boolean flag indicating that this a predictor)
+  bool predict = true;
+  EvaluateForceStiffResidual(predict);
+
+  // rotate to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(fres_);
+
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // rotate back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(fres_);
+
+  // split norms
+  if (pressure_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> fres = pressure_->ExtractOtherVector(fres_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres);
+    Teuchos::RCP<Epetra_Vector> fpres = pressure_->ExtractCondVector(fres_);
+    normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fpres);
+
+  }
+  else
+  {
+    // build residual force norm
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+  }
+
+  // determine characteristic norms
+  // we set the minumum of CalcRefNormForce() and #tolfres_, because
+  // we want to prevent the case of a zero characteristic fnorm
+  normcharforce_ = CalcRefNormForce();
+  if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
+  normchardis_ = CalcRefNormDisplacement();
+  if (normchardis_ == 0.0) normchardis_ = toldisi_;
+
+
+  // output
+  PrintPredictor();
+
+  // enjoy your meal
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* predict solution as constant displacements, velocities
  * and accelerations */
 void STR::TimIntImpl::PredictConstDisVelAcc()
