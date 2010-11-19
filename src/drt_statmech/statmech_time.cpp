@@ -174,11 +174,11 @@ void StatMechTime::Integrate()
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
     if(i == 0)
-      statmechmanager_->StatMechInitOutput(ndim,dt);
+      statmechmanager_->InitOutput(ndim,dt);
 
     //set and delete crosslinkers compared to converged configuration of last time step
     const double t_admin = Teuchos::Time::wallTime();
-    statmechmanager_->StatMechUpdate(i, dt, *dis_, stiff_,ndim);
+    statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
 
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
@@ -240,13 +240,14 @@ void StatMechTime::Integrate()
       }
       while(isconverged_ == 0);
 
+      //periodic shift of configuration at the end of the time step in order to avoid improper output
+      statmechmanager_->PeriodicBoundaryShift(*dism_, ndim, dt);
+
       UpdateandOutput();
 
-      //periodic shift of configuration at the end of the time step in order to avoid improper output
-      statmechmanager_->PeriodicBoundaryShift(*dis_, ndim, dt);
-
       //special output for statistical mechanics
-      statmechmanager_->StatMechOutput(params_,ndim,time,i,dt,*dis_,*fint_);
+      statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
+
 
       if (time>=maxtime) break;
   }
@@ -1054,7 +1055,7 @@ void StatMechTime::Output()
 //note:the following block is the only difference to Output() in strugenalpha.cpp-----------------------------
 /* write restart information for statistical mechanics problems; all the information is saved as class variables
  * of StatMechManager*/
-    statmechmanager_->StatMechWriteRestart(output_);
+    statmechmanager_->WriteRestart(output_);
 //------------------------------------------------------------------------------------------------------------
 //____________________________________________________________________________________________________________
 
@@ -1177,7 +1178,6 @@ void StatMechTime::Output()
  *----------------------------------------------------------------------*/
 void StatMechTime::ReadRestart(int step)
 {
-  double dt = params_.get<double>("delta time",0.01);
   RCP<DRT::Discretization> rcpdiscret = rcp(&discret_,false);
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
@@ -1191,7 +1191,7 @@ void StatMechTime::ReadRestart(int step)
   reader.ReadMesh(step);
 
   // read restart information for contact
-  statmechmanager_->StatMechReadRestart(reader);
+  statmechmanager_->ReadRestart(reader);
 
 #ifdef INVERSEDESIGNUSE
   int idrestart = -1;

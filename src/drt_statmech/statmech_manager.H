@@ -50,10 +50,10 @@ public:
   virtual ~StatMechManager() {};
 
   //! \brief write special output for statistical mechanics into files
-  void StatMechOutput(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
+  void Output(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
 
   //! \brief saving all necessary class variables for restart
-  void StatMechWriteRestart(IO::DiscretizationWriter& output);
+  void WriteRestart(IO::DiscretizationWriter& output);
 
   //! \brief write restart information for fully overlapping Epetra_Multivector with name "name"
   void WriteRestartRedundantMultivector(IO::DiscretizationWriter& output,const string name, RCP<Epetra_MultiVector> multivector);
@@ -62,7 +62,7 @@ public:
   void ReadRestartRedundantMultivector(IO::DiscretizationReader& reader,const string name, RCP<Epetra_MultiVector> multivector);
 
   //! \brief reading all necessary information after a restart
-  void StatMechReadRestart(IO::DiscretizationReader& reader);
+  void ReadRestart(IO::DiscretizationReader& reader);
 
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param dt				(in)	current time step size
@@ -70,10 +70,10 @@ public:
    *  \param stiff		(in)
    *  \param ndim			(in)
    */
-  void StatMechUpdate(const int& istep, const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
+  void Update(const int& istep, const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
-  void StatMechInitOutput(const int ndim, const double& dt);
+  void InitOutput(const int ndim, const double& dt);
 
   //! \brief seed all random generators of this object properly
   void SeedRandomGenerators(const int seedparameter);

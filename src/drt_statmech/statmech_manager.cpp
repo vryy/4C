@@ -316,7 +316,7 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim)
+void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& disrow,RCP<LINALG::SparseOperator>& stiff, int ndim)
 {
 #ifdef MEASURETIME
 	const double t_start = Teuchos::Time::wallTime();
@@ -458,7 +458,7 @@ void StatMechManager::StatMechUpdate(const int& istep, const double dt, Epetra_V
 		}
 	}*/
 	return;
-} // StatMechManager::StatMechUpdate()
+} // StatMechManager::Update()
 
 /*----------------------------------------------------------------------*
  | Shifts current position of nodes so that they comply with periodic   |
@@ -1573,7 +1573,7 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
 /*----------------------------------------------------------------------*
  | (public) writing restart information for manager objects   cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
+void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 {
 	output.WriteInt("istart", istart_);
 	output.WriteDouble("starttimeoutput", starttimeoutput_);
@@ -1607,7 +1607,7 @@ void StatMechManager::StatMechWriteRestart(IO::DiscretizationWriter& output)
 
 
 	return;
-} // StatMechManager::StatMechWriteRestart()
+} // StatMechManager::WriteRestart()
 
 /*----------------------------------------------------------------------------*
  | (public) write restart information for fully redundant   Epetra_Multivector|
@@ -1634,7 +1634,7 @@ void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter&
 /*----------------------------------------------------------------------*
  |read restart information for statistical mechanics (public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
+void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 {
 	// read restart information for statistical mechanics
 	istart_ = reader.ReadInt("istart");
@@ -1668,7 +1668,7 @@ void StatMechManager::StatMechReadRestart(IO::DiscretizationReader& reader)
 	ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
 
 	return;
-}// StatMechManager::StatMechReadRestart()
+}// StatMechManager::ReadRestart()
 
 /*----------------------------------------------------------------------------*
  | (public) read restart information for fully redundant Epetra_Multivector   |

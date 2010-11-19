@@ -52,7 +52,7 @@ using namespace LARGEROTATIONS;
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
+void StatMechManager::Output(ParameterList& params, const int ndim,
                                      const double& time, const int& istep, const double& dt,
                                      const Epetra_Vector& dis, const Epetra_Vector& fint)
 {
@@ -493,7 +493,7 @@ void StatMechManager::StatMechOutput(ParameterList& params, const int ndim,
   }
 
   return;
-} // StatMechManager::StatMechOutput()
+} // StatMechManager::Output()
 
 
 /*----------------------------------------------------------------------*
@@ -1610,7 +1610,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
  *----------------------------------------------------------------------*/
-void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
+void StatMechManager::InitOutput(const int ndim, const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
 
@@ -1984,7 +1984,7 @@ void StatMechManager::StatMechInitOutput(const int ndim, const double& dt)
   }
 
   return;
-} // StatMechManager::StatMechInitOutput()
+} // StatMechManager::InitOutput()
 
 /*----------------------------------------------------------------------*
  | output for structural polymorphism             (public) mueller 07/10|
