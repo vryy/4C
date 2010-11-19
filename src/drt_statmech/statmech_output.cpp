@@ -632,7 +632,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
               }
             }
             else
-              GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
+              GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
           else
 #endif
@@ -651,7 +651,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
               }
             }
             else
-              GmshKinkedVisual(coord, 0.375, element->Id(), gmshfilecontent);
+              GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
           else
 #endif
@@ -1531,7 +1531,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
     gmshfilecontent << "){" << scientific;
-    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
 
     // now the other prisms will be computed
     for (int sector=0;sector<n-1;++sector)
@@ -1576,7 +1576,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
       gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
       gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
       gmshfilecontent << "){" << scientific;
-      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
     }
   }
   //no thickness >0 specified; plot elements as line segements without physical volume
