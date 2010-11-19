@@ -407,7 +407,7 @@ void ADAPTER::StructureTimIntImpl::ApplyInterfaceForces(
   // This will add the provided interface force onto the residual forces
   // The sign convention of the interface force is external-force-like.
   structure_->SetForceInterface(interface_, iforce);
-  structure_->Predict();
+  structure_->PreparePartitionStep();
 }
 
 
