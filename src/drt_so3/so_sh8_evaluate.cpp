@@ -30,6 +30,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_potential/drt_potential_manager.H"
+#include "../drt_lib/drt_condition.H"
 
 
 
@@ -406,6 +407,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 
       const double stc_fact = params.get<double>("stc_factor");
 
+      const int stc_layer = params.get<int>("stc_layer");
+
       if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
       {
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -472,20 +475,161 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       {
         LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
         DRT::Node** nodes = Nodes();
-        for(int i=0; i<NUMNOD_SOH8; i++)
-        {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
 
-        }
-        for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+        vector<DRT::Condition*> cond0;
+        int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
+        bool current0 = false; // layer with nodes 0..4 to be scaled
+        (nodes[0])->GetCondition("STC Layer",cond0);
+        vector<DRT::Condition*> cond1;
+        int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
+        bool current1 = false; // minimun STCid of layer with nodes 4..7
+        (nodes[NUMNOD_SOH8/2])->GetCondition("STC Layer",cond1);
+
+        for (unsigned int conu = 0; conu < cond0.size(); ++conu)
         {
-          elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0);
-          if (ind1<NUMDOF_SOH8/2)
+          int tmp = cond0[conu]->GetInt("ConditionID");
+          if (tmp < condnum0)
+            condnum0 = tmp;
+        }
+        if (condnum0 == stc_layer)
+          current0 = true;
+
+
+        for (unsigned int conu = 0; conu < cond1.size(); ++conu)
+        {
+          int tmp = cond1[conu]->GetInt("ConditionID");
+          if (tmp < condnum1)
+            condnum1 = tmp;
+        }
+        if (condnum1 == stc_layer)
+          current1 = true;
+
+
+        // both surfaces are to be scaled
+        if (current0 and current1)
+        {
+          // only valid for first round
+          if (condnum0 != 1)
+            dserror("STC error: non-initial layer is not connected to a smaller id");
+          else
           {
-            elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
-            elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
+            for(int i=0; i<NUMNOD_SOH8; i++)
+            {
+              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+
+            }
+            for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
+            {
+
+//              if (ind1<NUMDOF_SOH8/2)
+              {
+                elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0)*cond0.size();
+                elemat1(ind1+NUMDOF_SOH8/2,ind1+NUMDOF_SOH8/2)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
+                elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0)*cond0.size();
+                elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
+              }
+            }
+          }
+        }
+        // surface with nodes 0..3 is to be scaled
+        else if (current0)
+        {
+          //but not by this element
+          if (condnum1 > condnum0)
+          {
+            for(int i=0; i<NUMNOD_SOH8; i++)
+            {
+              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+
+            }
+            for(int ind1=NUMDOF_SOH8/2; ind1< NUMDOF_SOH8; ind1++)
+            {
+              elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+            }
+          }
+          // this element has to do the whole scaling
+          else if (condnum1 < condnum0)
+          {
+            for(int i=0; i<NUMNOD_SOH8; i++)
+            {
+              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+
+            }
+            for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+            {
+
+              if (ind1<NUMDOF_SOH8/2)
+              {
+                elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond0.size();
+                elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond0.size();
+              }
+              else
+              {
+                elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+              }
+            }
+          }
+        }
+        // surface with nodes 0..3 is to be scaled
+        else if (current1)
+        {
+          //but not by this element
+          if (condnum0 > condnum1)
+          {
+            for(int i=0; i<NUMNOD_SOH8; i++)
+            {
+              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+
+            }
+            for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
+            {
+              elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+            }
+          }
+          // this element has to do the whole scaling
+          else if (condnum0 < condnum1)
+          {
+            for(int i=0; i<NUMNOD_SOH8; i++)
+            {
+              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+
+            }
+            for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+            {
+
+              if (ind1>=NUMDOF_SOH8/2)
+              {
+                elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond1.size();
+                elemat1(ind1,-NUMDOF_SOH8/2+ind1)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond1.size();
+              }
+              else
+              {
+                elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+              }
+            }
+          }
+        }
+        else
+        {
+          for(int i=0; i<NUMNOD_SOH8; i++)
+          {
+            adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+            adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+            adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          }
+          for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+          {
+            elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
           }
         }
       }
@@ -1554,7 +1698,8 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
     }
   }
 
-  if (num_morphed_so_hex8_easmild>0){
+  if (num_morphed_so_hex8_easmild>0)
+  {
     cout << endl << num_morphed_so_hex8_easmild
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
   }

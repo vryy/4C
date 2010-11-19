@@ -85,8 +85,8 @@ STR::TimIntImpl::TimIntImpl
   freact_(Teuchos::null),
   fifc_(Teuchos::null),
   stcscale_(Teuchos::getIntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
-  stcfact_(sdynparams.get<double>("STC_FACTOR"))
-
+  stcfact_(sdynparams.get<double>("STC_FACTOR")),
+  stclayer_(sdynparams.get<int>("STC_LAYER"))
 {
   // verify: Old-style convergence check has to be 'vague' to
   if (Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
@@ -1960,6 +1960,17 @@ void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::STCPreconditioning()
 {
+  // print first system matrix to file in matlab format (DEBUGGING)
+  #ifdef DEBUG
+  if (iter_==1&& step_==0)
+  {
+    const std::string fname = "unscaled.mtl";
+    if (myrank_ == 0)
+      cout<<"Printing unscaled system matrix to file"<<endl;
+      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
+  }
+  #endif
+
   if(stcscale_!=INPAR::STR::stc_none)
   {
     if ((iter_==1 and step_==0 and
@@ -1979,114 +1990,85 @@ void STR::TimIntImpl::STCPreconditioning()
       stcmat_->SetUseTranspose(false);
       fres_->Update(1.0,*fressdc,0.0);
     }
-  }
 
-  // print first system matrix to file in matlab format (DEBUGGING)
-//  #ifdef DEBUG
-//  if (iter_==1&& step_==0)
-//  {
-//    const std::string fname = "sparsematrix.mtl";
-//    if (myrank_ == 0)
-//      cout<<"Printing system matrix to file"<<endl;
-//      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
-//  }
-//  #endif
+    // print first system matrix to file in matlab format (DEBUGGING)
+    #ifdef DEBUG
+    if (iter_==1&& step_==0)
+    {
+      const std::string fname = "scaled.mtl";
+      if (myrank_ == 0)
+        cout<<"Printing scaled system matrix to file"<<endl;
+        LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
+    }
+    #endif
+  }
 
   return;
 }
 
 void STR::TimIntImpl::ComputeSTCMatrix()
 {
-#if 1
+
   stcmat_->Zero();
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
+  discret_->  SetState("residual displacement", disi_);
+  discret_->  SetState("displacement", disn_);
+
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
   p.set("stc_scaling", stcscale_);
   p.set("stc_factor", stcfact_);
-  discret_->  SetState("residual displacement", disi_);
-  discret_->  SetState("displacement", disn_);
+  p.set("stc_layer",1);
+
   discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_-> ClearState();
-  stcmat_->Complete();
-#else
-  stcmat_->Zero();
-  
-  map<int, DRT::Node*> totnodes;
-  map<double, DRT::Node*> procnodes;
-  
-  DRT::UTILS::FindConditionedNodes(*discret_, "VolumeNeumann", totnodes);
 
-  map<int, DRT::Node*>::iterator nit1;
-  map<int, DRT::Node*>::iterator nit2;
-  
-  while (totnodes.size()>0)
+  stcmat_->Complete();
+
+  #ifdef DEBUG
+  if (iter_==1&& step_==0)
   {
-    nit1=totnodes.begin();
-    const double* coordm = (*nit1).second->X();
-    procnodes.insert(pair<double, DRT::Node*>(coordm[1],(*nit1).second));
-    //DRT::Node mnode = *(*nit1).second;
-    
-    int succ = totnodes.erase((*nit1).first);
-      if  (!succ) dserror("Strange1!");
-    for ( nit2=totnodes.begin() ; nit2 != totnodes.end(); nit2++ )
-    {
-      const double* coord = (*nit2).second->X();
-      if (abs(coord[0]-coordm[0])<1e-6 and abs(coord[2]-coordm[2])<1e-6)
-      {
-        procnodes.insert(pair<double, DRT::Node*>(coord[1],(*nit2).second));
-        int succ = totnodes.erase((*nit2).first);
-          if  (!succ) dserror("Strange2!");
-      }
-    }
-    map<double, DRT::Node*>::iterator nit3;
-    vector<int> lm;
-    vector<int> lmowner;
-    for ( nit3=procnodes.begin() ; nit3 != procnodes.end(); nit3++ )
-      discret_->Dof((*nit3).second,lm);
-  
-    lmowner.resize(lm.size(),0); // set 0 for Owner!!! FIXME!
-    Epetra_SerialDenseMatrix elematrix;
-    elematrix.Shape(lm.size(),lm.size());
-    double entry1= (stcfact_+1.0)/(2*stcfact_);
-    double entry2= (stcfact_-1.0)/(2*stcfact_);
-    if (lm.size()==9)
-      for (unsigned int i=0; i<3;i++)
-      {
-        elematrix(i,i)=entry1;
-        elematrix(i+6,i+6)=entry1;
-        elematrix(i+3,i+3)=1.0/stcfact_;
-        elematrix(i+6,i)=entry2;
-        elematrix(i,i+6)=entry2;
-        elematrix(i+3,i)=entry2;
-        elematrix(i+3,i+6)=entry2;
-      }
-    else if (lm.size()==12)
-      for (unsigned int i=0; i<3;i++)
-      {
-        elematrix(i,i)=entry1;
-        elematrix(i+9,i+9)=entry1;
-        elematrix(i+3,i+3)=1.0/stcfact_;
-        elematrix(i+6,i+6)=1.0/stcfact_;
-        elematrix(i+9,i)=entry2;
-        elematrix(i,i+9)=entry2;
-        elematrix(i+3,i)=entry2;
-        elematrix(i+3,i+9)=entry2;
-        elematrix(i+6,i)=entry2;
-        elematrix(i+6,i+9)=entry2;
-      }
-    else 
-      dserror("hack only valid for two and three layers");
-
-    stcmat_->Assemble(0,elematrix,lm,lmowner);
-    
-    procnodes.clear();
+    const std::string fname = "stcmatrix1.mtl";
+    if (myrank_ == 0)
+      cout<<"Printing stcmatrix1 to file"<<endl;
+      LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
   }
-  
-  stcmat_->Complete();
-#endif
+  #endif
+
+  for (int lay = 2; lay <= stclayer_; ++lay)
+  {
+    Teuchos::ParameterList pe;
+
+    pe.set("action", action);
+    pe.set("stc_scaling", stcscale_);
+    pe.set("stc_factor", stcfact_);
+    pe.set("stc_layer", lay);
+
+    Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat=
+      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,true));
+    tmpstcmat->Zero();
+
+    discret_-> Evaluate(pe, tmpstcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+    tmpstcmat->Complete();
+
+    #ifdef DEBUG
+    if (iter_==1&& step_==0)
+    {
+      const std::string fname = "stcmatrix2.mtl";
+      if (myrank_ == 0)
+        cout<<"Printing stcmatrix2 to file"<<endl;
+        LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
+    }
+    #endif
+
+
+    stcmat_ = MLMultiply(*tmpstcmat,*stcmat_,false,false,true);
+  }
+
+  discret_-> ClearState();
+
+
 }
 
 /*----------------------------------------------------------------------*

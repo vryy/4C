@@ -719,9 +719,10 @@ namespace STR
 
     //! @name SDC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::STC_Scale stcscale_; //< scale director of shells?
-    double stcfact_;  //!< scaling factor
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;
+    enum INPAR::STR::STC_Scale stcscale_; //!< scale thickness of shells?
+    double stcfact_;  //!< scaling factor for STC
+    int stclayer_;  //! number of layers for multilayered case
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
     //@}
 
   };  // class TimIntImpl

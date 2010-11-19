@@ -194,6 +194,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==PatientSpecificData)           os << "Various Geometric Patient Specific Data";
   else if (Type()==VolumetricSurfaceFlowCond)     os << "Volumetric Surface Flow Profile";
   else if (Type()==VolumetricFlowBorderNodes)     os << "Border Nodes of the volumetric flow Surface";
+  else if (Type()==VolSTCLayer)                   os << "Number of current STC layer";
     
   else dserror("no output string for condition defined in DRT::Condition::Print");
 

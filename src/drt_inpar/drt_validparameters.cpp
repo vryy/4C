@@ -698,6 +698,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Scaled director conditioning factor",
       &sdyn);
 
+  IntParameter("STC_LAYER",1,
+               "number of STC layers for multilayer case",
+               &sdyn);
+
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);

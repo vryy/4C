@@ -147,6 +147,7 @@ public:
     FluidStressCalc,
     LineLIFTDRAG,
     SurfLIFTDRAG,
+    VolSTCLayer,
     VolumeConstraint_3D,
     VolumeConstraint_3D_pen,
     AreaConstraint_3D,

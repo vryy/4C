@@ -1375,6 +1375,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfliftdrag);
 
   /*--------------------------------------------------------------------*/
+  // stc layer condition
+
+  Teuchos::RCP<ConditionDefinition> stclayer =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL STC LAYER",
+                                         "STC Layer",
+                                         "Layer for Multilayered STC",
+                                         DRT::Condition::VolSTCLayer,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  stclayer->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  stclayer->AddComponent(Teuchos::rcp(new RealConditionComponent("STCFactor")));
+
+  condlist.push_back(stclayer);
+
+  /*--------------------------------------------------------------------*/
   // volume constraint
 
   Teuchos::RCP<ConditionDefinition> volumeconstraint =
