@@ -176,15 +176,21 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  const Epetra_Map& rmap = systemmatrix1->OperatorRangeMap();
-  const Epetra_Map& dmap = rmap;
+  const Epetra_Map* rmap = NULL;
+  const Epetra_Map* dmap = NULL;
 
   RCP<Epetra_FECrsMatrix> stifftmp;
-  RCP<LINALG::SparseMatrix> systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
-  if (systemmatrix != null && systemmatrix->Filled())
-    stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
-  else
-    stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,rmap,256,false));
+  RCP<LINALG::SparseMatrix> systemmatrix;
+  if (systemmatrix1 != Teuchos::null)
+  {
+    rmap = &(systemmatrix1->OperatorRangeMap());
+    dmap = rmap;
+    systemmatrix = rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
+    if (systemmatrix != null && systemmatrix->Filled())
+      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
+    else
+      stifftmp = rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+  }
 
   //-----------------------------------------------------------------
   // make some tests for fast assembly
@@ -364,7 +370,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         }
         else // local row
         {
-          if (systemmatrix != null && systemmatrix->Filled())
+          if (systemmatrix != null && systemmatrix->Filled()) // matrix is SparseMatrix
           {
             Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
             int length;
@@ -374,18 +380,37 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
             for (int j=0; j<ndofperpatch; ++j)
             {
               int* loc = std::lower_bound(indices,indices+length,lclm[j]);
-#ifdef DEBUG
+#ifdef DEBUG 
               if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
 #endif
               int pos = loc-indices;
-              values[pos++] += stiff(i,j++);
-              values[pos++] += stiff(i,j++);
-              values[pos]   += stiff(i,j);
-              //int err = matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
-              //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+
+              // test physical continuity of nodal values inside the Epetra_CrsMatrix
+              bool continuous = true;
+              for (int k=1; k<3; ++k)
+                if (indices[pos+k] == lclm[j+k]) continue;
+                else
+                {
+                  continuous = false;
+                  break;
+                }
+
+              if (continuous)
+              {
+                values[pos++] += stiff(i,j++);
+                values[pos++] += stiff(i,j++);
+                values[pos]   += stiff(i,j);
+              }
+              else
+              {
+                int err =  matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]); j++;
+                    err += matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]); j++;
+                    err += matrix.SumIntoMyValues(lrlm[i],1,&stiff(i,j),&lclm[j]);
+                if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+              }
             }
           }
-          else
+          else // matrix not SparseMatrix (e.g. BlockMatrix) -> fall back to standard assembly
           {
             for (int j=0; j<ndofperpatch; ++j)
               systemmatrix1->Assemble(stiff(i,j),lm[i],lm[j]);
@@ -432,7 +457,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
           }
           else
           {
-            if (systemmatrix != null && systemmatrix->Filled())
+            if (systemmatrix != null && systemmatrix->Filled()) // matrix is SparseMatrix
             {
               Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
               int length;
@@ -446,14 +471,33 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
                 if (*loc != lclm[j]) dserror("Cannot find local column entry %d",lclm[j]);
 #endif
                 int pos = loc-indices;
-                values[pos++] += mis_stiff(i,j++);
-                values[pos++] += mis_stiff(i,j++);
-                values[pos]   += mis_stiff(i,j);
-                //int err = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
-                //if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+                
+                // test physical continuity of nodal values inside the Epetra_CrsMatrix
+                bool continuous = true;
+                for (int k=1; k<3; ++k)
+                  if (indices[pos+k] == lclm[j+k]) continue;
+                  else
+                  {
+                    continuous = false;
+                    break;
+                  }
+                
+                if (continuous)
+                {
+                  values[pos++] += mis_stiff(i,j++);
+                  values[pos++] += mis_stiff(i,j++);
+                  values[pos]   += mis_stiff(i,j);
+                }
+                else
+                {
+                  int err  = matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]); j++;
+                      err += matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]); j++;
+                      err += matrix.SumIntoMyValues(lrlm[i],1,&mis_stiff(i,j),&lclm[j]);
+                  if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+                }
               }
             }
-            else
+            else // matrix not SparseMatrix (e.g. BlockMatrix) -> fall back to standard assembly
             {
               for (int j=0; j<mis_ndofperpatch; ++j)
                 systemmatrix1->Assemble(mis_stiff(i,j),(*mis_lm)[i],(*mis_lm)[j]);
@@ -551,7 +595,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 #ifdef NSTET_TIMINGS
     double t4 = timer.ElapsedTime();
 #endif
-    int err = stifftmp->GlobalAssemble(dmap,rmap,false);
+    int err = stifftmp->GlobalAssemble(*dmap,*rmap,false);
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
 #ifdef NSTET_TIMINGS
     double t5 = timer.ElapsedTime();
