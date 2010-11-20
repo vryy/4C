@@ -30,7 +30,7 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
     const_cast<tetgenio &>( out ).save_elements( const_cast<char*>( "tetcut" ) );
     const_cast<tetgenio &>( out ).save_faces( const_cast<char*>( "tetcut" ) );
 
-    Mesh mesh( pp_, false );
+    Mesh mesh( 1, pp_, false );
 
     mesh.AddTetgen( out );
 
@@ -44,7 +44,7 @@ void GEO::CUT::TetCutGenerator::Generate( Element* element, const tetgenio & out
 
     if ( parent_ != NULL )
     {
-      Mesh resultmesh( pp_, false );
+      Mesh resultmesh( 1, pp_, false );
       TetCutConverter converter( resultmesh );
       mesh.GenerateTetgen( &converter );
 

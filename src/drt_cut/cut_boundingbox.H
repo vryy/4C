@@ -43,13 +43,13 @@ public:
 
   void AddPoints( const std::vector<Node*> & nodes );
 
-  bool Within( const BoundingBox & b ) const;
+  bool Within( double norm, const BoundingBox & b ) const;
 
-  bool Within( const double * x ) const;
+  bool Within( double norm, const double * x ) const;
 
-  bool Within( const Epetra_SerialDenseMatrix & xyz ) const;
+  bool Within( double norm, const Epetra_SerialDenseMatrix & xyz ) const;
 
-  bool Within( Element & element ) const;
+  bool Within( double norm, Element & element ) const;
 
   void Print();
 
@@ -65,10 +65,11 @@ public:
 
 private:
 
-  bool InBetween( double smin, double smax, double omin, double omax ) const
+  bool InBetween( double norm, double smin, double smax, double omin, double omax ) const
   {
-    return ( ( omax > smin - 1e-7 and omin < smax + 1e-7 ) or
-             ( smax > omin - 1e-7 and smin < omax + 1e-7 ) );
+    double tol = 1e-7*norm;
+    return ( ( omax > smin - tol and omin < smax + tol ) or
+             ( smax > omin - tol and smin < omax + tol ) );
   }
 
   bool empty_;

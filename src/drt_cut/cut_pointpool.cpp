@@ -42,7 +42,7 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x,
 
       p->Coordinates( nx.A() );
       nx.Update( -1, px, 1 );
-      if ( nx.Norm2() < MINIMALTOL )
+      if ( nx.Norm2() < MINIMALTOL*norm_ )
       {
         if ( cut_edge!=NULL )
         {
@@ -122,7 +122,7 @@ void GEO::CUT::OctTreeNode::Split( int level )
 
     for ( int i=0; i<8; ++i )
     {
-      nodes_[i] = Teuchos::rcp( new OctTreeNode() );
+      nodes_[i] = Teuchos::rcp( new OctTreeNode( norm_ ) );
     }
 
     // avoid empty room (room not covered by boundary boxes)
@@ -162,7 +162,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<
 {
   if ( not IsLeaf() )
   {
-    if ( sidebox.Within( bb_ ) )
+    if ( sidebox.Within( norm_, bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
@@ -183,7 +183,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<
         if ( sides.count( s )==0 )
         {
           sbox.Assign( *s );
-          if ( sbox.Within( sidebox ) )
+          if ( sbox.Within( norm_, sidebox ) )
           {
             sides.insert( s );
           }
@@ -197,7 +197,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::s
 {
   if ( not IsLeaf() )
   {
-    if ( sidebox.Within( bb_ ) )
+    if ( sidebox.Within( norm_, bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
@@ -218,7 +218,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::s
         if ( elements.count( e )==0 )
         {
           elementbox.Assign( *e );
-          if ( elementbox.Within( sidebox ) )
+          if ( elementbox.Within( norm_, sidebox ) )
           {
             elements.insert( e );
           }

@@ -27,12 +27,12 @@ public:
 
   explicit MeshIntersection( int numcutmesh=1 )
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( pp_, false )
+      mesh_( 1, pp_, false )
   {
     cut_mesh_.reserve( numcutmesh );
     for ( int i=0; i<numcutmesh; ++i )
     {
-      cut_mesh_.push_back( Teuchos::rcp( new Mesh( pp_, true ) ) );
+      cut_mesh_.push_back( Teuchos::rcp( new Mesh( 1, pp_, true ) ) );
     }
   }
 

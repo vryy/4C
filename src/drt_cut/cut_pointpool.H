@@ -23,6 +23,8 @@ class OctTreeNode
 {
 public:
 
+  OctTreeNode( double norm ) : norm_( norm ) {}
+
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
   unsigned size() const { return points_.size(); }
@@ -54,11 +56,15 @@ private:
   BoundingBox bb_;
 
   LINALG::Matrix<3,1> splitpoint_;
+
+  double norm_;
 };
 
 class PointPool
 {
 public:
+
+  explicit PointPool( double norm=1 ) : tree_( norm ) {}
 
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
   { return tree_.NewPoint( x, cut_edge, cut_side ); }

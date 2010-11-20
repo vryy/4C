@@ -72,21 +72,21 @@ void GEO::CUT::BoundingBox::AddPoint( const double * x )
   }
 }
 
-bool GEO::CUT::BoundingBox::Within( const BoundingBox & b ) const
+bool GEO::CUT::BoundingBox::Within( double norm, const BoundingBox & b ) const
 {
-  return ( InBetween( minx(), maxx(), b.minx(), b.maxx() ) and
-           InBetween( miny(), maxy(), b.miny(), b.maxy() ) and
-           InBetween( minz(), maxz(), b.minz(), b.maxz() ) );
+  return ( InBetween( norm, minx(), maxx(), b.minx(), b.maxx() ) and
+           InBetween( norm, miny(), maxy(), b.miny(), b.maxy() ) and
+           InBetween( norm, minz(), maxz(), b.minz(), b.maxz() ) );
 }
 
-bool GEO::CUT::BoundingBox::Within( const double * x ) const
+bool GEO::CUT::BoundingBox::Within( double norm, const double * x ) const
 {
-  return ( InBetween( minx(), maxx(), x[0], x[0] ) and
-           InBetween( miny(), maxy(), x[1], x[1] ) and
-           InBetween( minz(), maxz(), x[2], x[2] ) );
+  return ( InBetween( norm, minx(), maxx(), x[0], x[0] ) and
+           InBetween( norm, miny(), maxy(), x[1], x[1] ) and
+           InBetween( norm, minz(), maxz(), x[2], x[2] ) );
 }
 
-bool GEO::CUT::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz ) const
+bool GEO::CUT::BoundingBox::Within( double norm, const Epetra_SerialDenseMatrix & xyz ) const
 {
   BoundingBox bb;
   int numnode = xyz.N();
@@ -94,13 +94,13 @@ bool GEO::CUT::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz ) const
   {
     bb.AddPoint( &xyz( 0, i ) );
   }
-  return Within( bb );
+  return Within( norm, bb );
 }
 
-bool GEO::CUT::BoundingBox::Within( Element & element ) const
+bool GEO::CUT::BoundingBox::Within( double norm, Element & element ) const
 {
   BoundingBox bb( element );
-  return Within( bb );
+  return Within( norm, bb );
 }
 
 void GEO::CUT::BoundingBox::Print()

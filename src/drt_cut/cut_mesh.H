@@ -55,7 +55,7 @@ class Mesh
 {
 public:
 
-  explicit Mesh( Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
+  Mesh( double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
 #ifdef QHULL
 
@@ -158,6 +158,7 @@ private:
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
 
+  double norm_;
   Teuchos::RCP<PointPool> pp_;
   BoundingBox bb_;
   bool cutmesh_;

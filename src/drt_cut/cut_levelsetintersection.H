@@ -24,7 +24,7 @@ public:
 
   LevelSetIntersection()
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( pp_, false ),
+      mesh_( 1, pp_, false ),
       side_( 1 )
   {
   }

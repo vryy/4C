@@ -16,13 +16,14 @@
 #include "cut_facet.H"
 #include "cut_levelsetside.H"
 
-GEO::CUT::Mesh::Mesh( Teuchos::RCP<PointPool> pp, bool cutmesh )
-  : pp_( pp ),
+GEO::CUT::Mesh::Mesh( double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
+  : norm_( norm ),
+    pp_( pp ),
     cutmesh_( cutmesh )
 {
   if ( pp_ == Teuchos::null )
   {
-    pp_ = Teuchos::rcp( new PointPool );
+    pp_ = Teuchos::rcp( new PointPool( norm ) );
   }
 }
 
@@ -1096,10 +1097,10 @@ void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
 
 bool GEO::CUT::Mesh::WithinBB( const Epetra_SerialDenseMatrix & xyz )
 {
-  return bb_.Within( xyz );
+  return bb_.Within( norm_, xyz );
 }
 
 bool GEO::CUT::Mesh::WithinBB( Element & element )
 {
-  return bb_.Within( element );
+  return bb_.Within( norm_, element );
 }

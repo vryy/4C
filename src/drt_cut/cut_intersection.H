@@ -40,6 +40,20 @@ public:
   {
     edge_.Coordinates( xyze_lineElement_ );
     side_.Coordinates( xyze_surfaceElement_ );
+
+    scale_ = 0;
+    LINALG::Matrix<3,1> d;
+    for ( int i=0; i<numNodesSurface; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_surfaceElement_( 0, i ),  true );
+      LINALG::Matrix<3,1> x2( &xyze_surfaceElement_( 0, ( i+1 )%numNodesSurface ),  true );
+      d.Update( 1, x2, -1, x1, 0 );
+      scale_ += d.Norm2();
+    }
+    scale_ /= numNodesSurface;
+
+    xyze_lineElement_.Scale( 1./scale_ );
+    xyze_surfaceElement_.Scale( 1./scale_ );
   }
 
   bool Intersect( std::set<Point*, PointPidLess> & cuts );
@@ -88,6 +102,8 @@ private:
 
   LINALG::Matrix<3,1> xsi_;
   LINALG::Matrix<3,1> x_;
+
+  double scale_;
 };
 
 
@@ -279,6 +295,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
   LINALG::Matrix<3,1> px;
 
   p->Coordinates( px.A() );
+  px.Scale( 1./scale_ );
 
   xsi_ = 0;
 
@@ -313,6 +330,12 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     cross( 1 ) = A( 2, 0 )*A( 0, 1 ) - A( 0, 0 )*A( 2, 1 );
     cross( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 1, 0 )*A( 0, 1 );
 
+    // norm normal direction
+    double cnorm = cross.Norm2();
+    double fact1 = 1./cnorm;
+    double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
+    cross.Scale( fact1 );
+
     C = 0;
 
     for ( int inode=0; inode<numNodesSurface; ++inode )
@@ -341,6 +364,17 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
 
     B( 2, 0 ) = ( C( 0, 0 )*A( 1, 1 )+A( 0, 0 )*C( 1, 2 ) - ( C( 1, 0 )*A( 0, 1 )+A( 1, 0 )*C( 0, 2 ) ) )*xsi_( 2 );
     B( 2, 1 ) = ( C( 0, 2 )*A( 1, 1 )+A( 0, 0 )*C( 1, 1 ) - ( C( 1, 2 )*A( 0, 1 )+A( 1, 0 )*C( 0, 1 ) ) )*xsi_( 2 );
+
+    // product rule for normed cross product
+
+    B( 0, 0 ) *= fact1 + fact2 * A( 0, 2 );
+    B( 0, 1 ) *= fact1 + fact2 * A( 0, 2 );
+
+    B( 1, 0 ) *= fact1 + fact2 * A( 1, 2 );
+    B( 1, 1 ) *= fact1 + fact2 * A( 1, 2 );
+
+    B( 2, 0 ) *= fact1 + fact2 * A( 2, 2 );
+    B( 2, 1 ) *= fact1 + fact2 * A( 2, 2 );
 
     A.Update( 1, B, 1 );
 
@@ -464,6 +498,7 @@ LINALG::Matrix<3,1> & Intersection<edgetype, sidetype, numNodesLine, numNodesSur
     {
       x_(isd) += xyze_lineElement_(isd,inode) * lineFunct(inode);
     }
+  x_.Scale( scale_ );
   return x_;
 }
 

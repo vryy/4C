@@ -24,6 +24,7 @@ public:
   {
     element.Coordinates( xyze_ );
     point.Coordinates( px_.A() );
+    Scale();
   }
 
   Position( ConcreteElement<elementtype> & element,
@@ -31,6 +32,7 @@ public:
     : px_( xyz )
   {
     element.Coordinates( xyze_ );
+    Scale();
   }
 
   bool Compute();
@@ -40,11 +42,31 @@ public:
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
 private:
+
+  void Scale()
+  {
+    scale_ = 0;
+    LINALG::Matrix<3,1> d;
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_( 0, i ),  true );
+      LINALG::Matrix<3,1> x2( &xyze_( 0, ( i+1 )%numNodesElement ),  true );
+      d.Update( 1, x2, -1, x1, 0 );
+      scale_ += d.Norm2();
+    }
+    scale_ /= numNodesElement;
+
+    px_.Scale( 1./scale_ );
+    xyze_.Scale( 1./scale_ );
+  }
+
   LINALG::Matrix<3,1> px_;
 
   LINALG::Matrix<3,1> xsi_;
 
   LINALG::Matrix<3, numNodesElement> xyze_;
+
+  double scale_;
 };
 
 

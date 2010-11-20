@@ -1231,6 +1231,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_levelset.cpp
   tests/cut_test/cut_test_main.cpp
   tests/cut_test/cut_test_simple.cpp
+  tests/cut_test/cut_test_units.cpp
   tests/cut_test/cut_test_utils.cpp
   tests/cut_test/drt_dserror.cpp
 )
