@@ -55,6 +55,7 @@ StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& dis
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
 konswitch_(false),
 nsearch_(0),
+unconvergedsteps_(0),
 starttimeoutput_(-1.0),
 endtoendref_(0.0),
 istart_(0),
@@ -1576,6 +1577,7 @@ void StatMechManager::GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> rand
 void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 {
 	output.WriteInt("istart", istart_);
+	output.WriteInt("unconvergedsteps", unconvergedsteps_);
 	output.WriteDouble("starttimeoutput", starttimeoutput_);
 	output.WriteDouble("endtoendref", endtoendref_);
 	output.WriteInt("basisnodes", basisnodes_);
@@ -1638,6 +1640,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 {
 	// read restart information for statistical mechanics
 	istart_ = reader.ReadInt("istart");
+	unconvergedsteps_ = reader.ReadInt("unconvergedsteps");
 	starttimeoutput_ = reader.ReadDouble("starttimeoutput");
 	endtoendref_ = reader.ReadDouble("endtoendref");
 	basisnodes_ = reader.ReadInt("basisnodes");

@@ -51,8 +51,7 @@ StatMechTime::StatMechTime(ParameterList& params,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output),
-isconverged_(0),
-unconvergedsteps_(0)
+isconverged_(0)
 {
 	Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -169,7 +168,7 @@ void StatMechTime::Integrate()
   for (int i=step; i<nstep; ++i)
   {
     //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
-    statmechmanager_->SeedRandomGenerators(i);
+    statmechmanager_->SeedRandomGenerators(i + statmechmanager_->unconvergedsteps_);
 
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
@@ -186,11 +185,8 @@ void StatMechTime::Integrate()
       std::cout<<"\nbegin time step "<<i+1<<":";
       std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
       std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
-      std::cout<<"\nNumber of unconverged steps since start / last restart: "<<unconvergedsteps_<<"\n";
+      std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n";
     }
-
-
-
 
 
 			//time_ is time at the end of this time step
@@ -679,7 +675,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
-    unconvergedsteps_++;
+    statmechmanager_->unconvergedsteps_++;
     if(discret_.Comm().MyPID() == 0)
       std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("PTC unconverged in %d iterations",numiter);
@@ -978,7 +974,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   if (numiter>=maxiter)
   {
     isconverged_ = 0;
-    unconvergedsteps_++;
+    statmechmanager_->unconvergedsteps_++;
     if(discret_.Comm().MyPID()==0 and printscreen)
       std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
      //dserror("FullNewton unconverged in %d iterations",numiter);

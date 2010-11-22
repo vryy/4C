@@ -140,6 +140,9 @@ public:
   //! \brief current simulation time
   double time_;
 
+  //! \brief how often a time step had to be restarted with new random numbers due to unconverged solution of nonlinear system of equations since simulation start
+  int unconvergedsteps_;
+
 protected:
 
   // don't want = operator and cctor
