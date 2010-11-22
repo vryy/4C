@@ -36,6 +36,10 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_io/io_gmsh.H"
 
+  // Gmsh output on gausspoint
+  //#define GmshOutput_velGP   
+  //#define GmshOutput_presGP
+
   using namespace XFEM::PHYSICS;
 
   //! size factor to allow fixed size arrays
@@ -820,6 +824,18 @@ void SysmatDomainSigma(
         // integration points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
+        // gmsh output of integration cells
+#ifdef GmshOutput_velGP
+        const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
+        const bool screen_out = false;
+        int step = params.get<int >("step");
+        const std::string filename = IO::GMSH::GetFileName("velGP", step, screen_out,0);
+        std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);       
+        LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()),true);
+        IO::GMSH::cellWithVectorFieldToStream(cell->Shape(),cellvalues,cellpos,gmshfilecontent);
+        gmshfilecontent.close();
+#endif 
+        
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
@@ -1085,6 +1101,19 @@ void SysmatDomainSigma(
             }
 
 
+            // gmsh output of Gauss point velocities
+#ifdef GmshOutput_velGP
+            LINALG::Matrix<3,1> physpos(true);
+            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);  
+            const bool screen_out = false;
+            int step = params.get<int >("step");
+            const std::string filename = IO::GMSH::GetFileName("velGP", step, screen_out, 0);
+            std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+            gmshfilecontent << "VP(" << scientific << physpos(0) << "," << physpos(1) << "," << physpos(2) << ")";
+            gmshfilecontent << "{" << scientific << gpvelnp(0) << "," << gpvelnp(1) << "," << gpvelnp(2) << "};" << endl;
+            gmshfilecontent.close();
+#endif          
+            
             // get bodyforce in gausspoint
 //            LINALG::Matrix<3,1> bodyforce;
 //            bodyforce = 0.0;

@@ -999,6 +999,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   // Gmsh output on gausspoint
+  //#define GmshOutput_velGP 
   //#define GmshOutput_presGP 
   
   {
@@ -1140,12 +1141,22 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 
   while (stopnonliniter==false)
   {
-    
-    //only for Gmsh presGP output   
-#ifdef GmshOutput_presGP
-    std::cout << "writing gmsh output" << std::endl;
+    // only for GP velocities gmsh output
+#ifdef GmshOutput_velGP
+    std::cout << "writing GP velocities gmsh output" << std::endl;
     const bool screen_out_eps = false;
-    
+    if (discret_->Comm().NumProc()>1) dserror("ERROR: GP gmsh output only for one processor case");
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("velGP", step_, 350, screen_out_eps, 0);
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent << "View \" " << "velGP" << " \" {\n";
+    gmshfilecontent.close();   
+#endif
+
+    // only for GP pressure gmsh output (Shadan, Jeffrey-Hamel flow)
+#ifdef GmshOutput_presGP
+    std::cout << "writing GP pressure gmsh output" << std::endl;
+    const bool screen_out_eps = false;
+    if (discret_->Comm().NumProc()>1) dserror("ERROR: GP gmsh output only for one processor case");
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("presGP", step_, 350, screen_out_eps, 0);
     std::ofstream gmshfilecontent(filename.c_str());
     gmshfilecontent << "View \" " << "preGP" << " \" {\n";
@@ -1231,6 +1242,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("L2",L2);
 
       //only for Gmsh presGP output
+#ifdef GmshOutput_velGP
+        eleparams.set("step",step_);
+#endif
 #ifdef GmshOutput_presGP
         eleparams.set("step",step_);
 #endif
@@ -1580,7 +1594,15 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     }
    }
   
-    //only for Gmsh presGP output
+    //only for Gmsh GP output
+#ifdef GmshOutput_velGP
+      const bool screen_out = false;
+      const std::string filename = IO::GMSH::GetFileName("velGP", step_, screen_out, 0); 
+      std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
+      gmshfilecontent << "};\n";
+      gmshfilecontent.close();  
+#endif   
+      
 #ifdef GmshOutput_presGP
       const bool screen_out = false;
       const std::string filename = IO::GMSH::GetFileName("presGP", step_, screen_out, 0); 
