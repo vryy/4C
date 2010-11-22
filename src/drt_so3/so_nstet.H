@@ -40,19 +40,22 @@ using namespace Teuchos;
 #include "Epetra_Time.h"
 
 //#define PRINT_NSTET            ///< printout of setup
-//#define NSTET_TIMINGS            ///< printout timings
 #define NSTET_NUMGREEDY   2      ///< number of sweeps of greedy patching
-#define MIS_MIN_PATCHSIZE 1      ///< minimum MIS patch size required
+#define MIS_MIN_PATCHSIZE 2      ///< minimum MIS patch size required
 
 // stabilization approach & parameters
 //#define PUSOSOLBERG              ///< run the Puso&Solberg tet
-#define ALPHA_NSTET       0.20   ///< stabilization parameter for vol-dev split stabilization
+#define ALPHA_NSTET       0.20   ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 #define BETA_NSTET        0.9    ///< stabilization parameter for MIS-pressure stabilization
 
-// make sure beta is off for puso tet
+// make parameters match for puso&solberg tet
 #ifdef PUSOSOLBERG
 #undef  BETA_NSTET
 #define BETA_NSTET        0.0    ///< beta has to be zero in puso&solberg tet
+#undef MIS_MIN_PATCHSIZE
+#define MIS_MIN_PATCHSIZE 1
+#undef NSTET_NUMGREEDY
+#define NSTET_NUMGREEDY   5
 #endif
 
 namespace DRT
