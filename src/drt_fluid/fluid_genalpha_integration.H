@@ -453,8 +453,15 @@ public:
   \brief return velocity and pressure solutions at
          intermediate time step n+alpha_F
 
+         We have to ensure, that the current velnp value is used for
+         determination of an intermediate velocity before it is provided to
+         the outer world
   */
-  Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
+  Teuchos::RCP<Epetra_Vector> Velaf()
+    {
+      GenAlphaComputeIntermediateSol();
+      return velaf_;
+    }
 
   /*!
   \brief return previous velocity and pressure solutions

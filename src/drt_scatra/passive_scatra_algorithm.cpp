@@ -94,7 +94,11 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
 {
   // solve nonlinear Navier-Stokes system
-  FluidField().NonlinearSolve();
+  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+    FluidField().MultiCorrector();
+  else
+    FluidField().NonlinearSolve();
+
   return;
 }
 
@@ -109,19 +113,31 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   }
 
   // transfer convective velocity to scalar transport field solver
-  if (ScaTraField().MethodName()== INPAR::SCATRA::timeint_gen_alpha)
+  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  {
     ScaTraField().SetVelocityField(
-        FluidField().Velnp(),
-        Teuchos::null,  // TODO: feed in correct vector for gen. alpha!
+        FluidField().Velaf(),
+        Teuchos::null, // no support for subgrid velocity at the moment!
         Teuchos::null,
         FluidField().Discretization());
+  }
+  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+  {
+    ScaTraField().SetVelocityField(
+        FluidField().Velaf(),
+        FluidField().Accam(),
+        Teuchos::null,
+        FluidField().Discretization());;
+  }
   else
+  {
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
         FluidField().Hist(),
         Teuchos::null,
         FluidField().Discretization()
     );
+  }
 
   // solve the linear convection-diffusion equation(s)
   ScaTraField().Solve();
