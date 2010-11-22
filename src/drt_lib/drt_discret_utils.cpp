@@ -79,6 +79,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_sosh8:
     case DRT::Element::element_so_hex8:
+    case DRT::Element::element_so_hex8fbar:
     case DRT::Element::element_so_hex20:
     case DRT::Element::element_so_hex27:
     case DRT::Element::element_so_nurbs27:
