@@ -532,73 +532,206 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
 
       const double stc_fact = params.get<double>("stc_factor");
 
+      const int stc_layer = params.get<int>("stc_layer");
+
       if (stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-        DRT::Node** nodes = Nodes();
-        for (int i=0; i<NUMNOD_SOH8; ++i)
-        {
-          const double* x = nodes[i]->X();
-
-          xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
-          xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
-          xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
-        }
-
-        LINALG::Matrix<NUMDOF_,NUMDOF_> TotJac(true);
-        LINALG::Matrix<NUMDOF_,NUMDOF_> TotJacInv(true);
-        vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
-        for(int i=0; i<NUMNOD_SOH8; i++)
-        {
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac(true);
-          jac.Multiply(derivs_X[i],xcurr);
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jacInv(jac);
-          LINALG::FixedSizeSerialDenseSolver<NUMDIM_SOH8,NUMDIM_SOH8,1> solve_for_inverseJ;
-
-          solve_for_inverseJ.SetMatrix(jacInv);
-          int err2 = solve_for_inverseJ.Factor();
-          int err = solve_for_inverseJ.Invert();
-          if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
-
-          for (int k=0; k<NUMDIM_SOH8; k++)
-            for (int l=0; l<NUMDIM_SOH8; l++)
-            {
-              TotJac(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jac(k,l);
-              TotJacInv(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jacInv(k,l);
-            }
-          TotJac(i*NUMDIM_SOH8+3,i*NUMDIM_SOH8+3) = 1.0;
-          TotJacInv(i*NUMDIM_SOH8+3,i*NUMDIM_SOH8+3) = 1.0;
-        }
-
-
-        for(int ind1=0; ind1< NUMDOF_; ind1++)
-        {
-          elemat1(ind1,ind1)+=1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact);
-          if (ind1<NUMDOF_/2)
-          {
-            elemat1(ind1,ind1+16)+=(stc_fact-1.0)/(2.0*stc_fact);
-            elemat1(ind1+16,ind1)+=(stc_fact-1.0)/(2.0*stc_fact);
-          }
-        }
-
-        LINALG::Matrix<NUMDOF_,NUMDOF_> tmp;
-        tmp.Multiply(TotJacInv,elemat1);
-        elemat1.Multiply(tmp,TotJac);
+        dserror("STC in material configuration in Sosh8p8 not implemented!");
       }
       else
       {
-        for(int ind1=0; ind1< NUMDOF_; ind1++)
+
+        LINALG::Matrix<NUMDOF_,1> adjele(true);
+        DRT::Node** nodes = Nodes();
+
+        vector<DRT::Condition*> cond0;
+        int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
+        bool current0 = false; // layer with nodes 0..4 to be scaled
+        (nodes[0])->GetCondition("STC Layer",cond0);
+        vector<DRT::Condition*> cond1;
+        int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
+        bool current1 = false; // minimun STCid of layer with nodes 4..7
+        (nodes[NUMNOD_/2])->GetCondition("STC Layer",cond1);
+
+        for (unsigned int conu = 0; conu < cond0.size(); ++conu)
         {
-          elemat1(ind1,ind1)+=1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact);
-          if (ind1<NUMDOF_/2)
+          int tmp = cond0[conu]->GetInt("ConditionID");
+          if (tmp < condnum0)
+            condnum0 = tmp;
+        }
+        if (condnum0 == stc_layer)
+          current0 = true;
+
+
+        for (unsigned int conu = 0; conu < cond1.size(); ++conu)
+        {
+          int tmp = cond1[conu]->GetInt("ConditionID");
+          if (tmp < condnum1)
+            condnum1 = tmp;
+        }
+        if (condnum1 == stc_layer)
+          current1 = true;
+
+        // both surfaces are to be scaled
+        if (current0 and current1)
+        {
+          // only valid for first round
+          if (condnum0 != 1)
+            dserror("STC error: non-initial layer is not connected to a smaller id");
+          else
           {
-            elemat1(ind1,ind1+16)+=(stc_fact-1.0)/(2.0*stc_fact);
-            elemat1(ind1+16,ind1)+=(stc_fact-1.0)/(2.0*stc_fact);
+            for(int i=0; i<NUMNOD_; i++)
+            {
+              adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+            }
+
+            for(int ind1=0; ind1< NUMNOD_/2; ind1++)
+            {
+              for (int ind2 = 0; ind2 < NUMDIM_; ind2++)
+              {
+                elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
+                    (1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
+                elemat1(NODDOF_ * ind1 + ind2+NUMDOF_/2,NODDOF_ * ind1 + ind2+NUMDOF_/2) +=
+                    (1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(NODDOF_ * ind1 + ind2+NUMDOF_/2,0)*cond1.size();
+                elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2 + NUMDOF_/2) +=
+                    (stc_fact-1.0)/(2.0*stc_fact)/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
+                elemat1(NODDOF_ * ind1 + ind2 + NUMDOF_/2, NODDOF_ * ind1 + ind2) +=
+                    (stc_fact-1.0)/(2.0*stc_fact)/adjele(NODDOF_ * ind1 + ind2 + NUMDOF_/2, 0)*cond1.size();
+              }
+              elemat1(NODDOF_ * ind1 + NUMDIM_, NODDOF_ * ind1 + NUMDIM_) += 1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0)*cond0.size();
+              elemat1(NODDOF_ * ind1 + NUMDIM_ + NUMDOF_/2, NODDOF_ * ind1 + NUMDIM_ + NUMDOF_/2) +=
+                  1.0/adjele(NODDOF_ * ind1 + NUMDIM_ + NUMDOF_/2,0)*cond1.size();
+            }
+          }
+        }
+        // surface with nodes 0..3 is to be scaled
+        else if (current0)
+        {
+          //but not by this element
+          if (condnum1 > condnum0)
+          {
+            for(int i=0; i<NUMNOD_; i++)
+            {
+              adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+            }
+
+            for(int ind1=NUMNOD_/2; ind1< NUMNOD_; ind1++)
+            {
+              for (int ind2 = 0; ind2 < NODDOF_; ind2++)
+              {
+                elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
+                    1.0/adjele(NODDOF_ * ind1 + ind2, 0);
+              }
+            }
+          }
+          // this element has to do the whole scaling
+          else if (condnum1 < condnum0)
+          {
+            for(int i=0; i<NUMNOD_; i++)
+            {
+              adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+            }
+
+            for(int ind1=0; ind1< NUMNOD_; ind1++)
+            {
+              for (int ind2 = 0; ind2 < NUMDIM_; ind2++)
+              {
+                if (ind1<NUMNOD_/2)
+                {
+                  elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2)+=
+                      (1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
+                  elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2 + NUMDOF_/2)+=
+                      (1.0-1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
+                }
+                else
+                {
+                  elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
+                      1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0);
+                }
+              }
+              elemat1(NODDOF_ * ind1 + NUMDIM_, NODDOF_ * ind1 + NUMDIM_) +=
+                  1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0);
+            }
+          }
+        }
+        // surface with nodes 4..7 is to be scaled
+        else if (current1)
+        {
+          //but not by this element
+          if (condnum0 > condnum1)
+          {
+            for(int i=0; i<NUMNOD_; i++)
+            {
+              adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+            }
+
+            for(int ind1=0; ind1< NUMNOD_/2; ind1++)
+            {
+              for (int ind2 = 0; ind2 < NODDOF_; ind2++)
+              {
+                elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
+                    1.0/adjele(NODDOF_ * ind1 + ind2, 0);
+              }
+            }
+          }
+          // this element has to do the whole scaling
+          else if (condnum0 < condnum1)
+          {
+            for(int i=0; i<NUMNOD_; i++)
+            {
+              adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+              adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+            }
+
+            for(int ind1=0; ind1< NUMNOD_; ind1++)
+            {
+              for (int ind2 = 0; ind2 < NUMDIM_; ind2++)
+              {
+                if (ind1>=NUMNOD_/2)
+                {
+                  elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2)+=
+                      (1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
+                  elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2-NUMDOF_/2)+=
+                      (1.0-1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
+                }
+                else
+                {
+                  elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
+                      1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0);
+                }
+              }
+              elemat1(NODDOF_ * ind1 + NUMDIM_, NODDOF_ * ind1 + NUMDIM_) +=
+                  1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0);
+            }
+          }
+        }
+
+        else
+        {
+          for(int i=0; i<NUMNOD_; i++)
+          {
+            adjele(NODDOF_ * i + 0, 0) = nodes[i]->NumElement();
+            adjele(NODDOF_ * i + 1, 0) = nodes[i]->NumElement();
+            adjele(NODDOF_ * i + 2, 0) = nodes[i]->NumElement();
+            adjele(NODDOF_ * i + 3, 0) = nodes[i]->NumElement();
+          }
+          for(int ind1=0; ind1< NUMDOF_; ind1++)
+          {
+            elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
           }
         }
       }

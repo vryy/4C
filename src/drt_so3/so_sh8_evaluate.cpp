@@ -522,14 +522,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
             }
             for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
             {
-
-//              if (ind1<NUMDOF_SOH8/2)
-              {
-                elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0)*cond0.size();
-                elemat1(ind1+NUMDOF_SOH8/2,ind1+NUMDOF_SOH8/2)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
-                elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0)*cond0.size();
-                elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
-              }
+              elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0)*cond0.size();
+              elemat1(ind1+NUMDOF_SOH8/2,ind1+NUMDOF_SOH8/2)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
+              elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0)*cond0.size();
+              elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
             }
           }
         }
@@ -576,7 +572,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
             }
           }
         }
-        // surface with nodes 0..3 is to be scaled
+        // surface with nodes 4..7 is to be scaled
         else if (current1)
         {
           //but not by this element
