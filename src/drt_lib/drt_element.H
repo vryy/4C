@@ -138,7 +138,7 @@ public:
   public:
 
     /// clear all vectors
-    void Clear() { lm_.clear(); lmdirich_.clear(); lmowner_.clear(); }
+    void Clear() { lm_.clear(); lmdirich_.clear(); lmowner_.clear(); stride_.clear(); }
 
     /// return number of dofs collected
     int Size() const { return lm_.size(); }
@@ -151,6 +151,9 @@ public:
 
     /// Owner of dof (that is owner of node or element the dof belongs to)
     vector<int> lmowner_;
+    
+    /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
+    vector<int> stride_;
   };
 
 
