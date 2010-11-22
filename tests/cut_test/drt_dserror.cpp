@@ -42,12 +42,12 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "drt_dserror.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../../src/drt_lib/standardtypes_cpp.H"
 
 #ifdef THROWELEMENTERRORS
 
 #include "drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+#include "../../src/drt_io/io_control.H"
 
 
 static bool elementcall = false;
