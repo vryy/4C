@@ -221,12 +221,30 @@ class SparseMatrix : public SparseMatrixBase
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     virtual void Assemble(int eid,
+                          const std::vector<int>& lmstride,
+                          const Epetra_SerialDenseMatrix& Aele,
+                          const std::vector<int>& lm,
+                          const std::vector<int>& lmowner)
+    {
+      Assemble(eid,lmstride,Aele,lm,lmowner,lm);
+    }
+
+    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    virtual void Assemble(int eid,
                           const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner)
     {
       Assemble(eid,Aele,lm,lmowner,lm);
     }
+
+    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    void Assemble(int eid,
+                  const std::vector<int>& lmstride,
+                  const Epetra_SerialDenseMatrix& Aele,
+                  const std::vector<int>& lmrow,
+                  const std::vector<int>& lmrowowner,
+                  const std::vector<int>& lmcol);
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     void Assemble(int eid,

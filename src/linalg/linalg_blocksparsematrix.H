@@ -315,6 +315,18 @@ public:
 
   Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access);
 
+  /// just a dummy that switches from strided assembly to standard assembly
+  void Assemble(int eid,
+      const std::vector<int>& lmstride,
+      const Epetra_SerialDenseMatrix& Aele,
+      const std::vector<int>& lmrow,
+      const std::vector<int>& lmrowowner,
+      const std::vector<int>& lmcol)
+  {
+    const int myrank = Comm().MyPID();
+    Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
+  }
+
   void Assemble(int eid,
       const Epetra_SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow,

@@ -349,7 +349,168 @@ void LINALG::SparseMatrix::Reset()
   graph_ = Teuchos::null;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Assemble(
+    int eid,
+    const std::vector<int>& lmstride,
+    const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner,
+    const std::vector<int>& lmcol)
+{
+#if 0 // return to standard assembly
 
+  Assemble(eid,Aele,lmrow,lmrowowner,lmcol);
+  
+#else // do strided assembly where possible
+
+  const int lrowdim = (int)lmrow.size();
+  const int lcoldim = (int)lmcol.size();
+#ifdef DEBUG
+  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
+    dserror("Mismatch in dimensions");
+#endif
+
+  const int myrank = sysmat_->Comm().MyPID();
+  const Epetra_Map& rowmap = sysmat_->RowMap();
+  const Epetra_Map& colmap = sysmat_->ColMap();
+
+  //-----------------------------------------------------------------------------------
+  Epetra_SerialDenseMatrix& A = (Epetra_SerialDenseMatrix&)Aele;
+  if (sysmat_->Filled()) // assembly in local indices
+  {
+#ifdef DEBUG
+    // There is the case of nodes without dofs (XFEM).
+    // If no row dofs are present on this proc, their is nothing to assemble.
+    // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
+    bool doit = false;
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+      if (lmrowowner[lrow] == myrank)
+      {
+        doit = true;
+        break;
+      }
+    if (!doit) return;
+#endif
+
+    std::vector<double> values(lcoldim);
+    std::vector<int> localcol(lcoldim);
+    for (int lcol=0; lcol<lcoldim; ++lcol)
+    {
+      const int cgid = lmcol[lcol];
+      localcol[lcol] = colmap.LID(cgid);
+#ifdef DEBUG
+      if (localcol[lcol]<0) dserror("Sparse matrix A does not have global column %d",cgid);
+#endif
+    }
+
+    // loop rows of local matrix
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+    {
+      // check ownership of row
+      if (lmrowowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      const int rgid = lmrow[lrow];
+
+      // if we have a Dirichlet map check if this row is a Dirichlet row
+      if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) ) continue;
+
+      const int rlid = rowmap.LID(rgid);
+
+#ifdef DEBUG
+      if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
+#endif
+      int length;
+      double* valview;
+      int* indices;
+#ifdef DEBUG
+      int err = 
+#endif
+      sysmat_->ExtractMyRowView(rlid,length,valview,indices);
+#ifdef DEBUG
+      if (err) dserror("Epetra_CrsMatrix::ExtractMyRowView returned error code %d",err);
+#endif
+      const int numnode = (int)lmstride.size();
+      int dofcount=0;      
+      for (int node=0; node<numnode; ++node)
+      {
+        int* loc = std::lower_bound(indices,indices+length,localcol[dofcount]);
+#ifdef DEBUG
+        if (*loc != localcol[dofcount]) dserror("Cannot find local column entry %d",localcol[dofcount]);
+#endif
+        int pos = loc-indices;
+        const int stride = lmstride[node];
+        // test continuity of data in sparsematrix
+        bool continuous = true;
+        for (int j=1; j<stride; ++j)
+          if (indices[pos+j] == localcol[dofcount+j]) continue;
+          else
+          {
+            continuous = false;
+            break;
+          }
+          
+        if (continuous)
+        {
+          for (int j=0; j<stride; ++j)
+            valview[pos++] += Aele(lrow,dofcount++);
+        }
+        else
+        {
+          for (int j=0; j<stride; ++j)
+          {
+#ifdef DEBUG
+            const int errone = 
+#endif
+            sysmat_->SumIntoMyValues(rlid,1,&A(lrow,dofcount),&localcol[dofcount]);
+            dofcount++;  
+#ifdef DEBUG
+            if (errone) dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+#endif
+          }
+        }
+      } // for (int node=0; node<numnode; ++node)
+    } // for (int lrow=0; lrow<ldim; ++lrow)
+  }
+  //-----------------------------------------------------------------------------------
+  else // assembly in global indices
+  {
+    // loop rows of local matrix
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+    {
+      // check ownership of row
+      if (lmrowowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      const int rgid = lmrow[lrow];
+#ifdef DEBUG
+      if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
+#endif
+
+      // if we have a Dirichlet map check if this row is a Dirichlet row
+      if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) ) continue;
+
+      for (int lcol=0; lcol<lcoldim; ++lcol)
+      {
+        int cgid = lmcol[lcol];
+        // Now that we do not rebuild the sparse mask in each step, we
+        // are bound to assemble the whole thing. Zeros included.
+        const int errone = sysmat_->SumIntoGlobalValues(rgid,1,&A(lrow,lcol),&cgid);
+        if (errone>0)
+        {
+          const int errtwo = sysmat_->InsertGlobalValues(rgid,1,&A(lrow,lcol),&cgid);
+          if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+        }
+        else if (errone)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+      } // for (int lcol=0; lcol<lcoldim; ++lcol)
+    } // for (int lrow=0; lrow<lrowdim; ++lrow)
+  }
+#endif  
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -505,7 +666,7 @@ void LINALG::SparseMatrix::FEAssemble(
       }
       const int errone = fe_mat->SumIntoGlobalValues(1, &rgid, lcoldim, &lmcol[0], &values[0], Epetra_FECrsMatrix::COLUMN_MAJOR );
       if (errone)
-        dserror("Epetra_FECrsMatrix::SumIntoMyValues returned error code %d",errone);
+        dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d",errone);
     } // for (int lrow=0; lrow<ldim; ++lrow)
   }
   else

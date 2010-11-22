@@ -2035,7 +2035,8 @@ namespace LINALG
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
-      if (det > -1e-30 and det < 1e-30) dserror("Determinant of 3x3 matrix is zero");
+      if (det > -1e-30 and det < 1e-30) 
+        dserror("Determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0/det;
       out[0    ] *= invdet;
       out[1    ] *= invdet;
