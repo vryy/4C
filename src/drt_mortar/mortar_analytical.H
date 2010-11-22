@@ -72,7 +72,7 @@ namespace MORTAR
 	{
 		//----------------------------------------------------------------------
 		// 3D beam bending solution
-  	// (see Timoshenko and Goodier, Theory of Elasticity, 1970, page 284)
+  	// (see Timoshenko and Goodier, Theory of Elasticity, 1970, p. 284)
 		//----------------------------------------------------------------------
 		if (MORTARANALYTICALSOL==1)
 		{
@@ -116,7 +116,7 @@ namespace MORTAR
 			// model parameters
 			double a = 0.9;
 			double b = 1.1;
-      double pa = 1.0;
+      double pi = 1.0;
       double nu = 0.3;
       double E = 1.0;
 
@@ -154,7 +154,7 @@ namespace MORTAR
 			Jinv(2,2) =  0.0;
 
 			// solution coefficients
-			double B = (pa*(1+nu)*(1-2*nu)*a*a*a*b*b*b) / (E*(1+nu)*a*a*a + 2*E*(1-2*nu)*b*b*b);
+			double B = (pi*(1+nu)*(1-2*nu)*a*a*a*b*b*b) / (E*(1+nu)*a*a*a + 2*E*(1-2*nu)*b*b*b);
 			double A = -B / (b*b*b);
 
 			// displacements
