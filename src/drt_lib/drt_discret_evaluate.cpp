@@ -75,8 +75,8 @@ void DRT::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(
-                        Teuchos::ParameterList&              params,
-                        DRT::AssembleStrategy & strategy )
+                        Teuchos::ParameterList& params,
+                        DRT::AssembleStrategy&  strategy )
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
@@ -144,8 +144,8 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();
-      strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lmowner_);
-      strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_);
+      strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
+      strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
       strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
       strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
@@ -160,7 +160,8 @@ void DRT::Discretization::Evaluate(
 #endif
 
   } // for (int i=0; i<numcolele; ++i)
-
+  
+  
 #ifdef THROWELEMENTERRORS
   ExitElementLoop();
 #endif
