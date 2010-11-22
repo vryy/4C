@@ -97,22 +97,24 @@ namespace DRT
     /// Asseble to matrix 1
     void AssembleMatrix1(int eid,
                          const std::vector<int>& lm,
-                         const std::vector<int>& lmowner)
+                         const std::vector<int>& lmowner,
+                         const std::vector<int>& lmstride)
     {
       if ( Assemblemat1() )
       {
-        Assemble( *systemmatrix1_, eid, elematrix1_, lm, lmowner );
+        Assemble( *systemmatrix1_, eid, lmstride, elematrix1_, lm, lmowner );
       }
     }
 
     /// Asseble to matrix 2
     void AssembleMatrix2(int eid,
                          const std::vector<int>& lm,
-                         const std::vector<int>& lmowner)
+                         const std::vector<int>& lmowner,
+                         const std::vector<int>& lmstride)
     {
       if ( Assemblemat2() )
       {
-        Assemble( *systemmatrix2_, eid, elematrix2_, lm, lmowner );
+        Assemble( *systemmatrix2_, eid, lmstride, elematrix2_, lm, lmowner );
       }
     }
 
@@ -147,9 +149,10 @@ namespace DRT
 
     //! @name General Purpose Assembly Methods
 
-    /// Assemble to given matrix
+    /// Assemble to given matrix using nodal stride
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
+                          const std::vector<int>& lmstride,
                           const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner);
