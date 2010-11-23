@@ -1550,11 +1550,17 @@ if (D_EXODUS)
   target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 endif (D_EXODUS)
 
+###------------------------------------------------------------------ Tests
+
+ENABLE_TESTING()
+include(CTest)
+
 ###------------------------------------------------------------------ Unit Tests
 
 if (QHULL)
   add_executable(cut_test ${OBJS_CUT_TEST})
   target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
+  add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 endif (QHULL)
 
 if (STKADAPTIVE)
@@ -1565,37 +1571,31 @@ if (STKADAPTIVE)
 
   add_executable(stk_test_change_owner tests/stk_test/stk_test_change_owner.cpp)
   target_link_libraries(stk_test_change_owner stk_test_utils ${LIBRARIES})
+  add_test(NAME run_stk_test_change_owner COMMAND $<TARGET_FILE:stk_test_change_owner>)
 
   add_executable(stk_test_corner1 tests/stk_test/stk_test_corner1.cpp)
   target_link_libraries(stk_test_corner1 stk_test_utils ${LIBRARIES})
+  add_test(NAME run_stk_test_corner1 COMMAND $<TARGET_FILE:stk_test_corner1>)
 
   add_executable(stk_test_corner2 tests/stk_test/stk_test_corner2.cpp)
   target_link_libraries(stk_test_corner2 stk_test_utils ${LIBRARIES})
+  add_test(NAME run_stk_test_corner2 COMMAND $<TARGET_FILE:stk_test_corner2>)
 
   add_executable(stk_test_ghosttoshared tests/stk_test/stk_test_ghosttoshared.cpp)
   target_link_libraries(stk_test_ghosttoshared stk_test_utils ${LIBRARIES})
+  add_test(NAME run_stk_test_ghosttoshared COMMAND $<TARGET_FILE:stk_test_ghosttoshared>)
 
   add_executable(stk_test_ownership tests/stk_test/stk_test_ownership.cpp)
   target_link_libraries(stk_test_ownership stk_test_utils ${LIBRARIES})
+  add_test(NAME run_stk_test_ownership COMMAND $<TARGET_FILE:stk_test_ownership>)
 
   add_executable(stk_test_ownership2 tests/stk_test/stk_test_ownership2.cpp)
   target_link_libraries(stk_test_ownership2 stk_test_utils ${LIBRARIES})
-
-#  add_executable (stk_test
-#    src/stk_test/stk_test.cpp
-#    )
-#  target_link_libraries (stk_test 
-#    stk_drt_lib
-#    stk_refine
-#    ${LIBRARIES}
-#    )
+  add_test(NAME run_stk_test_ownership2 COMMAND $<TARGET_FILE:stk_test_ownership2>)
 
 endif (STKADAPTIVE)
 
 ###------------------------------------------------------------------ Test definitions
-
-ENABLE_TESTING()
-include(CTest)
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
