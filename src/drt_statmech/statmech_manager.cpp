@@ -53,15 +53,12 @@ using namespace LARGEROTATIONS;
  *----------------------------------------------------------------------*/
 StatMechManager::StatMechManager(ParameterList& params, DRT::Discretization& discret):
 statmechparams_( DRT::Problem::Instance()->StatisticalMechanicsParams() ),
-konswitch_(false),
-nsearch_(0),
 unconvergedsteps_(0),
 starttimeoutput_(-1.0),
 endtoendref_(0.0),
 istart_(0),
 basisnodes_(discret.NumGlobalNodes()),
 basiselements_(discret.NumGlobalElements()),
-currentelements_(discret.NumGlobalElements()),
 outputfilenumber_(-1),
 normalgen_(0,1),
 discret_(discret)
@@ -381,34 +378,9 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 				currrot(2) = discol[discret_.DofColMap()->LID(dofnode[5])];
 			}
 
-			/*/ debugging cout
-			for(int j=0; j<(int)currpos.M(); j++)
-				if(currpos(j)<0.0 || currpos(j)>statmechparams_.get<double>("PeriodLength", 0.0))
-					cout<<"Proc "<<discret_.Comm().MyPID()<<": currpos(discol["<<i<<"] = "<<currpos<<endl;
-
-			if(node->Id()==4496 || node->Id()==2146)
-			{
-				std::cout<<"\n\noutput for currpos:\n";
-
-				std::cout<<"\ncurrpos in Id = "<<node->Id()<<": "<<currpos;
-				std::cout<<"\nnode->X() in Id = "<<node->Id()<<":";
-				for(int zz=0; zz<3; zz++)
-					std::cout<<"  "<<node->X()[zz];
-
-				std::cout<<"\ndiscol[discret_.DofColMap()->LID(dofnode[0])] in Id = "<<node->Id()<<":";
-				for(int zz=0; zz<3; zz++)
-					std::cout<<"  "<<discol[discret_.DofColMap()->LID(dofnode[zz])];
-
-				std::cout<<"\n\n";
-			}*/
-
 			currentpositions[node->LID()] = currpos;
 			currentrotations[node->LID()] = currrot;
 		}
-
-
-		//number of elements in this time step before adding or deleting any elements
-		currentelements_ = discret_.NumGlobalElements();
 
 		// set crosslinkers, i.e. considering crosslink molecule diffusion
     SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations);
@@ -416,9 +388,6 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
     discret_.CheckFilledGlobally();
     discret_.FillComplete(true, false, false);
     SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
-    discret_.CheckFilledGlobally();
-    discret_.FillComplete(true, false, false);
-
 
 		/*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
 		 *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
@@ -439,25 +408,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 	cout << "\n***\ntotal time: " << Delta_t<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 
-	// test cout
-	/*for(int i=0; i<discret_.NumMyColNodes(); i++)
-	{
-		for(int proc=0; proc<discret_.Comm().NumProc(); proc++)
-		{
-			if(proc==discret_.Comm().MyPID())
-			{
-				DRT::Node *node = discret_.lColNode(i);
-				if(node->NumElement()>2+statmechparams_.get<int>("N_CROSSMAX",0))
-				{
-					cout<<"Proc "<<discret_.Comm().MyPID()<<": nodeLID = "<<i<<", "<<node->NumElement()<<" elements: ";
-					for(int j=0; j<node->NumElement(); j++)
-						cout<<node->Elements()[j]->Id()<<" ";
-					cout<<endl;
-				}
-			}
-			discret_.Comm().Barrier();
-		}
-	}*/
+
 	return;
 } // StatMechManager::Update()
 
@@ -948,9 +899,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
 
-	// update the number of times the function SearchNeighbours has already been called
-	nsearch_++;
-
 	double t_search = Teuchos::Time::wallTime();
 	/*preliminaries*/
 
@@ -1027,13 +975,14 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	if(discret_.Comm().MyPID()==0)
 	{
-		//cout<<*neighbourslid<<endl;
+
 		// obtain a random order in which the crosslinkers are addressed
 		std::vector<int> order = Permutation(statmechparams_.get<int>("N_crosslink", 0));
 
 		for(int i=0; i<numbond_->MyLength(); i++)
 		{
 			int irandom = order[i];
+
 
 			// skip this crosslink molecule if it already bonded with two nodes or if it is passive
 			if((*numbond_)[irandom]>1.9)
@@ -1048,6 +997,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			{
 				// random index
 				int index = neighbourorder[j];
+
+
+
 				// continue, if neighbourslid entry is '-2', meaning empty
 				if((*neighbourslid)[index][irandom] < -1.9)
 					continue;
@@ -1069,7 +1021,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				else
 					probability = pself;
 
-				if(uniformclosedgen_.random() < probability)
+				if( uniformclosedgen_.random() < probability )
 				{
 					int free = 0;
 					int occupied = 0;
@@ -1214,23 +1166,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	doublebondtrans.Export(doublebond, crosslinkexporter, Add);
 	doublebond.Import(doublebondtrans, crosslinkimporter, Insert);
 
-	/*/ check numcrossnodes for correct values
-	Epetra_Vector check(*crosslinkermap_, true);
-	Epetra_Vector checktrans(*transfermap_, true);
-
-	checktrans.Export(*numbond_,crosslinkexporter, Add);
-	check.Import(checktrans, crosslinkimporter, Insert);
-
-	if(discret_.Comm().MyPID()==1)
-		for(int i=0; i<check.MyLength(); i++)
-			if((int)check[i] % discret_.Comm().NumProc()!=0)
-				dserror("wrong communication of numbond");*/
-
-	// debug couts
-	//cout<<*crosslinkerpositions_<<endl;
-	//cout<<*crosslinkerbond_<<endl;
-	//cout<<*numbond_<<endl;
-	//cout<<doublebond<<endl;
 
 	std::vector<int> crosslinkerids;
 	// ADDING ELEMENTS
@@ -1299,15 +1234,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 						rotrefe[k+3] = (rot0->second)(k);
 					}
 				}
-				/*/ test cout of the length
-				LINALG::Matrix<3,1> length;
-				cout<<"xrefe="<<endl;
-				for(int k=0; k<3; k++)
-				{
-					length(k) = xrefe[k+3]-xrefe[k];
-					cout<<xrefe[k]<<","<<xrefe[k+3]<<endl;
-				}
-				cout<<"SetNSearch: length = "<<length.Norm2()<<endl;*/
 
 				if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
 				{
@@ -1329,8 +1255,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 					newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
 
 					//add element to discretization
+					addedelements_.push_back(newcrosslinkerGID);
+			    std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": added element "<<newcrosslinkerGID<<"\n";
 					discret_.AddElement(newcrosslinker);
-					//cout<<"Proc "<<discret_.Comm().MyPID()<<": ADDED GID = "<<newcrosslinkerGID<<", numbond = "<<(*numbond_)[i]<<endl;
 				}
 				else
 				{
@@ -1346,7 +1273,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 					//correct reference configuration data is computed for the new crosslinker element;
 					newcrosslinker->SetUpReferenceGeometry(xrefe);
 
-					//add new element to discretization
+					//add new element to discretization and list this event in addedelements_
+					addedelements_.push_back(newcrosslinkerGID);
+					std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": added element "<<newcrosslinkerGID<<"\n";
 					discret_.AddElement(newcrosslinker);
 				}
 			}
@@ -1532,17 +1461,17 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	delcrosslinkerstrans.Export(delcrosslinkers, crosslinkexporter, Add);
 	delcrosslinkers.Import(delcrosslinkerstrans, crosslinkimporter, Insert);
 
-	// debug couts
-	//cout<<*crosslinkerbond_<<endl;
-	//cout<<*numbond_<<endl;
-	//cout<<delcrosslinkers<<endl;
 
 	// DELETION OF ELEMENTS
-	int delelement = 0;
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
 		{
-			delelement++;
+			//save the element by packing before elimination to make it restorable in case that needed
+			deletedelements_.resize(deletedelements_.size() + 1);
+			discret_.gElement((int)delcrosslinkers[i])->Pack(deletedelements_[deletedelements_.size()-1]);
+
+			std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": deleted element "<<(int)delcrosslinkers[i]<<"\n";
+
 			discret_.DeleteElement( (int)delcrosslinkers[i]);
 		}
 
@@ -1583,10 +1512,7 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 	output.WriteInt("basisnodes", basisnodes_);
 	output.WriteInt("outputfilenumber", outputfilenumber_);
   //note: beginold_,endold_,sumdispmiddle_ not considered; related methods not restartable
-	output.WriteInt("nsearch", nsearch_);
-	output.WriteInt("konswitch", int(konswitch_));
 	output.WriteInt("basiselements", basiselements_);
-	output.WriteInt("currentelements", currentelements_);
 	output.WriteDouble("sumsquareincpar", sumsquareincpar_);
 	output.WriteDouble("sumsquareincort", sumsquareincort_);
 	output.WriteDouble("sumrotmiddle", sumrotmiddle_);
@@ -1646,10 +1572,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 	basisnodes_ = reader.ReadInt("basisnodes");
 	outputfilenumber_ = reader.ReadInt("outputfilenumber");
 	//note: beginold_,endold_,sumdispmiddle_ not considered; related methods not restartable
-	nsearch_ = reader.ReadInt("nsearch");
-	konswitch_ = bool(reader.ReadInt("konswitch"));
 	basiselements_ = reader.ReadInt("basiselements");
-	currentelements_ = reader.ReadInt("currentelements");
 	sumsquareincpar_ = reader.ReadDouble("sumsquareincpar");
 	sumsquareincort_ = reader.ReadDouble("sumsquareincort");
 	sumrotmiddle_ = reader.ReadDouble("sumrotmiddle");
@@ -1695,6 +1618,82 @@ void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& 
 
   return;
 } // StatMechManager::WriteRestartRedundantMultivector()
+
+/*-----------------------------------------------------------------------*
+ | (public) saves all relevant variables *_ as *conv_ to allow  for      |
+ | returning to the beginning of a time step                 cyron 11/10 |
+ *-----------------------------------------------------------------------*/
+void StatMechManager::WriteConv()
+{
+  //save relevant class variables at the very end of the time step
+  crosslinkerpartnerconv_ = rcp(new Epetra_MultiVector(*crosslinkerpartner_));
+  crosslinkerbondconv_ = rcp(new Epetra_MultiVector(*crosslinkerbond_));
+  crosslinkerpositionsconv_ = rcp(new Epetra_MultiVector(*crosslinkerpositions_));
+  numcrosslinkerpartnerconv_ = rcp(new Epetra_Vector(*numcrosslinkerpartner_));
+  numcrossnodesconv_ = rcp(new Epetra_Vector(*numcrossnodes_));
+  numbondconv_ = rcp(new Epetra_Vector(*numbond_));
+  crosslinkonsamefilamentconv_ = rcp(new Epetra_Vector(*crosslinkonsamefilament_));
+  searchforneighboursconv_ = rcp(new Epetra_Vector(*searchforneighbours_));
+
+  //set addedelements_, deletedelements_ empty vectors
+  addedelements_.resize(0);
+  deletedelements_.resize(0);
+
+  return;
+} // StatMechManager::WriteConv()
+
+/*-----------------------------------------------------------------------*
+ | (public) restore state at the beginning of this time step cyron 11/10 |
+ *-----------------------------------------------------------------------*/
+void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff)
+{
+  //restore state at the beginning of time step for relevant class variables
+  crosslinkerpartner_ = rcp(new Epetra_MultiVector(*crosslinkerpartnerconv_));
+  crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
+  crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
+  numcrosslinkerpartner_ = rcp(new Epetra_Vector(*numcrosslinkerpartnerconv_));
+  numcrossnodes_ = rcp(new Epetra_Vector(*numcrossnodesconv_));
+  numbond_ = rcp(new Epetra_Vector(*numbondconv_));
+  crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
+  searchforneighbours_ = rcp(new Epetra_Vector(*searchforneighboursconv_));
+
+  /*restore state of the discretization at the beginning of this time step; note that to this and
+   *adding and deleting crosslinker element has to be undone exactly vice-versa compared to the way
+   *it was done first in order to handle also those crosslinkers correctly added and deleted in one
+   *and the same time step*/
+
+  //loop through all elements deleted in this time step and restore them in the discretization
+  for(int i=0; i<(int)deletedelements_.size(); i++)
+  {
+    DRT::ParObject* o = DRT::UTILS::Factory(deletedelements_[i]);
+    DRT::Element* ele = dynamic_cast<DRT::Element*>(o);
+    if (ele == NULL)
+      dserror("Failed to build an element from the element data");
+    discret_.AddElement(rcp(ele));
+
+
+    std::cout<<"\nRestoreConv on proc "<<discret_.Comm().MyPID()<<" added element "<<ele->Id()<<"\n";
+  }
+  deletedelements_.resize(0);
+
+  //loop through addedelements_, delete all these elements and then set addedelements_ an empty vector
+  for(int i=0; i<(int)addedelements_.size(); i++)
+  {
+    discret_.DeleteElement(addedelements_[i]);
+    std::cout<<"\nRestoreConv on proc "<<discret_.Comm().MyPID()<<": deleted element "<<addedelements_[i]<<"\n";
+  }
+  addedelements_.resize(0);
+
+  /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
+   *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
+   *new element maps and call FillComplete(); finally Crs matrices stiff_ has to be deleted completely and made ready
+   *for new assembly since their graph was changed*/
+  discret_.CheckFilledGlobally();
+  discret_.FillComplete(true, false, false);
+  stiff->Reset();
+
+  return;
+} // StatMechManager::WriteConv()
 
 /*----------------------------------------------------------------------*
  | check for broken element                        (public) mueller 3/10|
@@ -1875,7 +1874,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean, double standarddev, const double &dt)
 {
 	/* Here, the diffusion of crosslink molecules is handled.
-	 * Depending on the number of occupied binding spots of the molecule, its movement
+	 * Depending on the number of occupied binding spots of the molecule, its motion
 	 * is calculated differently.
 	 */
 
@@ -2112,7 +2111,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	numcrossnodes_ = rcp(new Epetra_Vector(*(discret_.NodeColMap()), true));
 
 	return;
-}//StatMechManager::CrosslinkerPosInit
+}//StatMechManager::CrosslinkerMoleculeInit
 
 /*----------------------------------------------------------------------*
  | Periodic Boundary Shift for crosslinker diffusion simulation					|

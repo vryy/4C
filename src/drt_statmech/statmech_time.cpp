@@ -167,13 +167,54 @@ void StatMechTime::Integrate()
 
   for (int i=step; i<nstep; ++i)
   {
-    //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
-    statmechmanager_->SeedRandomGenerators(i + statmechmanager_->unconvergedsteps_);
-
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
     if(i == 0)
       statmechmanager_->InitOutput(ndim,dt);
+
+    //time_ is time at the end of this time step
+    double time = params_.get<double>("total time",0.0);
+    if(time + statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt) > statmechmanager_->statmechparams_.get<double>("STARTTIME", 0.0))
+    {
+      if(statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt)>0.0)
+      {
+        dt = statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt);
+        params_.set("delta time", dt);
+      }
+    }
+    statmechmanager_->time_ = time + dt;
+
+    //save relevant class variables at the beginning of this time step
+    statmechmanager_->WriteConv();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
+    statmechmanager_->SeedRandomGenerators(i);
+
+
+    //processor 0 indicates beginning of new time step on console
+    if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
+      std::cout<<"\nbegin time step "<<i+1<<", first trial:";
+
 
     //set and delete crosslinkers compared to converged configuration of last time step
     const double t_admin = Teuchos::Time::wallTime();
@@ -182,70 +223,124 @@ void StatMechTime::Integrate()
     //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
     {
-      std::cout<<"\nbegin time step "<<i+1<<":";
       std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
       std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
       std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n";
     }
 
+    //assuming that iterations will converge
+    isconverged_ = 1;
 
-			//time_ is time at the end of this time step
-      double time = params_.get<double>("total time",0.0);
-      if(time + statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt) > statmechmanager_->statmechparams_.get<double>("STARTTIME", 0.0))
+    /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
+     *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
+     *for synchrinisation of these random numbers in parallel computing*/
+    RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
+
+    //pay attention: for a constant predictor an incremental velocity update is necessary, which has
+    //been deleted out of the code in oder to simplify it
+
+    //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
+    statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
+
+    ConsistentPredictor(randomnumbers);
+
+    if(ndim ==3)
+      PTC(randomnumbers);
+    else
+      FullNewton(randomnumbers);
+
+    /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
+     *and the state of the discretization to status at the beginning of this time step*/
+
+    ParameterList p;
+    p.set("action","calc_struct_reset_istep");
+    discret_.Evaluate(p,null,null,null,null,null);
+    statmechmanager_->RestoreConv(stiff_);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
+    statmechmanager_->SeedRandomGenerators(i);
+
+
+    //processor 0 indicates beginning of new time step on console
+    if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
+      std::cout<<"\nbegin time step "<<i+1<<":";
+
+    do
+    {
+      //set and delete crosslinkers compared to converged configuration of last time step
+      const double t_admin = Teuchos::Time::wallTime();
+      statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
+
+      //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
+      if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
       {
-      	if(statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt)>0.0)
-      	{
-      		dt = statmechmanager_->statmechparams_.get<double>("DELTA_T_NEW",dt);
-      		params_.set("delta time", dt);
-      	}
+        std::cout<<"\ntime for update of crosslinkers: " << Teuchos::Time::wallTime() - t_admin<< " seconds";
+        std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
+        std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n";
       }
-      statmechmanager_->time_ = time + dt;
 
-      do
+      //assuming that iterations will converge
+      isconverged_ = 1;
+
+      /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
+       *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
+       *for synchrinisation of these random numbers in parallel computing*/
+      RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
+
+      //pay attention: for a constant predictor an incremental velocity update is necessary, which has
+      //been deleted out of the code in oder to simplify it
+
+      //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
+      statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
+
+      ConsistentPredictor(randomnumbers);
+
+      if(ndim ==3)
+        PTC(randomnumbers);
+      else
+        FullNewton(randomnumbers);
+
+      /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
+       *and the state of the discretization to status at the beginning of this time step*/
+      if(isconverged_ == 0)
       {
-        //assuming that iterations will converge
-        isconverged_ = 1;
-
-        /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
-         *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
-         *for synchrinisation of these random numbers in parallel computing*/
-        RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
-
-        //pay attention: for a constant predictor an incremental velocity update is necessary, which has
-        //been deleted out of the code in oder to simplify it
-
-        //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
-        statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
-
-        ConsistentPredictor(randomnumbers);
-
-        if(ndim ==3)
-          PTC(randomnumbers);
-        else
-          FullNewton(randomnumbers);
-
-        /*if iterations have not converged a new trial requires setting all intern element variables to
-         * status at the beginning of this time step*/
-        if(isconverged_ == 0)
-        {
-          ParameterList p;
-          p.set("action","calc_struct_reset_istep");
-          discret_.Evaluate(p,null,null,null,null,null);
-        }
-
+        ParameterList p;
+        p.set("action","calc_struct_reset_istep");
+        discret_.Evaluate(p,null,null,null,null,null);
+        statmechmanager_->RestoreConv(stiff_);
       }
-      while(isconverged_ == 0);
 
-      //periodic shift of configuration at the end of the time step in order to avoid improper output
-      statmechmanager_->PeriodicBoundaryShift(*dism_, ndim, dt);
+    }
+    while(isconverged_ == 0);
 
-      UpdateandOutput();
+    //periodic shift of configuration at the end of the time step in order to avoid improper output
+    statmechmanager_->PeriodicBoundaryShift(*dism_, ndim, dt);
 
-      //special output for statistical mechanics
-      statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
+    UpdateandOutput();
 
+    //special output for statistical mechanics
+    statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
 
-      if (time>=maxtime) break;
+    if (time>=maxtime) break;
   }
 
 

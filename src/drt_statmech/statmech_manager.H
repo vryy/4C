@@ -64,6 +64,12 @@ public:
   //! \brief reading all necessary information after a restart
   void ReadRestart(IO::DiscretizationReader& reader);
 
+  //! \brief saves all relevant variables *_ as *conv_ to allow for returning to the beginning of a time step
+  void WriteConv();
+
+  //! \brief resets all relevant variables *_ to *conv_ in order to return to the state at the beginning of the time step
+  void RestoreConv(RCP<LINALG::SparseOperator>& stiff);
+
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param dt				(in)	current time step size
    *  \param disrow		(in)	current displacement vector
@@ -247,12 +253,6 @@ protected:
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
 	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
 
-  //! \brief switch between different on and off-rates
-  bool konswitch_;
-
-  //! \brief how often SearchNeighbours() has already been called
-  int nsearch_;
-
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
 
@@ -273,9 +273,6 @@ protected:
 
   //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
   int basiselements_;
-
-  //! \brief number of elements which are part of the discretization in the beginning of this time step
-  int currentelements_;
 
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;
@@ -342,6 +339,26 @@ protected:
 	RCP<Epetra_Vector> searchforneighbours_;
 	// \brief a vector holding indices used in DensityDensityCorrOutput()
 	RCP<std::vector<double> > startindex_;
+
+	//the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
+
+	// \brief elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
+	std::vector<std::vector<char> > deletedelements_;
+
+	// \brief GIDs of elements added at the beginning when this time step was conducted the last time
+	std::vector<int> addedelements_;
+
+	//variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
+  RCP<Epetra_MultiVector> crosslinkerpartnerconv_;
+  RCP<Epetra_Vector> numcrosslinkerpartnerconv_;
+	RCP<Epetra_MultiVector> crosslinkerbondconv_;
+  RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
+  RCP<Epetra_Vector> numcrossnodesconv_;
+  RCP<Epetra_Vector> numbondconv_;
+  RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
+  RCP<Epetra_Vector> searchforneighboursconv_;
+
+
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/
