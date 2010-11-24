@@ -721,7 +721,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
   PrepareFluidXFluidBoundaryDis(fluidxfluidboundarydis);
   ComputeFluidXFluidInterfaceAccelerationsAndVelocities();
   ComputeInterfaceAndSetDOFs(fluidxfluidboundarydis);
-  cout << " bis hier " << endl;
+ 
   // merged the fluid and xfluid maps
   RCP<Epetra_Map> fluiddofrowmap = rcp(new Epetra_Map(*fluiddis_->DofRowMap())); 
   RCP<Epetra_Map> xfluiddofrowmap = rcp(new Epetra_Map(*xfluiddis_->DofRowMap())); 

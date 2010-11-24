@@ -347,23 +347,13 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   ALEfluidstate_.afidispnp_  = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
   ALEfluidstate_.afidispn_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-//  ALEfluidstate_.afivelnp_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-//  ALEfluidstate_.afiveln_    = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
-//  ALEfluidstate_.afivelnm_   = LINALG::CreateVector(*ALEFluidboundarydis_->DofRowMap(),true);
 
   ALEFluidboundarydis_->SetState("idispcolnp",ALEfluidstate_.afidispnp_);
   ALEFluidboundarydis_->SetState("idispcoln" ,ALEfluidstate_.afidispn_);
-//  ALEFluidboundarydis_->SetState("ivelcolnp" ,ALEfluidstate_.afivelnp_);
-//  ALEFluidboundarydis_->SetState("ivelcoln"  ,ALEfluidstate_.afiveln_);
-//  ALEFluidboundarydis_->SetState("ivelcolnm" ,ALEfluidstate_.afivelnm_);
 
   if (fluidfluidCoupling_)
     preparefluidfluidboundaryDofset();
 
-//  if (alefluid_ == true)
-//  {
-//    ALEfluidstate_.gridv_  = LINALG::CreateVector(*FluidFluidboundarydis_->DofRowMap(),true);
-//  }
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -1225,12 +1215,6 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
         FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
       }
-
-//      if (alefluid_)
-//      {
-//        fluidfluidstate_.gridv_->PutScalar(0.0);
-//        FluidFluidboundarydis_->SetState("gridv", fluidfluidstate_.gridv_);
-//      }
 
       discret_->SetState("velpres nodal iterinc",oldinc);
 

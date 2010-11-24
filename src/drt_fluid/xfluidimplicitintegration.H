@@ -619,10 +619,7 @@ protected:
   {
     Teuchos::RCP<Epetra_Vector>            afidispnp_;   ///< ALE fluid interface displacement  n+1
     Teuchos::RCP<Epetra_Vector>            afidispn_;    ///< ALE fluid interface displacement  n
-    Teuchos::RCP<Epetra_Vector>            afivelnp_;    ///< ALE fluid interface velocity      n+1
-    Teuchos::RCP<Epetra_Vector>            afiveln_;     ///< ALE fluid interface velocity      n
-    Teuchos::RCP<Epetra_Vector>            afivelnm_;    ///< ALE fluid interface velocity      n-1
-    
+   
     /// grid velocity
     Teuchos::RCP<Epetra_Vector>            gridv_;
      
