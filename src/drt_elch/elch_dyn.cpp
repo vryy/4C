@@ -54,15 +54,18 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  if (!fluiddis->Filled() or !fluiddis->HaveDofs()) fluiddis->FillComplete();
+  // access the scatra discretization
+  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
+
+  // ensure that all dofs are assigned in the right order; this creates dof numbers with
+  //       fluid dof < scatra/elch dof
+  fluiddis->FillComplete();
+  scatradis->FillComplete();
 
 #if 0
   std::ofstream f_system("mydiscretization.pos");
   f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
 #endif
-  // access the scatra discretization
-  RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
-  if (!scatradis->Filled()) scatradis->FillComplete();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& elchcontrol = DRT::Problem::Instance()->ELCHControlParams();

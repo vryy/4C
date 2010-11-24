@@ -334,13 +334,15 @@ protected:
     \param RefCountPtr<Epetra_Vector>       (i)          the result data read from the baci output
     \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
+    \param int                              (i)          potential offset in dof numbering
 
   */
   void WriteDofResultStepForNurbs(
     ofstream&                        file ,
     const int                        numdf,
     const RefCountPtr<Epetra_Vector> data ,
-    const string                     name
+    const string                     name ,
+    const int                      offset
     ) const;
 
 

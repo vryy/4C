@@ -53,11 +53,13 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
 
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
-
   // access the scatra discretization
   RefCountPtr<DRT::Discretization> scatradis = DRT::Problem::Instance()->Dis(disnumscatra,0);
-  if (!scatradis->Filled()) scatradis->FillComplete();
+
+  // ensure that all dofs are assigned in the right order; this creates dof numbers with
+  //       fluid dof < scatra dof
+  fluiddis->FillComplete();
+  scatradis->FillComplete();
 
   // set velocity field
   const INPAR::SCATRA::VelocityField veltype

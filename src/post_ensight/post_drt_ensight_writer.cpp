@@ -271,7 +271,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
       for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
       {
-	numvisp*=2*(nele_x_mele_x_lele[rr])+1;
+        numvisp*=2*(nele_x_mele_x_lele[rr])+1;
       }
       totalnumvisp+=numvisp;
     }
@@ -1144,14 +1144,34 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
                                      0,
                                      datamap.Comm()));
 
+  // determine offset of dofs in case of multiple discretizations in
+  // separate files (e.g. multi-scale problems). during calculation,
+  // dofs are numbered consecutively for all discretizations. in the
+  // post-processing phase, when only one discretization is called,
+  // numbering always starts with 0, so a potential offset needs to be
+  // taken into account.
+  // NOTE 1: for the pressure result vector of FLUID calculations,
+  //         this offset is 2 or 3, depending on the number of space dimensions.
+  // NOTE 2: this command is only valid, if you use NOT MORE processors
+  //         for filtering than for computation. Otherwise we have empty procs
+  //         owning empty maps, and therefore epetradatamap->MinAllGID()
+  //         will always return zero, resulting in a wrong offset value.
+  //         This is the only reason, why not to use more (and empty) procs.
+  //         All other code parts of post_drt_ensight can handle that.
+  // NOTE 3: This check works for polynomial as well as NURBS discretizations!
+  if (epetradatamap->NumMyElements()<1)
+    dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
+  const int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
+
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
     WriteDofResultStepForNurbs(
       file ,
       numdf,
-      data ,
-      name
+      data,
+      name,
+      offset
       );
   }
   else if(field_->problem()->SpatialApproximation()=="Polynomial")
@@ -1174,24 +1194,6 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     //------------------------------------------------------------------
     // each processor provides its dof global id information for proc 0
     //------------------------------------------------------------------
-
-    // determine offset of dofs in case of multiple discretizations in
-    // separate files (e.g. multi-scale problems). during calculation,
-    // dofs are numbered consecutively for all discretizations. in the
-    // post-processing phase, when only one discretization is called,
-    // numbering always starts with 0, so a potential offset needs to be
-    // taken into account.
-    // NOTE 1: for the pressure result vector of FLUID calculations,
-    // this offset is 2 or 3, depending on the number of space dimensions.
-    // NOTE 2: this command is only valid, if you use NOT MORE processors
-    //         for filtering than for computation. Otherwise we have empty procs
-    //         owning empty maps, and therefore epetradatamap->MinAllGID()
-    //         will always return zero, resulting in a wrong offset value.
-    //         This is the only reason, why not to use more (and empty) procs.
-    //         All other code parts of post_drt_ensight can handle that.
-    if (epetradatamap->NumMyElements()<1)
-      dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
-    int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
     RCP<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));

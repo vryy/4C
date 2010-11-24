@@ -1799,7 +1799,8 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   ofstream&                        file ,
   const int                        numdf,
   const RefCountPtr<Epetra_Vector> data ,
-  const string                     name
+  const string                     name ,
+  const int                      offset
   ) const
 {
   // a multivector for the interpolated data
@@ -1884,52 +1885,54 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     // extract local values from the global vectors
     actele->LocationVector(*nurbsdis,lm,lmowner);
 
+    // do not forget to consider a (potential) offset in dof numbering for all results!
     for (int inode=0; inode<actele->NumNode(); ++inode)
     {
 
       if(name == "velocity"
-	 ||
-	 name == "averaged_velocity"
-	 ||
-	 name == "ale_displacement"
-	)
+          ||
+          name == "averaged_velocity"
+              ||
+              name == "ale_displacement"
+      )
       {
-	if(dim!=numdf)
-	{
-	  dserror("dim and numdf not matching for field %s",name.c_str());
-	}
+        if(dim!=numdf)
+        {
+          dserror("dim and numdf not matching for field %s",name.c_str());
+        }
 
         for(int rr=0;rr<dim;++rr)
         {
-          coldofset.insert(lm[inode*(dim+1)+rr]);
+          coldofset.insert(lm[inode*(dim+1)+rr]+offset);
         }
       }
       else if(name == "displacement")
       {
-	if(dim!=numdf)
-	{
-	  dserror("dim and numdf not matching for field %s",name.c_str());
-	}
+        if(dim!=numdf)
+        {
+          dserror("dim and numdf not matching for field %s",name.c_str());
+        }
         for(int rr=0;rr<dim;++rr)
         {
-          coldofset.insert(lm[inode*dim+rr]);
+          coldofset.insert(lm[inode*dim+rr]+offset);
         }
       }
       else if(name == "pressure"
-	      ||
-	      name == "averaged_pressure")
+          ||
+          name == "averaged_pressure")
       {
-        coldofset.insert(lm[inode*(dim+1)+dim]);
+        // offset should be equal to dim for pressure case!
+        coldofset.insert(lm[inode*(dim+1)+dim]+(offset-dim));
       }
       else if(name == "phi"
           ||
-          name == "phi")
+          name == "phi_1")
       {
-        coldofset.insert(lm[inode]);
+        coldofset.insert(lm[inode]+offset);
       }
       else
       {
-        dserror("up to now, I'm only able to write velocity, displacement and pressure\n");
+        dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
       }
     }
   }
@@ -1955,7 +1958,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   int imerr = (*coldata).Import((*data),importer,Insert);
   if(imerr)
   {
-    dserror("import falied\n");
+    dserror("import failed\n");
   }
 
   // loop all available elements
@@ -2040,7 +2043,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       {
         for(int rr=0;rr<dim;++rr)
         {
-          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+rr])];
+          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+rr]+offset)];
         }
       }
     }
@@ -2052,7 +2055,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       {
         for(int rr=0;rr<dim;++rr)
         {
-          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*dim+rr])];
+          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*dim+rr]+offset)];
         }
       }
     }
@@ -2062,7 +2065,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
       for (int inode=0; inode<numnp; ++inode)
       {
-        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim])];
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset-dim)];
       }
     }
     else if(name == "phi")
@@ -2071,7 +2074,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
       for (int inode=0; inode<numnp; ++inode)
       {
-        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode])];
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode]+offset)];
       }
     }
     else
