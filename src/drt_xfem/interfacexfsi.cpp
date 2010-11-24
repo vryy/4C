@@ -79,7 +79,7 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   if(cutterdis_->NumMyColElements()!=0)
   {
 #ifdef QHULL
-#ifndef OLDINTERSECTION
+#ifdef NEWINTERSECTION
     GEO::computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleGIDs);
 #else
     Teuchos::RCP<GEO::Intersection> is = rcp(new GEO::Intersection());
