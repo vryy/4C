@@ -937,17 +937,31 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
     } // switch
 
-    // export global quantity to current interface slave dof row map
-    RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
-    RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
-
+    // slave dof and node map of the interface
+    // columnmap for current or updated LM
+    // rowmap for remaining cases 
+    RCP<Epetra_Map> sdofmap, snodemap;
+    if (type == MORTAR::StrategyBase::lmupdate or type == MORTAR::StrategyBase::lmcurrent)
+    {  
+      sdofmap = interface_[i]->SlaveColDofs();
+      snodemap = interface_[i]->SlaveColNodes();
+    }  
+    else
+    {  
+      sdofmap = interface_[i]->SlaveRowDofs();
+      snodemap = interface_[i]->SlaveRowNodes();
+    }
+      
+    // export global quantity to current interface slave dof map (column or row)
+    RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofmap));
+    
     if (vectorglobal != null) // necessary for case "activeold"
       LINALG::Export(*vectorglobal, *vectorinterface);
 
-    // loop over all slave row nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    // loop over all slave nodes (column or row) on the current interface
+    for (int j=0; j<snodemap->NumMyElements(); ++j)
     {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      int gid = snodemap->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CoNode* cnode = static_cast<CoNode*>(node);
@@ -1232,7 +1246,10 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
   // because usually active set convergence check has been integrated into
   // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
-  if (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged())
+  // not for thermo-structure-interaction because of partitioned scheme
+  // so long
+  std::string probtype = DRT::Problem::Instance()->ProblemType();
+  if (probtype!="tsi" and (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged()))
     dserror("ERROR: Active set not fully converged!");
   
   // reset active set status for next time step
