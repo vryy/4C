@@ -1226,6 +1226,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     LINALG::Export(*fluidincvel_,*fxfiincvel_);
     fluidxfluidboundarydis->SetState("ivelcolnp",fxfivelnp_);
   }      
+  
   Output();
   MovingFluidOutput("sol_field_fluid_vel_np","Velocity Solution n+1");
   FluidXFluidBoundaryOutput(fluidxfluidboundarydis);
@@ -3248,25 +3249,21 @@ void FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput(std::string filestr,
         DRT::UTILS::ExtractMyValues(*fluidstate_.velnp_, myvelnp, lm);
 
         int numparam = actele->NumNode();
-        LINALG::SerialDenseMatrix elementvalues(3, numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
-        {
-          elementvalues(0, iparam) = myvelnp[0];
-          elementvalues(1, iparam) = myvelnp[1];
-          elementvalues(2, iparam) = myvelnp[2];
-        }
-
         LINALG::SerialDenseMatrix xyze(3,numparam);
-        for (int inode=0;inode<numparam;inode++)
+        LINALG::SerialDenseMatrix elementvalues(3, numparam);
+        for (int inode=0; inode<numparam; ++inode)
         {
-           xyze(0,inode) = actele->Nodes()[inode]->X()[0];
-           xyze(1,inode) = actele->Nodes()[inode]->X()[1];
-           xyze(2,inode) = actele->Nodes()[inode]->X()[2];
-        }    
+          elementvalues(0, inode) = myvelnp[0+(inode*4)];
+          elementvalues(1, inode) = myvelnp[1+(inode*4)];
+          elementvalues(2, inode) = myvelnp[2+(inode*4)];
+          
+          xyze(0,inode) = actele->Nodes()[inode]->X()[0];
+          xyze(1,inode) = actele->Nodes()[inode]->X()[1];
+          xyze(2,inode) = actele->Nodes()[inode]->X()[2];
+        }
 
         IO::GMSH::cellWithVectorFieldToStream(
             actele->Shape(), elementvalues, xyze, gmshfilecontent);
-
       }
       gmshfilecontent << "};\n";
     }
