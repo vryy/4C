@@ -76,6 +76,9 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
   const int err =  fluidxfluidboundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
   
+  RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(fluiddis_, fluidxfluidboundarydis_);
+  fluiddis_->Redistribute(*(fluiddis_->NodeRowMap()), *newcolnodemap);
+  
   DRT::UTILS::PrintParallelDistribution(*fluidxfluidboundarydis_);
 
   fluidxfluidboundaryoutput_ = rcp(new IO::DiscretizationWriter(fluidxfluidboundarydis_));
@@ -91,6 +94,8 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
   fxfiaccn_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
   
   PrepareFluidXFluidBoundaryDis();
+  fluid_.PrepareFluidXFluidBoundaryDofset(fluidxfluidboundarydis_);
+  fluid_.PrepareFluidXFluidBoundaryDis(fluidxfluidboundarydis_);
   fluid_.PrepareTimeLoop(fluidxfluidboundarydis_);
  
 }
@@ -453,8 +458,8 @@ void ADAPTER::FluidXFluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialFi
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+///*----------------------------------------------------------------------*/
+///*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFluidImpl::PrepareFluidXFluidBoundaryDis()
 {
   // put vectors into boundary discretization (SetState generates col vector automatically)

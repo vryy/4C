@@ -198,6 +198,81 @@ void FLD::UTILS::SetupXFluidSplit(
   extractor.Setup(*map, prerowmap, velrowmap);
 }
 
+//----------------------------------------------------------------------*/
+//----------------------------------------------------------------------*/
+void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis,int ndim, 
+                                   const DRT::Discretization& xfluiddis, const RCP<XFEM::DofManager> dofman,
+                                   LINALG::MapExtractor& extractor,Teuchos::RCP<Epetra_Map> fullmap)
+{
+  std::set<int> veldofset;
+  std::set<int> presdofset;
+  
+  // for fluid elements
+  int numfluidrownodes = fluiddis.NumMyRowNodes();
+  for (int i=0; i<numfluidrownodes; ++i)
+  {
+    DRT::Node* fluidnode = fluiddis.lRowNode(i);
+
+    std::vector<int> fluiddof = fluiddis.Dof(fluidnode);
+    for (unsigned j=0; j<fluiddof.size(); ++j)
+    {
+      // test for dof position
+      if (j<static_cast<unsigned>(ndim))
+      {
+        veldofset.insert(fluiddof[j]);
+      }
+      else
+      {
+        presdofset.insert(fluiddof[j]);
+      }
+     }   
+   }
+  
+  // for xfluid elements
+  for (int i=0; i<xfluiddis.NumMyRowNodes(); ++i) 
+  {
+     const DRT::Node* xfluidnode = xfluiddis.lRowNode(i);
+     const std::set<XFEM::FieldEnr>& enrvarset(dofman->getNodeDofSet(xfluidnode->Id()));
+     const vector<int> xfluiddof = xfluiddis.Dof(xfluidnode);
+     dsassert(xfluiddof.size() == enrvarset.size(), "mismatch in length!");
+     std::set<XFEM::FieldEnr>::const_iterator enrvar;
+     size_t countdof = 0;
+     for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar)
+     {
+       switch (enrvar->getField()) {
+       case XFEM::PHYSICS::Velx:
+       case XFEM::PHYSICS::Vely:
+       case XFEM::PHYSICS::Velz:
+         veldofset.insert(xfluiddof[countdof]);
+         break;
+       case XFEM::PHYSICS::Pres:
+         presdofset.insert(xfluiddof[countdof]);
+         break;
+       default:
+         break;
+       }
+       countdof++;
+     }
+   }
+  
+  std::vector<int> veldofmapvec;
+  veldofmapvec.reserve(veldofset.size());
+  veldofmapvec.assign(veldofset.begin(), veldofset.end());
+  veldofset.clear();
+  RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
+                                  veldofmapvec.size(),&veldofmapvec[0],0,
+                                  xfluiddis.Comm()));
+  veldofmapvec.clear();
+  
+  std::vector<int> presdofmapvec;
+  presdofmapvec.reserve(presdofset.size());
+  presdofmapvec.assign(presdofset.begin(), presdofset.end());
+  presdofset.clear();
+  RCP<Epetra_Map> presrowmap = rcp(new Epetra_Map(-1,
+                                  presdofmapvec.size(),&presdofmapvec[0],0,
+                                  xfluiddis.Comm()));
+  extractor.Setup(*fullmap, presrowmap, velrowmap);
+}
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------

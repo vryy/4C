@@ -394,6 +394,11 @@ void SetupXFluidSplit(
         LINALG::MapExtractor&        extractor  ///< ready made map splitter
         );
 
+
+void SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim, 
+                       const DRT::Discretization& xfluiddis, const RCP<XFEM::DofManager> dofman,
+                       LINALG::MapExtractor& extractor, Teuchos::RCP<Epetra_Map> fullmap);
+
 /*!
 
 \brief calculate lift&drag forces and angular momenta
