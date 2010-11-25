@@ -295,6 +295,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
 
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
+    vector<int> lmstride;
     RCP<vector<int> > lmowner = rcp(new vector<int>);
     const int* ele_nodes = ele[0][0].NodeIds();
 
@@ -303,7 +304,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     else
        ElemNum = 1;
 
-    ele[ElemNum][0].LocationVector(*discret,lm,*lmowner);
+    ele[ElemNum][0].LocationVector(*discret,lm,*lmowner,lmstride);
 
     // get node coordinates and number of elements per node
     LINALG::Matrix<3,2> xyze;
