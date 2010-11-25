@@ -313,7 +313,8 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
         // get element location vector, dirichlet flags and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*this,lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*this,lm,lmowner,lmstride);
         elevector.Size((int)lm.size());
         if (!assemblemat)
         {
@@ -327,7 +328,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
           else memset(elematrix.A(),0,size*size*sizeof(double));
           curr->second->EvaluateNeumann(params,*this,cond,lm,elevector,&elematrix);
           LINALG::Assemble(systemvector,elevector,lm,lmowner);
-          systemmatrix->Assemble(curr->second->Id(),elematrix,lm,lmowner);
+          systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
         }
       }
     }
@@ -1162,7 +1163,8 @@ void DRT::Discretization::EvaluateCondition
           // get element location vector and ownerships
           vector<int> lm;
           vector<int> lmowner;
-          curr->second->LocationVector(*this,lm,lmowner);
+          vector<int> lmstride;
+          curr->second->LocationVector(*this,lm,lmowner,lmstride);
 
           // get dimension of element matrices and vectors
           // Reshape element matrices and vectors and init to zero
@@ -1180,8 +1182,8 @@ void DRT::Discretization::EvaluateCondition
 
           // assembly
           int eid = curr->second->Id();
-          if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-          if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
+          if (assemblemat1) systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
+          if (assemblemat2) systemmatrix2->Assemble(eid,lmstride,elematrix2,lm,lmowner);
           if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
           if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
           if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
@@ -1255,7 +1257,8 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  // get element location vector and ownerships
 	  vector<int> lm;
 	  vector<int> lmowner;
-	  curr->second->LocationVector(*this,lm,lmowner);
+	  vector<int> lmstride;
+	  curr->second->LocationVector(*this,lm,lmowner,lmstride);
 
 	  // place vectors for parent lm and lmowner in
 	  // the parameterlist --- the element will fill
@@ -1263,9 +1266,11 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  // knows its parent
 	  RCP<vector<int> > plm     =rcp(new vector<int>);
 	  RCP<vector<int> > plmowner=rcp(new vector<int>);
+	  RCP<vector<int> > plmstride=rcp(new vector<int>);
 
 	  params.set<RCP<vector<int> > >("plm",plm);
 	  params.set<RCP<vector<int> > >("plmowner",plmowner);
+	  params.set<RCP<vector<int> > >("plmstride",plmstride);
 
 	  // call the element specific evaluate method
 	  int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
@@ -1276,8 +1281,8 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  // over a boundary element
 	  int eid = curr->second->Id();
 
-	  if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,*plm,*plmowner);
-	  if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,*plm,*plmowner);
+	  if (assemblemat1) systemmatrix1->Assemble(eid,*plmstride,elematrix1,*plm,*plmowner);
+	  if (assemblemat2) systemmatrix2->Assemble(eid,*plmstride,elematrix2,*plm,*plmowner);
 	  if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,*plm,*plmowner);
 	  if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,*plm,*plmowner);
 	  if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,*plm,*plmowner);
