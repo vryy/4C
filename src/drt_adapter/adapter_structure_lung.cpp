@@ -199,7 +199,8 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
         // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*Discretization(),lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
         // reshape element matrices and vectors and init to zero
         elevector3.Size(1);
@@ -317,7 +318,8 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
       // get element location vector and ownerships
       vector<int> lm;
       vector<int> lmowner;
-      curr->second->LocationVector(*Discretization(),lm,lmowner);
+      vector<int> lmstride;
+      curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -351,13 +353,13 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
       //   which seems more natural in this case)
 
       elematrix1.Scale(-lagraval*sign);
-      StructMatrix->Assemble(eid,elematrix1,lm,lmowner);
+      StructMatrix->Assemble(eid,lmstride,elematrix1,lm,lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
       vector<int> colvec(1);
       colvec[0]=gindex;
       elevector2.Scale(-sign);
-      StructMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
+      StructMatrix->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
 
       // "Newton-ready" residual -> already scaled with -1.0
       elevector1.Scale(lagraval*sign);

@@ -609,7 +609,8 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
         const DRT::Element* bele = boundarydis_->lColElement(i);
         vector<int> lm;
         vector<int> lmowner;
-        bele->LocationVector(*boundarydis_, lm, lmowner);
+        vector<int> lmstride;
+        bele->LocationVector(*boundarydis_, lm, lmowner,lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());

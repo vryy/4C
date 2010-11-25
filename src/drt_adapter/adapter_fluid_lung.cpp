@@ -159,7 +159,8 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
       // get element location vector and ownerships
       vector<int> lm;
       vector<int> lmowner;
-      curr->second->LocationVector(*Discretization(),lm,lmowner);
+      vector<int> lmstride;
+      curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // Reshape element matrices and vectors and init to zero
       elevector3.Size(1);
@@ -250,7 +251,8 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       // get element location vector and ownerships
       vector<int> lm;
       vector<int> lmowner;
-      curr->second->LocationVector(*Discretization(),lm,lmowner);
+      vector<int> lmstride;
+      curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -272,7 +274,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       int eid = curr->second->Id();
 
       elematrix1.Scale(-lagraval*invresscale);
-      FluidShapeDerivMatrix->Assemble(eid,elematrix1,lm,lmowner);
+      FluidShapeDerivMatrix->Assemble(eid,lmstride,elematrix1,lm,lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
       vector<int> colvec(1);
@@ -282,7 +284,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       FluidConstrMatrix->Assemble(eid,elevector1,lm,lmowner,colvec);
 
       elevector2.Scale(-dttheta);
-      AleConstrMatrix->Assemble(eid,elevector2,lm,lmowner,colvec);
+      AleConstrMatrix->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
 
       // negative sign (for shift to rhs) is already implicitly taken into account!
       elevector1.Scale(-lagraval*invresscale);
