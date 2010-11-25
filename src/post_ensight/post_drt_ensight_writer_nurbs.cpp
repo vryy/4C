@@ -1881,9 +1881,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
     vector<int> lm;
     vector<int> lmowner;
+    vector<int> lmstride;
 
     // extract local values from the global vectors
-    actele->LocationVector(*nurbsdis,lm,lmowner);
+    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
 
     // do not forget to consider a (potential) offset in dof numbering for all results!
     for (int inode=0; inode<actele->NumNode(); ++inode)
@@ -2011,8 +2012,9 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     // extract local values from the global vectors
     vector<int> lm;
     vector<int> lmowner;
+    vector<int> lmstride;
 
-    actele->LocationVector(*nurbsdis,lm,lmowner); // get gid, location in the patch and the number of the patch
+    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride); // get gid, location in the patch and the number of the patch
 
     int npatch  =np;
 
