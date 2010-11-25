@@ -283,14 +283,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RefCountPtr<vector<int> > plm
+  RCP<vector<int> > plm
     =
-    params.get<RefCountPtr<vector<int> > >("plm");
-  RefCountPtr<vector<int> > plmowner
+    params.get<RCP<vector<int> > >("plm");
+  RCP<vector<int> > plmowner
     =
-    params.get<RefCountPtr<vector<int> > >("plmowner");
+    params.get<RCP<vector<int> > >("plmowner");
+  RCP<vector<int> > plmstride
+    =
+    params.get<RCP<vector<int> > >("plmstride");
 
-  surfele->ParentElement()->LocationVector(discretization,*plm,*plmowner);
+  surfele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -2183,14 +2186,17 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RefCountPtr<vector<int> > plm
+  RCP<vector<int> > plm
     =
-    params.get<RefCountPtr<vector<int> > >("plm");
-  RefCountPtr<vector<int> > plmowner
+    params.get<RCP<vector<int> > >("plm");
+  RCP<vector<int> > plmowner
     =
-    params.get<RefCountPtr<vector<int> > >("plmowner");
+    params.get<RCP<vector<int> > >("plmowner");
+  RCP<vector<int> > plmstride
+    =
+    params.get<RCP<vector<int> > >("plmstride");
 
-  lineele->ParentElement()->LocationVector(discretization,*plm,*plmowner);
+  lineele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
