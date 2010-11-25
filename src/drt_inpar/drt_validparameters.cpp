@@ -1276,6 +1276,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
   // number of histogram bins for post-analysis
   IntParameter("HISTOGRAMBINS",-1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
+  // number of raster point along for ddcorr output boundary box shift -> n³ points in volume
+  IntParameter("NUMRASTERPOINTS",-1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   //Reading whether DBCs shall be applied to broken elements
   setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
                                yesnotuple,yesnovalue,&statmech);
