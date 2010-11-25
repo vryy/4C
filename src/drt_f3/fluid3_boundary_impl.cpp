@@ -48,56 +48,52 @@ using namespace DRT::UTILS;
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInterface::Impl(const DRT::Element* ele)
 {
-  // we assume here, that numdofpernode is equal for every node within
-  // the discretization and does not change during the computations
-  const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
-
   switch (ele->Shape())
   {
   case DRT::Element::quad4:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad4>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::quad4>::Instance();
   }
   case DRT::Element::quad8:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad8>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::quad8>::Instance();
   }
   case DRT::Element::quad9:
   {
-    return Fluid3BoundaryImpl<DRT::Element::quad9>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::quad9>::Instance();
   }
   case DRT::Element::tri3:
   {
-    return Fluid3BoundaryImpl<DRT::Element::tri3>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::tri3>::Instance();
   }
   /*  case DRT::Element::tri6:
   {
-    return Fluid3BoundaryImpl<DRT::Element::tri6>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::tri6>::Instance();
   }*/
   case DRT::Element::line2:
   {
-    return Fluid3BoundaryImpl<DRT::Element::line2>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::line2>::Instance();
   }
   /*
   case DRT::Element::line3:
   {
-    return Fluid3BoundaryImpl<DRT::Element::line3>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::line3>::Instance();
   }*/
   case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs2>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::nurbs2>::Instance();
   }
   case DRT::Element::nurbs3:    // 1D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs3>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::nurbs3>::Instance();
   }
   case DRT::Element::nurbs4:    // 2D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs4>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::nurbs4>::Instance();
   }
   case DRT::Element::nurbs9:    // 2D nurbs boundary element
   {
-    return Fluid3BoundaryImpl<DRT::Element::nurbs9>::Instance(numdofpernode);
+    return Fluid3BoundaryImpl<DRT::Element::nurbs9>::Instance();
   }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
@@ -109,22 +105,21 @@ DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInt
  *----------------------------------------------------------------------*/
 
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Instance(int numdofpernode)
+DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Instance()
 {
   static Fluid3BoundaryImpl<distype> * instance;
   if ( instance==NULL )
-    instance = new Fluid3BoundaryImpl<distype>(numdofpernode);
+    instance = new Fluid3BoundaryImpl<distype>();
   return instance;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl(int numdofpernode)
-  : numdofpernode_(numdofpernode)
-    {
-      return;
-    }
+DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
+{
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

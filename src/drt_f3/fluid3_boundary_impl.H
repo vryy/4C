@@ -123,10 +123,10 @@ class Fluid3BoundaryImpl: public Fluid3BoundaryImplInterface
 public:
 
   /// Singleton access method
-  static Fluid3BoundaryImpl<distype> * Instance(int numdofpernode);
+  static Fluid3BoundaryImpl<distype> * Instance();
 
   /// Constructor
-  Fluid3BoundaryImpl(int numdofpernode);
+  Fluid3BoundaryImpl();
 
   //! number of element nodes
   static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -136,6 +136,9 @@ public:
 
   //! number of space dimensions of the parent element
   static const int nsd_ = bdrynsd_+1;
+
+  //! number of dof's per node
+  static const int numdofpernode_ = nsd_ + 1;
 
   //! Evaluate
   virtual int Evaluate(DRT::ELEMENTS::Fluid3Boundary* ele,
@@ -160,9 +163,6 @@ public:
                               );
 
 private:
-
-    //! number of dof's per node
-    const int numdofpernode_;
 
     void CreateLinesTri(const int& nline,
                         const int& nnode);
