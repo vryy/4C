@@ -56,81 +56,48 @@ DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInt
   {
   case DRT::Element::quad4:
   {
-    static Fluid3BoundaryImpl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
-      cp4 = new Fluid3BoundaryImpl<DRT::Element::quad4>(numdofpernode);
-      return cp4;
+    return Fluid3BoundaryImpl<DRT::Element::quad4>::Instance(numdofpernode);
   }
   case DRT::Element::quad8:
   {
-    static Fluid3BoundaryImpl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
-      cp8 = new Fluid3BoundaryImpl<DRT::Element::quad8>(numdofpernode);
-    return cp8;
+    return Fluid3BoundaryImpl<DRT::Element::quad8>::Instance(numdofpernode);
   }
   case DRT::Element::quad9:
   {
-    static Fluid3BoundaryImpl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
-      cp9 = new Fluid3BoundaryImpl<DRT::Element::quad9>(numdofpernode);
-    return cp9;
+    return Fluid3BoundaryImpl<DRT::Element::quad9>::Instance(numdofpernode);
   }
   case DRT::Element::tri3:
   {
-    static Fluid3BoundaryImpl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
-      cp3 = new Fluid3BoundaryImpl<DRT::Element::tri3>(numdofpernode);
-      return cp3;
+    return Fluid3BoundaryImpl<DRT::Element::tri3>::Instance(numdofpernode);
   }
   /*  case DRT::Element::tri6:
   {
-    static ScaTraBoundaryImpl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
-      cp6 = new ScaTraBoundaryImpl<DRT::Element::tri6>(numdofpernode,numscal);
-    return cp6;
+    return Fluid3BoundaryImpl<DRT::Element::tri6>::Instance(numdofpernode);
   }*/
   case DRT::Element::line2:
   {
-    static Fluid3BoundaryImpl<DRT::Element::line2>* cl2;
-    if (cl2==NULL)
-      cl2 = new Fluid3BoundaryImpl<DRT::Element::line2>(numdofpernode);
-      return cl2;
+    return Fluid3BoundaryImpl<DRT::Element::line2>::Instance(numdofpernode);
   }
   /*
   case DRT::Element::line3:
   {
-    static ScaTraBoundaryImpl<DRT::Element::line3>* cl3;
-    if (cl3==NULL)
-      cl3 = new ScaTraBoundaryImpl<DRT::Element::line3>(numdofpernode,numscal);
-    return cl3;
+    return Fluid3BoundaryImpl<DRT::Element::line3>::Instance(numdofpernode);
   }*/
   case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
-    static Fluid3BoundaryImpl<DRT::Element::nurbs2>* cn2;
-    if (cn2==NULL)
-      cn2 = new Fluid3BoundaryImpl<DRT::Element::nurbs2>(numdofpernode);
-      return cn2;
+    return Fluid3BoundaryImpl<DRT::Element::nurbs2>::Instance(numdofpernode);
   }
   case DRT::Element::nurbs3:    // 1D nurbs boundary element
   {
-    static Fluid3BoundaryImpl<DRT::Element::nurbs3>* cn3;
-    if (cn3==NULL)
-      cn3 = new Fluid3BoundaryImpl<DRT::Element::nurbs3>(numdofpernode);
-      return cn3;
+    return Fluid3BoundaryImpl<DRT::Element::nurbs3>::Instance(numdofpernode);
   }
   case DRT::Element::nurbs4:    // 2D nurbs boundary element
   {
-    static Fluid3BoundaryImpl<DRT::Element::nurbs4>* cn4;
-    if (cn4==NULL)
-      cn4 = new Fluid3BoundaryImpl<DRT::Element::nurbs4>(numdofpernode);
-      return cn4;
+    return Fluid3BoundaryImpl<DRT::Element::nurbs4>::Instance(numdofpernode);
   }
   case DRT::Element::nurbs9:    // 2D nurbs boundary element
   {
-    static Fluid3BoundaryImpl<DRT::Element::nurbs9>* cn9;
-    if (cn9==NULL)
-      cn9 = new Fluid3BoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
-      return cn9;
+    return Fluid3BoundaryImpl<DRT::Element::nurbs9>::Instance(numdofpernode);
   }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
@@ -138,6 +105,17 @@ DRT::ELEMENTS::Fluid3BoundaryImplInterface* DRT::ELEMENTS::Fluid3BoundaryImplInt
   return NULL;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Instance(int numdofpernode)
+{
+  static Fluid3BoundaryImpl<distype> * instance;
+  if ( instance==NULL )
+    instance = new Fluid3BoundaryImpl<distype>(numdofpernode);
+  return instance;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

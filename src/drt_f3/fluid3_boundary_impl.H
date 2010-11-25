@@ -121,6 +121,10 @@ template<DRT::Element::DiscretizationType distype>
 class Fluid3BoundaryImpl: public Fluid3BoundaryImplInterface
 {
 public:
+
+  /// Singleton access method
+  static Fluid3BoundaryImpl<distype> * Instance(int numdofpernode);
+
   /// Constructor
   Fluid3BoundaryImpl(int numdofpernode);
 
