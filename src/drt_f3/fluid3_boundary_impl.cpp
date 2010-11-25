@@ -335,7 +335,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         else
         {
           dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-        } 
+        }
         break;
       }
       // 3D:
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         else
         {
           dserror("expected combination quad4/hex8 for surface/parent pair");
-        } 
+        }
         break;
       }
       default:
@@ -462,8 +462,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::Matrix<iel,1>   funct(true);
-  LINALG::Matrix<bdrynsd_,iel>   deriv(true);
+  LINALG::Matrix<bdrynen_,1>   funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_>   deriv(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -473,8 +473,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
 
   // get local node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  LINALG::Matrix<nsd_,iel>   xyze(true);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  LINALG::Matrix<nsd_,bdrynen_>   xyze(true);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   // get scalar vector
   RCP<const Epetra_Vector> scanp = discretization.GetState("scanp");
@@ -484,11 +484,11 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   vector<double> myscanp(lm.size());
   DRT::UTILS::ExtractMyValues(*scanp,myscanp,lm);
 
-  LINALG::Matrix<iel,1>   escanp(true);
+  LINALG::Matrix<bdrynen_,1>   escanp(true);
 
   // insert scalar into element array
   // the scalar is stored to the pressure dof
-  for (int inode=0;inode<iel;++inode)
+  for (int inode=0;inode<bdrynen_;++inode)
   {
     escanp(inode) = myscanp[(nsd_)+(inode*numdofpernode_)];
   }
@@ -501,7 +501,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   double normalfac = 0.0;
   std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
-  Epetra_SerialDenseVector weights(iel);
+  Epetra_SerialDenseVector weights(bdrynen_);
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -580,7 +580,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
         }
         const double val_fac_drs_curvefac_thsl_dens_functfac = (*val)[idim]*fac_drs_curvefac_thsl_dens*functfac;
 
-        for(int inode=0; inode < iel; ++inode )
+        for(int inode=0; inode < bdrynen_; ++inode )
         {
         elevec1_epetra[inode*numdofpernode_+idim] += funct(inode)*val_fac_drs_curvefac_thsl_dens_functfac;
         }
@@ -621,11 +621,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   // ------------------------------------
 
   // vector for shape functions and matrix for derivatives
-  LINALG::Matrix<iel,1>     funct(true);
-  LINALG::Matrix<bdrynsd_,iel>  deriv(true);
+  LINALG::Matrix<bdrynen_,1>     funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_>  deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel>    xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_>    xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -637,7 +637,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   // ------------------------------------
   // get statevectors from discretisation
@@ -656,7 +656,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
 
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for(int idim=0;idim<(nsd_);++idim)
       {
@@ -666,7 +666,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   }
 
   // extract local velocities from the global vectors
-  LINALG::Matrix<nsd_, iel>   evel(true);
+  LINALG::Matrix<nsd_, bdrynen_>   evel(true);
 
   RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
   if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
@@ -675,7 +675,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-  for (int inode=0;inode<iel;++inode)
+  for (int inode=0;inode<bdrynen_;++inode)
   {
     for (int idim=0; idim<nsd_; ++idim)
     {
@@ -691,7 +691,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
   double normalfac = 0.0;
   std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
-  Epetra_SerialDenseVector weights(iel);
+  Epetra_SerialDenseVector weights(bdrynen_);
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -750,7 +750,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
     */
 
     // fill all velocity elements of the matrix
-    for (int ui=0; ui<iel; ++ui) // loop columns
+    for (int ui=0; ui<bdrynen_; ++ui) // loop columns
     {
       //Epetra_SerialDenseMatrix  temp(nsd_,nsd_) = n_x_u (copy);
       LINALG::Matrix<nsd_,nsd_>   temp(n_x_u, false);
@@ -762,7 +762,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
       {
         const int fui   = numdofpernode_*ui+idimcol;
 
-        for (int vi=0; vi<iel; ++vi)  // loop rows
+        for (int vi=0; vi<bdrynen_; ++vi)  // loop rows
         {
           // temp(nsd_,nsd) *= funct(vi)
           temp.Scale(funct(vi));
@@ -787,12 +787,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
    // fill only diagonal velocity elements of the matrix
    for (int idim=0; idim < (nsd_); ++idim) // loop dimensions
    {
-     for (int ui=0; ui<iel; ++ui) // loop columns
+     for (int ui=0; ui<bdrynen_; ++ui) // loop columns
      {
        const int fui   = numdofpernode_*ui+idim;
        const double timefac_mat_u_o_n_funct_ui = timefac_mat_u_o_n*funct(ui);
 
-       for (int vi=0; vi<iel; ++vi)  // loop rows
+       for (int vi=0; vi<bdrynen_; ++vi)  // loop rows
        {
          const int fvi = numdofpernode_*vi + idim;
          const double timefac_mat_u_o_n_funct_ui_funct_vi
@@ -812,7 +812,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
     // temp(nsd, nsd_) *= timefac_rhs * u_o_n
     temp.Scale(timefac_rhs*u_o_n);
 
-    for (int vi=0; vi<iel; ++vi) // loop rows  (test functions)
+    for (int vi=0; vi<bdrynen_; ++vi) // loop rows  (test functions)
     {
       for (int idim = 0; idim<(nsd_); ++idim) // loop over dimensions
       {
@@ -869,12 +869,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // (density-weighted) shape functions and first derivatives
-  LINALG::Matrix<iel,1>        funct(true);
-  LINALG::Matrix<iel,1>        densfunct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1>        funct(true);
+  LINALG::Matrix<bdrynen_,1>        densfunct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // node coordinate
-  LINALG::Matrix<nsd_,iel>     xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_>     xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1>   xsi(true);
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   // get velocity and scalar vector at time n+alpha_F/n+1
   RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
@@ -903,11 +903,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
 
   // create Epetra objects for scalar array and velocities
-  LINALG::Matrix<nsd_,iel> evelaf(true);
-  LINALG::Matrix<iel,1> escaaf(true);
+  LINALG::Matrix<nsd_,bdrynen_> evelaf(true);
+  LINALG::Matrix<bdrynen_,1> escaaf(true);
 
   // insert velocity and scalar into element array
-  for (int inode=0;inode<iel;++inode)
+  for (int inode=0;inode<bdrynen_;++inode)
   {
     for (int idim=0; idim<(nsd_);++idim)
     {
@@ -924,7 +924,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   double normalfac = 0.0;
   std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
-  Epetra_SerialDenseVector weights(iel);
+  Epetra_SerialDenseVector weights(bdrynen_);
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -994,13 +994,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
       // fill diagonal elements
       for (int idim = 0; idim < nsd_; ++idim) // loop over dimensions
       {
-        for (int vi=0; vi<iel; ++vi) // loop over rows
+        for (int vi=0; vi<bdrynen_; ++vi) // loop over rows
         {
           const double vlhs = lhsfac*funct(vi);
 
           const int fvi = numdofpernode_*vi+idim;
 
-          for (int ui=0; ui<iel; ++ui) // loop over columns
+          for (int ui=0; ui<bdrynen_; ++ui) // loop over columns
           {
             const int fui = numdofpernode_*ui+idim;
 
@@ -1014,7 +1014,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
       LINALG::Matrix<nsd_,1> vrhs(velint, false);
       vrhs.Scale(rhsfac);
 
-      for (int vi=0; vi<iel; ++vi) //loop over rows
+      for (int vi=0; vi<bdrynen_; ++vi) //loop over rows
       {
         for (int idim = 0; idim < nsd_; ++idim)  //loop over dimensions
         {
@@ -1048,24 +1048,24 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   if (isale)
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0;idim<(nsd_);++idim)
       {
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegrateShapeFunction(
     double drs = 0.0;
     EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, NULL);
     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for(int idim=0;idim<(nsd_);idim++)
       {
@@ -1118,11 +1118,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::Matrix<iel,1> funct(0.0);
-  LINALG::Matrix<bdrynsd_,iel> deriv(0.0);
+  LINALG::Matrix<bdrynen_,1> funct(0.0);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(0.0);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(0.0);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(0.0);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(0.0);
@@ -1133,13 +1133,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   if (isale)
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int inode=0;inode<iel; ++inode)
+    for (int inode=0;inode<bdrynen_; ++inode)
     {
       for (int idim=0;idim<(nsd_); ++idim)
       {
@@ -1161,7 +1161,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
     EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
-    for (int inode=0; inode<iel; ++inode)
+    for (int inode=0; inode<bdrynen_; ++inode)
     {
       for(int idim=0; idim<nsd_; ++idim)
       {
@@ -1196,14 +1196,14 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // node normals &
-  LINALG::Matrix<nsd_,iel> norm_elem(true);
+  LINALG::Matrix<nsd_,bdrynen_> norm_elem(true);
   LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(true);
 
   // coordinates of current node in reference coordinates
@@ -1211,13 +1211,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   if (isale)
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int inode=0; inode<iel; ++inode)
+    for (int inode=0; inode<bdrynen_; ++inode)
     {
       for (int idim=0;idim<nsd_; ++idim)
       {
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
 
   // set normal vectors to length = 1.0
   // normal vector is coming from outside
-  for (int inode=0; inode<iel; ++inode)
+  for (int inode=0; inode<bdrynen_; ++inode)
   {
     //double length = 0.0;
     for (int idim=0; idim < nsd_; ++idim)
@@ -1240,12 +1240,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementMeanCurvature(
   norm_elem.Scale(1/norm_elem.Norm2());
 
   // get local node coordinates of the element
-  // function gives back a matrix with the local node coordinates of the element (nsd_,iel)
+  // function gives back a matrix with the local node coordinates of the element (nsd_,bdrynen_)
   // the function gives back an Epetra_SerialDenseMatrix!!!
   Epetra_SerialDenseMatrix xsi_ele = getEleNodeNumbering_nodes_paramspace(distype);
 
   // ============================== loop over nodes ==========================
-  for (int inode=0;inode<iel; ++inode)
+  for (int inode=0;inode<bdrynen_; ++inode)
   {
     // the local node coordinates matrix is split to a vector containing the local coordinates of the actual node
     for (int idim = 0; idim < bdrynsd_; idim++)
@@ -1396,24 +1396,24 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1>       funct(true);
-  LINALG::Matrix<bdrynsd_,iel>    deriv(true);
+  LINALG::Matrix<bdrynen_,1>       funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_>    deriv(true);
 
   // node coordinates
-  LINALG::Matrix<nsd_, iel> xyze(true);
+  LINALG::Matrix<nsd_, bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_, 1> xsi(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   if (isale)
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int inode=0; inode<iel; ++inode)
+    for (int inode=0; inode<bdrynen_; ++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -1457,7 +1457,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
       abs_dxyzdr = sqrt(abs_dxyzdr);
       abs_dxyzds = sqrt(abs_dxyzds);
 
-      for (int node=0;node<iel;++node)
+      for (int node=0;node<bdrynen_;++node)
       {
         for (int dim=0;dim<3;dim++)
         {
@@ -1491,7 +1491,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
     } // end if (nsd_==2)
     else if (bdrynsd_==1)
     {
-      for (int inode=0;inode<iel;++inode)
+      for (int inode=0;inode<bdrynen_;++inode)
       {
          for(int idim=0;idim<2;idim++)
          {
@@ -1523,11 +1523,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
 {
 
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -1573,7 +1573,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 
 #ifdef D_ALE_BFLOW
@@ -1592,7 +1592,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
     }
 
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -1630,11 +1630,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
                                                                 vector<int>&                      lm)
 {
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -1654,10 +1654,10 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // alocate local velocity vector
-  LINALG::Matrix<nsd_,iel> evelnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
 
   // split velocity and pressure, insert into element arrays
-  for (int inode=0; inode<iel; ++inode)
+  for (int inode=0; inode<bdrynen_; ++inode)
   {
     for (int idim=0; idim<nsd_; ++idim)
     {
@@ -1671,7 +1671,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
@@ -1688,7 +1688,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -1708,7 +1708,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
      const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     //Compute elment flowrate (add to actual frow rate obtained before
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for(int idim=0; idim<nsd_; ++idim)
       {
@@ -1738,11 +1738,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   //------------------------------------------------------------------
 #if 1
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -1790,12 +1790,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate local velocity vector
-  LINALG::Matrix<nsd_,iel> evelnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
   // allocate local pressure vector
-  LINALG::Matrix<1,iel>   eprenp(true);
+  LINALG::Matrix<1,bdrynen_>   eprenp(true);
 
   // split velocity and pressure, insert into element arrays
-  for (int inode=0; inode<iel; ++inode)
+  for (int inode=0; inode<bdrynen_; ++inode)
   {
     eprenp(inode) = density*myvelnp[nsd_+inode*numdofpernode_];
   }
@@ -1806,7 +1806,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
@@ -1823,7 +1823,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -1844,7 +1844,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
     //Compute elment flowrate (add to actual frow rate obtained before
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       pressure += funct(inode) * eprenp(inode) *fac_drs;
     }
@@ -1873,11 +1873,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
   //------------------------------------------------------------------
 #if 1
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -1892,7 +1892,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
@@ -1909,7 +1909,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -1922,7 +1922,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
   // first evaluate the area of the surface element
   params.set<double>("Area calculation",0.0);
   this->AreaCaculation(ele, params, discretization,lm);
-  
+
   // get the surface element area
   const double elem_area = params.get<double>("Area calculation");
 
@@ -1938,7 +1938,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CenterOfMassCalculation(
       // Computation of nurb specific stuff is not activated here
       double drs = 0.0;
       EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
-      
+
       // global coordinates of gausspoint
       LINALG::Matrix<(nsd_),1>  coordgp(true);
 
@@ -1985,11 +1985,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
                                                                 Epetra_SerialDenseVector&         elevec1)
 {
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -2010,10 +2010,10 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate velocity vector
-  LINALG::Matrix<nsd_,iel> evelnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
 
   // split velocity and pressure, insert into element arrays
-  for (int inode=0;inode<iel;inode++)
+  for (int inode=0;inode<bdrynen_;inode++)
   {
     for (int idim=0; idim< nsd_; idim++)
     {
@@ -2024,7 +2024,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
@@ -2041,7 +2041,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -2071,7 +2071,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
 
     // store flowrate at first dof of each node
     // use negative value so that inflow is positiv
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       elevec1[inode*numdofpernode_] -= funct(inode)* fac_drs * flowrate; //
     }
@@ -2119,11 +2119,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
   int gridvel = fdyn.get<int>("GRIDVEL");
 
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -2133,13 +2133,13 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   if (isale)
   {
     dsassert(edispnp.size()!=0,"paranoid");
 
-    for (int inode=0; inode<iel; ++inode)
+    for (int inode=0; inode<bdrynen_; ++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -2159,9 +2159,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
   DRT::UTILS::ExtractMyValues(*convelnp,myconvelnp,lm);
 
   // allocate velocities vector
-  LINALG::Matrix<nsd_,iel> evelnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
 
-  for (int inode=0; inode<iel; ++inode)
+  for (int inode=0; inode<bdrynen_; ++inode)
   {
     for (int idim=0;idim<nsd_; ++idim)
     {
@@ -2197,7 +2197,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
     blitz::Array<double,1> u(3);
     u = 0.;
     for (int dim=0;dim<3;++dim)
-      for (int node=0;node<iel;++node)
+      for (int node=0;node<bdrynen_;++node)
         u(dim) += funct(node) * evelnp(dim,node);
 
     for(int dim=0;dim<3;++dim)
@@ -2207,7 +2207,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
     {
       //-------------------------------------------------------------------
       // dQ/du
-      for (int node=0;node<iel;++node)
+      for (int node=0;node<bdrynen_;++node)
       {
         for (int dim=0;dim<3;++dim)
           elevec1[node*numdofpernode_+dim] += funct(node) * normal(dim,0) * fac;
@@ -2218,9 +2218,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
       // dQ/dd
 
       // determine derivatives of surface normals wrt mesh displacements
-      blitz::Array<double,2> normalderiv(3,iel*3);
+      blitz::Array<double,2> normalderiv(3,bdrynen_*3);
 
-      for (int node=0;node<iel;++node)
+      for (int node=0;node<bdrynen_;++node)
       {
         normalderiv(0,3*node)   = 0.;
         normalderiv(0,3*node+1) = deriv(0,node)*dxyzdrs(1,2)-deriv(1,node)*dxyzdrs(0,2);
@@ -2235,7 +2235,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
         normalderiv(2,3*node+2) = 0.;
       }
 
-      for (int node=0;node<iel;++node)
+      for (int node=0;node<bdrynen_;++node)
       {
         for (int dim=0;dim<3;++dim)
           for (int iterdim=0;iterdim<3;++iterdim)
@@ -2252,7 +2252,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
 
         if (gridvel == 1)  // BE time discretization
         {
-          for (int node=0;node<iel;++node)
+          for (int node=0;node<bdrynen_;++node)
           {
             for (int dim=0;dim<3;++dim)
               elevec2[node*numdofpernode_+dim] -= 1.0/dt * funct(node) * normal(dim,0) * fac;
@@ -2265,11 +2265,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
       //-------------------------------------------------------------------
       // (d^2 Q)/(du dd)
 
-      for (int unode=0;unode<iel;++unode)
+      for (int unode=0;unode<bdrynen_;++unode)
       {
         for (int udim=0;udim<numdofpernode_;++udim)
         {
-          for (int nnode=0;nnode<iel;++nnode)
+          for (int nnode=0;nnode<bdrynen_;++nnode)
           {
             for (int ndim=0;ndim<numdofpernode_;++ndim)
             {
@@ -2286,12 +2286,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
       // (d^2 Q)/(dd)^2
 
       // determine second derivatives of surface normals wrt mesh displacements
-      blitz::Array<double,3> normalderiv2(3,iel*3,iel*3);
+      blitz::Array<double,3> normalderiv2(3,bdrynen_*3,bdrynen_*3);
       normalderiv2 = 0.;
 
-      for (int node1=0;node1<iel;++node1)
+      for (int node1=0;node1<bdrynen_;++node1)
       {
-        for (int node2=0;node2<iel;++node2)
+        for (int node2=0;node2<bdrynen_;++node2)
         {
           double temp = deriv(0,node1)*deriv(1,node2)-deriv(1,node1)*deriv(0,node2);
 
@@ -2306,11 +2306,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
         }
       }
 
-      for (int node1=0;node1<iel;++node1)
+      for (int node1=0;node1<bdrynen_;++node1)
       {
         for (int dim1=0;dim1<numdofpernode_;++dim1)
         {
-          for (int node2=0;node2<iel;++node2)
+          for (int node2=0;node2<bdrynen_;++node2)
           {
             for (int dim2=0;dim2<numdofpernode_;++dim2)
             {
@@ -2336,11 +2336,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateDeriv(
 
         if (gridvel == 1)
         {
-          for (int node1=0;node1<iel;++node1)
+          for (int node1=0;node1<bdrynen_;++node1)
           {
             for (int dim1=0;dim1<3;++dim1)
             {
-              for (int node2=0;node2<iel;++node2)
+              for (int node2=0;node2<bdrynen_;++node2)
               {
                 for (int dim2=0;dim2<3;++dim2)
                 {
@@ -2378,11 +2378,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   double invdensity=0.0; // inverse density of my parent element
 
   // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<iel,1> funct(true);
-  LINALG::Matrix<bdrynsd_,iel> deriv(true);
+  LINALG::Matrix<bdrynen_,1> funct(true);
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
   // global node coordinates
-  LINALG::Matrix<nsd_,iel> xyze(true);
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi(true);
@@ -2423,7 +2423,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,iel> >(ele,xyze);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
 #ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
@@ -2440,7 +2440,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
     dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
     {
       for (int idim=0; idim<nsd_; ++idim)
       {
@@ -2461,7 +2461,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 
     const double fac_drs_thsl_pres_inve = fac_drs * thsl * pressure * invdensity;
 
-    for (int inode=0;inode<iel;++inode)
+    for (int inode=0;inode<bdrynen_;++inode)
       for(int idim=0;idim<nsd_;++idim)
         // inward pointing normal of unit length
         elevec1[inode*numdofpernode_+idim] += funct(inode) * fac_drs_thsl_pres_inve * (-unitnormal(idim));
@@ -2476,12 +2476,12 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,
     const int                                         gpid,
-    const LINALG::Matrix<nsd_,iel>&                   xyze,
+    const LINALG::Matrix<nsd_,bdrynen_>&                   xyze,
     const std::vector<Epetra_SerialDenseVector>*      myknots,
     const Epetra_SerialDenseVector*                   weights,
     LINALG::Matrix<bdrynsd_,1>&                       xsi,
-    LINALG::Matrix<iel,1>&                            funct,
-    LINALG::Matrix<bdrynsd_,iel>&                     deriv,
+    LINALG::Matrix<bdrynen_,1>&                            funct,
+    LINALG::Matrix<bdrynsd_,bdrynen_>&                     deriv,
     double&                                           drs,
     LINALG::Matrix<nsd_,1>*                           unitnormal
 )
@@ -2575,7 +2575,7 @@ bool DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs
 
   // --------------------------------------------------
   // get node weights for nurbs elements
-  for (int inode=0; inode<iel; ++inode)
+  for (int inode=0; inode<bdrynen_; ++inode)
   {
     DRT::NURBS::ControlPoint* cp
       =
@@ -2648,7 +2648,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   elemat_epetra.Shape(peledim,peledim);
   elevec_epetra.Size (peledim);
-  
+
   LINALG::Matrix<peledim,peledim> elemat(elemat_epetra.A(),true);
   LINALG::Matrix<peledim,      1> elevec(elevec_epetra.A(),true);
 
@@ -2656,7 +2656,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   // scaling for constitutive law
   const double scaling=1.0/(2.0*viscosity);
   //  double rhsscaling=1./(2.0*viscosity);
-  
+
   //  const double scaling=1.0;
   const double rhsscaling=1.0;
 
@@ -2665,7 +2665,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   RefCountPtr<DRT::Condition> hixhybdbc_cond
     =
     params.get<RefCountPtr<DRT::Condition> >("condition");
-  
+
   // get value for boundary condition
   const vector<double>* val = (*hixhybdbc_cond).Get<vector<double> >("val");
 
@@ -2693,17 +2693,17 @@ template <DRT::Element::DiscretizationType bndydistype,
   }
 
   // --------------------------------------------------
-  // Extra matrices 
+  // Extra matrices
 
   // for r / sigma: indices ordered according to
   //
   //      0    1    2    (2D)
-  //     11 , 22 , 12 
+  //     11 , 22 , 12
   //
 
   //      0    1    2    3    4   5  (3D)
   //     11 , 22 , 33 , 12 , 13 ,23
-  
+
   // for volume integrals
 
   LINALG::Matrix<numstressdof_*piel,              piel> mat_r_p(true);
@@ -2722,7 +2722,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
   // --------------------------------------------------
-  // Extra vectors 
+  // Extra vectors
 
   // for volume integrals
 
@@ -2749,14 +2749,14 @@ template <DRT::Element::DiscretizationType bndydistype,
   // extract local velocities and pressure from the global vectors
   LINALG::Matrix<nsd ,piel>    pevel (true);
   LINALG::Matrix<piel,   1>    pepres(true);
-  
+
   RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
   if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
-  
+
   // extract local node values for pressure and velocities from global vectors
   vector<double> mypvel((*plm).size());
   DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
-  
+
   for (int inode=0;inode<piel;++inode)
   {
     for (int idim=0; idim<nsd ; ++idim)
@@ -2781,7 +2781,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
     //--------------------------------------------------
     // Gaussian integration points
-    const DRT::UTILS::IntPointsAndWeights<nsd> 
+    const DRT::UTILS::IntPointsAndWeights<nsd>
       pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     //--------------------------------------------------
@@ -2802,7 +2802,7 @@ template <DRT::Element::DiscretizationType bndydistype,
     LINALG::Matrix<nsd ,nsd >    pxji(true);
 
     LINALG::Matrix<nsd ,   1>    pxsi(true);
-    
+
     //--------------------------------------------------
     // the actual loop
     for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
@@ -2813,7 +2813,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         pxsi(idim) = gpcoord[idim];
       }
-      
+
       // get parent elements shape functions
       DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
       DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
@@ -2955,7 +2955,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0)*2.0*viscosity*scaling;
           vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1)*2.0*viscosity*scaling;
-          
+
           vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0))*2.0*viscosity*scaling;
         }
       }
@@ -2966,7 +2966,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0)*2.0*viscosity*scaling;
           vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1)*2.0*viscosity*scaling;
           vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2)*2.0*viscosity*scaling;
-          
+
           vec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0))*2.0*viscosity*scaling;
           vec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0))*2.0*viscosity*scaling;
           vec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1))*2.0*viscosity*scaling;
@@ -2998,10 +2998,10 @@ template <DRT::Element::DiscretizationType bndydistype,
 
     //--------------------------------------------------
     // Gaussian integration points
-    const DRT::UTILS::IntPointsAndWeights<bndynsd> 
+    const DRT::UTILS::IntPointsAndWeights<bndynsd>
       intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bndydistype>::rule);
 
-    const DRT::UTILS::IntPointsAndWeights<nsd> 
+    const DRT::UTILS::IntPointsAndWeights<nsd>
       pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     // coordinates of current integration point in reference coordinates
@@ -3019,7 +3019,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
         const double* gpcoord = (intpoints.IP().qxg)[iquad];
-      
+
         for (int idim=0;idim<bndynsd ;idim++)
         {
           gps(iquad,idim) = gpcoord[idim];
@@ -3063,7 +3063,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         xsi(idim) = gpcoord[idim];
       }
-      
+
       DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
       DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
 
@@ -3080,7 +3080,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       // compute measure tensor for surface element and the infinitesimal
       // area element drs for the integration
       LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
-      
+
       DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
       // compute integration factor
@@ -3120,7 +3120,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                   +-           -+   +-           -+   +-           -+
       */
       LINALG::Matrix<nsd,nsd> G;
-      
+
       for (int nn=0;nn<nsd;++nn)
       {
         for (int rr=0;rr<nsd;++rr)
@@ -3141,7 +3141,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       //                   \ / |  n * G * n |
       //                    +   \          /
       //
-      
+
       double nGn=0;
       for (int nn=0;nn<nsd;++nn)
       {
@@ -3151,20 +3151,20 @@ template <DRT::Element::DiscretizationType bndydistype,
         }
       }
       const double h =2.0/sqrt(nGn);
-      
+
       //      rhsscaling=1./h;
 #endif
 
       // interpolate to gausspoint
       velint.Multiply(pevel,pfunct);
-    
+
       /*
                               /              \
                              |  h       h     |
                            - | v , sigma  o n |
                              |                |
                               \              / Gamma
-      */  
+      */
       if(nsd ==2)
       {
         for(int A=0;A<piel;++A)
@@ -3188,11 +3188,11 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_  )-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+3)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+4)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-                                                        
+
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+3)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+5)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-                                                        
+
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+4)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+5)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
@@ -3317,12 +3317,12 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
 
       LINALG::Matrix<nsd,1> delta_vel(true);
-      
+
       for(int rr=0;rr<nsd;++rr)
       {
         delta_vel(rr)=velint(rr)-u_dirich(rr)*functionfac(rr);
       }
-      
+
       if(nsd==2)
       {
         for(int A=0;A<piel;++A)
@@ -3373,7 +3373,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           }
         }
       }
-      
+
       /*
       // factor: 1.0
       //
@@ -3442,10 +3442,10 @@ template <DRT::Element::DiscretizationType bndydistype,
   for(int A=0;A<piel;++A)
   {
     for(int B=0;B<piel;++B)
-    {   
-      for(int i=0;i<numstressdof_;++i) 
+    {
+      for(int i=0;i<numstressdof_;++i)
       {
-        for(int j=0;j<nsd;++j) 
+        for(int j=0;j<nsd;++j)
         {
           mat_r_up_block(A*numstressdof_+i,B*(nsd+1)+j)+=mat_r_epsu (A*numstressdof_+i,B*nsd+j);
           mat_r_up_block(A*numstressdof_+i,B*(nsd+1)+j)+=mat_r_o_n_u(A*numstressdof_+i,B*nsd+j);
@@ -3469,12 +3469,12 @@ template <DRT::Element::DiscretizationType bndydistype,
     for(int i=0;i<nsd;++i)
     {
       for(int B=0;B<piel;++B)
-      {   
+      {
         for(int rr=0;rr<numstressdof_*piel;++rr)
         {
           for(int mm=0;mm<numstressdof_*piel;++mm)
           {
-            for(int j=0;j<nsd+1;++j) 
+            for(int j=0;j<nsd+1;++j)
             {
               elemat(A*(nsd+1)+i,B*(nsd+1)+j)-=mat_v_sigma_o_n(A*nsd+i,rr)*inv_r_sigma(rr,mm)*mat_r_up_block(mm,B*(nsd+1)+j);
             }
@@ -3506,16 +3506,16 @@ template <DRT::Element::DiscretizationType bndydistype,
   // --------------------------------------------------
   for(int fd=0;fd<nsd+1;fd++)
   {
-    // Extra vectors 
+    // Extra vectors
 
     // for volume integrals
-    
+
     LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_p(true);
     LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_epsu(true);
-    
+
     // for boundary integrals
     LINALG::Matrix<numstressdof_*piel,                 1> FDvec_r_o_n_u_minus_g(true);
-        
+
     for (int inode=0;inode<piel;++inode)
     {
       for (int idim=0; idim<nsd ; ++idim)
@@ -3533,7 +3533,7 @@ template <DRT::Element::DiscretizationType bndydistype,
     {
       pevel(fd,0)+=1;
     }
-    
+
 
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
          PART 1: Gaussloop for volume integrals of parent element
@@ -3549,7 +3549,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       //--------------------------------------------------
       // Gaussian integration points
-      const DRT::UTILS::IntPointsAndWeights<nsd> 
+      const DRT::UTILS::IntPointsAndWeights<nsd>
         pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
       //--------------------------------------------------
@@ -3570,7 +3570,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       LINALG::Matrix<nsd ,nsd >    pxji(true);
 
       LINALG::Matrix<nsd ,   1>    pxsi(true);
-    
+
       //--------------------------------------------------
       // the actual loop
       for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
@@ -3581,7 +3581,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           pxsi(idim) = gpcoord[idim];
         }
-      
+
         // get parent elements shape functions
         DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
         DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
@@ -3655,7 +3655,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           {
             FDvec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
             FDvec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
-          
+
             FDvec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
           }
         }
@@ -3666,7 +3666,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             FDvec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
             FDvec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
             FDvec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2);
-          
+
             FDvec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
             FDvec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
             FDvec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
@@ -3698,10 +3698,10 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       //--------------------------------------------------
       // Gaussian integration points
-      const DRT::UTILS::IntPointsAndWeights<bndynsd> 
+      const DRT::UTILS::IntPointsAndWeights<bndynsd>
         intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bndydistype>::rule);
 
-      const DRT::UTILS::IntPointsAndWeights<nsd> 
+      const DRT::UTILS::IntPointsAndWeights<nsd>
         pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
 
@@ -3742,7 +3742,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           xsi(idim) = gpcoord[idim];
         }
-      
+
         DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
         DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
 
@@ -3750,7 +3750,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           pxsi(idim) = pqxg(iquad,idim);
         }
-      
+
         DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
 
         double drs=0.0;
@@ -3758,7 +3758,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
         LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
-      
+
         DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
         // compute integration factor
@@ -3766,7 +3766,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
         // interpolate to gausspoint
         velint.Multiply(pevel,pfunct);
-  
+
         /*
                      /          \
                     |  h       h |
@@ -3774,7 +3774,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                     |            |
                      \          / Gamma
         */
-  
+
         // ------------------------------------------------
         // factor given by spatial function
         LINALG::Matrix<nsd,1> functionfac(true);
@@ -3815,12 +3815,12 @@ template <DRT::Element::DiscretizationType bndydistype,
         }
 
         LINALG::Matrix<nsd,1> delta_vel(true);
-      
+
         for(int rr=0;rr<nsd;++rr)
         {
           delta_vel(rr)=velint(rr)-u_dirich(rr)*functionfac(rr);
         }
-      
+
         if(nsd==2)
         {
           for(int A=0;A<piel;++A)
@@ -3855,7 +3855,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
     }
     else
-    { 
+    {
       for(int rr=0;rr<numstressdof_;++rr)
       {
         printf("FDvec_r_epsu(%2d,%2d)          %12.5e  %12.5e %12.5e  %12.5e\n",rr,fd,mat_r_epsu (rr,fd),FDvec_r_epsu(rr)-vec_r_epsu(rr),FDvec_r_epsu(rr),vec_r_epsu(rr));

@@ -125,7 +125,7 @@ public:
   Fluid3BoundaryImpl(int numdofpernode);
 
   //! number of element nodes
-  static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of space dimensions of the Fluid3Boundary element
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -433,12 +433,12 @@ private:
   void EvalShapeFuncAndIntFac(
       const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points (in)
       const int                                         iquad,      ///< actual Gauss point (in)
-      const LINALG::Matrix<nsd_,iel>&                   xyze,       ///< global coordinates of the element nodes (in)
+      const LINALG::Matrix<nsd_,bdrynen_>&                   xyze,       ///< global coordinates of the element nodes (in)
       const std::vector<Epetra_SerialDenseVector>*      myknots,    ///< nurbs specific knotes (in)
       const Epetra_SerialDenseVector*                   weights,    ///< nurbs specific weights (in)
       LINALG::Matrix<bdrynsd_,1>&                       xsi,        ///< local coordinates of the gauss points (in)
-      LINALG::Matrix<iel,1>&                            funct,      ///< shape functions (in)
-      LINALG::Matrix<bdrynsd_,iel>&                     deriv,      ///< derivative of the shape functions (in)
+      LINALG::Matrix<bdrynen_,1>&                            funct,      ///< shape functions (in)
+      LINALG::Matrix<bdrynsd_,bdrynen_>&                     deriv,      ///< derivative of the shape functions (in)
       double&                                           drs,      ///< infinitesimal area element
       LINALG::Matrix<nsd_,1>*                           unitnormal  ///< normalized normal vector (out)
   );
