@@ -115,7 +115,8 @@ void IO::GMSH::ScalarFieldToGmsh(
 
     std::vector<int> lm;
     std::vector<int> lmowner;
-    ele->LocationVector(*discret, lm, lmowner);
+    std::vector<int> lmstride;
+    ele->LocationVector(*discret, lm, lmowner, lmstride);
 
     // extract local values from the global vector
     Epetra_SerialDenseVector myscalarfield(lm.size());
@@ -169,7 +170,8 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
 
     std::vector<int> lm;
     std::vector<int> lmowner;
-    ele->LocationVector(*discret, lm, lmowner);
+    std::vector<int> lmstride;
+    ele->LocationVector(*discret, lm, lmowner, lmstride);
 
     // extract local values from the global vector
     Epetra_SerialDenseVector myvectorfield(lm.size());
