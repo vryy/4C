@@ -1696,7 +1696,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -1794,7 +1795,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2131,7 +2133,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*discret_, lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*discret_, lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
