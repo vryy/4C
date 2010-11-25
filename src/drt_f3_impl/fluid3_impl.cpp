@@ -674,9 +674,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     double rhsfac            = fac_;
 
-    const double fssgviscfac = fssgvisc_*timefacfac;
-
-
   //--------------------------------------------------------------------
   // The following computations are performed depending on
   // time-integration, that is, whether it is generalized-alpha or not,
@@ -966,7 +963,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     if(f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
     {
-      FineScaleSubGridViscosityTerm(velforce, fssgviscfac);
+      const double fssgviscfac = fssgvisc_*rhsfac;
+
+      FineScaleSubGridViscosityTerm(velforce,
+                                    fssgviscfac);
     }
 
   //--------------------------------------------------------------------
