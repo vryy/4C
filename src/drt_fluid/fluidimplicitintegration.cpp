@@ -306,7 +306,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
     // evaluate the map of te womersley bcs
     vol_surf_flow_bc_->EvaluateCondMap(vol_surf_flow_bcmaps_);
-    
+
 #ifdef D_ARTNET
     // -----------------------------------------------------------------
     // Initialize the reduced models
@@ -359,7 +359,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
     // Evaluate the womersley velocities
     vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
-      
+
 
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -776,7 +776,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
-  // 
+  //
   // for example
   //
   //
@@ -850,7 +850,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
         coupled3D_redDbc_airways_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
       }
 #endif //D_RED_AIRWAYS
-      
+
       // Evaluate the womersley velocities
       vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
 
@@ -1300,7 +1300,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     if (project_)
     {
       DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
-      
+
       // in this case, we want to project out some zero pressure modes
       const string* definition = KSPcond->Get<string>("weight vector definition");
 
@@ -2649,7 +2649,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     // (The Dirichlet rows will become all zero, no diagonal one.)
     shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-    
+
     // apply the womersley bc as a dirichlet bc
     shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bcmaps_),false);
   }
@@ -2768,15 +2768,15 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp, 
-                                              onlyveln , 
-                                              onlyvelnm, 
+    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
+                                              onlyveln ,
+                                              onlyvelnm,
                                               onlyaccn ,
-                                              timealgo_, 
-                                              step_    , 
-                                              theta_   , 
-                                              dta_     , 
-                                              dtp_     , 
+                                              timealgo_,
+                                              step_    ,
+                                              theta_   ,
+                                              dta_     ,
+                                              dtp_     ,
                                               onlyaccnp);
 
     // copy back into global vector
@@ -4494,15 +4494,15 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_node_normal");
-  
+
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  
+
   //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
   Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-  
+
   //call loop over elements, note: normal vectors do not yet have length = 1.0
   discret_->ClearState();
   if (alefluid_)
@@ -4525,7 +4525,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
       L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
     }
     L = sqrt(L);
-    
+
     // normalise the normal vector (if present for the current node)
     if (L > EPS15)
     {
