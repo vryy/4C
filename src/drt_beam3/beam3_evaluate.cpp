@@ -371,6 +371,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       curvold_ = curvconv_;
       thetaold_ = thetaconv_;
       thetaprimeold_ = thetaprimeconv_;
+      Qnew_ = Qconv_;
+      curvnew_ = curvconv_;
+      thetanew_ = thetaconv_;
+      thetaprimenew_ = thetaprimeconv_;
     }
     break;
     case calc_struct_stress:

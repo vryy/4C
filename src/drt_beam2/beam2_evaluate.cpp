@@ -222,6 +222,8 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
        * beginning of the time step*/
       numperiodsold_ = numperiodsconv_;
       alphaold_ = alphaconv_;
+      numperiodsnew_ = numperiodsconv_;
+      alphanew_ = alphaconv_;
     }
     break;
     case calc_struct_stress:

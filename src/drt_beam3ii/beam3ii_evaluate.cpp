@@ -417,6 +417,8 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
        * beginning of the time step*/
       Qold_ = Qconv_;
       dispthetaold_ = dispthetaconv_;
+      Qnew_ = Qconv_;
+      dispthetanew_ = dispthetaconv_;
     }
     break;
     case calc_struct_stress:
