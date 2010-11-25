@@ -126,10 +126,13 @@ public:
   /// Constructor
   ScaTraBoundaryImpl(int numdofpernode, int numscal);
 
+  /// Singleton access method
+  static ScaTraBoundaryImpl<distype> * Instance(const int numdofpernode,const int numscal);
+
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  //! number of space dimensions
+  //! number of boundary(!) space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! Evaluate
@@ -268,6 +271,10 @@ public:
 
     //! node coordinates
     LINALG::Matrix<nsd_+1,nen_> xyze_;
+    //! weights for nurbs elements
+    LINALG::Matrix<nen_,1> weights_;
+    //! knot vector for nurbs elements
+    std::vector<Epetra_SerialDenseVector> myknots_;
     //! nodal displacement values for ALE
     LINALG::Matrix<nsd_+1,nen_> edispnp_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity

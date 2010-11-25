@@ -107,7 +107,10 @@ class ScaTraImpl: public ScaTraImplInterface
 {
 public:
   /// Constructor
-  ScaTraImpl(int numdofpernode, int numscal);
+  ScaTraImpl(const int numdofpernode, const int numscal);
+
+  /// Singleton access method
+  static ScaTraImpl<distype> * Instance(const int numdofpernode, const int numscal);
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

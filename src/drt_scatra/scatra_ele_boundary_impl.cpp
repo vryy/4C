@@ -31,6 +31,8 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 // material headers
@@ -62,57 +64,67 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   {
   case DRT::Element::quad4:
   {
-    static ScaTraBoundaryImpl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
-      cp4 = new ScaTraBoundaryImpl<DRT::Element::quad4>(numdofpernode,numscal);
-      return cp4;
+    return ScaTraBoundaryImpl<DRT::Element::quad4>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::quad8:
   {
-    static ScaTraBoundaryImpl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
-      cp8 = new ScaTraBoundaryImpl<DRT::Element::quad8>(numdofpernode,numscal);
-    return cp8;
+    return ScaTraBoundaryImpl<DRT::Element::quad8>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::quad9:
   {
-    static ScaTraBoundaryImpl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
-      cp9 = new ScaTraBoundaryImpl<DRT::Element::quad9>(numdofpernode,numscal);
-    return cp9;
+    return ScaTraBoundaryImpl<DRT::Element::quad9>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::tri3:
   {
-    static ScaTraBoundaryImpl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
-      cp3 = new ScaTraBoundaryImpl<DRT::Element::tri3>(numdofpernode,numscal);
-      return cp3;
+    return ScaTraBoundaryImpl<DRT::Element::tri3>::Instance(numdofpernode,numscal);
   }
   /*  case DRT::Element::tri6:
   {
-    static ScaTraBoundaryImpl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
-      cp6 = new ScaTraBoundaryImpl<DRT::Element::tri6>(numdofpernode,numscal);
-    return cp6;
+    return ScaTraBoundaryImpl<DRT::Element::tri6>::Instance(numdofpernode,numscal);
   }*/
   case DRT::Element::line2:
   {
-    static ScaTraBoundaryImpl<DRT::Element::line2>* cl2;
-    if (cl2==NULL)
-      cl2 = new ScaTraBoundaryImpl<DRT::Element::line2>(numdofpernode,numscal);
-      return cl2;
+    return ScaTraBoundaryImpl<DRT::Element::line2>::Instance(numdofpernode,numscal);
   }/*
   case DRT::Element::line3:
   {
-    static ScaTraBoundaryImpl<DRT::Element::line3>* cl3;
-    if (cl3==NULL)
-      cl3 = new ScaTraBoundaryImpl<DRT::Element::line3>(numdofpernode,numscal);
-    return cl3;
+    return ScaTraBoundaryImpl<DRT::Element::line3>::Instance(numdofpernode,numscal);
   }*/
+  case DRT::Element::nurbs2:    // 1D nurbs boundary element
+  {
+    return ScaTraBoundaryImpl<DRT::Element::nurbs2>::Instance(numdofpernode,numscal);
+  }
+  case DRT::Element::nurbs3:    // 1D nurbs boundary element
+  {
+    return ScaTraBoundaryImpl<DRT::Element::nurbs3>::Instance(numdofpernode,numscal);
+  }
+  case DRT::Element::nurbs4:    // 2D nurbs boundary element
+  {
+    return ScaTraBoundaryImpl<DRT::Element::nurbs4>::Instance(numdofpernode,numscal);
+  }
+  case DRT::Element::nurbs9:    // 2D nurbs boundary element
+  {
+    return ScaTraBoundaryImpl<DRT::Element::nurbs9>::Instance(numdofpernode,numscal);
+  }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
   }
   return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::ScaTraBoundaryImpl<distype> * DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Instance(
+    const int numdofpernode,
+    const int numscal
+    )
+{
+  static ScaTraBoundaryImpl<distype> * instance;
+  if ( instance==NULL )
+    instance = new ScaTraBoundaryImpl<distype>(numdofpernode,numscal);
+  return instance;
 }
 
 
@@ -182,6 +194,31 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     xyze_ += edispnp_;
   }
   else edispnp_.Clear();
+
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(SCATRA::IsNurbs(distype))
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    bool zero_size(false);
+    // get local knot vector entries and check for zero sized elements
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    {
+      return(0);
+    }
+    // you are still here? So get the node weights for nurbs elements as well
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0; inode<nen_; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      weights_(inode) = cp->W();
+    }
+  } // Nurbs specific stuff
 
   // Now, check for the action parameter
   const string action = params.get<string>("action","none");
@@ -606,6 +643,31 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   }
   else edispnp_.Clear();
 
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(SCATRA::IsNurbs(distype))
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+    bool zero_size(false);
+    // get local knot vector entries and check for zero sized elements
+    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    {
+      return(0);
+    }
+    // you are still here? So get the node weights for nurbs elements as well
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0; inode<nen_; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      weights_(inode) = cp->W();
+    }
+  } // Nurbs specific stuff
+
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -845,9 +907,36 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   for (int idim=0;idim<nsd_;idim++)
   {xsi_(idim) = gpcoord[idim];}
 
-  // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if(not SCATRA::IsNurbs(distype))
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  }
+  else // nurbs elements are always somewhat special...
+  {
+    if (nsd_ == 2)
+    {
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+      (funct_  ,
+          deriv_  ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+    }
+    else if (nsd_ == 1)
+    {
+      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
+      (funct_  ,
+          deriv_  ,
+          xsi_(0) ,
+          myknots_[0],
+          weights_,
+          distype );
+    }
+    else dserror("Your boundary has not supported spatial dimension: %d",nsd_);
+  }
 
   // the metric tensor and the area of an infinitesimal surface/line element
   double drs(0.0);

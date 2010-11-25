@@ -71,136 +71,79 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   {
   case DRT::Element::hex8:
   {
-    static ScaTraImpl<DRT::Element::hex8>* ch8;
-    if (ch8==NULL)
-      ch8 = new ScaTraImpl<DRT::Element::hex8>(numdofpernode,numscal);
-    return ch8;
+    return ScaTraImpl<DRT::Element::hex8>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::hex20:
   {
-    static ScaTraImpl<DRT::Element::hex20>* ch20;
-    if (ch20==NULL)
-      ch20 = new ScaTraImpl<DRT::Element::hex20>(numdofpernode,numscal);
-    return ch20;
+    return ScaTraImpl<DRT::Element::hex20>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::hex27:
   {
-    static ScaTraImpl<DRT::Element::hex27>* ch27;
-    if (ch27==NULL)
-      ch27 = new ScaTraImpl<DRT::Element::hex27>(numdofpernode,numscal);
-    return ch27;
+    return ScaTraImpl<DRT::Element::hex27>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::nurbs8:
   {
-    static ScaTraImpl<DRT::Element::nurbs8>* cn8;
-    if (cn8==NULL)
-      cn8 = new ScaTraImpl<DRT::Element::nurbs8>(numdofpernode,numscal);
-    return cn8;
+    return ScaTraImpl<DRT::Element::nurbs8>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::nurbs27:
   {
-    static ScaTraImpl<DRT::Element::nurbs27>* cn27;
-    if (cn27==NULL)
-      cn27 = new ScaTraImpl<DRT::Element::nurbs27>(numdofpernode,numscal);
-    return cn27;
+    return ScaTraImpl<DRT::Element::nurbs27>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::tet4:
   {
-    static ScaTraImpl<DRT::Element::tet4>* ct4;
-    if (ct4==NULL)
-      ct4 = new ScaTraImpl<DRT::Element::tet4>(numdofpernode,numscal);
-    return ct4;
+    return ScaTraImpl<DRT::Element::tet4>::Instance(numdofpernode,numscal);
   }
  /* case DRT::Element::tet10:
   {
-    static ScaTraImpl<DRT::Element::tet10>* ct10;
-    if (ct10==NULL)
-      ct10 = new ScaTraImpl<DRT::Element::tet10>(numdofpernode,numscal);
-    return ct10;
+    return ScaTraImpl<DRT::Element::tet10>::Instance(numdofpernode,numscal);
   } */
   case DRT::Element::wedge6:
   {
-    static ScaTraImpl<DRT::Element::wedge6>* cw6;
-    if (cw6==NULL)
-      cw6 = new ScaTraImpl<DRT::Element::wedge6>(numdofpernode,numscal);
-    return cw6;
+    return ScaTraImpl<DRT::Element::wedge6>::Instance(numdofpernode,numscal);
   }
 /*  case DRT::Element::wedge15:
   {
-    static ScaTraImpl<DRT::Element::wedge15>* cw15;
-    if (cw15==NULL)
-      cw15 = new ScaTraImpl<DRT::Element::wedge15>(numdofpernode,numscal);
-    return cw15;
+    return ScaTraImpl<DRT::Element::wedge15>::Instance(numdofpernode,numscal);
   } */
   case DRT::Element::pyramid5:
   {
-    static ScaTraImpl<DRT::Element::pyramid5>* cp5;
-    if (cp5==NULL)
-      cp5 = new ScaTraImpl<DRT::Element::pyramid5>(numdofpernode,numscal);
-    return cp5;
+    return ScaTraImpl<DRT::Element::pyramid5>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::quad4:
   {
-    static ScaTraImpl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
-      cp4 = new ScaTraImpl<DRT::Element::quad4>(numdofpernode,numscal);
-    return cp4;
+    return ScaTraImpl<DRT::Element::quad4>::Instance(numdofpernode,numscal);
   }
 /*  case DRT::Element::quad8:
   {
-    static ScaTraImpl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
-      cp8 = new ScaTraImpl<DRT::Element::quad8>(numdofpernode,numscal);
-    return cp8;
+    return ScaTraImpl<DRT::Element::quad8>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::quad9:
   {
-    static ScaTraImpl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
-      cp9 = new ScaTraImpl<DRT::Element::quad9>(numdofpernode,numscal);
-    return cp9;
+    return ScaTraImpl<DRT::Element::quad9>::Instance(numdofpernode,numscal);
   }*/
   case DRT::Element::nurbs4:
   {
-    static ScaTraImpl<DRT::Element::nurbs4>* cn4;
-    if (cn4==NULL)
-      cn4 = new ScaTraImpl<DRT::Element::nurbs4>(numdofpernode,numscal);
-    return cn4;
+    return ScaTraImpl<DRT::Element::nurbs4>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::nurbs9:
   {
-    static ScaTraImpl<DRT::Element::nurbs9>* cn9;
-    if (cn9==NULL)
-      cn9 = new ScaTraImpl<DRT::Element::nurbs9>(numdofpernode,numscal);
-    return cn9;
+    return ScaTraImpl<DRT::Element::nurbs9>::Instance(numdofpernode,numscal);
   }
   case DRT::Element::tri3:
   {
-    static ScaTraImpl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
-      cp3 = new ScaTraImpl<DRT::Element::tri3>(numdofpernode,numscal);
-    return cp3;
+    return ScaTraImpl<DRT::Element::tri3>::Instance(numdofpernode,numscal);
   }
 /*  case DRT::Element::tri6:
   {
-    static ScaTraImpl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
-      cp6 = new ScaTraImpl<DRT::Element::tri6>(numdofpernode,numscal);
-    return cp6;
+    return ScaTraImpl<DRT::Element::tri6>::Instance(numdofpernode,numscal);
   }*/
   case DRT::Element::line2:
   {
-    static ScaTraImpl<DRT::Element::line2>* cl2;
-    if (cl2==NULL)
-      cl2 = new ScaTraImpl<DRT::Element::line2>(numdofpernode,numscal);
-    return cl2;
+    return ScaTraImpl<DRT::Element::line2>::Instance(numdofpernode,numscal);
   }/*
   case DRT::Element::line3:
   {
-    static ScaTraImpl<DRT::Element::line3>* cl3;
-    if (cl3==NULL)
-      cl3 = new ScaTraImpl<DRT::Element::line3>(numdofpernode,numscal);
-    return cl3;
+    return ScaTraImpl<DRT::Element::line3>::Instance(numdofpernode,numscal);
   }*/
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(ele->Shape()).c_str());
@@ -211,8 +154,23 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::ScaTraImpl<distype> * DRT::ELEMENTS::ScaTraImpl<distype>::Instance(
+    const int numdofpernode,
+    const int numscal
+    )
+{
+  static ScaTraImpl<distype> * instance;
+  if ( instance==NULL )
+    instance = new ScaTraImpl<distype>(numdofpernode,numscal);
+  return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(int numdofpernode, int numscal)
+DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
     iselch_((numdofpernode_ - numscal_) == 1),
@@ -334,15 +292,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       return(0);
     }
     // you are still here? So get the node weights for nurbs elements as well
-    if(SCATRA::IsNurbs(distype))
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0; inode<nen_; inode++)
     {
-      for (int inode=0; inode<nen_; inode++)
-      {
-        DRT::Node** nodes = ele->Nodes();
-        DRT::NURBS::ControlPoint* cp
-        = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-        weights_(inode) = cp->W();
-      }
+      DRT::NURBS::ControlPoint* cp
+      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      weights_(inode) = cp->W();
     }
   } // Nurbs specific stuff
 

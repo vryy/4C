@@ -108,12 +108,12 @@ namespace UTILS
 
   */
 
-  template<class V>
+  template<class V, class WG>
   void nurbs_get_1D_funct(
     V                                      & nurbs_shape_funct  ,
     const double                           & u                  ,
     const Epetra_SerialDenseVector         & knots              ,
-    const Epetra_SerialDenseVector         & weights            ,
+    const WG                               & weights            ,
     const DRT::Element::DiscretizationType & distype            )
 {
 
@@ -392,13 +392,13 @@ namespace UTILS
 
   */
 
-  template <class VF,class VD>
+  template <class VF,class VD,class WG>
   void nurbs_get_1D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     VD                                     & nurbs_shape_deriv,
     const double                           & u                ,
     const Epetra_SerialDenseVector         & knots            ,
-    const Epetra_SerialDenseVector         & weights          ,
+    const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
   int degree = 0;
@@ -612,13 +612,13 @@ namespace UTILS
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
 
     // loop directions to compute derivatives
-    nurbs_shape_deriv(rr)
+    nurbs_shape_deriv(0,rr)
       =
       bezier_shape_deriv(rr)*sum_funct_weight
       -
       bezier_shape_funct(rr)*sum_deriv_weight;
 
-      nurbs_shape_deriv(rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
+      nurbs_shape_deriv(0,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
   }
 
   // -----------------------------------------------
@@ -638,7 +638,7 @@ namespace UTILS
   // loop all basis function derivatives
   for(int rr=0;rr<size;++rr)
   {
-    nurbs_shape_deriv(rr)*=Ju;
+    nurbs_shape_deriv(0,rr)*=Ju;
   }
 
   return;

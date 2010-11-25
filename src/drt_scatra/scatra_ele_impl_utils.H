@@ -37,6 +37,7 @@ namespace SCATRA
   template<> struct Use2ndDerivs<DRT::Element::nurbs4>  {static const bool use = false;};
   template<> struct Use2ndDerivs<DRT::Element::tri3>    {static const bool use = false;};
   template<> struct Use2ndDerivs<DRT::Element::line2>   {static const bool use = false;};
+  template<> struct Use2ndDerivs<DRT::Element::nurbs2>  {static const bool use = false;};
   template<> struct Use2ndDerivs<DRT::Element::hex20>   {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::hex27>   {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::nurbs27> {static const bool use = true; };
@@ -46,6 +47,7 @@ namespace SCATRA
   template<> struct Use2ndDerivs<DRT::Element::nurbs9>  {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::tri6>    {static const bool use = true; };
   template<> struct Use2ndDerivs<DRT::Element::line3>   {static const bool use = true; };
+  template<> struct Use2ndDerivs<DRT::Element::nurbs3>  {static const bool use = true;};
 
 
   //! Template Meta Programming version of switch over discretization type
@@ -69,6 +71,8 @@ namespace SCATRA
   template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs9>  {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
   template<> struct DisTypeToOptGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_2point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_3point; };
 
   //! Template Meta Programming version of switch over discretization type
   template<DRT::Element::DiscretizationType DISTYPE>
@@ -91,6 +95,8 @@ namespace SCATRA
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs9>  {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
   template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
+  template<> struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule1D_undefined; };
 
   //! for each distype provide the m_k needed for stabilization computation
   template<DRT::Element::DiscretizationType DISTYPE>
@@ -126,9 +132,11 @@ namespace SCATRA
       break;
       // finally, do the 1D case
     case DRT::Element::line2:
+    case DRT::Element::nurbs2:
       return 0.333333333333333333333;
       break;
     case DRT::Element::line3:
+    case DRT::Element::nurbs3:
       return 0.083333333333333333333;
       break;
     default:
@@ -158,6 +166,8 @@ namespace SCATRA
   template<> struct DisTypeToStabGaussRule<DRT::Element::tri6>    {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_1point; };
   template<> struct DisTypeToStabGaussRule<DRT::Element::line2>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
   template<> struct DisTypeToStabGaussRule<DRT::Element::line3>   {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
+  template<> struct DisTypeToStabGaussRule<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
 
   //! determine whether this is an NURBS element or not
   inline bool IsNurbs(DRT::Element::DiscretizationType distype){
@@ -167,6 +177,8 @@ namespace SCATRA
     case DRT::Element::nurbs27:
     case DRT::Element::nurbs4:
     case DRT::Element::nurbs9:
+    case DRT::Element::nurbs2:
+    case DRT::Element::nurbs3:
     {
       return true;
       break;
