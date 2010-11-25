@@ -52,7 +52,8 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
     DRT::ELEMENTS::NStet* e = ele->second;
     vector<int> lm;
     vector<int> lmowner;
-    e->LocationVector(dis,lm,lmowner);
+    vector<int> lmstride;
+    e->LocationVector(dis,lm,lmowner,lmstride);
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     
@@ -85,7 +86,8 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
     DRT::ELEMENTS::NStet* e = ele->second;
     vector<int> lm;
     vector<int> lmowner;
-    e->LocationVector(dis,lm,lmowner);
+    vector<int> lmstride;
+    e->LocationVector(dis,lm,lmowner,lmstride);
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     
@@ -628,7 +630,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // get the element's displacements out of the patch' displacements
     vector<int> elelm;
     vector<int> lmowner;
-    adjele[i]->LocationVector(dis,elelm,lmowner);
+    vector<int> lmstride;
+    adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
 
     // have to find position of elelm[i] in lm
     // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
@@ -960,7 +963,8 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     // get the element's displacements out of the patch' displacements
     vector<int> elelm;
     vector<int> lmowner;
-    adjele[i]->LocationVector(dis,elelm,lmowner);
+    vector<int> lmstride;
+    adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
     // have to find position of elelm[i] in lm
     // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
     lmlm[i].resize(12);

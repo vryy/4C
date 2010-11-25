@@ -162,7 +162,8 @@ void DRT::ELEMENTS::PtetType::PreEvaluate(DRT::Discretization& dis,
   {
     vector<int> lm;
     vector<int> lmowner;
-    ele->second->LocationVector(dis,lm,lmowner);
+    vector<int> lmstride;
+    ele->second->LocationVector(dis,lm,lmowner,lmstride);
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     ele->second->DeformationGradient(mydisp);
