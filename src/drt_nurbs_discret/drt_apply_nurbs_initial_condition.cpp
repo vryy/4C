@@ -89,6 +89,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
     vector<int> lm;
     vector<int> lmowner;
+    vector<int> lmstride;
 
     // loop over column elements
     const int numcolele = nurbsdis->NumMyColElements();
@@ -109,7 +110,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
       // get element location vector, dirichlet flags and ownerships
       lm.clear();
       lmowner.clear();
-      actele->LocationVector(*nurbsdis,lm,lmowner);
+      actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
