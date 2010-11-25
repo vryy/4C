@@ -734,6 +734,7 @@ set(OBJS_DRT_SCATRA
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
+  src/drt_tsi/tsi_monolithic.cpp
   src/drt_tsi/tsi_dyn.cpp
   src/drt_tsi/tsi_utils.cpp
 )

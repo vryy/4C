@@ -1453,9 +1453,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    // Coupling strategy for (partitioned and monolithic) TSI solvers
    setStringToIntegralParameter<INPAR::TSI::SolutionSchemeOverFields>(
                                 "COUPALGO","tsi_iterstagg",
-//                                "PARTITIONED","tsi_iterstagg",
-//                                "Coupling strategies for TSI solvers",
-                                "Coupling strategies for partitioned TSI solvers",
+                                "Coupling strategies for TSI solvers",
                                 tuple<std::string>(
                                   "tsi_oneway",
                                   "tsi_sequstagg",
