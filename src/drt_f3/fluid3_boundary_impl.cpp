@@ -2710,14 +2710,17 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RefCountPtr<vector<int> > plm
+  RCP<vector<int> > plm
     =
-    params.get<RefCountPtr<vector<int> > >("plm");
-  RefCountPtr<vector<int> > plmowner
+    params.get<RCP<vector<int> > >("plm");
+  RCP<vector<int> > plmowner
     =
-    params.get<RefCountPtr<vector<int> > >("plmowner");
+    params.get<RCP<vector<int> > >("plmowner");
+  RCP<vector<int> > plmstride
+    =
+    params.get<RCP<vector<int> > >("plmstride");
 
-  parent->LocationVector(discretization,*plm,*plmowner);
+  parent->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // extract local velocities and pressure from the global vectors
   LINALG::Matrix<nsd ,piel>    pevel (true);
