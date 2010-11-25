@@ -996,7 +996,8 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
     RefCountPtr<DRT::Element> iele = elemiter->second;
     vector<int> lm;
     vector<int> lmowner;
-    iele->LocationVector(*structdis,lm,lmowner);
+    vector<int> lmstride;
+    iele->LocationVector(*structdis,lm,lmowner,lmstride);
     elevector2.Size(1);   //length of circ with gaussinteg
     elevector3.Size(dim);   //centerdisp part of ele  
 
