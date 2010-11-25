@@ -370,6 +370,30 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   return;
 }
 
+/*-----------------------------------------------------------------------*
+|(public)                                                        tk 01/08|
+|Compute values defined to keep track of.                                |
+*-----------------------------------------------------------------------*/
+void UTILS::ConstrManager::ComputeMonitorValues(RCP<const Epetra_Vector> disp)
+{
+  vector<DRT::Condition*> monitcond(0);
+  monitorvalues_->PutScalar(0.0);
+  ParameterList p;
+  actdisc_->SetState("displacement",disp);
+
+  RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
+  p.set("OffsetID",minMonitorID_);
+
+  volmonitor3d_->Evaluate(p,actmonredundant);
+  areamonitor3d_->Evaluate(p,actmonredundant);
+  areamonitor2d_->Evaluate(p,actmonredundant);
+
+  Epetra_Import monimpo(*monitormap_,*redmonmap_);
+  monitorvalues_->Export(*actmonredundant,*monimpo_,Add);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
 |Print monitored values                                                 |

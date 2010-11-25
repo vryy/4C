@@ -267,6 +267,14 @@ namespace UTILS
     (
       RCP<Epetra_Vector> disp ///< current displacement
     );
+    
+    /*!
+       \brief Compute values described by a monitor boundary condition
+    */
+    void ComputeMonitorValues
+    (
+      RCP<const Epetra_Vector> disp ///< current displacement
+    );
 
     /// Reset reference base values for restart computations
     void SetRefBaseValues
