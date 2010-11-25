@@ -2021,8 +2021,6 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		// remainder of above division (will be distributed equally among processors)
 		int remainder = numcombinations%combinationsperproc;
 
-		cout<<numcombinations<<", "<<combinationsperproc<<", "<<remainder<<endl;
-
 		// get starting index tuples for later use
 		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
 
@@ -2074,10 +2072,10 @@ void StatMechManager::CrosslinkerMoleculeInit()
 			}
 		}
 	}
-	cout<<"start indices: ";
-	for(int i=0; i<(int)startindex_->size(); i++)
-		cout<<(*startindex_)[i]<<" ";
-	cout<<endl;
+	//cout<<"start indices: ";
+	//for(int i=0; i<(int)startindex_->size(); i++)
+	//	cout<<(*startindex_)[i]<<" ";
+	//cout<<endl;
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions
