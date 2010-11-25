@@ -203,6 +203,7 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat,
   sysmat.Assemble( eid, lmstride, Aele, lm, lmowner);
 }
 
+#if 0
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat,
@@ -214,6 +215,7 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat,
 {
   sysmat.Assemble( eid, Aele, lmrow, lmrowowner, lmcol );
 }
+#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

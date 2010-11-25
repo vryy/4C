@@ -157,6 +157,7 @@ namespace DRT
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner);
 
+#if 0
     /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
@@ -164,6 +165,7 @@ namespace DRT
                           const std::vector<int>& lmrow,
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol);
+#endif
 
     /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
