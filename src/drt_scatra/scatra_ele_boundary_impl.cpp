@@ -375,7 +375,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const int nenparent = parentele->NumNode();
     vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
-    parentele->LocationVector(discretization, lmparent, lmparentowner);
+    vector<int> lmparentstride;
+    parentele->LocationVector(discretization, lmparent, lmparentowner,lmparentstride);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -476,7 +477,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const int nenparent = parentele->NumNode();
     vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
-    parentele->LocationVector(discretization, lmparent, lmparentowner);
+    vector<int> lmparentstride;
+    parentele->LocationVector(discretization, lmparent, lmparentowner,lmparentstride);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -1620,7 +1622,8 @@ template <DRT::Element::DiscretizationType bdistype,
   // EvaluateConditionUsingParentData)
   RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
   RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  pele->LocationVector(discretization,*plm,*plmowner);
+  RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
   const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);

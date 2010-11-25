@@ -116,6 +116,7 @@ private:
      */
     void Assemble(int eid,
         int myrank,
+        const std::vector<int>& lmstride,
         const Epetra_SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner,

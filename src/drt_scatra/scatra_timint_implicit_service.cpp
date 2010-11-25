@@ -1871,8 +1871,9 @@ Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   // get element location vector, dirichlet flags and ownerships
   std::vector<int> lm;  // location vector
   std::vector<int> lmowner;  // processor which owns DOFs
+  std::vector<int> lmstride;  // nodal block sizes in element matrices
 
-  actele->LocationVector(*discret_,lm,lmowner);
+  actele->LocationVector(*discret_,lm,lmowner,lmstride);
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
