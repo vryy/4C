@@ -869,7 +869,8 @@ void POTENTIAL::Potential::CollectLmcol(
       const DRT::Element* element = potentialdis->gElement(*eleIter);
       vector<int> lmowner;
       vector<int> lm;
-      element->LocationVector(*potentialdis,lm,lmowner);
+      vector<int> lmstride;
+      element->LocationVector(*potentialdis,lm,lmowner,lmstride);
 
       for(int i = 0; i < (int) lm.size(); i++)
       {
@@ -948,7 +949,8 @@ void POTENTIAL::Potential::CollectLmcol(
         const DRT::Element* element = potentialdis->gElement(ele_id);
         vector<int> lmowner;
         vector<int> lm;
-        element->LocationVector(*potentialdis,lm,lmowner);
+        vector<int> lmstride;
+        element->LocationVector(*potentialdis,lm,lmowner,lmstride);
         
         for(int i = 0; i < (int) lm.size(); i++)
         {

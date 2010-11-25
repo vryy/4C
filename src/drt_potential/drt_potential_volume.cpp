@@ -161,7 +161,8 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
        // get element location vector and ownerships
        vector<int> lm;
        vector<int> lmrowowner;
-       curr->second->LocationVector(discret_,lm,lmrowowner);
+       vector<int> lmstride;
+       curr->second->LocationVector(discret_,lm,lmrowowner,lmstride);
        const int rowsize = lm.size();
 
        // tree search has to be called before evaluate for each element
@@ -475,7 +476,8 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
         DRT::Element* element = discretRCP_->gElement(*eleIter);
         vector<int> lmowner;
         vector<int> lm;
-        element->LocationVector(*discretRCP_,lm,lmowner);
+        vector<int> lmstride;
+        element->LocationVector(*discretRCP_,lm,lmowner,lmstride);
         const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
         
         RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer(
@@ -606,7 +608,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          // obtain current potential dofs
          vector<int> lmpot;
          vector<int> lmowner;
-         element_pot->LocationVector(*discretRCP_,lmpot,lmowner);
+         vector<int> lmstride;
+         element_pot->LocationVector(*discretRCP_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
          DRT::UTILS::GaussRule3D rule_pot = DRT::UTILS::intrule3D_undefined;
@@ -789,7 +792,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
         // obtain current potential dofs
         vector<int> lmpot;
         vector<int> lmowner;
-        element_pot->LocationVector(*discretRCP_,lmpot,lmowner);
+        vector<int> lmstride;
+        element_pot->LocationVector(*discretRCP_,lmpot,lmowner,lmstride);
 
         // obtain Gaussrule and integration points
         DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;

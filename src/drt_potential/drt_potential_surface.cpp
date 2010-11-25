@@ -210,7 +210,8 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
       // get element location vector and ownerships
       vector<int> lm;
       vector<int> lmrowowner;
-      curr->second->LocationVector(discret_,lm,lmrowowner);
+      vector<int> lmstride;
+      curr->second->LocationVector(discret_,lm,lmrowowner,lmstride);
       const int rowsize = lm.size();
       
       // Reshape element matrices and vectors and init to zero in element->evaluate
@@ -559,7 +560,8 @@ void POTENTIAL::SurfacePotential::computeFandK(
          // obtain current potential dofs
          vector<int> lmpot;
          vector<int> lmowner;
-         element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+         vector<int> lmstride;
+         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
          DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;
@@ -722,7 +724,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
          // obtain current potential dofs         
          vector<int> lmpot;
          vector<int> lmowner;
-         element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+         vector<int> lmstride;
+         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
          //warum muss Gaussregel so kompliziert hergeholt werden?
@@ -915,7 +918,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
          // obtain current potential dofs         
          vector<int> lmpot;
          vector<int> lmowner;
-         element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+         vector<int> lmstride;
+         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
          DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;
@@ -1100,7 +1104,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
         // obtain current potential dofs
         vector<int> lmpot;
         vector<int> lmowner;
-        element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+        vector<int> lmstride;
+        element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
   
         //Compute normal and detF in xp 
         LINALG::Matrix<3,1> np;    
@@ -1281,7 +1286,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         // obtain current potential dofs
         vector<int> lmpot;
         vector<int> lmowner;
-        element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+        vector<int> lmstride;
+        element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
   
         //Compute normal on potential elment in xp 
         LINALG::Matrix<3,1> np;    
@@ -1442,7 +1448,8 @@ void POTENTIAL::SurfacePotential::computeFandK(
          // obtain current potential dofs
          vector<int> lmpot;
          vector<int> lmowner;
-         element_pot->LocationVector(*potentialdis_,lmpot,lmowner);
+         vector<int> lmstride;
+         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
          // obtain Gaussrule and integration points
