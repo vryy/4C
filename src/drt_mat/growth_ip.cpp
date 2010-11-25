@@ -564,7 +564,8 @@ void MAT::GrowthOutputToGmsh
     // build current configuration
     vector<int> lm;
     vector<int> lmowner;
-    actele->LocationVector(*dis,lm,lmowner);
+    vector<int> lmstride;
+    actele->LocationVector(*dis,lm,lmowner,lmstride);
     RCP<const Epetra_Vector> disp = dis->GetState("displacement");
     vector<double> mydisp(lm.size(),0);
 
