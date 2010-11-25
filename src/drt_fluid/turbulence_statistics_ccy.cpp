@@ -606,8 +606,9 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     // extract local values from the global vectors
     vector<int> lm;
     vector<int> lmowner;
+    vector<int> lmstride;
 
-    actele->LocationVector(*nurbsdis,lm,lmowner);
+    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
 
     // extract local values from global vector
     vector<double> myvelnp(lm.size());

@@ -197,7 +197,8 @@ void FLD::DynSmagFilter::DynSmagBoxFilter(
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmowner;
-    ele->LocationVector(*discret_,lm,lmowner);
+    vector<int> lmstride;
+    ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
@@ -537,7 +538,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmowner;
-    ele->LocationVector(*discret_,lm,lmowner);
+    vector<int> lmstride;
+    ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element

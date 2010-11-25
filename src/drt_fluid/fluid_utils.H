@@ -77,6 +77,7 @@ namespace UTILS
     /// assemble into the given block
     void Assemble(int eid,
         int myrank,
+        const std::vector<int>& lmstride,
         const Epetra_SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner,
@@ -282,6 +283,7 @@ namespace UTILS
     /// assemble into the given block
     void Assemble(int eid,
                   int myrank,
+                  const std::vector<int>& lmstride,
                   const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
@@ -291,14 +293,14 @@ namespace UTILS
       {
         // if we have an element with conditioned nodes, we have to do the
         // default assembling
-        LINALG::DefaultBlockMatrixStrategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
+        LINALG::DefaultBlockMatrixStrategy::Assemble(eid,myrank,lmstride,Aele,lmrow,lmrowowner,lmcol);
       }
       else
       {
         // if there are no conditioned nodes we can simply assemble to the
         // internal matrix
         LINALG::SparseMatrix& matrix = Mat().Matrix(0,0);
-        matrix.Assemble(eid,Aele,lmrow,lmrowowner,lmcol);
+        matrix.Assemble(eid,lmstride,Aele,lmrow,lmrowowner,lmcol);
       }
     }
 

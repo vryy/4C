@@ -2088,7 +2088,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2135,7 +2136,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2186,7 +2188,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2294,7 +2297,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2454,7 +2458,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*discret_, lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*discret_, lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -3168,7 +3173,8 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
 
     vector<int> fluidlm;
     vector<int> fluidlmowner;
-    xele->LocationVector(*fluiddis, fluidlm, fluidlmowner);
+    vector<int> fluidlmstride;
+    xele->LocationVector(*fluiddis, fluidlm, fluidlmowner, fluidlmstride);
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
@@ -3203,12 +3209,12 @@ void FLD::XFluidImplicitTimeInt::MonolithicMultiDisEvaluate(
 
       if (intersected and assemble_coupling_matrices)
       {
-        Cud->Assemble(-1, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cud"), fluidlm     , fluidlmowner     , *ifacepatchlm);
-        Cdu->Assemble(-1, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cdu"), *ifacepatchlm, *ifacepatchlmowner, fluidlm);
-        Cdd->Assemble(-1, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd"), *ifacepatchlm, *ifacepatchlmowner, *ifacepatchlm);
+        Cud->Assemble(-1, fluidlmstride, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cud"), fluidlm     , fluidlmowner     , *ifacepatchlm);
+        Cdu->Assemble(-1, fluidlmstride, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cdu"), *ifacepatchlm, *ifacepatchlmowner, fluidlm);
+        Cdd->Assemble(-1, fluidlmstride, *params.get<RCP<Epetra_SerialDenseMatrix> >("Cdd"), *ifacepatchlm, *ifacepatchlmowner, *ifacepatchlm);
         LINALG::Assemble(*rhsd, *params.get<RCP<Epetra_SerialDenseVector> >("rhsd"), *ifacepatchlm, *ifacepatchlmowner);
       }
-      systemmatrix1->Assemble(-1,elematrix1,fluidlm,fluidlmowner);
+      systemmatrix1->Assemble(-1,fluidlmstride,elematrix1,fluidlm,fluidlmowner);
       LINALG::Assemble(*systemvector1,elevector1,fluidlm,fluidlmowner);
     }
 
@@ -3442,7 +3448,8 @@ void FLD::XFluidImplicitTimeInt::ProjectOldTimeStepValues(
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myveln(lm.size());
@@ -3548,7 +3555,8 @@ void FLD::XFluidImplicitTimeInt::GetInterfacepatchLocationVectorsFluidFluid(
     DRT::Element* bele = ih_np_->cutterdis()->gElement(*begid);
     std::vector<int> ifacelm;
     std::vector<int> ifacelmowner;
-    bele->LocationVector(*ih_np_->cutterdis(), ifacelm, ifacelmowner);
+    std::vector<int> ifacelmstride;
+    bele->LocationVector(*ih_np_->cutterdis(), ifacelm, ifacelmowner, ifacelmstride);
     std::vector<int> ifacefluidlm;
     std::vector<int> ifacefluidlmowner;
     for (size_t i=0; i<ifacelm.size(); i++)
@@ -3833,7 +3841,8 @@ void FLD::XFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
         const DRT::Element* bele = FluidFluidboundarydis_->lColElement(i);
         vector<int> lm;
         vector<int> lmowner;
-        bele->LocationVector(*FluidFluidboundarydis_, lm, lmowner);
+        vector<int> lmstride;
+        bele->LocationVector(*FluidFluidboundarydis_, lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -3913,7 +3922,8 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 
               vector<int> lm;
               vector<int> lmowner;
-              actele->LocationVector(*(discret_), lm, lmowner);
+              vector<int> lmstride;
+              actele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
               // extract local values from the global vector
               vector<double> myvelnp(lm.size());
