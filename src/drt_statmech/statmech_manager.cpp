@@ -131,139 +131,135 @@ discret_(discret)
 	 * crosslinkers in parallel computing*/
 	discret_.FillComplete(true,false,false);
 
-  //if dynamic crosslinkers are used additional variables are initialized
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+  /* and filamentnumber_ is generated based on a column map vector as each node has to
+   * know about each other node its filament number in order to decide weather a crosslink may be established
+   * or not; vectors is initalized with -1, which state is changed if filament numbering is used, only*/
+  filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
+  filamentnumber_->PutScalar(-1);
+
+  //initialize crosslinkerpartner_ as a col map multivector consisting of as many vectors as a node can have crosslinkers at the maximum
+  crosslinkerpartner_ = rcp(new Epetra_MultiVector(*(discret_.NodeColMap()),statmechparams_.get<int>("N_CROSSMAX",1)));
+  crosslinkerpartner_->PutScalar(-1);
+
+  numcrosslinkerpartner_ = rcp(new Epetra_Vector(*(discret_.NodeColMap())));
+  numcrosslinkerpartner_->PutScalar(0);
+
+
+  /*force sensors can be applied at any degree of freedom of the discretization the list of force sensors should
+   * be based on a column map vector so that each processor has not only the information about each node's
+   * displacement, but also about whether this has a force sensor; as a consequence each processor can write the
+   * complete information gathered by all force sensors into a file of its own without any additional communication
+   * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
+  forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
+  forcesensor_->PutScalar(-1);
+
+  /*since crosslinkers should be established only between different filaments the number of the filament
+   * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
+   * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
+   * are allowed*/
+
+  //getting a vector consisting of pointers to all filament number conditions set
+  vector<DRT::Condition*> filamentnumberconditions(0);
+  discret_.GetCondition("FilamentNumber",filamentnumberconditions);
+
+  //next all the pointers to all the different conditions are looped
+  for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
   {
-    /* and filamentnumber_ is generated based on a column map vector as each node has to
-     * know about each other node its filament number in order to decide weather a crosslink may be established
-     * or not; vectors is initalized with -1, which state is changed if filament numbering is used, only*/
-    filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
-    filamentnumber_->PutScalar(-1);
+    //get filament number described by the current condition
+    int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
 
-    //initialize crosslinkerpartner_ as a col map multivector consisting of as many vectors as a node can have crosslinkers at the maximum
-    crosslinkerpartner_ = rcp(new Epetra_MultiVector(*(discret_.NodeColMap()),statmechparams_.get<int>("N_CROSSMAX",0)));
-    crosslinkerpartner_->PutScalar(-1);
+    //get a pointer to nodal cloud covered by the current condition
+    const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
 
-    numcrosslinkerpartner_ = rcp(new Epetra_Vector(*(discret_.NodeColMap())));
-    numcrosslinkerpartner_->PutScalar(0);
+    //loop through all the nodes of the nodal cloud
+    for(int j=0; j<(int)nodeids->size() ; j++)
+    {
+      //get the node's global id
+      int nodenumber = (*nodeids)[j];
 
+      //turning global id into local one
+      nodenumber = discret_.NodeColMap()->LID(nodenumber);
 
-    /*force sensors can be applied at any degree of freedom of the discretization the list of force sensors should
-     * be based on a column map vector so that each processor has not only the information about each node's
-     * displacement, but also about whether this has a force sensor; as a consequence each processor can write the
-     * complete information gathered by all force sensors into a file of its own without any additional communication
-     * with any other processor; initialization with -1 indicates that so far no forcesensors have been set*/
-    forcesensor_ = rcp( new Epetra_Vector(*(discret_.DofColMap())) );
-    forcesensor_->PutScalar(-1);
+      //if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored
+      if(nodenumber > -1)
+        (*filamentnumber_)[nodenumber] = filamentnumber;
+    }
+  }
 
-    /*since crosslinkers should be established only between different filaments the number of the filament
-     * each node is belonging to is stored in the condition FilamentNumber; if no such conditions have been defined
-     * the default -1 value is upkept in filamentnumber_ and crosslinkers between nodes belonging to the same filament
-     * are allowed*/
+  /*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
+   * an actin network between two rheometer plates the stiffness is to be determined this can be done by measuring the forces exerted
+   * to the upper plate which is moving forwards and backwards for example; so for measurements of viscoelastic properties of materials
+   * whithin a system certain sensor points have to be specified and in order to handle this within BACI these points are marked by
+   * means of the condition sensorcondition*/
 
-    //getting a vector consisting of pointers to all filament number conditions set
-    vector<DRT::Condition*> filamentnumberconditions(0);
-    discret_.GetCondition("FilamentNumber",filamentnumberconditions);
+  //gettin a vector consisting of pointers to all filament number conditions set
+  vector<DRT::Condition*> forcesensorconditions(0);
+  discret_.GetCondition("ForceSensor",forcesensorconditions);
 
-		//next all the pointers to all the different conditions are looped
-		for (int i=0; i<(int)filamentnumberconditions.size(); ++i)
-		{
-			//get filament number described by the current condition
-			int filamentnumber = filamentnumberconditions[i]->GetInt("Filament Number") ;
+  //next all the pointers to all the different conditions are looped
+  for (int i=0; i<(int)forcesensorconditions.size(); ++i)
+  {
+    //get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
+    int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
 
-			//get a pointer to nodal cloud covered by the current condition
-			const vector<int>* nodeids = filamentnumberconditions[i]->Nodes();
+    //get a pointer to nodal cloud covered by the current condition
+    const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
 
-			//loop through all the nodes of the nodal cloud
-			for(int j=0; j<(int)nodeids->size() ; j++)
-			{
-				//get the node's global id
-				int nodenumber = (*nodeids)[j];
+    //loop through all the nodes of the nodal cloud
+    for (int j=0; j<(int)nodeids->size(); j++)
+    {
+      //get the node's global id
+      int nodenumber = (*nodeids)[j];
 
-				//turning global id into local one
-				nodenumber = discret_.NodeColMap()->LID(nodenumber);
+      //testing whether current nodedofnumber makes sense for current node
+      if (nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)))
+        dserror("ForceSensor condition applied with improper local dof number");
 
-				//if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored
-				if(nodenumber > -1)
-					(*filamentnumber_)[nodenumber] = filamentnumber;
-			}
-		}
+        //global id of degree of freedom at which force is to be measured
+        int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber-1 );
 
-		/*Young's modulus and loss modulus are to be measured by means of the reaction forces at certain sensor points; example: if for a
-		 * an actin network between two rheometer plates the stiffness is to be determined this can be done by measuring the forces exerted
-		 * to the upper plate which is moving forwards and backwards for example; so for measurements of viscoelastic properties of materials
-		 * whithin a system certain sensor points have to be specified and in order to handle this within BACI these points are marked by
-		 * means of the condition sensorcondition*/
+        /*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
+         * freedom affected by this condition are marked in the vector *forcesensor_ by a one entry*/
+        if(nodenumber > -1)
+          (*forcesensor_)[dofnumber] = 1.0;
+    }
+  }
 
-		//gettin a vector consisting of pointers to all filament number conditions set
-		vector<DRT::Condition*> forcesensorconditions(0);
-		discret_.GetCondition("ForceSensor",forcesensorconditions);
+  //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
+  octTree_ = rcp(new GEO::SearchTree(8));
 
-		//next all the pointers to all the different conditions are looped
-		for (int i=0; i<(int)forcesensorconditions.size(); ++i)
-		{
-			//get number of nodal dof with respect to which force is to be measured; note: numbering starts with zero
-			int nodedofnumber = forcesensorconditions[i]->GetInt("DOF Number") ;
+  /*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
+   * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
+   * with respect to the reference positions (which are the positions at the beginning of the simulation;
+   * in case of large overall deformations of the fiber network such an initialization would have to be carried
+   * out in each time step with respect to the current node positions*/
 
-			//get a pointer to nodal cloud covered by the current condition
-			const vector<int>* nodeids = forcesensorconditions[i]->Nodes();
+  /*currenpositions is a map which relates each LID of any node on this processor to the nodes coordinates*/
+  std::map<int,LINALG::Matrix<3,1> > currentpositions;
 
-			//loop through all the nodes of the nodal cloud
-			for (int j=0; j<(int)nodeids->size(); j++)
-			{
-				//get the node's global id
-				int nodenumber = (*nodeids)[j];
+  currentpositions.clear();
 
-				//testing whether current nodedofnumber makes sense for current node
-				if (nodedofnumber < 0 || nodedofnumber >= discret_.NumDof(discret_.gNode(nodenumber)))
-					dserror("ForceSensor condition applied with improper local dof number");
+  for (int lid = 0; lid <discret_.NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = discret_.lColNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
+    currentpositions[node->LID()] = currpos;
+  }
 
-					//global id of degree of freedom at which force is to be measured
-					int dofnumber = discret_.Dof( discret_.gNode(nodenumber), nodedofnumber-1 );
+  //find bounding box for search tree
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(discret_, currentpositions);
 
-					/*if the node does not belong to current processor Id is set by LID() to -1 and the node is ignored; otherwise the degrees of
-					 * freedom affected by this condition are marked in the vector *forcesensor_ by a one entry*/
-					if(nodenumber > -1)
-						(*forcesensor_)[dofnumber] = 1.0;
-			}
-		}
-
-		//we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
-		octTree_ = rcp(new GEO::SearchTree(8));
-
-		/*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
-		 * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
-		 * with respect to the reference positions (which are the positions at the beginning of the simulation;
-		 * in case of large overall deformations of the fiber network such an initialization would have to be carried
-		 * out in each time step with respect to the current node positions*/
-
-		/*currenpositions is a map which relates each LID of any node on this processor to the nodes coordinates*/
-		std::map<int,LINALG::Matrix<3,1> > currentpositions;
-
-		currentpositions.clear();
-
-		for (int lid = 0; lid <discret_.NumMyColNodes(); ++lid)
-		{
-			const DRT::Node* node = discret_.lColNode(lid);
-			LINALG::Matrix<3,1> currpos;
-			currpos(0) = node->X()[0];
-			currpos(1) = node->X()[1];
-			currpos(2) = node->X()[2];
-			currentpositions[node->LID()] = currpos;
-		}
-
-		//find bounding box for search tree
-		const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(discret_, currentpositions);
-
-		//initialize search tree
-		octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
+  //initialize search tree
+  octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
 
 	/* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
 	 * between two filaments, only their positions are calculated. Here, the molecules' initial positions are determined.
 	 * Calculations are made on Proc 0, only.*/
 	CrosslinkerMoleculeInit();
 
-	}//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 	return;
 }// StatMechManager::StatMechManager
 

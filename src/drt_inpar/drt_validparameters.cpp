@@ -1231,7 +1231,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //upon reaching a number of N_crosslink crosslinkers the first time, statmechmanager switches from K_ON_start and K_OFF_start to K_ON_end and K_OFF_end
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //Maximal number of crosslinkers a node can establish to other nodes
-  IntParameter("N_CROSSMAX",-1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
+  IntParameter("N_CROSSMAX",1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
