@@ -176,8 +176,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   vector<int>::iterator it = lm.begin();
 
   //vector<int> lmowner;
+  vector<int> lmstride;
   RCP<vector<int> > lmowner = rcp(new vector<int>);
-  ele->LocationVector(discretization,lm,*lmowner);
+  ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------
   // Initialize the pressure vectors

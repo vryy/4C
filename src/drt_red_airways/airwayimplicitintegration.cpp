@@ -168,9 +168,10 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
+    vector<int> lmstride;
     //vector<int> lmowner;
     RCP<vector<int> > lmowner = rcp(new vector<int>);
-    ele->LocationVector(*discret_,lm,*lmowner);
+    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
 
