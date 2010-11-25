@@ -483,7 +483,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
         std::ostringstream filename;
         filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        DensityDensityCorrOutput(filename);
+        DDCorrOutput(filename);
       }
     }
     break;
@@ -2059,20 +2059,27 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 /*----------------------------------------------------------------------*
  | output for density-density-correlation-function(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filename)
+void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
 {
-  /* Calculate the distances for all tuples of crosslink molecules.
-   * Each processor calculates the distances between its row map molecules and column map molecules
-   * Since we compare a set to itself, we just calculate one half of the matrix ( (n²-n)/2 calculations for n molecules)*/
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	// storage vector for shifted crosslinker LIDs(crosslinkermap)
+	std::vector<double> boxcenter(3,0.0);
+	std::vector<double> centershift(3,0.0);
+
+	// determine the new center point of the periodic volume
+	DDCorrShift(&boxcenter, &centershift);
+
+	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
+	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
   // number of overall independent combinations
-  int numcombinations = (statmechparams_.get<int>("N_crosslink", 0)*statmechparams_.get<int>("N_crosslink", 0)-statmechparams_.get<int>("N_crosslink", 0))/2;
+	int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
+  int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
   // combinations on each processor
   int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
   int remainder = numcombinations%combinationsperproc;
-
   int combicount = 0;
-  Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
+
   // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
   for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
   {
@@ -2091,30 +2098,50 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
           // start adding crosslink from here
           if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
             continueloop = true;
+
           // only entries above main diagonal and within limits of designated number of crosslink molecules per processor
           if(j>i && continueloop)
-            if(combicount<combinationsperproc+appendix)
-            {
-              combicount++;
-              double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-              double deltaxij = 0.0;
+          	if(combicount<combinationsperproc+appendix)
+						{
+							combicount++;
+							// only do calculate deltaxij if the following if both indices i and j stand for crosslinker elements
+							if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
+							{
+								double deltaxij = 0.0;
+								std::vector<int> indices(2,0);
+								LINALG::Matrix<3,2> currpositions;
 
-              // calculate the distance between molecule i and molecule j
-              for(int k=0; k<crosslinkerpositions_->NumVectors(); k++)
-                deltaxij += ((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j])*((*crosslinkerpositions_)[k][i]-(*crosslinkerpositions_)[k][j]);
-              deltaxij = sqrt(deltaxij);
-              // calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
-              int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
-              // in case the distance is exactly periodlength*sqrt(3)
-              if(currbin==numbins)
-                currbin--;
-              crosslinksperbinrow[currbin] += 1.0;
-            }
-            else
-            {
-              quitloop = true;
-              break;
-            }
+								indices[0] = i;
+								indices[1] = j;
+
+								// shift it according to new boundary box
+								for(int m=0; m<(int)currpositions.M(); m++)
+								{
+									for(int n=0; n<(int)currpositions.N(); n++)
+									{
+										currpositions(m,n) = (*crosslinkerpositions_)[m][indices[n]];
+										if (currpositions(m,n) > periodlength+centershift[j])
+											currpositions(m,n) -= periodlength;
+										if (currpositions(m,n) < 0.0+centershift[j])
+											currpositions(m,n) += periodlength;
+									}
+									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
+								}
+								deltaxij = sqrt(deltaxij);
+
+								// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
+								int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
+								// in case the distance is exactly periodlength*sqrt(3)
+								if(currbin==numbins)
+									currbin--;
+								crosslinksperbinrow[currbin] += 1.0;
+							}
+						}
+						else
+						{
+							quitloop = true;
+							break;
+						}
         }
         if(quitloop)
           break;
@@ -2122,8 +2149,6 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
       if(quitloop)
         break;
     }
-    else
-      continue;
   }
 
   // Export
@@ -2133,9 +2158,20 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
 
   // Add the processor-specific data up
   std::vector<int> crosslinksperbin(numbins, 0);
+  int total = 0;
   for(int i=0; i<numbins; i++)
+  {
     for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
       crosslinksperbin[i] += (int)crosslinksperbincol[pid*numbins+i];
+    total += crosslinksperbin[i];
+    //if(!discret_.Comm().MyPID())
+    //	cout<<"BIN "<<i<<": "<<crosslinksperbin[i]<<endl;
+  }
+  /*if(!discret_.Comm().MyPID())
+  {
+  	cout<<"================"<<endl;
+  	cout<<"Total: "<<total<<endl;
+  }*/
 
   // write data to file
   if(!discret_.Comm().MyPID())
@@ -2150,7 +2186,89 @@ void StatMechManager::DensityDensityCorrOutput(const std::ostringstream& filenam
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
   }
-}
+}////StatMechManager::DDCorrOutput()
+
+/*------------------------------------------------------------------------------*
+ | Selects raster point with the smallest average distance to all crosslinker   |
+ | elements, makes it the new center of the boundary box and shifts crosslinker |
+ | positions.                                                                   |
+ |                                                        (public) mueller 11/10|
+ *------------------------------------------------------------------------------*/
+void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift)
+{
+	int numrasterpoints = statmechparams_.get<int>("NUMRASTERPOINTS", 3);
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	// smallest average distance among all the average distances between the rasterpoints and all crosslinker elements
+	// (init with 2*pl,so that it is definitely overwritten by the first "real" value)
+	double smallestdistance = 2*periodlength;
+	// storage vector holding crosslinker element LIDs (crosslinkermap_)
+	std::vector<int> crosslinkerentries;
+
+	//store crosslinker element position within crosslinkerbond to crosslinkerentries
+	for(int i=0; i<crosslinkerbond_->MyLength(); i++)
+		if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
+			crosslinkerentries.push_back(i);
+
+	//if(!discret_.Comm().MyPID())
+	//	cout<<"crosslinkers: "<<crosslinkerentries.size()<<endl;
+
+	// determine the new center of the box
+	for(int i=0; i<numrasterpoints; i++)
+		for(int j=0; j<numrasterpoints; j++)
+			for(int k=0; k<numrasterpoints; k++)
+			{
+				double averagedistance = 0.0;
+				std::vector<double> currentrasterpoint(3,0.0);
+				std::vector<double> currentcentershift(3,0.0);
+
+				// calculate current raster point
+				currentrasterpoint[0] = i*periodlength/(numrasterpoints-1);
+				currentrasterpoint[1] = j*periodlength/(numrasterpoints-1);
+				currentrasterpoint[2] = k*periodlength/(numrasterpoints-1);
+
+				//cout<<"currentrasterpoint:   "<<currentrasterpoint[0]<<", "<<currentrasterpoint[1]<<", "<<currentrasterpoint[2]<<endl;
+
+				// calculate the center shift (difference vector between regular center and new center of the boundary box)
+				for(int l=0; l<(int)currentrasterpoint.size(); l++)
+					currentcentershift[l] = currentrasterpoint[l]-periodlength/2.0;
+
+				// calculate average distance of crosslinker elements to raster point
+				for(int l=0; l<(int)crosslinkerentries.size(); l++)
+				{
+					// get the crosslinker position in question and shift it according to new boundary box center
+					std::vector<double> currcrosslinkerpos(3,0.0);
+					double distance=0.0;
+					for(int m=0; m<(int)currcrosslinkerpos.size(); m++)
+					{
+						currcrosslinkerpos[m] = (*crosslinkerpositions_)[m][crosslinkerentries[l]];
+						if (currcrosslinkerpos[m] > periodlength+currentcentershift[m])
+							currcrosslinkerpos[m] -= periodlength;
+						if (currcrosslinkerpos[m] < 0.0+currentcentershift[m])
+							currcrosslinkerpos[m] += periodlength;
+
+						distance += (currcrosslinkerpos[m] - currentrasterpoint[m]) * (currcrosslinkerpos[m] - currentrasterpoint[m]);
+					}
+					averagedistance += sqrt(distance);
+				}
+				averagedistance /= (double)crosslinkerentries.size();
+
+				if(averagedistance<smallestdistance)
+				{
+					smallestdistance = averagedistance;
+					for(int m=0; m<3; m++)
+					{
+						(*boxcenter)[m] = currentrasterpoint[m];
+						(*centershift)[m] = currentcentershift[m];
+					}
+				}
+			}
+	/*if(!discret_.Comm().MyPID())
+	{
+		cout<<"box center: "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
+		cout<<"d_av_min  = "<<smallestdistance<<endl;
+	}*/
+	return;
+}//StatMechManager::DDCorrShift()
 
 /*----------------------------------------------------------------------*
  | check the binding mode of a crosslinker        (public) mueller 07/10|

@@ -1990,36 +1990,43 @@ void StatMechManager::CrosslinkerIntermediateUpdate(const std::map<int,
  *----------------------------------------------------------------------*/
 void StatMechManager::CrosslinkerMoleculeInit()
 {
+	int ncrosslink = statmechparams_.get<int> ("N_crosslink", 0);
+	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+	double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
+
 	// create crosslinker maps
 	std::vector<int> gids;
-	for (int i=0; i<statmechparams_.get<int> ("N_crosslink", 0); i++)
+	for (int i=0; i<ncrosslink; i++)
 		gids.push_back(i);
 	// crosslinker column and row map
-	crosslinkermap_ = rcp(new Epetra_Map(-1, statmechparams_.get<int> ("N_crosslink", 0), &gids[0], 0, discret_.Comm()));
-	transfermap_    = rcp(new Epetra_Map(statmechparams_.get<int> ("N_crosslink", 0), 0, discret_.Comm()));
+	crosslinkermap_ = rcp(new Epetra_Map(-1, ncrosslink, &gids[0], 0, discret_.Comm()));
+	transfermap_    = rcp(new Epetra_Map(ncrosslink, 0, discret_.Comm()));
 	startindex_ = rcp(new std::vector<double>);
 
 	// create density-density-correlation-function map with
 	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 	{
-		int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 		std::vector<int> bins;
 		for(int i=0; i<discret_.Comm().NumProc()*numbins; i++)
 			bins.push_back(i);
-		ddcorrcolmap_     = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
+		ddcorrcolmap_ = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
 		// create processor-specific density-density-correlation-function map
 		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
 
 		// calculation of start indices for each processor
 		// number of overall independent combinations
-		int numcombinations = (statmechparams_.get<int>("N_crosslink", 0)*statmechparams_.get<int>("N_crosslink", 0)-statmechparams_.get<int>("N_crosslink", 0))/2;
+		int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
 		// combinations on each processor
 		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+		// remainder of above division (will be distributed equally among processors)
 		int remainder = numcombinations%combinationsperproc;
+
+		cout<<numcombinations<<", "<<combinationsperproc<<", "<<remainder<<endl;
 
 		// get starting index tuples for later use
 		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
-		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+
+		for(int mypid=0; mypid<discret_.Comm().NumProc()-1; mypid++)
 		{
 			std::vector<int> start(2,0);
 			bool continueloop = false;
@@ -2060,18 +2067,22 @@ void StatMechManager::CrosslinkerMoleculeInit()
 					else
 						start[0] = i;
 					// new start tuple
-					(*startindex_)[2*mypid] = (double)(start[0]);
-					(*startindex_)[2*mypid+1] = (double)(start[1]);
+					(*startindex_)[2*(mypid+1)] = (double)(start[0]);
+					(*startindex_)[2*(mypid+1)+1] = (double)(start[1]);
 					break;
 				}
 			}
 		}
 	}
+	cout<<"start indices: ";
+	for(int i=0; i<(int)startindex_->size(); i++)
+		cout<<(*startindex_)[i]<<" ";
+	cout<<endl;
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions
-	if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
-		upperbound = statmechparams_.get<double> ("PeriodLength", 0.0);
+	if (periodlength > 0.0)
+		upperbound = periodlength;
 	else
 		upperbound = statmechparams_.get<double> ("MaxRandValue", 0.0);
 
@@ -2084,7 +2095,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// initial bonding status is set (no bonds)
 	crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
 	crosslinkerbond_->PutScalar(-1.0);
-
+	// initial bond counter is set (no bonds)
 	numbond_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
 
 	crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
