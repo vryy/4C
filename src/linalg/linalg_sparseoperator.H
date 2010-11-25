@@ -128,6 +128,7 @@ class SparseOperator : public Epetra_Operator
       Assemble(eid,lmstride,Aele,lm,lmowner,lm);
     }
 
+#if 0
     /// Assemble a Epetra_SerialDenseMatrix into a matrix
     /*!
 
@@ -165,6 +166,7 @@ class SparseOperator : public Epetra_Operator
     {
       Assemble(eid,Aele,lm,lmowner,lm);
     }
+#endif
 
     /// Assemble a Epetra_SerialDenseMatrix into a matrix with striding
     /*!
@@ -208,6 +210,7 @@ class SparseOperator : public Epetra_Operator
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
 
+#if 0
     /// Assemble a Epetra_SerialDenseMatrix into a matrix
     /*!
 
@@ -248,6 +251,7 @@ class SparseOperator : public Epetra_Operator
                           const std::vector<int>& lmrow,
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
+#endif
 
     /// single value assemble using gids
     virtual void Assemble(double val, int rgid, int cgid) = 0;

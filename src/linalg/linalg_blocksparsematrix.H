@@ -324,9 +324,10 @@ public:
       const std::vector<int>& lmcol)
   {
     const int myrank = Comm().MyPID();
-    Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
+    Strategy::Assemble(eid,myrank,lmstride,Aele,lmrow,lmrowowner,lmcol);
   }
 
+#if 0
   void Assemble(int eid,
       const Epetra_SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow,
@@ -336,7 +337,7 @@ public:
     const int myrank = Comm().MyPID();
     Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
   }
-
+#endif
   /// single value assemble
   /*!
 
@@ -379,6 +380,15 @@ public:
   /// construct with a block matrix base
   explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat);
 
+  /// assemble into the given block using nodal strides
+  void Assemble(int eid,
+      int myrank,
+      const std::vector<int>& lmstride,
+      const Epetra_SerialDenseMatrix& Aele,
+      const std::vector<int>& lmrow,
+      const std::vector<int>& lmrowowner,
+      const std::vector<int>& lmcol);
+#if 0
   /// assemble into the given block
   void Assemble(int eid,
       int myrank,
@@ -386,7 +396,7 @@ public:
       const std::vector<int>& lmrow,
       const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
-
+#endif
   /// assemble into the given block
   void Assemble(double val, int rgid, int cgid);
 
@@ -531,6 +541,7 @@ int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
 inline
 void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
     int myrank,
+    const std::vector<int>& lmstride,
     const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner,
@@ -561,6 +572,42 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
   }
 }
 
+#if 0
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
+    int myrank,
+    const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner,
+    const std::vector<int>& lmcol)
+{
+  const int lrowdim = (int)lmrow.size();
+  const int lcoldim = (int)lmcol.size();
+
+  // loop rows of local matrix
+  for (int lrow=0; lrow<lrowdim; ++lrow)
+  {
+
+    // check ownership of row
+    if (lmrowowner[lrow]!=myrank)
+      continue;
+
+    int rgid = lmrow[lrow];
+    int rblock = RowBlock(lrow,rgid);
+
+    for (int lcol=0; lcol<lcoldim; ++lcol)
+    {
+      double val = Aele(lrow,lcol);
+      int cgid = lmcol[lcol];
+      int cblock = ColBlock(rblock,lcol,cgid);
+
+      Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
+    }
+  }
+}
+#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

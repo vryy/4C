@@ -394,7 +394,6 @@ void LINALG::SparseMatrix::Assemble(
     if (!doit) return;
 #endif
 
-    std::vector<double> values(lcoldim);
     std::vector<int> localcol(lcoldim);
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
@@ -443,6 +442,7 @@ void LINALG::SparseMatrix::Assemble(
         int pos = loc-indices;
         const int stride = lmstride[node];
         // test continuity of data in sparsematrix
+        bool reachedlength=false;
         bool continuous = true;
         for (int j=1; j<stride; ++j)
           if (indices[pos+j] == localcol[dofcount+j]) continue;
@@ -455,7 +455,14 @@ void LINALG::SparseMatrix::Assemble(
         if (continuous)
         {
           for (int j=0; j<stride; ++j)
+          {
             valview[pos++] += Aele(lrow,dofcount++);
+            if (dofcount==lcoldim)
+            {
+              reachedlength=true;
+              break;
+            }
+          }
         }
         else
         {
@@ -465,12 +472,25 @@ void LINALG::SparseMatrix::Assemble(
             const int errone = 
 #endif
             sysmat_->SumIntoMyValues(rlid,1,&A(lrow,dofcount),&localcol[dofcount]);
-            dofcount++;  
 #ifdef DEBUG
-            if (errone) dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+            if (errone) 
+            {
+              
+              printf("Dimensions of A: %d x %d\n",A.M(),A.N());
+              for (unsigned k=0; k<lmstride.size(); ++k) printf("lmstride[%d] %d\n",k,lmstride[k]);
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d\nrlid %d localcol[%d] %d dofcount %d length %d stride %d j %d node %d numnode %d",
+                      errone,rlid,dofcount,localcol[dofcount],dofcount,length,stride,j,node,numnode);
+            }
 #endif
+            dofcount++;
+            if (dofcount==lcoldim)
+            {
+              reachedlength=true;
+              break;
+            }
           }
         }
+        if (reachedlength) break;
       } // for (int node=0; node<numnode; ++node)
     } // for (int lrow=0; lrow<ldim; ++lrow)
   }
@@ -485,9 +505,9 @@ void LINALG::SparseMatrix::Assemble(
 
       // check whether I have that global row
       const int rgid = lmrow[lrow];
-#ifdef DEBUG
+//#ifdef DEBUG
       if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
-#endif
+//#endif
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
       if ( dbcmaps_!=Teuchos::null and dbcmaps_->Map( 1 )->MyGID( rgid ) ) continue;
