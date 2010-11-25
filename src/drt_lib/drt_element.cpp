@@ -473,7 +473,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
  *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis,
                                   vector<int>& lm, vector<int>& lmdirich,
-                                  vector<int>& lmowner) const
+                                  vector<int>& lmowner, vector<int>& lmstride) const
 {
   const int numnode = NumNode();
   const DRT::Node*const* nodes = Nodes();
@@ -481,6 +481,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
   lm.clear();
   lmdirich.clear();
   lmowner.clear();
+  lmstride.clear();
 
   // fill the vector with nodal dofs
   if (nodes)
@@ -501,6 +502,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
       const int owner = nodes[i]->Owner();
       vector<int> dof = dis.Dof(nodes[i]);
       const int size = NumDofPerNode(*(nodes[i]));
+      lmstride.push_back(size);
       for (int j=0; j<size; ++j)
       {
         if (flag && (*flag)[j])
@@ -527,6 +529,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
   }
   const int owner = Owner();
   vector<int> dof = dis.Dof(this);
+  if (dof.size()) lmstride.push_back((int)dof.size());
   for (unsigned j=0; j<dof.size(); ++j)
   {
     if (flag && (*flag)[j])
@@ -545,13 +548,15 @@ void DRT::Element::LocationVector(const Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner) const
+void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, 
+                                  vector<int>& lmowner, vector<int>& lmstride) const
 {
   const int numnode = NumNode();
   const DRT::Node*const* nodes = Nodes();
 
   lm.clear();
   lmowner.clear();
+  lmstride.clear();
 
   // fill the vector with nodal dofs
   if (nodes)
@@ -559,13 +564,19 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
     for (int i=0; i<numnode; ++i)
     {
       const Node* node = nodes[i];
+      unsigned bef = lm.size();
       dis.Dof(0,this,node,lm);
+      unsigned aft = lm.size();
+      if (aft-bef) lmstride.push_back((int)(aft-bef));
       lmowner.resize(lm.size(),node->Owner());
     }
   }
 
   // fill the vector with element dofs
+  unsigned bef = lm.size();
   dis.Dof(0,this,lm);
+  unsigned aft = lm.size();
+  if (aft-bef) lmstride.push_back((int)(aft-bef));
   lmowner.resize(lm.size(),Owner());
   return;
 }
