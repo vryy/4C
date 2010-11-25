@@ -248,7 +248,8 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*actdisc_,lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -277,8 +278,8 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
         elematrix1.Scale(scStiff*penalties_[condID]);
         elematrix2.Scale((*lagrvalues_)[condID-1]*scStiff);
         
-        systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        systemmatrix1->Assemble(eid,elematrix2,lm,lmowner);
+        systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
+        systemmatrix1->Assemble(eid,lmstride,elematrix2,lm,lmowner);
         
         elevector1.Scale(penalties_[condID]*diff);
         elevector2.Scale((*lagrvalues_)[condID-1]);
@@ -336,7 +337,8 @@ void UTILS::ConstraintPenalty::EvaluateError(
         // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*actdisc_,lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero

@@ -305,7 +305,8 @@ void UTILS::Constraint::EvaluateConstraint(
         // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*actdisc_,lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -327,7 +328,7 @@ void UTILS::Constraint::EvaluateConstraint(
         {
           // scale with time integrator dependent value
           elematrix1.Scale(scStiff*lagraval);
-          systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+          systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
         }
         if (assemblemat2)
         {
@@ -336,7 +337,7 @@ void UTILS::Constraint::EvaluateConstraint(
           vector<int> colvec(1);
           colvec[0]=gindex;
           elevector2.Scale(scConMat);
-          systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
+          systemmatrix2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
         }
         if (assemblevec1)
         {
@@ -402,7 +403,8 @@ void UTILS::Constraint::InitializeConstraint(
         // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        curr->second->LocationVector(*actdisc_,lm,lmowner);
+        vector<int> lmstride;
+        curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero

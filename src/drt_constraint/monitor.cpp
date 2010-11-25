@@ -140,7 +140,8 @@ void UTILS::Monitor::EvaluateMonitor
       // get element location vector and ownerships
       vector<int> lm;
       vector<int> lmowner;
-      curr->second->LocationVector(*actdisc_,lm,lmowner);
+      vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero

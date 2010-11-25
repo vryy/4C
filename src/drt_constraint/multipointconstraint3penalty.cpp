@@ -418,7 +418,8 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         // get element location vector, dirichlet flags and ownerships
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*disc,lm,lmowner);
+        vector<int> lmstride;
+        actele->LocationVector(*disc,lm,lmowner,lmstride);
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
@@ -450,7 +451,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
             elematrix1(i,j) += elevector1(i)*elevector1(j);
         elematrix1.Scale(2*scStiff*penalties_[condID]);
 
-        systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+        systemmatrix1->Assemble(eid,lmstride,elematrix1,lm,lmowner);
         elevector1.Scale(2.*penalties_[condID]*diff);
         LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
       }
@@ -494,7 +495,8 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       // get element location vector, dirichlet flags and ownerships
       vector<int> lm;
       vector<int> lmowner;
-      actele->LocationVector(*disc,lm,lmowner);
+      vector<int> lmstride;
+      actele->LocationVector(*disc,lm,lmowner,lmstride);
       elevector3.Size(1);
       params.set("ConditionID",eid);
 
