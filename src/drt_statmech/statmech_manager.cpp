@@ -1126,7 +1126,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			}// for(int j=0; j<(int)neighboursLID.size(); j++)
 
 		}// for(int i=0; i<numbond_->MyLength(); i++)
-		cout << "\n***\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds\n***\n";
+		cout << "\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds";
 	}// if(discret_.Comm().MypPID==0)
 	else
 	{
@@ -1256,7 +1256,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 					//add element to discretization
 					addedelements_.push_back(newcrosslinkerGID);
-			    std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": added element "<<newcrosslinkerGID<<"\n";
 					discret_.AddElement(newcrosslinker);
 				}
 				else
@@ -1275,7 +1274,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 					//add new element to discretization and list this event in addedelements_
 					addedelements_.push_back(newcrosslinkerGID);
-					std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": added element "<<newcrosslinkerGID<<"\n";
 					discret_.AddElement(newcrosslinker);
 				}
 			}
@@ -1469,9 +1467,6 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			//save the element by packing before elimination to make it restorable in case that needed
 			deletedelements_.resize(deletedelements_.size() + 1);
 			discret_.gElement((int)delcrosslinkers[i])->Pack(deletedelements_[deletedelements_.size()-1]);
-
-			std::cout<<"\non proc "<<discret_.Comm().MyPID()<<": deleted element "<<(int)delcrosslinkers[i]<<"\n";
-
 			discret_.DeleteElement( (int)delcrosslinkers[i]);
 		}
 
@@ -1670,18 +1665,13 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff)
     if (ele == NULL)
       dserror("Failed to build an element from the element data");
     discret_.AddElement(rcp(ele));
-
-
-    std::cout<<"\nRestoreConv on proc "<<discret_.Comm().MyPID()<<" added element "<<ele->Id()<<"\n";
   }
   deletedelements_.resize(0);
 
   //loop through addedelements_, delete all these elements and then set addedelements_ an empty vector
   for(int i=0; i<(int)addedelements_.size(); i++)
-  {
     discret_.DeleteElement(addedelements_[i]);
-    std::cout<<"\nRestoreConv on proc "<<discret_.Comm().MyPID()<<": deleted element "<<addedelements_[i]<<"\n";
-  }
+
   addedelements_.resize(0);
 
   /*settling administrative stuff in order to make the discretization ready for the next time step: synchronize
