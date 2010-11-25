@@ -418,7 +418,8 @@ void XFEM::InterfaceHandleXFSI::GetInterfacepatchLocationVectors(
 
     vector<int> ifacelm;
     vector<int> ifacelmowner;
-    bele->LocationVector(*cutterdis_,ifacelm,ifacelmowner);
+    vector<int> ifacelmstride;
+    bele->LocationVector(*cutterdis_,ifacelm,ifacelmowner,ifacelmstride);
 
     ifacepatchlm->reserve( ifacepatchlm->size() + ifacelm.size());
     ifacepatchlm->insert( ifacepatchlm->end(), ifacelm.begin(), ifacelm.end());
