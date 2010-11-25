@@ -585,9 +585,9 @@ class SparseMatrix : public SparseMatrixBase
   /// matrix matrix multiplication with explicitly defined flags
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                       const SparseMatrix& B, bool transB,
-                                      bool completeoutput,
                                       bool explicitdirichlet,
-                                      bool savegraph);
+                                      bool savegraph,
+                                      bool completeoutput);
 
   /// merge 2x2 system
   Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii,
