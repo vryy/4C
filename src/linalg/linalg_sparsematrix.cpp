@@ -189,15 +189,17 @@ LINALG::SparseMatrix::SparseMatrix(
     dserror("Row map is not unique");
 
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,1,true));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,map,1,true));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,map,1,true));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,map,map,1,true));
   else
     dserror("matrix type is not correct");
 
+  sysmat_->FillComplete();
+
   for (int i=0; i<length; ++i)
   {
-    int gid = diag.Map().GID(i);
+    int gid = map.GID(i);
     Assemble(diag[i],gid,gid);
   }
 }
@@ -362,7 +364,7 @@ void LINALG::SparseMatrix::Assemble(
 #if 0 // return to standard assembly
 
   Assemble(eid,Aele,lmrow,lmrowowner,lmcol);
-  
+
 #else // do strided assembly where possible
 
   const int lrowdim = (int)lmrow.size();
@@ -425,14 +427,14 @@ void LINALG::SparseMatrix::Assemble(
       double* valview;
       int* indices;
 #ifdef DEBUG
-      int err = 
+      int err =
 #endif
       sysmat_->ExtractMyRowView(rlid,length,valview,indices);
 #ifdef DEBUG
       if (err) dserror("Epetra_CrsMatrix::ExtractMyRowView returned error code %d",err);
 #endif
       const int numnode = (int)lmstride.size();
-      int dofcount=0;      
+      int dofcount=0;
       for (int node=0; node<numnode; ++node)
       {
         int* loc = std::lower_bound(indices,indices+length,localcol[dofcount]);
@@ -451,7 +453,7 @@ void LINALG::SparseMatrix::Assemble(
             continuous = false;
             break;
           }
-          
+
         if (continuous)
         {
           for (int j=0; j<stride; ++j)
@@ -469,13 +471,13 @@ void LINALG::SparseMatrix::Assemble(
           for (int j=0; j<stride; ++j)
           {
 #ifdef DEBUG
-            const int errone = 
+            const int errone =
 #endif
             sysmat_->SumIntoMyValues(rlid,1,&A(lrow,dofcount),&localcol[dofcount]);
 #ifdef DEBUG
-            if (errone) 
+            if (errone)
             {
-              
+
               printf("Dimensions of A: %d x %d\n",A.M(),A.N());
               for (unsigned k=0; k<lmstride.size(); ++k) printf("lmstride[%d] %d\n",k,lmstride[k]);
               dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d\nrlid %d localcol[%d] %d dofcount %d length %d stride %d j %d node %d numnode %d",
@@ -528,7 +530,7 @@ void LINALG::SparseMatrix::Assemble(
       } // for (int lcol=0; lcol<lcoldim; ++lcol)
     } // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
-#endif  
+#endif
   return;
 }
 
