@@ -195,7 +195,7 @@ LINALG::SparseMatrix::SparseMatrix(
   else
     dserror("matrix type is not correct");
 
-  sysmat_->FillComplete();
+  //sysmat_->FillComplete();
 
   for (int i=0; i<length; ++i)
   {
