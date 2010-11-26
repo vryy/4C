@@ -284,12 +284,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -----------------------------------------
 
   // create the volumetric-surface-flow condition
-#ifdef D_ALE_BFLOW
+#if 1 //def D_ALE_BFLOW
   if (alefluid_)
   {
     discret_->SetState("dispnp", dispn_);
   }
 #endif
+
   vol_surf_flow_bc_     = rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, output_, dta_) );
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
@@ -305,8 +306,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                 Teuchos::null, dbcmaps_);
 
     // evaluate the map of te womersley bcs
+    vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
     vol_surf_flow_bc_->EvaluateCondMap(vol_surf_flow_bcmaps_);
 
+    
 #ifdef D_ARTNET
     // -----------------------------------------------------------------
     // Initialize the reduced models
@@ -359,7 +362,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
     // Evaluate the womersley velocities
     vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
-
+      
 
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -751,6 +754,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 {
+
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -776,7 +780,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
-  //
+  // 
   // for example
   //
   //
@@ -835,25 +839,25 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 #endif // D_ALE_BFLOW
 
 #ifdef D_ARTNET
-      // update the 3D-to-reduced_D coupling data
-      // Check if one-dimensional artery network problem exist
-      if (ART_exp_timeInt_ != Teuchos::null)
-      {
-        coupled3D_redDbc_art_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
-      }
+    // update the 3D-to-reduced_D coupling data
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_art_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
+    }
 #endif //D_ARTNET
 #ifdef D_RED_AIRWAYS
-      // update the 3D-to-reduced_D coupling data
-      // Check if one-dimensional artery network problem exist
-      if (airway_imp_timeInt_ != Teuchos::null)
-      {
-        coupled3D_redDbc_airways_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
-      }
+    // update the 3D-to-reduced_D coupling data
+    // Check if one-dimensional artery network problem exist
+    if (airway_imp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_airways_->EvaluateDirichlet(velnp_, *(dbcmaps_->CondMap()), time_);
+    }
 #endif //D_RED_AIRWAYS
-
-      // Evaluate the womersley velocities
-      vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
-
+    
+    // Evaluate the womersley velocities
+    vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+    
     discret_->ClearState();
 
     // set all parameters and states required for Neumann conditions
@@ -929,6 +933,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   if (step_==1 and fssgv_ != "No") AVM3Preparation();
 
+  return;
 }
 
 
@@ -1295,12 +1300,20 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+    
+    // Treat the surface volumetric flow rate
+    //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+    //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
+      residual_);
+
 
     // Krylov projection for solver already required in convergence check
     if (project_)
     {
       DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
-
+      
       // in this case, we want to project out some zero pressure modes
       const string* definition = KSPcond->Get<string>("weight vector definition");
 
@@ -1875,6 +1888,14 @@ void FLD::FluidImplicitTimeInt::Predictor()
   // -------------------------------------------------------------------
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
 
+  // Treat the surface volumetric flow rate
+  //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+  vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+    vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
+    residual_);
+
+
   double vresnorm;
   double presnorm;
 
@@ -2153,6 +2174,13 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // to avoid that.)
     // -------------------------------------------------------------------
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+    // Treat the surface volumetric flow rate
+    //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+    //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
+      residual_);
 
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm);
@@ -2531,8 +2559,18 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     // values.
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     aux->Update(1.0, *veln_, 1.0, *vel, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
+
+    //
+    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(velnp_),
+      aux);
+
+    *velnp_ = *aux;
+    
   }
+
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -2649,7 +2687,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     // (The Dirichlet rows will become all zero, no diagonal one.)
     shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-
+    
     // apply the womersley bc as a dirichlet bc
     shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bcmaps_),false);
   }
@@ -2709,6 +2747,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
+
   ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
@@ -2768,15 +2807,15 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
-                                              onlyveln ,
-                                              onlyvelnm,
+    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp, 
+                                              onlyveln , 
+                                              onlyvelnm, 
                                               onlyaccn ,
-                                              timealgo_,
-                                              step_    ,
-                                              theta_   ,
-                                              dta_     ,
-                                              dtp_     ,
+                                              timealgo_, 
+                                              step_    , 
+                                              theta_   , 
+                                              dta_     , 
+                                              dtp_     , 
                                               onlyaccnp);
 
     // copy back into global vector
@@ -2824,11 +2863,13 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   // update wind kessel optimization condition
   Wk_optimization_->Solve(WkOpt_params);
+
   // -------------------------------------------------------------------
   // treat the 3D-to-reduced_D couplign condition
   // note: these methods return without action, if the problem does not
   //       have any coupling boundary conditions
   // -------------------------------------------------------------------
+
 
 #ifdef D_ALE_BFLOW
   if (alefluid_)
@@ -2836,6 +2877,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     discret_->SetState("dispnp", dispnp_);
   }
 #endif // D_ALE_BFLOW
+
 #ifdef D_ARTNET
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
@@ -2844,7 +2886,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
   }
 #endif //D_ARTNET
+
 #ifdef D_RED_AIRWAYS
+
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
@@ -4017,11 +4061,12 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
         coupled3D_redDbc_airways_->EvaluateDirichlet(velnp_,*(dbcmaps_->CondMap()), time_);
       }
 #endif // D_RED_AIRWAYS
-      discret_->ClearState();
+
 
       // Evaluate the womersley velocities
       vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
 
+      discret_->ClearState();
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
 
@@ -4494,15 +4539,15 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_node_normal");
-
+  
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
+  
   //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
   Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-
+  
   //call loop over elements, note: normal vectors do not yet have length = 1.0
   discret_->ClearState();
   if (alefluid_)
@@ -4525,7 +4570,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
       L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
     }
     L = sqrt(L);
-
+    
     // normalise the normal vector (if present for the current node)
     if (L > EPS15)
     {

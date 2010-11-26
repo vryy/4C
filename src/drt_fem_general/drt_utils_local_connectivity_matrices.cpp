@@ -665,6 +665,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
+        case DRT::Element::pyramid5:
+        {
+            const int nLine = 8;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_pyramid5_lines[i][j];
+            }
+            break;
+        }
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }

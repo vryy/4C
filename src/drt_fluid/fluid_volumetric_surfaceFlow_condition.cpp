@@ -111,6 +111,27 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   return;
 } // end FluidVolumetricSurfaceFlowWrapper
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                    ismail 09/10|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::InsertCondVector(Epetra_Vector & v1, Epetra_Vector & v2)
+{
+  for (int lid = 0; lid<v1.MyLength (); lid++ )
+  {
+    int gid    = v1.Map().GID(lid);
+    double val = v1[lid];
+
+    v2.ReplaceGlobalValues(1,&val,&gid);
+  }
+}
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -197,6 +218,23 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateCondMap(RCP<Epetra_M
 
   //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
   bcmap =   rcp(new Epetra_Map(*(womersley_mp_extractor_->VolumetricSurfaceFlowCondMap())));
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Evaluate the map extractor of the womersley conditions  ismail 10/10 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor )
+{
+
+  //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
+  mapextractor =   rcp(new FLD::UTILS::MapExtractor(*(womersley_mp_extractor_)));
 }
 
 
@@ -1459,7 +1497,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(RCP<Epetra_Vector
                     params);
 
 
-  discret_->ClearState();
+  //  discret_->ClearState();
   discret_->SetState("velnp",correction_velnp);
 
   double corrective_flowrate = this->FlowRateCalculation(time, condid_);

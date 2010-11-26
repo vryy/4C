@@ -527,6 +527,9 @@ protected:
   /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> dbcmaps_;
 
+  /// maps for extracting Dirichlet and free DOF sets
+  RCP<FLD::UTILS::MapExtractor> vol_flow_rates_bc_extractor_;
+
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>    zeros_;
 

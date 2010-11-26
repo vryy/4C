@@ -94,10 +94,17 @@ public:
   */
   void EvaluateCondMap(RCP<Epetra_Map> &   bcmap );
 
+  void InsertCondVector(Epetra_Vector & vec1, Epetra_Vector & vec2);
+  /*!
+  \brief Returns the map extractor of the conditions
+  */
+  void EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor );
+
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
   */
   void UpdateResidual(RCP<Epetra_Vector>  residual );
+
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
@@ -108,6 +115,7 @@ public:
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::ReadRestart
   */
   void ReadRestart(IO::DiscretizationReader& reader);
+
 
 private:
   /*!

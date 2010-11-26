@@ -136,6 +136,18 @@ namespace UTILS
     {2,3,4},
     {0,4,3}};
 
+  //! 9 lines of a wedge15 element with 3 nodes per line
+  const int eleNodeNumbering_pyramid5_lines[8][2] = {
+          {0, 1},
+          {1, 2},
+          {2, 3},
+          {3, 0},
+          {0, 4},
+          {1, 4},
+          {2, 4},
+          {3, 4}};
+
+
   //! 4 Lines of a Quad9 element with 3 nodes per line
   const int eleNodeNumbering_quad9_lines[4][3] = {
           {0,  1,  4},
