@@ -215,8 +215,8 @@ protected:
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);
 
-	//! \brief gmsh output of periodic boundary box
-	void GmshOutputBoundaryBox(double color, const std::ostringstream *filename);
+	//! \brief gmsh output of (periodic boundary) box around "boxcenter" with edgelength "length"
+	void GmshOutputBox(double color, std::vector<double>* boxcenter, double length, const std::ostringstream *filename);
 
 	//! \brief gmsh output for crosslink molecule diffusion
 	void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);

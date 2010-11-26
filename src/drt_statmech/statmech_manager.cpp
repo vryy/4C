@@ -2002,7 +2002,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	startindex_ = rcp(new std::vector<double>);
 
 	// create density-density-correlation-function map with
-	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
+		 Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_gmsh)
 	{
 		std::vector<int> bins;
 		for(int i=0; i<discret_.Comm().NumProc()*numbins; i++)

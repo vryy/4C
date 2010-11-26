@@ -453,9 +453,9 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
         //creating complete file name dependent on step number with 6 digits and leading zeros
         if (istep<1000000)
-        filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
+        	filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
         else
-        dserror("Gmsh output implemented for a maximum of 999999 steps");
+        	dserror("Gmsh output implemented for a maximum of 999999 steps");
 
         //calling method for writing Gmsh output
         GmshOutput(dis,filename,istep);
@@ -506,6 +506,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
    * processor 0 writes; it is assumed to have a fully overlapping column map and hence all the information about
    * all the nodal position; parallel output is now possible with the restriction that the nodes(processors) in question
    * are of the same machine*/
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+
 	GmshPrepareVisualization(disrow);
 
   //we need displacements also of ghost nodes and hence export displacment vector to column map format
@@ -606,7 +608,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
           color = 0.5;
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
-        if (statmechparams_.get<double> ("PeriodLength", 0.0) == 0.0)
+        if (periodlength == 0.0)
         {
           // check whether the kinked visualization is to be applied
           bool kinked = CheckForKinkedVisual(element->Id());
@@ -682,7 +684,11 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     discret_.Comm().Barrier();
   }
   // plot the periodic boundary box
-  GmshOutputBoundaryBox(0.0, &filename);
+  std::vector<double> center(3,periodlength/2);
+  std::vector<double> shift(3,0.0);
+  GmshOutputBox(0.0, &center, periodlength, &filename);
+ 	DDCorrShift(&center, &shift);
+  GmshOutputBox(0.75, &center, 0.125, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
@@ -690,6 +696,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   {
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream gmshfileend;
+
+    gmshfileend << "SP(" << scientific;
+    gmshfileend << center[0]<<","<<center[1]<<","<<center[2]<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -889,63 +898,70 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 /*----------------------------------------------------------------------*
  | plot the periodic boundary box                  (public) mueller 7/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutputBoundaryBox(double boundarycolor,const std::ostringstream *filename)
+void StatMechManager::GmshOutputBox(double boundarycolor, std::vector<double>* boxcenter, double length, const std::ostringstream *filename)
 {
+  double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
   // plot the periodic box in case of periodic boundary conditions (first processor)
-  if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0 && discret_.Comm().MyPID() == 0)
+  if (periodlength > 0 && discret_.Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilefooter;
     // get current period length
-    double pl = statmechparams_.get<double> ("PeriodLength", 0.0);
+
+    double xmin = (*boxcenter)[0]-length/2.0;
+    double xmax = (*boxcenter)[0]+length/2.0;
+    double ymin = (*boxcenter)[1]-length/2.0;
+    double ymax = (*boxcenter)[1]+length/2.0;
+    double zmin = (*boxcenter)[2]-length/2.0;
+    double zmax = (*boxcenter)[2]+length/2.0;
 
     // define boundary lines
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << "," << pl << ","<< 0.0 << "," << 0.0;
+    gmshfilefooter << xmin << "," << ymin << "," << zmin << "," << xmax << ","<< ymin << "," << zmin;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 2
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << "," << pl << "," << pl<< "," << 0.0;
+    gmshfilefooter << xmax << "," << ymin << "," << zmin << "," << xmax << "," << ymax << "," << zmin;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 3
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << pl << "," << 0.0 << "," << pl << "," << pl<< "," << pl;
+    gmshfilefooter << xmax << "," << ymax << "," << zmin << "," << xmax << "," << ymax << "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 4
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << pl << "," << pl << "," << 0.0 << "," << pl<< "," << pl;
+    gmshfilefooter << xmax << "," << ymax << "," << zmax << "," << xmin << "," << ymax << "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 5
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << pl << "," << pl << "," << 0.0 << "," << 0.0<< "," << pl;
+    gmshfilefooter << xmin << "," << ymax << "," << zmax << "," << xmin << "," << ymin << "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 6
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << 0.0 << "," << pl << "," << 0.0 << ","<< 0.0 << "," << 0.0;
+    gmshfilefooter << xmin << "," << ymin << "," << zmax << "," << xmin << ","<< ymin << "," << zmin;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 7
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << ","<< pl << "," << 0.0;
+    gmshfilefooter << xmin << "," << ymin << "," << zmin << "," << xmin << ","<< ymax << "," << zmin;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 8
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << "," << pl << "," << pl<< "," << 0.0;
+    gmshfilefooter << xmin << "," << ymax << "," << zmin << "," << xmax << "," << ymax << "," << zmin;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 9
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << 0.0 << "," << pl << "," << 0.0 << "," << 0.0 << "," << pl<< "," << pl;
+    gmshfilefooter << xmin << "," << ymax << "," << zmin << "," << xmin << "," << ymax << "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 10
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << 0.0 << "," << 0.0 << "," << pl << "," << 0.0<< "," << pl;
+    gmshfilefooter << xmax << "," << ymin << "," << zmin << "," << xmax << "," << ymin << "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 11
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << 0.0 << "," << pl << "," << pl << "," << pl<< "," << pl;
+    gmshfilefooter << xmax << "," << ymin << "," << zmax << "," << xmax << "," << ymax<< "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
     // line 12
     gmshfilefooter << "SL(" << scientific;
-    gmshfilefooter << pl << "," << 0.0 << "," << pl << "," << 0.0 << "," << 0.0<< "," << pl;
+    gmshfilefooter << xmax << "," << ymin << "," << zmax << "," << xmin << "," << ymin<< "," << zmax;
     gmshfilefooter << ")" << "{" << scientific << boundarycolor << ","<< boundarycolor << "};" << endl;
 
     fprintf(fp, gmshfilefooter.str().c_str());
@@ -2061,6 +2077,12 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
  *----------------------------------------------------------------------*/
 void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
 {
+	/*for(int i=0; i<discret_.Comm().NumProc(); i++)
+	{
+		if(i==discret_.Comm().MyPID())
+			cout<<"Proc "<<discret_.Comm().MyPID()<<": Pos1"<<endl;
+		discret_.Comm().Barrier();
+	}*/
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// storage vector for shifted crosslinker LIDs(crosslinkermap)
@@ -2172,7 +2194,6 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
   	cout<<"================"<<endl;
   	cout<<"Total: "<<total<<endl;
   }*/
-
   // write data to file
   if(!discret_.Comm().MyPID())
   {
@@ -2262,11 +2283,8 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 					}
 				}
 			}
-	/*if(!discret_.Comm().MyPID())
-	{
-		cout<<"box center: "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
-		cout<<"d_av_min  = "<<smallestdistance<<endl;
-	}*/
+	//if(!discret_.Comm().MyPID())
+		//cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
 	return;
 }//StatMechManager::DDCorrShift()
 
