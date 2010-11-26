@@ -7,6 +7,8 @@
 
 #ifdef CCADISCRET
 
+#undef USE_SAAMG_FALLBACK
+
 #include "transfer_operator.H"
 #include "transfer_operator_saamg.H"
 #include "transfer_operator_pgamg.H"
@@ -143,10 +145,12 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
 
   }
 
+#ifdef USE_SAAMG_FALLBACK
   //////////////// calculate SA-AMG value for omega (for exceptions)
   double maxeig = MaxEigCG(*A,true);
   double sadampingfactor = 1.333333333333;
   double saomega = sadampingfactor/maxeig;
+#endif
 
   //////////////// convert column based omegas to row-based omegas
 
@@ -173,9 +177,9 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
     std::vector<double> vals(nnz);
     int numEntries;
     int err = DinvAP0->EpetraMatrix()->ExtractGlobalRowCopy(grid,nnz,numEntries,&vals[0],&indices[0]);
-#ifdef DEBUG
+/*#ifdef DEBUG*/
     if(err!=0) dserror("Error in ExtractGlobalRowCopy");
-#endif
+/*#endif*/
 
     ///////////////// special cases
     if(nnz==0)  // empty row (should not happen, but possible because of funny MIS aggregation?)
@@ -184,7 +188,11 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
       if(P_tent->EpetraMatrix()->NumMyEntries(row) == 0)
       {
         // ok, this is the bad -1 aggregate thing in MIS aggregation process
+#ifdef USE_SAAMG_FALLBACK
         (*RowBasedOmegas)[row] = saomega; //0.0;
+#else
+        (*RowBasedOmegas)[row] = 0.0;
+#endif
       }
       else
       {
@@ -208,13 +216,21 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
         }
 #endif
         nSpuriousZeros++;
+#ifdef USE_SAAMG_FALLBACK
         (*RowBasedOmegas)[row] = saomega; //0.0;
+#else
+        (*RowBasedOmegas)[row] = 0.0;
+#endif
       }
     }
     else if(nnz==1) // special treatment for dirichlet bc nodes
     {
       nDirichletDofs++;
+#ifdef USE_SAAMG_FALLBACK
       (*RowBasedOmegas)[row] = saomega; //0.0;
+#else
+      (*RowBasedOmegas)[row] = 0.0;
+#endif
     }
     else  // standard case
     {

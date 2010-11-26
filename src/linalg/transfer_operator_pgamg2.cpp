@@ -297,9 +297,9 @@ RCP<Epetra_Vector> LINALG::PGAMG2TransferOperator::TransformColBased2RowBasedOme
                                                          numEntries,
                                                          &values[0],
                                                          &indices[0]);
-#ifdef DEBUG
+//#ifdef DEBUG
       if(err!=0) dserror("Error in ExtractGlobalRowCopy");
-#endif
+//#endif
 
       ///////////// find corresponding minimal colbased omega within indices
       for(int j=0; j<nnz; j++)

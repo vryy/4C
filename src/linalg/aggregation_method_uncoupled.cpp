@@ -26,7 +26,6 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
 
   int nUnamalgamatedBlockSize = params.get("Unamalgamated BlockSize",3);          // number of real PDE equations (for setting up amalgamated maps)
   int nPDE = params.get("PDE equations",nUnamalgamatedBlockSize);                 // local block size (should be = nUnamalgamated BlockSize in most cases, used for myblockid2blocksize, necessary if there are holes in the RowMatrix of A)
-  int nRows = A->NumMyRows();  // number of matrix rows for current proc
 
   //////////////// store original map of matrix A
   map_ = rcp(new Epetra_Map(A->RowMap()));
@@ -78,6 +77,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   //RCP<Epetra_Map> amalA_RowMap = rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
   amal_map_ = rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
 #ifdef DEBUG
+  int nRows = A->NumMyRows();  // number of matrix rows for current proc
   if(nvblocks != amal_map_->NumMyElements()) dserror("nvblocks and NumMyElements of amalA_RowMap does not match");
   if(nVerbose_ > 5)
     cout << "PROC " << A->Comm().MyPID() << " " << globalamalblockids_.size() << " amalgamated rows, " << nRows << " normal rows " << endl;
@@ -463,7 +463,9 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
 int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////////// initialize local variables
+#ifdef DEBUG
   int aggr_count = nLocalAggregates; // again count aggregates
+#endif
 
   // loop over all local rows
   for(int inode=0; inode<amalA->NumMyRows(); inode++)
@@ -576,7 +578,9 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
 int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////////// initialize local variables
+#ifdef DEBUG
   int aggr_count = nLocalAggregates; // again count aggregates
+#endif
 
   ///////////////// prepare phase 2
 
@@ -927,6 +931,8 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 #endif
   // <<<<<<<<<<<<<<<<<<<<
 #else
+
+
 
 
   // THIS WORKS IN PARALLEL WITHOUT RESTRICTIONS
