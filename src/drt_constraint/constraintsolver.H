@@ -98,7 +98,8 @@ namespace UTILS
     void Solve
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
+      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -126,6 +127,16 @@ namespace UTILS
       return;
     }
 
+    void SetSTCProp
+    (
+      INPAR::STR::STC_Scale stcalgo,
+      RCP<LINALG::SparseMatrix> stcmat
+    )
+    {
+      stcalgo_=stcalgo;
+      stcmat_=stcmat;
+    };
+
 private:
 
     // do not want = operator, cctor
@@ -138,7 +149,8 @@ private:
     void SolveUzawa
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
+      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -151,7 +163,8 @@ private:
     void SolveSimple
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
+      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -164,7 +177,8 @@ private:
     void SolveDirect
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseOperator> constr, ///< constraint matrix
+      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
       RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
@@ -187,7 +201,8 @@ private:
     RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
     INPAR::STR::ConSolveAlgo algochoice_;
-
+    INPAR::STR::STC_Scale stcalgo_;
+    RCP<LINALG::SparseMatrix> stcmat_;
 
   }; //class
 }

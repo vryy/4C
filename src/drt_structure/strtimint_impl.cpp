@@ -130,6 +130,7 @@ STR::TimIntImpl::TimIntImpl
   stcmat_=
     Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
+  stccompl_ =false;
 
   // setup NOX parameter lists
   if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
@@ -1051,10 +1052,36 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
+
+    //Use STC preconditioning on system matrix
+    STCPreconditioning();
+
+    // get constraint matrix with and without Dirichlet zeros
+    Teuchos::RCP<LINALG::SparseMatrix> constr =
+        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
+    Teuchos::RCP<LINALG::SparseMatrix> constrT =
+        rcp(new LINALG::SparseMatrix (*constr));
+
+    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+
+    // Apply STC on constraint matrices of desired
+    if(stcscale_ != INPAR::STR::stc_none)
+    {
+      cout<<"scaling constraint matrices"<<endl;
+      constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
+      if ((stcscale_ == INPAR::STR::stc_currsym) or (stcscale_ == INPAR::STR::stc_parasym))
+      {
+        cout<<"symmetric scaling constraint matrices"<<endl;
+        constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
+      }
+    }
     // Call constraint solver to solve system with zeros on diagonal
-    consolv_->Solve(SystemMatrix(), conman_->GetConstrMatrix(),
+    consolv_->Solve(SystemMatrix(), constr, constrT,
                     disi_, lagrincr,
                     fres_, conrhs);
+
+    //recover unscaled solution
+    RecoverSTCSolution();
 
     // transform back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
@@ -1973,11 +2000,10 @@ void STR::TimIntImpl::STCPreconditioning()
 
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    if ((iter_==1 and step_==0 and
-        (stcscale_==INPAR::STR::stc_curr or stcscale_==INPAR::STR::stc_currsym))or
-        (stcscale_==INPAR::STR::stc_para or stcscale_==INPAR::STR::stc_parasym))
+    if (!stccompl_ or (stcscale_==INPAR::STR::stc_para or stcscale_==INPAR::STR::stc_parasym))
     {
       ComputeSTCMatrix();
+      stccompl_=true;
     }
 
     stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);

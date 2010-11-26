@@ -1748,8 +1748,17 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
     lagrIncr->PutScalar(0.0);
 
-    // Call Uzawa algorithm to solve system with zeros on diagonal
-    constrSolv_->Solve(SystemMatrix(),constrMan_->GetConstrMatrix(),disi_,lagrIncr,fresm_,constrRHS);
+    Teuchos::RCP<LINALG::SparseMatrix> constr =
+        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrMan_->GetConstrMatrix()));
+    Teuchos::RCP<LINALG::SparseMatrix> constrT =
+        rcp(new LINALG::SparseMatrix (*constr));
+
+    constr->ApplyDirichlet(dirichtoggle_,false);
+
+    // Call constraint solver to solve system with zeros on diagonal
+    constrSolv_->Solve(SystemMatrix(), constr, constrT,
+                    disi_, lagrIncr,
+                    fresm_, constrRHS);
 
     //update lagrange multiplier
     constrMan_->UpdateLagrMult(lagrIncr);

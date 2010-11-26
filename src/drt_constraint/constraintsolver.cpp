@@ -129,7 +129,8 @@ void UTILS::ConstraintSolver::Setup
 void UTILS::ConstraintSolver::Solve
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseOperator> constr,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseMatrix> constrT,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -139,13 +140,13 @@ void UTILS::ConstraintSolver::Solve
   switch (algochoice_)
   {
     case INPAR::STR::consolve_uzawa:
-      SolveUzawa(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      SolveUzawa(stiff,constr,constrT,dispinc,lagrinc,rhsstand,rhsconstr);
     break;
     case INPAR::STR::consolve_direct:
-      SolveDirect(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      SolveDirect(stiff,constr,constrT,dispinc,lagrinc,rhsstand,rhsconstr);
     break;
     case INPAR::STR::consolve_simple:
-      SolveSimple(stiff,constr,dispinc,lagrinc,rhsstand,rhsconstr);
+      SolveSimple(stiff,constr,constrT,dispinc,lagrinc,rhsstand,rhsconstr);
     break;
     default :
       dserror("Unknown constraint solution technique!");
@@ -160,7 +161,8 @@ void UTILS::ConstraintSolver::Solve
 void UTILS::ConstraintSolver::SolveUzawa
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseOperator> constr,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseMatrix> constrT,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -184,7 +186,7 @@ void UTILS::ConstraintSolver::SolveUzawa
 
   RCP<Epetra_Vector> constrTLagrInc = rcp(new Epetra_Vector(rhsstand->Map()));
   RCP<Epetra_Vector> constrTDispInc = rcp(new Epetra_Vector(rhsconstr->Map()));
-  LINALG::SparseMatrix constrT = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constr));
+  //LINALG::SparseMatrix constrT = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constr));
 
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
@@ -214,10 +216,10 @@ void UTILS::ConstraintSolver::SolveUzawa
   while (((norm_uzawa > iterationtol_ or norm_constr_uzawa > iterationtol_) and numiter_uzawa < maxIter_)
       or numiter_uzawa < minstep)
   {
-    LINALG::ApplyDirichlettoSystem(stiff,dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
-    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+    //LINALG::ApplyDirichlettoSystem(dispinc,fresmcopy,zeros,*(dbcmaps_->CondMap()));
+//    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-#if 0
+    #if 0
     const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*stiff),Ifpack_GMRES, 1000);
     // computation of significant digits might be completely bogus, so don't take it serious
     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
@@ -239,7 +241,7 @@ void UTILS::ConstraintSolver::SolveUzawa
 
     //compute Lagrange multiplier increment
     constrTDispInc->PutScalar(0.0);
-    constrT.Multiply(true,*dispinc,*constrTDispInc) ;
+    constrT->Multiply(true,*dispinc,*constrTDispInc) ;
     lagrinc->Update(iterationparam_,*constrTDispInc,iterationparam_,*rhsconstr,1.0);
 
     //Compute residual of the uzawa algorithm
@@ -321,7 +323,8 @@ void UTILS::ConstraintSolver::SolveUzawa
 void UTILS::ConstraintSolver::SolveDirect
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseOperator> constr,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseMatrix> constrT,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -342,7 +345,6 @@ void UTILS::ConstraintSolver::SolveDirect
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,mergedmap->NumMyElements()));
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
   RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedmap));
-  RCP<Epetra_Vector> mergedzeros = rcp(new Epetra_Vector(*mergedmap));
 
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
@@ -352,16 +354,13 @@ void UTILS::ConstraintSolver::SolveDirect
   // fill merged matrix using Add
   mergedmatrix -> Add(*stiff,false,1.0,1.0);
   mergedmatrix -> Add(*constr,false,1.0,1.0);
-  mergedmatrix -> Add(*constr,true,1.0,1.0);
+  mergedmatrix -> Add(*constrT,true,1.0,1.0);
   mergedmatrix -> Complete(*mergedmap,*mergedmap);
 
   // fill merged vectors using Export
   LINALG::Export(*rhsconstr,*mergedrhs);
   mergedrhs -> Scale(-1.0);
   LINALG::Export(*rhsstand,*mergedrhs);
-
-  // apply dirichlet boundary conditions
-  LINALG::ApplyDirichlettoSystem(mergedmatrix,mergedsol,mergedrhs,mergedzeros,*(dbcmaps_->CondMap()));
 
 #if 0
     const int myrank=(actdisc_->Comm().MyPID());
@@ -387,7 +386,8 @@ void UTILS::ConstraintSolver::SolveDirect
 void UTILS::ConstraintSolver::SolveSimple
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseOperator> constr,
+  RCP<LINALG::SparseMatrix> constr,
+  RCP<LINALG::SparseMatrix> constrT,
   RCP<Epetra_Vector> dispinc,
   RCP<Epetra_Vector> lagrinc,
   const RCP<Epetra_Vector> rhsstand,
@@ -408,9 +408,8 @@ void UTILS::ConstraintSolver::SolveSimple
   
   // cast constraint operators to matrices and save transpose of constraint matrix
   LINALG::SparseMatrix constrTrans (*conrowmap,81,false,true);
-  LINALG::SparseMatrix constrMatrix = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constr));
-  constrTrans.Add(constrMatrix,true,1.0,0.0); 
-  constrTrans.Complete(constrMatrix.RangeMap(),constrMatrix.DomainMap());
+  constrTrans.Add(*constrT,true,1.0,0.0);
+  constrTrans.Complete(constrT->RangeMap(),constrT->DomainMap());
   
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
@@ -422,9 +421,6 @@ void UTILS::ConstraintSolver::SolveSimple
   RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
   RCP<Epetra_Vector> rhscopy=rcp(new Epetra_Vector(*rhsstand));
   
-  LINALG::ApplyDirichlettoSystem(stiff,dispinc,rhscopy,zeros,*(dbcmaps_->CondMap()));
-  constrMatrix.ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-  
   //make solver SIMPLE-ready
   solver_->PutSolverParamsToSubParams("SIMPLER",
       DRT::Problem::Instance()->FluidPressureSolverParams());
@@ -433,7 +429,7 @@ void UTILS::ConstraintSolver::SolveSimple
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=
       rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
   mat->Assign(0,0,View,*stiff);
-  mat->Assign(0,1,View,constrMatrix);
+  mat->Assign(0,1,View,*constr);
   mat->Assign(1,0,View,constrTrans);
   mat->Complete();
   
