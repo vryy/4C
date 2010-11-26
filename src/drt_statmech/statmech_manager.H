@@ -293,13 +293,6 @@ protected:
   //! \brief reference to current discretization
   DRT::Discretization& discret_;
 
-  //! \brief storing for each col map node the GIDs of nodes to which a crosslinker has been established
-  RCP<Epetra_MultiVector>  crosslinkerpartner_;
-
-
-  //! \brief storing for each col map node how many crosslinkers it has currently
-  RCP<Epetra_Vector>  numcrosslinkerpartner_;
-
   //! \brief storing for each node column map LID number of filament to which it belongs
   RCP<Epetra_Vector> filamentnumber_;
 
@@ -353,8 +346,6 @@ protected:
 	std::vector<int> addedelements_;
 
 	//variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
-  RCP<Epetra_MultiVector> crosslinkerpartnerconv_;
-  RCP<Epetra_Vector> numcrosslinkerpartnerconv_;
 	RCP<Epetra_MultiVector> crosslinkerbondconv_;
   RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
   RCP<Epetra_Vector> numcrossnodesconv_;

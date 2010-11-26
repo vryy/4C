@@ -137,13 +137,6 @@ discret_(discret)
   filamentnumber_ = rcp( new Epetra_Vector(*(discret_.NodeColMap())) );
   filamentnumber_->PutScalar(-1);
 
-  //initialize crosslinkerpartner_ as a col map multivector consisting of as many vectors as a node can have crosslinkers at the maximum
-  crosslinkerpartner_ = rcp(new Epetra_MultiVector(*(discret_.NodeColMap()),statmechparams_.get<int>("N_CROSSMAX",1)));
-  crosslinkerpartner_->PutScalar(-1);
-
-  numcrosslinkerpartner_ = rcp(new Epetra_Vector(*(discret_.NodeColMap())));
-  numcrosslinkerpartner_->PutScalar(0);
-
 
   /*force sensors can be applied at any degree of freedom of the discretization the list of force sensors should
    * be based on a column map vector so that each processor has not only the information about each node's
@@ -1512,9 +1505,14 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
   /*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
    * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
 
-	output.WriteVector("crosslinkerpartner",crosslinkerpartner_,IO::DiscretizationWriter::nodevector);
-	output.WriteVector("numcrosslinkerpartner",numcrosslinkerpartner_,IO::DiscretizationWriter::nodevector);
-	output.WriteVector("numcrossnodes",numcrossnodes_,IO::DiscretizationWriter::nodevector);
+	//note: Using WriteVector and ReadMultiVector requires unique map of MultiVector thus export/import for restart to/from row map
+	const Epetra_Map noderowmap = *(discret_.NodeRowMap());
+	const Epetra_Map nodecolmap = *(discret_.NodeColMap());
+	Epetra_Export exporter(nodecolmap,noderowmap);
+	RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap));
+	numcrossnodesrow->Export(*numcrossnodes_,exporter,Add);
+	output.WriteVector("numcrossnodes",numcrossnodesrow,IO::DiscretizationWriter::nodevector);
+
   output.WriteRedundantDoubleVector("startindex",startindex_);
 
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
@@ -1555,7 +1553,8 @@ void StatMechManager::WriteRestartRedundantMultivector(IO::DiscretizationWriter&
  *----------------------------------------------------------------------*/
 void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 {
-	// read restart information for statistical mechanics
+
+  // read restart information for statistical mechanics
 	istart_ = reader.ReadInt("istart");
 	unconvergedsteps_ = reader.ReadInt("unconvergedsteps");
 	starttimeoutput_ = reader.ReadDouble("starttimeoutput");
@@ -1571,9 +1570,15 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 	sumsquareincrot_ = reader.ReadDouble("sumsquareincrot");
 	/*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
 	 * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
-	reader.ReadMultiVector(crosslinkerpartner_,"crosslinkerpartner");
-	reader.ReadMultiVector(numcrosslinkerpartner_,"numcrosslinkerpartner");
-	reader.ReadMultiVector(numcrossnodes_,"numcrossnodes");
+
+	//note: Using WriteVector and ReadMultiVector requires uniquen map of MultiVector thus export/import for restart to/from row map
+  const Epetra_Map noderowmap = *(discret_.NodeRowMap());
+  const Epetra_Map nodecolmap = *(discret_.NodeColMap());
+  Epetra_Import importer(nodecolmap,noderowmap);
+  RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap));
+  reader.ReadMultiVector(numcrossnodesrow,"numcrossnodes");
+  numcrossnodes_->Import(*numcrossnodesrow,importer,Insert);
+
 
 	//Read redundant Epetra_Multivectors and STL vectors
 	reader.ReadRedundantDoubleVector(startindex_,"startindex");
@@ -1583,6 +1588,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 	ReadRestartRedundantMultivector(reader,"crosslinkonsamefilament",crosslinkonsamefilament_);
 	ReadRestartRedundantMultivector(reader,"visualizepositions",visualizepositions_);
 	ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
+
 
 	return;
 }// StatMechManager::ReadRestart()
@@ -1617,10 +1623,8 @@ void StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& 
 void StatMechManager::WriteConv()
 {
   //save relevant class variables at the very end of the time step
-  crosslinkerpartnerconv_ = rcp(new Epetra_MultiVector(*crosslinkerpartner_));
   crosslinkerbondconv_ = rcp(new Epetra_MultiVector(*crosslinkerbond_));
   crosslinkerpositionsconv_ = rcp(new Epetra_MultiVector(*crosslinkerpositions_));
-  numcrosslinkerpartnerconv_ = rcp(new Epetra_Vector(*numcrosslinkerpartner_));
   numcrossnodesconv_ = rcp(new Epetra_Vector(*numcrossnodes_));
   numbondconv_ = rcp(new Epetra_Vector(*numbond_));
   crosslinkonsamefilamentconv_ = rcp(new Epetra_Vector(*crosslinkonsamefilament_));
@@ -1639,10 +1643,8 @@ void StatMechManager::WriteConv()
 void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff)
 {
   //restore state at the beginning of time step for relevant class variables
-  crosslinkerpartner_ = rcp(new Epetra_MultiVector(*crosslinkerpartnerconv_));
   crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
   crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
-  numcrosslinkerpartner_ = rcp(new Epetra_Vector(*numcrosslinkerpartnerconv_));
   numcrossnodes_ = rcp(new Epetra_Vector(*numcrossnodesconv_));
   numbond_ = rcp(new Epetra_Vector(*numbondconv_));
   crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
