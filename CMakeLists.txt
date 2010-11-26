@@ -2088,6 +2088,7 @@ baci_test(w1q4_cantilever_eas 2 "")
 baci_test(w1q4_patch_eas 1 "")
 baci_test(w1q4_patch_eas 2 "")
 baci_test(w1q9_dyn_rot_drt 1 "")
+baci_test(womersley_f3 2 "")
 
 if (D_BEAM3II)
   baci_test(beam3iitest1linear 1 "")

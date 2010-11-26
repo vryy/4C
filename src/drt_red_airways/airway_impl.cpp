@@ -220,11 +220,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   //--------------------------------------------------------------------
   // initialize the volumetric flow rate vectors
   //--------------------------------------------------------------------
-  if(myrank == ele->Owner())
-  {
-    int    gid = ele->Id();
-    double val = 0.0;
-  }
+  //  if(myrank == ele->Owner())
+  //  {
+  //    int    gid = ele->Id();
+  //  double val = 0.0;
+  //}
 
 }//AirwayImpl::Initial
 
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double dens = 0.0;
   double visc = 0.0;
 
-  const int elemVecdim = epnp.Length () ;
+  //  const int elemVecdim = epnp.Length () ;
 
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
@@ -820,7 +820,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   // create objects for element arrays
   //  LINALG::Matrix<numnode,1> epnp;
   Epetra_SerialDenseVector epnp(numnode);
-  for (int i=0;i<lm.size();++i)
+  for (unsigned int i=0;i<lm.size();++i)
   {
     // split area and volumetric flow rate, insert into element arrays
     epnp(i)    = mypnp[i];
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
     // find Inductance I
-    const double I = dens*L/A;
+    //    const double I = dens*L/A;
 
     // get element information from the previous time step
     double qcn,qln;
@@ -1015,7 +1015,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   const int   myrank  = discretization.Comm().MyPID();
 
   // get total time
-  const double time = params.get<double>("total time");
+  //  const double time = params.get<double>("total time");
 
   // get time-step size
   //  const double dt = params.get<double>("time step size");
