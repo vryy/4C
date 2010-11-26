@@ -37,6 +37,9 @@ C
       FOUR=4.0D0
       KKK=3
       IT=0
+      T1 = 0.0
+      IR = 0
+      IC = 0
 C
 C-------------------------------------------PUT A UNIT MATRIX IN ARRAY V
 C
