@@ -47,6 +47,10 @@ namespace ADAPTER
     { return structure_->HaveConstraint(); }
     virtual const RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    { return structure_->GetSTCAlgo();};
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    { return structure_->GetSTCMat();};
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 

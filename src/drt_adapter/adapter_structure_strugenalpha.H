@@ -136,6 +136,19 @@ namespace ADAPTER {
       return structure_->GetConstraintManager();
     };
 
+    /// Do not lie about STC feature
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    {
+       return INPAR::STR::stc_none;
+    };
+
+    /// in case the truth about STC feature did not suffice
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    {
+      dserror("not implemented");
+      return Teuchos::null;
+    }
+
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     {

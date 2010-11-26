@@ -190,6 +190,16 @@ namespace ADAPTER {
       return structure_->GetConstraintManager();
     };
 
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    {
+      return structure_->GetSTCAlgo();
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    {
+      return structure_->GetSTCMat();
+    };
+
     /// @name Solver calls
     //@{
 

@@ -133,6 +133,10 @@ namespace ADAPTER {
     /// get constraint manager defined in the structure
     virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
+    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
+
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 

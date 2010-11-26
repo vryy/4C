@@ -316,6 +316,19 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
   
+  // get info about STC feature
+  INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+  Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
+  if (stcalgo != INPAR::STR::stc_none)
+  {
+    stcmat = StructureField().GetSTCMat();
+
+    if (stcalgo == INPAR::STR::stc_currsym or stcalgo == INPAR::STR::stc_parasym)
+    {
+      dserror("only right preconditioning with STC implemented!");
+    }
+  }
+
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
@@ -349,7 +362,22 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   fgg->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
   
   s->Add(*fgg,false,scale*timescale,1.0);
-  mat.Assign(0,0,View,*s);
+
+  RCP<LINALG::SparseMatrix> sstc;
+
+  if (stcalgo != INPAR::STR::stc_none)
+  {
+    s->Complete();
+    RCP<LINALG::SparseMatrix> sstc = LINALG::MLMultiply(*s, false, *stcmat, false, true, true, false);
+    s->UnComplete();
+    mat.Assign(0,0,View,*s);
+  }
+  else
+  {
+    mat.Assign(0,0,View,*s);
+  }
+
+
   RCP<LINALG::SparseMatrix> fgi = MLMultiply(*mortar,true,f->Matrix(1,0),false,false,false,true);
   RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
@@ -371,7 +399,10 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   lfig->Complete(s->DomainMap(),fig->RangeMap());
   
   lfig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
-  
+
+  if (stcalgo != INPAR::STR::stc_none)
+    lfig = LINALG::MLMultiply(*lfig,false,*stcmat, false, false, false,true);
+
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1,0).UnComplete();
   mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
@@ -406,7 +437,10 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   laig->Complete(s->DomainMap(),llaig->RangeMap());
   
   laig->ApplyDirichlet( *(AleField().GetDBCMapExtractor()->CondMap()),false);
-  
+
+  if (stcalgo != INPAR::STR::stc_none)
+    laig = LINALG::MLMultiply(*laig,false,*stcmat, false, false, false,true);
+
   mat.Assign(2,0,View,*laig);
   
   mat.Assign(2,2,View,aii);
@@ -425,9 +459,16 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     RCP<LINALG::SparseMatrix> fmgg = MLMultiply(mmm->Matrix(1,1),false,*mortar,false,false,false,true);
     fmgg = MLMultiply(*mortar,true,*fmgg,false,false,false,true);
     
-    fmgg->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
-    
-    mat.Matrix(0,0).Add(*fmgg,false,scale,1.0);
+    RCP<LINALG::SparseMatrix> lfmgg = rcp(new LINALG::SparseMatrix(fmgg->RowMap(),81,false));
+    lfmgg->Add(*fmgg,false,timescale,0.0);
+    lfmgg->Complete(s->DomainMap(),fmgg->RangeMap());
+
+    lfmgg->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+
+    if (stcalgo != INPAR::STR::stc_none)
+      lfmgg = LINALG::MLMultiply(*lfmgg,false,*stcmat, false, false, false,true);
+
+    mat.Matrix(0,0).Add(*lfmgg,false,scale,1.0);
     
     RCP<LINALG::SparseMatrix> fmig = MLMultiply(mmm->Matrix(0,1),false,*mortar,false,false,false,true);
     RCP<LINALG::SparseMatrix> lfmig = rcp(new LINALG::SparseMatrix(fmig->RowMap(),81,false));
@@ -436,7 +477,10 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     lfmig->Complete(s->DomainMap(),fmig->RangeMap());
     
     lfmig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
-    
+
+    if (stcalgo != INPAR::STR::stc_none)
+      lfmig = LINALG::MLMultiply(*lfmig,false,*stcmat, false, false, false,true);
+
     mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
     
     // We cannot copy the pressure value. It is not used anyway. So no exact
@@ -559,6 +603,19 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
       dserror("ale scaling failed");
 
+    // get info about STC feature
+    INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
+    if (stcalgo != INPAR::STR::stc_none)
+    {
+      stcmat = StructureField().GetSTCMat();
+      stcmat->Multiply(false,*sy,*sy);
+      if (stcalgo == INPAR::STR::stc_currsym or stcalgo == INPAR::STR::stc_parasym)
+      {
+        dserror("only right preconditioning with STC implemented!");
+      }
+    }
+
     Extractor().InsertVector(*sy,0,x);
     Extractor().InsertVector(*ay,2,x);
 
@@ -569,6 +626,17 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
       dserror("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
       dserror("ale scaling failed");
+
+    // get info about STC feature
+    if (stcalgo != INPAR::STR::stc_none)
+    {
+      stcmat = StructureField().GetSTCMat();
+      stcmat->Multiply(false,*sx,*sx);
+      if (stcalgo == INPAR::STR::stc_currsym or stcalgo == INPAR::STR::stc_parasym)
+      {
+        dserror("only right preconditioning with STC implemented!");
+      }
+    }
 
     Extractor().InsertVector(*sx,0,b);
     Extractor().InsertVector(*ax,2,b);

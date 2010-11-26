@@ -120,6 +120,14 @@ namespace ADAPTER {
       return structure_->GetConstraintManager();
     };
 
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    { return structure_->GetSTCAlgo(); };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    {
+      return structure_->GetSTCMat();
+    }
+
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr

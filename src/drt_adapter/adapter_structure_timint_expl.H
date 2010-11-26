@@ -193,6 +193,18 @@ namespace ADAPTER {
       dserror("not implemented"); return Teuchos::null;
     };
 
+    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    {
+      dserror("not implemented");
+      return INPAR::STR::stc_none;
+    }
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    {
+      dserror("not implemented");
+      return Teuchos::null;
+    }
+
     /// @name Solver calls
     //@{
 
