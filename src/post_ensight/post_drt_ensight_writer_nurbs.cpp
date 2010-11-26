@@ -2284,7 +2284,6 @@ case DRT::Element::nurbs9:
       }
       int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
       (idata)->ReplaceMyValue(lid,isd,val);
-      }
     }
 
     // point 2
@@ -3602,10 +3601,10 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
 
       for (int inode=0; inode<numnp; ++inode)
       {
-        for(int rr=0;rr<dim;++rr)
+        for(int rr=0;rr<numdf;++rr)
         {
-          // erste Spalte
-          my_data[dim*inode+rr]=((*coldata)[0])[(*coldata).Map().LID(nodeids[inode])];
+          // value of column rr
+          my_data[numdf*inode+rr]=(*((*coldata)(rr)))[(*coldata).Map().LID(nodeids[inode])];
         }
       }
     }
@@ -3639,8 +3638,8 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
       Epetra_Vector* column = (*allsols)(idf);
       for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
       {
-        Write(file, static_cast<float>(idf));
- //       Write(file, static_cast<float>((*column)[inode]));
+//        Write(file, static_cast<float>(idf));
+        Write(file, static_cast<float>((*column)[inode]));
       }
     }
   } // if (myrank_==0)
