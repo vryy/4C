@@ -87,8 +87,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap      = discret_->DofRowMap();
 
-  const Epetra_Map* elementrowmap  = discret_->ElementRowMap();
-
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
   // contains the volumetric flow rate dofs and for one vector which only
@@ -160,7 +158,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
   
   // Fill the NodeId vector
-  int localNode;
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // get the element
@@ -665,8 +662,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
                                               RCP<ParameterList> CouplingParams)
 {
-  int step, upres, uprestart;
-  double time_backup;
+  int step      = 0;
+  int upres     = 0;
+  int uprestart = 0;
+  double time_backup = 0.0;
   // -------------------------------------------------------------------
   // if coupled to 3D problem, then get the export information from 
   // the 3D problem

@@ -630,8 +630,11 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
                                         RCP<ParameterList> CouplingParams)
 {
-  int step, upres, uprestart;
-  double time_backup;
+  int step      = 0;
+  int upres     = 0;
+  int uprestart = 0;
+  double time_backup =0.0;
+
   // -------------------------------------------------------------------
   // if coupled to 3D problem, then get the export information from 
   // the 3D problem

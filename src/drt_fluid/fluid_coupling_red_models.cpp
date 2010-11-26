@@ -419,6 +419,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     // -----------------------------------------------------------------
     RCP<map<string, double > >  map3D_inter_to_Red = rcp(new map<string, double >);
     double dstep = 1.0/double(NumOfSteps);
+
     // -----------------------------------------------------------------
     // Calculate the variables with in the reduced-D time subscale
     //
@@ -449,6 +450,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     //
     //
     // -----------------------------------------------------------------
+
     map<string,double>::iterator itr_sub ;
     for (itr_sub = map3_Dnp_->begin(); itr_sub != map3_Dnp_->end(); itr_sub++)
     {
