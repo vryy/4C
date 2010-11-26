@@ -272,6 +272,17 @@ public:
   virtual bool RoughCheckNodes();
 
   /*!
+  \brief Checks roughly whether the two elements are near (3D)
+
+  This methods checks the orientation of slave and master element.
+  Projection and overlap detection only make sense if the scalar
+  product of the two center normals is negative (i.e. if the two
+  elements form an angle smaller than 90°).
+
+  */
+  virtual bool RoughCheckOrient();
+  
+  /*!
   \brief Build auxiliary plane from slave element (3D)
 
   This method builds an auxiliary plane based on the possibly

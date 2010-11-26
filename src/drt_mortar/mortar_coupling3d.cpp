@@ -116,6 +116,12 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
     // compute auxiliary plane for 3D coupling
     AuxiliaryPlane();
 
+    // rough check of orientation of element centers
+    // if slave and master element center normals form an
+    // angle > 90° the pair will not be considered further
+    bool orient = RoughCheckOrient();
+    if (!orient) return false;
+    
     // project slave element nodes onto auxiliary plane
     ProjectSlave();
 
@@ -297,6 +303,39 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 }
 
 /*----------------------------------------------------------------------*
+ |  Rough check if elements are near (with normals)           popp 11/10|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling3d::RoughCheckOrient()
+{
+  // we first need the master element center:
+  // for quad4, quad8, quad9 elements: xi = eta = 0.0
+  // for tri3, tri6 elements: xi = eta = 1/3
+  double loccenter[2] = {0.0, 0.0};
+
+  DRT::Element::DiscretizationType dt = MasterIntElement().Shape();
+  if (dt==MortarElement::tri3 || dt==MortarElement::tri6)
+  {
+    loccenter[0] = 1.0/3;
+    loccenter[1] = 1.0/3;
+  }
+  else if (dt==MortarElement::quad4 || dt==MortarElement::quad8 || dt==MortarElement::quad9)
+  {
+    loccenter[0] = 0.0;
+    loccenter[1] = 0.0;
+  }
+  else dserror("ERROR: RoughCheckOrient called for unknown element type");
+
+  // compute the unit normal vector at the master element center
+  double nmc[3] = {0.0, 0.0, 0.0};
+  MasterIntElement().ComputeUnitNormalAtXi(loccenter,nmc);
+
+  // check orientation with respect to slave element
+  double dot = nmc[0]*Auxn()[0]+nmc[1]*Auxn()[1]+nmc[2]*Auxn()[2];
+  if (dot<0) return true;
+  else       return false;
+}
+
+/*----------------------------------------------------------------------*
  |  Build auxiliary plane from slave element (public)         popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::AuxiliaryPlane()
@@ -304,7 +343,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  double loccenter[2];
+  double loccenter[2] = {0.0, 0.0};
 
   DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
   if (dt==MortarElement::tri3 || dt==MortarElement::tri6)
