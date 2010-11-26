@@ -143,7 +143,7 @@ void stru_static_drt()
   const double dt = stepsize;
   int istep = 0;
   double time = 0.0;  // we should add an input parameter
-  double timen;
+  double timen = 0.0; 
 
   // -------------------------------------------------------------------
   // context for output and restart
