@@ -72,7 +72,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
 
   // minimal stretch equivalents with "thinnest" direction
   //const double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
-  double max_stretch;
+  double max_stretch = -1;
 
   ThicknessDirection thickdir = none; // of actual element
   int thick_index = -1;
