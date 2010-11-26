@@ -637,8 +637,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // div(epsilon(u))
     if (is_higher_order_ele_)
     {
-      CalcDivEps(evelaf,
-          f3Parameter_->timefac_);
+      CalcDivEps(evelaf);
     }
     else
     {
@@ -2584,9 +2583,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcDivEps(
-    const LINALG::Matrix<nsd_,nen_>&      evelaf,
-
-    const double &                        timefac)
+    const LINALG::Matrix<nsd_,nen_>&      evelaf)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
   /*   /                                                \

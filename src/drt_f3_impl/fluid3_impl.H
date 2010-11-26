@@ -1,4 +1,3 @@
-/*----------------------------------------------------------------------*/
 /*!
 \file fluid3_impl.H
 
@@ -11,7 +10,6 @@ Maintainer: Ulrich Kuettler
             089 - 289-15238
 </pre>
 */
-/*----------------------------------------------------------------------*/
 
 #ifdef D_FLUID3
 #ifdef CCADISCRET
@@ -216,7 +214,10 @@ namespace ELEMENTS
                 double * sveln,
                 double * svelnp);
 
-    // FD-check for debugging
+    /*!
+      \brief FD-check for debugging
+    */
+
     void FDcheck(
       int                                                   eid,
       const LINALG::Matrix<nsd_,nen_>&                      evelaf,
@@ -246,75 +247,60 @@ namespace ELEMENTS
 
   private:
 
-//     /*!
-//      * \brief calculate body force from node condition
-//      */
-//     void BodyForce(Fluid3*      ele);
-
     //! number of components necessary to store second derivatives
-    // 1 component  for nsd=1:  (N,xx)
-    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
-    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+    /*!
+     1 component  for nsd=1:  (N,xx)
+
+     3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+
+     6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+    */
     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-    /*!
-     * \brief evaluate shape functions and their derivatives at element center
-     */
-    void EvalShapeFuncAndDerivsAtEleCenter(const int  eleid);
+    //! evaluate shape functions and their derivatives at element center
+    void EvalShapeFuncAndDerivsAtEleCenter(
+         const int  eleid  ///< element ID
+          );
 
-    /*!
-     * \brief evaluate shape functions and their derivatives at integration point
-     */
+    //! brief evaluate shape functions and their derivatives at integration point
     void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
-        const int                              iquad,
-        const int                              eleid);
-
-    /*!
-       \brief set solution flags and parameters
-     */
-    //const double SetSolutionParameter(Fluid3*                    ele,
-    //                          ParameterList&             params);
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
+        const int                              iquad,             ///< actual integration point
+        const int                              eleid              ///< element ID
+        );
 
 
+    //! get material parameters
+    void GetMaterialParams(Teuchos::RCP<const MAT::Material>       material,  ///< reference pointer to material
+                           const LINALG::Matrix<nsd_,nen_>&        evelaf,    ///< velocity at time n+alpha_f / n+1
+                           const LINALG::Matrix<nen_,1>&           escaaf,    ///< scalar at time n+alpha_f / n+1
+                           const LINALG::Matrix<nen_,1>&           escaam,    ///< scalar at time n+alpha_m / n
+                           const double                            thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
+                           const double                            thermpressam,    ///< thermodynamic pressure at time n+alpha_m / n
+                           const double                            thermpressdtam ///< time derivative of thermodynamic pressure at time n+alpha_m / n
+                           );
 
-    /*!
-       \brief get material parameters
-     */
-    void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
-                           const LINALG::Matrix<nsd_,nen_>&        evelaf,
-                           const LINALG::Matrix<nen_,1>&           escaaf,
-                           const LINALG::Matrix<nen_,1>&           escaam,
-                           const double                            thermpressaf,
-                           const double                            thermpressam,
-                           const double                            thermpressdtam);
+    //! get turbulence parameter
+    void GetTurbulenceParams(ParameterList&             turbmodelparams,    ///< pointer turbulence parameter list
+                             double&                    Cs_delta_sq,        ///< parameter CS in dynamic Smagorinsky
+                             int&                       nlayer,             ///< number of layers for computation of parameter CS in dynamic Smagorinsky
+                             double CsDeltaSq                               ///< parameter CS in dynamic Smagorinsky computed in DynSmagFilter()
+                             );
 
-    /*!
-       \brief get material parameters
-     */
-    void GetTurbulenceParams(ParameterList&             turbmodelparams,
-                             //double&                    Cs,
-                             double&                    Cs_delta_sq,
-                             //double&                    l_tau,
-                             int&                       nlayer,
-                             double CsDeltaSq);
+    //! calculate (all-scale) subgrid viscosity
+    void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,   ///< velocity at time n+alpha_f / n+1
+                       const double                        vol,       ///< volume
+                       double&                             Cs,        ///< parameter CS in fixed Smagorinsky
+                       double&                             Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky
+                       double&                             l_tau          ///< channel length to normalize the normal wall distance
+                       );
 
-    /*!
-      \brief calculate (all-scale) subgrid viscosity
-    */
-    void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,
-                       const double                        vol,
-                       double&                             Cs,
-                       double&                             Cs_delta_sq,
-                       double&                             l_tau);
-
-    /*!
-      \brief calculate fine-scale subgrid viscosity
-    */
-    void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,
-                                const LINALG::Matrix<nsd_,nen_>&     fsevelaf,
-                                const double                        vol,
-                                double&                             Cs);
+    //! calculate fine-scale subgrid viscosity
+    void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&     evelaf,    ///< velocity at time n+alpha_f / n+1
+                                const LINALG::Matrix<nsd_,nen_>&     fsevelaf,  ///< fine scale velocity at time n+alpha_f / n+1
+                                const double                        vol,        ///< volume
+                                double&                             Cs          ///< parameter CS in fixed Smagorinsky
+                                );
 
     /*!
       \brief calculate stabilization parameter
@@ -334,182 +320,217 @@ namespace ELEMENTS
            tauMp: Barrenechea, Valentin
            tauMu: Franca, Valentin
            tauC : Codina
+
+      o Codina: Oberei
+           tauMp:
+           tauMu:
+           tauC :
     */
-
     void CalcStabParameter(
-        const double                            timefac,
-        const double                            vol);
+        const double                            timefac,  ///< time factor
+        const double                            vol       ///< volume
+        );
 
-
+    //! calculate div(epsilon(u))
     void CalcDivEps(
-        const LINALG::Matrix<nsd_,nen_>&        evelaf,
-        const double &                          timefac);
+        const LINALG::Matrix<nsd_,nen_>&        evelaf   ///< velocity at time n+alpha_f / n+1
+        );
 
-
+    //! calculate the residual of the fluid momentum equation
     void GetResidualMomentumEq(
-        const LINALG::Matrix<nsd_,nen_>&              eaccam,
-        const double &                                timefac,
-        double &                                      rhsfac);
+        const LINALG::Matrix<nsd_,nen_>&              eaccam,     ///< acceleration at time n+alpha_a / n
+        const double &                                timefac,    ///< time factor
+        double &                                      rhsfac      ///< right hand side factor
+        );
 
+    //! update the subscale velocity
     void UpdateSubscaleVelocity(
-        double &      fac1,
-        double &      fac2,
-        double &      fac3,
-        double &      facMtau,
-        int &         iquad,
-        double *        saccn,
-        double *        sveln,
-        double *        svelnp
+        double &      fac1,         ///< factor for old subgrid velocities
+        double &      fac2,         ///< factor for old subgrid accelerations
+        double &      fac3,         ///< factor for residual in current subgrid velocities
+        double &      facMtau,      ///< facMtau = modified tau_M (see code)
+        int &         iquad,        ///< actual integration point
+        double *        saccn,      ///< subgrid acceleration at time n+alpha_a / n
+        double *        sveln,      ///< subgrid velocity at time n+alpha_a / n
+        double *        svelnp      ///< subgrid velocity at time n+alpha_f / n+1
       );
 
-
+    //! calculate the residual of the continuity equation
     void GetResidualContinuityEq(
-        const LINALG::Matrix<nsd_,nen_>&          eveln,
-        const LINALG::Matrix<nen_,1>&             escaaf,
-        const LINALG::Matrix<nen_,1>&             escaam,
-        const LINALG::Matrix<nen_,1>&             escadtam,
-        const double & timefac);
+        const LINALG::Matrix<nsd_,nen_>&          eveln,      ///< velocity at time n+alpha_a / n
+        const LINALG::Matrix<nen_,1>&             escaaf,     ///< scalar at time n+alpha_f / n+1
+        const LINALG::Matrix<nen_,1>&             escaam,     ///< scalar at time n+alpha_a / n
+        const LINALG::Matrix<nen_,1>&             escadtam,   ///< acceleration at time n+alpha_a / n
+        const double & timefac
+        );
 
-
+    //! Provide linearization of Garlerkin momentum residual with respect to the velocities
     void LinGalMomResU(
-        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
-        const double &                          timefacfac);
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
+        const double &                          timefacfac      ///< = timefac x fac
+        );
 
+    //! Provide linearization of Garlerkin momentum residual with respect to the velocities in the case if subscales
     void LinGalMomResU_subscales(
-        LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v,
-        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
-        LINALG::Matrix<nsd_,1> &                resM_Du,
-        const double &                          timefacfac,
-        const double &                          facMtau);
+        LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v,      ///< block (weighting function v x pressure)
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
+        LINALG::Matrix<nsd_,1> &                resM_Du,        ///< residual of the fluid momentum equation
+        const double &                          timefacfac,     ///< (time factor) x (integration factor)
+        const double &                          facMtau         ///< facMtau = modified tau_M (see code)
+        );
 
+    //! Compute element matrix entries: the reactive and convective terms of the Galerkin part and rhs
     void InertiaAndConvectionGalPart(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
-        LINALG::Matrix<nsd_,nen_> &             velforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
-        LINALG::Matrix<nsd_,1> &                resM_Du,
-        const double &                          rhsfac);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nen_> &             velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
+        LINALG::Matrix<nsd_,1> &                resM_Du,        ///< linearisation of the Garlerkin momentum residual
+        const double &                          rhsfac          ///< right hand side factor
+        );
 
-
+    //! Compute element matrix entries: for the viscous terms of the Galerkin part
     void ViscousGalPart(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
-        LINALG::Matrix<nsd_,nsd_> &             viscstress,
-        const double &                          timefacfac,
-        const double &                          rhsfac);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nsd_> &             viscstress,     ///< viscous stresses
+        const double &                          timefacfac,     ///< = timefac x fac
+        const double &                          rhsfac          ///< right hand side factor
+        );
 
-
+    //! Compute element matrix entries: div-grad stabilization and the rhs of the viscous term
     void ContStab_and_ViscousTermRhs(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        LINALG::Matrix<nsd_,nsd_> &               viscstress,
-        const double &                            timefac,
-        const double &                            timefacfac,
-        const double &                            tau_C,
-        const double &                            rhsfac);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_,nsd_> &               viscstress,     ///< viscous stresses
+        const double &                            timefac,        ///< time factor
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            tau_C,          ///< (stabilization parameter continuity equation) x (integration factor)
+        const double &                            rhsfac          ///< right hand side factor
+        );
 
-
+    //! Compute element matrix entries: pressure terms of the Garlerkin part and rhs
     void PressureGalPart(
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        const double &                            timefacfac,
-        const double &                            rhsfac,
-        const double &                            press);
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x pressure)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            rhsfac,         ///< right hand side factor = integration factor
+        const double &                            press           ///< pressure at integration point
+        );
 
-
+    //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
     void ContinuityGalPart(
-        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
-        LINALG::Matrix<nen_,1> &                  preforce,
-        const double &                            timefacfac,
-        const double &                            rhsfac);
+        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,    ///< block (weighting function q x u)
+        LINALG::Matrix<nen_,1> &                  preforce,     ///< rhs forces pressure
+        const double &                            timefacfac,   ///< = timefac x fac
+        const double &                            rhsfac        ///< right hand side factor
+        );
 
-
+    //! Compute element matrix entries: body force terms on rhs
     void BodyForceRhsTerm(
-        LINALG::Matrix<nsd_,nen_> &               velforce);
+        LINALG::Matrix<nsd_,nen_> &               velforce      ///< rhs forces velocity
+        );
 
-
+    //TODO: look over it
+    //! Compute element matrix entries: conservative formulation
     void ConservativeFormulation(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        const double&                             timefacfac,
-        const double &                            rhsfac);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,      ///< block (weighting function v x u)
+        LINALG::Matrix<nsd_,nen_> &               velforce,     ///< rhs forces velocity
+        const double&                             timefacfac,   ///< = timefac x fac
+        const double &                            rhsfac        ///< right hand side factor
+        );
 
-
+    //! Compute element matrix entries: LOMA
     void LomaGalPart(
-        LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,
-        LINALG::Matrix<nen_,1> &                preforce,
-        const double &                          timefacfac,
-        const double &                          rhsfac);
+        LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,      ///< block (weighting function q x u)
+        LINALG::Matrix<nen_,1> &                preforce,       ///< rhs forces pressure
+        const double &                          timefacfac,     ///< = timefac x fac
+        const double &                          rhsfac          ///< right hand side factor
+        );
 
-
+    //! Provide linearization of stabilization residual with respect to the velocities
     void StabLinGalMomResU(
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double&                             timefacfac);
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double&                             timefacfac      ///< = timefac x fac
+        );
 
-
+    //! Compute element matrix entries: PSPG
     void PSPG(
-        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,
-        LINALG::Matrix<nen_,nen_> &               ppmat,
-        LINALG::Matrix<nen_,1> &                  preforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            fac3,
-        const double &                            timefacfac,
-        const double &                            tau_Mp,
-        const double &                            rhsfac);
+        LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,      ///< block (weighting function q x u)
+        LINALG::Matrix<nen_,nen_> &               ppmat,          ///< block (weighting function q x p)
+        LINALG::Matrix<nen_,1> &                  preforce,       ///< rhs forces pressure
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            fac3,           ///< factor for residual in current subgrid velocities
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
+        const double &                            rhsfac          ///< right hand side factor
+        );
 
+    //! Compute element matrix entries: SUPG
     void SUPG(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            fac3,
-        const double &                            timefacfac,
-        const double &                            timetauM);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            fac3,           ///< factor for residual in current subgrid velocities
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timetauM        ///< = timefac x Tau_M = timefac x tau(0) x fac
+        );
 
-
+    //! Compute element matrix entries: viscous stabilization
     void ViscStab(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            timefac,
-        const double &                            tau_Mp,
-        const double &                            vstabfac,
-        const double &                            fac3);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            timefac,        ///< time factor
+        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
+        const double &                            vstabfac,       ///< in case of viscous stabilization decide whether to use GLS or USFEM
+        const double &                            fac3            ///< factor for residual in current subgrid velocities
+        );
 
-
+    //! Compute element matrix entries: cross stress stabilization
     void CrossStressStab(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            timefac,
-        const double &                            timefacfac,
-        const double &                            tau_Mp,
-        const double &                            fac3);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            timefac,        ///< time factor
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
+        const double &                            fac3            ///< factor for residual in current subgrid velocities
+        );
 
+    //! Compute element matrix entries: Reynolds stress stabilization
     void ReynoldsStressStab(
-        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-        const double &                            timefacfac,
-        const double &                            fac3);
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            timefacfac,     ///< tau_Mp = tau(1) x fac
+        const double &                            fac3            ///< factor for residual in current subgrid velocities
+        );
 
+    //! Compute element matrix entries: fine scale subgrid viscousity rhs term
     void FineScaleSubGridViscosityTerm(
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        const double &                            fssgviscfac);
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        const double &                            fssgviscfac     ///< = (fine scale subgrid viscousity) x timefacfac
+        );
 
+    //! linearisation in the case of mesh motion 2-D
     void LinMeshMotion_2D(
-        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
-        const LINALG::Matrix<nsd_,nen_>&              evelaf,
-        const double &                                press,
-        const double &                                timefac,
-        const double &                                timefacfac);
+        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,        ///< mesh motion
+        const LINALG::Matrix<nsd_,nen_>&              evelaf,       ///< velocity at time n+alpha_f / n+1
+        const double &                                press,        ///< pressure at integration point
+        const double &                                timefac,      ///< time factor
+        const double &                                timefacfac    ///< = timefac x fac
+        );
 
+    //! linearisation in the case of mesh motion 3-D
     void LinMeshMotion_3D(
-        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
-        const LINALG::Matrix<nsd_,nen_>&              evelaf,
-        const double &                                press,
-        const double &                                timefac,
-        const double &                                timefacfac);
+        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,        ///< mesh motion
+        const LINALG::Matrix<nsd_,nen_>&              evelaf,       ///< velocity at time n+alpha_f / n+1
+        const double &                                press,        ///< pressure at integration point
+        const double &                                timefac,      ///< time factor
+        const double &                                timefacfac    ///< = timefac x fac
+        );
 
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
@@ -671,31 +692,28 @@ namespace ELEMENTS
     double conres_old_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     LINALG::Matrix<numderiv2_,nsd_> xder2_;
-
+    //! global velocity second derivatives in gausspoint w.r.t x,y,z
     LINALG::Matrix<nsd_,nsd_> vderiv_;
-
 
     //! residual of momentum equation, velocity part which is not integrated by parts (precomputed)
     LINALG::Matrix<nsd_,1> resM_Du_;
     //! linearisation of residual of momentum equation wrt velocities (precomputed)
     LINALG::Matrix<nsd_*nsd_,nen_> lin_resM_Du_;
-
+    //! block (weighting function v x u)
     LINALG::Matrix<nen_*nsd_,nen_*nsd_>     estif_;
+    //! block (weighting function v x p)
     LINALG::Matrix<nen_*nsd_,nen_>          estif_p_v_;
+    //! block (weighting function q x u)
     LINALG::Matrix<nen_, nen_*nsd_>         estif_q_u_;
+    //! block (weighting function q x p)
     LINALG::Matrix<nen_,nen_>               ppmat;
-
+    //! rhs forces pressure
     LINALG::Matrix<nen_,1>      preforce;
+    //! rhs forces velocity
     LINALG::Matrix<nsd_,nen_>   velforce;
-
 
     //! coordinates of current integration point in reference coordinates
     LINALG::Matrix<nsd_,1> xsi_;
-
-    //! flag for material evaluation at Gaussian integration points
-    //bool mat_gp_;
-    //! flag for stabilization parameter evaluation at Gaussian integration points
-    //bool tau_gp_;
     //! Jacobian determinant
     double det_;
     //! integration factor
@@ -708,22 +726,6 @@ namespace ELEMENTS
     double visceff_;
     //! fine-scale subgrid viscosity
     double fssgvisc_;
-
-#if 0
-    //! time-step length
-    double dt_;
-    //! factor for right-hand side due to time-integration scheme
-    double omtheta_;
-    //! generalised-alpha parameter (connecting velocity and acceleration)
-    double gamma_;
-    //! generalised-alpha parameter (velocity)
-    double alphaF_;
-    //! generalised-alpha parameter (acceleration)
-    double alphaM_;
-    //! generalised-alpha parameter, alphaF_*gamma_*dt_
-    double afgdt_;
-#endif
-
     //! LOMA-specific variables:
     //! right-hand-side term at int.-point for continuity equation
     double rhscon_;
@@ -755,74 +757,13 @@ namespace ELEMENTS
     double conv_scaaf_;
     //! convective scalar term at t_(n)
     double conv_scan_;
-    //! thermodynamic pressure at t_(n+alpha_F) or t_(n+1)
-    //double thermpressaf_;
-    //! thermodynamic pressure at t_(n+alpha_M) or t_(n)
-    //double thermpressam_;
-    //! time derivative of thermodynamic pressure at t_(n+alpha_M) or t_(n+1)
-    //double thermpressdtam_;
     //! for the handling of rotationally symmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
-
-    // flags
     //! Flag to (de)activate higher order elements
     //! elements with only mixed second order derivatives are not counted as higher order elements
     //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
     bool is_higher_order_ele_;
-#if 0
-    //! actual time to evaluate the body BC
-    double time_;
-    //! flag to (de)activate generalized-alpha time-integration scheme
-    bool is_genalpha_;
-    //! flag to (de)activate conservative formulation
-    bool is_conservative_;
-    //! flag to (de)activate stationary formulation
-    bool is_stationary_;
-    //! flag to (de)activate Newton linearization
-    bool is_newton_;
-    //! Flag to (de)activate higher order elements
-    //! elements with only mixed second order derivatives are not counted as higher order elements
-    //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
-    bool is_higher_order_ele_;
-    //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
-    INPAR::FLUID::PhysicalType physicaltype_;
-
-    //! Flag to (de)activate time-dependent subgrid stabilization
-    INPAR::FLUID::SubscalesTD tds_;
-    //! Flag to (de)activate time-dependent term in large-scale momentum equation
-    INPAR::FLUID::Transient transient_;
-    //! Flag to (de)activate PSPG stabilization
-    INPAR::FLUID::PSPG pspg_;
-    //! Flag to (de)activate SUPG stabilization
-    INPAR::FLUID::SUPG supg_;
-    //! Flag to (de)activate viscous term in residual-based stabilization
-    INPAR::FLUID::VStab vstab_;
-    //! Flag to (de)activate least-squares stabilization of continuity equation
-    INPAR::FLUID::CStab cstab_;
-    //! Flag to (de)activate cross-stress term -> residual-based VMM
-    INPAR::FLUID::CrossStress cross_;
-    //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-    INPAR::FLUID::ReynoldsStress reynolds_;
-
-    //! Flag to define tau
-    INPAR::FLUID::TauType whichtau_;
-    //! flag to (de)activate fine-scale subgrid viscosity
-    Fluid3::FineSubgridVisc fssgv_;
-    //! flag to define turbulence model
-    Fluid3::TurbModelAction turb_mod_action_;
-
-
-    double timefac;
-
-    double Cs;
-    double l_tau;
-#endif
-/*
-    bool boussinesq_;
-    bool loma_;
-    bool varyingdensity_;
-*/
-
+    //! pointer to parameter list
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
   };
 }
