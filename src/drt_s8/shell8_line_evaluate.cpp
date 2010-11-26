@@ -101,7 +101,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   double xgp[3];   // coord of integration point in line direction
   double wgp[3];   // weigth of this point
   double xgp_n[3]; // coord of intgration point orthogonal to line direction
-  int    dir;      // direction of integration, either 0 or 1
+  int    dir = -1;      // direction of integration, either 0 or 1
   int lnode[3];    // local node numbers of this line w.r.t to parent element
   switch (line)
   {
