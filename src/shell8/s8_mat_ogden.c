@@ -388,7 +388,7 @@ return;
 
 
 
-
+void s8jacb(double*, double*);
 /*----------------------------------------------------------------------*
  | make eigenvalue decomposition of Cauchy-Green strains  m.gee 6/03    |
  *----------------------------------------------------------------------*/
