@@ -589,6 +589,7 @@ namespace DRT
       else       return fool;
     }
     else return NULL;
+    return NULL;
   }
 } // end of namespace DRT
 
