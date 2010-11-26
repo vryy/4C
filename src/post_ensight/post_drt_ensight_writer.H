@@ -300,11 +300,10 @@ protected:
     };
 
 
-
     void WriteNodeConnectivityPar(
             ofstream& geofile,
             const RefCountPtr<DRT::Discretization> dis,
-    	    const vector<int>& nodevector,
+            const vector<int>& nodevector,
             const RefCountPtr<Epetra_Map> proc0map
             ) const;
     void WriteDofResultStep(
@@ -354,6 +353,7 @@ protected:
     const int                      offset
     ) const;
 
+  //! perform interpolation of result data to visualization points.
   void InterpolateNurbsResultToVizPoints(
       Teuchos::RefCountPtr<Epetra_MultiVector> idata,
       const int dim,

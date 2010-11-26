@@ -2115,6 +2115,14 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 } //EnsightWriter::WriteDofResultStepForNurbs
 
 
+/*----------------------------------------------------------------------*/
+/*
+    Perform interpolation of result data to visualization points.
+    This routine is used for dofmap-based as well as for nodemap-based
+    data. The results for the current element have to be provided in
+    my_data acoordingly.
+*/
+/*----------------------------------------------------------------------*/
 void EnsightWriter::InterpolateNurbsResultToVizPoints(
     Teuchos::RefCountPtr<Epetra_MultiVector> idata,
     const int dim,
@@ -3399,23 +3407,22 @@ default:
 return;
 }
 
-
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteNodalResultStepForNurbs(
-  ofstream&                             file ,
-  const int                             numdf,
-  const RefCountPtr<Epetra_MultiVector> data ,
-  const string                          name ,
-  const int                             offset
-  ) const
+    ofstream&                             file ,
+    const int                             numdf,
+    const RefCountPtr<Epetra_MultiVector> data ,
+    const string                          name ,
+    const int                             offset
+) const
 {
   // a multivector for the interpolated data
   Teuchos::RefCountPtr<Epetra_MultiVector> idata;
   idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
 
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
-    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
+  DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
 
   if(nurbsdis==NULL)
   {
@@ -3449,7 +3456,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
     numvispoints+=numvisp;
   } // end loop over patches
 
-    // get the knotvector itself
+  // get the knotvector itself
   RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
@@ -3476,52 +3483,45 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
 
-  // construct a colmap for data to have it available at
+  // construct a colmap for nodal data to have it available at
   // all elements (the critical ones are the ones at the
   // processor boundary)
   // loop all available elements
-  std::set<int> coldofset;
+  std::set<int> colnodeset;
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
     DRT::Element*  actele = nurbsdis->gElement(elementmap->GID(iele));
-
+/*
     vector<int> lm;
     vector<int> lmowner;
     vector<int> lmstride;
 
     // extract local values from the global vectors
     actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
-
+*/
     // do not forget to consider a (potential) offset in dof numbering for all results!
     const int* nodeids = actele->NodeIds();
     for (int inode=0; inode<actele->NumNode(); ++inode)
     {
-      if(name == "flux")
-      {
-        coldofset.insert(nodeids[inode]);
-      }
-      else
-      {
-        dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
-      }
+        colnodeset.insert(nodeids[inode]);
     }
   }
 
-  std::vector<int> coldofmapvec;
-  coldofmapvec.reserve(coldofset.size());
-  coldofmapvec.assign(coldofset.begin(), coldofset.end());
-  coldofset.clear();
-  Teuchos::RCP<Epetra_Map> coldofmap =
-    Teuchos::rcp(new Epetra_Map(-1,
-                                coldofmapvec.size(),
-                                &coldofmapvec[0],
-                                0,
-                                nurbsdis->Comm()));
-  coldofmapvec.clear();
+  std::vector<int> colnodemapvec;
+  colnodemapvec.reserve(colnodeset.size());
+  colnodemapvec.assign(colnodeset.begin(), colnodeset.end());
+  colnodeset.clear();
+  Teuchos::RCP<Epetra_Map> colnodemap =
+      Teuchos::rcp(new Epetra_Map(-1,
+          colnodemapvec.size(),
+          &colnodemapvec[0],
+          0,
+          nurbsdis->Comm()));
+  colnodemapvec.clear();
 
-  const Epetra_Map* fulldofmap = &(*coldofmap);
+  const Epetra_Map* fullnodemap = &(*colnodemap);
   const RefCountPtr<Epetra_MultiVector> coldata
-    = Teuchos::rcp(new Epetra_MultiVector(*fulldofmap,3,true));
+  = Teuchos::rcp(new Epetra_MultiVector(*fullnodemap,3,true));
 
   // create an importer and import the data
   Epetra_Import importer((*coldata).Map(),(*data).Map());
@@ -3578,13 +3578,6 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
       weights(inode) = cp->W();
     }
 
-    // extract local values from the global vectors
-/*    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
-
-    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride); // get gid, location in the patch and the number of the patch
-*/
     int npatch  =np;
 
     // access elements knot span
@@ -3592,29 +3585,20 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
     knotvec->GetEleKnots(eleknots,actele->Id());
 
     // access solution data
-    vector<double> my_data(numnp);
-    if(name == "flux")
+    vector<double> my_data(numnp*numdf);
+
+    const int* nodeids = actele->NodeIds();
+
+    for (int inode=0; inode<numnp; ++inode)
     {
-      my_data.resize(dim*numnp);
-
-      const int* nodeids = actele->NodeIds();
-
-      for (int inode=0; inode<numnp; ++inode)
+      for(int rr=0;rr<numdf;++rr)
       {
-        for(int rr=0;rr<numdf;++rr)
-        {
-          // value of column rr
-          my_data[numdf*inode+rr]=(*((*coldata)(rr)))[(*coldata).Map().LID(nodeids[inode])];
-        }
+        // value of nodemap-based column rr
+        my_data[numdf*inode+rr]=(*((*coldata)(rr)))[(*coldata).Map().LID(nodeids[inode])];
       }
     }
-    else
-    {
-      dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
-    }
 
-    if (numdf != 1) cout<<"numdf = "<<numdf<<endl;
-
+    // intoplate solution to desired visualization points
     InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis, eleknots, weights, numdf, my_data);
 
   } // loop over available elements
@@ -3638,14 +3622,13 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
       Epetra_Vector* column = (*allsols)(idf);
       for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
       {
-//        Write(file, static_cast<float>(idf));
+        //        Write(file, static_cast<float>(idf));
         Write(file, static_cast<float>((*column)[inode]));
       }
     }
   } // if (myrank_==0)
 
-} //EnsightWriter::WriteNodeResultStepForNurbs
-
+} //EnsightWriter::WriteNodalResultStepForNurbs
 
 
 #endif
