@@ -2035,7 +2035,7 @@ namespace LINALG
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
-      if (det > -1e-30 and det < 1e-30) 
+      if (det > -1e-30 and det < 1e-30)
         dserror("Determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0/det;
       out[0    ] *= invdet;
@@ -2200,7 +2200,8 @@ namespace LINALG
 #ifdef DEBUG
       if (out==in) dserror("'out' and 'in' point to same memory location");
 #endif
-      std::memcpy(out, in, i*j*sizeof(value_type));
+      //std::memcpy(out, in, i*j*sizeof(value_type));
+      std::copy(in,in+i*j,out);
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2472,7 +2473,8 @@ namespace LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void clearMatrix(value_type* mat)
     {
-      std::memset(mat,0,i*j*sizeof(value_type));
+      //std::memset(mat,0,i*j*sizeof(value_type));
+      std::fill(mat,mat+i*j,0);
     }
 
 
@@ -3979,7 +3981,8 @@ TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view) :
   }
   else {
     data_ = new value_type[rows*cols];
-    std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    //std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    std::copy(d,d+rows*cols,data_);
   }
 }
 
@@ -3994,7 +3997,8 @@ TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view) :
   }
   else {
     data_ = new value_type[rows*cols];
-    std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    //std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    std::copy(d,d+rows*cols,data_);
   }
 }
 
@@ -4012,7 +4016,8 @@ TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view) :
   }
   else {
     data_ = new value_type[rows*cols];
-    std::memcpy(data_, d.A(), rows*cols*sizeof(value_type));
+    //std::memcpy(data_, d.A(), rows*cols*sizeof(value_type));
+    std::copy(d.A(),d.A()+rows*cols,data_);
   }
 }
 
@@ -4026,7 +4031,8 @@ TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bo
   }
   else {
     data_ = new value_type[rows*cols];
-    std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+    //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+    std::copy(source.data_,source.data_+rows*cols,data_);
   }
 }
 
@@ -4036,7 +4042,8 @@ TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& sour
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   data_ = new value_type[rows*cols];
-  std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+  //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+  std::copy(source.data_,source.data_+rows*cols,data_);
 }
 
 // Destructor
@@ -4070,11 +4077,12 @@ void TMatrix<value_type,rows,cols>::SetView(TMatrix<value_type,rows,cols>& sourc
 template<class value_type, unsigned int rows, unsigned int cols>
 void TMatrix<value_type,rows,cols>::SetCopy(value_type* data)
 {
-    if (isview_) {
-        data_ = new value_type[rows*cols];
-        isview_ = false;
-    }
-    std::memcpy(data_, data, rows*cols*sizeof(value_type));
+  if (isview_) {
+    data_ = new value_type[rows*cols];
+    isview_ = false;
+  }
+  //std::memcpy(data_, data, rows*cols*sizeof(value_type));
+  std::copy(data,data+rows*cols,data_);
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
@@ -4084,7 +4092,8 @@ void TMatrix<value_type,rows,cols>::SetCopy(TMatrix<value_type,rows,cols>& sourc
     data_ = new value_type[rows*cols];
     isview_ = false;
   }
-  std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+  //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+  std::copy(source.data_,source.data_+rows*cols,data_);
 }
 
 // Determinant
