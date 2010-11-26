@@ -1884,7 +1884,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcSubgrVisc(
 
   // compute (all-scale) rate of strain
   double rateofstrain = -1.0e30;
-  // TODO: calculation of vderxy_ is realized two times!!
   rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
 
   if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)

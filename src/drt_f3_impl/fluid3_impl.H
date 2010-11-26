@@ -547,7 +547,9 @@ namespace ELEMENTS
     {
       double rateofstrain=0;
 
-      // TODO: velderxy is calculated two times, probably ;)
+      // velderxy is computed here since the evaluation of the strain rate can be performed
+      // at the element center before the gauss loop
+
       // get velocity derivatives at integration point
       //
       //              +-----  dN (x)
