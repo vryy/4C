@@ -32,6 +32,15 @@
 
 using namespace std;
 
+//forward declaration
+namespace DRT
+{
+  namespace NURBS
+  {
+    class NurbsDiscretization;
+  }
+}
+
 //! defines how 2 line2 elements are constructed from a line3
 const int sublinemap[2][2] =
     {
@@ -341,6 +350,28 @@ protected:
     ofstream&                        file ,
     const int                        numdf,
     const RefCountPtr<Epetra_Vector> data ,
+    const string                     name ,
+    const int                      offset
+    ) const;
+
+  void InterpolateNurbsResultToVizPoints(
+      Teuchos::RefCountPtr<Epetra_MultiVector> idata,
+      const int dim,
+      const int npatch,
+      const vector<int>& vpoff,
+      const vector<int>& ele_cart_id,
+      const DRT::Element* actele,
+      DRT::NURBS::NurbsDiscretization* nurbsdis,
+      const std::vector<Epetra_SerialDenseVector>& eleknots,
+      const Epetra_SerialDenseVector& weights,
+      const int                        numdf,
+      const vector<double>& my_data
+  ) const;
+
+  void WriteNodalResultStepForNurbs(
+    ofstream&                        file ,
+    const int                        numdf,
+    const RefCountPtr<Epetra_MultiVector> data ,
     const string                     name ,
     const int                      offset
     ) const;

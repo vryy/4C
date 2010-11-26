@@ -2018,19 +2018,11 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
     int npatch  =np;
 
-    // get nele_x_mele_x_lele array
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
-
     // access elements knot span
     std::vector<Epetra_SerialDenseVector> eleknots(dim);
     knotvec->GetEleKnots(eleknots,actele->Id());
 
-    // get shapefunctions, compute all visualisation point positions
-    Epetra_SerialDenseVector nurbs_shape_funct(numnp);
-
-    // element local visualisation point position
-    Epetra_SerialDenseVector uv(dim);
-
+    // access solution data
     vector<double> my_data(lm.size());
     if(name == "velocity"
        ||
@@ -2067,10 +2059,12 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
       for (int inode=0; inode<numnp; ++inode)
       {
+        // offset should be equal to dim for pressure case!
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset-dim)];
       }
     }
-    else if(name == "phi")
+    else if((name == "phi") ||
+        (name == "phi_1"))
     {
       my_data.resize(numnp);
 
@@ -2084,1261 +2078,9 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
     }
 
-    switch (actele->Shape())
-    {
-    case DRT::Element::nurbs4:
-    {
+    InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis, eleknots, weights, numdf, my_data);
 
-      // number of visualisation points in u direction
-      int nvpu=(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
-
-      {
-        // standard
-
-        // 3           4
-        //  X---------X
-        //  |         |
-        //  |         |
-        //  |         |
-        //  |         |
-        //  |         |
-        //  X---------X
-        // 1           2
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]  );
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  1.0;
-        uv(1)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]+1);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-
-        // point 3
-        uv(0)= -1.0;
-        uv(1)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]  );
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  1.0;
-        uv(1)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]+1);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-      }
-      break;
-    }
-    case DRT::Element::nurbs9:
-    {
-
-      int idu;
-      int idv;
-
-      // number of visualisation points in u direction
-      int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
-
-      {
-        // standard
-
-        //
-        //  +---------+
-        //  |         |
-        //  |         |
-        //  X    X    |
-        // 3|   4     |
-        //  |         |
-        //  X----X----+
-        // 1    2
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=2*ele_cart_id[0];
-        idv=2*ele_cart_id[1]*(nvpu);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  0.0;
-        uv(1)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=2*ele_cart_id[0]+1;
-        idv=2*ele_cart_id[1]*(nvpu);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idv+idu);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-
-        // point 3
-        uv(0)= -1.0;
-        uv(1)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=2*ele_cart_id[0];
-        idv=(2*ele_cart_id[1]+1)*(nvpu);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  0.0;
-        uv(1)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=2*ele_cart_id[0]+1;
-        idv=(2*ele_cart_id[1]+1)*(nvpu);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-      }
-      // top line
-
-      //
-      //  X----X----+
-      // 5|   6     |
-      //  |         |
-      //  X    X    |
-      // 3|   4     |
-      //  |         |
-      //  X----X----+
-      // 1    2
-      //
-      // two additional points
-
-      if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
-      {
-        // point 5
-        uv(0)= -1.0;
-        uv(1)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  );
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 6
-        uv(0)=  0.0;
-        uv(1)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-      // right line
-      if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
-      {
-
-        //
-        //  +---------+
-        //  |         |
-        //  |         |
-        //  x    x    X
-        // 4|   5    6|
-        //  |         |
-        //  x----x----X
-        // 1    2    3
-
-        // two additional points
-        // point 5
-        uv(0)=  1.0;
-        uv(1)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 6
-        uv(0)=  1.0;
-        uv(1)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-      // top right corner
-      if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]&&ele_cart_id[1]+1==nele_x_mele_x_lele[1])
-      {
-        //
-        //  x----x----X
-        // 7|   8    9|
-        //  |         |
-        //  x    x    x
-        // 4|   5    6|
-        //  |         |
-        //  x----x----x
-        // 1    2    3
-
-        // point 9
-        uv(0)=  1.0;
-        uv(1)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots         ,
-                                              weights          ,
-                                              actele->Shape()  );
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-      break;
-    }
-    case DRT::Element::nurbs27:
-    {
-      // element local point position
-      Epetra_SerialDenseVector uv(3);
-
-      int idu;
-      int idv;
-      int idw;
-
-      {
-        // standard
-
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | /         / |
-        //   /         /  |
-        //  +---------+   |
-        //  | A----A  |   |
-        //  |/|   /|  |   +
-        //  A----A |  |  /
-        //  | A--|-A  | /
-        //  |/   |/   |/
-        //  A----A----+ ----->u
-        //
-        // append 8 points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)= -1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  0.0;
-        uv(1)= -1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 3
-        uv(0)= -1.0;
-        uv(1)=  0.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  0.0;
-        uv(1)=  0.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 5
-        uv(0)= -1.0;
-        uv(1)= -1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 6
-        uv(0)=  0.0;
-        uv(1)= -1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 7
-        uv(0)= -1.0;
-        uv(1)=  0.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 8
-        uv(0)=  0.0;
-        uv(1)=  0.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-      if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
-      {
-
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | /         / |
-        //   /         /  |
-        //  +---------+   |
-        //  | X----X--|-A |
-        //  |/|   /|  |/| +
-        //  X----X----A |/
-        //  | X--|-X--|-A
-        //  |/   |/   |/
-        //  X----X----A ----->u
-        //
-        // append 4 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)=  1.0;
-        uv(1)= -1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  1.0;
-        uv(1)=  0.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 3
-        uv(0)=  1.0;
-        uv(1)= -1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  1.0;
-        uv(1)=  0.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-      if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
-      {
-
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | /         / |
-        //   /  A----A /  |
-        //  +---------+   |
-        //  | X----X ||   |
-        //  |/| A-/|-A|   +
-        //  X----X |/ |  /
-        //  | X--|-X  | /
-        //  |/   |/   |/
-        //  X----X----+ ----->u
-        //
-        // append 4 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)=  1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-
-        // point 2
-        uv(0)=  0.0;
-        uv(1)=  1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 3
-        uv(0)= -1.0;
-        uv(1)=  1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  0.0;
-        uv(1)=  1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-      }
-
-      if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
-         &&
-         ele_cart_id[1]+1==nele_x_mele_x_lele[1])
-      {
-
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | /         / |
-        //   /  X----X-/--A
-        //  +---------+  /|
-        //  | X----X--|-X |
-        //  |/| X-/|-X|/|-A
-        //  X----X----X |/
-        //  | X--|-X--|-X
-        //  |/   |/   |/
-        //  X----X----X ----->u
-        //
-        // append 2 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)=  1.0;
-        uv(1)=  1.0;
-        uv(2)= -1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  1.0;
-        uv(1)=  1.0;
-        uv(2)=  0.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-
-      if(ele_cart_id[2]+1==nele_x_mele_x_lele[2])
-      {
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | A----A    / |
-        //   /    /|   /  |
-        //  A----A----+   |
-        //  | X--|-X  |   |
-        //  |/|  |/|  |   +
-        //  X----X |  |  /
-        //  | X--|-X  | /
-        //  |/   |/   |/
-        //  X----X----+ ----->u
-        //
-        //
-        // append 4 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)= -1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  0.0;
-        uv(1)= -1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 3
-        uv(0)= -1.0;
-        uv(1)=  0.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 4
-        uv(0)=  0.0;
-        uv(1)=  0.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-
-      if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
-         &&
-         ele_cart_id[1]+1==nele_x_mele_x_lele[1]
-        )
-      {
-        //               v
-        //              /
-        //  w          /
-        //  ^   A----A----+
-        //  |  /|   /|   /|
-        //  | X----X |  / |
-        //   /| X /| X /  |
-        //  X----X----+   |
-        //  | X--|-X ||   |
-        //  |/|  |/| X|   +
-        //  X----X |/ |  /
-        //  | X--|-X  | /
-        //  |/   |/   |/
-        //  X----X----+ ----->u
-        //
-        //
-        // append 2 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)= -1.0;
-        uv(1)=  1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]  );
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  0.0;
-        uv(1)=  1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+1);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-      }
-
-      if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
-         &&
-         ele_cart_id[0]+1==nele_x_mele_x_lele[0]
-        )
-      {
-        //               v
-        //              /
-        //  w          /
-        //  ^   +---------+
-        //  |  /         /|
-        //  | X----X----A |
-        //   /    /|   /| |
-        //  X----X----A | |
-        //  | X--|-X--|-X |
-        //  |/|  |/|  |/| +
-        //  X----X----X |/
-        //  | X--|-X--|-X
-        //  |/   |/   |/
-        //  X----X----X ----->u
-        //
-        //
-        // append 2 additional points
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)=  1.0;
-        uv(1)= -1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-        // point 2
-        uv(0)=  1.0;
-        uv(1)=  0.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-      }
-
-      if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
-         &&
-         ele_cart_id[1]+1==nele_x_mele_x_lele[1]
-         &&
-         ele_cart_id[0]+1==nele_x_mele_x_lele[0]
-        )
-      {
-
-        //               v
-        //              /
-        //  w          /
-        //  ^   X----X----A
-        //  |  /|   /    /|
-        //  | X----X----X |
-        //   /| X-/|-X-/|-X
-        //  X----X----X |/|
-        //  | X--|-X--|-X |
-        //  |/| X|/|-X|/|-X
-        //  X----X----X |/
-        //  | X--|-X--|-X
-        //  |/   |/   |/
-        //  X----X----X ----->u
-        //
-        // append 1 additional point
-
-        // temporary x vector
-        std::vector<double> x(3);
-
-        // point 1
-        uv(0)=  1.0;
-        uv(1)=  1.0;
-        uv(2)=  1.0;
-        DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-                                              uv               ,
-                                              eleknots            ,
-                                              weights          ,
-                                              actele->Shape()  );
-
-        idu=(2*ele_cart_id[0]+2);
-        idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
-        idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
-
-        for (int isd=0; isd<numdf; ++isd)
-        {
-          double val = 0;
-          for (int inode=0; inode<numnp; ++inode)
-          {
-            val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
-          }
-          int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
-          (idata)->ReplaceMyValue(lid,isd,val);
-        }
-
-      }
-
-      break;
-    }
-    default:
-      dserror("unable to visualise this as a nurbs discretisation\n");
-    }
-  }
+  } // loop over available elements
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
@@ -3371,5 +2113,1540 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     }
   }
 } //EnsightWriter::WriteDofResultStepForNurbs
+
+
+void EnsightWriter::InterpolateNurbsResultToVizPoints(
+    Teuchos::RefCountPtr<Epetra_MultiVector> idata,
+    const int dim,
+    const int npatch,
+    const vector<int>& vpoff,
+    const vector<int>& ele_cart_id,
+    const DRT::Element* actele,
+    DRT::NURBS::NurbsDiscretization* nurbsdis,
+    const std::vector<Epetra_SerialDenseVector>& eleknots,
+    const Epetra_SerialDenseVector& weights,
+    const int                        numdf,
+    const vector<double>& my_data
+) const
+{
+  // number of all control points of the element
+  const int numnp = actele->NumNode();
+
+  // get shapefunctions, compute all visualisation point positions
+  Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+
+  // element local visualisation point position
+  Epetra_SerialDenseVector uv(dim);
+
+  // get nele_x_mele_x_lele array
+  vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
+
+switch (actele->Shape())
+{
+case DRT::Element::nurbs4:
+{
+
+  // number of visualisation points in u direction
+  int nvpu=(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
+
+  {
+    // standard
+
+    // 3           4
+    //  X---------X
+    //  |         |
+    //  |         |
+    //  |         |
+    //  |         |
+    //  |         |
+    //  X---------X
+    // 1           2
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]  );
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  1.0;
+    uv(1)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]+1);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+
+    // point 3
+    uv(0)= -1.0;
+    uv(1)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]  );
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  1.0;
+    uv(1)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]+1);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+  }
+  break;
+}
+case DRT::Element::nurbs9:
+{
+
+  int idu;
+  int idv;
+
+  // number of visualisation points in u direction
+  int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[0]+1;
+
+  {
+    // standard
+
+    //
+    //  +---------+
+    //  |         |
+    //  |         |
+    //  X    X    |
+    // 3|   4     |
+    //  |         |
+    //  X----X----+
+    // 1    2
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=2*ele_cart_id[0];
+    idv=2*ele_cart_id[1]*(nvpu);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
+      (idata)->ReplaceMyValue(lid,isd,val);
+      }
+    }
+
+    // point 2
+    uv(0)=  0.0;
+    uv(1)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=2*ele_cart_id[0]+1;
+    idv=2*ele_cart_id[1]*(nvpu);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idv+idu);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+
+    // point 3
+    uv(0)= -1.0;
+    uv(1)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=2*ele_cart_id[0];
+    idv=(2*ele_cart_id[1]+1)*(nvpu);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  0.0;
+    uv(1)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=2*ele_cart_id[0]+1;
+    idv=(2*ele_cart_id[1]+1)*(nvpu);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+  }
+  // top line
+
+  //
+  //  X----X----+
+  // 5|   6     |
+  //  |         |
+  //  X    X    |
+  // 3|   4     |
+  //  |         |
+  //  X----X----+
+  // 1    2
+  //
+  // two additional points
+
+  if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+  {
+    // point 5
+    uv(0)= -1.0;
+    uv(1)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  );
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 6
+    uv(0)=  0.0;
+    uv(1)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+  // right line
+  if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+  {
+
+    //
+    //  +---------+
+    //  |         |
+    //  |         |
+    //  x    x    X
+    // 4|   5    6|
+    //  |         |
+    //  x----x----X
+    // 1    2    3
+
+    // two additional points
+    // point 5
+    uv(0)=  1.0;
+    uv(1)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 6
+    uv(0)=  1.0;
+    uv(1)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+  // top right corner
+  if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]&&ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+  {
+    //
+    //  x----x----X
+    // 7|   8    9|
+    //  |         |
+    //  x    x    x
+    // 4|   5    6|
+    //  |         |
+    //  x----x----x
+    // 1    2    3
+
+    // point 9
+    uv(0)=  1.0;
+    uv(1)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots         ,
+                                          weights          ,
+                                          actele->Shape()  );
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+(2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+  break;
+}
+case DRT::Element::nurbs27:
+{
+  // element local point position
+  Epetra_SerialDenseVector uv(3);
+
+  int idu;
+  int idv;
+  int idw;
+
+  {
+    // standard
+
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | /         / |
+    //   /         /  |
+    //  +---------+   |
+    //  | A----A  |   |
+    //  |/|   /|  |   +
+    //  A----A |  |  /
+    //  | A--|-A  | /
+    //  |/   |/   |/
+    //  A----A----+ ----->u
+    //
+    // append 8 points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)= -1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  0.0;
+    uv(1)= -1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 3
+    uv(0)= -1.0;
+    uv(1)=  0.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  0.0;
+    uv(1)=  0.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 5
+    uv(0)= -1.0;
+    uv(1)= -1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 6
+    uv(0)=  0.0;
+    uv(1)= -1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 7
+    uv(0)= -1.0;
+    uv(1)=  0.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 8
+    uv(0)=  0.0;
+    uv(1)=  0.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+  if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+  {
+
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | /         / |
+    //   /         /  |
+    //  +---------+   |
+    //  | X----X--|-A |
+    //  |/|   /|  |/| +
+    //  X----X----A |/
+    //  | X--|-X--|-A
+    //  |/   |/   |/
+    //  X----X----A ----->u
+    //
+    // append 4 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)=  1.0;
+    uv(1)= -1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  1.0;
+    uv(1)=  0.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 3
+    uv(0)=  1.0;
+    uv(1)= -1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  1.0;
+    uv(1)=  0.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+  if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+  {
+
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | /         / |
+    //   /  A----A /  |
+    //  +---------+   |
+    //  | X----X ||   |
+    //  |/| A-/|-A|   +
+    //  X----X |/ |  /
+    //  | X--|-X  | /
+    //  |/   |/   |/
+    //  X----X----+ ----->u
+    //
+    // append 4 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)=  1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+
+    // point 2
+    uv(0)=  0.0;
+    uv(1)=  1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 3
+    uv(0)= -1.0;
+    uv(1)=  1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  0.0;
+    uv(1)=  1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+  }
+
+  if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+     &&
+     ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+  {
+
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | /         / |
+    //   /  X----X-/--A
+    //  +---------+  /|
+    //  | X----X--|-X |
+    //  |/| X-/|-X|/|-A
+    //  X----X----X |/
+    //  | X--|-X--|-X
+    //  |/   |/   |/
+    //  X----X----X ----->u
+    //
+    // append 2 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)=  1.0;
+    uv(1)=  1.0;
+    uv(2)= -1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  1.0;
+    uv(1)=  1.0;
+    uv(2)=  0.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+
+  if(ele_cart_id[2]+1==nele_x_mele_x_lele[2])
+  {
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | A----A    / |
+    //   /    /|   /  |
+    //  A----A----+   |
+    //  | X--|-X  |   |
+    //  |/|  |/|  |   +
+    //  X----X |  |  /
+    //  | X--|-X  | /
+    //  |/   |/   |/
+    //  X----X----+ ----->u
+    //
+    //
+    // append 4 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)= -1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  0.0;
+    uv(1)= -1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 3
+    uv(0)= -1.0;
+    uv(1)=  0.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 4
+    uv(0)=  0.0;
+    uv(1)=  0.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+
+  if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+     &&
+     ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+    )
+  {
+    //               v
+    //              /
+    //  w          /
+    //  ^   A----A----+
+    //  |  /|   /|   /|
+    //  | X----X |  / |
+    //   /| X /| X /  |
+    //  X----X----+   |
+    //  | X--|-X ||   |
+    //  |/|  |/| X|   +
+    //  X----X |/ |  /
+    //  | X--|-X  | /
+    //  |/   |/   |/
+    //  X----X----+ ----->u
+    //
+    //
+    // append 2 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)= -1.0;
+    uv(1)=  1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]  );
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  0.0;
+    uv(1)=  1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+1);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+  }
+
+  if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+     &&
+     ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+    )
+  {
+    //               v
+    //              /
+    //  w          /
+    //  ^   +---------+
+    //  |  /         /|
+    //  | X----X----A |
+    //   /    /|   /| |
+    //  X----X----A | |
+    //  | X--|-X--|-X |
+    //  |/|  |/|  |/| +
+    //  X----X----X |/
+    //  | X--|-X--|-X
+    //  |/   |/   |/
+    //  X----X----X ----->u
+    //
+    //
+    // append 2 additional points
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)=  1.0;
+    uv(1)= -1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+    // point 2
+    uv(0)=  1.0;
+    uv(1)=  0.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+  }
+
+  if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+     &&
+     ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+     &&
+     ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+    )
+  {
+
+    //               v
+    //              /
+    //  w          /
+    //  ^   X----X----A
+    //  |  /|   /    /|
+    //  | X----X----X |
+    //   /| X-/|-X-/|-X
+    //  X----X----X |/|
+    //  | X--|-X--|-X |
+    //  |/| X|/|-X|/|-X
+    //  X----X----X |/
+    //  | X--|-X--|-X
+    //  |/   |/   |/
+    //  X----X----X ----->u
+    //
+    // append 1 additional point
+
+    // temporary x vector
+    std::vector<double> x(3);
+
+    // point 1
+    uv(0)=  1.0;
+    uv(1)=  1.0;
+    uv(2)=  1.0;
+    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                          uv               ,
+                                          eleknots            ,
+                                          weights          ,
+                                          actele->Shape()  );
+
+    idu=(2*ele_cart_id[0]+2);
+    idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+    idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+    for (int isd=0; isd<numdf; ++isd)
+    {
+      double val = 0;
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+      }
+      int lid = (*vispointmap_).LID(vpoff[npatch]+idu+idv+idw);
+      (idata)->ReplaceMyValue(lid,isd,val);
+    }
+
+  }
+
+  break;
+}
+default:
+  dserror("unable to visualise this as a nurbs discretisation\n");
+}
+
+return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteNodalResultStepForNurbs(
+  ofstream&                             file ,
+  const int                             numdf,
+  const RefCountPtr<Epetra_MultiVector> data ,
+  const string                          name ,
+  const int                             offset
+  ) const
+{
+  // a multivector for the interpolated data
+  Teuchos::RefCountPtr<Epetra_MultiVector> idata;
+  idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
+
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
+
+  if(nurbsdis==NULL)
+  {
+    dserror("This probably isn't a NurbsDiscretization\n");
+  }
+
+  // get number of patches
+  int npatches = (nurbsdis->GetKnotVector())->ReturnNP();
+
+  // assuming that dimension of the manifold is
+  // equal to spatial dimension
+  int dim = (int)(nurbsdis->Return_nele_x_mele_x_lele(0)).size();
+
+  // the number of vizualisation points
+  int numvispoints = 0;
+
+  for(int np=0;np<npatches;++np)
+  {
+    int numvisp=1;
+
+    // get nurbs dis' knotvector sizes
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
+
+    // get nurbs dis' knotvector sizes
+    vector<int> degree(nurbsdis->Return_degree(np));
+
+    for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
+    {
+      numvisp*=2*(n_x_m_x_l[rr]-2*degree[rr])-1;
+    }
+    numvispoints+=numvisp;
+  } // end loop over patches
+
+    // get the knotvector itself
+  RefCountPtr<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+
+  // get vispoint offsets among patches
+  vector<int> vpoff(npatches);
+
+  vpoff[0]=0;
+
+  // loop all patches
+  for(int np=1;np<npatches;++np)
+  {
+    // get nurbs dis' knotvector sizes
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
+
+    int numvisp=1;
+
+    for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
+    {
+      numvisp*=2*nele_x_mele_x_lele[rr]+1;
+    }
+
+    vpoff[np]=vpoff[np-1]+numvisp;
+  }
+
+  // get element map
+  const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+
+  // construct a colmap for data to have it available at
+  // all elements (the critical ones are the ones at the
+  // processor boundary)
+  // loop all available elements
+  std::set<int> coldofset;
+  for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+  {
+    DRT::Element*  actele = nurbsdis->gElement(elementmap->GID(iele));
+
+    vector<int> lm;
+    vector<int> lmowner;
+    vector<int> lmstride;
+
+    // extract local values from the global vectors
+    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
+
+    // do not forget to consider a (potential) offset in dof numbering for all results!
+    const int* nodeids = actele->NodeIds();
+    for (int inode=0; inode<actele->NumNode(); ++inode)
+    {
+      if(name == "flux")
+      {
+        coldofset.insert(nodeids[inode]);
+      }
+      else
+      {
+        dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
+      }
+    }
+  }
+
+  std::vector<int> coldofmapvec;
+  coldofmapvec.reserve(coldofset.size());
+  coldofmapvec.assign(coldofset.begin(), coldofset.end());
+  coldofset.clear();
+  Teuchos::RCP<Epetra_Map> coldofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                coldofmapvec.size(),
+                                &coldofmapvec[0],
+                                0,
+                                nurbsdis->Comm()));
+  coldofmapvec.clear();
+
+  const Epetra_Map* fulldofmap = &(*coldofmap);
+  const RefCountPtr<Epetra_MultiVector> coldata
+    = Teuchos::rcp(new Epetra_MultiVector(*fulldofmap,3,true));
+
+  // create an importer and import the data
+  Epetra_Import importer((*coldata).Map(),(*data).Map());
+  int imerr = (*coldata).Import((*data),importer,Insert);
+  if(imerr)
+  {
+    dserror("import failed\n");
+  }
+
+  // loop all available elements
+  for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+  {
+    DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
+
+    // get gid, location in the patch
+    vector<int> ele_cart_id(dim);
+    int gid = actele->Id();
+    int np=-1;
+
+    // access elements knot span
+    std::vector<Epetra_SerialDenseVector> knots(dim);
+    bool zero_size=(*knotvec).GetEleKnots(knots,actele->Id());
+
+    knotvec->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
+
+    // zero sized elements in knot span cannot be visualised
+    if(zero_size)
+    {
+      // if we just skip them, we would loose some connectivity
+      // in the result;
+      // as a work-around, we replace the zero-sized element
+      // with the next nonzero element --- this preserves the
+      // connectivity, and everything looks nice and smooth again.
+      // Note: This work-around will not work in parallel (or a
+      //       special ghosting for elements along interpolated
+      //       boundries has to be applied)
+      // Note: The following element will be plotted twice
+
+      actele = nurbsdis->gElement(knotvec->Return_next_nonzero_ele_gid(actele->Id()));
+      (*knotvec).GetEleKnots(knots,actele->Id());
+    }
+
+    DRT::Node**   nodes = actele->Nodes();
+
+    // number of all control points of the element
+    const int numnp = actele->NumNode();
+
+    // aquire weights from nodes
+    Epetra_SerialDenseVector weights(numnp);
+
+    for (int inode=0; inode<numnp; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      weights(inode) = cp->W();
+    }
+
+    // extract local values from the global vectors
+/*    vector<int> lm;
+    vector<int> lmowner;
+    vector<int> lmstride;
+
+    actele->LocationVector(*nurbsdis,lm,lmowner,lmstride); // get gid, location in the patch and the number of the patch
+*/
+    int npatch  =np;
+
+    // access elements knot span
+    std::vector<Epetra_SerialDenseVector> eleknots(dim);
+    knotvec->GetEleKnots(eleknots,actele->Id());
+
+    // access solution data
+    vector<double> my_data(numnp);
+    if(name == "flux")
+    {
+      my_data.resize(dim*numnp);
+
+      const int* nodeids = actele->NodeIds();
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        for(int rr=0;rr<dim;++rr)
+        {
+          // erste Spalte
+          my_data[dim*inode+rr]=((*coldata)[0])[(*coldata).Map().LID(nodeids[inode])];
+        }
+      }
+    }
+    else
+    {
+      dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
+    }
+
+    if (numdf != 1) cout<<"numdf = "<<numdf<<endl;
+
+    InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis, eleknots, weights, numdf, my_data);
+
+  } // loop over available elements
+
+  // import my new values (proc0 gets everything, other procs empty)
+  Epetra_Import proc0importer(*proc0map_,*vispointmap_);
+  RefCountPtr<Epetra_MultiVector> allsols = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  int err = allsols->Import(*idata,proc0importer,Insert);
+  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+  //---------------
+  // write results
+  //---------------
+
+  const int finalnumnode = proc0map_->NumGlobalElements();
+
+  if (myrank_==0)
+  {
+    for (int idf=0; idf<numdf; ++idf)
+    {
+      Epetra_Vector* column = (*allsols)(idf);
+      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+      {
+        Write(file, static_cast<float>(idf));
+ //       Write(file, static_cast<float>((*column)[inode]));
+      }
+    }
+  } // if (myrank_==0)
+
+} //EnsightWriter::WriteNodeResultStepForNurbs
+
+
 
 #endif

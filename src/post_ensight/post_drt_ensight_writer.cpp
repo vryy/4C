@@ -1326,7 +1326,19 @@ void EnsightWriter::WriteNodalResultStep(ofstream& file,
                                      0,
                                      datamap.Comm()));
 
-
+  //switch between nurbs an others
+  if(field_->problem()->SpatialApproximation()=="Nurbs")
+  {
+    WriteNodalResultStepForNurbs(
+      file ,
+      numdf,
+      data,
+      name,
+      0
+      );
+  }
+  else if(field_->problem()->SpatialApproximation()=="Polynomial")
+  {
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
   RCP<Epetra_MultiVector> data_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
@@ -1340,16 +1352,22 @@ void EnsightWriter::WriteNodalResultStep(ofstream& file,
 
   const int finalnumnode = proc0map_->NumGlobalElements();
 
-  if (myrank_==0) // ensures pointer dofgids is valid
+  if (myrank_==0)
   {
     for (int idf=0; idf<numdf; ++idf)
     {
+      Epetra_Vector* column = (*data_proc0)(idf);
       for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
       {
-        Write(file, static_cast<float>((*((*data_proc0)(idf)))[inode]));
+        Write(file, static_cast<float>((*column)[inode]));
       }
     }
   } // if (myrank_==0)
+} // polynomial
+else
+{
+  dserror("spatial approximation neither Nurbs nor Polynomial\n");
+}
 
   Write(file, "END TIME STEP");
   return;
