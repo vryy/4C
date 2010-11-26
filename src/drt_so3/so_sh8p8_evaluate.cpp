@@ -719,7 +719,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
             }
           }
         }
-
+        //nothing to be done by this element
         else
         {
           for(int i=0; i<NUMNOD_; i++)
