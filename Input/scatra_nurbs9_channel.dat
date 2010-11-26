@@ -35,7 +35,7 @@ UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
 NUMSTEP      10
-TIMESTEP     0.1
+TIMESTEP     0.5
 ALPHA_F      0.666666
 ALPHA_M      0.833333
 GAMMA        0.666666
@@ -56,7 +56,7 @@ CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE       linear_full
+SOLVERTYPE       linear_full //linear_incremental //nonlinear
 TIMEINTEGR       Gen_Alpha
 UPRES            1
 RESTARTEVRY      1
@@ -67,14 +67,15 @@ ALPHA_F          0.666666
 ALPHA_M          0.833333
 GAMMA            0.666666
 VELOCITYFIELD    Navier_Stokes
-VELFUNCNO        1
+VELFUNCNO        -1
 INITIALFIELD     field_by_function
 INITFUNCNO       1
 FSSUGRDIFF       No
-WRITEFLUX        No
+WRITEFLUX        diffusiveflux_boundary
 MATID            2
 SKIPINITDER      No
 OUTPUT_GMSH      No
+OUTMEAN          Yes
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION
@@ -107,6 +108,12 @@ E 3 -   1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 0
 //E 4 -   1 1 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 live mid 3 3 0 0 0 0
+---------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 2
+E 1 - 0 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 live mid 0 0 0 0 0 0
+E 2 - 0 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 live mid 0 0 0 0 0 0
+// for flux calculation on these two boundaries
 -------------------------------------------------FLUID KNOTVECTORS
 BEGIN NURBSPATCH
 ID        1
@@ -459,16 +466,14 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 5.0 c2 1.0
 ------------------------------------------------------------CURVE2
 // from 1.0 down to 0.0
 CURVE2 on EXPR FUNC 1.0-sin(t*pi/(5.0*2.0)) t1 0.0 t2 5.0
-//CURVE2 on EXPR FUNC 0.0 t1 5.0 t2 100.0
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
 ------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0 0.0 0 FUNCTION 4.0*y*(1.0-y)
 ------------------------------------------------------------FUNCT3
-//FUNCT3 EXPR 0 0.0 0 FUNCTION 0.0*4.0*0.1*2.0*((2.0*y)-1.0)
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 79 POSITION velx     NAME velx     VALUE 9.854030450e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 79 POSITION vely     NAME vely     VALUE 7.232560390e-04 TOLERANCE 1e-9
@@ -478,4 +483,6 @@ FLUID DIS 1 NODE 123 POSITION velx     NAME velx     VALUE 1.941551659e-01 TOLER
 FLUID DIS 1 NODE 123 POSITION vely     NAME vely     VALUE 1.980942970e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 123 POSITION pressure NAME pressure VALUE 6.602342237e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 123 POSITION phi     NAME phi      VALUE 2.862477828e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 144 POSITION fluxy   NAME fluxy    VALUE -1.139051110e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 9 POSITION fluxy     NAME fluxy    VALUE -1.235851513e-01 TOLERANCE 1e-9
 ---------------------------------------------------------------END
