@@ -2042,18 +2042,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   //d)  Bazilevs without dt
   //f)  Oberai
 
-  // TODO: different element length calculations for 2D and 3D flow is
-  // just a temporary work around (not to change the results of the test cases)
-
   //----------------------------------------------------------------
   // definiton of element size 'strle' for tau_Mu
   //----------------------------------------------------------------
 
-  double strle = 0.0;
 // a) streamlength (based on velocity vector at element centre) -> default
+      // Tezeduyar 1992
 
-    if(nsd_==3)
-    {
       // normed velocity at element centre
       if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
       else
@@ -2065,20 +2060,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
       LINALG::Matrix<nen_,1> tmp;
       tmp.MultiplyTN(derxy_, velino_);
       const double val = tmp.Norm1();
-      strle = 2.0/val;
-      // const double strle = 2.0/val;
-    }
+      const double strle = 2.0/val;
 
 //  b) volume-equival. diameter -> not default
       // warning: 3D formula
       // const double strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
 //  c) cubic/square root of the element volume/area  -> not default
-    else if(nsd_==2)
-      strle = pow(vol,1/dim);
+
+    //  strle = pow(vol,1/dim);
       //const double strle = pow(vol,1/dim);
 
-    else dserror("elment length calculation is not implemented for 1D flow");
+   // else dserror("elment length calculation is not implemented for 1D flow");
 
 
   //----------------------------------------------------------------
@@ -2197,8 +2190,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     */
 
     // compute tau_c with hk instead of streamlength
-    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-    const double xi_tau_c = DMIN(re12,1.0);
+    //const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    const double xi_tau_c = DMIN(re02,1.0);
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   break; // end franca_barrenechea_valentin_wall
