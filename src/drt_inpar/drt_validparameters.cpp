@@ -1941,11 +1941,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
+  // the options "tau_not_defined" are only available in Peter's Genalpha code
+  // (there, which_tau is set via the string, not via INPAR::FLUID::TauType)
   setStringToIntegralParameter<INPAR::FLUID::TauType>("DEFINITION_TAU",
                                "Barrenechea_Franca_Valentin_Wall",
                                "Definition of tau_M,C",
                                tuple<std::string>(
                                  "Barrenechea_Franca_Valentin_Wall",
+                                 "Barrenechea_Franca_Valentin_Wall_wo_dt",
                                  "BFVW_gradient_based_hk",
                                  "Smoothed_FBVW",
                                  "FBVW_without_dt",
@@ -1956,6 +1959,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Oberai"),
                                tuple<INPAR::FLUID::TauType>(
                                    INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt,
                                    INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined,

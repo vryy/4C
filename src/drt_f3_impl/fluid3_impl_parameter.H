@@ -1,3 +1,22 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid3_impl_parameter.H
+
+\brief Evaluation of general fluid parameter
+
+Fluid3ImplParameter::SetParameter(Teuchos::ParameterList& params)
+set all general fluid parameter once for all elements.
+
+<pre>
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+
 #ifndef FLUID3_IMPL_PARAMETER_H
 #define FLUID3_IMPL_PARAMETER_H
 
@@ -10,15 +29,17 @@ namespace DRT
 namespace ELEMENTS
 {
 
-/// General fluid evaluation parameters.
+/// Evaluation of general parameters
 class Fluid3ImplParameter
 {
 public:
 
+  //! Singleton access method
   static Fluid3ImplParameter* Instance();
 
-  //! general parameter are set
-  void SetParameter(Teuchos::ParameterList& params);
+  //! general fluid parameter are set
+  void SetParameter(Teuchos::ParameterList& params    //> parameter list
+      );
 
   /// Flags to switch on/off the different fluid formulations
   //! flag to (de)activate generalized-alpha time-integration scheme

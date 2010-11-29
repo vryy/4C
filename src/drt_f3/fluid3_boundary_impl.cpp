@@ -158,7 +158,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::calc_node_curvature;
     else if (action == "calc_surface_tension")
         act = Fluid3Boundary::calc_surface_tension;
-    //TODO: weak Dirichlet boundary condition
+    //TODO: weak Dirichlet boundary condition:
+    //There is still a 2D and a 3D implementation
     else if (action == "enforce_weak_dbc")
         act = Fluid3Boundary::enforce_weak_dbc;
     else if (action == "MixedHybridDirichlet")

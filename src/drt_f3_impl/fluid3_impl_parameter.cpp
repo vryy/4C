@@ -1,3 +1,20 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid3_impl_parameter.cpp
+
+\brief Evaluation of general fluid parameter
+
+Fluid3ImplParameter::SetParameter(Teuchos::ParameterList& params)
+set all general fluid parameter once for all elements.
+
+<pre>
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include <string>
 
@@ -61,7 +78,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
 // get flags to switch on/off different fluid formulations
 //----------------------------------------------------------------------
 
-  //TODO: check, when is_stationary must be set
   // set flag, if it is a stationary fluid system
   is_stationary_ = params.get<bool>("is stationary");
 
@@ -103,6 +119,9 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
     omtheta_           = params.get<double>("omtheta",-1.0);
 
     // compute timefactor for left-hand side
+    // in the case of BDF2 and generalized-alpha:
+    // theta is set to the characteristic values in FLD::FluidImplicitTimeInt::PrepareTimeStep()
+
     // One-step-Theta:    timefac = theta*dt
     // BDF2:              timefac = 2/3 * dt
     // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
@@ -121,7 +140,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
       alphaM_=1.0;
     }
 
-    // in the case of not genalpha: afgdt = theta * dt_
+    // in the case of not genalpha: afgdt = theta * dt_ = timefac_
     afgdt_=alphaF_*gamma_*dt_;
   }
   else
@@ -155,14 +174,30 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
   whichtau_ =  Teuchos::getIntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
   // check if tau can be handled
   if (not(whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+      INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt or
       INPAR::FLUID::tautype_bazilevs or
+      INPAR::FLUID::tautype_bazilevs_wo_dt or
       INPAR::FLUID::tautype_franca_barrenechea_valentin_codina or
       INPAR::FLUID::tautype_oberai))
     dserror("Definition of Tau cannot be handled by the element");
 
-  // TODO: stationary tau definition cannot be choosen in the dat.-file
+  //stationary tau definition is switched on automatically
   if (is_stationary_ == true)
-    whichtau_ = INPAR::FLUID::tautype_stationary;
+  {
+    if (whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
+       whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt)
+    {
+      whichtau_ = INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt;
+    }
+    else if (whichtau_ == INPAR::FLUID::tautype_bazilevs or
+        whichtau_ == INPAR::FLUID::tautype_bazilevs_wo_dt)
+    {
+      whichtau_ = INPAR::FLUID::tautype_bazilevs_wo_dt;
+    }
+    else
+      dserror("Actual tau definition (%i) is not compatible with the stationary option",
+          whichtau_);
+  }
 
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
@@ -182,7 +217,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
 // parameter for turbulence and subgrid-viscosity approach
 //---------------------------------------------------------------------------------
 
-  //TODO: change Parameter in ValidParameter
   // get flag for fine-scale subgrid-viscosity approach
   {
     const std::string fssgvdef = params.get<std::string>("fs subgrid viscosity","No");
@@ -203,8 +237,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
   {
     if (is_stationary_ == true)
       dserror("Stationary turbulent flow does not make any sense");
-
-    //TODO: Check parameter for 2D and 3D case
 
     // get Smagorinsky model parameter for fine-scale subgrid viscosity
     // (Since either all-scale Smagorinsky model (i.e., classical LES model

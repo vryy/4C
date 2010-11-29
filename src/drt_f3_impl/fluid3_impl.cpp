@@ -958,8 +958,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
   //----------------------------------------------------------------------
 
-  // TODO: Stabilization of FINE-SCALE SUBGRID-VISCOSITY TERM not yet variable in space dimensions
-
     if(f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
     {
       const double fssgviscfac = fssgvisc_*rhsfac;
@@ -2038,10 +2036,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
   // computation of stabilization parameter tau
   // ---------------------------------------------------------------
   //a)  Franca, Barrenechea, Valentin, Wall
-  //b)  Franca, Barrenechea, Valentin, Wall stationary
+  //b)  Franca, Barrenechea, Valentin, Wall without dt
   //c)  Bazilevs
-  //d)  Codina
-  //e)  Oberai
+  //e)  Codina
+  //d)  Bazilevs without dt
+  //f)  Oberai
 
   // TODO: different element length calculations for 2D and 3D flow is
   // just a temporary work around (not to change the results of the test cases)
@@ -2147,8 +2146,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
     if (nsd_ == 2)
+    {
       //TODO: in 2D hk and strlng was defined in the same way
       tau_(1)= tau_(0);
+    }
     else if (nsd_ == 3)
     {
       // compute tau_Mp
@@ -2194,31 +2195,32 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
                           +--------------> Re2
                               1
     */
-    const double xi_tau_c = DMIN(re02,1.0);
+
+    // compute tau_c with hk instead of streamlength
+    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    const double xi_tau_c = DMIN(re12,1.0);
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   break; // end franca_barrenechea_valentin_wall
 
-  case INPAR::FLUID::tautype_stationary:
+  case INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt:
   {
-    // TODO: density dependency is still missing
-
     // compute tau_Mu
     /* convective : viscous forces */
-    const double re_tau_mu = mk * vel_norm * strle / (2.0 * visceff_);
+    const double re_tau_mu = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
     const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
     tau_(0) = (DSQR(strle)*mk)/(4.0*visceff_*xi_tau_mu);
 
     // compute tau_Mp
     /* convective : viscous forces */
-    const double re_tau_mp = mk  * vel_norm * hk / (2.0 * visceff_);
+    const double re_tau_mp = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
     const double xi_tau_mp = DMAX(re_tau_mp,1.0);
     tau_(1) = (DSQR(hk)*mk)/(4.0*visceff_*xi_tau_mp);
 
     // compute tau_C
-    const double re_tau_c = mk * vel_norm * hk / (2.0 * visceff_);
+    const double re_tau_c = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
     const double xi_tau_c = DMIN(re_tau_c, 1.0);
-    tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
+    tau_(2) = 0.5 * densaf_ * vel_norm *hk * xi_tau_c;
 
     break;
   }
@@ -2571,7 +2573,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     const double xi_tau_c = DMIN(re02,1.0);
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
-  break; // end franca_barrenechea_valentin_wall
+  break; // end oberai
 
   default: dserror("unknown definition of tau\n %i  ", f3Parameter_->whichtau_);
   }  // end switch
@@ -4473,7 +4475,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
      }
      else
      {
-       //TODO: Ask Peter
        two_visc_tau      = vstabfac*2.0*visc_*f3Parameter_->alphaF_*fac3;
      }
 
