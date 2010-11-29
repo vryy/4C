@@ -36,9 +36,6 @@ public:
   /// Destructor
   virtual ~TimIntOneStepTheta();
 
-  /// verify if given coefficients are in the admissable range;
-  void VerifyCoeff();
-
   /// Print information about current time step to screen (reimplementation for OST)
   virtual void PrintTimeStepInfo()
   {
@@ -111,6 +108,9 @@ protected:
 
   /// copy constructor
   TimIntOneStepTheta (const TimIntOneStepTheta& old);
+
+  /// verify if given coefficients are in the admissable range;
+  void VerifyCoeff();
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep();

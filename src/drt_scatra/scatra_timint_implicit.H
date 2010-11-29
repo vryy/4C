@@ -107,31 +107,11 @@ public:
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 
-  /// check convergence (or divergence) of nonlinear iteration
-  bool AbortNonlinIter(
-      const int itnum,
-      const int itmax,
-      const double ittol,
-      const double abstolres,
-      double& actresidual);
-
-  /// prepare Krylov space projection
-  void PrepareKrylovSpaceProjection();
-
   /// general solver call for coupled algorithms (decides if linear/nonlinear internally)
   void Solve();
 
-  /// solve linear system
-  void LinearSolve();
-
-  /// contains the nonlinear iteration loop
-  void NonlinearSolve();
-
   /// call elements to calculate system matrix and rhs and assemble
   void AssembleMatAndRHS();
-
-  /// potential residual scaling and potential addition of Neumann terms
-  void ScalingAndNeumann();
 
   /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
@@ -147,26 +127,6 @@ public:
 
   /// read restart data
   virtual void ReadRestart(int step)=0;
-
-  /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
-
-  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
-  ///
-  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
-  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
-  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-  /// note: VM3 solver still needs an explicit toggle vector for construction
-  const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
-
-  /// prepare AVM3-based scale separation
-  void AVM3Preparation();
-
-  /// AVM3-based scale separation
-  virtual void AVM3Separation()=0;
-
-  /// scaling of AVM3-based subgrid-diffusivity matrix
-  void AVM3Scaling(ParameterList& eleparams);
 
   /// set the velocity field (zero or field by function)
   void SetVelocityField();
@@ -361,16 +321,7 @@ public:
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
 
-  /// computes different conductivity expressions for electrolyte solutions (ELCH)
-  Epetra_SerialDenseVector ComputeConductivity();
-
-  /// apply galvanostatic control (update electrode potential) (ELCH)
-  bool ApplyGalvanostaticControl();
-
-  /// check for negative values of concentrations (ELCH)
-  void CheckConcentrationValues();
-
-  /// check for negative values of concentrations (ELCH)
+  /// return type of physics we are solving for
   INPAR::SCATRA::ScaTraType ScaTraType() const {return scatratype_;};
 
   /// routine to calculate mass/heat flux vectors (in domain / at boundary)
@@ -452,6 +403,46 @@ protected:
       const enum INPAR::SCATRA::FluxType fluxtype ///< switch for flux calculation
   );
 
+  /// prepare Krylov space projection
+  void PrepareKrylovSpaceProjection();
+
+  /// potential residual scaling and potential addition of Neumann terms
+  void ScalingAndNeumann();
+
+  /// solve linear system
+  void LinearSolve();
+
+  /// contains the nonlinear iteration loop
+  void NonlinearSolve();
+
+  /// check convergence (or divergence) of nonlinear iteration
+  bool AbortNonlinIter(
+      const int itnum,
+      const int itmax,
+      const double ittol,
+      const double abstolres,
+      double& actresidual);
+
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
+  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
+  ///
+  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+  /// note: VM3 solver still needs an explicit toggle vector for construction
+  const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+
+  /// prepare AVM3-based scale separation
+  void AVM3Preparation();
+
+  /// AVM3-based scale separation
+  virtual void AVM3Separation()=0;
+
+  /// scaling of AVM3-based subgrid-diffusivity matrix
+  void AVM3Scaling(ParameterList& eleparams);
+
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
 
@@ -479,6 +470,15 @@ protected:
 
   /// write flux vectors to BINIO
   void OutputFlux();
+
+  /// computes different conductivity expressions for electrolyte solutions (ELCH)
+  Epetra_SerialDenseVector ComputeConductivity();
+
+  /// apply galvanostatic control (update electrode potential) (ELCH)
+  bool ApplyGalvanostaticControl();
+
+  /// check for negative values of concentrations (ELCH)
+  void CheckConcentrationValues();
 
   //! compute outward pointing unit normal vectors at given bc's
   RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);

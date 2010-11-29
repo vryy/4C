@@ -182,7 +182,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   );
 
   // solve coupled electrochemistry equations
-  ScaTraField().NonlinearSolve();
+  ScaTraField().Solve();
 
   return;
 }
