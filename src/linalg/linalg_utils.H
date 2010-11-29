@@ -136,7 +136,7 @@ namespace LINALG
   void SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
                              Epetra_SerialDenseVector& L,
                              const bool postproc=false);
-
+#if 0
   void SymmetricEigenProblem(IO::DiscretizationWriter& output,
                              LINALG::Solver& solver,
                              RCP<LINALG::SparseMatrix> A,
@@ -145,6 +145,7 @@ namespace LINALG
                              int nev,
                              int step=0,
                              double time=0.0);
+#endif
   /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A
@@ -280,6 +281,31 @@ namespace LINALG
   \return the determinant of the matrix A
   */
   double DeterminantLU(const Epetra_SerialDenseMatrix& A);
+
+  /*!
+  \brief Explicit determinant of a nonsymmetric 3x3 matrix
+
+  \return the determinant of the matrix A
+  */
+  template<typename T> 
+  T Determinant3x3(LINALG::TMatrix<T,3,3>& A)
+  {
+    T b00 = A(0,0);
+    T b01 = A(0,1);
+    T b02 = A(0,2);
+    T b10 = A(1,0);
+    T b11 = A(1,1);
+    T b12 = A(1,2);
+    T b20 = A(2,0);
+    T b21 = A(2,1);
+    T b22 = A(2,2);
+    T a =   b11*b22 - b21*b12;
+    T b = - b10*b22 + b20*b12;
+    T c =   b10*b21 - b20*b11;
+    T det = b00 * a + b01 * b + b02 * c;
+    return det;
+}
+
 
   /*!
   \brief Invert a symmetric dim*dim square matrix
