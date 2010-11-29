@@ -34,43 +34,6 @@ Maintainer: Michael Gee
 
 #include "so_nstet.H"
 
-#if 0 // FAD version, not needed for element def gradient
-/*----------------------------------------------------------------------*
- |                                                             gee 10/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& dis)
-{
-  typedef Sacado::Fad::DFad<double> FAD;
-  
-  // current displacement
-  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
-  // loop elements
-  std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
-  for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
-  {
-    DRT::ELEMENTS::NStet* e = ele->second;
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
-    e->LocationVector(dis,lm,lmowner,lmstride);
-    vector<double> mydisp(lm.size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    
-    // create dfad version of nxyz and mydisp
-    Teuchos::SerialDenseMatrix<int,FAD> disp(4,3,false);
-    for (int i=0; i<4; ++i)
-      for (int j=0; j<3; ++j)
-        disp(i,j) = FAD(12,i*3+j,mydisp[i*3+j]);
-    
-    // create deformation gradient
-    e->F() = e->BuildF<FAD>(disp,e->Nxyz());
-    
-  } // ele
-  return;
-}
-#endif
-
 /*----------------------------------------------------------------------*
  |                                                             gee 10/10|
  *----------------------------------------------------------------------*/
@@ -616,7 +579,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // build averaged F, det(F) and volume of node (using sacado)
   double VnodeL = 0.0;
   FAD fad_Jnode = 0.0;
-  Teuchos::SerialDenseMatrix<int,FAD> fad_FnodeL(3,3,true);
+  LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   
   vector<vector<int> > lmlm(neleinpatch);
 #if 0
@@ -643,30 +606,29 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     }
 
     // copy element disp to 4x3 format
-    Teuchos::SerialDenseMatrix<int,FAD> eledispmat(4,3,false);
+    LINALG::TMatrix<FAD,4,3> eledispmat(false);
     for (int j=0; j<4; ++j)
       for (int k=0; k<3; ++k) 
         eledispmat(j,k) = patchdisp[lmlm[i][j*3+k]];
     
     // build F of this element
-    Teuchos::SerialDenseMatrix<int,FAD> Fele = 
-      adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->Nxyz());
-    
+    LINALG::TMatrix<FAD,3,3> Fele(true); 
+    Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->Nxyz());
 #if 0
-    Jeles[i] = adjele[i]->Determinant3x3<FAD>(Fele).val();
+    Jeles[i] = LINALG::Determinant3x3<FAD>(Fele).val();
 #endif
     
     // add up to nodal deformation gradient
-    Fele *= V;
+    Fele.Scale(V);
     fad_FnodeL += Fele;
     
   } // for (int i=0; i<neleinpatch; ++i)
 
   // do averaging
-  fad_FnodeL *= (1.0/VnodeL);
+  fad_FnodeL.Scale(1.0/VnodeL);
 
   // compute det(F)
-  fad_Jnode = adjele[0]->Determinant3x3<FAD>(fad_FnodeL);
+  fad_Jnode = LINALG::Determinant3x3<FAD>(fad_FnodeL);
   
 #if 0
   for (int i=0; i<neleinpatch; ++i)
@@ -740,8 +702,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
-  Teuchos::SerialDenseMatrix<int,FAD> CG(3,3,false);
-  CG.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,fad_FnodeL,fad_FnodeL,0.0);
+  LINALG::TMatrix<FAD,3,3> CG(false);
+  CG.MultiplyTN(fad_FnodeL,fad_FnodeL);
   vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);
@@ -750,7 +712,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   Ebar[4] =        CG(1,2);
   Ebar[5] =        CG(2,0);
 
-  // for material law and output, copy to baci object
+  // for material law and output, copy to LINALG::Matrix object
   LINALG::Matrix<3,3> cauchygreen(false);
   for (int i=0; i<3; ++i)
     for (int j=0; j<3; ++j)
@@ -975,14 +937,14 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     }
 
     // copy eledisp to 4x3 format
-    Teuchos::SerialDenseMatrix<int,FAD> eledispmat(4,3,false);
+    LINALG::TMatrix<FAD,4,3> eledispmat(false);
     for (int j=0; j<4; ++j)
       for (int k=0; k<3; ++k) 
         eledispmat(j,k) = patchdisp[lmlm[i][j*3+k]];
     
     // build F and det(F) of this element
-    Teuchos::SerialDenseMatrix<int,FAD> Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
-    FAD Jele = adjele[i]->Determinant3x3<FAD>(Fele);
+    LINALG::TMatrix<FAD,3,3> Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
+    FAD Jele = LINALG::Determinant3x3<FAD>(Fele);
     
 #if 0
     Jeles[i] = Jele.val();
@@ -1004,11 +966,11 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
 #endif
 
   // build volumetric deformation gradient
-  Teuchos::SerialDenseMatrix<int,FAD> fad_FnodeL(3,3,true);
+  LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   for (int i=0; i<3; ++i) 
     fad_FnodeL(i,i) = Jpowthird;
     
-  // copy to baci-type objects for output of strain
+  // copy to LINALG::Matrix objects for output of strain
   const double Jnode = fad_Jnode.val();
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
@@ -1072,8 +1034,8 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   
   //-----------------------------------------------------------------------
   // green-lagrange strains based on averaged volumetric F
-  Teuchos::SerialDenseMatrix<int,FAD> CG(3,3,false);
-  CG.multiply(Teuchos::TRANS,Teuchos::NO_TRANS,1.0,fad_FnodeL,fad_FnodeL,0.0);
+  LINALG::TMatrix<FAD,3,3> CG(false);
+  CG.MultiplyTN(fad_FnodeL,fad_FnodeL);
   vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);

@@ -36,7 +36,7 @@ using namespace Teuchos;
 #include "so_line.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
-#include <Teuchos_SerialDenseMatrix.hpp>
+//#include <Teuchos_SerialDenseMatrix.hpp>
 #include "Epetra_Time.h"
 
 //#define PRINT_NSTET            ///< printout of setup
@@ -575,11 +575,11 @@ protected:
   }
 
   template<typename T> 
-  static Teuchos::SerialDenseMatrix<int,T> BuildF(
-                                         Teuchos::SerialDenseMatrix<int,T>& xdisp,
-                                         LINALG::Matrix<4,3>& nxyz)
+  static LINALG::TMatrix<T,3,3> BuildF(
+                                       LINALG::TMatrix<T,4,3>& xdisp,
+                                       LINALG::Matrix<4,3>& nxyz)
   {
-    Teuchos::SerialDenseMatrix<int,T> F(3,3,true);
+    LINALG::TMatrix<T,3,3> F(true);
     for (int i=0; i<3; ++i)
     {
       for (int j=0; j<3; ++j)
@@ -589,26 +589,7 @@ protected:
     }
     return F;
   }
-
-  template<typename T> 
-  T Determinant3x3(Teuchos::SerialDenseMatrix<int,T>& F)
-  {
-    T b00 = F(0,0);
-    T b01 = F(0,1);
-    T b02 = F(0,2);
-    T b10 = F(1,0);
-    T b11 = F(1,1);
-    T b12 = F(1,2);
-    T b20 = F(2,0);
-    T b21 = F(2,1);
-    T b22 = F(2,2);
-    T a =   b11*b22 - b21*b12;
-    T b = - b10*b22 + b20*b12;
-    T c =   b10*b21 - b20*b11;
-    T det = b00 * a + b01 * b + b02 * c;
-    return det;
-}
-
+  
   // don't want = operator
   NStet& operator = (const NStet& old);
 
