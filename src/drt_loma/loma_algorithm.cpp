@@ -292,6 +292,9 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
+    // compute scalar time derivative
+    ScaTraField().ComputeTimeDerivative();
+
     // in case of non-constant thermodynamic pressure: compute and update
     if (consthermpress_=="No_energy")
     {
