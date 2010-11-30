@@ -471,7 +471,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
         std::ostringstream filename;
 
         filename << "./GmshOutput/StruPolyFilamentOrientation_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        StructPolymorphOutput(dis,filename);
+        StructPolymorphOutput(dis, filename);
       }
     }
     break;
@@ -483,7 +483,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
         std::ostringstream filename;
         filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        DDCorrOutput(filename);
+        DDCorrOutput(dis, filename);
       }
     }
     break;
@@ -685,9 +685,11 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   }
   // plot the periodic boundary box
   std::vector<double> center(3,periodlength/2);
-  std::vector<double> shift(3,0.0);
   GmshOutputBox(0.0, &center, periodlength, &filename);
- 	DDCorrShift(&center, &shift);
+  // plot the shifted center
+  std::vector<double> dummyshift(3,0.0);
+  std::vector<int> dummyentries;
+ 	DDCorrShift(&center, &dummyshift, &dummyentries);
   GmshOutputBox(0.75, &center, 0.125, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
@@ -2046,8 +2048,10 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
         LINALG::Matrix<3, 1> dirvec;
         for(int dof=0; dof<3; dof++)
         {
-          double poscomponent0 = node0->X()[dof]+discol[nodelid0];
-          double poscomponent1 = node1->X()[dof]+discol[nodelid1];
+          int dofgid0 = discret_.Dof(node0)[dof];
+          int dofgid1 = discret_.Dof(node1)[dof];
+          double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
+          double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
           // check for periodic boundary shift and correct accordingly
           if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
             poscomponent1 -= periodlength;
@@ -2075,8 +2079,10 @@ void StatMechManager::StructPolymorphOutput(const Epetra_Vector& disrow, const s
 /*----------------------------------------------------------------------*
  | output for density-density-correlation-function(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
+void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
 {
+	// Output: crosslinkers per bin, spherical coordinates (sorted into bins as well)
+
 	/*for(int i=0; i<discret_.Comm().NumProc(); i++)
 	{
 		if(i==discret_.Comm().MyPID())
@@ -2088,9 +2094,10 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
 	// storage vector for shifted crosslinker LIDs(crosslinkermap)
 	std::vector<double> boxcenter(3,0.0);
 	std::vector<double> centershift(3,0.0);
+	std::vector<int> crosslinkerentries;
 
 	// determine the new center point of the periodic volume
-	DDCorrShift(&boxcenter, &centershift);
+	DDCorrShift(&boxcenter, &centershift, &crosslinkerentries);
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
 	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
@@ -2103,6 +2110,7 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
   int combicount = 0;
 
   // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
+  // obtain crosslinker-crosslinker distances and sort them into histogram bins
   for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
   {
     bool quitloop = false;
@@ -2173,27 +2181,99 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
     }
   }
 
+  // calculation of filament element orientation in sperical coordinates, sorted into histogram
+  Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
+  Epetra_Vector thetabinsrow(*ddcorrrowmap_, true);
+
+  for(int i=0; i<discret_.NumMyRowElements(); i++)
+  {
+  	DRT::Element* element = discret_.lRowElement(i);
+  	// consider filament elements only
+  	if(element->Id()<basisnodes_)
+  	{
+  		int gid0 = element->Nodes()[0]->Id();
+  		int gid1 = element->Nodes()[1]->Id();
+      int lid0 = discret_.NodeRowMap()->LID(gid0);
+      int lid1 = discret_.NodeRowMap()->LID(gid1);
+      DRT::Node* node0 = discret_.lRowNode(lid0);
+      DRT::Node* node1 = discret_.lRowNode(lid1);
+
+      // calculate directional vector between nodes
+      LINALG::Matrix<3, 1> dirvec;
+      for(int dof=0; dof<3; dof++)
+      {
+        int dofgid0 = discret_.Dof(node0)[dof];
+        int dofgid1 = discret_.Dof(node1)[dof];
+        double poscomponent0 = node0->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid0)];
+        double poscomponent1 = node1->X()[dof]+disrow[discret_.DofRowMap()->LID(dofgid1)];
+        // check for periodic boundary shift and correct accordingly
+        if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+          poscomponent1 -= periodlength;
+        else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+          poscomponent1 += periodlength;
+
+        dirvec(dof) = poscomponent1-poscomponent0;
+      }
+      // normed vector
+      dirvec.Scale(1/dirvec.Norm2());
+
+      // normed direction (via dot product with normalized z-direction vector acos([d_x d_y d_z]*[0 0 1]))
+      LINALG::Matrix<3,1> zdir;
+      zdir.Clear();
+      zdir(2) = 1.0;
+      if(dirvec.Dot(zdir)>M_PI/2.0)
+        dirvec.Scale(-1.0);
+
+      // transform into spherical coordinates (phi E [0;2pi], theta E [0; pi]) and sort into appropriate bin
+      double phi = atan2(dirvec(1),dirvec(0)) + M_PI;
+      double theta = acos(dirvec(2));
+
+      int phibin = (int)floor(phi/(2*M_PI)*numbins);
+      int thetabin = (int)floor(theta/M_PI*numbins);
+      if(phibin == numbins)
+      	phibin--;
+      if(thetabin == numbins)
+      	thetabin--;
+      if(phibin<0 || thetabin<0)
+      	dserror("bin smaller zero");
+      phibinsrow[phibin] += 1.0;
+      thetabinsrow[thetabin] += 1.0;
+  	}
+  }
+
+  // calculate center of gravity for bound crosslinkers
+  LINALG::Matrix<3,1> cog;
+  cog.Clear();
+  for(int i=0; i<(int)crosslinkerentries.size(); i++)
+  	for(int j=0; j<(int)cog.M(); j++)
+  		cog(j) += (*crosslinkerpositions_)[j][crosslinkerentries[i]];
+
+  if(crosslinkerentries.size() != 0)
+  	cog.Scale(1/(double)crosslinkerentries.size());
+
+
   // Export
   Epetra_Vector crosslinksperbincol(*ddcorrcolmap_, true);
+  Epetra_Vector phibinscol(*ddcorrcolmap_, true);
+  Epetra_Vector thetabinscol(*ddcorrcolmap_, true);
   Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
   crosslinksperbincol.Import(crosslinksperbinrow, importer, Insert);
+  phibinscol.Import(phibinsrow, importer, Insert);
+  thetabinscol.Import(thetabinsrow, importer, Insert);
 
   // Add the processor-specific data up
   std::vector<int> crosslinksperbin(numbins, 0);
-  int total = 0;
+  std::vector<int> phibins(numbins, 0);
+  std::vector<int> thetabins(numbins, 0);
+  //int total = 0;
   for(int i=0; i<numbins; i++)
-  {
     for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+    {
       crosslinksperbin[i] += (int)crosslinksperbincol[pid*numbins+i];
-    total += crosslinksperbin[i];
-    //if(!discret_.Comm().MyPID())
-    //	cout<<"BIN "<<i<<": "<<crosslinksperbin[i]<<endl;
-  }
-  /*if(!discret_.Comm().MyPID())
-  {
-  	cout<<"================"<<endl;
-  	cout<<"Total: "<<total<<endl;
-  }*/
+      phibins[i] += (int)phibinscol[pid*numbins+i];
+      thetabins[i] += (int)thetabinscol[pid*numbins+i];
+    }
+
   // write data to file
   if(!discret_.Comm().MyPID())
   {
@@ -2202,7 +2282,7 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
     std::stringstream histogram;
 
     for(int i=0; i<numbins; i++)
-      histogram<<i+1<<"    "<<crosslinksperbin[i]<<endl;
+      histogram<<i+1<<"    "<<crosslinksperbin[i]<<"    "<<phibins[i]<<"    "<<thetabins[i]<<endl;
     //write content into file and close it
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
@@ -2215,23 +2295,21 @@ void StatMechManager::DDCorrOutput(const std::ostringstream& filename)
  | positions.                                                                   |
  |                                                        (public) mueller 11/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift)
+void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift, std::vector<int>* crosslinkerentries)
 {
 	int numrasterpoints = statmechparams_.get<int>("NUMRASTERPOINTS", 3);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// smallest average distance among all the average distances between the rasterpoints and all crosslinker elements
 	// (init with 2*pl,so that it is definitely overwritten by the first "real" value)
 	double smallestdistance = 2*periodlength;
-	// storage vector holding crosslinker element LIDs (crosslinkermap_)
-	std::vector<int> crosslinkerentries;
 
 	//store crosslinker element position within crosslinkerbond to crosslinkerentries
 	for(int i=0; i<crosslinkerbond_->MyLength(); i++)
 		if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
-			crosslinkerentries.push_back(i);
+			crosslinkerentries->push_back(i);
 
 	//if(!discret_.Comm().MyPID())
-	//	cout<<"crosslinkers: "<<crosslinkerentries.size()<<endl;
+	//	cout<<"crosslinkers: "<<crosslinkerentries->size()<<endl;
 
 	// determine the new center of the box
 	for(int i=0; i<numrasterpoints; i++)
@@ -2254,14 +2332,14 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 					currentcentershift[l] = currentrasterpoint[l]-periodlength/2.0;
 
 				// calculate average distance of crosslinker elements to raster point
-				for(int l=0; l<(int)crosslinkerentries.size(); l++)
+				for(int l=0; l<(int)crosslinkerentries->size(); l++)
 				{
 					// get the crosslinker position in question and shift it according to new boundary box center
 					std::vector<double> currcrosslinkerpos(3,0.0);
 					double distance=0.0;
 					for(int m=0; m<(int)currcrosslinkerpos.size(); m++)
 					{
-						currcrosslinkerpos[m] = (*crosslinkerpositions_)[m][crosslinkerentries[l]];
+						currcrosslinkerpos[m] = (*crosslinkerpositions_)[m][(*crosslinkerentries)[l]];
 						if (currcrosslinkerpos[m] > periodlength+currentcentershift[m])
 							currcrosslinkerpos[m] -= periodlength;
 						if (currcrosslinkerpos[m] < 0.0+currentcentershift[m])
@@ -2271,7 +2349,7 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 					}
 					averagedistance += sqrt(distance);
 				}
-				averagedistance /= (double)crosslinkerentries.size();
+				averagedistance /= (double)crosslinkerentries->size();
 
 				if(averagedistance<smallestdistance)
 				{
