@@ -2138,43 +2138,33 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
 
     tau_(0) = timefac*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*timefac*visceff_/mk)*xi02);
 
-    if (nsd_ == 2)
-    {
-      //TODO: in 2D hk and strlng was defined in the same way
-      tau_(1)= tau_(0);
-    }
-    else if (nsd_ == 3)
-    {
-      // compute tau_Mp
-      //    stability parameter definition according to Franca and Valentin (2000)
-      //                                       and Barrenechea and Valentin (2002)
+    // compute tau_Mp
+    //    stability parameter definition according to Franca and Valentin (2000)
+    //                                       and Barrenechea and Valentin (2002)
 
-      // viscous : reactive forces
-      const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
+    // viscous : reactive forces
+    const double re11 = 4.0 * timefac * visceff_ / (mk * densaf_ * DSQR(hk));
 
-      // convective : viscous forces
-      const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    // convective : viscous forces
+    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
-      const double xi11 = DMAX(re11,1.0);
-      const double xi12 = DMAX(re12,1.0);
+    const double xi11 = DMAX(re11,1.0);
+    const double xi12 = DMAX(re12,1.0);
 
-      /*
-                    xi1,xi2 ^
-                            |      /
-                            |     /
-                            |    /
-                          1 +---+
-                            |
-                            |
-                            |
-                            +--------------> re1,re2
-                                1
-      */
+    /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+    */
 
-      tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
-    }
-    else
-      dserror("stabilization 'franca_barrenechea_valentin_wall' is not implemented for 1D flow");
+    tau_(1) = timefac*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*timefac*visceff_/mk)*xi12);
 
     /*------------------------------------------------------ compute tau_C ---*/
     // PhD thesis Wall (1999)
@@ -2190,8 +2180,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(
     */
 
     // compute tau_c with hk instead of streamlength
-    //const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-    const double xi_tau_c = DMIN(re02,1.0);
+    const double xi_tau_c = DMIN(re12,1.0);
     tau_(2) = densaf_ * vel_norm * hk * 0.5 * xi_tau_c;
   }
   break; // end franca_barrenechea_valentin_wall
