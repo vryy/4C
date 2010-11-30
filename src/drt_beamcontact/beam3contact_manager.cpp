@@ -12,12 +12,13 @@ Maintainer: Alexander Popp, Christian Cyron
 *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
-#ifdef D_BEAM3
-
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
 #include "../drt_inpar/inpar_contact.H"
+
+#ifdef D_BEAM3
+#include "../drt_beam3/beam3.H"
+#endif
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -115,10 +116,6 @@ discret_(discret)
   // rebuild discretization based on the new column maps
   discret_.FillComplete(true,false,false);
   
-#ifndef D_BEAM3
-  dserror("ERROR: Beam3 contact manager called without D_BEAM3 activated");
-#endif
-  
   // read parameter list from DRT::Problem
   scontact_ = DRT::Problem::Instance()->MeshtyingAndContactParams();
   
@@ -211,8 +208,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   {
   	// only evaluate pair for those procs owning or ghosting at
     // least one node of one of the two elements of the pair	
-  	int firsteleid = (pairs_[i]->Element1()).Id();
-  	int secondeleid = (pairs_[i]->Element2()).Id();
+  	int firsteleid = (pairs_[i]->Element1())->Id();
+  	int secondeleid = (pairs_[i]->Element2())->Id();
   	bool firstisincolmap = ColElements()->MyGID(firsteleid);
   	bool secondisincolmap = ColElements()->MyGID(secondeleid);
   	
@@ -279,13 +276,13 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
   for(int i=0;i<(int)pairs_.size();++i)
   {
   	// temporary matrices to store nodal coordinates of each element
-  	Epetra_SerialDenseMatrix ele1pos(3,pairs_[i]->Element1().NumNode());
-	  Epetra_SerialDenseMatrix ele2pos(3,pairs_[i]->Element2().NumNode());
+  	Epetra_SerialDenseMatrix ele1pos(3,pairs_[i]->Element1()->NumNode());
+	  Epetra_SerialDenseMatrix ele2pos(3,pairs_[i]->Element2()->NumNode());
 	 
 	  // Loop over all nodes of element 1
-	  for(int m=0;m<pairs_[i]->Element1().NumNode();m++)	
+	  for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
 	  {
-		  int tempGID = (pairs_[i]->Element1().NodeIds())[m];
+		  int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
 		  LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
 		  
 		  // store updated nodal coordinates
@@ -293,9 +290,9 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
 	  } 			   
 
 	  // Loop over all nodes of element 2
-	  for(int m=0;m<pairs_[i]->Element2().NumNode();m++)	
+	  for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
 	  {
-	  	int tempGID = (pairs_[i]->Element2().NodeIds())[m];
+	  	int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
 	 	 	LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
 	 	 	
 	 	 // store updated nodal coordinates
@@ -414,12 +411,12 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    // loop over all elements adjacent to firstnode
    for (int j=0;j<firstnode->NumElement();++j)
    {
-     // beam element pointer
-  	 DRT::Element* tempele1 = neighboureles[j];
-  	 DRT::ELEMENTS::Beam3* ele1 = static_cast<DRT::ELEMENTS::Beam3*>(tempele1);
-  	 
+     //element pointer
+     DRT::Element* tempele1 = neighboureles[j];
+
   	 // insert into element vector
-  	 FirstElesGIDs.push_back(ele1->Id());
+  	 FirstElesGIDs.push_back(tempele1->Id());
+
    }
    
    // loop over ALL nodes close to first node
@@ -434,12 +431,11 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
   	 // loop over all elements adjacent to tempnode
   	 for (int k=0;k<tempnode->NumElement();++k)
   	 {
-  	   // beam element pointer
+  	   //element pointer
   		 DRT::Element* tempele2 = TempEles[k];
-  		 DRT::ELEMENTS::Beam3* ele2 = static_cast<DRT::ELEMENTS::Beam3*>(tempele2);
   		 
   		 // insert into element vector
-  		 SecondElesGIDs.push_back(ele2->Id());
+  		 SecondElesGIDs.push_back(tempele2->Id());
   	 }
    }
    
@@ -478,26 +474,24 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
 	 {
 		 // beam element pointer
   	 DRT::Element* tempele1 = discret_.gElement(FirstElesGIDs[j]);
-  	 DRT::ELEMENTS::Beam3* ele1=static_cast<DRT::ELEMENTS::Beam3*>(tempele1);
   	 
   	 // node ids adjacent to this element
-  	 const int* NodesEle1 = ele1->NodeIds();
+  	 const int* NodesEle1 = tempele1->NodeIds();
      
   	 // loop over all close elements
 		 for (int k=0;k<(int)SecondElesGIDsRej.size();++k)
    	 {
 			 // get and cast a pointer on an element
    		 DRT::Element* tempele2 = discret_.gElement(SecondElesGIDsRej[k]);				
-     	 DRT::ELEMENTS::Beam3* ele2=static_cast<DRT::ELEMENTS::Beam3*>(tempele2);
      	 
      	 // close element id
-     	 const int* NodesEle2 = ele2->NodeIds();
+     	 const int* NodesEle2 = tempele2->NodeIds();
      	 
      	 // check if elements are neighbouring (share one common node)
      	 bool elements_neighbouring = false;
-     	 for (int m=0;m<ele1->NumNode();++m)
+     	 for (int m=0;m<tempele1->NumNode();++m)
      	 {
-     		 for (int n=0;n<ele2->NumNode();++n)
+     		 for (int n=0;n<tempele2->NumNode();++n)
      		 {
      			 // neighbouring if they share one common node
      			 if(NodesEle1[m] == NodesEle2[n])
@@ -509,8 +503,8 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
      	 bool foundbefore = false;
    		 for (int m=0;m<(int)pairs_.size();++m)
    		 {
-   			 int id1 = (pairs_[m]->Element1()).Id();	
-   			 int id2 = (pairs_[m]->Element2()).Id();
+   			 int id1 = (pairs_[m]->Element1())->Id();
+   			 int id2 = (pairs_[m]->Element2())->Id();
    			 int currid1 = FirstElesGIDs[j];
    			 int currid2 = SecondElesGIDsRej[k];
    			 
@@ -524,53 +518,34 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    		 if (!foundbefore && !elements_neighbouring)
    		 {
    			 // matrices to store nodal coordinates
-   			 Epetra_SerialDenseMatrix ele1pos(3,ele1->NumNode());
-   			 Epetra_SerialDenseMatrix ele2pos(3,ele2->NumNode());
+   			 Epetra_SerialDenseMatrix ele1pos(3,tempele1->NumNode());
+   			 Epetra_SerialDenseMatrix ele2pos(3,tempele2->NumNode());
    			 
    			 // store nodal coordinates of element 1
-   			 for (int m=0;m<ele1->NumNode();++m)
+   			 for (int m=0;m<tempele1->NumNode();++m)
    			 {
-   				 int tempGID = (ele1->NodeIds())[m];
+   				 int tempGID = (tempele1->NodeIds())[m];
    				 LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
    				 for(int n=0;n<3;n++) ele1pos(n,m) = temppos(n);
    			 } 			 
 
    			 // store nodal coordinates of element 1
-   			 for (int m=0;m<ele2->NumNode();++m)
+   			 for (int m=0;m<tempele2->NumNode();++m)
    			 {
-   				 int tempGID = (ele2->NodeIds())[m];
+   				 int tempGID = (tempele2->NodeIds())[m];
    				 LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
    				 for(int n=0;n<3;n++) ele2pos(n,m) = temppos(n);
    			 }
    			
    			 //***************************************************************
    			 // create a new contact pair object
-   			 pairs_.push_back(rcp (new CONTACT::Beam3contact(discret_,*ele1,*ele2,ele1pos,ele2pos)));
+   			 pairs_.push_back(rcp (new CONTACT::Beam3contact(discret_,tempele1,tempele2,ele1pos,ele2pos)));
    			 //***************************************************************
      	  }
    	  }
     }
   }
  
-  // debug output
-  /*for (int j=0;j<Comm().NumProc();++j)
-  {
-    // one processor after the other
-    if (j==Comm().MyPID())
-    {
-      cout << "*****  PRINTING pairs_ for PROC " << j << "  *****" << endl;
-      cout << "Length of 'pairs_': " << pairs_.size() << endl;
-     
-      for (int j=0;j<(int)pairs_.size();++j)
-      {
-     	  int temp1 = (pairs_[j]->Element1()).Id();
-     	  int temp2 = (pairs_[j]->Element2()).Id(); 
-     	  cout << "Pair " << j+1 << ":		Elements " << temp1 << " and " << temp2 << endl;
-      }
-    }
-    Comm().Barrier();
-  }*/
-
 	return;
 }
 
@@ -628,11 +603,17 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
 		// get pointer onto element
     int gid = RowElements()->GID(i);
     DRT::Element* thisele = discret_.gElement(gid);
-    DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
     
+
     // compute eleradius from moment of inertia
     // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
-    const double momentofinertia = thisbeam->Iyy();
+    double momentofinertia = 0;
+
+#ifdef D_BEAM3
+    DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
+    momentofinertia = thisbeam->Iyy();
+#endif  // #ifdef D_BEAM3
+
     const double eleradius = sqrt(sqrt(4 * momentofinertia / M_PI));
     
     // if current radius is larger than maximum radius -> update
@@ -653,11 +634,10 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
 	  // get pointer onto element
     int gid = RowElements()->GID(i);
     DRT::Element* thisele = discret_.gElement(gid);
-    DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
     
     // get global IDs of edge nodes and pointers
-    int node0_gid = thisbeam->NodeIds()[0];
-    int node1_gid = thisbeam->NodeIds()[1];
+    int node0_gid = thisele->NodeIds()[0];
+    int node1_gid = thisele->NodeIds()[1];
     DRT::Node* node0 = discret_.gNode(node0_gid);
     DRT::Node* node1 = discret_.gNode(node1_gid);
     
@@ -791,7 +771,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     {
       // get pointer onto current beam element
       DRT::Element* element = discret_.lColElement(i);
-      DRT::ELEMENTS::Beam3* thisele = static_cast<DRT::ELEMENTS::Beam3*>(element);
       
       // prepare storage for nodal coordinates
       int nnodes = element->NumNode();
@@ -815,13 +794,13 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         // 2-noded beam element (linear interpolation)
       	case 2:
       	{
-      		GMSH_2_noded(n,coord,thisele,gmshfilecontent);
+      		GMSH_2_noded(n,coord,element,gmshfilecontent);
       		break;
       	}
       	// 3-noded beam element (quadratic nterpolation)
       	case 3:
       	{
-      		GMSH_3_noded(n,coord,thisele,gmshfilecontent);
+      		GMSH_3_noded(n,coord,element,gmshfilecontent);
       		break;
       	}
       	// 4- or 5-noded beam element (higher-order interpolation)
@@ -1037,12 +1016,12 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 			
 			// make sure to print each pair only once
 			// (TODO: this is not yet enough...)
-			int firsteleid = (pairs_[i]->Element1()).Id();
+			int firsteleid = (pairs_[i]->Element1())->Id();
 			bool firstisinrowmap = RowElements()->MyGID(firsteleid);
 			
 			// abbreviations
-			int id1 = pairs_[i]->Element1().Id();
-			int id2 = pairs_[i]->Element2().Id();
+			int id1 = (pairs_[i]->Element1())->Id();
+			int id2 = (pairs_[i]->Element2())->Id();
 			double gap = pairs_[i]->GetGap();
 			double lm = pairs_[i]->Getlmuzawa() - currentpp_ * pairs_[i]->GetGap();
 			
@@ -1111,7 +1090,7 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
                                           const Epetra_SerialDenseMatrix& coord,
-		                                      const DRT::ELEMENTS::Beam3* thisele,
+		                                      const DRT::Element* thisele,
 		                                      std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -1124,15 +1103,20 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   Epetra_SerialDenseMatrix R(3,3);
      	 
   // get radius of element
-  const double radius = sqrt(sqrt(4 * (thisele->Izz()) / M_PI));
+  double radius = 0;
+
+#ifdef D_BEAM3
+    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+    radius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+#endif  // #ifdef D_BEAM3
   
   // declaring variable for color of elements
   double color = 1.0; 	
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
-    int id1 = pairs_[i]->Element1().Id();
-    int id2 = pairs_[i]->Element2().Id();
+    int id1 = (pairs_[i]->Element1())->Id();
+    int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
     
     // if element is memeber of an active contact pair, choose different color
@@ -1258,7 +1242,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
                                           const Epetra_SerialDenseMatrix& allcoord,
-		                                      const DRT::ELEMENTS::Beam3* thisele,
+		                                      const DRT::Element* thisele,
 		                                      std::stringstream& gmshfilecontent)
 {
   // some local variables
@@ -1272,15 +1256,20 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   Epetra_SerialDenseMatrix coord(3,2);
     
   // get radius of element
-  const double radius = sqrt(sqrt(4 * (thisele->Izz()) / M_PI));
+  double radius = 0;
+
+#ifdef D_BEAM3
+    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+    radius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+#endif  // #ifdef D_BEAM3
 
   // declaring variable for color of elements
   double color = 1.0;   
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
-    int id1 = pairs_[i]->Element1().Id();
-    int id2 = pairs_[i]->Element2().Id();
+    int id1 = (pairs_[i]->Element1())->Id();
+    int id2 = (pairs_[i]->Element2())->Id();
     bool active = pairs_[i]->GetContactFlag();
     
     // if element is memeber of an active contact pair, choose different color
@@ -1427,5 +1416,4 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 	return;
 }
 
-#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET

@@ -12,14 +12,13 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
 
-//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
-#ifdef D_BEAM3
-
 #include "beam3contact.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../drt_lib/drt_discret.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -361,14 +360,14 @@ private:
 
 	*/
 	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord,
-	                  const DRT::ELEMENTS::Beam3* thisele, std::stringstream& gmshfilecontent);
+	                  const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
 	/*!
 	\brief Compute coordinates for GMSH-Output for three-noded-elements
 
 	*/
 	void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
-	                  const DRT::ELEMENTS::Beam3* thisele, std::stringstream& gmshfilecontent);
+	                  const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
 	//@}
 
@@ -376,5 +375,4 @@ private:
 } // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_MANAGER_H
-#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET

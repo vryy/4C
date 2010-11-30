@@ -16,12 +16,11 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io.H"
 #include "../drt_structure/strugenalpha.H"
-
-#ifdef D_BEAM3
 #include "beam3contact_manager.H"
-#endif // #ifdef D_BEAM3
+
 
 namespace LINALG
 {
@@ -111,9 +110,7 @@ protected:
   int uzawaiter_;
 
   // beam contact manager
-#ifdef D_BEAM3
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
-#endif // #ifdef D_BEAM3
 
 }; // class Beam3ContactStruGenAlpha
 } // namespace CONTACT

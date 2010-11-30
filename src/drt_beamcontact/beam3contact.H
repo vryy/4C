@@ -12,10 +12,6 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifndef BEAM3C_H
 #define BEAM3C_H
 
-//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
-#ifdef D_BEAM3
-
-#include "../drt_beam3/beam3.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -26,6 +22,7 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -50,7 +47,7 @@ namespace CONTACT
 {
 
 /*!
- \brief contact element for contact between two elements of type beam3
+ \brief contact element for contact between two 3D beam elements
 
  Refer also to the Semesterarbeit of Matthias Mayr, 2010
 
@@ -79,8 +76,8 @@ public:
   
   */
 	Beam3contact(DRT::Discretization& discret,
-			         const DRT::ELEMENTS::Beam3& element1,
-               const DRT::ELEMENTS::Beam3& element2,
+			         DRT::Element* element1,
+               DRT::Element* element2,
                const Epetra_SerialDenseMatrix ele1pos,
                const Epetra_SerialDenseMatrix ele2pos);
 
@@ -112,13 +109,13 @@ public:
 	\brief Get first element
 	
 	*/
-  inline const DRT::ELEMENTS::Beam3& Element1() { return element1_;};
+  inline const DRT::Element* Element1() { return element1_;};
 	
 	/*!
 	\brief Get first element
 		
 	*/
-	inline const DRT::ELEMENTS::Beam3& Element2() { return element2_;};
+	inline const DRT::Element* Element2() { return element2_;};
 
   //! @name public evaluation methods
 	
@@ -187,10 +184,10 @@ private:
 	DRT::Discretization& discret_;
 	
   //! first element of contact pair
-  const DRT::ELEMENTS::Beam3& element1_;
+  DRT::Element* element1_;
   
   //! second element of contact pair
-  const DRT::ELEMENTS::Beam3& element2_;
+  DRT::Element* element2_;
   
   //! current node coordinates of the two elements
   // TODO: Set to const if finite differences are not needed anymore
@@ -417,5 +414,4 @@ private:
 } // namespace CONTACT
 
 #endif  // #ifndef BEAM3C_H
-#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 

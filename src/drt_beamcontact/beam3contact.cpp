@@ -12,9 +12,6 @@ Maintainer: Alexander Popp, Christian Cyron
 *-----------------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//compile only if beam3 element is complied, too, as beam3 element required for member variables of this class
-#ifdef D_BEAM3
-
 #include "beam3contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -22,12 +19,16 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+#ifdef D_BEAM3
+#include "../drt_beam3/beam3.H"
+#endif
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
 CONTACT::Beam3contact::Beam3contact(DRT::Discretization& discret,
-		                                const DRT::ELEMENTS::Beam3& element1,
-                                    const DRT::ELEMENTS::Beam3& element2,
+		                                DRT::Element* element1,
+                                    DRT::Element* element2,
                                     const Epetra_SerialDenseMatrix ele1pos,
                                     const Epetra_SerialDenseMatrix ele2pos):
 discret_(discret),
@@ -97,8 +98,8 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 	bool elementscolinear = false;
 	
 	// number of nodes of each element
-	const int numnode1 = Element1().NumNode();
-	const int numnode2 = Element2().NumNode();
+	const int numnode1 = element1_->NumNode();
+	const int numnode2 = element2_->NumNode();
 
 	// vectors for shape functions and their derivatives
 	Epetra_SerialDenseVector funct1(numnode1);					// = N1
@@ -184,8 +185,8 @@ void CONTACT::Beam3contact::ClosestPointProjection(vector<double>& XiContact,
 	vector<double> eta(2);
 		
 	// number of nodes of each element
-	const int numnode1 = Element1().NumNode();
-	const int numnode2 = Element2().NumNode();
+	const int numnode1 = element1_->NumNode();
+	const int numnode2 = element2_->NumNode();
 	
 	// vectors for shape functions and their derivatives
 	Epetra_SerialDenseVector funct1(numnode1);					// = N1
@@ -397,8 +398,8 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 	if (contactflag_)
 	{
 	  // node ids of both elements
-		const int* node_ids1 = Element1().NodeIds();
-		const int* node_ids2 = Element2().NodeIds();
+		const int* node_ids1 = element1_->NodeIds();
+		const int* node_ids2 = element2_->NodeIds();
 		
 		//********************************************************************
 		// Compute Fc1 (force acting on first element)
@@ -505,8 +506,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
 		Epetra_SerialDenseMatrix stiffc_III(NDIM*(numnode1+numnode2),NDIM*(numnode1+numnode2));
 		
 		// node ids of both elements
-		const int* node_ids1 = Element1().NodeIds();
-		const int* node_ids2 = Element2().NodeIds();
+		const int* node_ids1 = element1_->NodeIds();
+		const int* node_ids2 = element2_->NodeIds();
 		
 		// initialize storage for linearizations
 		vector<double> delta_xi(NDIM*(numnode1+numnode2));
@@ -839,8 +840,13 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 {
 	// get moments of inertia of both elements
 	// NOTE: here Iyy_ = Izz_ due to the circular cross section
-	double MomentOfInertia_ele1 = element1_.Iyy();
-	double MomentOfInertia_ele2 = element2_.Iyy();
+	double MomentOfInertia_ele1 = 0;
+	double MomentOfInertia_ele2 = 0;
+
+#ifdef D_BEAM3
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
+    MomentOfInertia_ele2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
+#endif  // #ifdef D_BEAM3
 	
 	// compute radii of both elements
 	double radius_ele1=0;
@@ -848,6 +854,7 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 	ComputeEleRadius(radius_ele1,MomentOfInertia_ele1);
 	ComputeEleRadius(radius_ele2,MomentOfInertia_ele2);
 	
+
 	// comute gap to be returned
 	gap = norm - radius_ele1 - radius_ele2;
 	
@@ -932,8 +939,8 @@ void CONTACT::Beam3contact::GetShapeFunctions(
      const vector<double>& eta)
 {
 	// get both discretization types
-	const DRT::Element::DiscretizationType distype1 = Element1().Shape();
-	const DRT::Element::DiscretizationType distype2 = Element2().Shape();
+	const DRT::Element::DiscretizationType distype1 = element1_->Shape();
+	const DRT::Element::DiscretizationType distype2 = element2_->Shape();
 			
 	// get values and derivatives of shape functions
 	DRT::UTILS::shape_function_1D(funct1, eta[0], distype1);
@@ -1703,9 +1710,6 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 		
 	if ((-gap)>0)		// Fc > 0 only, if penetration occurs
 	{
-//		cout << "Found contact pair: " << Element1().Id() << " " << Element2().Id() << endl;
-//		cout<<"normal: "<<normal[0]<<"	"<<normal[1]<<"	"<<normal[2]<<endl;
-//		cout<<"gap = "<<gap<<"	pp = "<<pp<<endl;
 		
 		// Compute Fc1
 		for(int i=0;i<numnode1;i++)
@@ -1920,5 +1924,4 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 	return;
 }
 
-#endif  // #ifdef D_BEAM3
 #endif  // #ifdef CCADISCRET 
