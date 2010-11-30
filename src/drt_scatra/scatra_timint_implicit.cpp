@@ -501,11 +501,6 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
     PrepareTimeStep();
 
     // -------------------------------------------------------------------
-    // compute values at intermediate time steps (only for gen.-alpha)
-    // -------------------------------------------------------------------
-    ComputeIntermediateValues();
-
-    // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
     Solve();
@@ -601,6 +596,11 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
   if (step_==1 and fssgd_ != INPAR::SCATRA::fssugrdiff_no) AVM3Preparation();
+
+  // -------------------------------------------------------------------
+  // compute values at intermediate time steps (only for gen.-alpha)
+  // -------------------------------------------------------------------
+  ComputeIntermediateValues();
 
   return;
 
@@ -843,6 +843,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
     //------------------------------------------------ update solution vector
     phinp_->Update(1.0,*increment_,1.0);
+
+    //-------- update values at intermediate time steps (only for gen.-alpha)
+    ComputeIntermediateValues();
 
     // iteration number (only after that data output is possible)
   /*
@@ -1150,6 +1153,11 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     if (myrank_==0)
       printf("Solvertype linear_full (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
   }
+
+  // -------------------------------------------------------------------
+  // compute values at intermediate time steps (only for gen.-alpha)
+  // -------------------------------------------------------------------
+  ComputeIntermediateValues();
 
   return;
 } // ScaTraTimIntImpl::Solve

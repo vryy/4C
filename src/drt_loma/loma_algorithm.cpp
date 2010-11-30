@@ -187,10 +187,8 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
                                  Teuchos::null,
                                  FluidField().Discretization());
 
-  // compute scalar values at intermediate time steps
-  ScaTraField().ComputeIntermediateValues();
-
   // initially solve scalar transport equation
+  // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
   if (Comm().MyPID()==0) cout<<"\n************************\n     SCALAR SOLVER\n************************\n";
   ScaTraField().Solve();
 
@@ -200,9 +198,6 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
 
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
-
-    // compute scalar time derivative
-    ScaTraField().ComputeTimeDerivative();
 
     // compute scalar values at intermediate time steps
     ScaTraField().ComputeIntermediateValues();
