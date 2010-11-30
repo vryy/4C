@@ -1925,11 +1925,29 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         // offset should be equal to dim for pressure case!
         coldofset.insert(lm[inode*(dim+1)+dim]+(offset-dim));
       }
-      else if(name == "phi"
-          ||
-          name == "phi_1")
+      else if(name == "phi")
       {
-        coldofset.insert(lm[inode]+offset);
+        DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = actele->NumDofPerNode(*n);
+        if (numdofpernode == 1) // one passive scalar (Scalar_Transport problem)
+          coldofset.insert(lm[inode]+offset);
+        else // result for electric potential (ELCH problem)
+          coldofset.insert(lm[inode*numdofpernode + (numdofpernode - 2)]+offset);
+      }
+      else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
+      {
+        int k;
+        if (name=="c_1") k=0;
+        else if (name=="c_2") k=1;
+        else if (name=="c_3") k=2;
+        else if (name=="c_4") k=3;
+        else if (name=="c_5") k=4;
+        else
+          dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
+
+        DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = actele->NumDofPerNode(*n);
+        coldofset.insert(lm[inode*numdofpernode+k]+offset);
       }
       else
       {
@@ -2063,14 +2081,38 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset-dim)];
       }
     }
-    else if((name == "phi") ||
-        (name == "phi_1"))
+    else if(name == "phi")
     {
       my_data.resize(numnp);
 
       for (int inode=0; inode<numnp; ++inode)
       {
-        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode]+offset)];
+        DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = actele->NumDofPerNode(*n);
+        if (numdofpernode == 1) // one passive scalar (Scalar_Transport problem)
+          my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode]+offset)];
+        else // result for electric potential (ELCH problem)
+          my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+(numdofpernode-2)]+offset)];
+      }
+    }
+    else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
+    {
+      my_data.resize(numnp);
+
+      int k;
+      if (name=="c_1") k=0;
+      else if (name=="c_2") k=1;
+      else if (name=="c_3") k=2;
+      else if (name=="c_4") k=3;
+      else if (name=="c_5") k=4;
+      else
+        dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = actele->NumDofPerNode(*n);
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+k]+offset)];
       }
     }
     else
