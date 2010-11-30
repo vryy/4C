@@ -920,24 +920,17 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
 {
   RCP<Epetra_Map> structdofrowmap; 
   RCP<Epetra_Map> fluiddofrowmap;
-  RCP<Epetra_Map> msfullnodemap; 
-  RCP<Epetra_Map> msfullelemap;  
   
   
   if (structcoupmaster_)
   {
     structdofrowmap = coupsf.MasterDofRowMap();
     fluiddofrowmap = coupsf.SlaveDofRowMap();
-    msfullnodemap =  coupsf.Interface()->MasterFullDofs();
-    msfullelemap =  coupsf.Interface()->MasterFullElements();
-
   }
   else
   {
     structdofrowmap = coupsf.SlaveDofRowMap();
     fluiddofrowmap = coupsf.MasterDofRowMap();
-    msfullnodemap =  coupsf.Interface()->SlaveFullDofs();
-    msfullelemap =  coupsf.Interface()->SlaveFullElements();
   }
   
   //merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
