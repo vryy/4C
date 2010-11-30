@@ -2145,18 +2145,21 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 								indices[1] = j;
 
 								// shift it according to new boundary box
+								cout<<"centershift: ";
 								for(int m=0; m<(int)currpositions.M(); m++)
 								{
+									cout<<centershift[m]<<" ";
 									for(int n=0; n<(int)currpositions.N(); n++)
 									{
 										currpositions(m,n) = (*crosslinkerpositions_)[m][indices[n]];
-										if (currpositions(m,n) > periodlength+centershift[j])
+										if (currpositions(m,n) > periodlength+centershift[m])
 											currpositions(m,n) -= periodlength;
-										if (currpositions(m,n) < 0.0+centershift[j])
+										if (currpositions(m,n) < 0.0+centershift[m])
 											currpositions(m,n) += periodlength;
 									}
 									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
 								}
+								cout<<endl;
 								deltaxij = sqrt(deltaxij);
 
 								// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
