@@ -199,9 +199,6 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
-    // compute scalar values at intermediate time steps
-    ScaTraField().ComputeIntermediateValues();
-
     // in case of non-constant thermodynamic pressure: compute
     if (consthermpress_=="No_energy")
     {
