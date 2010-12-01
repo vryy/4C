@@ -15,6 +15,8 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
