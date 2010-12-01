@@ -546,6 +546,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
   typedef Sacado::Fad::DFad<double> FAD; // for first derivs
+  //typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
   
   //-------------------------------------------------- standard quantities
   const int nnodeinpatch = (int)adjnode.size();
@@ -576,9 +577,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   }
   
   //-----------------------------------------------------------------------
-  // build averaged F, det(F) and volume of node (using sacado)
+  // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
-  FAD fad_Jnode = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   
   vector<vector<int> > lmlm(neleinpatch);
@@ -627,24 +627,20 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // do averaging
   fad_FnodeL.Scale(1.0/VnodeL);
 
-  // compute det(F)
-  fad_Jnode = LINALG::Determinant3x3<FAD>(fad_FnodeL);
-  
 #if 0
   for (int i=0; i<neleinpatch; ++i)
   {
-//    Jeles[i] = pow(fad_Jnode.val()/Jeles[i],-1./3.);
-    Jeles[i] = pow(Jeles[i]/fad_Jnode.val(),-1./3.);
+    Jeles[i] = pow(fad_Jnode.val()/Jeles[i],-1./3.);
   }
 #endif
   
   // copy values of fad to 'normal' values
-  double Jnode = fad_Jnode.val();
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
       FnodeL(j,k) = fad_FnodeL(j,k).val();
- 
+  
+#if 1
   //-----------------------------------------------------------------------
   // build B operator
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
@@ -699,6 +695,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
         bop(k,lmlm[ele][j]) += ratio * bele(k,j);
 #endif
   } // for (int ele=0; ele<neleinpatch; ++ele)
+#endif
 
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
@@ -727,11 +724,13 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   
   //-------------------------------------------------------- output of strain
   if (iostrain != INPAR::STR::strain_none)
+  {
 #ifndef PUSOSOLBERG
-    StrainOutput(iostrain,*nodalstrain,FnodeL,Jnode,1.0-BETA_NSTET,1.0-ALPHA_NSTET);
+    StrainOutput(iostrain,*nodalstrain,FnodeL,FnodeL.Determinant(),1.0-BETA_NSTET,1.0-ALPHA_NSTET);
 #else
     StrainOutput(iostrain,*nodalstrain,FnodeL,glstrain,1.0-ALPHA_NSTET);
 #endif
+  }
   
   //-------------------------------------------------------------------------
   // build a second B-operator from the averaged strains that are based on
@@ -807,13 +806,15 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   //-----------------------------------------------------------------------
   // stress output
   if (iostress != INPAR::STR::stress_none)
-    StressOutput(iostress,*nodalstress,stress,FnodeL,Jnode);
+  {
+    StressOutput(iostress,*nodalstress,stress,FnodeL,FnodeL.Determinant());
+  }
 
   //----------------------------------------------------- internal forces
   if (force)
   {
     Epetra_SerialDenseVector stress_epetra(::View,stress.A(),stress.Rows());
-    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);
+    force->Multiply('T','N',VnodeL,bop,stress_epetra,0.0);// bop
   }
   
   //--------------------------------------------------- elastic stiffness
@@ -822,7 +823,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     Epetra_SerialDenseMatrix cmat_epetra(::View,cmat.A(),cmat.Rows(),cmat.Rows(),cmat.Columns());
     LINALG::SerialDenseMatrix cb(6,ndofinpatch);
     cb.Multiply('N','N',1.0,cmat_epetra,bopbar,0.0);
-    stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
+    stiff->Multiply('T','N',VnodeL,bop,cb,0.0);// bop
   }
 
   //----------------------------------------------------- geom. stiffness
