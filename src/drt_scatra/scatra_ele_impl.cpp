@@ -1218,11 +1218,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         rhs_[k] = bodyforce_[k].Dot(funct_);
       }
 
-      // check for unsupported time-integration scheme
-      if (is_genalpha_) dserror("GenAlpha is not supported by ELCH!");
+      // safety check
+      if (!is_incremental_)
+        dserror("ELCH problems are always in incrmental formulation");
 
       // compute matrix and rhs for electrochemistry problem
-      CalMatElch(sys_mat,residual,frt,timefac,fac);
+      CalMatElch(sys_mat,residual,frt,timefac,alphaF,fac);
     }
 
   }
@@ -4510,6 +4511,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     Epetra_SerialDenseVector&             erhs,
     const double                          frt,
     const double                          timefac,
+    const double                          alphaF,
     const double                          fac
 )
 {
@@ -4539,6 +4541,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   // integration factors and coefficients of single terms
   double timefacfac;
   double timetaufac;
+  double rhsfac;
 
 #ifdef SUBSCALE_ENC
   int ilcs(0);
@@ -4561,13 +4564,26 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     {
       timefacfac  = fac;
       timetaufac  = taufac;
-      rhsint = rhs_[k];     // set rhs at integration point
+      rhsfac= 1.0;
+      rhsint = rhs_[k]; // set rhs at integration point
     }
     else
     {
-      timefacfac  = timefac * fac;
-      timetaufac  = timefac * taufac;
-      rhsint = hist_[k] + rhs_[k]*timefac;     // set rhs at integration point
+      if (is_genalpha_)
+      {
+        timefacfac  = timefac * fac;
+        timetaufac  = timefac * taufac;
+        rhsfac= 1.0/alphaF;
+        // in hist_ we receive the time derivative at step n+alpha_F !!
+        rhsint = (-hist_[k] + rhs_[k])*timefac;
+      }
+      else
+      {
+        timefacfac  = timefac * fac;
+        timetaufac  = timefac * taufac;
+        rhsfac= 1.0;
+        rhsint = hist_[k] + rhs_[k]*timefac; // set rhs at integration point
+      }
     }
 
     // compute gradient of scalar k at integration point
@@ -4632,7 +4648,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         emat(fvi,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*laplawf;
 
         /* electroneutrality condition */
-        emat(vi*numdofpernode_+numscal_, fui) += valence_k_fac_funct_vi*funct_(ui);
+        emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
 
         /* Stabilization term: */
         /* 0) transient stabilization */
@@ -4753,11 +4769,12 @@ if (k != ilcs)
 
     } // use2ndderiv
 
-    // ----------------------------------------------RHS
+    //----------------------------------------------------------------
+    // element right hand side vector (neg. residuum of nonlinear problem)
+    //----------------------------------------------------------------
     const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
     const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
     const double conv_eff_k = conv_ephinp_k + Dkzk_mig_ephinp_k;
-    const double funct_ephinp_k = funct_.Dot(ephinp_[k]);
     double diff_ephinp_k(0.0);
     double migrea_k(0.0);
     if (use2ndderiv_)
@@ -4796,8 +4813,12 @@ else
 #endif
     } // betterconsistency
     if (!is_stationary_) // add transient term to the residual
-      taufacresidual -= taufac*funct_ephinp_k;
-
+    {
+      if (is_genalpha_)
+        ; // do nothing (instationary term already included via rhsint)
+      else
+        taufacresidual -= taufac*conint_[k];
+    }
 #ifdef PRINT_ELCH_DEBUG
     cout<<"tau["<<k<<"]    = "<<tau_[k]<<endl;
     cout<<"taufac["<<k<<"] = "<<taufac<<endl;
@@ -4817,30 +4838,30 @@ else
       const int fvi = vi*numdofpernode_+k;
 
       // RHS source term
-      erhs[fvi] += fac*funct_(vi)*rhsint ;
+      erhs[fvi] += fac*rhsfac*funct_(vi)*rhsint ;
 
       // nonlinear migration term
-      erhs[fvi] += conint_[k]*timefacfac*diffus_valence_k*migconv_(vi);
+      erhs[fvi] += conint_[k]*rhsfac*timefacfac*diffus_valence_k*migconv_(vi);
 
       // convective term
-      erhs[fvi] -= timefacfac*funct_(vi)*conv_ephinp_k;
+      erhs[fvi] -= rhsfac*timefacfac*funct_(vi)*conv_ephinp_k;
 
       // addition to convective term for conservative form
       // (not included in residual)
       if (conservative_)
       {
         // convective term in conservative form
-        erhs[fvi] -= timefacfac*funct_(vi)*funct_ephinp_k*vdiv_;
+        erhs[fvi] -= rhsfac*timefacfac*funct_(vi)*conint_[k]*vdiv_;
       }
 
       // diffusive term
       double laplawf(0.0);
       GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-      erhs[fvi] -= timefacfac*diffus_[k]*laplawf;
+      erhs[fvi] -= rhsfac*timefacfac*diffus_[k]*laplawf;
 
       // electroneutrality condition
       // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
-      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*funct_ephinp_k;
+      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
 
       // Stabilization terms:
 
@@ -4857,10 +4878,10 @@ else
       if (k != ilcs)
       {
 #endif
-      erhs[fvi] += conv_(vi)* taufacresidual *adjust;
+      erhs[fvi] += rhsfac*conv_(vi)* taufacresidual *adjust;
       if (migrationstab_)
       {
-        erhs[fvi] +=  diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
+        erhs[fvi] +=  rhsfac*diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
       }
 #ifdef SUBSCALE_ENC
       const double myfactor = (-valence_[k]/valence_[ilcs]);
@@ -4928,9 +4949,12 @@ else
 
         // residuum on RHS:
 
-        /* Standard Galerkin terms: */
-        /* transient term */
-        erhs[fvi] -= fac_funct_vi*funct_ephinp_k;
+        if (not is_genalpha_)
+        {
+          /* Standard Galerkin terms: */
+          /* transient term */
+          erhs[fvi] -= fac_funct_vi*conint_[k];
+        }
 
       } // for vi
     } // instationary case

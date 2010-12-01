@@ -243,8 +243,11 @@ void ELCH::Algorithm::DoFluidStep()
   }
 
   // solve nonlinear Navier-Stokes system
-  FluidField().NonlinearSolve();
-  //FluidField().MultiCorrector();
+  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+    FluidField().MultiCorrector();
+  else
+    FluidField().NonlinearSolve();
+
   return;
 }
 
@@ -261,13 +264,32 @@ void ELCH::Algorithm::DoTransportStep()
     cout<<"************************\n";
   }
 
-  // transfer actual velocity fields
-  ScaTraField().SetVelocityField(
-      FluidField().Velnp(),
-      FluidField().Hist(),
-      Teuchos::null,
-      FluidField().Discretization()
-  );
+  // transfer convective velocity to scalar transport field solver
+  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  {
+    ScaTraField().SetVelocityField(
+        FluidField().Velaf(),
+        Teuchos::null, // no support for subgrid velocity at the moment!
+        Teuchos::null,
+        FluidField().Discretization());
+  }
+  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+  {
+    ScaTraField().SetVelocityField(
+        FluidField().Velaf(),
+        FluidField().Accam(),
+        Teuchos::null,
+        FluidField().Discretization());;
+  }
+  else
+  {
+    ScaTraField().SetVelocityField(
+        FluidField().Velnp(),
+        FluidField().Hist(),
+        Teuchos::null,
+        FluidField().Discretization()
+    );
+  }
 
   // solve coupled transport equations for ion concentrations and
   // electric potential

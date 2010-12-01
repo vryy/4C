@@ -288,11 +288,12 @@ public:
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)
     virtual void CalMatElch(
-        Epetra_SerialDenseMatrix&             emat,   ///< element matrix
-        Epetra_SerialDenseVector&             erhs,   ///< element rhs
-        const double                          frt,    ///< factor F/RT
-        const double                          timefac,///< time discretization factor
-        const double                          fac     ///< integration factor
+        Epetra_SerialDenseMatrix&    emat,   ///< element matrix
+        Epetra_SerialDenseVector&    erhs,   ///< element rhs
+        const double                 frt,    ///< factor F/RT
+        const double                 timefac,///< time discretization factor
+        const double                 alphaF, ///< factor for gen. alpha time integration
+        const double                 fac     ///< integration factor
     );
 
     //! calculate error compared to analytical solutions

@@ -110,9 +110,6 @@ public:
   /// general solver call for coupled algorithms (decides if linear/nonlinear internally)
   void Solve();
 
-  /// call elements to calculate system matrix and rhs and assemble
-  void AssembleMatAndRHS();
-
   /// update the solution after convergence of the nonlinear iteration.
   virtual void Update() = 0;
 
@@ -160,9 +157,6 @@ public:
 
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void PredictThermPressure() = 0;
-
-  /// compute values at intermediate time steps (required for generalized-alpha)
-  virtual void ComputeIntermediateValues() = 0;
 
   /// compute values of thermodynamic pressure at intermediate time steps
   virtual void ComputeThermPressureIntermediateValues() = 0;
@@ -409,6 +403,9 @@ protected:
   /// potential residual scaling and potential addition of Neumann terms
   void ScalingAndNeumann();
 
+  /// call elements to calculate system matrix and rhs and assemble
+  void AssembleMatAndRHS();
+
   /// solve linear system
   void LinearSolve();
 
@@ -433,6 +430,9 @@ protected:
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   /// note: VM3 solver still needs an explicit toggle vector for construction
   const Teuchos::RCP<const Epetra_Vector> DirichletToggle();
+
+  /// compute values at intermediate time steps (required for generalized-alpha)
+  virtual void ComputeIntermediateValues() = 0;
 
   /// prepare AVM3-based scale separation
   void AVM3Preparation();

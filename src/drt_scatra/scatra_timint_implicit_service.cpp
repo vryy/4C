@@ -236,6 +236,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   // time measurement: evaluate condition 'ElectrodeKinetics'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
 
+  discret_->ClearState();
+
   // create an parameter list
   ParameterList condparams;
 
@@ -243,18 +245,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   condparams.set("action","calc_elch_electrode_kinetics");
   condparams.set("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
-  condparams.set("total time",time_);
-
-  //provide displacement field in case of ALE
   condparams.set("isale",isale_);
-  if (isale_)
+  if (isale_)   //provide displacement field in case of ALE
     AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-
-  // add element parameters according to time-integration scheme
+  // add element parameters and set state vectors according to time-integration scheme
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("ElectrodeKinetics");
