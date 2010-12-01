@@ -644,7 +644,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       }
       case integrate_shape:
       {
-
         // integrate the shape function for this element
         // the results are assembled into the element vector
 
@@ -679,6 +678,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         case DRT::Element::tet4:
         {
           this->integrateShapefunction<DRT::Element::tet4>(discretization, lm, elevec1);
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+          this->integrateShapefunction<DRT::Element::quad4>(discretization, lm, elevec1);
           break;
         }
         default:
