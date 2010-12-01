@@ -2104,8 +2104,6 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
 	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
-  // average inter-crosslinker distance
-  double averagecrossdist = 0.0;
   // number of overall crosslink molecules
 	int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
 	// number of crosslinker elements
@@ -2166,7 +2164,6 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
 								}
 								deltaxij = sqrt(deltaxij);
-								averagecrossdist += deltaxij;
 
 								// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
 								int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
@@ -2190,12 +2187,10 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     }
   }
 
-  // compute average inter-crosslink distance
-  averagecrossdist /= numcombinations;
-
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
   Epetra_Vector thetabinsrow(*ddcorrrowmap_, true);
+  Epetra_Vector costhetabinsrow(*ddcorrrowmap_, true);
   // vectors holding the summed and then normed direction of all filament elements
   LINALG::Matrix<3,1> normed1, normed2, normed3;
   normed1.Clear();
@@ -2235,23 +2230,23 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
       dirvec.Scale(1/dirvec.Norm2());
 
       // transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
-      double phi = atan2(dirvec(1),dirvec(0));
+      double phi = atan2(dirvec(1),dirvec(0)) + M_PI;
       double theta = acos(dirvec(2));
-
-      // shift all negative angles by M_PI so they're counted along with their antiparallel positive values. Result phi E ]0; pi]
-      if(phi<=0.0)
-      	phi += M_PI;
 
       int phibin = (int)floor(phi/(2*M_PI)*numbins);
       int thetabin = (int)floor(theta/M_PI*numbins);
+      int costhetabin = (int)floor((dirvec(2)+1.0)/2.0*numbins);
       if(phibin == numbins)
       	phibin--;
       if(thetabin == numbins)
       	thetabin--;
+      if(costhetabin == numbins)
+      	costhetabin--;
       if(phibin<0 || thetabin<0)
       	dserror("bin smaller zero");
       phibinsrow[phibin] += 1.0;
       thetabinsrow[thetabin] += 1.0;
+      costhetabinsrow[costhetabin] += 1.0;
 
       // normed directions (via dot product with normalized 1,2,3-direction vector acos([d_x d_y d_z]*e_k, k=1,2,3))
       LINALG::Matrix<3,1> e1, e2, e3;
@@ -2312,9 +2307,6 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   std::vector<double> characlength(3,0.0);
   // threshold fraction of crosslinkers
   double pthresh = 0.9;
-  // characteristic length increment;
-  double increment;
-  increment = periodlength/50.0;
 
   // calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
   for(int i=0; i<(int)volumes.size(); i++)
@@ -2324,45 +2316,145 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   		// shperical volume
   		case 0:
   		{
-  			// start at average inter-crosslink distance
-  			double radius = averagecrossdist;
+  			bool leaveloop = false;
+  			// initial search radius
+  			double radius = periodlength/2.0;
+  			// fraction of crosslinks within test volume
+  			double pr = 0.0;
+  			// tolerance
+  			double tol = 0.02;
+  			int numiter = 1;
 
-  			// determine whether to shrink or enlarge the test volume subsequently
-  			int rcount = 0;
-  			for(int j=0; j<numcrossele; j++)
+  			// loop as long as pr has not yet reached pthresh
+  			while(!leaveloop)
   			{
-  				// get distance of crosslinker element to center of gravity
-  				LINALG::Matrix<3,1> dist = shiftedpositions[j];
-  				dist -= cog;
-  				if(dist.Norm2()<=radius)
-  					rcount++;
-  			}
-  			double pr = double(rcount)/double(numcrossele);
+					int rcount = 0;
+					// loop over crosslinker elements
+					for(int j=0; j<numcrossele; j++)
+					{
+						// get distance of crosslinker element to center of gravity
+						LINALG::Matrix<3,1> dist = shiftedpositions[j];
+						dist -= cog;
+						if(dist.Norm2()<=radius)
+							rcount++;
+					}
+					pr = double(rcount)/double(numcrossele);
 
-  			// determine increment
-  			int inc = 0;
-  			if(pr<pthresh)
-  				inc = 1;
-  			else
-  				inc = -1;
-
-  			rcount = 0;
-  			for(int j=0; j<numcrossele; j++)
-  			{
-  				// get distance of crosslinker element to center of gravity
-  				LINALG::Matrix<3,1> dist = shiftedpositions[j];
-  				dist -= cog;
-  				if(dist.Norm2()<=radius)
-  					rcount++;
+	  			numiter++;
+					// new radius
+					if(pr<pthresh-tol && pr>pthresh+tol)
+					{
+						// determine "growth direction"
+						double sign;
+						if(pr<pthresh)
+							sign = 1.0;
+						else
+							sign = -1.0;
+						radius += sign*radius/pow(2.0,(double)numiter);
+					}
+					else
+						leaveloop = true;
   			}
+  			// store characteristic length and test sphere volume
+  			characlength[0] = radius;
+  			volumes[0] = 4/3 * M_PI * pow(radius, 3);
   		}
 			break;
   		// cylindrical volume
   		case 1:
-  			break;
+  		{
+  			// cylinder
+  			bool leaveloop = false;
+  			double radius = periodlength/2.0;
+  			double length = 0.0;
+  			double pr = 0.0;
+  			double tol = 0.02;
+  			int numiter = 1;
+
+  			// get the intersections of normed1 with the cube faces
+  			std::vector<LINALG::Matrix<3,1> > intersections;
+  			std::vector<double> boundaries(2,0.0);
+  			boundaries[1] = periodlength;
+  			for(int j=0; j<2; j++)
+  				for(int k=0; k<3; k++)
+  					for(int l=0; l<3; l++)
+  						if(l>k)
+  							for(int m=0; m<3; m++)
+  								if(m!=k && m!=l)
+  								{
+  									LINALG::Matrix<3,1> currentintersection;
+  									// known intersection component
+  									currentintersection(m) = boundaries[j]+centershift[m];
+  									// get line parameter
+  									double lambdaline = (currentintersection(m)-cog(m))/normed1(m);
+  									currentintersection(k) = cog(k)+lambdaline*normed1(k);
+  									currentintersection(l) = cog(l)+lambdaline*normed1(l);
+
+  									// check if intersection lies on volume boundary
+  									if(currentintersection(k)<=periodlength+centershift[k] && currentintersection(k)>=centershift[k] &&
+  										 currentintersection(l)<=periodlength+centershift[l] && currentintersection(l)>=centershift[l])
+  										intersections.push_back(currentintersection);
+  								}
+  			LINALG::Matrix<3,1> difference = intersections[1];
+  			difference -= intersections[0];
+  			length = difference.Norm2();
+
+  			while(!leaveloop)
+				{
+					int rcount = 0;
+					// loop over crosslinker elements
+					for(int j=0; j<numcrossele; j++)
+					{
+						// get distance of crosslinker element to normed1 through center of gravity
+						// intersection line-plane
+						LINALG::Matrix<3,1> crosstocog = shiftedpositions[j];
+						crosstocog -= cog;
+
+						double numerator = 0.0;
+						double denominator = 0.0;
+						for(int k=0; k<(int)normed1.M(); k++)
+						{
+							numerator += crosstocog(k)*normed1(k);
+							denominator += normed1(k)*normed1(k);
+						}
+						double lambda = numerator/denominator;
+						// intersection and distance of crosslinker to intersection
+						LINALG::Matrix<3,1> distance;
+						for(int k=0; k<(int)distance.M(); k++)
+							distance(k) = cog(k) + lambda*normed1(k);
+						distance -= shiftedpositions[j];
+
+						if(distance.Norm2()<=radius)
+							rcount++;
+					}
+					pr = double(rcount)/double(numcrossele);
+
+					numiter++;
+					// new radius
+					if(pr<pthresh-tol && pr>pthresh+tol)
+					{
+						// determine "growth direction"
+						double sign;
+						if(pr<pthresh)
+							sign = 1.0;
+						else
+							sign = -1.0;
+						radius += sign*radius/pow(2.0,(double)numiter);
+					}
+					else
+						leaveloop = true;
+				}
+  			characlength[1] = radius;
+  			volumes[1] = M_PI*radius*radius*length;
+  		}
+			break;
   		// cuboid layer volume
   		case 2:
-  			break;
+  		{
+
+				volumes[2] = 0.0;
+  		}
+  		break;
   	}
   }
 
@@ -2370,22 +2462,25 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   Epetra_Vector crosslinksperbincol(*ddcorrcolmap_, true);
   Epetra_Vector phibinscol(*ddcorrcolmap_, true);
   Epetra_Vector thetabinscol(*ddcorrcolmap_, true);
+  Epetra_Vector costhetabinscol(*ddcorrcolmap_, true);
   Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
   crosslinksperbincol.Import(crosslinksperbinrow, importer, Insert);
   phibinscol.Import(phibinsrow, importer, Insert);
   thetabinscol.Import(thetabinsrow, importer, Insert);
+  costhetabinscol.Import(thetabinsrow, importer, Insert);
 
   // Add the processor-specific data up
   std::vector<int> crosslinksperbin(numbins, 0);
   std::vector<int> phibins(numbins, 0);
   std::vector<int> thetabins(numbins, 0);
+  std::vector<int> costhetabins(numbins, 0);
   //int total = 0;
   for(int i=0; i<numbins; i++)
     for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
     {
       crosslinksperbin[i] += (int)crosslinksperbincol[pid*numbins+i];
       phibins[i] += (int)phibinscol[pid*numbins+i];
-      thetabins[i] += (int)thetabinscol[pid*numbins+i];
+      costhetabins[i] += (int)thetabinscol[pid*numbins+i];
     }
 
   // write data to file
@@ -2396,7 +2491,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     std::stringstream histogram;
 
     for(int i=0; i<numbins; i++)
-      histogram<<i+1<<"    "<<crosslinksperbin[i]<<"    "<<phibins[i]<<"    "<<thetabins[i]<<endl;
+      histogram<<i+1<<"    "<<crosslinksperbin[i]<<"    "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<endl;
     //write content into file and close it
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
