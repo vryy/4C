@@ -1879,20 +1879,21 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 		{
 			// number of crosslink molecule bonds to filament nodes, larger GID in case of two bonds
 			bool set = false;
-			int marker = 0;
-			int largergid = -1;
+			int nodegid0 = -1;
+			int nodegid1 = -1;
 
+			// getting node gid for crosslink molecules with one bond (both active and passive, i.e. numbond={1,2})
 			for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-			{
 				if ((*crosslinkerbond_)[j][i]>-0.9 && !set)
 				{
-					marker = j;
+					nodegid0 = (int)(*crosslinkerbond_)[j][i];
 					set = true;
 				}
-				if ((int)(*crosslinkerbond_)[j][i] > largergid)
-					largergid = (int)(*crosslinkerbond_)[j][i];
-			}
+			// case: crosslinker beam element (numbond=2 AND both gid entries>-1)
+			if ((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
+				nodegid1 = (int)(*crosslinkerbond_)[1][i];
 
+			// determine crosslinker position according to bonding status (only crosslinker representations, actual crosslinker elements handled thereafter)
 			for (int j=0; j<crosslinkerpositions_->NumVectors(); j++)
 			{
 				switch ((int)(*numbond_)[i])
@@ -1904,9 +1905,7 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 					// bonding case 2: crosslink molecule attached to one filament
 					case 1:
 					{
-						int nodegid = (int)(*crosslinkerbond_)[marker][i];
-
-						DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodegid));
+						DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodegid0));
 						int dofgid = discret_.Dof(node).at(j);
 						// set current crosslink position to coordinates of node which it is attached to
 						(*crosslinkerpositions_)[j][i] = node->X()[j] + discol[discret_.DofColMap()->LID(dofgid)];
@@ -1916,13 +1915,28 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 					case 2:
 					{
 						// crosslink molecule position is set to position of the node with the larger GID
-						DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(largergid));
-						int dofgid = discret_.Dof(node).at(j);
-						(*crosslinkerpositions_)[j][i] = node->X()[j]	+ discol[discret_.DofColMap()->LID(dofgid)];
+						if(nodegid1 == -1)
+						{
+							DRT::Node *node = discret_.lColNode(discret_.NodeColMap()->LID(nodegid0));
+							int dofgid = discret_.Dof(node).at(j);
+							(*crosslinkerpositions_)[j][i] = node->X()[j]	+ discol[discret_.DofColMap()->LID(dofgid)];
+						}
 					}
 					break;
 				}
-			}// end of j-loop
+			}
+			// crosslinker position in case of an actual crosslinker element (mid position)
+			if(nodegid1 > -1)
+			{
+				DRT::Node *node0 = discret_.lColNode(discret_.NodeColMap()->LID(nodegid0));
+				DRT::Node *node1 = discret_.lColNode(discret_.NodeColMap()->LID(nodegid1));
+				for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
+				{
+					int dofgid0 = discret_.Dof(node0).at(j);
+					int dofgid1 = discret_.Dof(node1).at(j);
+					(*crosslinkerpositions_)[j][i] = (node0->X()[j]+discol[discret_.DofColMap()->LID(dofgid0)] + node1->X()[j]+discol[discret_.DofColMap()->LID(dofgid1)])/2.0;
+				}
+			}
 		}// end of i-loop
 		// check for compliance with periodic boundary conditions if existent
 		if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)

@@ -444,6 +444,9 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
       {
+        //std::ostringstream filename2;
+        //filename2 << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
+        //DDCorrOutput(dis, filename2);
         /*construct unique filename for gmsh output with two indices: the first one marking the time step number
          * and the second one marking the newton iteration number, where numbers are written with zeros in the front
          * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
@@ -2101,8 +2104,13 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
 	Epetra_Vector crosslinksperbinrow(*ddcorrrowmap_, true);
-  // number of overall independent combinations
+  // average inter-crosslinker distance
+  double averagecrossdist = 0.0;
+  // number of overall crosslink molecules
 	int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
+	// number of crosslinker elements
+	int numcrossele = (int)crosslinkerentries.size();
+  // number of overall independent combinations
   int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
   // combinations on each processor
   int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
@@ -2145,10 +2153,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 								indices[1] = j;
 
 								// shift it according to new boundary box
-								cout<<"centershift: ";
 								for(int m=0; m<(int)currpositions.M(); m++)
 								{
-									cout<<centershift[m]<<" ";
 									for(int n=0; n<(int)currpositions.N(); n++)
 									{
 										currpositions(m,n) = (*crosslinkerpositions_)[m][indices[n]];
@@ -2159,8 +2165,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 									}
 									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
 								}
-								cout<<endl;
 								deltaxij = sqrt(deltaxij);
+								averagecrossdist += deltaxij;
 
 								// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
 								int currbin = (int)floor(deltaxij/(periodlength*sqrt(3.0))*numbins);
@@ -2184,9 +2190,17 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     }
   }
 
+  // compute average inter-crosslink distance
+  averagecrossdist /= numcombinations;
+
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
   Epetra_Vector thetabinsrow(*ddcorrrowmap_, true);
+  // vectors holding the summed and then normed direction of all filament elements
+  LINALG::Matrix<3,1> normed1, normed2, normed3;
+  normed1.Clear();
+  normed2.Clear();
+  normed3.Clear();
 
   for(int i=0; i<discret_.NumMyRowElements(); i++)
   {
@@ -2217,19 +2231,16 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 
         dirvec(dof) = poscomponent1-poscomponent0;
       }
-      // normed vector
+      // normed directional vector
       dirvec.Scale(1/dirvec.Norm2());
 
-      // normed direction (via dot product with normalized z-direction vector acos([d_x d_y d_z]*[0 0 1]))
-      LINALG::Matrix<3,1> zdir;
-      zdir.Clear();
-      zdir(2) = 1.0;
-      if(dirvec.Dot(zdir)>M_PI/2.0)
-        dirvec.Scale(-1.0);
-
-      // transform into spherical coordinates (phi E [0;2pi], theta E [0; pi]) and sort into appropriate bin
-      double phi = atan2(dirvec(1),dirvec(0)) + M_PI;
+      // transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
+      double phi = atan2(dirvec(1),dirvec(0));
       double theta = acos(dirvec(2));
+
+      // shift all negative angles by M_PI so they're counted along with their antiparallel positive values. Result phi E ]0; pi]
+      if(phi<=0.0)
+      	phi += M_PI;
 
       int phibin = (int)floor(phi/(2*M_PI)*numbins);
       int thetabin = (int)floor(theta/M_PI*numbins);
@@ -2241,19 +2252,119 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
       	dserror("bin smaller zero");
       phibinsrow[phibin] += 1.0;
       thetabinsrow[thetabin] += 1.0;
+
+      // normed directions (via dot product with normalized 1,2,3-direction vector acos([d_x d_y d_z]*e_k, k=1,2,3))
+      LINALG::Matrix<3,1> e1, e2, e3;
+      LINALG::Matrix<3,1> v1=dirvec;
+      LINALG::Matrix<3,1> v2=dirvec;
+      LINALG::Matrix<3,1> v3=dirvec;
+      e1.Clear();
+      e2.Clear();
+      e3.Clear();
+      e1(0) = 1.0;
+      e2(1) = 1.0;
+      e3(2) = 1.0;
+      if(v1.Dot(e1)>M_PI/2.0)
+        v1.Scale(-1.0);
+      if(v2.Dot(e2)>M_PI/2.0)
+        v2.Scale(-1.0);
+      if(v3.Dot(e3)>M_PI/2.0)
+        v3.Scale(-1.0);
+      // dirvec added to normedvector
+      normed1 += v1;
+      normed2 += v2;
+      normed3 += v3;
   	}
   }
+  // scale to unit length
+  normed1.Scale(1/normed1.Norm2());
+  normed2.Scale(1/normed1.Norm2());
+  normed3.Scale(1/normed1.Norm2());
 
-  // calculate center of gravity for bound crosslinkers
+  // calculate center of gravity with respect to shiftedpositions for bound crosslinkers
   LINALG::Matrix<3,1> cog;
+  std::vector<LINALG::Matrix<3,1> > shiftedpositions;
   cog.Clear();
-  for(int i=0; i<(int)crosslinkerentries.size(); i++)
-  	for(int j=0; j<(int)cog.M(); j++)
-  		cog(j) += (*crosslinkerpositions_)[j][crosslinkerentries[i]];
+	// shift positions according to new center point (raster point)
+  for(int i=0; i<numcrossele; i++)
+  {
+    LINALG::Matrix<3,1> currposition;
+  	for(int j=0; j<(int)currposition.M(); j++)
+  	{
+			currposition(j) = (*crosslinkerpositions_)[j][crosslinkerentries[i]];
+			if (currposition(j) > periodlength+centershift[j])
+				currposition(j) -= periodlength;
+			if (currposition(j) < 0.0+centershift[j])
+				currposition(j) += periodlength;
 
-  if(crosslinkerentries.size() != 0)
-  	cog.Scale(1/(double)crosslinkerentries.size());
+  		cog(j) += currposition(j);
+  	}
+  	shiftedpositions.push_back(currposition);
+  }
 
+  if(numcrossele != 0)
+  	cog.Scale(1/(double)numcrossele);
+  //cout<<"COG: "<<cog(0)<<", "<<cog(1)<<", "<<cog(2)<<endl;
+
+  // vector for test volumes (V[0]-sphere, V[1]-cylinder, V[2]-layer/homogenous network)
+  std::vector<double> volumes(3,0.0);
+  // characteristic lengths for Volumes
+  std::vector<double> characlength(3,0.0);
+  // threshold fraction of crosslinkers
+  double pthresh = 0.9;
+  // characteristic length increment;
+  double increment;
+  increment = periodlength/50.0;
+
+  // calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
+  for(int i=0; i<(int)volumes.size(); i++)
+  {
+  	switch(i)
+  	{
+  		// shperical volume
+  		case 0:
+  		{
+  			// start at average inter-crosslink distance
+  			double radius = averagecrossdist;
+
+  			// determine whether to shrink or enlarge the test volume subsequently
+  			int rcount = 0;
+  			for(int j=0; j<numcrossele; j++)
+  			{
+  				// get distance of crosslinker element to center of gravity
+  				LINALG::Matrix<3,1> dist = shiftedpositions[j];
+  				dist -= cog;
+  				if(dist.Norm2()<=radius)
+  					rcount++;
+  			}
+  			double pr = double(rcount)/double(numcrossele);
+
+  			// determine increment
+  			int inc = 0;
+  			if(pr<pthresh)
+  				inc = 1;
+  			else
+  				inc = -1;
+
+  			rcount = 0;
+  			for(int j=0; j<numcrossele; j++)
+  			{
+  				// get distance of crosslinker element to center of gravity
+  				LINALG::Matrix<3,1> dist = shiftedpositions[j];
+  				dist -= cog;
+  				if(dist.Norm2()<=radius)
+  					rcount++;
+  			}
+  		}
+			break;
+  		// cylindrical volume
+  		case 1:
+  			break;
+  		// cuboid layer volume
+  		case 2:
+  			break;
+  	}
+  }
 
   // Export
   Epetra_Vector crosslinksperbincol(*ddcorrcolmap_, true);
@@ -2311,8 +2422,7 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 		if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
 			crosslinkerentries->push_back(i);
 
-	//if(!discret_.Comm().MyPID())
-	//	cout<<"crosslinkers: "<<crosslinkerentries->size()<<endl;
+	int numcrossele = (int)crosslinkerentries->size();
 
 	// determine the new center of the box
 	for(int i=0; i<numrasterpoints; i++)
@@ -2335,7 +2445,7 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 					currentcentershift[l] = currentrasterpoint[l]-periodlength/2.0;
 
 				// calculate average distance of crosslinker elements to raster point
-				for(int l=0; l<(int)crosslinkerentries->size(); l++)
+				for(int l=0; l<numcrossele; l++)
 				{
 					// get the crosslinker position in question and shift it according to new boundary box center
 					std::vector<double> currcrosslinkerpos(3,0.0);
@@ -2368,6 +2478,18 @@ void StatMechManager::DDCorrShift(std::vector<double>* boxcenter, std::vector<do
 		//cout<<"Box Center(2): "<<(*boxcenter)[0]<<", "<<(*boxcenter)[1]<<", "<<(*boxcenter)[2]<<endl;
 	return;
 }//StatMechManager::DDCorrShift()
+
+/*------------------------------------------------------------------------------*
+ | Selects raster point with the smallest average distance to all crosslinker   |
+ | elements, makes it the new center of the boundary box and shifts crosslinker |
+ | positions.                                                                   |
+ |                                                        (public) mueller 11/10|
+ *------------------------------------------------------------------------------*/
+int StatMechManager::DDCorrCurrentStructure(std::vector<double>* centershift, std::vector<int>* crosslinkerentries)
+{
+	int structurenumber = 0;
+	return structurenumber;
+}
 
 /*----------------------------------------------------------------------*
  | check the binding mode of a crosslinker        (public) mueller 07/10|

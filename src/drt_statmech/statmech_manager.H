@@ -212,6 +212,9 @@ protected:
 	//! \brief Selects raster point with the smallest average distance to all crosslinker elements and makes it the new center of the boundary box
 	void DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift, std::vector<int>* crosslinkerentries);
 
+	//! \brief determine the current network structure
+	int DDCorrCurrentStructure(std::vector<double>* centershift, std::vector<int>* crosslinkerentries);
+
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);
 
