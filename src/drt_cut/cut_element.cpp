@@ -23,6 +23,28 @@ void GEO::CUT::Element::FillComplete( Mesh & mesh )
 bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
 {
   bool cut = false;
+
+  // find nodal points inside the element
+  const std::vector<Node*> side_nodes = side.Nodes();
+  for ( std::vector<Node*>::const_iterator i=side_nodes.begin(); i!=side_nodes.end(); ++i )
+  {
+    Node * n = *i;
+    Point * p = n->point();
+
+    if ( not p->IsCut( this ) )
+    {
+      if ( PointInside( p ) )
+      {
+        p->AddElement( this );
+        cut = true;
+      }
+    }
+    else
+    {
+      cut = true;
+    }
+  }
+
   const std::vector<Side*> & sides = Sides();
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
@@ -37,6 +59,26 @@ bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
     if ( FindCutLines( mesh, *s, side ) )
     {
       cut = true;
+    }
+  }
+
+  // find lines inside the element
+  const std::vector<Edge*> & side_edges = side.Edges();
+  for ( std::vector<Edge*>::const_iterator i=side_edges.begin(); i!=side_edges.end(); ++i )
+  {
+    Edge * e = *i;
+    std::vector<Point*> line;
+    e->CutPointsInside( this, line );
+    std::vector<Point*>::iterator i = line.begin();
+    if ( i!=line.end() )
+    {
+      Point * bp = *i;
+      for ( ++i; i!=line.end(); ++i )
+      {
+        Point * ep = *i;
+        mesh.NewLine( bp, ep, &side, NULL, this );
+        bp = ep;
+      }
     }
   }
 
@@ -70,13 +112,14 @@ void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
 {
   if ( facets_.size()==0 )
   {
-    for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
+    const std::vector<Side*> & sides = Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side & side = **i;
       SideElementCutFilter filter( &side, this );
       side.MakeOwnedSideFacets( mesh, filter, facets_ );
     }
-    for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side & side = **i;
       side.MakeSideCutFacets( mesh, this, facets_ );
@@ -323,6 +366,133 @@ bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
   }
 
   return false;
+}
+
+void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
+{
+  for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
+  {
+    Side * side = *i;
+    LinearSide * ls = dynamic_cast<LinearSide*>( side );
+    if ( ls==NULL )
+    {
+      throw std::runtime_error( "linear element needs linear sides" );
+    }
+
+    for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+    {
+      Side * other = *i;
+      LinearSide * ls_other = dynamic_cast<LinearSide*>( other );
+      if ( ls_other==NULL )
+      {
+        throw std::runtime_error( "linear element needs linear side cuts" );
+      }
+      ls->GetCutPoints( this, *ls_other, cut_points );
+    }
+  }
+}
+
+void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
+{
+  std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->GetLines( lines );
+  }
+
+  // Alle Facets einsammeln, die sich zu zweit eine Linie teilen. Jede Seite
+  // nur ein Facet. Das sollte im Element eindeutig sein. Damit sollten die
+  // Volumina erstellt werden können. Löcher sind noch ein extra Thema.
+
+  std::set<Facet*> facets_done;
+
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( facets_done.count( f )==0 and OwnedSide( f->ParentSide() ) )
+    {
+      std::stack<Facet*> new_facets;
+      std::set<Facet*> collected_facets;
+      std::set<Side*> sides_done;
+
+      new_facets.push( f );
+
+      while ( not new_facets.empty() )
+      {
+        Facet * f = new_facets.top();
+        new_facets.pop();
+
+        collected_facets.insert( f );
+        sides_done.insert( f->ParentSide() );
+        std::map<std::pair<Point*, Point*>, std::set<Facet*> > facet_lines;
+        f->GetLines( facet_lines );
+
+        for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=facet_lines.begin();
+              i!=facet_lines.end();
+              ++i )
+        {
+          const std::pair<Point*, Point*> & line = i->first;
+          std::set<Facet*> & facets = lines[line];
+
+          Facet * found_facet = NULL;
+          for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+          {
+            Facet * f = *i;
+            if ( collected_facets.count( f )==0 and
+                 ( not OwnedSide( f->ParentSide() ) or
+                   sides_done.count( f->ParentSide() )==0 ) )
+            {
+              if ( found_facet==NULL )
+              {
+                found_facet = f;
+              }
+              else
+              {
+                // undecided. Ignore all matches.
+                found_facet = NULL;
+                break;
+              }
+            }
+          }
+          if ( found_facet!=NULL )
+          {
+            new_facets.push( found_facet );
+          }
+        }
+      }
+
+      // test for open lines in collected_facets
+
+      std::map<std::pair<Point*, Point*>, std::set<Facet*> > volume_lines;
+      for ( std::set<Facet*>::iterator i=collected_facets.begin();
+            i!=collected_facets.end();
+            ++i )
+      {
+        Facet * f = *i;
+        f->GetLines( volume_lines );
+      }
+
+      for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=volume_lines.begin();
+            i!=volume_lines.end();
+            ++i )
+      {
+        std::set<Facet*> & facets = i->second;
+        if ( facets.size()!=2 )
+        {
+          throw std::runtime_error( "not properly closed line in volume cell" );
+        }
+      }
+
+      // Create new cell and remember done stuff!
+
+      std::copy( collected_facets.begin(),
+                 collected_facets.end(),
+                 std::inserter( facets_done, facets_done.begin() ) );
+
+      cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
+    }
+  }
 }
 
 bool GEO::CUT::QuadraticElement::Cut( Mesh & mesh, LinearSide & side )

@@ -160,24 +160,24 @@ bool Position<elementtype,numNodesElement>::WithinLimits()
   case DRT::Element::hex8:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
-    return ( xsi_( 0 ) >= -1-RELAXEDTOL and xsi_( 1 ) >= -1-RELAXEDTOL and xsi_( 2 ) >= -1-RELAXEDTOL and
-             xsi_( 0 ) <=  1+RELAXEDTOL and xsi_( 1 ) <=  1+RELAXEDTOL and xsi_( 2 ) <=  1+RELAXEDTOL );
+    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
+             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE );
   case DRT::Element::tet4:
   case DRT::Element::tet10:
-    return ( xsi_( 0 ) >=   -RELAXEDTOL and xsi_( 1 ) >=   -RELAXEDTOL and xsi_( 2 ) >=   -RELAXEDTOL and
-             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+RELAXEDTOL );
+    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
+             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+TOLERANCE );
   case DRT::Element::pyramid5:
-    return ( xsi_( 0 ) >= -1-RELAXEDTOL and xsi_( 1 ) >= -1-RELAXEDTOL and xsi_( 2 ) >=   -RELAXEDTOL and
-             xsi_( 0 ) <=  1+RELAXEDTOL and xsi_( 1 ) <=  1+RELAXEDTOL and
+    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
+             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and
              ( fabs( xsi_( 0 ) ) > fabs( xsi_( 1 ) ) ?
-               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+RELAXEDTOL ) :
-               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+RELAXEDTOL ) )
+               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+TOLERANCE ) :
+               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+TOLERANCE ) )
       );
   case DRT::Element::wedge6:
   case DRT::Element::wedge15:
-    return ( xsi_( 0 ) >=   -RELAXEDTOL and xsi_( 1 ) >=   -RELAXEDTOL and xsi_( 2 ) >= -1-RELAXEDTOL and
-             xsi_( 2 ) <=  1+RELAXEDTOL and
-             xsi_( 0 )+xsi_( 1 ) <= 1+RELAXEDTOL );
+    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
+             xsi_( 2 ) <=  1+TOLERANCE and
+             xsi_( 0 )+xsi_( 1 ) <= 1+TOLERANCE );
   default:
     throw std::runtime_error( "unsupported element type" );
   }

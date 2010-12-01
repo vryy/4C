@@ -79,6 +79,11 @@ public:
     return cut_sides_.count( s )>0;
   }
 
+  bool IsCut( Element* s )
+  {
+    return cut_elements_.count( s )>0;
+  }
+
   void Coordinates( double * x )
   {
     std::copy( x_, x_+3, x );
@@ -118,7 +123,8 @@ public:
 
   void Print( std::ostream & stream=std::cout )
   {
-    stream << pid_ << ": ("
+    stream << "("
+           << pid_ << "; "
            << x_[0] << ","
            << x_[1] << ","
            << x_[2] << ")";

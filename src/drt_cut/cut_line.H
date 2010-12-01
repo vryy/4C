@@ -14,20 +14,9 @@ public:
 
   Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 
-  void AddSide( Side * cut_side )
-  {
-    p1_->AddSide( cut_side );
-    p2_->AddSide( cut_side );
-    cut_sides_.insert( cut_side );
-  }
+  void AddSide( Side * cut_side );
 
-  void AddElement( Element * cut_element )
-  {
-    if ( cut_element!=NULL )
-    {
-      cut_elements_.insert( cut_element );
-    }
-  }
+  void AddElement( Element * cut_element );
 
   bool IsCut( Side* s1, Side* s2 )
   {

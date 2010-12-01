@@ -48,6 +48,22 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
 #endif
 }
 
+void GEO::CUT::Line::AddSide( Side * cut_side )
+{
+  p1_->AddSide( cut_side );
+  p2_->AddSide( cut_side );
+  cut_sides_.insert( cut_side );
+  cut_side->AddLine( this );
+}
+
+void GEO::CUT::Line::AddElement( Element * cut_element )
+{
+  if ( cut_element!=NULL )
+  {
+    cut_elements_.insert( cut_element );
+  }
+}
+
 bool GEO::CUT::Line::IsInternalCut( Side * side )
 {
   return cut_sides_.count( side )>0 and not side->OnEdge( this );

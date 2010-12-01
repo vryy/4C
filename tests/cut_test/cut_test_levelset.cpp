@@ -1,7 +1,7 @@
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
-#include "../../src/drt_cut/cut_levelsetintersection.H"
+#include "../drt_cut/cut_mesh.H"
+#include "../drt_cut/cut_element.H"
+#include "../drt_cut/cut_levelsetintersection.H"
 #include "cut_test_utils.H"
 
 void test_ls_hex8_simple()

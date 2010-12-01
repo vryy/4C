@@ -98,8 +98,6 @@ void GEO::CUT::Facet::GenerateTetgen( Mesh & mesh, LinearElement * element, tetg
   switch ( position_ )
   {
   case Point::undecided:
-    // There is no node (point) without cut side in this facet. There are no
-    // dofs anyway, so assume this is on the inside.
     throw std::runtime_error( "undecided facet position" );
   case Point::inside:
     if ( sid > -1 )
@@ -275,7 +273,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
     b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
     b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
 
-    if ( b3.Norm2() > MINIMALTOL )
+    if ( b3.Norm2() > PLANARTOL )
     {
       found = true;
       break;
@@ -313,8 +311,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
       throw std::runtime_error( "failed to find point position" );
     }
 
-    if ( fabs( x2( 2 ) ) > MINIMALTOL )
-    //if ( fabs( x2( 2 )*det ) > TOLERANCE )
+    if ( fabs( x2( 2 ) ) > PLANARTOL )
     {
       // there is one point that is not within the plain
 
@@ -495,3 +492,40 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
     }
   }
 }
+
+void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines )
+{
+  unsigned length = points_.size();
+  for ( unsigned i=0; i<length; ++i )
+  {
+    unsigned j = ( i+1 ) % length;
+
+    Point * p1 = points_[i];
+    Point * p2 = points_[j];
+
+    if ( p1->Id() < p2->Id() )
+    {
+      lines[std::make_pair( p1, p2 )].insert( this );
+    }
+    else
+    {
+      lines[std::make_pair( p2, p1 )].insert( this );
+    }
+  }
+}
+
+// DRT::Element::DiscretizationType GEO::CUT::Facet::Shape()
+// {
+//   if ( holes_.size()==0 )
+//   {
+//     if ( points_.size()==3 )
+//     {
+//       return DRT::Element::tri3;
+//     }
+//     if ( points_.size()==4 )
+//     {
+//       return DRT::Element::quad4;
+//     }
+//   }
+//   return DRT::Element::dis_none;
+// }

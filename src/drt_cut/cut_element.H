@@ -11,6 +11,7 @@ namespace GEO
 namespace CUT
 {
   class CellGenerator;
+  class VolumeCell;
 
 class Element
 {
@@ -123,6 +124,10 @@ public:
 
   virtual bool OnSide( const std::vector<Point*> & facet_points );
 
+  void GetCutPoints( std::set<Point*> & cut_points );
+
+  void MakeVolumeCells( Mesh & mesh );
+
 private:
 
   bool FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other );
@@ -132,6 +137,8 @@ private:
   std::set<Side*> cut_faces_;
 
   std::set<Facet*> facets_;
+
+  std::set<VolumeCell*> cells_;
 };
 
 

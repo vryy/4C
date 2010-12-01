@@ -150,6 +150,8 @@ public:
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line ) = 0;
 
+  virtual void CutPointsInside( Element * element, std::vector<Point*> & line ) = 0;
+
   virtual bool IsCut( Side * side ) = 0;
 
   Node* BeginNode() { return nodes_.front(); }
@@ -210,6 +212,8 @@ public:
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
+  virtual void CutPointsInside( Element * element, std::vector<Point*> & line );
+
   virtual bool IsCut( Side * side );
 
   void Coordinates( LINALG::Matrix<3, 2> & xyze_lineElement )
@@ -255,6 +259,8 @@ public:
   virtual void CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points );
 
   virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
+
+  virtual void CutPointsInside( Element * element, std::vector<Point*> & line );
 
   virtual bool IsCut( Side * side );
 

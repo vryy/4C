@@ -142,6 +142,7 @@ bool GEO::CUT::LineSegment::ClosedOnEdge( Mesh & mesh, Element * element, Side *
       }
       else
       {
+#if 1
         // look for a common node within the element
 
         // If there are more than two nodes within the element, we do not find it.
@@ -194,6 +195,7 @@ bool GEO::CUT::LineSegment::ClosedOnEdge( Mesh & mesh, Element * element, Side *
             }
           }
         }
+#endif
       }
     }
   }

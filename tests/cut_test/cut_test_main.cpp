@@ -1,6 +1,6 @@
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
+#include "../drt_cut/cut_mesh.H"
+#include "../drt_cut/cut_element.H"
 #include "cut_test_utils.H"
 
 //#include <boost/program_options.hpp>
@@ -37,6 +37,9 @@ void test_hex8_quad4_cut();
 void test_hex8_quad4_gedreht();
 void test_hex8_hex8_durchstoss();
 void test_hex8_hex8_onside();
+void test_hex8_hex8_internal();
+void test_hex8_hex8_sideintersection();
+void test_hex8_hex8_inside();
 void test_hex8_quad4_schnitt();
 void test_hex8_quad4_touch4();
 void test_hex8_quad4_touch5();
@@ -97,6 +100,9 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_gedreht"] = test_hex8_quad4_gedreht;
   functable["hex8_hex8_durchstoss"] = test_hex8_hex8_durchstoss;
   functable["hex8_hex8_onside"] = test_hex8_hex8_onside;
+  functable["hex8_hex8_internal"] = test_hex8_hex8_internal;
+  functable["hex8_hex8_sideintersection"] = test_hex8_hex8_sideintersection;
+  functable["hex8_hex8_inside"] = test_hex8_hex8_inside;
   //functable["hex8_quad4_schnitt"] = test_hex8_quad4_schnitt;
   functable["hex8_quad4_touch4"] = test_hex8_quad4_touch4;
   functable["hex8_quad4_touch5"] = test_hex8_quad4_touch5;

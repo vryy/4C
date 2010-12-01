@@ -215,9 +215,9 @@ public:
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   {
-    if ( fabs( s     ) < TOLERANCE ) edges.push_back( Edges()[0] );
-    if ( fabs( r+s-1 ) < TOLERANCE ) edges.push_back( Edges()[1] );
-    if ( fabs( r     ) < TOLERANCE ) edges.push_back( Edges()[2] );
+    if ( fabs( s     ) < MINIMALTOL ) edges.push_back( Edges()[0] );
+    if ( fabs( r+s-1 ) < MINIMALTOL ) edges.push_back( Edges()[1] );
+    if ( fabs( r     ) < MINIMALTOL ) edges.push_back( Edges()[2] );
   }
 
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
@@ -247,10 +247,10 @@ public:
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   {
-    if ( fabs( s+1 ) < TOLERANCE ) edges.push_back( Edges()[0] );
-    if ( fabs( r-1 ) < TOLERANCE ) edges.push_back( Edges()[1] );
-    if ( fabs( s-1 ) < TOLERANCE ) edges.push_back( Edges()[2] );
-    if ( fabs( r+1 ) < TOLERANCE ) edges.push_back( Edges()[3] );
+    if ( fabs( s+1 ) < MINIMALTOL ) edges.push_back( Edges()[0] );
+    if ( fabs( r-1 ) < MINIMALTOL ) edges.push_back( Edges()[1] );
+    if ( fabs( s-1 ) < MINIMALTOL ) edges.push_back( Edges()[2] );
+    if ( fabs( r+1 ) < MINIMALTOL ) edges.push_back( Edges()[3] );
   }
 
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );

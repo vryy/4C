@@ -1,6 +1,6 @@
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_intersection.H"
+#include "../drt_cut/cut_mesh.H"
+#include "../drt_cut/cut_intersection.H"
 #include "cut_test_utils.H"
 
 void test_unit_intersection_touch()

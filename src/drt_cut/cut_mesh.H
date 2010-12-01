@@ -29,12 +29,14 @@ class Side;
 class LinearSide;
 class LevelSetSide;
 class Element;
+class LinearElement;
 
 class PointPool;
 
 class Point;
 class Line;
 class Facet;
+class VolumeCell;
 
 /// cell generator callback
 class CellGenerator
@@ -101,6 +103,10 @@ public:
 
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
+  VolumeCell* NewVolumeCell( const std::set<Facet*> & facets,
+                             const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+                             LinearElement * element );
+
   void SelfCut();
 
   void Cut( Mesh & mesh, std::set<Element*> & elements_done );
@@ -158,6 +164,7 @@ private:
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
 
+  bool setup_;
   double norm_;
   Teuchos::RCP<PointPool> pp_;
   BoundingBox bb_;
@@ -166,6 +173,7 @@ private:
   //std::list<Teuchos::RCP<Point> > points_;
   std::list<Teuchos::RCP<Line > > lines_;
   std::list<Teuchos::RCP<Facet> > facets_;
+  std::list<Teuchos::RCP<VolumeCell> > cells_;
 
   std::map<int, Teuchos::RCP<Node> > nodes_;
   std::map<std::set<int>, Teuchos::RCP<Edge> > edges_;

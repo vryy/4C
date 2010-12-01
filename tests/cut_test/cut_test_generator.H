@@ -1,7 +1,7 @@
 #ifndef CUT_TEST_GENERATOR_H
 #define CUT_TEST_GENERATOR_H
 
-#include "../../src/drt_cut/cut_mesh.H"
+#include "../drt_cut/cut_mesh.H"
 
 class OutputGenerator : public GEO::CUT::CellGenerator
 {

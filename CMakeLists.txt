@@ -1212,6 +1212,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
   src/drt_cut/cut_facet.cpp
+  src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_levelsetintersection.cpp
   src/drt_cut/cut_levelsetside.cpp
   src/drt_cut/cut_line.cpp
@@ -1224,6 +1225,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
   src/drt_cut/cut_tetcutgenerator.cpp
+  src/drt_cut/cut_volumecell.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp

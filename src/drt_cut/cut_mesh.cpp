@@ -15,9 +15,11 @@
 #include "cut_element.H"
 #include "cut_facet.H"
 #include "cut_levelsetside.H"
+#include "cut_volumecell.H"
 
 GEO::CUT::Mesh::Mesh( double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
-  : norm_( norm ),
+  : setup_( true ),
+    norm_( norm ),
     pp_( pp ),
     cutmesh_( cutmesh )
 {
@@ -182,6 +184,8 @@ void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
 
 void GEO::CUT::Mesh::FillComplete()
 {
+  setup_ = false;
+
   // make a local copy of me list of elements since the main list might change
   // inside the fill loop.
 
@@ -660,7 +664,13 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
 GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
 {
   bb_.AddPoint( x );
-  return pp_->NewPoint( x, cut_edge, cut_side );
+  Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
+#if 0
+  std::cout << "Mesh::NewPoint: ";
+  p->Print();
+  std::cout << "\n";
+#endif
+  return p;
 }
 
 GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element )
@@ -675,11 +685,13 @@ GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1,
   {
     line = new Line( p1, p2, cut_side1, cut_side2, cut_element );
     lines_.push_back( Teuchos::rcp( line ) );
-//     std::cout << "NewLine: ";
-//     p1->Print();
-//     std::cout << "--";
-//     p2->Print();
-//     std::cout << "\n";
+#if 0
+    std::cout << "Mesh::NewLine: ";
+    p1->Print();
+    std::cout << "--";
+    p2->Print();
+    std::cout << "\n";
+#endif
   }
   else
   {
@@ -697,7 +709,26 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
 {
   Facet* f = new Facet( *this, points, side, cutsurface );
   facets_.push_back( Teuchos::rcp( f ) );
+#if 0
+  std::cout << "Mesh::NewFacet: ";
+  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+  {
+    Point * p = *i;
+    p->Print();
+    std::cout << " ";
+  }
+  std::cout << "\n";
+#endif
   return f;
+}
+
+GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & facets,
+                                                     const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+                                                     LinearElement * element )
+{
+  VolumeCell * c = new VolumeCell( facets, volume_lines, element );
+  cells_.push_back( Teuchos::rcp( c ) );
+  return c;
 }
 
 void GEO::CUT::Mesh::SelfCut()
@@ -848,6 +879,20 @@ void GEO::CUT::Mesh::FindNodePositions()
   {
     Element & e = *i->second;
     e.FindNodePositions();
+  }
+
+  // If there are any undecided facets left, those should be outside. This can
+  // only happen in test cases where there is no edge cut to determine a
+  // genuine facet position.
+  for ( std::list<Teuchos::RCP<Facet> >::iterator i=facets_.begin();
+        i!=facets_.end();
+        ++i )
+  {
+    Facet * f = &**i;
+    if ( f->Position()==Point::undecided )
+    {
+      f->Position( Point::outside );
+    }
   }
 }
 

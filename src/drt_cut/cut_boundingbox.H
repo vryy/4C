@@ -6,6 +6,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "cut_tolerance.H"
 
 namespace GEO
 {
@@ -67,7 +68,7 @@ private:
 
   bool InBetween( double norm, double smin, double smax, double omin, double omax ) const
   {
-    double tol = 1e-7*norm;
+    double tol = BOXOVERLAP*norm;
     return ( ( omax > smin - tol and omin < smax + tol ) or
              ( smax > omin - tol and smin < omax + tol ) );
   }

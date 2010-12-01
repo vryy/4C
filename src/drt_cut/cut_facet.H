@@ -11,6 +11,8 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+// #include "../drt_lib/drt_element.H"
+
 #include "cut_tetgen.H"
 #include "cut_point.H"
 #include "cut_line.H"
@@ -41,6 +43,8 @@ public:
   }
 
   int SideId();
+
+  Side* ParentSide() const { return parentside_; }
 
   void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
@@ -90,6 +94,10 @@ public:
   Point::PointPosition Position() const { return position_; }
 
   void Position( Point::PointPosition p );
+
+  void GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
+
+//   DRT::Element::DiscretizationType Shape();
 
 private:
 

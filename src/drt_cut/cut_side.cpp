@@ -87,8 +87,6 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
     if ( reverse_cuts.size()==1 )
     {
       Line * l = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, element );
-      AddLine( l );
-      other.AddLine( l );
       return true;
     }
     else if ( reverse_cuts.size()==0 )
@@ -106,8 +104,6 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
     // The normal case. A straight cut.
     std::vector<Point*> c( cuts.begin(), cuts.end() );
     Line * l = mesh.NewLine( c[0], c[1], this, &other, element );
-    AddLine( l );
-    other.AddLine( l );
     return true;
   }
   default:
@@ -125,8 +121,6 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
       {
         unsigned j = ( i+1 ) % nodes.size();
         Line* l = mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, element );
-        AddLine( l );
-        other.AddLine( l );
       }
       return true;
     }
@@ -198,7 +192,8 @@ void GEO::CUT::LinearSide::CreateLineSegmentList( Mesh & mesh,
 
   while ( cut_lines.size() )
   {
-    segments.push_back( Teuchos::rcp( new LineSegment( mesh, element, this, cut_lines, inner ) ) );
+    LineSegment * ls = new LineSegment( mesh, element, this, cut_lines, inner );
+    segments.push_back( Teuchos::rcp( ls ) );
   }
 }
 
@@ -449,7 +444,7 @@ GEO::CUT::Node * GEO::CUT::Side::OnNode( const LINALG::Matrix<3,1> & x )
     Node * n = *i;
     n->Coordinates( nx.A() );
     nx.Update( -1, x, 1 );
-    if ( nx.Norm2() < RELAXEDTOL )
+    if ( nx.Norm2() < MINIMALTOL )
     {
       return n;
     }

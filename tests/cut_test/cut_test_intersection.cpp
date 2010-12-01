@@ -3,8 +3,8 @@
 
 #include "cut_test_utils.H"
 
-#include "../../src/drt_cut/cut_meshintersection.H"
-#include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_cut/cut_meshintersection.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 void test_hex8_quad8_mesh_many()
 {

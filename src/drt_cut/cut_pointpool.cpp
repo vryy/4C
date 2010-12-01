@@ -2,9 +2,9 @@
 #include "cut_pointpool.H"
 #include "cut_tolerance.H"
 
-GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
+GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {
-  Teuchos::RCP<Point> p = GetPoint( x, cut_edge, cut_side );
+  Teuchos::RCP<Point> p = GetPoint( x, cut_edge, cut_side, tolerance );
   if ( p==Teuchos::null )
   {
     p = CreatePoint( points_.size(), x, cut_edge, cut_side );
@@ -18,13 +18,13 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_e
   return &*p;
 }
 
-Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_edge, Side * cut_side )
+Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {
   if ( not IsLeaf() )
   {
     for ( int i=0; i<8; ++i )
     {
-      Teuchos::RCP<Point> p = nodes_[i]->GetPoint( x, cut_edge, cut_side );
+      Teuchos::RCP<Point> p = nodes_[i]->GetPoint( x, cut_edge, cut_side, tolerance );
       if ( p!=Teuchos::null )
       {
         return p;
@@ -36,13 +36,15 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x,
     LINALG::Matrix<3,1> px( x );
     LINALG::Matrix<3,1> nx;
 
+    double tol = tolerance*norm_;
+
     for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
 
       p->Coordinates( nx.A() );
       nx.Update( -1, px, 1 );
-      if ( nx.Norm2() < MINIMALTOL*norm_ )
+      if ( nx.Norm2() < tol )
       {
         if ( cut_edge!=NULL )
         {

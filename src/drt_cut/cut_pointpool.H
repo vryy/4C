@@ -25,7 +25,7 @@ public:
 
   OctTreeNode( double norm ) : norm_( norm ) {}
 
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
   unsigned size() const { return points_.size(); }
 
@@ -41,7 +41,7 @@ public:
 
 private:
 
-  Teuchos::RCP<Point> GetPoint( const double * x, Edge * cut_edge, Side * cut_side );
+  Teuchos::RCP<Point> GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
   Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side );
 
@@ -66,8 +66,8 @@ public:
 
   explicit PointPool( double norm=1 ) : tree_( norm ) {}
 
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
-  { return tree_.NewPoint( x, cut_edge, cut_side ); }
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
+  { return tree_.NewPoint( x, cut_edge, cut_side, tolerance ); }
 
   unsigned size() const { return tree_.size(); }
 

@@ -1,6 +1,6 @@
 
-#include "../../src/drt_cut/cut_mesh.H"
-#include "../../src/drt_cut/cut_element.H"
+#include "../drt_cut/cut_mesh.H"
+#include "../drt_cut/cut_element.H"
 #include "cut_test_utils.H"
 
 GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
@@ -1203,6 +1203,289 @@ void test_hex8_hex8_onside()
 
   hex8_1->MakeFacets( mesh );
   hex8_1->FindNodePositions();
+
+  hex8_1->GenerateTetgen( mesh, NULL );
+}
+
+void test_hex8_hex8_internal()
+{
+  GEO::CUT::Mesh mesh;
+
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+
+  xyze( 0, 0 ) = -1.5;
+  xyze( 1, 0 ) = -0.5;
+  xyze( 2, 0 ) = 0.707107;
+
+  xyze( 0, 1 ) = -0.5;
+  xyze( 1, 1 ) = -1.5;
+  xyze( 2, 1 ) = -0.707107;
+
+  xyze( 0, 2 ) = -0.207107;
+  xyze( 1, 2 ) = 0.207107;
+  xyze( 2, 2 ) = -1.70711;
+
+  xyze( 0, 3 ) = -1.20711;
+  xyze( 1, 3 ) = 1.20711;
+  xyze( 2, 3 ) = -0.292893;
+
+  xyze( 0, 4 ) = 0.207107;
+  xyze( 1, 4 ) = -0.207107;
+  xyze( 2, 4 ) = 1.70711;
+
+  xyze( 0, 5 ) = 1.20711;
+  xyze( 1, 5 ) = -1.20711;
+  xyze( 2, 5 ) = 0.292893;
+
+  xyze( 0, 6 ) = 1.5;
+  xyze( 1, 6 ) = 0.5;
+  xyze( 2, 6 ) = -0.707107;
+
+  xyze( 0, 7 ) = 0.5;
+  xyze( 1, 7 ) = 1.5;
+  xyze( 2, 7 ) = 0.707107;
+
+  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+
+  mesh.Status();
+
+  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
+        i!=hex8_2->Sides().end();
+        ++i )
+  {
+    GEO::CUT::Side * s = *i;
+    s->SetId( 1 );
+    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  }
+
+  mesh.Status();
+
+  hex8_1->MakeFacets( mesh );
+  hex8_1->FindNodePositions();
+
+  hex8_1->GenerateTetgen( mesh, NULL );
+}
+
+void test_hex8_hex8_sideintersection()
+{
+  GEO::CUT::Mesh mesh;
+
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+
+  xyze( 0, 0 ) =  0.5;
+  xyze( 1, 0 ) = -0.5;
+  xyze( 2, 0 ) = -0.5;
+
+  xyze( 0, 1 ) = 1.5;
+  xyze( 1, 1 ) = -0.5;
+  xyze( 2, 1 ) = -0.5;
+
+  xyze( 0, 2 ) = 1.5;
+  xyze( 1, 2 ) = 0.5;
+  xyze( 2, 2 ) = -0.5;
+
+  xyze( 0, 3 ) = 0.5;
+  xyze( 1, 3 ) = 0.5;
+  xyze( 2, 3 ) = -0.5;
+
+  xyze( 0, 4 ) = 0.5;
+  xyze( 1, 4 ) = -0.5;
+  xyze( 2, 4 ) = 0.5;
+
+  xyze( 0, 5 ) = 1.5;
+  xyze( 1, 5 ) = -0.5;
+  xyze( 2, 5 ) = 0.5;
+
+  xyze( 0, 6 ) = 1.5;
+  xyze( 1, 6 ) = 0.5;
+  xyze( 2, 6 ) = 0.5;
+
+  xyze( 0, 7 ) = 0.5;
+  xyze( 1, 7 ) = 0.5;
+  xyze( 2, 7 ) = 0.5;
+
+
+  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+
+  mesh.Status();
+
+  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
+        i!=hex8_2->Sides().end();
+        ++i )
+  {
+    GEO::CUT::Side * s = *i;
+    s->SetId( 1 );
+    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  }
+
+  mesh.Status();
+
+  hex8_1->MakeFacets( mesh );
+
+  mesh.FindNodePositions();
+
+  hex8_1->GenerateTetgen( mesh, NULL );
+}
+
+void test_hex8_hex8_inside()
+{
+  GEO::CUT::Mesh mesh;
+
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+
+  xyze( 0, 0 ) = -0.5;
+  xyze( 1, 0 ) = -0.5;
+  xyze( 2, 0 ) = -0.5;
+
+  xyze( 0, 1 ) = 0.5;
+  xyze( 1, 1 ) = -0.5;
+  xyze( 2, 1 ) = -0.5;
+
+  xyze( 0, 2 ) = 0.5;
+  xyze( 1, 2 ) = 0.5;
+  xyze( 2, 2 ) = -0.5;
+
+  xyze( 0, 3 ) = -0.5;
+  xyze( 1, 3 ) = 0.5;
+  xyze( 2, 3 ) = -0.5;
+
+  xyze( 0, 4 ) = -0.5;
+  xyze( 1, 4 ) = -0.5;
+  xyze( 2, 4 ) = 0.5;
+
+  xyze( 0, 5 ) = 0.5;
+  xyze( 1, 5 ) = -0.5;
+  xyze( 2, 5 ) = 0.5;
+
+  xyze( 0, 6 ) = 0.5;
+  xyze( 1, 6 ) = 0.5;
+  xyze( 2, 6 ) = 0.5;
+
+  xyze( 0, 7 ) = -0.5;
+  xyze( 1, 7 ) = 0.5;
+  xyze( 2, 7 ) = 0.5;
+
+
+  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+
+  mesh.Status();
+
+  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
+        i!=hex8_2->Sides().end();
+        ++i )
+  {
+    GEO::CUT::Side * s = *i;
+    s->SetId( 1 );
+    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  }
+
+  mesh.Status();
+
+  hex8_1->MakeFacets( mesh );
+
+  mesh.FindNodePositions();
 
   hex8_1->GenerateTetgen( mesh, NULL );
 }
