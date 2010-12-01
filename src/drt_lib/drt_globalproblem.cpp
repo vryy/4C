@@ -1004,15 +1004,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
   case prb_elch:
   {
-    // allocate and input general old stuff....
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+    if(distype == "Nurbs")
+    {
+      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+      aledis = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
+    }
+    else
+    {
+      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+      aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
+    }
     AddDis(genprob.numff, fluiddis);
-
-    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
-
-    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
     AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
