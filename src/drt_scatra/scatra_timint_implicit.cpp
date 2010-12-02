@@ -1343,6 +1343,9 @@ void SCATRA::ScaTraTimIntImpl::Output()
     // write flux vector field (only writing, calculation was done during Update() call)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
+      // for flux output of inital field (before first solve) do:
+      if (step_==0) flux_=CalcFlux(true);
+
       OutputFlux(flux_);
     }
 
