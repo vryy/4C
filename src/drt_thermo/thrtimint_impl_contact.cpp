@@ -27,6 +27,7 @@ Maintainer: Markus Gitterle
 #include "thr_aux.H"
 
 #include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_interface.H"
@@ -88,7 +89,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
   RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
 
-  AssembleDM(*dmatrix,*mmatrix);
+  TransformDM(*dmatrix,*mmatrix,sdofs,mdofs);
   
   // FillComplete() global Mortar matrices
   dmatrix->Complete();
@@ -667,164 +668,139 @@ void THR::TimIntImpl::ConvertMaps(RCP<Epetra_Map>& slavedofs,
 }
 
 /*----------------------------------------------------------------------*
- | assemble mortar matrices in thermo dofs                    mgit 04/10 |
+ | transform mortar matrices in thermo dofs                   mgit 04/10 |
  *----------------------------------------------------------------------*/
 
-void THR::TimIntImpl::AssembleDM(LINALG::SparseMatrix& dmatrix,
-                         LINALG::SparseMatrix& mmatrix)
-
+void THR::TimIntImpl::TransformDM(LINALG::SparseMatrix& dmatrix,
+                                  LINALG::SparseMatrix& mmatrix,
+                                  RCP<Epetra_Map>& slavedofs,
+                                  RCP<Epetra_Map>& masterdofs)
 {
-  // stactic cast of mortar strategy to contact strategy
+  // static cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
-  // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  // dimension of the problem
+  int dim = cstrategy.Dim();
+  if (dim==2)
+    dserror("In THR::TimIntImpl::TransformDM: Thermal problems only in 3D so far");
+  
+  int myrow;
+  int numentries;
+  
+  /****************************************************** D-matrix ******/
+  
+  // mortar matrix D in structural dofs 
+  RCP<Epetra_CrsMatrix> dstruct = (cstrategy.DMatrix())->EpetraMatrix();
+  
+  // row and column map of mortar matrices
+  const Epetra_Map& rowmap = dstruct->RowMap();
+  const Epetra_Map& colmap = dstruct->ColMap();
+  
+  // set of every dim-th dof (row map)
+  std::set<int> rowsetred;
+  for (myrow=0; myrow<dstruct->NumMyRows(); myrow=myrow+dim)
+    rowsetred.insert(rowmap.GID(myrow));
+  
+  // map of every dim-th dof (row map)
+  RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,Comm());
+  
+  // mortar matrices in reduced structural dofs
+  // this means no loss of information
+  RCP<LINALG::SparseMatrix> dstructred = rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
 
-  // this currently works only for one interface yet
-  if (interface.size()>1)
-    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
-
-  // This is a little bit complicated and a lot of parallel stuff has to
-  // be done here. The point is that, when assembling the mortar matrix
-  // M, we need the temperature dof from the master node which can lie on
-  // a complete different proc. For this reason, we have to keep all procs
-  // around
-
-  // loop over all interfaces
-  for (int m=0; m<(int)interface.size(); ++m)
+  // loop over all rows of mortar matrix D 
+  for (myrow=0; myrow<dstruct->NumMyRows(); myrow=myrow+dim)
   {
-    // slave nodes (full map)
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveFullNodes();
+    double *Values;
+    int *Indices;
 
-    // loop over all slave nodes of the interface
-    for (int i=0;i<slavenodes->NumMyElements();++i)
+    int err = dstruct->ExtractMyRowView(myrow, numentries, Values, Indices);
+    if (err)
+      dserror("ExtractMyRowView failed: err=%d", err);
+
+     // row
+     int row = rowmap.GID(myrow);
+    
+    // loop over entries of the row 
+    for (int i=0;i<numentries; ++i)
     {
-      int gid = slavenodes->GID(i);
-      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
-      DRT::Node* nodeges = discretstruct_->gNode(gid);
-
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
-
-      // row dof of temperature
-      int rowtemp = 0;
-      if(Comm().MyPID()==cnode->Owner())
-        rowtemp = discretstruct_->Dof(1,nodeges)[0];
-
-      /************************************************** D-matrix ******/
-      set<int> snodes;
-      int slavegid=0;
-      set<int>::iterator scurr;
-      int slavesize = 0;
-      vector<map<int,double> > dmap;
+      // col and val
+      int col  = colmap.GID(Indices[i]);
+      double  val = Values[i];
       
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        dmap = cnode->MoData().GetD();
-        snodes = cnode->FriData().GetSNodes();
-        slavesize = snodes.size();
-        scurr = snodes.begin();
-      }
-      
-      // communicate number of slave nodes
-      Comm().Broadcast(&slavesize,1,cnode->Owner());
-      
-      // using lagrange multipliers for thermo contact, the matrix D  
-      // has to be diagonal
-      if(slavesize>1 and 
-        (Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"THERMOLAGMULT"))==true)
-        dserror("Error in AssembleDM: Matrix D must be diagonal for using LM");
-            
-      // loop over all according master nodes
-      for (int l=0;l<slavesize;++l)
-      {
-        if (Comm().MyPID()==cnode->Owner())
-          slavegid=*scurr;
-
-        // communicate GID of masternode
-        Comm().Broadcast(&slavegid,1,cnode->Owner());
-
-        DRT::Node* snode = (interface[m]->Discret()).gNode(slavegid);
-        DRT::Node* snodeges = discretstruct_->gNode(slavegid);
-
-        // temperature and displacement dofs
-        int coltemp = 0;
-        int coldis = 0;
-        if(Comm().MyPID()==snode->Owner())
-        {
-          CONTACT::CoNode* csnode = static_cast<CONTACT::CoNode*>(snode);
-          coltemp = discretstruct_->Dof(1,snodeges)[0];
-          coldis = (csnode->Dofs())[0];
-        }
-
-        // communicate temperature and displacement dof
-        Comm().Broadcast(&coltemp,1,snode->Owner());
-        Comm().Broadcast(&coldis,1,snode->Owner());
-
-        // do the assembly
-        if (Comm().MyPID()==cnode->Owner())
-        {
-          double val = dmap[0][coldis];
-          if (abs(val)>1e-12) dmatrix.Assemble(val, rowtemp, coltemp);
-          ++scurr;
-        }
-      }
-      
-      /************************************************** M-matrix ******/
-      set<int> mnodes;
-      int mastergid=0;
-      set<int>::iterator mcurr;
-      int mastersize = 0;
-      vector<map<int,double> > mmap;
-
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        mmap = cnode->MoData().GetM();
-        mnodes = cnode->FriData().GetMNodes();
-        mastersize = mnodes.size();
-        mcurr = mnodes.begin();
-      }
-
-      // communicate number of master nodes
-      Comm().Broadcast(&mastersize,1,cnode->Owner());
-
-      // loop over all according master nodes
-      for (int l=0;l<mastersize;++l)
-      {
-        if (Comm().MyPID()==cnode->Owner())
-          mastergid=*mcurr;
-
-        // communicate GID of masternode
-        Comm().Broadcast(&mastergid,1,cnode->Owner());
-
-        DRT::Node* mnode = (interface[m]->Discret()).gNode(mastergid);
-        DRT::Node* mnodeges = discretstruct_->gNode(mastergid);
-
-        // temperature and displacement dofs
-        int coltemp = 0;
-        int coldis = 0;
-        if(Comm().MyPID()==mnode->Owner())
-        {
-          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
-          coltemp = discretstruct_->Dof(1,mnodeges)[0];
-          coldis = (cmnode->Dofs())[0];
-        }
-
-        // communicate temperature and displacement dof
-        Comm().Broadcast(&coltemp,1,mnode->Owner());
-        Comm().Broadcast(&coldis,1,mnode->Owner());
-
-        // do the assembly
-        if (Comm().MyPID()==cnode->Owner())
-        {
-          double val = mmap[0][coldis];
-          if (abs(val)>1e-12) mmatrix.Assemble(val, rowtemp, coltemp);
-          ++mcurr;
-        }
-      }
+      // assembly
+      dstructred->Assemble(val,row,col); 
     }
   }
+  
+  // complete the matrix
+  dstructred->Complete();
+  
+  // transform reduced structural D matrix in thermo dofs
+  dmatrix=*(MORTAR::MatrixRowColTransformGIDs(dstructred,slavedofs,slavedofs));
+
+  /****************************************************** M-matrix ******/
+  
+  // mortar matrix M in structural dofs 
+  RCP<Epetra_CrsMatrix> mstruct = (cstrategy.MMatrix())->EpetraMatrix();
+  
+  // row and column map of mortar matrix M
+  const Epetra_Map& rowmapm = mstruct->RowMap();
+  const Epetra_Map& colmapm = mstruct->ColMap();
+  const Epetra_Map& domainmapm = mstruct->DomainMap();
+  
+  // set of every dim-th dof (row map)
+  rowsetred.clear();
+  for (myrow=0; myrow<mstruct->NumMyRows(); myrow=myrow+dim)
+    rowsetred.insert(rowmapm.GID(myrow));
+
+  // set of every dim-th dof (domain map)
+  std::set<int> domainsetred;
+    for (int mycol=0; mycol<domainmapm.NumMyElements(); mycol=mycol+dim)
+      domainsetred.insert(domainmapm.GID(mycol));
+    
+  // map of every dim-th dof (row map)
+  rowmapred = LINALG::CreateMap(rowsetred,Comm());
+  
+  // map of every dim-th dof (domain map)
+  RCP<Epetra_Map> domainmapred = LINALG::CreateMap(domainsetred,Comm());
+  
+  // mortar matrix M in reduced structural dofs
+  // this means no loss of information
+  RCP<LINALG::SparseMatrix> mstructred = rcp(new LINALG::SparseMatrix(*rowmapred,100)) ;
+
+  // loop over all rows of mortar matrix M 
+  for (myrow=0; myrow<mstruct->NumMyRows(); myrow=myrow+dim)
+  {
+    double *Values;
+    int *Indices;
+
+    int err = mstruct->ExtractMyRowView(myrow, numentries, Values, Indices);
+    if (err)
+      dserror("ExtractMyRowView failed: err=%d", err);
+
+     // row
+     int row = rowmapm.GID(myrow);
+     
+    // loop over entries of the row 
+    for (int i=0;i<numentries; ++i)
+    {
+      // col and val
+      int col  = colmapm.GID(Indices[i]);
+      double  val = Values[i];
+      
+      // assembly
+      mstructred->Assemble(val,row,col); 
+    }
+  }
+  
+  // complete the matrix
+  mstructred->Complete(*domainmapred,*rowmapred);
+  
+  // transform reduced structural M matrix in thermo dofs
+  mmatrix=*(MORTAR::MatrixRowColTransformGIDs(mstructred,slavedofs,masterdofs));
+
   return;
 }
 

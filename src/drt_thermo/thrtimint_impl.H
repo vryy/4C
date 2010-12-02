@@ -280,9 +280,14 @@ namespace THR
                      RCP<Epetra_Map>& activedofs,
                      RCP<Epetra_Map>& masterdofs);
 
-    // apply mortar matrices for nodes in contact
-    void AssembleDM(LINALG::SparseMatrix& dmatrix,
-                    LINALG::SparseMatrix& mmatrix);
+    // transform mortar matrices from structure dofs in thermo dofs
+    // This needs 
+    // 1. Reduction of mortar matrices
+    // 2. Transformation into thermo dofs  
+    void TransformDM(LINALG::SparseMatrix& dmatrix,
+                     LINALG::SparseMatrix& mmatrix,
+                     RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& masterdofs);
 
     // apply A matrix for nodes in contact
     void AssembleA(LINALG::SparseMatrix& amatrix);
