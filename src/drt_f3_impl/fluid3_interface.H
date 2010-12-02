@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid3_interface.H
+
+\brief Internal implementation of fluid3 elements
+
+<pre>
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FLUID3_INTERFACE_H
 #define FLUID3_INTERFACE_H
 
@@ -41,6 +56,12 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec2_epetra,
                          Epetra_SerialDenseVector&  elevec3_epetra
       ) = 0;
+
+    virtual int IntegrateShapeFunction(
+        DRT::ELEMENTS::Fluid3*    ele,
+        DRT::Discretization&      discretization,
+        vector<int>&              lm            ,
+        Epetra_SerialDenseVector& elevec1       ) = 0;
 
     /// Internal implementation class for fluid element
     static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
