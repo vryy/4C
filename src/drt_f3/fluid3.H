@@ -49,7 +49,6 @@ namespace ELEMENTS
 
 class Fluid3ImplParameter;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
-//template<DRT::Element::DiscretizationType distype> class Fluid3StationaryImpl;
 template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
 //class DRT::ELEMENTS::Fluid3ImplInterface;
@@ -79,7 +78,7 @@ public:
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
-  /// preevaluation
+  /// pre-evaluation
   virtual void PreEvaluate(DRT::Discretization& dis,
                           Teuchos::ParameterList& p,
                           Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -481,13 +480,6 @@ public:
   */
   Epetra_SerialDenseMatrix Svelnp() const {return svelnp_; }
 
-  //@}
-
-  /// calculate body force from nodal conditions
-  void BodyForce( int nsd,
-                  DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter,
-                  Epetra_SerialDenseMatrix & edeadaf );
-
 private:
 
   //! action parameters recognized by fluid3
@@ -748,26 +740,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   double&                  center);
 
   /*!
-   \brief get optimal gaussrule for given discretization type
-   \return enum with optimal gausrule for this element
-   */
-
-  /*!
-    \brief integrate shape functions over volume element
-
-    \param discretization (i) the discretisation (required in the nurbs case)
-    \param lm             (i) location vector (to get ale displacements from global vectors)
-    \param w              (o) shape functions integrated over element (a so called 'weight' vector)
-
-    \return
-   */
-  template<DRT::Element::DiscretizationType DISTYPE>
-  void integrateShapefunction(
-    DRT::Discretization&      discretization,
-    vector<int>&              lm            ,
-    Epetra_SerialDenseVector& w             );
-
-  /*!
     \brief Calculate node normals using the volume integral in Wall (7.13).
     That formula considers all surfaces of the element, not only the
     free surfaces.
@@ -815,7 +787,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
 */
-
 
 class Fluid3BoundaryType : public DRT::ElementType
 {

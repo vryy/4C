@@ -97,6 +97,13 @@ namespace ELEMENTS
 
     static const int numdofpernode_ = nsd_+1;
 
+
+    virtual int IntegrateShapeFunction(
+        DRT::ELEMENTS::Fluid3*    ele,
+        DRT::Discretization&      discretization,
+        vector<int>&              lm            ,
+        Epetra_SerialDenseVector& elevec1       );
+
     /// Evaluate the element
     /*!
       Generic virtual interface function. Called via base pointer.
@@ -256,6 +263,13 @@ namespace ELEMENTS
      6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
     */
     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+
+    /// calculate body force from nodal conditions
+    void BodyForce(
+      DRT::ELEMENTS::Fluid3*               ele,           //< pointer to element
+      DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,   //< pointer to fluid parameter
+      Epetra_SerialDenseMatrix &           edeadaf        //<
+      );
 
     //! evaluate shape functions and their derivatives at element center
     void EvalShapeFuncAndDerivsAtEleCenter(

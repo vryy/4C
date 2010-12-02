@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_f3/fluid3_stabilization.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/mixfrac.H"
@@ -187,8 +188,60 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
   f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
 }
 
+/*----------------------------------------------------------------------*
+ * Action type: Integrate shape function
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
+    DRT::ELEMENTS::Fluid3*    ele,
+    DRT::Discretization&      discretization,
+    vector<int>&              lm            ,
+    Epetra_SerialDenseVector& elevec1       )
+{
+  // --------------------------------------------------
+  // construct views
+  LINALG::Matrix<numdofpernode_*nen_,    1> vector(elevec1.A(),true);
+
+  // get Gaussrule
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+//------------------------------------------------------------------
+//                       INTEGRATION LOOP
+//------------------------------------------------------------------
+
+  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+  {
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
+    {
+      // integrated shape function is written into the pressure dof
+      int fuippp=numdofpernode_*ui+nsd_;
+      vector(fuippp)+=fac_*funct_(ui);
+    }
+  }
+
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
+ * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
@@ -216,7 +269,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
   Epetra_SerialDenseMatrix edeadaf_epetra;
-  ele->BodyForce( nsd_, f3Parameter_, edeadaf_epetra );
+  BodyForce(ele, f3Parameter_, edeadaf_epetra );
 
   // a view to the body forces
   LINALG::Matrix<nsd_,nen_> edeadaf( edeadaf_epetra, true );
@@ -1321,6 +1374,97 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FDcheck(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get the body force in the nodes of the element (private) gammi 04/07|
+ |  the Neumann condition associated with the nodes is stored in the    |
+ |  array edeadaf only if all nodes have a VolumeNeumann condition      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(
+           DRT::ELEMENTS::Fluid3*               ele,
+           DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,
+           Epetra_SerialDenseMatrix &           edeadaf )
+{
+  vector<DRT::Condition*> myneumcond;
+
+  edeadaf.Shape(nsd_, nen_ );
+
+  // check whether all nodes have a unique VolumeNeumann condition
+  if (nsd_==3)
+    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+  else if (nsd_==2)
+    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+  else
+    dserror("Body force for a 1D problem is not yet implemented");
+
+  if (myneumcond.size()>1)
+    dserror("more than one VolumeNeumann cond on one node");
+
+  if (myneumcond.size()==1)
+  {
+    // find out whether we will use a time curve
+    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    if (curve) curvenum = (*curve)[0];
+
+    // initialisation
+    double curvefac    = 0.0;
+
+    if (curvenum >= 0) // yes, we have a timecurve
+    {
+      // time factor for the intermediate step
+      if (f3Parameter->time_ >= 0.0)
+      {
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(f3Parameter->time_);
+      }
+      else
+      {
+        // do not compute an "alternative" curvefac here since a negative time value
+        // indicates an error.
+        dserror("Negative time value in body force calculation: time = %f", f3Parameter->time_);
+      }
+    }
+    else // we do not have a timecurve --- timefactors are constant equal 1
+    {
+      curvefac = 1.0;
+    }
+
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
+
+    // factor given by spatial function
+    double functionfac = 1.0;
+    int functnum = -1;
+
+    // set this condition to the edeadaf array
+    for (int isd=0;isd<nsd_;isd++)
+    {
+      // get factor given by spatial function
+      if (functions) functnum = (*functions)[isd];
+      else functnum = -1;
+
+      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+
+      for ( int jnode=0; jnode<nen_; ++jnode )
+      {
+        if (functnum>0)
+        {
+          // evaluate function at the position of the current node
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
+                                                                             (ele->Nodes()[jnode])->X(),
+                                                                             f3Parameter->time_,
+                                                                             NULL);
+        }
+        else functionfac = 1.0;
+
+        edeadaf(isd,jnode) = num*functionfac;
+      }
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at element center  vg 09/09 |
