@@ -57,6 +57,11 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec3_epetra
       ) = 0;
 
+    /// Integrate shape function
+    /*!
+      This class does not provide a definition for this function, it
+      must be defined in Fluid3Impl.
+     */
     virtual int IntegrateShapeFunction(
         DRT::ELEMENTS::Fluid3*    ele,
         DRT::Discretization&      discretization,
