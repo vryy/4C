@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "drt_dserror.H"
-#include "../drt_lib/standardtypes_cpp.H"
+#include "../../src/drt_lib/standardtypes_cpp.H"
 
 #ifdef THROWELEMENTERRORS
 

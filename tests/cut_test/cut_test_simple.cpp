@@ -1,6 +1,6 @@
 
-#include "../drt_cut/cut_mesh.H"
-#include "../drt_cut/cut_element.H"
+#include "../../src/drt_cut/cut_mesh.H"
+#include "../../src/drt_cut/cut_element.H"
 #include "cut_test_utils.H"
 
 GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
