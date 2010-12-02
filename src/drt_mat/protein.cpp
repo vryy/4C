@@ -87,8 +87,8 @@ void MAT::PROTEIN::Unpack(const vector<char>& data) {
 	params_ = NULL;
     }
 
-    if (position != (int) data.size())
-	dserror("Mismatch in size of data %d <-> %d", (int) data.size(), position);
+    if (position != data.size())
+	dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
