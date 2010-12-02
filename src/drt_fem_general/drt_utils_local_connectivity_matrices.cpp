@@ -1359,6 +1359,7 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
         case DRT::Element::nurbs4  : dim = DisTypeToDim<DRT::Element::nurbs4>::dim; break;
         case DRT::Element::nurbs9  : dim = DisTypeToDim<DRT::Element::nurbs9>::dim; break;
         case DRT::Element::hex8    : dim = DisTypeToDim<DRT::Element::hex8>::dim; break;
+        case DRT::Element::nurbs8  : dim = DisTypeToDim<DRT::Element::nurbs8>::dim; break;
         case DRT::Element::hex20   : dim = DisTypeToDim<DRT::Element::hex20>::dim; break;
         case DRT::Element::hex27   : dim = DisTypeToDim<DRT::Element::hex27>::dim; break;
         case DRT::Element::nurbs27 : dim = DisTypeToDim<DRT::Element::nurbs27>::dim; break;

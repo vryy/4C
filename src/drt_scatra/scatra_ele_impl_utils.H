@@ -169,24 +169,6 @@ namespace SCATRA
   template<> struct DisTypeToStabGaussRule<DRT::Element::nurbs2>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
   template<> struct DisTypeToStabGaussRule<DRT::Element::nurbs3>  {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_1point; };
 
-  //! determine whether this is an NURBS element or not
-  inline bool IsNurbs(DRT::Element::DiscretizationType distype){
-    switch(distype)
-    {
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
-    case DRT::Element::nurbs2:
-    case DRT::Element::nurbs3:
-    {
-      return true;
-      break;
-    }
-    default:
-      return false;
-    }
-  }
 
   //! determine whether there are only two charged species present or not
   bool IsBinaryElectrolyte(const std::vector<double>& valence);

@@ -32,6 +32,7 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -276,29 +277,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   else edispnp_.Clear();
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if(SCATRA::IsNurbs(distype))
+  if(DRT::NURBS::IsNurbs(distype))
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
 
-    bool zero_size(false);
-    // get local knot vector entries and check for zero sized elements
-    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
-
-    // if we have a zero sized element due to a interpolated
-    // point --- exit here
+    // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size)
-    {
       return(0);
-    }
-    // you are still here? So get the node weights for nurbs elements as well
-    DRT::Node** nodes = ele->Nodes();
-    for (int inode=0; inode<nen_; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp
-      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      weights_(inode) = cp->W();
-    }
   } // Nurbs specific stuff
 
   // the type of scalar transport problem has to be provided for all actions!
@@ -3332,7 +3318,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   for (int idim=0;idim<nsd_;idim++)
     {xsi_(idim) = gpcoord[idim];}
 
-  if (not SCATRA::IsNurbs(distype))
+  if (not DRT::NURBS::IsNurbs(distype))
   {
     // shape functions and their first derivatives
     DRT::UTILS::shape_function<distype>(xsi_,funct_);
@@ -3345,11 +3331,9 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   }
   else // nurbs elements are always somewhat special...
   {
-    if (nsd_ == 3)
-    {
     if (use2ndderiv_)
     {
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
       (funct_  ,
           deriv_  ,
           derxy2_ ,
@@ -3360,7 +3344,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     }
     else
     {
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
       (funct_  ,
           deriv_  ,
           xsi_    ,
@@ -3368,32 +3352,6 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
           weights_,
           distype );
     }
-    }
-    else if (nsd_ == 2)
-    {
-      if (use2ndderiv_)
-      {
-        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
-        (funct_  ,
-            deriv_  ,
-            derxy2_ ,
-            xsi_    ,
-            myknots_,
-            weights_,
-            distype );
-      }
-      else
-      {
-        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-        (funct_  ,
-            deriv_  ,
-            xsi_    ,
-            myknots_,
-            weights_,
-            distype );
-      }
-    }
-    else dserror("Only 3D and 2D nurbs supported.");
   } // IsNurbs()
 
   // compute Jacobian matrix and determinant

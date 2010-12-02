@@ -22,6 +22,7 @@ Maintainer: Peter Gamnitzer
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_bspline.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 
 namespace DRT
@@ -3755,6 +3756,153 @@ void nurbs_get_3D_funct_deriv_deriv2(
   return;
 }
 
+
+//! Evaluate basis functions, first and second derivatives of nurbs basis functions.
+template <class VF,class MD, class MSD,class UV,class WG>
+void nurbs_get_funct_deriv_deriv2(
+       VF                                     & nurbs_shape_funct ,
+       MD                                     & nurbs_shape_deriv ,
+       MSD                                    & nurbs_shape_deriv2,
+       const UV                               & uv                ,
+       const vector<Epetra_SerialDenseVector> & knots             ,
+       const WG                               & weights           ,
+       const DRT::Element::DiscretizationType & distype           )
+{
+  switch (DRT::UTILS::getDimension(distype))
+  {
+  case 3:
+  {
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
+    (nurbs_shape_funct   ,
+        nurbs_shape_deriv  ,
+        nurbs_shape_deriv2,
+        uv    ,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 2:
+  {
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
+    (nurbs_shape_funct   ,
+        nurbs_shape_deriv  ,
+        nurbs_shape_deriv2,
+        uv    ,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 1:
+  {
+     dserror("No second derivatives for 1D Nurbs implemented.");
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+  }
+  return;
+}
+
+//! Evaluate basis functions and first derivatives of nurbs basis functions.
+template <class VF,class MD,class UV,class WG>
+void nurbs_get_funct_deriv(
+       VF                                     & nurbs_shape_funct ,
+       MD                                     & nurbs_shape_deriv ,
+       const UV                               & uv                ,
+       const vector<Epetra_SerialDenseVector> & knots             ,
+       const WG                               & weights           ,
+       const DRT::Element::DiscretizationType & distype           )
+{
+  switch (DRT::UTILS::getDimension(distype))
+  {
+  case 3:
+  {
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+    (nurbs_shape_funct,
+        nurbs_shape_deriv,
+        uv,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 2:
+  {
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+    (nurbs_shape_funct,
+        nurbs_shape_deriv,
+        uv,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 1:
+  {
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
+    (nurbs_shape_funct,
+        nurbs_shape_deriv,
+        uv(0),
+        knots[0],
+        weights,
+        distype );
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+  }
+  return;
+}
+
+
+//! Evaluate basis functions of nurbs basis functions.
+template <class VF,class UV,class WG>
+void nurbs_get_funct(
+       VF                                     & nurbs_shape_funct ,
+       const UV                               & uv                ,
+       const vector<Epetra_SerialDenseVector> & knots             ,
+       const WG                               & weights           ,
+       const DRT::Element::DiscretizationType & distype           )
+{
+  switch (DRT::UTILS::getDimension(distype))
+  {
+  case 3:
+  {
+    DRT::NURBS::UTILS::nurbs_get_3D_funct
+    (nurbs_shape_funct,
+        uv,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 2:
+  {
+    DRT::NURBS::UTILS::nurbs_get_2D_funct
+    (nurbs_shape_funct,
+        uv,
+        knots,
+        weights,
+        distype );
+    break;
+  }
+  case 1:
+  {
+    DRT::NURBS::UTILS::nurbs_get_1D_funct
+    (nurbs_shape_funct,
+        uv(0),
+        knots[0],
+        weights,
+        distype );
+    break;
+  }
+  default:
+    dserror("dimension of the element is not correct");
+  }
+  return;
+}
 
 }// namespace UTILS
 

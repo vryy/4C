@@ -33,6 +33,7 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 // material headers
@@ -196,28 +197,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   else edispnp_.Clear();
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if(SCATRA::IsNurbs(distype))
+  if(DRT::NURBS::IsNurbs(distype))
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-    bool zero_size(false);
-    // get local knot vector entries and check for zero sized elements
-    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size)
-    {
       return(0);
-    }
-    // you are still here? So get the node weights for nurbs elements as well
-    DRT::Node** nodes = ele->Nodes();
-    for (int inode=0; inode<nen_; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp
-      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      weights_(inode) = cp->W();
-    }
   } // Nurbs specific stuff
 
   // Now, check for the action parameter
@@ -644,7 +631,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   else edispnp_.Clear();
 
   // Now do the nurbs specific stuff (for isogeometric elements)
-  if(SCATRA::IsNurbs(distype))
+  if(DRT::NURBS::IsNurbs(distype))
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
     = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -907,7 +894,7 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   for (int idim=0;idim<nsd_;idim++)
   {xsi_(idim) = gpcoord[idim];}
 
-  if(not SCATRA::IsNurbs(distype))
+  if(not DRT::NURBS::IsNurbs(distype))
   {
     // shape functions and their first derivatives
     DRT::UTILS::shape_function<distype>(xsi_,funct_);
@@ -915,27 +902,13 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   }
   else // nurbs elements are always somewhat special...
   {
-    if (nsd_ == 2)
-    {
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-      (funct_  ,
-          deriv_  ,
-          xsi_    ,
-          myknots_,
-          weights_,
-          distype );
-    }
-    else if (nsd_ == 1)
-    {
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv
-      (funct_  ,
-          deriv_  ,
-          xsi_(0) ,
-          myknots_[0],
-          weights_,
-          distype );
-    }
-    else dserror("Your boundary has not supported spatial dimension: %d",nsd_);
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+        funct_  ,
+        deriv_  ,
+        xsi_    ,
+        myknots_,
+        weights_,
+        distype );
   }
 
   // the metric tensor and the area of an infinitesimal surface/line element
