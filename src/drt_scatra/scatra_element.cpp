@@ -606,19 +606,7 @@ void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumLine() const
 {
-  // get spatial dimension of boundary
-  const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
-
-  if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-  else if (NumNode()==6) return 3;
-  else if (NumNode()==3 && nsd ==2) return 3;
-  else if (NumNode()==3 && nsd ==1) return 1;
-  else if (NumNode()==2) return 1;
-  else
-  {
-    dserror("Could not determine number of lines");
-    return -1;
-  }
+  return DRT::UTILS::getNumberOfElementLines(Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -626,13 +614,7 @@ int DRT::ELEMENTS::TransportBoundary::NumLine() const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::NumSurface() const
 {
-  // get spatial dimension of parent element
-  const int nsd = DRT::UTILS::getDimension(parent_->Shape());
-
-  if (nsd == 3)
-    return 1;
-  else
-    return 0;
+  return DRT::UTILS::getNumberOfElementSurfaces(Shape());
 }
 
 /*----------------------------------------------------------------------*
