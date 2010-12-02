@@ -155,7 +155,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled()) discret_->FillComplete();
+  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+    discret_->FillComplete();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -583,7 +584,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
-  ApplyDirichletBC(time_,phinp_,phidtnp_);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
   // -------------------------------------------------------------------
@@ -1339,14 +1340,10 @@ void SCATRA::ScaTraTimIntImpl::Output()
     // add restart data
     if (step_%uprestart_==0) OutputRestart();
 
-    // write flux vector field
+    // write flux vector field (only writing, calculation was done during Update() call)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
-      // compute scalar values at intermediate time steps (for flux computation)
-      // required only for genalpha
-      ComputeIntermediateValues();
-
-      OutputFlux();
+      OutputFlux(flux_);
     }
 
     // write mean values of scalar(s)

@@ -30,7 +30,7 @@ NUMTHERMDIS  0
 ----------------------------------------------------------------IO
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIMEINTEGR   Gen_Alpha    //    Volker: Af_Gen_Alpha
+TIMEINTEGR   Gen_Alpha
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
@@ -56,8 +56,9 @@ CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE       linear_full // solve linear Problem within one Newton step!! //linear_full //linear_incremental //nonlinear
-TIMEINTEGR       Gen_Alpha //One_Step_Theta
+// all three solver types have to deliver IDENTICAL results !!!!!!!!!!!!!!!
+SOLVERTYPE       linear_full //linear_incremental //nonlinear  
+TIMEINTEGR       Gen_Alpha
 UPRES            1
 RESTARTEVRY      1
 MAXTIME          1000.0
@@ -481,11 +482,11 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 4.0*y*(1.0-y)
 FLUID DIS 1 NODE 79 POSITION velx     NAME velx     VALUE 9.854030450e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 79 POSITION vely     NAME vely     VALUE 7.232560390e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 79 POSITION pressure NAME pressure VALUE 3.489831671e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 79 POSITION phi     NAME phi      VALUE 8.784690249e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 79 POSITION phi     NAME phi      VALUE 8.784648400e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 123 POSITION velx     NAME velx     VALUE 1.941551659e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 123 POSITION vely     NAME vely     VALUE 1.980942970e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 123 POSITION pressure NAME pressure VALUE 6.602342237e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 123 POSITION phi     NAME phi      VALUE 2.862477828e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 144 POSITION fluxy   NAME fluxy    VALUE -1.139051110e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 9 POSITION fluxy     NAME fluxy    VALUE -1.235851513e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 123 POSITION phi     NAME phi      VALUE 2.862133428e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 144 POSITION fluxy   NAME fluxy    VALUE -1.153849570e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 9 POSITION fluxy     NAME fluxy    VALUE -1.248353125e-01 TOLERANCE 1e-9
 ---------------------------------------------------------------END

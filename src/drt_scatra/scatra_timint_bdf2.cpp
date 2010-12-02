@@ -347,9 +347,12 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
     phidtnp_->Update(fact1,*phinp_,fact2,*phin_,1.0);
   }
 
-  // we know the first time derivative on Dirichlet boundaries
+  // We know the first time derivative on Dirichlet boundaries
   // so we do not need an approximation of these values!
-  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // However, we do not want to break the linear relationship
+  // as stated above. We do not want to set Dirichlet values for
+  // dependent values like phidtnp_. This turned out to be inconsistent.
+  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
 
   return;
 }
@@ -387,6 +390,13 @@ void SCATRA::TimIntBDF2::ComputeThermPressureTimeDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::Update()
 {
+  // compute flux vector field for later output BEFORE time shift of results
+  // is performed below !!
+  if (writeflux_!=INPAR::SCATRA::flux_no)
+  {
+    flux_ = CalcFlux(true);
+  }
+
   // solution of this step becomes most recent solution of the last step
   phinm_->Update(1.0,*phin_ ,0.0);
   phin_ ->Update(1.0,*phinp_,0.0);

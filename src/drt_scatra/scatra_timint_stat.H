@@ -56,7 +56,7 @@ public:
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
-  void Update(){return;};
+  void Update();
 
   /// update thermodynamic pressure and time derivative for low-Mach-number flow
   void UpdateThermPressure(){return;};

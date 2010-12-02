@@ -116,8 +116,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     sysmat_->Complete();
   }
 
+  // We determine phidtn at every node (including boundaries)
+  // To be consistent with time integration scheme we do not prescribe
+  // any values at Dirichlet boundaries for phidtn !!!
   // apply Dirichlet boundary conditions to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+  // LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
 
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
@@ -1210,10 +1213,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputFlux()
+void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
 {
-  RCP<Epetra_MultiVector> flux = CalcFlux(true);
-
   // post_drt_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filter
 
@@ -1462,8 +1463,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // clear state
     discret_->ClearState();
 
+    // we have to perform some dirty action here...
+    bool incremental_old = incremental_;
+    incremental_ = true;
     // add element parameters according to time-integration scheme
     AddSpecificTimeIntegrationParameters(eleparams);
+    // undo
+    incremental_ = incremental_old;
 
     {
       // call standard loop over elements

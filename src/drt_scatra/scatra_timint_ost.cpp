@@ -316,9 +316,12 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
   phidtnp_->Update(fact2,*phidtn_,0.0);
   phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
 
-  // we know the first time derivative on Dirichlet boundaries
+  // We know the first time derivative on Dirichlet boundaries
   // so we do not need an approximation of these values!
-  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // However, we do not want to break the linear relationship
+  // as stated above. We do not want to set Dirichlet values for
+  // dependent values like phidtnp_. This turned out to be inconsistent.
+  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
 
   return;
 }
@@ -347,6 +350,14 @@ void SCATRA::TimIntOneStepTheta::Update()
 {
   // compute time derivative at time n+1
   ComputeTimeDerivative();
+
+  // compute flux vector field for later output BEFORE time shift of results
+  // is performed below !!
+  if (writeflux_!=INPAR::SCATRA::flux_no)
+  {
+    flux_ = CalcFlux(true);
+  }
+
   // after the next command (time shift of solutions) do NOT call
   // ComputeTimeDerivative() anymore within the current time step!!!
 
@@ -509,7 +520,8 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
 void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
 {
   // evaluate Dirichlet boundary conditions at time t=0
-  ApplyDirichletBC(time_,phin_,phidtn_);
+  //ApplyDirichletBC(time_,phin_,phidtn_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
 
   // evaluate Neumann boundary conditions at time t=0
   neumann_loads_->PutScalar(0.0);

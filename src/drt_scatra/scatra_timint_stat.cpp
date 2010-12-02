@@ -160,6 +160,22 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
 
 
 /*----------------------------------------------------------------------*
+ | update of solution at end of time step                     gjb 12/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::Update()
+{
+  // for the stationary scheme there is nothing to do except this:
+
+  // compute flux vector field for later output BEFORE time shift of results
+  // is performed below !!
+  if (writeflux_!=INPAR::SCATRA::flux_no)
+  {
+    flux_ = CalcFlux(true);
+  }
+  return;
+};
+
+/*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 10/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::OutputRestart()

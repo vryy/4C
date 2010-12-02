@@ -321,6 +321,8 @@ public:
   /// routine to calculate mass/heat flux vectors (in domain / at boundary)
   Teuchos::RCP<Epetra_MultiVector> CalcFlux(const bool writetofile);
 
+  Teuchos::RCP<Epetra_MultiVector> Flux(){return flux_;};
+
 protected:
 
   /// don't want = operator and cctor
@@ -469,7 +471,7 @@ protected:
   virtual double ResidualScaling() const = 0;
 
   /// write flux vectors to BINIO
-  void OutputFlux();
+  void OutputFlux(RCP<Epetra_MultiVector> flux);
 
   /// computes different conductivity expressions for electrolyte solutions (ELCH)
   Epetra_SerialDenseVector ComputeConductivity();
@@ -671,6 +673,9 @@ protected:
 
   /// only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix
   RCP<LINALG::SparseMatrix> Mnsv_;
+
+  /// flux vector fields
+  RCP<Epetra_MultiVector> flux_;
 
   /// Extractor used for convergence check either in ELCH or LOMA case
   RCP<LINALG::MapExtractor> splitter_;

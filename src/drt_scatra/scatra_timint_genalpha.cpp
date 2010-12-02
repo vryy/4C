@@ -357,9 +357,15 @@ void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
   phidtnp_->Update(fact2,*phidtn_,0.0);
   phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
 
-  // we know the first time derivative on Dirichlet boundaries
+  // We know the first time derivative on Dirichlet boundaries
   // so we do not need an approximation of these values!
-  ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
+  // However, we do not want to break the linear relationship
+  // as stated above. We do not want to set Dirichlet values for
+  // dependent values like phidtnp_. This turned out to be inconsistent.
+  // Such an inconsistency can cause different results for
+  // our different Gen. Alpha formulations (linear_full <-> linear_incremental).
+  // We don't want this to happen.
+  // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
 
   return;
 }
@@ -387,7 +393,14 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressureTimeDerivative()
 void SCATRA::TimIntGenAlpha::Update()
 {
   // set history variable to zero for not spoiling flux calculation
-  if (not incremental_) hist_->PutScalar(0.0);
+  //if (not incremental_) hist_->PutScalar(0.0);
+
+  // compute flux vector field for later output BEFORE time shift of results
+  // is performed below !!
+  if (writeflux_!=INPAR::SCATRA::flux_no)
+  {
+    flux_ = CalcFlux(true);
+  }
 
   // compute time derivative at time n+1
   ComputeTimeDerivative();
@@ -493,7 +506,8 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
 void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
 {
   // evaluate Dirichlet boundary conditions at time t=0
-  ApplyDirichletBC(time_,phin_,phidtn_);
+  // ApplyDirichletBC(time_,phin_,phidtn_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
 
   // evaluate Neumann boundary conditions at time t=0
   neumann_loads_->PutScalar(0.0);
