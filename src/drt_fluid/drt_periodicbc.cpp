@@ -983,7 +983,19 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // get all periodic boundary conditions on this node
     vector<DRT::Condition*> thiscond;
 
-    discret_->GetCondition("SurfacePeriodic",thiscond);
+    vector<DRT::Condition*> linecond;
+    discret_->GetCondition("LinePeriodic",linecond);
+
+    for(vector<DRT::Condition*>::iterator cond=linecond.begin();cond!=linecond.end();++cond)
+    {
+      thiscond.push_back(*cond);
+    }
+    vector<DRT::Condition*> surfcond;
+    discret_->GetCondition("SurfacePeriodic",surfcond);
+    for(vector<DRT::Condition*>::iterator cond=surfcond.begin();cond!=surfcond.end();++cond)
+    {
+      thiscond.push_back(*cond);
+    }
 
     for (unsigned numcond=0;numcond<thiscond.size();++numcond)
     {
