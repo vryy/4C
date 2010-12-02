@@ -59,6 +59,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::integrate_shape;
   else if (action == "fluidfluidCoupling")
     act = XFluid3::fluidfluidCoupling;
+  else if (action == "fluidxfluidCoupling")
+      act = XFluid3::fluidxfluidCoupling;
   else
   {
     cout << "Unknown action: " << action << endl;
@@ -662,6 +664,141 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       params.set<double>("L2",L2);
       break;
     }
+    case fluidxfluidCoupling:
+        {
+          // do no calculation, if not needed
+          if (lm.empty())
+            break;
+
+          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
+
+          double L2 = params.get<double>("L2");
+
+          // time integration factors
+          const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+          const double            dt       = params.get<double>("dt");
+          const double            theta    = params.get<double>("theta");
+
+          // extract local values from the global vectors
+          const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
+
+          DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+
+          const bool newton = params.get<bool>("include reactive terms for linearisation");
+          const bool pstab  = true;
+          const bool supg   = true;
+          const bool cstab  = true;
+
+          const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
+
+          const RCP<const vector<int> > ifacepatchlm = params.get<RCP<vector<int> > >("ifacepatchlm");
+
+          if (not params.get<bool>("DLM_condensation") or not ih_->ElementIntersected(Id())) // integrate and assemble all unknowns
+          {
+            if (ih_->ElementIntersected(Id()))
+            {
+              const size_t nui = ifacepatchlm->size();
+              fluidfluidmatrices_.Guis_uncond   = rcp(new Epetra_SerialDenseMatrix(nui, eleDofManager_uncondensed_->NumDofElemAndNode()));
+              fluidfluidmatrices_.Gsui_uncond   = rcp(new Epetra_SerialDenseMatrix(eleDofManager_uncondensed_->NumDofElemAndNode(), nui));
+              fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+            }
+
+            const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+                *eleDofManager_, NumNode(), NodeIds());
+
+            // calculate element coefficient matrix and rhs
+            XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+                this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+
+            if (ih_->ElementIntersected(Id()))
+            {
+              const size_t nui = ifacepatchlm->size();
+              RCP<Epetra_SerialDenseMatrix> Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+              params.set("Cdu",fluidfluidmatrices_.Guis_uncond);
+              params.set("Cud",fluidfluidmatrices_.Gsui_uncond);
+              params.set("Cdd",Cdd);
+              params.set("rhsd",fluidfluidmatrices_.rhsui_uncond);
+            }
+          }
+
+          else // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
+          {
+            // sanity checks
+            SanityChecks(eleDofManager_, eleDofManager_uncondensed_);
+
+            const RCP<const Epetra_Vector>  iterinciface   = ih_->cutterdis()->GetState("interface nodal iterinc");
+            const RCP<const Epetra_Vector>  iterincxdomain = discretization.GetState("velpres nodal iterinc");
+
+            // stress update
+            UpdateOldDLMAndDLMRHS(iterincxdomain, iterinciface, lm, *ifacepatchlm, mystate, true);
+
+            // create uncondensed element matrix and vector
+            const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
+            Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
+            Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
+
+            RCP<Epetra_SerialDenseMatrix> Cud;
+            RCP<Epetra_SerialDenseMatrix> Cdu;
+            RCP<Epetra_SerialDenseMatrix> Cdd;
+            RCP<Epetra_SerialDenseVector> rhsd;
+
+            if (ih_->ElementIntersected(Id()))
+            {
+              const size_t nui = ifacepatchlm->size();
+              const size_t nus = eleDofManager_uncondensed_->NumDofElemAndNode();
+
+              fluidfluidmatrices_.Guis_uncond  = rcp(new Epetra_SerialDenseMatrix(nui, nus));
+              fluidfluidmatrices_.Gsui_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+              fluidfluidmatrices_.rhsui_uncond = rcp(new Epetra_SerialDenseVector(nui));
+              if (monolithic_FSI)
+              {
+                fluidfluidmatrices_.GNudi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+                fluidfluidmatrices_.GNsdi_uncond  = rcp(new Epetra_SerialDenseMatrix(nus, nui));
+                fluidfluidmatrices_.GNdidi_uncond = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+              }
+              Cud = rcp(new Epetra_SerialDenseMatrix(lm.size(), nui));
+              Cdu = rcp(new Epetra_SerialDenseMatrix(nui, lm.size()));
+              Cdd = rcp(new Epetra_SerialDenseMatrix(nui, nui));
+              rhsd = rcp(new Epetra_SerialDenseVector(nui));
+            }
+
+            const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+                               *eleDofManager_uncondensed_, NumNode(), NodeIds());
+
+            // calculate element coefficient matrix and rhs
+            XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+                this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
+                mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+
+            // condensation
+            CondenseElementStressAndStoreOldIterationStep(
+                elemat1_uncond, elevec1_uncond,
+                *fluidfluidmatrices_.Gsui_uncond,
+                *fluidfluidmatrices_.Guis_uncond,
+                *fluidfluidmatrices_.rhsui_uncond,
+                fluidfluidmatrices_.GNudi_uncond,
+                fluidfluidmatrices_.GNsdi_uncond,
+                fluidfluidmatrices_.GNdidi_uncond,
+                elemat1, elevec1,
+                *Cud, *Cdu, *Cdd, *rhsd,
+                *ifacepatchlm,
+                true,
+                monolithic_FSI
+            );
+
+            if (ih_->ElementIntersected(Id()))
+            {
+              params.set("Cdu",Cdu);
+              params.set("Cud",Cud);
+              params.set("Cdd",Cdd);
+              params.set("rhsd",rhsd);
+            }
+           }
+
+          params.set<double>("L2",L2);
+          break;
+        }
     case calc_fluid_projection_systemmat_and_residual:
     {
       // do no calculation, if not needed

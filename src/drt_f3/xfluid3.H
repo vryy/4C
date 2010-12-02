@@ -248,7 +248,8 @@ private:
           reset,
           set_output_mode,
           integrate_shape,
-          fluidfluidCoupling
+          fluidfluidCoupling,
+          fluidxfluidCoupling
         };
 
         //! stabilization actions recognized by fluid3 (genalpha implementation)

@@ -722,7 +722,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
   ComputeFluidXFluidInterfaceAccelerationsAndVelocities();
   ComputeInterfaceAndSetDOFs(fluidxfluidboundarydis);
  
-  // merged the fluid and xfluid maps
+  // merge the fluid and xfluid maps
   RCP<Epetra_Map> fluiddofrowmap = rcp(new Epetra_Map(*fluiddis_->DofRowMap())); 
   RCP<Epetra_Map> xfluiddofrowmap = rcp(new Epetra_Map(*xfluiddis_->DofRowMap())); 
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
@@ -730,6 +730,9 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
   maps.push_back(xfluiddofrowmap);
   fluidxfluidrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
   fluidxfluidsplitter_.Setup(*fluidxfluidrowmap_,fluiddofrowmap,xfluiddofrowmap);
+  
+  fluidresidual_  = LINALG::CreateVector(*fluiddofrowmap,true);
+  fluidsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap,108,false,true));
    
   // split velocity and pressure 
   FLD::UTILS::SetupFluidXFluidVelPresSplit(*fluiddis_,numdim_,*xfluiddis_,dofmanager_np_,fluidxfluidvelpressplitter_,fluidxfluidrowmap_);  
@@ -944,27 +947,34 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
         eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
         eleparams.set("monolithic_FSI",false);
         eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
-        eleparams.set("action","fluidfluidCoupling");
-        RCP<Epetra_Vector> tmp = LINALG::CreateVector(*xfluiddis_->DofColMap(),false);
-        LINALG::Export(*fxfiincvel_,*tmp);
-        xfluiddis_->SetState("interface nodal iterinc",tmp);
-                  
-        const Epetra_Map& xfluiddofrowmap = *xfluiddis_->DofRowMap();
-        Cud_ = Teuchos::rcp(new LINALG::SparseMatrix(xfluiddofrowmap,0,false,false));
-        Cdu_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap,0,false,false));
-        Cdd_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap,0,false,false));
-        rhsd_ = LINALG::CreateVector(*fluiddofrowmap,true);
-        eleparams.set("action","fluidfluidCoupling");       
+        fluidxfluidboundarydis->SetState("interface nodal iterinc", fxfiincvel_);
+        
+        eleparams.set("action","fluidxfluidCoupling");       
+        
+        Cud_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluiddofrowmap,0,false,false));
+        Cdu_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluidxfluidboundarydis->DofRowMap(),0,false,false));
+        Cdd_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluidxfluidboundarydis->DofRowMap(),0,false,false));
+        rhsd_ = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
         
         // call standard loop over xfluid-elements
         MonolithicMultiDisEvaluate(ih_np_, xfluiddis_, fluidxfluidboundarydis, eleparams,
                     Cud_, Cdu_, Cdd_, rhsd_, xfluidsysmat_, xfluidresidual_, true, true);
-        Cud_->Complete(*fluiddofrowmap,xfluiddofrowmap);
-        Cdu_->Complete(xfluiddofrowmap,*fluiddofrowmap);
-        Cdd_->Complete(*fluiddofrowmap,*fluiddofrowmap); 
-
-        fluidresidual_->Update(1.0,*rhsd_,1.0);               
-
+        
+        Cud_->Complete(*fluidxfluidboundarydis->DofRowMap(),*xfluiddofrowmap);
+        Cdu_->Complete(*xfluiddofrowmap,*fluidxfluidboundarydis->DofRowMap());
+        Cdd_->Complete(*fluidxfluidboundarydis->DofRowMap(),*fluidxfluidboundarydis->DofRowMap()); 
+                
+        // adding rhsd_ to fluidresidual_
+        // in *vector[LID] immer mit LID!!! Hier rhsd_->Map().LID(rhsdgid) muss wieder gleich iter sein!
+        for (int iter=0; iter<rhsd_->MyLength();++iter)
+        {
+          int rhsdgid = rhsd_->Map().GID(iter);
+          if (rhsd_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all prossesors");
+          if (fluidresidual_->Map().MyGID(rhsdgid)) 
+            (*fluidresidual_)[fluidresidual_->Map().LID(rhsdgid)]=(*fluidresidual_)[fluidresidual_->Map().LID(rhsdgid)] + 
+            (*rhsd_)[rhsd_->Map().LID(rhsdgid)];
+        }
+                   
         // account for potential Neumann inflow terms
         if (neumanninflow_)
         {
@@ -1019,7 +1029,8 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     fluiddbcmaps_->InsertCondVector(fluiddbcmaps_->ExtractCondVector(fluidzeros_), fluidresidual_);
     const Teuchos::RCP<const Epetra_Vector> xfluidzeros = LINALG::CreateVector(*xfluiddis_->DofRowMap(),true);
     xfluiddbcmaps_->InsertCondVector(xfluiddbcmaps_->ExtractCondVector(xfluidzeros), xfluidresidual_);
-         
+    
+    // insert fluid and xfluid residuals to fluidxfluidresidual
     fluidxfluidsplitter_.InsertXFluidVector(xfluidresidual_,fluidxfluidresidual_);
     fluidxfluidsplitter_.InsertFluidVector(fluidresidual_,fluidxfluidresidual_);
     
@@ -1087,7 +1098,6 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
         printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e |    --   |    --   |    --   |",
                        itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%9.2E",dtele_);
-        printf(")\n");
       }
     }
     /* ordinary case later iteration steps:
@@ -1108,8 +1118,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
           printf("|  %3d/%3d   | %9.2e[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
                   itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          printf(")\n");
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file",NULL);
@@ -1128,8 +1137,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
           printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
                   itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          printf(")\n");
+          printf(" (ts=%10.3E,te=%10.3E)",dtsolve_,dtele_);
         }
     }
 
@@ -1140,6 +1148,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
       stopnonliniter=true;
       if (myrank_ == 0)
       {
+        printf("\n");
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
@@ -1162,13 +1171,6 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     xfluidincvel_->PutScalar(0.0);
     fluidincvel_->PutScalar(0.0);
 
-    {
-      // time measurement: application of dbc
-      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(fluidsysmat_,fluidincvel_,fluidresidual_,fluidzeros_,*(fluiddbcmaps_->CondMap()));
-      LINALG::ApplyDirichlettoSystem(xfluidsysmat_,xfluidincvel_,xfluidresidual_,xfluidzeros,*(xfluiddbcmaps_->CondMap()));
-    }
-    
     // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat
     fluidxfluidsysmat_->Add(*fluidsysmat_,false,1.0,0.0);
     fluidxfluidsysmat_->Add(*xfluidsysmat_,false,1.0,1.0);
@@ -1176,11 +1178,26 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     fluidxfluidsysmat_->Add(*Cdu_,false,1.0,1.0);
     fluidxfluidsysmat_->Add(*Cdd_,false,1.0,1.0);
     fluidxfluidsysmat_->Complete();
- 
-    // insert residuals to fluidxfluidresidual
-    fluidxfluidsplitter_.InsertXFluidVector(xfluidresidual_,fluidxfluidresidual_);
-    fluidxfluidsplitter_.InsertFluidVector(fluidresidual_,fluidxfluidresidual_);
+    
+    {
+      // time measurement: application of dbc
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+      //fluid-xfluid dbc
+      Teuchos::RCP<Epetra_Vector> fluidxfluiddbc = LINALG::CreateVector(*fluidxfluidrowmap_,true);
 
+      //build a merged map from fluid and xfluid dbc-maps 
+      std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+      maps.push_back(xfluiddbcmaps_->CondMap());
+      maps.push_back(fluiddbcmaps_->CondMap());
+      Teuchos::RCP<Epetra_Map> fluidxfluiddbcmaps = LINALG::MultiMapExtractor::MergeMaps(maps);
+         
+      const Teuchos::RCP<const Epetra_Vector> fluidxfluidzeros = LINALG::CreateVector(*fluidxfluidrowmap_,true);      
+      LINALG::ApplyDirichlettoSystem(fluidxfluidsysmat_,fluidxfluidincvel_,fluidxfluidresidual_,fluidxfluidzeros,*fluidxfluiddbcmaps);   
+    }   
+    if (myrank_ == 0)
+    {
+      cout << endl;
+    }
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
@@ -1228,7 +1245,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
   }      
   
   Output();
-  MovingFluidOutput("sol_field_fluid_vel_np","Velocity Solution n+1");
+  MovingFluidOutput();
   FluidXFluidBoundaryOutput(fluidxfluidboundarydis);
   
   xfluidincvel_ = Teuchos::null;
@@ -1971,6 +1988,14 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
     const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis
     )
 {
+  const Epetra_Map* fxfboundary_dofcolmap = fluidxfluidboundarydis->DofColMap();
+  fluidxfluidboundarydis->SetState("idispcolnp", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  fluidxfluidboundarydis->SetState("ivelcolnp", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  fluidxfluidboundarydis->SetState("idispcoln", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  fluidxfluidboundarydis->SetState("ivelcoln", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  fluidxfluidboundarydis->SetState("ivelcolnm", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  fluidxfluidboundarydis->SetState("iacccoln", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
+  
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
@@ -1987,7 +2012,7 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
   {
    // -------------------------------------------------------------------
    //              set (pseudo-)time dependent parameters
-   // -------------------------------------------------------------------
+   // -------------------------------------------------------------------   
    step_ += 1;
    time_ += dta_;
    // -------------------------------------------------------------------
@@ -1999,40 +2024,6 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
     }
 
     // -------------------------------------------------------------------
-    //         evaluate dirichlet and neumann boundary conditions
-    // -------------------------------------------------------------------
-    {
-      ParameterList eleparams;
-
-      // other parameters needed by the elements
-      eleparams.set("total time",time_);
-      eleparams.set("delta time",dta_);
-      eleparams.set("thsl",1.0); // no timefac in stationary case
-      eleparams.set("form of convective term",convform_);
-      eleparams.set("fs subgrid viscosity",fssgv_);
- //     eleparams.set("Physical Type", physicaltype_);
-
-      eleparams.set("thermodynamic pressure",thermpressaf_);
-
-      // set vector values needed by elements
-      fluiddis_->ClearState();
-      fluiddis_->SetState("velaf",fluidstate_.velnp_);
-      // predicted dirichlet values
-      // velnp then also holds prescribed new dirichlet values
-      fluiddis_->EvaluateDirichlet(eleparams,fluidstate_.velnp_,null,null,null);
-
-      fluiddis_->ClearState();
-
-      // evaluate Neumann b.c.
-      //eleparams.set("inc_density",density_);
-
-      neumann_loads_->PutScalar(0.0);
-      fluiddis_->SetState("scanp",fluidstate_.scaaf_);
-      fluiddis_->EvaluateNeumann(eleparams,*neumann_loads_);
-      fluiddis_->ClearState();
-    }
-
-    // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
     NonlinearSolve(fluidxfluidboundarydis);
@@ -2040,17 +2031,38 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
-    LiftDrag();
+    //LiftDrag();
 
     // -------------------------------------------------------------------
     //                        compute flow rates
     // -------------------------------------------------------------------
-    ComputeFlowRates();
+   //ComputeFlowRates();
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    Output();
+    //Output();
+    {
+      // compute acceleration at n+1 for xfluid
+      TIMEINT_THETA_BDF2::CalculateAcceleration( 
+          xfluidstate_.velnp_, xfluidstate_.veln_, xfluidstate_.velnm_, xfluidstate_.accn_,
+          timealgo_, step_, theta_, dta_, dtp_,
+          xfluidstate_.accnp_);
+        
+      // compute acceleration at n+1 for fluid
+      Teuchos::RCP<Epetra_Vector> onlyaccn  = fluidvelpressplitter_.ExtractOtherVector(fluidstate_.accn_ );
+      Teuchos::RCP<Epetra_Vector> onlyaccnp = fluidvelpressplitter_.ExtractOtherVector(fluidstate_.accnp_);
+      Teuchos::RCP<Epetra_Vector> onlyvelnm = fluidvelpressplitter_.ExtractOtherVector(fluidstate_.velnm_);
+      Teuchos::RCP<Epetra_Vector> onlyveln  = fluidvelpressplitter_.ExtractOtherVector(fluidstate_.veln_ );
+      Teuchos::RCP<Epetra_Vector> onlyvelnp = fluidvelpressplitter_.ExtractOtherVector(fluidstate_.velnp_);
+
+      TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn ,
+                                                  timealgo_, step_ , theta_, dta_, 
+                                                  dtp_, onlyaccnp);
+
+        // copy back into global vector
+        LINALG::Export(*onlyaccnp,*fluidstate_.accnp_);
+    }    
 
   } // end of time loop
 
@@ -2655,7 +2667,7 @@ void FLD::FluidXFluidImplicitTimeInt::PrepareFluidXFluidBoundaryDofset(const Teu
   fxfivelnm_     = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
   fxfiaccnp_     = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
   fxfiaccn_      = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
-  fxfiincvel_     = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
+  fxfiincvel_    = LINALG::CreateVector(*fluidxfluidboundarydis->DofRowMap(),true);
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -3233,21 +3245,25 @@ void FLD::FluidXFluidImplicitTimeInt::OutputToGmsh(
 }
 /*----------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-void FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput(std::string filestr,
-                                                        std::string name_in_gmsh)
+void FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput()
 {
-  
+  cout << "FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput()" << endl;
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
   const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
+  // get column version of fluidstate_.velnp_
+  Teuchos::RCP<const Epetra_Vector> col_fluidvelnp = DRT::UTILS::GetColVersionOfRowVector(fluiddis_, fluidstate_.velnp_);  
+  
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step_, 5, screen_out, fluiddis_->Comm().MyPID());
+    // fluid velocity Gmsh-output 
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_fluid_vel_np", step_, 5, screen_out, fluiddis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
-      gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
+      gmshfilecontent << "View \" " << "Velocity Solution n+1" << "\" {\n";
+      
       for (int i=0; i<fluiddis_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = fluiddis_->lColElement(i);
@@ -3259,7 +3275,7 @@ void FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput(std::string filestr,
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*fluidstate_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*col_fluidvelnp, myvelnp, lm);
 
         int numparam = actele->NumNode();
         LINALG::SerialDenseMatrix xyze(3,numparam);
@@ -3281,6 +3297,44 @@ void FLD::FluidXFluidImplicitTimeInt::MovingFluidOutput(std::string filestr,
       gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
+
+  // fluid pressure Gmsh-output 
+    const std::string filename_pres = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_fluid_pres_np", step_, 5, screen_out, fluiddis_->Comm().MyPID());
+    std::ofstream gmshfilecontent_pres(filename_pres.c_str());
+
+    {
+      gmshfilecontent_pres << "View \" " << "Pressure Solution n+1" << "\" {\n";
+      for (int i=0; i<fluiddis_->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = fluiddis_->lColElement(i);
+
+        vector<int> lm;
+        vector<int> lmowner;
+        vector<int> lmstride;
+        actele->LocationVector(*fluiddis_, lm, lmowner, lmstride);
+
+        //extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*col_fluidvelnp, myvelnp, lm);
+
+        int numparam = actele->NumNode();
+        LINALG::SerialDenseMatrix xyze(3,numparam);
+        LINALG::SerialDenseVector elementvalues(numparam);
+        
+        for (int inode=0; inode<numparam; ++inode)
+        {
+          elementvalues(inode) = myvelnp[3+(inode*4)];
+          
+          xyze(0,inode) = actele->Nodes()[inode]->X()[0];
+          xyze(1,inode) = actele->Nodes()[inode]->X()[1];
+          xyze(2,inode) = actele->Nodes()[inode]->X()[2];
+         }
+
+        IO::GMSH::cellWithScalarFieldToStream(actele->Shape(), elementvalues, xyze, gmshfilecontent_pres);
+      }
+     gmshfilecontent_pres << "};\n";
+    }
+    gmshfilecontent_pres.close();
     if (screen_out) std::cout << " done" << endl;
   }
 }

@@ -324,9 +324,7 @@ public:
       const double time
       ) const;
   
-  void MovingFluidOutput(std::string filestr,
-                         std::string name_in_gmsh);
-  
+  void MovingFluidOutput();  
   
   void FluidXFluidBoundaryOutput(const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis);
   
