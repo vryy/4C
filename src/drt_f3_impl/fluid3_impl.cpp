@@ -264,7 +264,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are currently not in use
 
-  LINALG::Matrix<nsd_,nen_> edeadaf;
+  LINALG::Matrix<nsd_,nen_> edeadaf(true);
   BodyForce(ele, f3Parameter_, edeadaf);
 
   // ---------------------------------------------------------------------
