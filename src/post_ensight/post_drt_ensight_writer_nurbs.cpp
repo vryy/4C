@@ -1936,7 +1936,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       }
       else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
       {
-        int k;
+        int k(0);
         if (name=="c_1") k=0;
         else if (name=="c_2") k=1;
         else if (name=="c_3") k=2;
@@ -2099,7 +2099,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     {
       my_data.resize(numnp);
 
-      int k;
+      int k(0);
       if (name=="c_1") k=0;
       else if (name=="c_2") k=1;
       else if (name=="c_3") k=2;
