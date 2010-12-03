@@ -264,16 +264,13 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are currently not in use
 
+  LINALG::Matrix<nsd_,nen_> edeadaf;
+  BodyForce(ele, f3Parameter_, edeadaf);
+
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  Epetra_SerialDenseMatrix edeadaf_epetra;
-  BodyForce(ele, f3Parameter_, edeadaf_epetra );
-
-  // a view to the body forces
-  LINALG::Matrix<nsd_,nen_> edeadaf( edeadaf_epetra, true );
-
   double * saccn = NULL;
   double * sveln = NULL;
   double * svelnp = NULL;
@@ -1383,11 +1380,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::BodyForce(
            DRT::ELEMENTS::Fluid3*               ele,
            DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,
-           Epetra_SerialDenseMatrix &           edeadaf )
+           LINALG::Matrix<nsd_,nen_>&           edeadaf)
 {
   vector<DRT::Condition*> myneumcond;
-
-  edeadaf.Shape(nsd_, nen_ );
 
   // check whether all nodes have a unique VolumeNeumann condition
   if (nsd_==3)

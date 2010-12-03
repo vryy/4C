@@ -268,7 +268,7 @@ namespace ELEMENTS
     void BodyForce(
       DRT::ELEMENTS::Fluid3*               ele,           //< pointer to element
       DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,   //< pointer to fluid parameter
-      Epetra_SerialDenseMatrix &           edeadaf        //<
+      LINALG::Matrix<nsd_,nen_> &          edeadaf        //<
       );
 
     //! evaluate shape functions and their derivatives at element center
