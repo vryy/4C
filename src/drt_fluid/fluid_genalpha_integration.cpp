@@ -2548,7 +2548,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         cout << "\n";
 
         // linearisation
-	cout << "Linearisation (0=fixed_point; 1=Newton; 2=minimal): ";
+	cout << "Linearisation (1=fixed_point; 2=Newton; 3=minimal): ";
 	cout << params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
         cout << endl;
 
