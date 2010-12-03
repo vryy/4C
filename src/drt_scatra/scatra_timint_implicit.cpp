@@ -105,7 +105,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   initialvelset_(false),
   lastfluxoutputstep_(-1),
   gstatnumite_(0),
-  gstatincrement_(0.0)
+  gstatincrement_(0.0),
+  project_(false),
+  w_(Teuchos::null),
+  c_(Teuchos::null)
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -423,21 +426,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     const std::string* name = KSPCond[icond]->Get<std::string>("discretization");
     if (*name == "scatra") nummodes++;
   }
-
   if (nummodes > 0)
   {
     project_ = true;
-    w_       = rcp(new Epetra_MultiVector(*dofrowmap,nummodes,true));
-    c_       = rcp(new Epetra_MultiVector(*dofrowmap,nummodes,true));
+    PrepareKrylovSpaceProjection();
     if (myrank_ == 0)
       cout<<"\nSetup of KrylovSpaceProjection:\n"<<
       "    => number of kernel basis vectors: "<<nummodes<<endl<<endl;
-  }
-  else
-  {
-    project_ = false;
-    w_       = Teuchos::null;
-    c_       = Teuchos::null;
   }
 
   return;
@@ -2967,12 +2962,25 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 {
   if (project_)
   {
-    if (isale_ or (step_<=1)) // fixed grid: compute w_,c_ only once!
-    {
-      vector<DRT::Condition*> KSPcond;
-      discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-      int nummodes = KSPcond.size();
+    vector<DRT::Condition*> KSPcond;
+    discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+    int nummodes = KSPcond.size();
 
+    bool justcreated(false);
+    // create vectors if not existing yet
+    if (w_ == Teuchos::null)
+    {
+      w_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+      justcreated = true;
+    }
+    if (c_ == Teuchos::null)
+    {
+      c_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+      justcreated = true;
+    }
+
+    if (isale_ or justcreated) // fixed grid: compute w_,c_ only once at beginning!
+    {
       for (int imode = 0; imode < nummodes; ++imode)
       {
         // zero w and c completely
