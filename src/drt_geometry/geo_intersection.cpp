@@ -154,6 +154,7 @@ void GEO::CellGenerator::Generate( GEO::CUT::Element* element, const tetgenio & 
       {
         int pointidx = out.trifacelist[i*3+j] * 3;
         std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], physCoordCorner.A() );
+        physCoordCorner.Scale( 1./TETGENPOINTSCALE );
 
         element ->LocalCoordinates( physCoordCorner, eleCoordDomainCorner );
         cut_side->LocalCoordinates( physCoordCorner, eleCoordBoundaryCorner );
@@ -190,6 +191,7 @@ void GEO::CellGenerator::Generate( GEO::CUT::Element* element, const tetgenio & 
     {
       int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
       std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], physCoordCorner.A() );
+      physCoordCorner.Scale( 1./TETGENPOINTSCALE );
 
       element ->LocalCoordinates( physCoordCorner, eleCoordDomainCorner );
 

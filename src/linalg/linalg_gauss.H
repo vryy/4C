@@ -1,7 +1,7 @@
 #ifndef LINALG_GAUSS_H
 #define LINALG_GAUSS_H
 
-
+#include <limits>
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace LINALG
@@ -55,7 +55,7 @@ double gaussElimination(
         // search for pivot element
         for ( unsigned i=k+1; i<dim; ++i )
         {
-          pivot = (fabs(A(pivot,pivot)) < fabs(A(i,k))) ? i : pivot;
+          pivot = (fabs(A(pivot,k)) < fabs(A(i,k))) ? i : pivot;
         }
 
         // exchange pivot row and current row
@@ -68,7 +68,7 @@ double gaussElimination(
           std::swap( b(k,0), b(pivot,0) );
         }
 
-        if ( A(k,k)==0 )
+        if ( fabs( A(k,k) ) < std::numeric_limits<double>::min() )
         {
           return 0;
         }

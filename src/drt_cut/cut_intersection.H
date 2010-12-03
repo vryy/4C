@@ -180,7 +180,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
   LINALG::Matrix<numNodesSurface,1> surfaceFunct;
   LINALG::Matrix<numNodesLine,1> lineFunct;
   LINALG::Matrix<2,numNodesSurface> surfaceDeriv1;
-  LINALG::Matrix<2,numNodesLine> lineDeriv1;
+  LINALG::Matrix<1,numNodesLine> lineDeriv1;
 
   LINALG::Matrix<3,3> A;
   LINALG::Matrix<3,1> b;

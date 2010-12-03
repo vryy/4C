@@ -301,7 +301,7 @@ void COMBUST::FlameFront::StorePhiVectors(
 void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi)
 {
   std::cout << "\n---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
-  
+
 if(ReinitModifyPhi==true)
 {
   // Benedikt:
@@ -475,7 +475,7 @@ else // non-ReinitModifyPhi case (standard case)
 
   for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
   {
-    // get node from fluid discretization 
+    // get node from fluid discretization
     const DRT::Node *actnode = fluiddis_->lRowNode(inode);
 
 
@@ -822,7 +822,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //============================================================
   for(int iele=0;iele<fluiddis_->NumMyColElements();iele++)
   {
-    // get element from fluid discretization 
+    // get element from fluid discretization
     const DRT::Element *actele = fluiddis_->lColElement(iele);
 
     //--------------------------------------------------------------------------------------------
@@ -1031,9 +1031,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(2,0) += nodal_grad_tmp(2,0);
 
       }// end loop over all adjacent elements
-#if(0)		  
+#if(0)
 		  // special case for straight_bodyforce
-		  // this is a node of an intersected element 
+		  // this is a node of an intersected element
 		  // the element must be a boundary element!
 		  // assume a continued interface across the domain boundary
 		  if(numberOfElements == 2)
@@ -1042,14 +1042,14 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 		    PHI_SMOOTHED_3D(0,0) = 1.0;
 		    PHI_SMOOTHED_3D(1,0) = 1.0;
 		    PHI_SMOOTHED_3D(2,0) = 0.0;
-		    
+
 		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
 		  }
-#endif	       
-      
+#endif
+
 #if(0)
 		  // special case for Rayleigh-Taylor
-		  // this is a node of an intersected element 
+		  // this is a node of an intersected element
 		  // the element must be a boundary element!
 		  // assume a continued interface across the domain boundary
 		  if(numberOfElements == 2)
@@ -1058,14 +1058,14 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 		    PHI_SMOOTHED_3D(0,0) = 0.0;
 		    PHI_SMOOTHED_3D(1,0) = 2.0;
 		    PHI_SMOOTHED_3D(2,0) = 0.0;
-		    
+
 		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
 		  }
-#endif	  
-		  
+#endif
+
 #if(0)
 		  // special case for flame vortex interaction
-		  // this is a node of an intersected element 
+		  // this is a node of an intersected element
 		  // the element must be a boundary element!
 		  // assume a continued interface across the domain boundary
 		  if(numberOfElements == 2 || numberOfElements == 1)
@@ -1074,12 +1074,12 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 		    PHI_SMOOTHED_3D(0,0) = 0.0;
 		    PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
 		    PHI_SMOOTHED_3D(2,0) = 0.0;
-		    
+
 		    cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
 		  }
-#endif	  
-      
-      
+#endif
+
+
       // weight sum of nodal_grad_tmp 1/number_of_vectors to get an average value
       PHI_SMOOTHED_3D.Scale(1.0/numberOfElements);
     } // end of average (mean value) reconstruction
@@ -1228,7 +1228,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       solver.SetMatrix(MAT);
       solver.SetVectors(PHI_SMOOTHED,RHS);
       solver.Solve();
-      
+
 //      cout << " node:" << (it_node->second)->Id() << endl;
 //      cout << "PHI_SMOOTHED" << PHI_SMOOTHED << endl;
       // set full 3D vector especially important for 2D leastsquares reconstruction
@@ -1285,10 +1285,10 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   LINALG::Export(*gradphirow,*gradphi_);
 
   std::cout << "done" << std::endl;
-  
-  
-  
-//  
+
+
+
+//
 //  //===================================== new 2-Ring version
 //  for(Reconstruct_iterator it_node = nodesToReconstruct.begin(); it_node!= nodesToReconstruct.end(); it_node++)
 //  {
@@ -1311,13 +1311,13 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //        // get all adjacent elements in a 2-Ring
 //        // get adjacent elements to current node actnode (1-Ring)
 //        const DRT::Element* const* elementsOneRing = ptToNode->Elements();
-//    	
-//        
+//
+//
 //        // map of pointers to nodes which must be reconstructed by this processor
 //        // key is the local id at processor
 //        std::map<int, const DRT::Element*> elesinTwoRing;
 //        elesinTwoRing.clear();
-//        
+//
 //        // loop over adjacent elements (1-ring elements)
 //        for(int ele_current=0; ele_current<numberOfElements; ele_current++)
 //        {
@@ -1326,8 +1326,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //
 //          // these are global Ids
 //          const int* ptToNodeIds_adj = ele_adj->NodeIds();
-//          
-//          
+//
+//
 //          for(int currentNode = 0; currentNode < (int)numnode; currentNode++)
 //          {
 //        	  // get local ID
@@ -1338,34 +1338,34 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //
 //              if (curr_lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),curr_GID);
 //
-//        	  
+//
 //        	  // get current Node, the local ID is needed
 //        	  const DRT::Node *actnode = fluiddis_->lColNode(curr_lid);
-//        	  
+//
 //        	  // get pointer to all adjacent elements of this node actnode
 //              const DRT::Element* const* elementsTwoRing = actnode->Elements();
-//        	  
+//
 //              int numberOfElementsTwoRing = actnode->NumElement();
-//              
+//
 //        	  // get all elements of the 2-ring and insert these in a vector
 //              // loop over these elements, insert to map
 //              for(int ele_current_two_ring=0; ele_current_two_ring < numberOfElementsTwoRing; ele_current_two_ring++)
 //              {
 //                  // get current element
 //                  const DRT::Element* ele_Two_Ring = elementsTwoRing[ele_current_two_ring];
-//                  
+//
 //                  // insert in map of all two-ring elements respect to one node
 //                  int lid = elementsTwoRing[ele_current_two_ring]->LID();
 //                  elesinTwoRing[lid] = ele_Two_Ring;
 //              } // end loop over elements in 2-ring
 //          } // end loop over nodes of 1-ring
 //        } // end loop over elements of 1-ring
-//    	
+//
 //        // get node xyze-coordinates
 //        LINALG::Matrix<nsd,1> xyz_node(ptToNode->X());
 ////        cout << "xyz_node" << xyz_node << endl;
-//        
-//        
+//
+//
 //    	const int numberOfTwoRingElements = elesinTwoRing.size();
 ////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << endl;
 //      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
@@ -1375,19 +1375,19 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //      typedef std::map<int, const DRT::Element*> Map_EleOfTwoRing;
 //      typedef Map_EleOfTwoRing::iterator TwoRing_iterator;
 //      int element_counter = 0;
-//      
-//      
+//
+//
 ////      cout << "=====================iterate over elements in two-ring==============" << endl;
 //      for(TwoRing_iterator it_ele = elesinTwoRing.begin(); it_ele!= elesinTwoRing.end(); it_ele++)
 //      {
-//    	  
+//
 //          // get adjacent elements to current node actnode
 //          const DRT::Element* ele_Two_Ring= it_ele->second;
-//          
+//
 //          // get pointer to NodeIds of current element (global Ids)
 //          const int* ptToNodeIds_adj = ele_Two_Ring->NodeIds();
-//          
-//          
+//
+//
 //          // get phi-values of current adjacent element ele_adj
 //          // create vector "ephinp" holding scalar phi values for this element
 //          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
@@ -1440,9 +1440,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //          direction(0) = centerOfGravXYZ(0) - xyz_node(0);
 //          direction(1) = centerOfGravXYZ(1) - xyz_node(1);
 //          direction(2) = centerOfGravXYZ(2) - xyz_node(2);
-//          
+//
 ////          cout << "direction" << direction << endl;
-//          
+//
 //          // calculate ephi at point of gravity via interpolation
 //          static LINALG::Matrix<1,1> phi_adj;
 //          phi_adj.Clear();
@@ -1462,19 +1462,19 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //
 //          double phi_node_value = (*phinp_)[lid];
 ////          cout << "phi_node_value " << phi_node_value << endl;
-//          
+//
 //          // set RHS and MAT for least squares method
 //
 //            RHS_LS(element_counter,0) = phi_adj(0,0) -phi_node_value;
-//            
+//
 //            MAT_LS(element_counter,0) = direction(0);
 //            MAT_LS(element_counter,1) = direction(1);
 //            MAT_LS(element_counter,2) = direction(2);
-//            
+//
 //            MAT_LS(element_counter,3) = 0.5*direction(0)*direction(0);
 //            MAT_LS(element_counter,4) = 0.5*direction(1)*direction(1);
 //            MAT_LS(element_counter,5) = 0.5*direction(2)*direction(2);
-//            
+//
 //            MAT_LS(element_counter,6) = direction(0)*direction(1);
 //            MAT_LS(element_counter,7) = direction(0)*direction(2);
 //            MAT_LS(element_counter,8) = direction(1)*direction(2);
@@ -1482,19 +1482,19 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 ////            MAT_LS(element_counter,1) = direction(0);
 ////            MAT_LS(element_counter,2) = direction(1);
 ////            MAT_LS(element_counter,3) = direction(2);
-////            
+////
 ////            MAT_LS(element_counter,4) = 0.5*direction(0)*direction(0);
 ////            MAT_LS(element_counter,5) = 0.5*direction(1)*direction(1);
 ////            MAT_LS(element_counter,6) = 0.5*direction(2)*direction(2);
-////            
+////
 ////            MAT_LS(element_counter,7) = direction(0)*direction(1);
 ////            MAT_LS(element_counter,8) = direction(0)*direction(2);
 ////            MAT_LS(element_counter,9) = direction(1)*direction(2);
-//            
-//            
+//
+//
 //            element_counter++;
 //      } // end loop over two-ring-elements
-//      
+//
 ////      cout << "MATLS" << endl;
 ////      for(int row = 0; row < element_counter; row++)
 ////      {
@@ -1505,7 +1505,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 ////    	  cout << endl;
 ////      }
 ////      cout << endl;
-//      
+//
 //      // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
 //      // MAT_LS is not square
 //      // -> solve MAT_LS^T * MAT_LS * phi_smoothed = MAT_LS^T * RHS_LS
@@ -1530,7 +1530,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //      solver.SetMatrix(MAT);
 //      solver.SetVectors(PHI_SMOOTHED,RHS);
 //      solver.Solve();
-//      
+//
 ////      cout << " node:" << (it_node->second)->Id() << endl;
 ////      cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << endl;
 //      // set full 3D vector especially important for 2D leastsquares reconstruction
@@ -1543,7 +1543,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 ////        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(7,0);
 ////        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(8,0);
 ////        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(9,0);
-//        
+//
 //        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(0,0);
 //        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(1,0);
 //        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(2,0);
@@ -1590,9 +1590,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 //  LINALG::Export(*gradphirow,*gradphi_);
 //
 //  std::cout << "done" << std::endl;
-//  
-//  
-  
+//
+//
+
 
   return;
 }
@@ -3740,7 +3740,7 @@ void COMBUST::FlameFront::CallTetGen(
 
   //allocate point list
   in.numberofpoints = pointlist.size();
-  in.pointlist = new REAL[in.numberofpoints * dim];
+  in.pointlist = new double[in.numberofpoints * dim];
 
   // TODO: should scale factor be an input parameter? Is it neccessary?
   const double scalefactor = 1.0E7;
@@ -3752,7 +3752,7 @@ void COMBUST::FlameFront::CallTetGen(
     for(int j = 0; j < dim; j++)
     {
       double coord = pointlist[i][j] * scalefactor;
-      in.pointlist[fill] = (REAL) coord;
+      in.pointlist[fill] = (double) coord;
       fill++;
     }
   }
@@ -3860,7 +3860,7 @@ void COMBUST::FlameFront::CallTetGen(
   for(int i = 0; i <  out.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
-      out.pointlist[fill] = (REAL) (out.pointlist[fill] * (1.0/scalefactor));
+      out.pointlist[fill] = (double) (out.pointlist[fill] * (1.0/scalefactor));
       fill++;
     }
 

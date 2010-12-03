@@ -10,6 +10,7 @@
 #include <tetgen.h>
 #endif
 #undef DOT
+#undef REAL
 #endif
 
 #endif

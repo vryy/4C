@@ -54,7 +54,7 @@ bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement * element, 
 
 bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other )
 {
-#if 1
+#if 0
   bool cut = false;
   for ( std::vector<Line*>::iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
   {
@@ -86,7 +86,8 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
     reverse_cuts.erase( *cuts.begin() );
     if ( reverse_cuts.size()==1 )
     {
-      Line * l = mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, element );
+      //Line * l =
+      mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, element );
       return true;
     }
     else if ( reverse_cuts.size()==0 )
@@ -103,7 +104,8 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
   {
     // The normal case. A straight cut.
     std::vector<Point*> c( cuts.begin(), cuts.end() );
-    Line * l = mesh.NewLine( c[0], c[1], this, &other, element );
+    //Line * l =
+    mesh.NewLine( c[0], c[1], this, &other, element );
     return true;
   }
   default:
@@ -120,7 +122,8 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
       for ( unsigned i=0; i<nodes.size(); ++i )
       {
         unsigned j = ( i+1 ) % nodes.size();
-        Line* l = mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, element );
+        //Line* l =
+        mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, element );
       }
       return true;
     }

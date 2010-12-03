@@ -113,7 +113,7 @@ void GEO::Intersection::computeIntersection(
 	if (cutterdis->Name() == "FluidFluidboundary" or cutterdis->Name() == "ALEFluidboundary")
 	{
 	  const bool is_moving = (std::find(MovingFluideleGIDs.begin(), MovingFluideleGIDs.end(), xfemElement->Id()) != MovingFluideleGIDs.end());
-	   	        	   	   	  
+
 	  if(is_moving){
 	    continue;
 	  }
@@ -1516,7 +1516,7 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
       {
         coord[indexNotOneZero[0]] = scalefactor - coord[indexOneZero[0]] - coord[indexOneZero[1]];
         for(int i  = 0; i < 3; i++)
-          in.pointlist[index*3+i] 	= (REAL) coord[i];
+          in.pointlist[index*3+i] 	= (double) coord[i];
 
       }
       else if(indexOneZero.size() == 1)
@@ -1525,16 +1525,16 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
         coord[indexNotOneZero[1]]  = scalefactor - coord[indexNotOneZero[0]] - coord[indexOneZero[0]];
 
         for(int i  = 0; i < 3; i++)
-          in.pointlist[index*3+i] 	= (REAL) coord[i];
+          in.pointlist[index*3+i] 	= (double) coord[i];
       }
       else if(indexOneZero.size() == 0)
       {
         coord[0] = (int) in.pointlist[index*3];
         coord[1] = (int) in.pointlist[index*3 + 1];
         coord[2] = scalefactor - coord[0] - coord[1];
-        in.pointlist[index*3] 	= (REAL) coord[0];
-        in.pointlist[index*3+1] = (REAL) coord[1];
-        in.pointlist[index*3+2]	= (REAL) coord[2];
+        in.pointlist[index*3] 	= (double) coord[0];
+        in.pointlist[index*3+1] = (double) coord[1];
+        in.pointlist[index*3+2]	= (double) coord[2];
       }
     }
   }
@@ -1691,7 +1691,7 @@ void GEO::Intersection::computeCDT(
   const double scalefactor =  1e7;
   // allocate pointlist
   in.numberofpoints = pointList_.size();
-  in.pointlist = new REAL[in.numberofpoints * dim];
+  in.pointlist = new double[in.numberofpoints * dim];
 
   // fill point list
   int fill = 0;
@@ -1699,7 +1699,7 @@ void GEO::Intersection::computeCDT(
     for(int j = 0; j < dim; j++)
     {
       int coord = (int) (pointList_[i].getCoord()(j) * scalefactor);
-      in.pointlist[fill] = (REAL) coord;
+      in.pointlist[fill] = (double) coord;
       fill++;
     }
 
@@ -1818,7 +1818,7 @@ void GEO::Intersection::computeCDT(
   for(int i = 0; i <  out.numberofpoints; i++)
     for(int j = 0; j < dim; j++)
     {
-      out.pointlist[fill] = (REAL) (out.pointlist[fill] * (1.0/scalefactor));
+      out.pointlist[fill] = (double) (out.pointlist[fill] * (1.0/scalefactor));
       fill++;
     }
 

@@ -251,7 +251,7 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, Cel
 
   // allocate pointlist
   in.numberofpoints = points.size();
-  in.pointlist = new REAL[in.numberofpoints * dim];
+  in.pointlist = new double[in.numberofpoints * dim];
 
   int pos = 0;
   for ( std::set<Point*, PointPidLess>::iterator i=points.begin();
@@ -260,6 +260,10 @@ void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, Cel
   {
     Point & p = **i;
     p.Coordinates( & in.pointlist[pos*dim] );
+    for ( int j=0; j<dim; ++j )
+    {
+      in.pointlist[pos*dim+j] *= TETGENPOINTSCALE;
+    }
     pos += 1;
   }
 
@@ -541,6 +545,7 @@ bool GEO::CUT::QuadraticElement::IsCut()
 void GEO::CUT::QuadraticElement::GenerateTetgen( Mesh & mesh, CellGenerator * generator )
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+    //for ( std::vector<Element*>::reverse_iterator i=subelements_.rbegin(); i!=subelements_.rend(); ++i )
   {
     LinearElement * e = dynamic_cast<LinearElement*>( *i );
     e->GenerateTetgen( mesh, this, generator );
@@ -912,7 +917,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::tet4>::FillTetgen( tetgenio & out )
   const int dim = 3;
 
   out.numberofpoints = 4;
-  out.pointlist = new REAL[out.numberofpoints * dim];
+  out.pointlist = new double[out.numberofpoints * dim];
   out.pointmarkerlist = new int[out.numberofpoints];
   std::fill( out.pointmarkerlist, out.pointmarkerlist+out.numberofpoints, 0 );
 

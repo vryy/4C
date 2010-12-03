@@ -52,7 +52,10 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
         {
           throw std::runtime_error( "node ids not consecutive" );
         }
-        Node* n = GetNode( nid, &out.pointlist[pointidx] );
+        LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
+        x.Scale( 1./TETGENPOINTSCALE );
+        //Node* n =
+        GetNode( nid, x.A() );
         nodeidmap[pointidx] = nid;
       }
       else
@@ -61,7 +64,8 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
       }
       nids.push_back( nid );
     }
-    Side * side = CreateTri3( out.trifacemarkerlist[i], nids );
+    //Side * side =
+    CreateTri3( out.trifacemarkerlist[i], nids );
   }
 
   const int numTetNodes = 4;
@@ -82,7 +86,10 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
         {
           throw std::runtime_error( "node ids not consecutive" );
         }
-        Node* n = GetNode( nid, &out.pointlist[pointidx] );
+        LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
+        x.Scale( 1./TETGENPOINTSCALE );
+        //Node* n =
+        GetNode( nid, x.A() );
         nodeidmap[pointidx] = nid;
       }
       else
@@ -96,7 +103,8 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
     {
       throw std::runtime_error( "element ids not consecutive" );
     }
-    Element * e = CreateTet4( eid, nids );
+    //Element * e =
+    CreateTet4( eid, nids );
   }
 }
 
@@ -105,7 +113,7 @@ void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
   const int dim = 3;
 
   out.numberofpoints = nodes_.size();
-  out.pointlist = new REAL[out.numberofpoints * dim];
+  out.pointlist = new double[out.numberofpoints * dim];
   out.pointmarkerlist = new int[out.numberofpoints];
 
   out.numberoftrifaces = sides_.size();
@@ -124,6 +132,10 @@ void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
   {
     Node * n = &*i->second;
     n->Coordinates( &out.pointlist[count*dim] );
+    for ( int j=0; j<dim; ++j )
+    {
+      out.pointlist[count*dim+j] *= TETGENPOINTSCALE;
+    }
     out.pointmarkerlist[count] = n->point()->Position();
     nodeidmap[n->Id()] = count;
     count += 1;
@@ -664,7 +676,8 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
 GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
 {
   bb_.AddPoint( x );
-  Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
+  //Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
+  Point* p = pp_->NewPoint( x, cut_edge, cut_side, MINIMALTOL );
 #if 0
   std::cout << "Mesh::NewPoint: ";
   p->Print();
