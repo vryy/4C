@@ -28,6 +28,8 @@ Maintainer: Caroline Danowski
 #include "../drt_adapter/adapter_thermo.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "../drt_inpar/inpar_tsi.H"
+
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
@@ -138,12 +140,10 @@ namespace TSI
 
     /// setup composed right hand side from field solvers
     // implemented in FSI in the "split level"
-    void SetupRHS(Epetra_Vector& f,bool firstcall=false);
+    void SetupRHS();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(
-      LINALG::BlockSparseMatrixBase& mat  //!< block matrix
-      );
+    void SetupSystemMatrix();
 
     //@}
 
@@ -158,15 +158,46 @@ namespace TSI
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
-    //! Predict constant displacement/temperature, displcacement/temperature rate,
-    //! i.e. the initial guess is equal to the last converged step
-    //! except Dirichlet BCs
-    void PredictConstValueRate();
-
-  protected:
+    //! Is convergence reached of iterative solution technique?
+    //! Keep your fingers crossed...
+    //! \author lw  \date 12/07
+    bool Converged();
 
     /// Outer Iteration loop
     void NewtonFull();
+
+    //! @name Updates
+    //@{
+
+    //! Update iteration
+    void NewtonUpdate();
+
+    //@}
+
+    //! @name Output
+
+    //! Print to screen information about residual forces and displacements
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIter();
+
+    //! Contains text to PrintNewtonIter
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIterText(
+      FILE* ofile  //!< output file handle
+      );
+
+    //! Contains header to PrintNewtonIter
+    //! \author lw (originally) \date 12/07
+    void PrintNewtonIterHeader(
+      FILE* ofile  //!< output file handle
+      );
+
+    //! print statistics of converged Newton-Raphson iteration
+    void PrintNewtonConv();
+
+    //@}
+
+  protected:
 
     /// convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
@@ -175,8 +206,8 @@ namespace TSI
     /*!
       x is the sum of all increments up to this point.
       \param x  (i) composed vector that contains all field vectors
-      \param sx (o) displacements
-      \param tx (o) temperatures
+      \param sx (o) structural vector (e.g. displacements)
+      \param tx (o) thermal vector (e.g. temperatures)
       */
     virtual void ExtractFieldVectors(
       Teuchos::RCP<const Epetra_Vector> x,
@@ -191,6 +222,9 @@ namespace TSI
     {
       return blockrowdofmap_.FullMap();
     }
+
+    /// combined DBC map
+    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     /// set full monolithic dof row map
     /*!
@@ -208,82 +242,77 @@ namespace TSI
     //! @name General purpose algorithm members
     //@{
 
+    bool solveradapttol_;  //!< adapt solver tolerance
+    double solveradaptolbetter_;  //!< tolerance to which is adpated ????
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
 
     //@}
+
+    //! @name Printing and output
+    //@{
+
+    bool printscreen_;  //!< print infos to standard out
+    bool printiter_;  //!< print intermediate iterations during solution
+    bool printerrfile_;  //!< print infos to error file #errfile_
+    FILE* errfile_;  //!< error file handle
+
+    //@}
+
+    //! @name Global vectors
+
+    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+
+    //@}
+
 
   private:
 
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
 
-    /// build block vector from field vectors
-    void SetupVector(Epetra_Vector &f,  ///< full RHS vector of TSI
-      Teuchos::RCP<const Epetra_Vector> sv,  ///< structural RHS vector
-      Teuchos::RCP<const Epetra_Vector> tv  ///< thermal RHS vector
+    /// build block vector from field vectors, e.g. rhs, increment vector
+    void SetupVector(
+      Epetra_Vector &f,  //!< vector of length of all dofs
+      Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
+      Teuchos::RCP<const Epetra_Vector> tv  //!< vector containing only thermal dofs
       );
 
-    // TODO: type of systemmatrix is correct??
     /// block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > systemmatrix_;
-    //    Teuchos::RCP<TSIBlockMatrix> systemmatrix_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
-//    //! @name Iterative solution technique
-//    int iter_;  //!< iteration step
-//    double normfres_;  //!< norm of residual forces
-//    double normtempi_;  //!< norm of residual unknowns
+    //! @name Iterative solution technique
+
+    enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
+    enum INPAR::TSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum INPAR::TSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
+
+    double tolinc_;  //!< tolerance residual temperatures
+    double tolfres_;  //!< tolerance force residual
+    int iter_;  //!< iteration step
+    int itermax_;  //!< maximally permitted iterations
+    int itermin_;  //!< minimally requested iteration
+    bool iterdivercont_;  //!< if TRUE then go on with time integration
+                          //!< even if Newton-Raphson iteration failed
+    double normrhs_;  //!< norm of residual forces
+    double norminc_;  //!< norm of residual unknowns
 
     //@}
 
-    /// needed for ConvergenceCheck()
-    /// maximum iteration steps
-    int itmax_;
-    /// temperature tolerance
-    double ittol_;
-    /// temperature increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> tempincnp_;  //!< \f$\Delta{T}^{<k>}_{n+1}\f$
-    /// displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> dispincnp_;  //!< \f$\Delta{d}^{<k>}_{n+1}\f$
+    //! @name Various global forces
+
+    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
+    Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
+    Teuchos::RCP<Epetra_Vector> incn_;  //!< increment between timestep n and n+1,
+                                               //!< tempn_ in THR, the new solution
+    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
+                                           //!< \f$\Delta{x}^{<k>}_{n+1}\f$
+
+    //@}
 
   }; // Monolithic
 
-
-  /// Base class for all TSI block preconditioning matrices
-  class TSIBlockMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
-  {
-  public:
-
-    /// construction
-    TSIBlockMatrix(
-      const LINALG::MultiMapExtractor& maps,
-      ADAPTER::Structure& structure,
-      ADAPTER::Thermo& thermo
-      );
-
-    /// setup of block matrix
-    virtual void SetupTSIBlockMatrix();
-
-    /** \name Attribute access functions */
-    //@{
-
-    /// Returns a character string describing the operator.
-    virtual const char* Label() const;
-
-    //@}
-
-  protected:
-
-    /** \name Field solver objects (implemented in class BlockPreconditioningMatrix)*/
-    //@{
-
-    Teuchos::RCP<LINALG::Solver> structuresolver_;
-    Teuchos::RCP<LINALG::Solver> thermosolver_;
-
-    //@}
-
-  };  // TSIBlockMatrix
-
 } // namespace TSI
+
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_MONOLITHIC_H

@@ -1288,207 +1288,232 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
   /*----------------------------------------------------------------------*/
-   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
+  Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 
-   setStringToIntegralParameter<INPAR::THR::DynamicType>("DYNAMICTYP","OneStepTheta",
-                                "type of time integration control",
-                                tuple<std::string>(
-                                  "Statics",
-                                  "OneStepTheta",
-                                  "GEMM",
-                                  "GenAlpha"
-                                  ),
-                                tuple<INPAR::THR::DynamicType>(
-                                   INPAR::THR::dyna_statics,
-                                   INPAR::THR::dyna_onesteptheta,
-                                   INPAR::THR::dyna_gemm,
-                                   INPAR::THR::dyna_genalpha),
-                                &tdyn);
+  setStringToIntegralParameter<INPAR::THR::DynamicType>("DYNAMICTYP","OneStepTheta",
+                               "type of time integration control",
+                               tuple<std::string>(
+                                 "Statics",
+                                 "OneStepTheta",
+                                 "GEMM",
+                                 "GenAlpha"
+                                 ),
+                               tuple<INPAR::THR::DynamicType>(
+                                  INPAR::THR::dyna_statics,
+                                  INPAR::THR::dyna_onesteptheta,
+                                  INPAR::THR::dyna_gemm,
+                                  INPAR::THR::dyna_genalpha),
+                               &tdyn);
 
-   // Output type
-   IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
-   IntParameter("RESEVRYELEM",1,"save heat fluxes and other element quantities every RESEVRYELEM steps",&tdyn);
-   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&tdyn);
-   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
+  // Output type
+  IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
+  IntParameter("RESEVRYELEM",1,"save heat fluxes and other element quantities every RESEVRYELEM steps",&tdyn);
+  IntParameter("RESEVRYERGY",0,"write system energies every requested step",&tdyn);
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
 
-   setStringToIntegralParameter<INPAR::THR::InitialField>("INITIALFIELD","zero_field",
-                                "Initial Field for thermal problem",
-                                tuple<std::string>(
-                                  "zero_field",
-                                  "field_by_function",
-                                  "field_by_condition"
-                                  ),
-                                tuple<INPAR::THR::InitialField>(
-                                    INPAR::THR::initfield_zero_field,
-                                    INPAR::THR::initfield_field_by_function,
-                                    INPAR::THR::initfield_field_by_condition
-                                    ),
-                                &tdyn);
-   IntParameter("INITFUNCNO",-1,"function number for thermal initial field",&tdyn);
+  setStringToIntegralParameter<INPAR::THR::InitialField>("INITIALFIELD","zero_field",
+                               "Initial Field for thermal problem",
+                               tuple<std::string>(
+                                "zero_field",
+                                 "field_by_function",
+                                 "field_by_condition"
+                                 ),
+                               tuple<INPAR::THR::InitialField>(
+                                   INPAR::THR::initfield_zero_field,
+                                   INPAR::THR::initfield_field_by_function,
+                                   INPAR::THR::initfield_field_by_condition
+                                   ),
+                               &tdyn);
+  IntParameter("INITFUNCNO",-1,"function number for thermal initial field",&tdyn);
 
-   // Time loop control
-   DoubleParameter("TIMESTEP",0.05,"time step size",&tdyn);
-   IntParameter("NUMSTEP",200,"maximum number of steps",&tdyn);
-   DoubleParameter("MAXTIME",5.0,"maximum time",&tdyn);
-   // Iterationparameters
-   DoubleParameter("TOLTEMP",1.0E-10,
-                   "tolerance in the temperature norm of the Newton iteration",
-                   &tdyn);
-   setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_TEMP","Abs","type of norm for temperature convergence check",
-                                tuple<std::string>(
-                                  "Abs",
-                                  "Rel",
-                                  "Mix"),
-                                tuple<INPAR::THR::ConvNorm>(
-                                  INPAR::THR::convnorm_abs,
-                                  INPAR::THR::convnorm_rel,
-                                  INPAR::THR::convnorm_mix),
-                                &tdyn);
+  // Time loop control
+  DoubleParameter("TIMESTEP",0.05,"time step size",&tdyn);
+  IntParameter("NUMSTEP",200,"maximum number of steps",&tdyn);
+  DoubleParameter("MAXTIME",5.0,"maximum time",&tdyn);
 
-   DoubleParameter("TOLRES",1.0E-08,
-                   "tolerance in the residual norm for the Newton iteration",
-                   &tdyn);
-   setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",
-                                tuple<std::string>(
-                                  "Abs",
-                                  "Rel",
-                                  "Mix"),
-                                tuple<INPAR::THR::ConvNorm>(
-                                  INPAR::THR::convnorm_abs,
-                                  INPAR::THR::convnorm_rel,
-                                  INPAR::THR::convnorm_mix),
-                                &tdyn);
+  // Iterationparameters
+  DoubleParameter("TOLTEMP",1.0E-10,
+                  "tolerance in the temperature norm of the Newton iteration",
+                  &tdyn);
+  setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_TEMP","Abs","type of norm for temperature convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel",
+                                 "Mix"),
+                               tuple<INPAR::THR::ConvNorm>(
+                                 INPAR::THR::convnorm_abs,
+                                 INPAR::THR::convnorm_rel,
+                                 INPAR::THR::convnorm_mix),
+                               &tdyn);
 
-   setStringToIntegralParameter<INPAR::THR::BinaryOp>("NORMCOMBI_RESFTEMP","And","binary operator to combine temperature and residual force values",
-                                tuple<std::string>(
-                                  "And",
-                                  "Or"),
-                                tuple<INPAR::THR::BinaryOp>(
-                                  INPAR::THR::bop_and,
-                                  INPAR::THR::bop_or),
-                                &tdyn);
+  DoubleParameter("TOLRES",1.0E-08,
+                  "tolerance in the residual norm for the Newton iteration",
+                  &tdyn);
+  setStringToIntegralParameter<INPAR::THR::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel",
+                                 "Mix"),
+                               tuple<INPAR::THR::ConvNorm>(
+                                 INPAR::THR::convnorm_abs,
+                                 INPAR::THR::convnorm_rel,
+                                 INPAR::THR::convnorm_mix),
+                               &tdyn);
 
+  setStringToIntegralParameter<INPAR::THR::BinaryOp>("NORMCOMBI_RESFTEMP","And","binary operator to combine temperature and residual force values",
+                               tuple<std::string>(
+                                 "And",
+                                 "Or"),
+                               tuple<INPAR::THR::BinaryOp>(
+                                 INPAR::THR::bop_and,
+                                 INPAR::THR::bop_or),
+                               &tdyn);
 
-   IntParameter("MAXITER",50,
-                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
-                &tdyn);
-   IntParameter("MINITER",0,
-                "minimum number of iterations to be done within Newton-Raphson loop",
-                &tdyn);
-   setStringToIntegralParameter<INPAR::THR::VectorNorm>("ITERNORM","L2","type of norm to be applied to residuals",
-                                tuple<std::string>(
-                                  "L1",
-                                  "L2",
-                                  "Rms",
-                                  "Inf"),
-                                tuple<INPAR::THR::VectorNorm>(
-                                  INPAR::THR::norm_l1,
-                                  INPAR::THR::norm_l2,
-                                  INPAR::THR::norm_rms,
-                                  INPAR::THR::norm_inf),
-                                &tdyn);
-   setStringToIntegralParameter<int>("DIVERCONT","No",
-                                     "Go on with time integration even if Newton-Raphson iteration failed",
+  IntParameter("MAXITER",50,
+               "maximum number of iterations allowed for Newton-Raphson iteration before failure",
+               &tdyn);
+  IntParameter("MINITER",0,
+               "minimum number of iterations to be done within Newton-Raphson loop",
+               &tdyn);
+  setStringToIntegralParameter<INPAR::THR::VectorNorm>("ITERNORM","L2","type of norm to be applied to residuals",
+                               tuple<std::string>(
+                                 "L1",
+                                 "L2",
+                                 "Rms",
+                                 "Inf"),
+                               tuple<INPAR::THR::VectorNorm>(
+                                 INPAR::THR::norm_l1,
+                                 INPAR::THR::norm_l2,
+                                 INPAR::THR::norm_rms,
+                                 INPAR::THR::norm_inf),
+                               &tdyn);
+  setStringToIntegralParameter<int>("DIVERCONT","No",
+                                    "Go on with time integration even if Newton-Raphson iteration failed",
                                      yesnotuple,yesnovalue,&tdyn);
 
-   setStringToIntegralParameter<INPAR::THR::NonlinSolTech>("NLNSOL","fullnewton","Nonlinear solution technique",
-                                tuple<std::string>(
-                                  "vague",
-                                  "fullnewton"),
-                                tuple<INPAR::THR::NonlinSolTech>(
-                                  INPAR::THR::soltech_vague,
-                                  INPAR::THR::soltech_newtonfull),
-                                &tdyn);
+  setStringToIntegralParameter<INPAR::THR::NonlinSolTech>("NLNSOL","fullnewton","Nonlinear solution technique",
+                               tuple<std::string>(
+                                 "vague",
+                                 "fullnewton"),
+                                 tuple<INPAR::THR::NonlinSolTech>(
+                                     INPAR::THR::soltech_vague,
+                                     INPAR::THR::soltech_newtonfull),
+                                     &tdyn);
 
-   setStringToIntegralParameter<INPAR::THR::PredEnum>("PREDICT","ConstTemp","Predictor of iterative solution techniques",
-                                tuple<std::string>(
-                                  "Vague",
-                                  "ConstTemp",
-                                  "ConstTempRate",
-                                  "TangTemp"),
-                                tuple<INPAR::THR::PredEnum>(
-                                  INPAR::THR::pred_vague,
-                                  INPAR::THR::pred_consttemp,
-                                  INPAR::THR::pred_consttemprate,
-                                  INPAR::THR::pred_tangtemp),
-                                &tdyn);
+  setStringToIntegralParameter<INPAR::THR::PredEnum>("PREDICT","ConstTemp","Predictor of iterative solution techniques",
+                               tuple<std::string>(
+                                 "Vague",
+                                 "ConstTemp",
+                                 "ConstTempRate",
+                                 "TangTemp"),
+                               tuple<INPAR::THR::PredEnum>(
+                                 INPAR::THR::pred_vague,
+                                 INPAR::THR::pred_consttemp,
+                                 INPAR::THR::pred_consttemprate,
+                                 INPAR::THR::pred_tangtemp),
+                               &tdyn);
 
-   // convergence criteria solver adaptivity
-   setStringToIntegralParameter<int>("ADAPTCONV","No",
-                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
-                                yesnotuple,yesnovalue,&tdyn);
-   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
+  // convergence criteria solver adaptivity
+  setStringToIntegralParameter<int>("ADAPTCONV","No",
+                              "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                              yesnotuple,yesnovalue,&tdyn);
+  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&tdyn);
 
-   /*----------------------------------------------------------------------*/
-   /* parameters for generalised-alpha thermal integrator */
-   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
+  /*----------------------------------------------------------------------*/
+  /* parameters for generalised-alpha thermal integrator */
+  Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
 
-   setStringToIntegralParameter<INPAR::THR::MidAverageEnum>("GENAVG","ImrLike",
-                                "mid-average type of internal forces",
-                                tuple<std::string>(
-                                  "Vague",
-                                  "ImrLike",
-                                  "TrLike"),
-                                tuple<INPAR::THR::MidAverageEnum>(
-                                  INPAR::THR::midavg_vague,
-                                  INPAR::THR::midavg_imrlike,
-                                  INPAR::THR::midavg_trlike),
-                                &tgenalpha);
-   DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&tgenalpha);
-   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&tgenalpha);
-   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
-   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
+  setStringToIntegralParameter<INPAR::THR::MidAverageEnum>("GENAVG","ImrLike",
+                              "mid-average type of internal forces",
+                              tuple<std::string>(
+                                "Vague",
+                                "ImrLike",
+                                "TrLike"),
+                              tuple<INPAR::THR::MidAverageEnum>(
+                                INPAR::THR::midavg_vague,
+                                INPAR::THR::midavg_imrlike,
+                                INPAR::THR::midavg_trlike),
+                              &tgenalpha);
+  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&tgenalpha);
+  DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&tgenalpha);
+  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
+  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
 
-   /*----------------------------------------------------------------------*/
-   /* parameters for one-step-theta thermal integrator */
-   Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA",false,"");
+  /*----------------------------------------------------------------------*/
+  /* parameters for one-step-theta thermal integrator */
+  Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA",false,"");
 
-   DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&tonesteptheta);
+  DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&tonesteptheta);
 
-   /*----------------------------------------------------------------------*/
-   Teuchos::ParameterList& tsidyn = list->sublist(
-     "TSI DYNAMIC",false,
-     "Thermo Structure Interaction\n"
-     "Partitioned TSI solver with various coupling methods"
-     );
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& tsidyn = list->sublist(
+   "TSI DYNAMIC",false,
+   "Thermo Structure Interaction\n"
+   "Partitioned TSI solver with various coupling methods"
+   );
 
-   // Coupling strategy for (partitioned and monolithic) TSI solvers
-   setStringToIntegralParameter<INPAR::TSI::SolutionSchemeOverFields>(
-                                "COUPALGO","tsi_iterstagg",
-                                "Coupling strategies for TSI solvers",
-                                tuple<std::string>(
-                                  "tsi_oneway",
-                                  "tsi_sequstagg",
-                                  "tsi_iterstagg",
-                                  "tsi_monolithic"
-                                  ),
-                                tuple<INPAR::TSI::SolutionSchemeOverFields>(
-                                  INPAR::TSI::OneWay,
-                                  INPAR::TSI::SequStagg,
-                                  INPAR::TSI::IterStagg,
-                                  INPAR::TSI::Monolithic
-                                  ),
-                                &tsidyn);
+  // Coupling strategy for (partitioned and monolithic) TSI solvers
+  setStringToIntegralParameter<INPAR::TSI::SolutionSchemeOverFields>(
+                              "COUPALGO","tsi_iterstagg",
+                              "Coupling strategies for TSI solvers",
+                              tuple<std::string>(
+                                "tsi_oneway",
+                                "tsi_sequstagg",
+                                "tsi_iterstagg",
+                                "tsi_monolithic"
+                                ),
+                              tuple<INPAR::TSI::SolutionSchemeOverFields>(
+                                INPAR::TSI::OneWay,
+                                INPAR::TSI::SequStagg,
+                                INPAR::TSI::IterStagg,
+                                INPAR::TSI::Monolithic
+                                ),
+                              &tsidyn);
 
-   // decide in partitioned TSI which one-way coupling should be used
-   setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
-                                "Coupling variable",
-                                tuple<std::string>(
-                                  "Displacement",
-                                  "Temperature"
-                                  ),
-                                tuple<int>(0,1),
-                                &tsidyn);
+  // decide in partitioned TSI which one-way coupling should be used
+  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                              "Coupling variable",
+                              tuple<std::string>(
+                                "Displacement",
+                                "Temperature"
+                                ),
+                              tuple<int>(0,1),
+                              &tsidyn);
 
-   // Output type
-   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
-   // Time loop control
-   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
-   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&tsidyn);
-   DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
-   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&tsidyn);
-   IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&tsidyn);
-   IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
+  // Output type
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
+  // Time loop control
+  IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&tsidyn);
+  DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&tsidyn);
+  IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&tsidyn);
+  IntParameter("ITEMIN",1,"Minimal number of iterations over fields",&tsidyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
+
+  // Iterationparameters
+  setStringToIntegralParameter<INPAR::TSI::ConvNorm>("NORM_INC","Abs","type of norm for primary variables convergence check",
+                               tuple<std::string>(
+                                 "Abs"
+                                 ),
+                               tuple<INPAR::TSI::ConvNorm>(
+                                 INPAR::TSI::convnorm_abs
+                                 ),
+                               &tsidyn);
+
+  setStringToIntegralParameter<INPAR::TSI::ConvNorm>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                 tuple<std::string>(
+                                   "Abs"
+                                   ),
+                                 tuple<INPAR::TSI::ConvNorm>(
+                                   INPAR::TSI::convnorm_abs
+                                   ),
+                                 &tsidyn);
+
+  setStringToIntegralParameter<INPAR::TSI::BinaryOp>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                               tuple<std::string>("And"),
+                               tuple<INPAR::TSI::BinaryOp>(INPAR::TSI::bop_and),
+                               &tsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");

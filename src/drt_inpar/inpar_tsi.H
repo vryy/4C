@@ -38,6 +38,22 @@ namespace TSI
     Monolithic
   };
 
+  /// @name Solution technique and related
+
+  /// type of norm to check for convergence
+  enum ConvNorm
+  {
+    convnorm_abs  ///< absolute norm
+  };
+
+  /// type of norm to check for convergence
+  enum BinaryOp
+  {
+    bop_and  ///<  and
+  };
+
+  //@}
+
 
 }  // namespace TSI
 
