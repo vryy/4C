@@ -207,6 +207,9 @@ class StrategyBase
 
   protected:
 
+    // don't want cctor (= operator impossible anyway for abstract class)
+    StrategyBase(const StrategyBase& old);
+
     RCP<Epetra_Map>        problemrowmap_;  // global problem dof row map (not only interfaces)
     RCP<Epetra_Comm>       comm_;           // communicator
     Teuchos::ParameterList scontact_;       // containing contact input parameters

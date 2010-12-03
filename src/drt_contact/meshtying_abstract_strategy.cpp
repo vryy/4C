@@ -431,14 +431,16 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // export Xslavemod to fully overlapping column map for current interface
-    Epetra_Vector Xslavemodcol(*(interface_[i]->SlaveFullDofs()),false);
+  	RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*gsdofrowmap_);
+  	RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*gsnoderowmap_);
+    Epetra_Vector Xslavemodcol(*fullsdofs,false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
     
     // loop over all slave nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveFullNodes()->NumMyElements(); ++j)
+    for (int j=0; j<fullsnodes->NumMyElements(); ++j)
     {
     	// get global ID of current node
-      int gid = interface_[i]->SlaveFullNodes()->GID(j);
+      int gid = fullsnodes->GID(j);
       
       // be careful to modify BOTH mtnode in interface discret ...
       // (check if the node is available on this processor)

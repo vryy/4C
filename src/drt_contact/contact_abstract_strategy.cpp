@@ -836,9 +836,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 {
-  
-  if (friction_ == false)
-    return;
+	// only for fricional contact
+  if (!friction_) return;
   
   // transformation of slave displacement dofs
   // Dmod       ---->   D * T^(-1)

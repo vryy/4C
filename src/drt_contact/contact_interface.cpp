@@ -64,8 +64,9 @@ Maintainer: Alexander Popp
 CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
                                   const int dim,
                                   const Teuchos::ParameterList& icontact,
-                                  bool selfcontact) :
-MORTAR::MortarInterface(id,comm,dim,icontact),
+                                  bool selfcontact,
+                                  bool redundant) :
+MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
 selfcontact_(selfcontact),
 friction_(false)
 {
@@ -73,6 +74,13 @@ friction_(false)
   INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
+
+  // check for redundant slave storage
+  // (needed for self contact but not wanted for general contact)
+  if (selfcontact_ && !redundant)
+  	dserror("ERROR: We need redundant interface storage for self contact");
+  if (!selfcontact_ && redundant)
+  	dserror("ERROR: We do not want redundant interface storage for contact");
 
   return;
 }
@@ -150,8 +158,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	//**********************************************************************
   // perform contact search (still with non-optimal distribution)
   Initialize();
-  if (SearchAlg()==INPAR::MORTAR::search_bfnode)          EvaluateSearch();
-  else if (SearchAlg()==INPAR::MORTAR::search_bfele)      EvaluateSearchBruteForce(SearchParam());
+  if (SearchAlg()==INPAR::MORTAR::search_bfele)           EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
   else                                                    dserror("ERROR: Invalid search algorithm");
 
@@ -170,7 +177,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
     MORTAR::MortarElement* cele = static_cast<MORTAR::MortarElement*>(ele);
 
     // store element id and adjacent node ids
-    int close = cele->NumSearchElements();
+    int close = cele->MoData().NumSearchElements();
     if (close > 0)
     {
     	closeele.push_back(gid);
@@ -184,11 +191,15 @@ bool CONTACT::CoInterface::Redistribute(int index)
   }
 
   // loop over all elements to reset candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  // (use standard slave column map)
+  for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
+  	int gid = SlaveColElements()->GID(i);
+		DRT::Element* ele = Discret().gElement(gid);
+		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->MoData().SearchElements().resize(0);
   }
 
   // we need an arbitrary preliminary element row map
@@ -224,7 +235,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   }
 
   //**********************************************************************
-	// (3) PREPARATIONS decide how many procs are used
+	// (3a) PREPARATIONS decide how many procs are used
 	//**********************************************************************
 	// first we assume that all procs will be used
 	int scproc = numproc;
@@ -254,6 +265,38 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	  cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
 	  cout << "\nRedistributing interface using 3-PARMETIS.......";
 	}
+
+  //**********************************************************************
+	// (3b) PREPARATIONS build initial node graph
+	//**********************************************************************
+	// create graph object
+	Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*SlaveRowNodes(),108,false));
+
+	// loop over all row nodes to fill graph
+	for (int k=0;k<SlaveRowNodes()->NumMyElements();++k)
+	{
+		int gid = SlaveRowNodes()->GID(k);
+		DRT::Node* node = Discret().gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
+		// find adjacent elements first
+		for (int k=0;k<node->NumElement();++k)
+		{
+			// store adjacent nodes
+			DRT::Element* ele = node->Elements()[k];
+			int numnode = ele->NumNode();
+			vector<int> nodeids(numnode);
+			for (int n=0;n<numnode;++n) nodeids[n] = ele->NodeIds()[n];
+
+			int err = graph->InsertGlobalIndices(gid,numnode,&nodeids[0]);
+			if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+			if (err==1) dserror("graph->InsertGlobalIndices returned %d",err);
+		}
+	}
+
+	// fill graph and optimize storage
+	graph->FillComplete();
+	graph->OptimizeStorage();
 
 	//**********************************************************************
 	// (4) CLOSE SLAVE redistribution
@@ -381,35 +424,31 @@ bool CONTACT::CoInterface::Redistribute(int index)
 	// this is not possible for the node column map. Some necessary
 	// information on ghosting at the transition between close and non-close
 	// slave region would always be missed! Thus, we reconstruct a
-	// suitable slave node column map by hand here. This is quite simply
-	// done by finding all adjacent nodes to the row nodes of each proc.
+	// suitable slave node column map "by hand" here. This is quite simply
+	// done by exporting the initial node graph to the new distribution
+	// and by then asking for its column map.
 
-	// build slave node column map
-	set<int> lcn;
-	vector<int> vlcn;
+	 // create the output graph (with new slave node row map) and export to it
+	 RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(Copy,*srownodes,108,false));
+	 Epetra_Export exporter(graph->RowMap(),*srownodes);
+	 int err = outgraph->Export(*graph,exporter,Add);
+	 if (err<0) dserror("Graph export returned err=%d",err);
 
-	// loop over all row nodes and find adjacent nodes
-	for (int i=0;i<srownodes->NumMyElements();++i)
-	{
-    int gid = srownodes->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+	// trash old graph
+	graph=null;
 
-    // find adjacent elements first
-    for (int k=0;k<node->NumElement();++k)
-    {
-    	// store adjacent nodes
-    	DRT::Element* ele = node->Elements()[k];
-    	for (int n=0;n<ele->NumNode();++n)
-    		lcn.insert(ele->NodeIds()[n]);
-    }
-	}
+	// call fill complete and optimize storage
+	outgraph->FillComplete();
+	outgraph->OptimizeStorage();
 
-	// transform set to vector
-	for (iter=lcn.begin();iter!=lcn.end();++iter) vlcn.push_back(*iter);
-	sort(vlcn.begin(),vlcn.end());
-	RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(-1,(int)vlcn.size(),&vlcn[0],0,Comm()));
+	// get column map from the graph -> build slave node column map
+	// (do stupid conversion from Epetra_BlockMap to Epetra_Map)
+	const Epetra_BlockMap& bcol = outgraph->ColMap();
+	RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),bcol.NumMyElements(),bcol.MyGlobalElements(),0,Comm()));
 
+	// trash new graph
+	outgraph=null;
+	
 	// merge interface node column map from slave and master parts
 	RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
@@ -450,7 +489,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
     CoElement* selement = static_cast<CoElement*>(ele1);
     
     // bool indicating coupling partners
-    bool add = (selement->NumSearchElements()>0);
+    bool add = (selement->MoData().NumSearchElements()>0);
     
     // check if this element has any coupling partners and add
     // element ID to input variable loadele if so
@@ -462,23 +501,6 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
   }
   
   return;	
-}
-
-/*----------------------------------------------------------------------*
- | create interface ghosting (public)                         popp 10/10|
- *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::CreateInterfaceGhosting()
-{
-	// TODO: we still do full ghosting of all SLAVE and MASTER elements
-	// -> this is supposed to go away one day...
-	// -> in a first step, slave redundancy could be removed (except for self contact)
-	// -> in a second step, master redundancy could be removed, too
-
-	// derived version not yet implemented / needed
-	// refer back to base class method instead
-	MORTAR::MortarInterface::CreateInterfaceGhosting();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -511,7 +533,7 @@ void CONTACT::CoInterface::CreateSearchTree()
       SetState("displacement",zero);
 
       // create fully overlapping map of all contact elements
-      RCP<Epetra_Map> elefullmap = rcp(new Epetra_Map(*idiscret_->ElementColMap()));
+      RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
 
       // create binary tree object for self contact search
       // (TODO: NOTE THAT SELF CONTACT SEARCH IS NOT YET PARALLELIZED!)
@@ -523,9 +545,12 @@ void CONTACT::CoInterface::CreateSearchTree()
     {
       // get out of here if not participating in interface
       if (!lComm()) return;
+
+      // create fully overlapping map of all master elements
+      RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
       
       // create binary tree object for contact search and setup tree
-      binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap_,Dim(),SearchParam()));
+      binarytree_ = rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
 
       // initialize active contact nodes via binarytree
       // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
@@ -652,13 +677,314 @@ void CONTACT::CoInterface::Initialize()
     }
   }
 
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  // loop over all elements to reset candidates / search lists
+  // (use standard slave column map)
+  for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-    CONTACT::CoElement* element = static_cast<CONTACT::CoElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
+  	int gid = SlaveColElements()->GID(i);
+		DRT::Element* ele = Discret().gElement(gid);
+		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->MoData().SearchElements().resize(0);
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute element areas (public)                            popp 11/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::SetElementAreas()
+{
+	//**********************************************************************
+	// In general, it is sufficient to compute element areas only for
+	// all elements in the standard slave column map. However, self contact
+	// is an exception here and we need the element areas of all elements
+	// (slave and master) in the fully overlapping column map there. At the
+	// same time we initialize the element data containers for self contact.
+	//**********************************************************************
+
+	if (SelfContact())
+	{
+		// loop over all elements to set current element length / area
+		// (use fully overlapping column map)
+		for (int i=0;i<idiscret_->NumMyColElements();++i)
+		{
+			MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+			element->InitializeDataContainer();
+			element->MoData().Area()=element->ComputeArea();
+		}
+	}
+	else
+	{
+		// refer call back to base class version
+		MORTAR::MortarInterface::SetElementAreas();
+	}
+
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  export nodal normals (public)                             popp 11/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::ExportNodalNormals()
+{
+	// create empty data objects
+	map<int,RCP<Epetra_SerialDenseMatrix> > triad;
+
+	map<int,vector<int> > n_x_key;
+	map<int,vector<int> > n_y_key;
+	map<int,vector<int> > n_z_key;
+	map<int,vector<int> > txi_x_key;
+	map<int,vector<int> > txi_y_key;
+	map<int,vector<int> > txi_z_key;
+	map<int,vector<int> > teta_x_key;
+	map<int,vector<int> > teta_y_key;
+	map<int,vector<int> > teta_z_key;
+
+	map<int,vector<double> > n_x_val;
+	map<int,vector<double> > n_y_val;
+	map<int,vector<double> > n_z_val;
+	map<int,vector<double> > txi_x_val;
+	map<int,vector<double> > txi_y_val;
+	map<int,vector<double> > txi_z_val;
+	map<int,vector<double> > teta_x_val;
+	map<int,vector<double> > teta_y_val;
+	map<int,vector<double> > teta_z_val;
+
+	map<int,double>::iterator iter;
+
+  // build info on row map
+  for(int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    // fill nodal matrix
+    RCP<Epetra_SerialDenseMatrix> loc = rcp(new Epetra_SerialDenseMatrix(3,3));
+    (*loc)(0,0) = cnode->MoData().n()[0];
+    (*loc)(1,0) = cnode->MoData().n()[1];
+    (*loc)(2,0) = cnode->MoData().n()[2];
+    (*loc)(0,1) = cnode->CoData().txi()[0];
+		(*loc)(1,1) = cnode->CoData().txi()[1];
+		(*loc)(2,1) = cnode->CoData().txi()[2];
+		(*loc)(0,2) = cnode->CoData().teta()[0];
+		(*loc)(1,2) = cnode->CoData().teta()[1];
+		(*loc)(2,2) = cnode->CoData().teta()[2];
+
+    triad[gid] = loc;
+
+    // fill nodal derivative vectors
+    vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+    for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
+    {
+    	n_x_key[gid].push_back(iter->first);
+    	n_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
+    {
+    	n_y_key[gid].push_back(iter->first);
+    	n_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
+    {
+    	n_z_key[gid].push_back(iter->first);
+    	n_z_val[gid].push_back(iter->second);
+    }
+
+    for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
+    {
+    	txi_x_key[gid].push_back(iter->first);
+    	txi_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
+    {
+    	txi_y_key[gid].push_back(iter->first);
+    	txi_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
+    {
+    	txi_z_key[gid].push_back(iter->first);
+    	txi_z_val[gid].push_back(iter->second);
+    }
+
+    for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
+    {
+    	teta_x_key[gid].push_back(iter->first);
+    	teta_x_val[gid].push_back(iter->second);
+    }
+    for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
+    {
+    	teta_y_key[gid].push_back(iter->first);
+    	teta_y_val[gid].push_back(iter->second);
+    }
+    for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
+    {
+    	teta_z_key[gid].push_back(iter->first);
+    	teta_z_val[gid].push_back(iter->second);
+    }
+  }
+
+  // communicate from slave node row to column map
+  // (use boundary map to include slave side boundary nodes)
+  DRT::Exporter ex(*snoderowmap_,*snodecolmapbound_,Comm());
+  ex.Export(triad);
+
+  ex.Export(n_x_key);
+  ex.Export(n_x_val);
+  ex.Export(n_y_key);
+  ex.Export(n_y_val);
+  ex.Export(n_z_key);
+  ex.Export(n_z_val);
+
+  ex.Export(txi_x_key);
+  ex.Export(txi_x_val);
+  ex.Export(txi_y_key);
+  ex.Export(txi_y_val);
+  ex.Export(txi_z_key);
+  ex.Export(txi_z_val);
+
+  ex.Export(teta_x_key);
+  ex.Export(teta_x_val);
+  ex.Export(teta_y_key);
+  ex.Export(teta_y_val);
+  ex.Export(teta_z_key);
+  ex.Export(teta_z_val);
+
+  // extract info on column map
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+  {
+  	// only do something for ghosted nodes
+  	int gid = snodecolmapbound_->GID(i);
+  	if (snoderowmap_->MyGID(gid)) continue;
+
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    // extract info
+    RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    cnode->MoData().n()[0]    = (*loc)(0,0);
+    cnode->MoData().n()[1]    = (*loc)(1,0);
+    cnode->MoData().n()[2]    = (*loc)(2,0);
+    cnode->CoData().txi()[0]  = (*loc)(0,1);
+		cnode->CoData().txi()[1]  = (*loc)(1,1);
+		cnode->CoData().txi()[2]  = (*loc)(2,1);
+		cnode->CoData().teta()[0] = (*loc)(0,2);
+		cnode->CoData().teta()[1] = (*loc)(1,2);
+		cnode->CoData().teta()[2] = (*loc)(2,2);
+
+		// extract derivative info
+		vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+		vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+		vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+    for (int k=0;k<(int)(derivn.size());++k)
+      derivn[k].clear();
+    derivn.resize(3);
+    for (int k=0;k<(int)(derivtxi.size());++k)
+      derivtxi[k].clear();
+    derivtxi.resize(3);
+    for (int k=0;k<(int)(derivteta.size());++k)
+      derivteta[k].clear();
+    derivteta.resize(3);
+
+		for (int k=0;k<(int)(n_x_key[gid].size());++k)
+			(cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+		for (int k=0;k<(int)(n_y_key[gid].size());++k)
+			(cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+		for (int k=0;k<(int)(n_z_key[gid].size());++k)
+			(cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+
+		for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+			(cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+		for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+			(cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+		for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+			(cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+
+		for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+			(cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+		for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+			(cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+		for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+			(cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+  }
+
+  // free memory
+  triad.clear();
+
+  n_x_key.clear();
+  n_y_key.clear();
+  n_z_key.clear();
+  txi_x_key.clear();
+  txi_y_key.clear();
+  txi_z_key.clear();
+  teta_x_key.clear();
+  teta_y_key.clear();
+  teta_z_key.clear();
+
+  n_x_val.clear();
+  n_y_val.clear();
+  n_z_val.clear();
+  txi_x_val.clear();
+  txi_y_val.clear();
+  txi_z_val.clear();
+  teta_x_val.clear();
+  teta_y_val.clear();
+  teta_z_val.clear();
+
+  // print nodal normals
+  /*for (int p=0;p<Comm().NumProc();++p)
+  {
+  	// one proc after the other
+  	if (p==Comm().MyPID())
+  	{
+  		cout << "\n*****\nPROC " << p << "\n*****" << endl;
+  		for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+			{
+				int gid = snodecolmapbound_->GID(i);
+				DRT::Node* node = idiscret_->gNode(gid);
+				if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+				CoNode* cnode = static_cast<CoNode*>(node);
+
+				// print normal and tangents at each slave node
+				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+						 << " Normal: " << cnode->MoData().n()[0]
+				     << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
+				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+						 << " TXi: " << cnode->CoData().txi()[0]
+						 << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << endl;
+				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+						 << " TEta: " << cnode->CoData().teta()[0]
+						 << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << endl;
+
+				// print linearizations at each slave node
+				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
+				for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
+					cout << "\n" << iter->first << "\t" << iter->second;
+				cout << endl;
+				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
+				for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
+					cout << "\n" << iter->first << "\t" << iter->second;
+				cout << endl;
+				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
+				for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
+					cout << "\n" << iter->first << "\t" << iter->second;
+				cout << endl;
+			}
+  		cout << endl << endl;
+  	}
+
+  	// barrier
+  	Comm().Barrier();
+  }*/
 
   return;
 }
@@ -694,23 +1020,22 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // update master/slave sets of interface
     UpdateMasterSlaveSets();
     
-    // initialize / reset data container
-    for (int i=0; i<SlaveFullNodesBound()->NumMyElements(); ++i)
+    // initialize node data container
+    // (include slave side boundary nodes / crosspoints)
+    for (int i=0; i<SlaveColNodesBound()->NumMyElements(); ++i)
     {
-      int gid = SlaveFullNodesBound()->GID(i);
+      int gid = SlaveColNodesBound()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
       MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(node);
 
       // initialize container if not yet initialized before
-      // loop over all slave column nodes on the current interface
-      // (include slave side boundary nodes / crosspoints)
-      if (SlaveColNodesBound()->MyGID(gid))
-        mnode->InitializeDataContainer();
-      // reset containter for all non-column slave nodes
-      else
-      	mnode->ResetDataContainer();
+      mnode->InitializeDataContainer();
     }
+
+    // no initialization of element data container as this would
+    // possibly destroy the information on search elements again
+    // (this was already done in SetElementAreas())
   }
 
   // *********************************************************************
@@ -719,7 +1044,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   //
   // 1) Combined Update and Contact Search
   // -> In this case we only have to call SearchCOntactCombined(), which
-  //    does buth top-down update (where necessary) and search.
+  //    does both top-down update (where necessary) and search.
   //
   // 2) Separate Update and Contact Search
   // -> In this case we have to explicitly call and updating routine, i.e.
@@ -753,7 +1078,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // search for contact with a separate algorithm
     binarytree_->SearchSeparate();
 
-    // search for contact with an combined algorithm
+    // search for contact with a combined algorithm
     //binarytree_->SearchCombined();
   }
 
@@ -1007,7 +1332,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
     for (int k=0;k<dim;++k)
       lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
-    double kappa = cnode->Kappa();
+    double kappa = cnode->CoData().Kappa();
 
     // evaluate jump (relative displacement) of this node
     // only when the node is going to be active, otherwise,
@@ -1486,7 +1811,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     //double modgap = cnode->CoData().Getg();
     //if (abs(modgap) < 1.0e-10) modgap=0.0;
 
-    double kappa = cnode->Kappa();
+    double kappa = cnode->CoData().Kappa();
 
     double lmuzawan = 0.0;
     for (int k=0;k<dim;++k)
@@ -1627,7 +1952,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
+    double kappa = cnode->CoData().Kappa();
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
@@ -1977,7 +2302,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
+    double kappa = cnode->CoData().Kappa();
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm

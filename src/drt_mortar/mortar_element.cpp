@@ -75,6 +75,46 @@ void MORTAR::MortarElementType::ComputeNullSpace( DRT::Discretization & dis, std
 
 
 /*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 12/10|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarEleDataContainer::MortarEleDataContainer()
+{
+	// initialize area
+  Area()=0.0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            popp 12/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarEleDataContainer::Pack(vector<char>& data) const
+{
+  // add area_
+  DRT::ParObject::AddtoPack(data,area_);
+  // add searchelements_
+	DRT::ParObject::AddtoPack(data,&searchelements_,(int)searchelements_.size());
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            mgit 02/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarEleDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
+{
+  // area_
+	DRT::ParObject::ExtractfromPack(position,data,area_);
+  // searchelements_
+	DRT::ParObject::ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarElement::MortarElement(int id, int owner,
@@ -87,20 +127,20 @@ shape_(shape),
 isslave_(isslave)
 {
   SetNodeIds(numnode,nodeids);
-  Area()=0.0;
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        mwgee 10/07|
+ |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarElement::MortarElement(const MORTAR::MortarElement& old) :
 DRT::Element(old),
 shape_(old.shape_),
-isslave_(old.isslave_),
-area_(old.area_),
-searchelements_(old.searchelements_)
+isslave_(old.isslave_)
 {
+  // not yet used and thus not necessarily consistent
+  dserror("ERROR: MortarElement copy-ctor not yet implemented");
+
   return;
 }
 
@@ -156,10 +196,11 @@ void MORTAR::MortarElement::Pack(vector<char>& data) const
   AddtoPack(data,shape_);
   // add isslave_
   AddtoPack(data,isslave_);
-  // add area_
-  AddtoPack(data,area_);
-  // add searchelements_
-  AddtoPack(data,&searchelements_,(int)searchelements_.size());
+
+  // add modata_
+  bool hasdata = (modata_!=Teuchos::null);
+  AddtoPack(data,hasdata);
+  if (hasdata) modata_->Pack(data);
 
   return;
 }
@@ -184,10 +225,19 @@ void MORTAR::MortarElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,shape_);
   // isslave_
   ExtractfromPack(position,data,isslave_);
-  // area_
-  ExtractfromPack(position,data,area_);
-  // searchelements_
-  ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
+
+  // modata_
+  bool hasdata = false;
+  ExtractfromPack(position,data,hasdata);
+  if (hasdata)
+  {
+    modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
+    modata_->Unpack(position,data);
+  }
+  else
+  {
+    modata_ = Teuchos::null;
+  }
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -409,7 +459,7 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
   elens(4,i) = sqrt(elens(0,i)*elens(0,i)+elens(1,i)*elens(1,i)+elens(2,i)*elens(2,i));
   if (elens(4,i)==0.0) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
   elens(3,i) = Id();
-  elens(5,i) = Area();
+  elens(5,i) = MoData().Area();
 
   return;
 }
@@ -681,11 +731,11 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 
   // 2D linear case (2noded line element)
   if (dt==line2)
-    jac = Area()/2;
+    jac = MoData().Area()/2;
 
   // 3D linear case (3noded triangular element)
   else if (dt==tri3)
-    jac = Area()*2;
+    jac = MoData().Area()*2;
 
   // 2D quadratic case (3noded line element)
   // 3D bilinear case (4noded quadrilateral element)
@@ -744,10 +794,10 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, map<int,double>& derivjac)
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt==line2) jac = Area()/2;
+  if (dt==line2) jac = MoData().Area()/2;
 
   // 3D linear case (3noded triangular element)
-  else if (dt==tri3) jac = Area()*2;
+  else if (dt==tri3) jac = MoData().Area()*2;
 
   // 2D quadratic case (3noded line element)
   // 3D bilinear case (4noded quadrilateral element)
@@ -1057,30 +1107,26 @@ double MORTAR::MortarElement::MaxEdgeSize(bool isinit)
 }
 
 /*----------------------------------------------------------------------*
- |  Add MortarElements to potential contact partners          popp 01/08|
+ |  Initialize data container                                 popp 12/10|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::AddSearchElements(const vector<int>& gids)
+void MORTAR::MortarElement::InitializeDataContainer()
 {
-  // check input data and calling element type
-  if ((int)gids.size()==0)
-    dserror("ERROR: AddSearchElements called with vec of length zero!");
-  if (!IsSlave())
-    dserror("ERROR: AddSearchElements called for non-slave MortarElement!");
+	// only initialize if not yet done
+	if (modata_==Teuchos::null)
+    modata_=rcp(new MORTAR::MortarEleDataContainer());
 
-  // loop over all input gids
-  for (int i=0;i<(int)gids.size();++i)
-  {
-    // loop over all search candidates already known
-    bool found = false;
-    for (int j=0;j<NumSearchElements();++j)
-      if (gids[i]==searchelements_[j])
-        found = true;
+  return;
+}
 
-    // add new gid to vector of search candidates
-    if (!found) SearchElements().push_back(gids[i]);
-  }
+/*----------------------------------------------------------------------*
+ |  Reset data container                                      popp 12/10|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::ResetDataContainer()
+{
+	// reset to null
+  modata_  = Teuchos::null;
 
-  return true;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1088,12 +1134,12 @@ bool MORTAR::MortarElement::AddSearchElements(const vector<int>& gids)
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::AddSearchElements(const int & gid)
 {
-  // check input data and calling element type
+  // check calling element type
   if (!IsSlave())
-    dserror("ERROR: AddSearchElements called for non-slave MortarElement!");
+    dserror("ERROR: AddSearchElements called for infeasible MortarElement!");
 
   // add new gid to vector of search candidates
-  SearchElements().push_back(gid);
+  MoData().SearchElements().push_back(gid);
 
   return true;
 }

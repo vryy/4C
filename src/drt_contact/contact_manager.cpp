@@ -243,7 +243,12 @@ discret_(discret)
     }
 
     // create an empty interface and store it in this Manager
-    interfaces.push_back(rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,cparams,isself[0])));
+    // create an empty contact interface and store it in this Manager
+    // (for structural contact we do NOT want redundant storage)
+    // (the only exception is self contact where a redundant slave is needed)
+    bool redundant = false;
+    if (isself[0]) redundant = true;
+    interfaces.push_back(rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,cparams,isself[0],redundant)));
 
     // get it again
     RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size()-1];
@@ -455,10 +460,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                    input.get<double>("FRCOEFF") <= 0.0)
     dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
-                                                        input.get<double>("SEARCH_PARAM") == 0.0)
-    dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
@@ -549,10 +550,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
-       Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_binarytree) &&
-                                                         input.get<double>("SEARCH_PARAM") == 0.0)
-    cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
+  if (input.get<double>("SEARCH_PARAM") == 0.0)
+    cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
 
   // store ParameterList in local parameter list
   cparams = input;

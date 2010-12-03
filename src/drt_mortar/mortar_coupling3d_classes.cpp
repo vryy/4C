@@ -73,7 +73,9 @@ parshape_(parshape)
     quadnode_[i] = nodes[i];
 
   // as discretization is already evaluated, compute area
-  Area()=ComputeArea();
+  // (data container has to be initialized first)
+  InitializeDataContainer();
+  MoData().Area() = ComputeArea();
 
   return;
 }
@@ -507,20 +509,6 @@ shape_(shape)
   linvertex_[2] = linv3;
   linauxn_ = linauxn;
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  cctor (public)                                             popp 11/08|
- *----------------------------------------------------------------------*/
-MORTAR::IntCell::IntCell(const IntCell& old) :
-id_(old.id_),
-nvertices_(old.nvertices_),
-area_(old.area_),
-coords_(old.coords_),
-shape_(old.shape_)
-{
-  // empty copy constructor body
   return;
 }
 

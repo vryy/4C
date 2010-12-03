@@ -257,11 +257,6 @@ public:
   virtual void DJacDXi(double* djacdxi, double* xi,
                        const LINALG::SerialDenseMatrix& secderiv);
 
-  /*!
-  \brief Compute length/area derivative of the element
-  */
-  virtual void DerivArea(map<int,double>& derivarea);
-
   //@}
 
 

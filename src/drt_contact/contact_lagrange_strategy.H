@@ -244,6 +244,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
   protected:
 
+    // don't want = operator and cctor
+    CoLagrangeStrategy operator = (const CoLagrangeStrategy& old);
+    CoLagrangeStrategy(const CoLagrangeStrategy& old);
+
     bool activesetssconv_;    // convergence flag for semi-smooth active set search
     bool activesetconv_;      // convergence flag for fixed-point active set search      
     int  activesetsteps_;     // number of fixed-point active set steps in this time step

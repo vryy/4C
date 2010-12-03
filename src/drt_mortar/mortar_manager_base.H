@@ -134,6 +134,9 @@ public:
 
 protected:
 
+  // don't want cctor (= operator impossible anyway for abstract class)
+  ManagerBase(const ManagerBase& old);
+
   RCP<Epetra_Comm>               comm_;     // communicator
   RCP<MORTAR::StrategyBase>      strategy_; // strategy object
 

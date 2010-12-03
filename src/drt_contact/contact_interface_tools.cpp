@@ -942,13 +942,13 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckNormalDeriv()
 {
-  /****************************************************/
-  /* NOTE: This is a combined 2D / 3D method already! */
-  /****************************************************/
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for normals / tangents
   vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1031,7 +1031,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
   }
   
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int i=0; i<3*snodefullmap_->NumMyElements();++i)
+  for (int i=0; i<3*snodefullmap->NumMyElements();++i)
   {
     // reset normal etc.
     Initialize();
@@ -1040,7 +1040,7 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
     SetElementAreas();
 
     // now finally get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(i/3);
+    int gid = snodefullmap->GID(i/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CoNode* snode = static_cast<CoNode*>(node);
@@ -1231,14 +1231,13 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckMortarDDeriv()
 {
-  /****************************************************/
-  /* NOTE: This is a combined 2D / 3D method already! */
-  /****************************************************/
-  // however, for 2D the output is mysteriously doubled ...
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for D-Matrix entries
   map<int, map<int,double> > refD; // stores dof-wise the entries of D
@@ -1274,7 +1273,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
@@ -1283,7 +1282,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -1388,7 +1387,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
   }
 
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
@@ -1397,7 +1396,7 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -1522,14 +1521,13 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckMortarMDeriv()
 {
-  /****************************************************/
-  /* NOTE: This is a combined 2D / 3D method already! */
-  /****************************************************/
-  // however, for 2D the output is mysteriously doubled ...
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for M-Matrix entries
   map<int, map<int,double> > refM; // stores dof-wise the entries of M
@@ -1565,7 +1563,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
   }
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
@@ -1574,7 +1572,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -1679,7 +1677,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
   }
 
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
     int w=0;
@@ -1688,7 +1686,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -1813,9 +1811,13 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckGapDeriv()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -1843,9 +1845,9 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       vector<map<int,double> > mmap = cnode->MoData().GetM();
       map<int,double>::iterator mcurr;
 
-      for (int m=0;m<mnodefullmap_->NumMyElements();++m)
+      for (int m=0;m<mnodefullmap->NumMyElements();++m)
       {
-        int gid = mnodefullmap_->GID(m);
+        int gid = mnodefullmap->GID(m);
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* cmnode = static_cast<CoNode*>(mnode);
@@ -1879,13 +1881,13 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
   }
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CoNode* snode = static_cast<CoNode*>(node);
@@ -1940,9 +1942,9 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
         map<int,double>::iterator mcurr;
 
-        for (int m=0;m<mnodefullmap_->NumMyElements();++m)
+        for (int m=0;m<mnodefullmap->NumMyElements();++m)
         {
-          int gid = mnodefullmap_->GID(m);
+          int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           CoNode* cmnode = static_cast<CoNode*>(mnode);
@@ -2002,7 +2004,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
   }
 
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2010,7 +2012,7 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CoNode* mnode = static_cast<CoNode*>(node);
@@ -2065,9 +2067,9 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
         vector<map<int,double> > mmap = kcnode->MoData().GetM();
         map<int,double>::iterator mcurr;
 
-        for (int m=0;m<mnodefullmap_->NumMyElements();++m)
+        for (int m=0;m<mnodefullmap->NumMyElements();++m)
         {
-          int gid = mnodefullmap_->GID(m);
+          int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           CoNode* cmnode = static_cast<CoNode*>(mnode);
@@ -2139,9 +2141,13 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckTangLMDeriv()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
@@ -2173,7 +2179,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   }
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2227,19 +2233,23 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       node->HasProj() = false;
     }
 
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    // loop over all elements to reset candidates / search lists
+    // (use standard slave column map)
+    for (int i=0;i<SlaveColElements()->NumMyElements();++i)
     {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
+    	int gid = SlaveColElements()->GID(i);
+  		DRT::Element* ele = Discret().gElement(gid);
+  		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+  		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+      mele->MoData().SearchElements().resize(0);
     }
 
     // reset matrix containing interface contact segments (gmsh)
     //CSegs().Shape(0,0);
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CoNode* snode = static_cast<CoNode*>(node);
@@ -2287,7 +2297,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     }
 
     // contact search algorithm
-    EvaluateSearch();
+    EvaluateSearchBinarytree();
 
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -2300,9 +2310,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
       // loop over the contact candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
+      for (int j=0;j<selement->MoData().NumSearchElements();++j)
       {
-        int gid2 = selement->SearchElements()[j];
+        int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
@@ -2371,7 +2381,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   }
 
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2425,19 +2435,23 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       node->HasProj() = false;
     }
 
-    // loop over all elements to reset contact candidates / search lists
-    // (use fully overlapping column map)
-    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    // loop over all elements to reset candidates / search lists
+    // (use standard slave column map)
+    for (int i=0;i<SlaveColElements()->NumMyElements();++i)
     {
-      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-      element->SearchElements().resize(0);
+    	int gid = SlaveColElements()->GID(i);
+  		DRT::Element* ele = Discret().gElement(gid);
+  		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+  		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+      mele->MoData().SearchElements().resize(0);
     }
 
     // reset matrix containing interface contact segments (gmsh)
     //CSegs().Shape(0,0);
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CoNode* mnode = static_cast<CoNode*>(node);
@@ -2485,7 +2499,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     }
 
     // contact search algorithm
-    EvaluateSearch();
+    EvaluateSearchBinarytree();
 
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
@@ -2498,9 +2512,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
       // loop over the contact candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
-      for (int j=0;j<selement->NumSearchElements();++j)
+      for (int j=0;j<selement->MoData().NumSearchElements();++j)
       {
-        int gid2 = selement->SearchElements()[j];
+        int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
@@ -2622,12 +2636,16 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     node->HasProj() = false;
   }
 
-  // loop over all elements to reset contact candidates / search lists
-  // (use fully overlapping column map)
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  // loop over all elements to reset candidates / search lists
+  // (use standard slave column map)
+  for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-    MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-    element->SearchElements().resize(0);
+  	int gid = SlaveColElements()->GID(i);
+		DRT::Element* ele = Discret().gElement(gid);
+		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->MoData().SearchElements().resize(0);
   }
 
   // reset matrix containing interface contact segments (gmsh)
@@ -2654,7 +2672,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   }
 
   // contact search algorithm
-  EvaluateSearch();
+  EvaluateSearchBinarytree();
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -2667,9 +2685,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 
     // loop over the contact candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
-    for (int j=0;j<selement->NumSearchElements();++j)
+    for (int j=0;j<selement->MoData().NumSearchElements();++j)
     {
-      int gid2 = selement->SearchElements()[j];
+      int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
@@ -2692,9 +2710,13 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckStickDeriv()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -2772,11 +2794,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 //  FD CHECK for Lagrange Multipliers (will be needed when formulating
 //  stick condition according to Hueber)
 //  // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
-//  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+//  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
 //  {
 //
 //   // now get the node we want to apply the FD scheme to
-//   int gid = snodefullmap_->GID(fd/3);
+//   int gid = snodefullmap->GID(fd/3);
 //   DRT::Node* node = idiscret_->gNode(gid);
 //   if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
 //   FriNode* snode = static_cast<FriNode*>(node);
@@ -2898,7 +2920,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -2906,7 +2928,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
@@ -3043,7 +3065,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
   } // loop over procs slave nodes
 
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -3051,7 +3073,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     FriNode* mnode = static_cast<FriNode*>(node);
@@ -3201,9 +3223,13 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckSlipDeriv()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
@@ -3314,11 +3340,11 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
   } // loop over procs slave nodes
 
   // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
   {
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
@@ -3474,13 +3500,13 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
 
 
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
@@ -3646,13 +3672,13 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
   } // loop over procs slave nodes
 
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     FriNode* mnode = static_cast<FriNode*>(node);
@@ -3830,9 +3856,13 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   cout << setprecision(14);
 
@@ -3880,14 +3910,14 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
   int w = 0;
 
   // global loop to apply FD scheme to all SLAVE dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*snodefullmap->NumMyElements(); ++fd)
   {
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -3989,14 +4019,14 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
   w = 0;
 
   // global loop to apply FD scheme to all MASTER dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements(); ++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements(); ++fd)
   {
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
       dserror("ERROR: Cannot find slave node with gid %",gid);
@@ -4120,9 +4150,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 {
+	// FD checks only for serial case
+	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // information from interface contact parameter list
   double frcoeff = IParams().get<double>("FRCOEFF");
@@ -4150,7 +4184,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
     int dim = cnode->NumDof();
-    double kappa = cnode->Kappa();
+    double kappa = cnode->CoData().Kappa();
     double* n = cnode->MoData().n();
 
     // evaluate traction
@@ -4248,13 +4282,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
    } // loop over procs slave nodes
 
     // global loop to apply FD scheme to all slave dofs (=3*nodes)
-    for (int fd=0; fd<3*snodefullmap_->NumMyElements();++fd)
+    for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
     {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(fd/3);
+    int gid = snodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CoNode* snode = static_cast<CoNode*>(node);
@@ -4301,7 +4335,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // get some informatiom form the node
       double gap = kcnode->CoData().Getg();
       int dim = kcnode->NumDof();
-      double kappa = kcnode->Kappa();
+      double kappa = kcnode->CoData().Kappa();
       double* n = kcnode->MoData().n();
 
       // evaluate traction
@@ -4450,13 +4484,13 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
   } // loop over procs slave nodes
 
    // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap_->NumMyElements();++fd)
+  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap_->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/3);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CoNode* mnode = static_cast<CoNode*>(node);
@@ -4503,7 +4537,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       // get some informatiom form the node
       double gap = kcnode->CoData().Getg();
       int dim = kcnode->NumDof();
-      double kappa = kcnode->Kappa();
+      double kappa = kcnode->CoData().Kappa();
       double* n = kcnode->MoData().n();
 
       // evaluate traction

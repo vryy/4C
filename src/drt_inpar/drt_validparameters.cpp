@@ -1027,10 +1027,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
   setStringToIntegralParameter<INPAR::MORTAR::SearchAlgorithm>("SEARCH_ALGORITHM","Binarytree","Type of contact search",
-       tuple<std::string>("BruteForceNodeBased","bruteforcenodebased",
-                          "BruteForceEleBased","bruteforceelebased",
+       tuple<std::string>("BruteForce","bruteforce",
+      		                "BruteForceEleBased","bruteforceelebased",
                           "BinaryTree","Binarytree","binarytree"),
-       tuple<INPAR::MORTAR::SearchAlgorithm>(INPAR::MORTAR::search_bfnode,INPAR::MORTAR::search_bfnode,
+       tuple<INPAR::MORTAR::SearchAlgorithm>(INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
                   INPAR::MORTAR::search_bfele,INPAR::MORTAR::search_bfele,
                   INPAR::MORTAR::search_binarytree,INPAR::MORTAR::search_binarytree,
                   INPAR::MORTAR::search_binarytree),

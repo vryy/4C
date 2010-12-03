@@ -208,7 +208,9 @@ discret_(discret)
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams)));
+    // (for structural meshtying we do NOT need redundant storage)
+    bool redundant = false;
+    interfaces.push_back(rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
 
     // get it again
     RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size()-1];
@@ -368,10 +370,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
             Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
     dserror("Friction law supplied for mortar meshtying");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfnode &&
-                                                        input.get<double>("SEARCH_PARAM") == 0.0)
-    dserror("Search radius sp = 0, must be greater than 0 for node-based search");
-
   if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
@@ -412,10 +410,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if ((Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_bfele ||
-       Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(input,"SEARCH_ALGORITHM") == INPAR::MORTAR::search_binarytree) &&
-                                                         input.get<double>("SEARCH_PARAM") == 0.0)
-    cout << ("Warning: Ele-based / binary tree search called without inflation of bounding volumes\n") << endl;
+  if (input.get<double>("SEARCH_PARAM") == 0.0)
+    cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
 
   // store ParameterList in local parameter list
   mtparams = input;

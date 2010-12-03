@@ -57,15 +57,12 @@ DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
 }
 
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO CONODEDATACONTAINER
-/*----------------------------------------------------------------------*/
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::CoNodeDataContainer::CoNodeDataContainer():
-  grow_(1.0e12)
+grow_(1.0e12),
+kappa_(1.0)
   {
     for (int i=0;i<3;++i)
     {
@@ -74,30 +71,6 @@ CONTACT::CoNodeDataContainer::CoNodeDataContainer():
     }
 
     return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        mgit 02/10|
- *----------------------------------------------------------------------*/
-CONTACT::CoNodeDataContainer::CoNodeDataContainer(const CONTACT::CoNodeDataContainer& old):
-  grow_(old.grow_)
-  {
-    for (int i=0;i<3;++i)
-    {
-      txi()[i]=old.txi_[i];
-      teta()[i]=old.teta_[i];
-    }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance of CoNodeDataContainer and
-    return pointer to it (public)                              mgit 02/10|
- *----------------------------------------------------------------------*/
-CONTACT::CoNodeDataContainer* CONTACT::CoNodeDataContainer::Clone() const
-{
-  CONTACT::CoNodeDataContainer* newnodedc = new CONTACT::CoNodeDataContainer(*this);
-  return newnodedc;
 }
 
 /*----------------------------------------------------------------------*
@@ -110,6 +83,14 @@ void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,txi_,3*sizeof(double));
   // add teta_
   DRT::ParObject::AddtoPack(data,teta_,3*sizeof(double));
+  // add grow_
+  DRT::ParObject::AddtoPack(data,grow_);
+  // add kappa_
+  DRT::ParObject::AddtoPack(data,kappa_);
+
+  // no need to pack derivs_
+  // (these will evaluated anew anyway)
+
   return;
 }
 
@@ -123,12 +104,14 @@ void CONTACT::CoNodeDataContainer::Unpack(vector<char>::size_type& position, con
   DRT::ParObject::ExtractfromPack(position,data,txi_,3*sizeof(double));
   // teta_
   DRT::ParObject::ExtractfromPack(position,data,teta_,3*sizeof(double));
+  // grow_
+  DRT::ParObject::ExtractfromPack(position,data,grow_);
+  // kappa_
+  DRT::ParObject::ExtractfromPack(position,data,kappa_);
+
   return;
 }
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO CONODE
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -151,6 +134,9 @@ MORTAR::MortarNode(old),
 active_(old.active_),
 initactive_(old.initactive_)
 {
+  // not yet used and thus not necessarily consistent
+  dserror("ERROR: CoNode copy-ctor not yet implemented");
+
   return;
 }
 
@@ -208,11 +194,10 @@ void CONTACT::CoNode::Pack(vector<char>& data) const
   // add initactive_
   AddtoPack(data,initactive_);
 
-  // data_
-  int hasdata = codata_!=Teuchos::null;
+  // add data_
+  bool hasdata = (codata_!=Teuchos::null);
   AddtoPack(data,hasdata);
-  if (hasdata)
-    codata_->Pack(data);
+  if (hasdata) codata_->Pack(data);
 
   return;
 }
@@ -242,7 +227,7 @@ void CONTACT::CoNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,initactive_);
 
   // data_
-  int hasdata;
+  bool hasdata = false;
   ExtractfromPack(position,data,hasdata);
   if (hasdata)
   {

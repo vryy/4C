@@ -91,20 +91,6 @@ public:
   CoNodeDataContainer();
 
   /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a CoNodeDataContainer
-
-  */
-  CoNodeDataContainer(const CONTACT::CoNodeDataContainer& old);
-
-  /*!
-  \brief Deep copy the derived class and return pointer to it
-
-  */
-  virtual CONTACT::CoNodeDataContainer* Clone() const;
-
-  /*!
   \brief Destructor
 
   */
@@ -248,6 +234,14 @@ public:
   virtual map<int,double>& GetDerivG() { return derivg_; }
 
   /*!
+  \brief Return scaling factor for weighted gap
+
+  Note: This is only calculated when performing a penalty strategy
+
+  */
+  virtual double& Kappa() { return kappa_; }
+
+  /*!
   \brief Return the 'DerivZ map of this node
 
   This map contains the directional derivatives of the node's
@@ -262,6 +256,10 @@ public:
 
 protected:
 
+  // don't want = operator and cctor
+  CoNodeDataContainer operator = (const CoNodeDataContainer& old);
+  CoNodeDataContainer(const CoNodeDataContainer& old);
+
   double          txi_[3];         // nodal tangent t_xi for contact methods
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          grow_;           // nodal entry of g vector
@@ -274,6 +272,7 @@ protected:
   map<int,double>               derivg_;     // directional derivative of nodal weighted gap value
 
   // Penalty-related quantities
+  double                        kappa_;      // gap-scaling factor kappa
   vector<map<int,double> >      derivz_;     // direction derivative of nodal z-matrix value
 
 }; // class CoNodeDataContainer
@@ -397,11 +396,6 @@ public:
   virtual bool& Active() { return active_; }
 
   /*!
-  \brief Return scaling factor for weighted gap (penalty strategy)
-  */
-  virtual double& Kappa() { return kappa_; }
-
-  /*!
   \brief Return data container of this node
 
   This method returns the data container of this node where additional
@@ -409,7 +403,6 @@ public:
 
   */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
-  inline RCP<CONTACT::CoNodeDataContainer> PointerCoData() { return codata_; }
 
   //@}
 

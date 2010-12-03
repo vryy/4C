@@ -57,9 +57,6 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
   return node;
 }
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO MORTARNODEDATACONTAINER
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 02/10|
@@ -78,35 +75,6 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        mgit 02/10|
- *----------------------------------------------------------------------*/
-MORTAR::MortarNodeDataContainer::MortarNodeDataContainer(const MORTAR::MortarNodeDataContainer& old):
-drows_(old.drows_),
-mrows_(old.mrows_),
-mmodrows_(old.mmodrows_)
-{
-  for (int i=0;i<3;++i)
-  {
-    n()[i]=old.n_[i];
-    lm()[i]=old.lm_[i];
-    lmold()[i]=old.lmold_[i];
-    lmuzawa()[i]=old.lmuzawa_[i];
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance of MortarNodeDataContainer and              |
- |  return pointer to it (public)                             mgit 02/10|
- *----------------------------------------------------------------------*/
-MORTAR::MortarNodeDataContainer* MORTAR::MortarNodeDataContainer::Clone() const
-{
-  MORTAR::MortarNodeDataContainer* newnodedc = new MORTAR::MortarNodeDataContainer(*this);
-  return newnodedc;
-}
-
-/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
@@ -120,6 +88,9 @@ void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,lmold_,3*sizeof(double));
   // add lmuzawa_
   DRT::ParObject::AddtoPack(data,lmuzawa_,3*sizeof(double));
+
+  // no need to pack drows_, mrows_ and mmodrows_
+  // (these will evaluated anew anyway)
 
   return;
 }
@@ -142,9 +113,6 @@ void MORTAR::MortarNodeDataContainer::Unpack(vector<char>::size_type& position, 
   return;
 }
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO MORTARNODE
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -158,8 +126,7 @@ isonbound_(false),
 isdbc_(false),
 numdof_(numdof),
 dofs_(dofs),
-hasproj_(false),
-kappa_(1.0)
+hasproj_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -181,14 +148,16 @@ isonbound_(old.isonbound_),
 isdbc_(old.isdbc_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
-hasproj_(old.hasproj_),
-kappa_(old.kappa_)
+hasproj_(old.hasproj_)
 {
   for (int i=0;i<3;++i)
   {
     uold()[i]=old.uold_[i];
     xspatial()[i]=old.xspatial_[i];
   }
+
+  // not yet used and thus not necessarily consistent
+  dserror("ERROR: MortarNode copy-ctor not yet implemented");
 
   return;
 }
@@ -263,15 +232,11 @@ void MORTAR::MortarNode::Pack(vector<char>& data) const
   AddtoPack(data,uold_,3*sizeof(double));
   // add hasproj_
   AddtoPack(data,hasproj_);
-  // add kappa_
-  AddtoPack(data,kappa_);
 
-
-  // data_
-  int hasdata = modata_!=Teuchos::null;
+  // add data_
+  bool hasdata = (modata_!=Teuchos::null);
   AddtoPack(data,hasdata);
-  if (hasdata)
-    modata_->Pack(data);
+  if (hasdata) modata_->Pack(data);
 
   return;
 }
@@ -310,11 +275,9 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,uold_,3*sizeof(double));
   // hasproj_
   ExtractfromPack(position,data,hasproj_);
-  // kappa_
-  DRT::ParObject::ExtractfromPack(position,data,kappa_);
 
   // data_
-  int hasdata;
+  bool hasdata = false;
   ExtractfromPack(position,data,hasdata);
   if (hasdata)
   {

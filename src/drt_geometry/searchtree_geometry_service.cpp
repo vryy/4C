@@ -542,7 +542,7 @@ LINALG::Matrix<3,2> GEO::computeContactXAABB(
     LINALG::Matrix<3,2> XAABB;
 
     CONTACT::CoElement* selement = static_cast<CONTACT::CoElement*>(element);
-    double area = selement->Area();
+    double area = selement->MoData().Area();
 
     // first node
     for(int dim=0; dim<nsd; ++dim)

@@ -92,20 +92,6 @@ public:
   MortarNodeDataContainer();
 
   /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a MortarNodeDataContainer
-
-  */
-  MortarNodeDataContainer(const MORTAR::MortarNodeDataContainer& old);
-
-  /*!
-  \brief Deep copy the derived class and return pointer to it
-
-  */
-  virtual MORTAR::MortarNodeDataContainer* Clone() const;
-
-  /*!
   \brief Destructor
 
   */
@@ -173,6 +159,10 @@ public:
   //@}
 
 protected:
+
+  // don't want = operator and cctor
+  MortarNodeDataContainer operator = (const MortarNodeDataContainer& old);
+  MortarNodeDataContainer(const MortarNodeDataContainer& old);
 
   double          n_[3];           // nodal normal for contact methods
   double          lm_[3];          // current Lagrange multiplier value (n+1)
@@ -373,7 +363,6 @@ public:
 
   */
   inline MORTAR::MortarNodeDataContainer& MoData() { return *modata_; }
-  inline RCP<MORTAR::MortarNodeDataContainer> PointerMoData() { return modata_; }
 
   //@}
 
@@ -486,7 +475,6 @@ protected:
   double          xspatial_[3];    // current configuration
   double          uold_[3];        // old displacement (last converged state)
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
-  double          kappa_;          // gap-scaling factor (penalty contact only)
 
   RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
 

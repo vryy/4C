@@ -83,7 +83,88 @@ private:
   static MortarElementType instance_;
 };
 
-// forward declarations
+/*!
+\brief A class containing additional data for mortar elements
+
+This class contains additional information for mortar elements which is
+only needed for contact evaluation. Thus, in order to save memory, it is
+sufficient to have this data available only on the slave element column map.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+class MortarEleDataContainer
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  MortarEleDataContainer();
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~MortarEleDataContainer() { return; }
+
+  /*!
+  \brief Pack this class so that it can be communicated
+
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a vector into this class
+
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Unpack(vector<char>::size_type& position, const vector<char>& data);
+
+  //@}
+
+  //! @name Access methods
+
+  /*!
+  \brief Return current area
+
+  */
+  virtual double& Area() { return area_; }
+
+  /*!
+  \brief Return number of potentially contacting elements
+
+  */
+  virtual int NumSearchElements() const { return (int)searchelements_.size(); }
+
+  /*!
+  \brief Return global ids of potentially contacting elements
+
+  */
+  virtual vector<int>& SearchElements() {return searchelements_; }
+
+  //@}
+
+protected:
+
+  // don't want = operator and cctor
+  MortarEleDataContainer operator = (const MortarEleDataContainer& old);
+  MortarEleDataContainer(const MortarEleDataContainer& old);
+
+  double            area_;           // element length/area in current configuration
+  vector<int>       searchelements_; // global ids of potentially contacting elements
+
+}; // class MortarEleDataContainer
+
 
 /*!
 \brief A mortar coupling element
@@ -278,12 +359,6 @@ public:
   virtual void Print(ostream& os) const;
 
   /*!
-  \brief Return current area
-
-  */
-  virtual double& Area() { return area_; }
-
-  /*!
   \brief Return slave (true) or master status
 
   */
@@ -309,16 +384,13 @@ public:
   }
 
   /*!
-  \brief Return number of potentially contacting elements
+  \brief Return data container of this element
+
+  This method returns the data container of this mortar element where additional
+  mortar specific quantities/information are stored.
 
   */
-  virtual int NumSearchElements() const { return (int)searchelements_.size(); }
-
-  /*!
-  \brief Return global ids of potentially contacting elements
-
-  */
-  virtual vector<int>& SearchElements() {return searchelements_; }
+  inline MORTAR::MortarEleDataContainer& MoData() { return *modata_; }
 
   //@}
 
@@ -550,17 +622,6 @@ public:
   virtual double MaxEdgeSize(bool isinit = false);
 
   /*!
-  \brief Add MortarElements to this MortarElement's potential contact partners
-
-  This is for the classical node-based brute-force search. We have to
-  additionally check, if the given MortarElements have already been added
-  to this MortarElement's potential contact partners before, in order to
-  avoid double integrations!!
-
-  */
-  virtual bool AddSearchElements(const vector<int>& gids);
-
-  /*!
   \brief Add one MortarElement to this MortarElement's potential contact partners
 
   This is for the element-based brute-force search and for the new
@@ -571,14 +632,32 @@ public:
   */
   virtual bool AddSearchElements(const int& gid);
 
+  /*!
+  \brief Initializes the data container of the element
+
+  With this function, the container with mortar specific quantities/information
+  is initialized.
+
+  */
+  virtual void InitializeDataContainer();
+
+  /*!
+  \brief Resets the data container of the element
+
+  With this function, the container with mortar specific quantities/information
+  is deleted / reset to null pointer
+
+  */
+  virtual void ResetDataContainer();
+
   //@}
 
 private:
 
-  DRT::Element::DiscretizationType   shape_;          // shape of this element
-  bool                               isslave_;        // indicating slave or master side
-  double                             area_;           // element length/area in current configuration
-  vector<int>                        searchelements_; // global ids of potentially contacting elements
+  DRT::Element::DiscretizationType    shape_;          // shape of this element
+  bool                                isslave_;        // indicating slave or master side
+
+  RCP<MORTAR::MortarEleDataContainer> modata_;         // additional information
 
 }; // class MortarElement
 

@@ -114,9 +114,9 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(const RCP<Epetra_Vector> dis
 
       // store kappa as the inverse of gap
       // (this removes the scaling introduced by weighting the gap!!!)
-      cnode->Kappa() = 1.0/gap;
+      cnode->CoData().Kappa() = 1.0/gap;
 
-      //cout << "S-NODE #" << gid << " kappa=" << cnode->Kappa() << endl;
+      //cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << endl;
     }
   }
 }

@@ -230,7 +230,11 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   //@}
   
 protected:
-    
+
+  // don't want = operator and cctor
+  CoPenaltyStrategy operator = (const CoPenaltyStrategy& old);
+  CoPenaltyStrategy(const CoPenaltyStrategy& old);
+
   RCP<LINALG::SparseMatrix> linzmatrix_;         // global matrix LinZ with derivatives of LM
   double                    constrnorm_;         // L2-norm of normal contact constraints
   double                    constrnormtan_;      // L2-norm of tangential contact constraints

@@ -92,14 +92,6 @@ public:
              const bool isslave);
 
   /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an IntElement
-
-  */
-  IntElement(const IntElement& old);
-
-  /*!
   \brief Destructor
 
   */
@@ -148,6 +140,10 @@ public:
 
 protected:
 
+  // don't want = operator and cctor
+  IntElement operator = (const IntElement& old);
+  IntElement(const IntElement& old);
+
   int                  lid_;        // local IntElement id
   vector<DRT::Node*>   quadnode_;   // explicit node pointers
   DRT::Element::DiscretizationType   parshape_;   // shape of parent element
@@ -188,14 +184,6 @@ public:
           vector<map<int,double> >& linv2,
           vector<map<int,double> >& linv3,
           vector<map<int,double> >& linauxn);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of an IntCell
-
-  */
-  IntCell(const IntCell& old);
 
   /*!
   \brief Destructor
@@ -318,6 +306,10 @@ public:
   //@}
 
 protected:
+
+  // don't want = operator and cctor
+  IntCell operator = (const IntCell& old);
+  IntCell(const IntCell& old);
 
   int                        id_;              // local ID of this intcell
   int                        nvertices_;       // number of vertices (always 3)

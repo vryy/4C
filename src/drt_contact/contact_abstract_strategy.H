@@ -649,6 +649,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
   protected:
 
+    // don't want cctor (= operator impossible anyway for abstract class)
+    CoAbstractStrategy(const CoAbstractStrategy& old);
+
     vector<RCP<CONTACT::CoInterface> > interface_;  // contact interfaces
     vector<double>                     tunbalance_; // parallel unbalance factors (time) for current timestep
     vector<int>                        eunbalance_; // parallel unbalance factors (eles) for current timestep

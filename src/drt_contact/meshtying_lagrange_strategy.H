@@ -156,6 +156,10 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     
   protected:
 
+    // don't want = operator and cctor
+    MtLagrangeStrategy operator = (const MtLagrangeStrategy& old);
+    MtLagrangeStrategy(const MtLagrangeStrategy& old);
+
     RCP<LINALG::SparseMatrix> conmatrix_;   // constraint matrix for saddle point system
     RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M    
     

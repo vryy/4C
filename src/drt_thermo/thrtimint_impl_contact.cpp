@@ -832,7 +832,7 @@ void THR::TimIntImpl::AssembleA(LINALG::SparseMatrix& amatrix)
   for (int m=0; m<(int)interface.size(); ++m)
   {
     // slave nodes (full map)
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveFullNodes();
+    const RCP<Epetra_Map> slavenodes = LINALG::AllreduceEMap(*(interface[m]->SlaveRowNodes()));
 
     // loop over all slave nodes of the interface
     for (int i=0;i<slavenodes->NumMyElements();++i)
@@ -928,7 +928,7 @@ void THR::TimIntImpl::AssembleB(LINALG::SparseMatrix& bmatrix)
   for (int m=0; m<(int)interface.size(); ++m)
   {
     // master nodes (full map)
-    const RCP<Epetra_Map> masternodes = interface[m]->MasterFullNodes();
+    const RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
 
     // loop over all slave nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)
@@ -1055,7 +1055,7 @@ void THR::TimIntImpl::AssembleMechDissMaster(Epetra_Vector& mechdissrate)
     // mortar integrals and mechanical dissipation 
 
     // master nodes
-    const RCP<Epetra_Map> masternodes = interface[m]->MasterFullNodes();
+    const RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
 
     // loop over all masternodes nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)

@@ -85,10 +85,11 @@ public:
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
   \param icontact (in): Global contact parameter list
+  \param redundant (in): if true, the interface is stored fully redundant
  
   */
   MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
-                  const Teuchos::ParameterList& icontact);
+                  const Teuchos::ParameterList& icontact, bool redundant);
     
   /*!
   \brief Destructor
@@ -106,7 +107,7 @@ public:
   \brief Print parallel distribution of this Interface
 
   */
-  virtual void PrintParallelDistribution(int index) const;
+  virtual void PrintParallelDistribution(int index);
 
   /*!
   \brief Get communicator
@@ -164,6 +165,14 @@ public:
 
   */
   virtual const bool& Quadslave3d() { return quadslave3d_; };
+
+  /*!
+  \brief Get redundant storage flag
+
+  Returns TRUE if the interface (nodes, elements) is stored fully redundant.
+
+  */
+  virtual const bool& Redundant() { return redundant_; };
 
   /*!
   \brief Get type of search algorithm
@@ -246,28 +255,6 @@ public:
   }
 
   /*!
-  \brief Get fully overlapping column map of slave nodes (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> SlaveFullNodes() const
-  {
-    if (Filled()) return snodefullmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
-  \brief Get fully overlapping column map of master nodes (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> MasterFullNodes() const
-  {
-    if (Filled()) return mnodefullmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
   \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
 
   */
@@ -285,17 +272,6 @@ public:
   virtual const RCP<Epetra_Map> SlaveColNodesBound() const
   {
     if (Filled()) return snodecolmapbound_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-  
-  /*!
-  \brief Get fully overlapping column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> SlaveFullNodesBound() const
-  {
-    if (Filled()) return snodefullmapbound_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -367,28 +343,6 @@ public:
   }
 
   /*!
-  \brief Get fully overlapping column map of slave elements (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> SlaveFullElements() const
-  {
-    if (Filled()) return selefullmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
-  \brief Get fully overlapping column map of master elements (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> MasterFullElements() const
-  {
-    if (Filled()) return melefullmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
   \brief Get row map of slave dofs (Filled()==true is prerequisite)
 
   */
@@ -411,17 +365,6 @@ public:
   }
 
   /*!
-  \brief Get fully overlapping column map of slave dofs (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> SlaveFullDofs() const
-  {
-    if (Filled()) return sdoffullmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
   \brief Get row map of master dofs (Filled()==true is prerequisite)
 
   */
@@ -439,17 +382,6 @@ public:
   virtual const RCP<Epetra_Map> MasterColDofs() const
   {
     if (Filled()) return mdofcolmap_;
-    else dserror("MORTAR::MortarInterface::FillComplete was not called");
-    exit(EXIT_FAILURE); // calm down the compiler
-  }
-
-  /*!
-  \brief Get fully overlapping column map of master dofs (Filled()==true is prerequisite)
-
-  */
-  virtual const RCP<Epetra_Map> MasterFullDofs() const
-  {
-    if (Filled()) return mdoffullmap_;
     else dserror("MORTAR::MortarInterface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -627,11 +559,16 @@ public:
   virtual void Evaluate();
 
   /*!
-  \brief Brute force search algorithm for potentially coupling
-         slave / master pairs (node-based algorithm)
+  \brief Export nodal normals
+
+  This method exports / communicates the nodal normal vector from row to
+  column map layout (needed for coupling evaluation). The reason behind this
+  is that only the row nodes can correctly evaluate the nodal normal based on
+  averaging of the adjacent element normals. A column node might not know of
+  all adjacent elements and thus would compute wrong nodal normals by itself.
 
   */
-  virtual bool EvaluateSearch();
+  virtual void ExportNodalNormals();
 
   /*!
   \brief Brute force search algorithm for potentially coupling
@@ -733,7 +670,6 @@ protected:
   MortarInterface operator = (const MortarInterface& old);
   MortarInterface(const MortarInterface& old);
 
-
   int                         id_;            // unique interface id
   const Epetra_Comm&          comm_;          // communicator
   RCP<Epetra_Comm>            lcomm_;         // interface local communicator
@@ -744,37 +680,30 @@ protected:
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
   bool                        quadslave3d_;   // flag indicating quadratic 3d slave elements
+  bool                        redundant_;     // flag indicating fully redundant storage of interface
   
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)
   RCP<Epetra_Map>             oldelecolmap_;  // column map of all interface elements (overlap=1)
     
   RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
-  RCP<Epetra_Map>             snodefullmap_;  // fully overlapping column map of all slave nodes
   RCP<Epetra_Map>             mnoderowmap_;   // row map of all master nodes
   RCP<Epetra_Map>             mnodecolmap_;   // column map of all master nodes
-  RCP<Epetra_Map>             mnodefullmap_;  // fully overlapping column map of all master nodes
-
-  RCP<Epetra_Map>             selerowmap_;    // row map of all slave elements
-  RCP<Epetra_Map>             selecolmap_;    // column map of all slave elements
-  RCP<Epetra_Map>             selefullmap_;   // fully overlapping column map of all slave elements
-  RCP<Epetra_Map>             melerowmap_;    // row map of all master elements
-  RCP<Epetra_Map>             melecolmap_;    // column map of all master elements
-  RCP<Epetra_Map>             melefullmap_;   // fully overlapping column map of all master elements
-
-  RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
-  RCP<Epetra_Map>             sdofcolmap_;    // column map of all slave dofs
-  RCP<Epetra_Map>             sdoffullmap_;   // fully overlapping column map of all slave dofs
-  RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
-  RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
-  RCP<Epetra_Map>             mdoffullmap_;   // fully overlapping column map of all master dofs
 
   RCP<Epetra_Map>             snoderowmapbound_;    // row map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
-  RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             mnoderowmapnobound_;  // row map of master nodes (- boundary nodes)
   RCP<Epetra_Map>             mnodecolmapnobound_;  // col map of master nodes (- boundary nodes)
-  RCP<Epetra_Map>             mnodefullmapnobound_; // full map of master nodes (- boundary nodes)
+
+  RCP<Epetra_Map>             selerowmap_;    // row map of all slave elements
+  RCP<Epetra_Map>             selecolmap_;    // column map of all slave elements
+  RCP<Epetra_Map>             melerowmap_;    // row map of all master elements
+  RCP<Epetra_Map>             melecolmap_;    // column map of all master elements
+
+  RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
+  RCP<Epetra_Map>             sdofcolmap_;    // column map of all slave dofs
+  RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
+  RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
 
   RCP<Epetra_Map>             lmdofmap_;      // row map of all Lagrange multiplier dofs
   int                         maxdofglobal_;  // maximum dof ID in global discretization

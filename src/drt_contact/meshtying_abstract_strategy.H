@@ -455,6 +455,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
         
   protected:
 
+    // don't want cctor (= operator impossible anyway for abstract class)
+    MtAbstractStrategy(const MtAbstractStrategy& old);
+
     DRT::Discretization&  probdiscret_;               // the underlying problem discretization
     vector<RCP<MORTAR::MortarInterface> > interface_; // contact interfaces
     

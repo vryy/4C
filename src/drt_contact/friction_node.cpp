@@ -56,12 +56,9 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
   return node;
 }
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO FRINODEDATACONTAINER
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mgit 01/10|
+ |  ctor (public)                                             mgit 01/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer():
 activeold_(false),
@@ -75,39 +72,6 @@ slip_(false)
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        mgit 01/10|
- *----------------------------------------------------------------------*/
-CONTACT::FriNodeDataContainer::FriNodeDataContainer(const CONTACT::FriNodeDataContainer& old):
-activeold_(old.activeold_),
-slip_(old.slip_),
-drowsold_(old.drowsold_),
-mrowsold_(old.mrowsold_),
-snodes_(old.snodes_),
-mnodes_(old.mnodes_),
-mnodesold_(old.mnodesold_),
-arows_(old.arows_),
-anodes_(old.anodes_)
-{
-  for (int i=0;i<3;++i)
-  {
-    jump()[i]=old.jump_[i];
-    traction()[i]=old.traction_[i];
-    tractionold()[i]=old.tractionold_[i];
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Deep copy this instance of FriNodeDataContainer and
-    return pointer to it (public)                              mgit 01/10|
- *----------------------------------------------------------------------*/
-CONTACT::FriNodeDataContainer* CONTACT::FriNodeDataContainer::Clone() const
-{
-  CONTACT::FriNodeDataContainer* newnodedc = new CONTACT::FriNodeDataContainer(*this);
-  return newnodedc;
 }
 
 /*----------------------------------------------------------------------*
@@ -207,12 +171,9 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   return;
 }
 
-/*----------------------------------------------------------------------*/
-// METHODS RELATED TO FRINODE
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                              mgit 02/10|
+ |  ctor (public)                                             mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
                           const int numdof, const vector<int>& dofs, const bool isslave,
@@ -230,12 +191,15 @@ CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
 CONTACT::CoNode(old),
 mechdiss_(old.mechdiss_)
 {
+  // not yet used and thus not necessarily consistent
+  dserror("ERROR: FriNode copy-ctor not yet implemented");
+
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of FriNode and return pointer to it (public) |
- |                                                           mgit 02/10|
+ |  Deep copy this instance of FriNode and return pointer to it (public)|
+ |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode* CONTACT::FriNode::Clone() const
 {
@@ -244,7 +208,7 @@ CONTACT::FriNode* CONTACT::FriNode::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mgit 02/10|
+ |  << operator                                               mgit 02/10|
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const CONTACT::FriNode& frinode)
 {
@@ -283,11 +247,10 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
   CONTACT::CoNode::Pack(basedata);
   AddtoPack(data,basedata);
 
-  // data_
-  int hasdata = fridata_!=Teuchos::null;
+  // add data_
+  bool hasdata = (fridata_!=Teuchos::null);
   AddtoPack(data,hasdata);
-  if (hasdata)
-    fridata_->Pack(data);
+  if (hasdata) fridata_->Pack(data);
 
   return;
 }
@@ -295,7 +258,7 @@ void CONTACT::FriNode::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                           mgit 02/10|
+ |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::Unpack(const vector<char>& data)
 {
@@ -312,7 +275,7 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   CONTACT::CoNode::Unpack(basedata);
 
   // data_
-  int hasdata;
+  bool hasdata = false;
   ExtractfromPack(position,data,hasdata);
   if (hasdata)
   {

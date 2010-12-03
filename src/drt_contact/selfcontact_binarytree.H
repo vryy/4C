@@ -318,6 +318,10 @@ public:
   //@}
     
 private:
+
+  // don't want = operator and cctor
+  SelfBinaryTreeNode operator = (const SelfBinaryTreeNode& old);
+  SelfBinaryTreeNode(const SelfBinaryTreeNode& old);
   
   //! type of SelfBinaryTreeNode
   SelfBinaryTreeNodeType type_;
@@ -568,6 +572,10 @@ public:
   
 private:
  
+  // don't want = operator and cctor
+  SelfDualEdge operator = (const SelfDualEdge& old);
+  SelfDualEdge(const SelfDualEdge& old);
+
   //! first node of dual edge
   RCP<SelfBinaryTreeNode> node1_;
   

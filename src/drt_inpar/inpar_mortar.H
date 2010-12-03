@@ -73,7 +73,6 @@ namespace INPAR
     /// (this enum represents the input file parameter SEARCH_ALGORITHM)
     enum SearchAlgorithm
     {
-      search_bfnode,      ///< brute force node-based
       search_bfele,       ///< brute force element-based
       search_binarytree   ///< binary tree element based
     };

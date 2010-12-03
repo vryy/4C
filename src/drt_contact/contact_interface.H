@@ -76,11 +76,12 @@ public:
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
   \param icontact (in): Global contact parameter list
-  \param selfcontact (in): Flag for self contact status (default=false)
+  \param selfcontact (in): Flag for self contact status
+  \param redundant (in): if true, the interface is stored fully redundant
  
   */
   CoInterface(const int id, const Epetra_Comm& comm, const int dim,
-              const Teuchos::ParameterList& icontact, bool selfcontact = false);
+              const Teuchos::ParameterList& icontact, bool selfcontact, bool redundant);
     
   /*!
   \brief Destructor
@@ -251,19 +252,11 @@ public:
 
   */
   void CollectDistributionData(int& loadele, int& crowele);
-  
-  /*!
-  \brief Create interface ghosting
-
-  Derived version!
-
-  */
-  void CreateInterfaceGhosting();
 
   /*!
   \brief Create binary search tree
 
-  The methods creates a binary tree object for efficient search. This is
+  The method creates a binary tree object for efficient search. This is
   an overloaded method specific for contact, as in this case we have to
   consider the possibility of SELF-contact.
 
@@ -280,6 +273,26 @@ public:
   */
   void Initialize();
   
+  /*!
+  \brief Set element areas
+
+  Derived version!
+
+  */
+  void SetElementAreas();
+
+  /*!
+  \brief Export nodal normals
+
+  This method exports / communicates the nodal normal vector and all
+  associated information (nodal tangent vectors, normal and tangent
+  linearizations) from row to column map layout.
+
+  Derived version!
+
+  */
+  void ExportNodalNormals();
+
   /*!
   \brief Binary tree search algorithm for potentially coupling slave /
   master pairs (element-based algorithm) including self-contact

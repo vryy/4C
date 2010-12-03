@@ -815,16 +815,16 @@ void FSI::UTILS::SlideAleUtils::Remeshing
   {
     structdofrowmap = coupsf.MasterDofRowMap();
     fluiddofrowmap = coupsf.SlaveDofRowMap();
-    msfullnodemap =  coupsf.Interface()->MasterFullDofs();
-    msfullelemap =  coupsf.Interface()->MasterFullElements();
+    msfullnodemap =  LINALG::AllreduceEMap(*(coupsf.Interface()->MasterRowDofs()));
+    msfullelemap =  LINALG::AllreduceEMap(*(coupsf.Interface()->MasterRowElements()));
 
   }
   else
   {
     structdofrowmap = coupsf.SlaveDofRowMap();
     fluiddofrowmap = coupsf.MasterDofRowMap();
-    msfullnodemap =  coupsf.Interface()->SlaveFullDofs();
-    msfullelemap =  coupsf.Interface()->SlaveFullElements();
+    msfullnodemap =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowDofs()));
+    msfullelemap =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowElements()));
   }
 
 

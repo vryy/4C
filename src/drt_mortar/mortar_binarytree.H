@@ -304,6 +304,10 @@ public:
     
 private:
 
+  // don't want = operator and cctor
+  BinaryTreeNode operator = (const BinaryTreeNode& old);
+  BinaryTreeNode(const BinaryTreeNode& old);
+
   //! type of BinaryTreeNode
   MORTAR::BinaryTreeNodeType type_;
 

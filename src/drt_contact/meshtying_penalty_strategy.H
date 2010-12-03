@@ -187,7 +187,11 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   //@}
   
 protected:
-    
+
+  // don't want = operator and cctor
+  MtPenaltyStrategy operator = (const MtPenaltyStrategy& old);
+  MtPenaltyStrategy(const MtPenaltyStrategy& old);
+
   double                     constrnorm_;         // L2-norm of normal contact constraints
   double                     initialpenalty_;     // initial penalty parameter
   

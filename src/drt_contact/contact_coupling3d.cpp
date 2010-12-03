@@ -141,7 +141,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     double intcellarea = Cells()[i]->Area();
     double selearea = 0.0;
     if (!CouplingInAuxPlane())
-      selearea = SlaveIntElement().Area();
+      selearea = SlaveIntElement().MoData().Area();
     else
     {
       DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();

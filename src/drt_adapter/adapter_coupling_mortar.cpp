@@ -78,7 +78,13 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
   //            Possible pressure DoF are not transferred to MortarInterface.
   const int dim = genprob.ndim;
-  RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input));
+
+  // create an empty mortar interface
+  // (To be on the safe side we still store all interface nodes and elements
+  // fully redundant here in the mortar ADAPTER. This makes applications such
+  // as SlidingALE much easier, whereas it would not be needed for others.)
+  bool redundant = true;
+  RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   // feeding master nodes to the interface including ghosted nodes
   map<int, DRT::Node*>::const_iterator nodeiter;
@@ -396,14 +402,16 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 	// (3) perform mesh initialization node by node
 	//**********************************************************************
 	// export Xslavemod to fully overlapping column map for current interface
-	Epetra_Vector Xslavemodcol(*(interface_->SlaveFullDofs()),false);
+	RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_->SlaveRowDofs()));
+	RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_->SlaveRowNodes()));
+	Epetra_Vector Xslavemodcol(*fullsdofs,false);
 	LINALG::Export(*Xslavemod,Xslavemodcol);
 
 	// loop over all slave nodes on the current interface
-	for (int j=0; j<interface_->SlaveFullNodes()->NumMyElements(); ++j)
+	for (int j=0; j<fullsnodes->NumMyElements(); ++j)
 	{
 		// get global ID of current node
-		int gid = interface_->SlaveFullNodes()->GID(j);
+		int gid = fullsnodes->GID(j);
 
     // be careful to modify BOTH mtnode in interface discret ...
     // (check if the node is available on this processor)

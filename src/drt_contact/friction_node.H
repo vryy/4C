@@ -90,20 +90,6 @@ public:
   FriNodeDataContainer();
 
   /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a FriNodeDataContainer
-
-  */
-  FriNodeDataContainer(const CONTACT::FriNodeDataContainer& old);
-
-  /*!
-  \brief Deep copy the derived class and return pointer to it
-
-  */
-  virtual CONTACT::FriNodeDataContainer* Clone() const;
-
-  /*!
   \brief Destructor
 
   */
@@ -206,6 +192,10 @@ public:
   //@}
 
 protected:
+
+  // don't want = operator and cctor
+  FriNodeDataContainer operator = (const FriNodeDataContainer& old);
+  FriNodeDataContainer(const FriNodeDataContainer& old);
 
   double          jump_[3];     // jump per time step
   bool            activeold_;   // true if cnode was in contact (last converged state n)
@@ -344,7 +334,6 @@ public:
 
   */
   inline CONTACT::FriNodeDataContainer& FriData() { return *fridata_; }
-  inline RCP<CONTACT::FriNodeDataContainer> PointerFriData() { return fridata_; }
 
   //@}
 
