@@ -37,7 +37,8 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("tanslaveforce", "tanslaveforce", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("normasterforce", "normasterforce", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tanmasterforce", "tanmasterforce", dofbased, field->problem()->num_dim());
-  
+  EnsightWriter::WriteResult("wear", "wear", dofbased, field->problem()->num_dim());
+ 
   // thermo results
   EnsightWriter::WriteResult("temperature", "temperature", nodebased, 1);
   

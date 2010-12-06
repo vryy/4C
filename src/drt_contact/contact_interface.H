@@ -460,6 +460,13 @@ public:
   
   */
   virtual void AssembleG(Epetra_Vector& gglobal);
+  
+  /*!
+  \brief Assemble wear w
+  
+   This method assembles the weighted wear vector.
+   */
+   virtual void AssembleWear(Epetra_Vector& gglobal);
  
   /*!
   \brief Assemble matrix LinStick containing linearizations

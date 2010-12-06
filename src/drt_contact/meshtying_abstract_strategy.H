@@ -434,13 +434,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool ActiveSetConverged() {return true;}
     bool ActiveSetSemiSmoothConverged() {return true;}
     bool Friction() {return false;}
+    bool Wear() {return false;}
     RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
-    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle) {}
+    RCP<Epetra_Vector> ContactWear() {return Teuchos::null;}
+    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle, RCP<Epetra_Vector>& weightedwear) {}
     void InitEvalInterface() {}
     void InitEvalMortar() {}
     void Initialize() {}
     void OutputStresses() {}
+    void OutputWear() {}
     void RedistributeContact(RCP<Epetra_Vector> dis) {}
     void ResetActiveSet() {}
     void ForceRefConfig() {}

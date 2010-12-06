@@ -123,7 +123,8 @@ public:
 
   /*!
   \brief Build all integrals and linearizations on a 1D slave /
-         master overlap (i.e. M, g, LinM, Ling and possibly D, LinD)
+         master overlap (i.e. M, g, LinM, Ling and possibly D, LinD and
+         wear)
 
   */
   void IntegrateDerivSegment2D(
@@ -131,7 +132,8 @@ public:
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       RCP<Epetra_SerialDenseMatrix> dseg,
       RCP<Epetra_SerialDenseMatrix> mseg,
-      RCP<Epetra_SerialDenseVector> gseg);
+      RCP<Epetra_SerialDenseVector> gseg,
+      RCP<Epetra_SerialDenseVector> wseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -160,7 +162,8 @@ public:
      RCP<Epetra_SerialDenseVector> mdisssegs,
      RCP<Epetra_SerialDenseVector> mdisssegm,
      RCP<Epetra_SerialDenseMatrix> aseg,
-     RCP<Epetra_SerialDenseMatrix> bseg);
+     RCP<Epetra_SerialDenseMatrix> bseg,
+     RCP<Epetra_SerialDenseVector> wseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -325,7 +328,14 @@ public:
   bool AssembleB(const Epetra_Comm& comm,
                  MORTAR::MortarElement& mele,
                  Epetra_SerialDenseMatrix& bseg);
+  
+  /*!
+  \brief Assemble wear contribution of current overlap into slave nodes
 
+  */
+  bool AssembleWear(const Epetra_Comm& comm,
+                    MORTAR::MortarElement& sele,
+                    Epetra_SerialDenseVector& wseg);    
 
   //@}
    

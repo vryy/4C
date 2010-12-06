@@ -287,13 +287,15 @@ void CONTACT::CoIntegrator::IntegrateDerivSlave2D3D(
  |  LinM and Ling are built and stored directly into the adjacent nodes.|
  |  (Thus this method combines EVERYTHING before done separately in     |
  |  IntegrateM, IntegrateG, DerivM and DerivG!)                         |
+ |  Also wear is integrated.                                            |
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
-     RCP<Epetra_SerialDenseVector> gseg)
+     RCP<Epetra_SerialDenseVector> gseg,
+     RCP<Epetra_SerialDenseVector> wseg)
 { 
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -310,6 +312,11 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   if ((mxia<-1.0) || (mxib>1.0))
     dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
 
+  // contact with wear
+  bool wear = false;  
+  if(DRT::Problem::Instance()->MeshtyingAndContactParams().get<double>("WEARCOEFF")!= 0.0)
+    wear = true;
+  
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
@@ -335,6 +342,21 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   sele.GetNodalCoords(scoord);
   LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
   mele.GetNodalCoords(mcoord);
+  
+  // nodal coords from previous time step and lagrange mulitplier
+  RCP<LINALG::SerialDenseMatrix> scoordold;
+  RCP<LINALG::SerialDenseMatrix> mcoordold;
+  RCP<LINALG::SerialDenseMatrix> lagmult;
+  
+  if(wear)
+  { 
+    scoordold = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    sele.GetNodalCoordsOld(*scoordold);
+    mcoordold = rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
+    mele.GetNodalCoordsOld(*mcoordold);
+    lagmult = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    sele.GetNodalLagMult(*lagmult);
+  }
   
   // map iterator
   typedef map<int,double>::const_iterator CI;
@@ -568,7 +590,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     for (int i=0;i<3;++i)
       gpn[i]/=length;
 
-    // build interpolation of slave GP coordinates
+    // build interpolation of master GP coordinates
     double mgpx[3] = {0.0, 0.0, 0.0};
     for (int i=0;i<ncol;++i)
     {
@@ -581,6 +603,64 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     double gap = 0.0;
     for (int i=0;i<3;++i)
       gap+=(mgpx[i]-sgpx[i])*gpn[i];
+    
+    // evaluate wear at current GP
+    // not including wearcoefficient
+    double wearvalue = 0;
+    if(wear)
+    {
+      double gpt[3] = {0.0,0.0,0.0};
+      double gplm[3] = {0.0, 0.0, 0.0};
+      double sgpjump[3] = {0.0, 0.0, 0.0};
+      for (int i=0;i<nrow;++i)
+      {
+         CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (mynodes[i]);
+         gpt[0]+=sval[i]*myconode->CoData().txi()[0];
+         gpt[1]+=sval[i]*myconode->CoData().txi()[1];
+         gpt[2]+=sval[i]*myconode->CoData().txi()[2];
+         
+         sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
+         sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
+         sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+       
+         gplm[0]+=lmval[i]*(*lagmult)(0,i);
+         gplm[1]+=lmval[i]*(*lagmult)(1,i);
+         gplm[2]+=lmval[i]*(*lagmult)(2,i);
+      }
+      
+      // normalize interpolated GP tangent back to length 1.0 !!!
+      length = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]+gpt[2]*gpt[2]);
+      if (length<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+      
+      for (int i=0;i<3;i++)
+        gpt[i]/=length;
+      
+      // interpolation of master GP jumps (relative displacement increment)
+      double mgpjump[3] = {0.0, 0.0, 0.0};
+      for (int i=0;i<ncol;++i)
+      {
+        mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
+        mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
+        mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+      }
+        
+      // jump
+      double jump[3] = {0.0, 0.0, 0.0};
+      jump[0] = sgpjump[0] - mgpjump[0]; 
+      jump[1] = sgpjump[1] - mgpjump[1]; 
+      jump[2] = sgpjump[2] - mgpjump[2]; 
+        
+      // evaluate wear   
+      double dprod = 0.0;
+      for (int i=0;i<3;++i)
+        dprod+=(gpn[i]*gplm[i]);
+      wearvalue=dprod;
+        
+      dprod = 0.0;
+      for (int i=0;i<3;++i)
+        dprod+=gpt[i]*jump[i];
+      wearvalue*=abs(dprod);
+    }
     
     // evaluate linearizations *******************************************
     // evaluate the derivative dxdsxidsxi = Jac,xi
@@ -717,6 +797,17 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       (*gseg)(j) += prod*dxdsxi*dsxideta*wgt;
     }
     // compute segment gap vector ****************************************
+    
+    // compute segment wear vector ***************************************
+    // loop over all wseg vector entries
+    // nrow represents the slave side dofs !!!
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = lmval[j]*wearvalue;
+
+      // add current Gauss point's contribution to wseg
+      (*wseg)(j) += prod*dxdsxi*dsxideta*wgt;
+    }
 
     // compute segment D/M linearization *********************************
 
@@ -1868,7 +1959,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      RCP<Epetra_SerialDenseVector> mdisssegs,
      RCP<Epetra_SerialDenseVector> mdisssegm,
      RCP<Epetra_SerialDenseMatrix> aseg,
-     RCP<Epetra_SerialDenseMatrix> bseg)
+     RCP<Epetra_SerialDenseMatrix> bseg,
+     RCP<Epetra_SerialDenseVector> wseg)
 {
   
   // explicitely defined shapefunction type needed
@@ -1900,6 +1992,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     if (Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
       thermolagmult = false;
   }
+  
+  // contact with wear
+  bool wear = false;  
+  if(DRT::Problem::Instance()->MeshtyingAndContactParams().get<double>("WEARCOEFF")!= 0.0)
+    wear = true;
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -1929,7 +2026,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   RCP<LINALG::SerialDenseMatrix> lagmult;
   
   // get them in the case of tsi
-  if (tsi)
+  if (tsi or wear)
   {
     scoordold = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     sele.GetNodalCoordsOld(*scoordold);
@@ -2213,10 +2310,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // evaluate mechanical dissipation in the case of thermo-structure-
     // -interaction with contact
 
-    // mechanical dissipation
+    // mechanical dissipation and wear
     double mechdiss = 0;
+    double wearvalue = 0.0;
     
-    if(tsi)
+    if(tsi or wear)
     {
       // tangent plane  
       Epetra_SerialDenseMatrix tanplane(3,3);
@@ -2270,10 +2368,30 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       // build tangential lm
       Epetra_SerialDenseMatrix lmtan(3,1);
       lmtan.Multiply('N','N',1,tanplane,lm,0.0);
-       
-      // build mechanical dissipation
-      for (int i=0;i<3;i++)
-        mechdiss += lmtan(i,0)*jumptan(i,0);
+
+      // evaluate mechanical dissipation
+      if (tsi)
+      {  
+        for (int i=0;i<3;i++)
+          mechdiss += lmtan(i,0)*jumptan(i,0);
+      }
+
+      // evaluate wear, not including wearcoefficient
+      if (wear)
+      { 
+        for (int i=0;i<3;++i)
+          wearvalue+=lm(i,0)*gpn[i];
+          
+          // FIXGIT: This evaluation contains a bug
+          //         3D wear has to be tested
+          dserror("ERROR: IntegrateDerivCell3DAuxPlane: 3D contact with wear has "
+                  "to be verified and tested!");
+      
+         double prod = 0.0;
+         for (int i=0;i<3;++i)
+           prod+=lmtan(i,0)*jumptan(i,0);
+         wearvalue*=abs(prod);
+      }
     }  
     
     // evaluate linearizations *******************************************
@@ -2483,6 +2601,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       }
       // compute cell mechanical dissipation vector / master *************
     } // tsi with contact
+    
+    // compute cell wear vector ******************************************
+    // loop over all wseg vector entries
+    // nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+      double prod = lmval[j]*wearvalue;
+      
+      // add current Gauss point's contribution to gseg
+      (*wseg)(j) += prod*jac*wgt;
+    }
+    // compute cell wear vector ******************************************
       
     // compute cell D/M linearization ************************************
     // loop over slave nodes
@@ -5218,6 +5348,38 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
         }
       }
     }
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+  |  Assemble wear contribution (2D / 3D)                  gitterle 12/10|
+  |  This method assembles the contribution of a 1D/2D slave and master  |
+  |  overlap pair to the wear of the adjacent slave nodes.               |
+  *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleWear(const Epetra_Comm& comm,
+                                         MORTAR::MortarElement& sele,
+                                         Epetra_SerialDenseVector& wseg)
+{
+  // get adjacent slave nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes) dserror("ERROR: AssembleWear: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID()) continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound()) continue;
+
+    double val = wseg(slave);
+    snode->AddDeltaWearValue(val);
   }
 
   return true;

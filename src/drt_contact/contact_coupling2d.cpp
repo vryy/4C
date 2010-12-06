@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 #include "contact_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -97,13 +98,14 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
   // create a CONTACT integrator instance with correct NumGP and Dim
   CONTACT::CoIntegrator integrator(shapefcn_,sele_.Shape());
 
-  // do the overlap integration (integrate and linearize both M and gap)
+  // do the overlap integration (integrate and linearize both M and gap and wear)
   int nrow = sele_.NumNode();
   int ncol = mele_.NumNode();
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg);
+  RCP<Epetra_SerialDenseVector> wseg = rcp(new Epetra_SerialDenseVector(nrow));
+  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg,wseg);
 
   // do the two assemblies into the slave nodes
   integrator.AssembleD(Comm(),sele_,*dseg);
@@ -111,6 +113,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
   
   // also do assembly of weighted gap vector
   integrator.AssembleG(Comm(),sele_,*gseg);
+  
+  // assemble wear
+  if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+    integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
 
   return true;
 }

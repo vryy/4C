@@ -533,6 +533,18 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
+  // contact with wear
+  // *********************************************************************
+  
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+      input.get<double>("WEARCOEFF") < 0.0)
+    dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0");
+    
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
+      input.get<double>("WEARCOEFF") >= 0.0)
+    dserror("ERROR: Wear only for frictional contact");
+
+  // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
   if ((Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
@@ -570,9 +582,10 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   // quantities to be written for restart
   RCP<Epetra_Vector> activetoggle;
   RCP<Epetra_Vector> sliptoggle;
+  RCP<Epetra_Vector> weightedwear;
 
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(activetoggle,sliptoggle);
+  GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear);
 
   // write restart information for contact
   output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
@@ -581,6 +594,9 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   // friction
   if(GetStrategy().Friction())
     output.WriteVector("sliptoggle",sliptoggle);
+  
+  if (weightedwear != Teuchos::null)
+    output.WriteVector("weightedwear", weightedwear);
 
   return;
 }
@@ -603,12 +619,13 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 {
-  // evaluate contact tractions
-  GetStrategy().OutputStresses();
-  
+
   // *********************************************************************
   // contact tractions
   // *********************************************************************
+  
+  // evaluate contact tractions
+  GetStrategy().OutputStresses();
   
   // problem row map  
   RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
@@ -665,7 +682,23 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   output.WriteVector("normasterforce",fcmasternorexp);
   output.WriteVector("tanmasterforce",fcmastertanexp);
 #endif
-  
+ 
+  // *********************************************************************
+  // wear
+  // *********************************************************************
+ 
+  bool wear = GetStrategy().Wear();
+  if (wear)
+  {
+    // evaluate wear (not weighted)
+    GetStrategy().OutputWear();
+
+    // write output
+    RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
+    RCP<Epetra_Vector> wearoutputexp = rcp(new Epetra_Vector(*problem));
+    LINALG::Export(*wearoutput, *wearoutputexp);
+    output.WriteVector("wear",wearoutputexp);
+  }
  return;
 }
 

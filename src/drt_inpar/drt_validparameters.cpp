@@ -1093,6 +1093,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
                                yesnotuple,yesnovalue,&scontact);
 
+  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

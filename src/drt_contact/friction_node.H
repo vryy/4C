@@ -189,6 +189,16 @@ public:
   */
   virtual inline double* tractionold() { return tractionold_; }
   
+  /*!
+  \brief Return the weighted wear per node (length 1)
+   */
+  virtual double& Wear() { return wear_; }
+  
+  /*!
+  \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
+   */
+   virtual double& DeltaWear() { return deltawear_; }
+  
   //@}
 
 protected:
@@ -215,6 +225,11 @@ protected:
   // penalty related quantities
   double                        traction_[3];     // traction vector of current time step
   double                        tractionold_[3];  // traction vector of previous time step
+
+  // wear related quantities
+  double                        wear_;            // weighted wear
+  double                        deltawear_;       // deltawear 
+  
   
 }; // class FriNodeDataContainer
 
@@ -401,6 +416,18 @@ public:
   */
   void AddBNode (int node);
 
+  /*!
+  \brief Add value to wear
+
+   */
+  void AddWearValue(double& val);
+
+  /*!
+  \brief Set deltawear to value
+
+   */
+  void AddDeltaWearValue(double& val);
+  
   /*!
   \brief Write nodal entries of D and M to Dold and Mold
 

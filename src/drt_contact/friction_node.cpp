@@ -62,7 +62,9 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer():
 activeold_(false),
-slip_(false)
+slip_(false),
+wear_(0.0),
+deltawear_(0.0)
 {
   for (int i=0;i<3;++i)
   {
@@ -478,6 +480,26 @@ void CONTACT::FriNode::StoreTracOld()
     FriData().tractionold()[j]=FriData().traction()[j];
 
   return;
+}
+
+/*-----------------------------------------------------------------------*
+ |  Add a value to wear                                    gitterle 12/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddWearValue(double& val)
+{
+  // add given value to wear_
+  FriData().Wear()+=val;
+
+  return;
+}
+
+/*-----------------------------------------------------------------------*
+ |  Set the value of deltawear                             gitterle 12/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddDeltaWearValue(double& val)
+{
+  // add given value to deltawear_
+  FriData().DeltaWear()+=val;
 }
 
 /*----------------------------------------------------------------------*

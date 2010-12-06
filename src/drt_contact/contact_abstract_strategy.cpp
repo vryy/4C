@@ -68,6 +68,7 @@ wasincontact_(false),
 wasincontactlts_(false),
 isselfcontact_(false),
 friction_(false),
+wear_(false),
 dualquadslave3d_(false)
 {
   // set potential global self contact status
@@ -86,6 +87,10 @@ dualquadslave3d_(false)
   // set frictional contact status
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
+  
+  // set wear contact status
+  if(Params().get<double>("WEARCOEFF", 0.0)!=0.0)
+    wear_ = true;
 
 	// call setup method with flag redistributed=FALSE, init=TRUE
 	Setup(false,true);
@@ -433,7 +438,10 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // output contact stress vectors
   stressnormal_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   stresstangential_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-
+  
+  // output wear
+  if (wear_) wearoutput_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+     
   //----------------------------------------------------------------------
 	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
 	//----------------------------------------------------------------------
@@ -672,7 +680,8 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
   if (friction_) jump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-
+  if (wear_)     wearvector_ = LINALG::CreateVector(*gsnoderowmap_, true);
+  
   // in the case of frictional dual quad 3D, also the modified D matrices are setup
   if (friction_ && Dualquadslave3d())
   {
@@ -698,7 +707,10 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     // assemble D-, M-matrix and g-vector, store them globally
     interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
     interface_[i]->AssembleG(*g_);
-
+    
+    // assemble wear vector
+    if (wear_) interface_[i]->AssembleWear(*wearvector_);
+    
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
     cout << " -- CONTACTFDNORMAL- -----------------------------------" << endl;
@@ -726,6 +738,9 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
 #endif // #ifdef CONTACTFDMORTARM
   }
+
+  // modify gap vector towards wear
+  if (wear_) g_->Update(1.0,*wearvector_,1.0);
 
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
@@ -932,6 +947,10 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = Jump();
         break;
       }
+      case MORTAR::StrategyBase::wear:
+      {
+        break;
+      }
       default:
         dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
     } // switch
@@ -954,7 +973,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     // export global quantity to current interface slave dof map (column or row)
     RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofmap));
     
-    if (vectorglobal != null) // necessary for case "activeold"
+    if (vectorglobal != null) // necessary for case "activeold" and wear
       LINALG::Export(*vectorglobal, *vectorinterface);
 
     // loop over all slave nodes (column or row) on the current interface
@@ -1030,6 +1049,19 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             dserror("ERROR: This should not be called for contact without friction");
           FriNode* frinode = static_cast<FriNode*>(cnode);
           frinode->FriData().jump()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::wear:
+        {
+          if(!friction_)
+            dserror("ERROR: This should not be called for contact without friction");
+            // update wear only once
+            if(dof==0)
+            {
+              FriNode* frinode = static_cast<FriNode*>(cnode);
+              double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
+              frinode->FriData().Wear() += wearcoeff*frinode->FriData().DeltaWear();
+            }
           break;
         }
         default:
@@ -1108,6 +1140,75 @@ void CONTACT::CoAbstractStrategy::OutputStresses ()
     }
   }
 
+  return;
+}
+
+/*-----------------------------------------------------------------------*
+|  Output de-weighted wear vector                          gitterle 10/10|
+*-----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::OutputWear()
+{
+
+  // vectors
+  RCP<Epetra_Vector> wear_vector = rcp(new Epetra_Vector(*gsdofrowmap_));
+  RCP<Epetra_Vector> real_wear = rcp(new Epetra_Vector(*gsdofrowmap_,true));
+
+  // solver  
+  RCP<Teuchos::ParameterList> solver_params = rcp(new Teuchos::ParameterList());
+  solver_params->set("solver","umfpack");
+  solver_params->set("symmetric",false);
+  LINALG::Solver solver(solver_params, Comm(), NULL);
+
+  // multiply the wear with its normal direction and store in wear_vector
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // FIRST: get the wear values and the normal directions for the interface
+    // loop over all slave row nodes on the current interface
+    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      FriNode* frinode = static_cast<FriNode*>(node);
+
+      // be aware of problem dimension
+      int dim = Dim();
+      int numdof = frinode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+      // nodal normal vector and wear
+      double nn[3];
+      double wear = 0.0;
+
+      for (int j=0;j<3;++j)
+        nn[j]=frinode->MoData().n()[j];
+      wear = frinode->FriData().Wear();
+
+      // find indices for DOFs of current node in Epetra_Vector
+      // and put node values (normal and tangential stress components) at these DOFs
+      vector<int> locindex(dim);
+
+      for (int dof=0;dof<dim;++dof)
+      {
+         locindex[dof] = (wear_vector->Map()).LID(frinode->Dofs()[dof]);
+        (*wear_vector)[locindex[dof]] = wear * nn[dof];
+      }
+    }
+  }
+ 
+  // approx. undo the weighting of the wear by solving
+  // D * w = w~
+  // dmatrix_ * real_wear = wear_
+  solver.Solve(dmatrix_->EpetraMatrix(), real_wear, wear_vector, true);
+
+  // copy the local part of real_wear into wearoutput_
+  for (int i=0; i<(int)gsdofrowmap_->NumMyElements(); ++i)
+  {
+   int gid = gsdofrowmap_->MyGlobalElements()[i];
+   double tmp = (*real_wear)[real_wear->Map().LID(gid)];
+   (*wearoutput_)[wearoutput_->Map().LID(gid)] = tmp;
+  }
   return;
 }
 
@@ -1283,6 +1384,10 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
     StoreToOld(MORTAR::StrategyBase::pentrac);
   }
   
+  // update wear
+  if(wear_)
+    StoreNodalQuantities(MORTAR::StrategyBase::wear);
+  
   return;
 }
 
@@ -1290,12 +1395,15 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggle,
-                                                 RCP<Epetra_Vector>& sliptoggle)
+                                                 RCP<Epetra_Vector>& sliptoggle,
+                                                 RCP<Epetra_Vector>& weightedwear)
 {
   // initalize
   activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
   if (friction_)
     sliptoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  if (wear_)
+    weightedwear = rcp(new Epetra_Vector(*gsnoderowmap_));
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1314,9 +1422,13 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
 
       // set value active / inactive in toggle vector
       if (cnode->Active()) (*activetoggle)[dof]=1;
+      
+      // set value slip / stick in the toggle vector 
       if (friction_)
       {
-        if (static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()) (*sliptoggle)[dof]=1;
+        CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
+        if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
+        if (wear_)  (*weightedwear)[dof] = frinode->FriData().Wear();
       }
     }
   }
@@ -1358,11 +1470,20 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   
   // friction
   RCP<Epetra_Vector> sliptoggle;
+  RCP<Epetra_Vector> weightedwear;
   if(friction_)
   {  
     sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
     reader.ReadVector(sliptoggle,"sliptoggle");
   }
+
+  // wear
+  if (wear_)
+  {
+    weightedwear = rcp(new Epetra_Vector(*gsnoderowmap_));
+    reader.ReadVector(weightedwear, "weightedwear");
+  }
+  
   // store restart information on active set and slip set
   // into nodes, therefore first loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1388,7 +1509,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
         if (friction_)
         {
           // set value stick / slip in cnode
+          // set wear value
           if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
+          if (wear_) static_cast<CONTACT::FriNode*>(cnode)->FriData().Wear() = (*weightedwear)[dof];
         }
       }
     }
@@ -1844,6 +1967,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   vector<double> llmt, glmt;
   vector<double> ljtx, gjtx;
   vector<double> ljte, gjte;
+  vector<double> lwear, gwear;
 
   // loop over all interfaces
 	for (int i=0; i<(int)interface_.size(); ++i)
@@ -1903,11 +2027,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				for (int k=0;k<3;++k)
 					nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
 
-				// compute tangential parts of Lagrange multiplier and jumps
+				// compute tangential parts of Lagrange multiplier and jumps and wear
 				double txiz = 0.0;
 				double tetaz = 0.0;
 				double jumptxi = 0.0;
 				double jumpteta = 0.0;
+				double wear = 0.0;
+				
 				for (int k=0;k<Dim();++k)
 				{
 					txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
@@ -1922,6 +2048,9 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				// check for dimensions
 				if (Dim()==2 && abs(jumpteta)>0.0001)
 					dserror("Error: Jumpteta should be zero for 2D");
+				
+				// compute weighted wear
+				if (wear_) wear = frinode->FriData().Wear();
 
 				// store node id
 				lnid.push_back(gid);
@@ -1932,6 +2061,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				llmt.push_back(tz);
 				ljtx.push_back(jumptxi);
 				ljte.push_back(jumpteta);
+				lwear.push_back(wear);
 
 				// store status (0=inactive, 1=active, 2=slip, 3=stick)
 				if (cnode->Active())
@@ -1963,7 +2093,8 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 		LINALG::Gather<double>(llmt,glmt,(int)allproc.size(),&allproc[0],Comm());
 		LINALG::Gather<double>(ljtx,gjtx,(int)allproc.size(),&allproc[0],Comm());
 		LINALG::Gather<double>(ljte,gjte,(int)allproc.size(),&allproc[0],Comm());
-	}
+    LINALG::Gather<double>(lwear,gwear,(int)allproc.size(),&allproc[0],Comm());
+ }
 
 	// output is solely done by proc 0
 	if (Comm().MyPID()==0)
@@ -2006,14 +2137,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 				// print nodes of slip set **************************************
 				if (gsta[k]==2)
 				{
-					printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k]);
+					printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
 					fflush(stdout);
 				}
 
 				// print nodes of stick set *************************************
 				else if (gsta[k]==3)
 				{
-					printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k]);
+					printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
 					fflush(stdout);
 				}
 

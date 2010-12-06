@@ -92,7 +92,8 @@ class StrategyBase
       activeold,
       jump,
       dm,
-      pentrac
+      pentrac,
+      wear
     };
     //@}
 
@@ -161,9 +162,10 @@ class StrategyBase
     virtual double ConstraintNorm() = 0;
     virtual RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual RCP<Epetra_Vector> ContactTanStress() = 0;
+    virtual RCP<Epetra_Vector> ContactWear() = 0;  
     virtual RCP<LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, RCP<Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle) = 0;
+    virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle,RCP<Epetra_Vector>& weightedwear) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void ForceRefConfig() = 0;
@@ -179,6 +181,7 @@ class StrategyBase
     virtual RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis) = 0;
     virtual void OutputStresses() = 0;
+    virtual void OutputWear() = 0;
     virtual void Print(ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(RCP<Epetra_Vector> disi) = 0;
@@ -201,6 +204,7 @@ class StrategyBase
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() = 0;
+    virtual bool Wear() = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
  
     //@}

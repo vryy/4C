@@ -164,6 +164,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     RCP<Epetra_Vector> ContactTanStress() { return stresstangential_; }
+    
+    /*!
+    \brief Return vector of wear (t_n+1)
+
+    */
+    RCP<Epetra_Vector> ContactWear() { return wearoutput_; }
 
     /*!
     \brief Return current global contact status
@@ -205,6 +211,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     bool Friction() { return friction_; }
 
+    /*!
+    \brief Return global wear status
+
+    */
+    bool Wear() { return wear_; }
+    
     /*!
     \brief Return contact interfaces
 
@@ -545,8 +557,10 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, RCP<Epetra_Vector>& sliptoggle);
-
+    void DoWriteRestart(RCP<Epetra_Vector>& activetoggle, 
+                        RCP<Epetra_Vector>& sliptoggle, 
+                        RCP<Epetra_Vector>& weightedwear);
+    
     /*!
     \brief Perform a write restart
 
@@ -600,6 +614,15 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void VisualizeGmsh(const int step, const int iter = 0);
+    
+    /*!
+    \brief Evaluate wear vector
+    
+    Evaluates the unweighted wear vector.
+    Refer also to the Semesterarbeit of Karl Wichmann 2010
+       
+    */
+    void OutputWear();
 
     //@}
         
@@ -680,6 +703,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     RCP<LINALG::SparseMatrix> dmatrix_; // global Mortar matrix D
     RCP<LINALG::SparseMatrix> mmatrix_; // global Mortar matrix M
     RCP<Epetra_Vector> g_;              // global weighted gap vector g
+    RCP<Epetra_Vector> wearvector_;     // global weighted wear vector w   
 
     RCP<LINALG::SparseMatrix> lindmatrix_; // global Matrix LinD containing slave fc derivatives
     RCP<LINALG::SparseMatrix> linmmatrix_; // global Matrix LinM containing master fc derivatives
@@ -694,6 +718,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     RCP<Epetra_Vector> stressnormal_;      // vector of normal contact forces at t_n+1
     RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1
+    RCP<Epetra_Vector> wearoutput_;        // vector of wear at t_n+1   
 
     // global storage fields
     bool isincontact_;        // flag indicating global contact status
@@ -701,7 +726,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool wasincontactlts_;    // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
-
+    bool wear_;               // flag for contact with wear
+    
     bool                       dualquadslave3d_; // flag indicating whether trafo should be applied
     RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case
     RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case

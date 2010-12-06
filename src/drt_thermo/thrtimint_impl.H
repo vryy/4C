@@ -280,7 +280,7 @@ namespace THR
                      RCP<Epetra_Map>& activedofs,
                      RCP<Epetra_Map>& masterdofs);
 
-    // transform mortar matrices from structure dofs in thermo dofs
+    //! transform mortar matrices from structure dofs in thermo dofs
     // This needs 
     // 1. Reduction of mortar matrices
     // 2. Transformation into thermo dofs  
@@ -289,19 +289,19 @@ namespace THR
                      RCP<Epetra_Map>& slavedofs,
                      RCP<Epetra_Map>& masterdofs);
 
-    // apply A matrix for nodes in contact
+    //! apply A matrix for nodes in contact
     void AssembleA(LINALG::SparseMatrix& amatrix);
 
-    // apply B matrix for nodes in contact
+    //! apply B matrix for nodes in contact
     void AssembleB(LINALG::SparseMatrix& bmatrix);
 
-    // assemble mechanical dissipation for master nodes
+    //! assemble mechanical dissipation for master nodes
     void AssembleMechDissMaster(Epetra_Vector& mechdissrate);
 
-    // assemble mechanical dissipation for slave nodes
+    //! assemble mechanical dissipation for slave nodes
     void AssembleMechDissSlave(Epetra_Vector& mechdissrate);
     
-    // assemble thermal contact condition
+    //! assemble thermal contact condition
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,
                                     Epetra_Vector& thermcontRHS,

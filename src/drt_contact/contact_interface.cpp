@@ -674,6 +674,10 @@ void CONTACT::CoInterface::Initialize()
         (frinode->FriData().GetA())[j].clear();
       
       (frinode->FriData().GetA()).resize(0);
+      
+      // reset wear increment
+      frinode->FriData().DeltaWear() = 0.0;
+      
     }
   }
 
@@ -3185,6 +3189,43 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
 
       LINALG::Assemble(gglobal,gnode,lm,lmowner);
     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble wear                                         gitterle 12/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleWear(Epetra_Vector& gglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if (frinode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleWear: Node ownership inconsistency!");
+
+    /**************************************************** w-vector ******/
+    double wear = frinode->FriData().Wear();
+      
+    Epetra_SerialDenseVector wnode(1);
+    vector<int> lm(1);
+    vector<int> lmowner(1);
+
+    wnode(0) = wear;
+    lm[0] = frinode->Id();
+    lmowner[0] = frinode->Owner();
+
+    LINALG::Assemble(gglobal,wnode,lm,lmowner);
   }
 
   return;

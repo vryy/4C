@@ -172,6 +172,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     {
       // prepare integration and linearization of M, g (and possibly D) on intcells
       // prepare integration of mechanical dissipation in the case of tsi with contact
+      // prepare integration of wear 
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
@@ -181,9 +182,10 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       RCP<Epetra_SerialDenseVector> mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
       RCP<Epetra_SerialDenseMatrix> aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> bseg = rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
+      RCP<Epetra_SerialDenseVector> wseg = rcp(new Epetra_SerialDenseVector(nrow));
       
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg,bseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
   
@@ -205,6 +207,16 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         if (!CouplingInAuxPlane()) 
           dserror("Tsi with contact only implemented for CouplingInAuxPlane");        
       }
+      
+      // assemble wear
+      if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+      {  
+        integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+        
+        // dserror 
+        if (!CouplingInAuxPlane()) 
+          dserror("Contact with wear only implemented for CouplingInAuxPlane");        
+      }  
     }
     
     // *******************************************************************
