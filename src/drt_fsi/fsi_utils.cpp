@@ -23,8 +23,6 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 // we need to know all element types for the ale mesh creation
-#include "../drt_f2/fluid2.H"
-#include "../drt_f2/fluid2_nurbs.H"
 #include "../drt_f3/fluid3.H"
 
 #include "../drt_ale2/ale2.H"
@@ -216,16 +214,6 @@ void FSI::UTILS::CreateAleDiscretization()
     bool found = false;
     bool myele = fluiddis->ElementRowMap()->MyGID(actele->Id());
 
-#ifdef D_FLUID2
-    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
-    if (not found and f2!=NULL)
-    {
-      found = true;
-      isale = f2->IsAle();
-      if (isale and myele)
-        aletype.push_back("ALE2");
-    }
-#endif
 
 #ifdef D_FLUID3
     DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
@@ -681,20 +669,20 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils
     RCP<DRT::Discretization> structdis,
     RCP<DRT::Discretization> fluiddis,
     ADAPTER::CouplingMortar& coupsf,
-    bool structcoupmaster    
+    bool structcoupmaster
 )
 :
 slideeleredmap_(null)
 {
   structcoupmaster_ =  structcoupmaster;
-  
+
   // declare struct objects in interface
   map<int, RefCountPtr<DRT::Element> > structelements;
   map<int, RefCountPtr<DRT::Element> > structmelements;
   map<int, DRT::Node*> structnodes; // dummy map
   map<int, DRT::Node*> structmnodes; // partial map of sticking structure nodes
   map<int, DRT::Node*> structgnodes; // complete map of strucutre nodes
-  
+
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*structdis, structnodes, structgnodes, structelements,"FSICoupling");
   DRT::UTILS::FindConditionObjects(*structdis, structnodes, structmnodes, structmelements,"FSICouplingNoSlide");
@@ -702,9 +690,9 @@ slideeleredmap_(null)
   istructdispeles_ = structelements;
   istructslidnodes_ = structgnodes;
   istructslideles_ = structelements;
-  
+
   vector<int> slideeleidvector;
-  
+
   map<int, DRT::Node*>::iterator nit;
   for ( nit=structmnodes.begin() ; nit != structmnodes.end(); nit++ )
   {
@@ -712,31 +700,31 @@ slideeleredmap_(null)
     if (!err)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
-  
+
   map<int, RefCountPtr<DRT::Element> >::iterator eit;
   for ( eit=structmelements.begin() ; eit != structmelements.end(); eit++ )
   {
     int err = istructslideles_.erase((*eit).first);
     if (!err)
-      dserror("Non sliding interface has to be a subset of FSI-interface or empty");   
+      dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
   for ( eit=istructslideles_.begin() ; eit != istructslideles_.end(); eit++ )
   {
     slideeleidvector.push_back((*eit).first);
   }
 
-  
+
   const Epetra_Map slideelemap (-1, slideeleidvector.size(), &slideeleidvector[0], 0, structdis->Comm());
-  
+
   slideeleredmap_ = LINALG::AllreduceEMap(slideelemap);
-  
+
   // declare fluid objects in interface
   map<int, RefCountPtr<DRT::Element> > fluidelements;
-  map<int, DRT::Node*> fluidnodes;  // complete map of fluid nodes 
-  map<int, DRT::Node*> fluidmnodes; // partial map of sticking fluid nodes 
+  map<int, DRT::Node*> fluidnodes;  // complete map of fluid nodes
+  map<int, DRT::Node*> fluidmnodes; // partial map of sticking fluid nodes
   map<int, DRT::Node*> fluidgnodes; // dummy map
-  
-  
+
+
   //initialize fluid objects in interface
   DRT::UTILS::FindConditionedNodes(*fluiddis, "FSICoupling", fluidnodes);
   DRT::UTILS::FindConditionedNodes(*fluiddis, "FSICouplingNoSlide", fluidmnodes);
@@ -749,11 +737,11 @@ slideeleredmap_(null)
     if (!err)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
-  
+
   RCP<Epetra_Map> structdofrowmap;
   RCP<Epetra_Map> fluiddofrowmap;
-  
-  
+
+
   // useful displacement vectors
   if (structcoupmaster_)
   {
@@ -768,7 +756,7 @@ slideeleredmap_(null)
 
   RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap,*fluiddofrowmap, true);
   idispms_ = LINALG::CreateVector(*dofrowmap, true);
-  
+
   iprojhist_=Teuchos::rcp(new Epetra_Vector(*fluiddofrowmap,true));
 
   centerdisptotal_.resize(genprob.ndim);
@@ -789,7 +777,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
 )
 {
 
-#ifdef D_SOLID3 
+#ifdef D_SOLID3
   Teuchos::RCP<Epetra_Vector> idispn = structure.ExtractInterfaceDispn();
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
   Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispnp();
@@ -854,7 +842,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
       }
     }
   }
-  
+
 
   //currentpositions of struct nodes for the search tree (always 3 coordinates)
   std::map<int,LINALG::Matrix<3,1> > currentpositions =
@@ -918,10 +906,10 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
     ADAPTER::CouplingMortar& coupsf
 )
 {
-  RCP<Epetra_Map> structdofrowmap; 
+  RCP<Epetra_Map> structdofrowmap;
   RCP<Epetra_Map> fluiddofrowmap;
-  
-  
+
+
   if (structcoupmaster_)
   {
     structdofrowmap = coupsf.MasterDofRowMap();
@@ -932,17 +920,17 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
     structdofrowmap = coupsf.SlaveDofRowMap();
     fluiddofrowmap = coupsf.MasterDofRowMap();
   }
-  
+
   //merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
   idispms_->Scale(0.0);
-  
+
   RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap,*fluiddofrowmap, true);
   RCP<Epetra_Import> msimpo = rcp (new Epetra_Import(*dofrowmap,*structdofrowmap));
   RCP<Epetra_Import> slimpo = rcp (new Epetra_Import(*dofrowmap,*fluiddofrowmap));
 
   idispms_ -> Import(*idisptotal,*msimpo,Add);
   idispms_ -> Import(*ifluid,*slimpo,Add);
-  
+
   //new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);
 }
@@ -958,15 +946,15 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 )
 {
   const int dim = genprob.ndim;
-  // get structure and fluid discretizations  and set stated for element evaluation 
-    
+  // get structure and fluid discretizations  and set stated for element evaluation
+
   const RCP<Epetra_Vector> idisptotalcol = LINALG::CreateVector(*structdis->DofColMap(),false);
   LINALG::Export(*idisptotal,*idisptotalcol);
   structdis->SetState("displacementtotal",idisptotalcol);
   const RCP<Epetra_Vector> idispstepcol = LINALG::CreateVector(*structdis->DofColMap(),false);
   LINALG::Export(*idispstep,*idispstepcol);
   structdis->SetState("displacementincr",idispstepcol);
-  
+
   //define stuff needed by the elements
   Teuchos::ParameterList params;
   Epetra_SerialDenseMatrix elematrix1;
@@ -977,24 +965,24 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 
   //prepare variables for length (2D) or area (3D) of the interface
   vector<double> mycenterdisp(dim);
-  vector<double> centerdisp(dim); 
+  vector<double> centerdisp(dim);
   double mylengthcirc = 0.0;
   double lengthcirc = 0.0;
-  
+
   //calculating the center displacement by evaluating structure interface elements
   map<int, RefCountPtr<DRT::Element> >::const_iterator elemiter;
   for (elemiter = istructdispeles_.begin(); elemiter != istructdispeles_.end(); ++elemiter)
   {
-    
+
     RefCountPtr<DRT::Element> iele = elemiter->second;
     vector<int> lm;
     vector<int> lmowner;
     vector<int> lmstride;
     iele->LocationVector(*structdis,lm,lmowner,lmstride);
     elevector2.Size(1);   //length of circ with gaussinteg
-    elevector3.Size(dim);   //centerdisp part of ele  
+    elevector3.Size(dim);   //centerdisp part of ele
 
-    params.set<string>("action","calc_struct_centerdisp");      
+    params.set<string>("action","calc_struct_centerdisp");
     int err = iele->Evaluate(params,*structdis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     if (err) dserror("error while evaluating elements");
     mylengthcirc += elevector2[0];
@@ -1002,7 +990,7 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
     //disp of the interface
     for (int i=0; i<dim ;i++)
     {
-      mycenterdisp[i] += elevector3[i];   
+      mycenterdisp[i] += elevector3[i];
     }
   } //end of ele loop
   structdis->ClearState();
@@ -1013,14 +1001,14 @@ vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 
   if (lengthcirc <= 1.0E-6)
     dserror("Zero interface length!");
-    
+
   //calculating the final disp of the interface and summation over all time steps
   for (int i=0; i<dim ;i++)
   {
     centerdisp[i] = centerdisp[i] / lengthcirc;
     centerdisptotal_[i] +=centerdisp[i];
   }
-  
+
   return centerdisp;
 }
 
@@ -1035,15 +1023,15 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
 {
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
 
-  // map with fully reduced struct element distribution 
+  // map with fully reduced struct element distribution
   map<int, RCP<DRT::Element> > structreduelements;
   for (int eleind = 0; eleind<msfullelemap->NumMyElements(); eleind++)
   {
     DRT::Element* tmpele = interfacedis.gElement(msfullelemap->GID(eleind));
     structreduelements[tmpele->Id()]= rcp(tmpele,false);
-        
+
     const int* n = tmpele->NodeIds();
-    
+
     // fill currentpositions
     for (int j=0; j < tmpele->NumNode(); j++)
     {
@@ -1055,9 +1043,9 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
       interfacedis.Dof(node, lm);
       vector<double> mydisp(3);
       LINALG::Matrix<3,1> currpos;
-      
+
       DRT::UTILS::ExtractMyValues(*reddisp,mydisp,lm);
-      
+
       for (int a=0; a<3; a++)
       {
         currpos(a,0) = node->X()[a] + mydisp[a];
@@ -1084,7 +1072,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 )
 {
   const int dim = genprob.ndim;
-  
+
   // Project fluid nodes onto the struct interface
   //init of search tree
   Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(8));
@@ -1095,12 +1083,12 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
   else if(dim==3)
     searchTree->initializeTreeSlideALE(rootBox, structreduelements, GEO::TreeType(GEO::OCTTREE));
   else dserror("wrong dimension");
-  
+
   // translation + projection
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = ifluidslidnodes_.begin(); nodeiter != ifluidslidnodes_.end(); ++nodeiter)
   {
-    
+
     DRT::Node* node = nodeiter->second;
     vector<int> lids(dim);
     for(int p=0; p<dim; p++)
@@ -1121,7 +1109,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
     // translate ale by centerdisp
     if (aletype==INPAR::FSI::ALEprojection_curr)
-    {   
+    {
       // current coord of ale node = ref + centerdispincr + history
       for(int p=0; p<dim; p++)
         alenodecurr(p,0) =   node->X()[p] + centerdisp[p] + (*iprojhist_)[(lids[p])];
@@ -1132,22 +1120,22 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
       for(int p=0; p<dim; p++)
         alenodecurr(p,0) =   node->X()[p] + centerdisptotal_[p];
     }
-    
 
-      
+
+
     // final displacement of projection
     vector <double> finaldxyz(dim);
 
     //search for near elements next to the query point
-    std::map<int,std::set<int> >  closeeles = 
+    std::map<int,std::set<int> >  closeeles =
         searchTree->searchElementsSlideALE(structreduelements, currentpositions, alenodecurr);
 
-    
+
     //search for the nearest point to project on
     if(dim == 2)
     {
       LINALG::Matrix<3,1> minDistCoords;
-      GEO::nearestObjectInNode(istructslidnodes_,  structreduelements, currentpositions, 
+      GEO::nearestObjectInNode(istructslidnodes_,  structreduelements, currentpositions,
           closeeles, alenodecurr, minDistCoords);
       finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
       finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
@@ -1155,14 +1143,14 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     else
     {
       LINALG::Matrix<3,1> minDistCoords;
-      GEO::nearestObjectInNode(rcp(&interfacedis,false), structreduelements, currentpositions, 
+      GEO::nearestObjectInNode(rcp(&interfacedis,false), structreduelements, currentpositions,
           closeeles, alenodecurr, minDistCoords);
       finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
       finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
       finaldxyz[2] = minDistCoords(2,0) - node->X()[2];
-      
+
     }
-    
+
     //store displacement into parallel vector
     int err = iprojdispale->ReplaceMyValues(dim, &finaldxyz[0], &lids[0]);
     if (err == 1) dserror("error while replacing values");
