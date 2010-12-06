@@ -1312,18 +1312,18 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(ParameterList& params,LIN
    /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
     * comparison of the finite element simulation with the results of that article; note that we assume that the element
     * length is equivalent to the particle length in the following when computing the length to diameter ratio p*/
-   /*
-   double lrefe=0;
-   for (int gp=0; gp<nnode-1; gp++)
-     lrefe += gausspointsdamping.qwgt[gp]*jacobi_[gp];
+/*
+   double lrefe= 0.3;
+   //for (int gp=0; gp<nnode-1; gp++)
+     //lrefe += gausspointsdamping.qwgt[gp]*jacobi_[gp];
 
    double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
    double Ct=0.312+0.565/p-0.100/pow(p,2.0);
    double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
    gamma(0) = 2.0*PI*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
    gamma(1) = 4.0*PI*params.get<double>("ETA",0.0)/(log(p)+Cr);
-   gamma(3) = 4.0*PI*params.get<double>("ETA",0.0)*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/p^2);
-   */
+   gamma(2) = 4.0*PI*params.get<double>("ETA",0.0)*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/(p*p));
+*/
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
