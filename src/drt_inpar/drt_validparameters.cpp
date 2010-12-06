@@ -1254,6 +1254,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
   //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
+  DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
+  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
+  DoubleParameter("CROTPTC0",0.145,"PTC factor for rotational DOF in first iteration step",&statmech);
+  //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
+  DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
   DoubleParameter("PlotFactorThick",1.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied

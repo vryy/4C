@@ -1250,16 +1250,12 @@ template<int nnode>
 void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
-  //heuristically determined PTC damping parameter
-  double basisdamp   = 1.885; //1.885 for Actin input files
-
   //apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
   if(nnode > 2)
     dserror("PTC implemented for 2-noded elements only");
 
   for (int node=0; node<nnode; node++)
   {
-
 
     //computing angle increment from current position in comparison with last converged position for damping
     LINALG::Matrix<4,1> deltaQ;
@@ -1270,15 +1266,19 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(ParameterList& params,
     //isotropic artificial stiffness
     LINALG::Matrix<3,3> artstiff;
     artstiff = Tmatrix(deltatheta);
-    artstiff.Scale(basisdamp);
 
-    //scale artificial damping with dti parameter for PTC method
-    artstiff.Scale( params.get<double>("dti",0.0) );
+    //scale artificial damping with crotptc parameter for PTC method
+    artstiff.Scale( params.get<double>("crotptc",0.0) );
 
     //each node gets a block diagonal damping term; the Lobatto integration weight is 0.5 for 2-noded elements
     for(int k=0; k<3; k++)
       for (int l=0; l<3; l++)
         elemat1(node*6+3+k,node*6+3+l) += artstiff(k,l)*0.5*jacobinode_[node];
+
+    //PTC for translational degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
+    for(int k=0; k<3; k++)
+      elemat1(node*6+k,node*6+k) += params.get<double>("ctransptc",0.0)*0.5*jacobinode_[node];
+
   }
 
 

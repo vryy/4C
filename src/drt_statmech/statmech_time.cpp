@@ -21,6 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_io/io_control.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
@@ -738,11 +739,12 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
   // hard wired ptc parameters
-  double ptcdt = 1.3e1; //1.3e1
+  double ctransptc = (statmechmanager_->statmechparams_).get<double>("CTRANSPTC0",0.0);
+  double crotptc   = (statmechmanager_->statmechparams_).get<double>("CROTPTC0",0.145);
+  double alphaptc  = (statmechmanager_->statmechparams_).get<double>("ALPHAPTC",6.0);
+
   double nc;
   fresm_->NormInf(&nc);
-  double dti = 1/ptcdt;
-  double dti0 = dti;
   RCP<Epetra_Vector> x0 = rcp(new Epetra_Vector(*disi_));
 
   double resinit = nc;
@@ -762,12 +764,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     // debug cout
   	Epetra_Vector discol(*discret_.DofColMap(), true);
 
-#if 1 // SER
-#else // TTE
-    double dtim = dti0;
-#endif
-
-    dti0 = dti;
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
 
@@ -783,7 +779,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       p.set("action","calc_struct_ptcstiff");
       p.set("delta time",dt);
-      p.set("dti",dti);
+      p.set("crotptc",crotptc);
+      p.set("ctransptc",ctransptc);
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
@@ -795,13 +792,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
 
       //evaluate ptc stiffness contribution in all the elements
-
-
       discret_.Evaluate(p,stiff_,null,null,null,null);
       sumptc += Teuchos::Time::wallTime() - t_ptc;
-
-
-
     }
 
 
@@ -923,50 +915,22 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     if (!myrank_ and (printscreen or printerr))
     {
       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck,dti);
+                  fresmnorm,disinorm,convcheck,crotptc);
     }
 
     //------------------------------------ PTC update of artificial time
-#if 1
     // SER step size control
-    dti *= pow((np/nc),6.0);
-    dti = max(dti,0.0);
+    crotptc *= pow((np/nc),alphaptc);
+    ctransptc *= pow((np/nc),alphaptc);
     nc = np;
 
 
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-    if(np < 0.01*resinit || numiter > 5)
-      dti = 0.0;
-
-
-#else
+    if(np < 0.01*resinit) // || numiter > 5
     {
-      // TTE step size control
-      double ttau=0.75;
-      RCP<Epetra_Vector> d1 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
-      d1->Update(1.0,*disi_,-1.0,*x0,0.0);
-      d1->Scale(dti0);
-      RCP<Epetra_Vector> d0 = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
-      d0->Update(1.0,*x0,-1.0,*xm,0.0);
-      d0->Scale(dtim);
-      double dt0 = 1/dti0;
-      double dtm = 1/dtim;
-      RCP<Epetra_Vector> xpp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
-      xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
-      RCP<Epetra_Vector> xtt = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
-      for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
-      double ett;
-      xtt->MaxValue(&ett);
-      ett = ett / (2.*ttau);
-      dti = sqrt(ett);
-      nc = np;
-
-      //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-      if(np < 0.01*resinit || numiter > 5)
-        dti = 0.0;
-
+      ctransptc = 0.0;
+      crotptc = 0.0;
     }
-#endif
 
 
     //--------------------------------- increment equilibrium loop index
@@ -990,7 +954,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
      if (!myrank_ and printscreen)
      {
        PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck,dti);
+                   fresmnorm,disinorm,convcheck,crotptc);
      }
   }
 
