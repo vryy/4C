@@ -615,35 +615,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,eid);
 
-  //----------------------------------------------------------------------
-  // get material parameters (evaluation at integration point)
-  //----------------------------------------------------------------------
-
-    if (f3Parameter_->mat_gp_)
-      GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
-
-  // ---------------------------------------------------------------------
-  // CALCULATE all-scale / fine-scale subgrid viscosity and
-  // stabilization parameter at integration point
-  // ---------------------------------------------------------------------
-
-    if (f3Parameter_->tau_gp_)
-    {
-      visceff_ = visc_;
-      if (f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model)
-      {
-        CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
-
-        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
-        visceff_ += sgvisc_;
-      }
-      else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
-
-      // Stabilization parameter
-      CalcStabParameter(f3Parameter_->timefac_,vol);
-    }
-
   //--------------------------------------------------------------------
   // COMPUTE numerical representation of some single operators
   //--------------------------------------------------------------------
@@ -707,6 +678,35 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     for (int idim = 0; idim <nsd_; ++idim)
     {
       vdiv_ += vderxy_(idim, idim);
+    }
+
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at integration point)
+  //----------------------------------------------------------------------
+
+    if (f3Parameter_->mat_gp_)
+      GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+
+  // ---------------------------------------------------------------------
+  // CALCULATE all-scale / fine-scale subgrid viscosity and
+  // stabilization parameter at integration point
+  // ---------------------------------------------------------------------
+
+    if (f3Parameter_->tau_gp_)
+    {
+      visceff_ = visc_;
+      if (f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model)
+      {
+        CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+
+        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+        visceff_ += sgvisc_;
+      }
+      else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
+
+      // Stabilization parameter
+      CalcStabParameter(f3Parameter_->timefac_,vol);
     }
 
   //--------------------------------------------------------------------
