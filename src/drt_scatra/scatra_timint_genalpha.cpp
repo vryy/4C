@@ -399,7 +399,8 @@ void SCATRA::TimIntGenAlpha::Update()
   // is performed below !!
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
-    flux_ = CalcFlux(true);
+    if ((step_%upres_==0 )or (step_%uprestart_==0))// output wanted?
+      flux_ = CalcFlux(true);
   }
 
   // compute time derivative at time n+1

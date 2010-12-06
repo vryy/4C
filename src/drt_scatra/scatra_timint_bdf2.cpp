@@ -394,7 +394,8 @@ void SCATRA::TimIntBDF2::Update()
   // is performed below !!
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
-    flux_ = CalcFlux(true);
+    if ((step_%upres_==0 )or (step_%uprestart_==0))// output wanted?
+      flux_ = CalcFlux(true);
   }
 
   // solution of this step becomes most recent solution of the last step
