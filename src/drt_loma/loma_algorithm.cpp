@@ -271,6 +271,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
     // compute scalar time derivative
+    // (still required to be called here for one-step-theta scheme)
     ScaTraField().ComputeTimeDerivative();
 
     // in case of non-constant thermodynamic pressure: compute
@@ -281,6 +282,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
       ScaTraField().ComputeThermPressure();
 
       // compute time derivative of thermodynamic pressure
+      // (still required to be called here for one-step-theta scheme)
       ScaTraField().ComputeThermPressureTimeDerivative();
     }
     else if (consthermpress_=="No_mass")
@@ -289,6 +291,7 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
       ScaTraField().ComputeThermPressureFromMassCons();
 
       // compute time derivative of thermodynamic pressure
+      // (still required to be called here for one-step-theta scheme)
       ScaTraField().ComputeThermPressureTimeDerivative();
     }
 
