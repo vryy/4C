@@ -464,5 +464,5 @@ private:
 #endif
 
 #endif // CCADISCRET
-#endif // D_FLUID3 or D_FLUID2
+#endif // D_FLUID3
 
