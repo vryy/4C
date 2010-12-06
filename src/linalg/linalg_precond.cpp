@@ -18,8 +18,6 @@ Maintainer: Michael Gee
 #include "simpler_operator.H"
 #include "../drt_lib/drt_node.H"
 
-#include "../drt_f2/fluid2.H"
-#include "../drt_f2/fluid2_nurbs.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
@@ -213,16 +211,6 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
       dserror("1D fluid element is not supported");
   }
   else
-#endif
-#if 0
-#ifdef D_FLUID2
-  if ( eot==DRT::ELEMENTS::Fluid2Type::Instance() or
-            eot==DRT::ELEMENTS::NURBS::Fluid2NurbsType::Instance() )
-  {
-    is3d = false;
-  }
-  else
-#endif
 #endif
   {
     dserror("Element type not supported by ML");
