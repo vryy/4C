@@ -124,11 +124,6 @@ void LOMA::Algorithm::InitialCalculations()
   else if (consthermpress_=="No_mass")
     ScaTraField().ComputeInitialMass();
 
-  // for generalized-alpha time-integration scheme, values at n+alpha_F and
-  // n+alpha_M are set (for constant thermodynamic pressure, this is done here
-  // once and for all simulation time)
-  ScaTraField().ComputeThermPressureIntermediateValues();
-
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
@@ -200,28 +195,11 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
     // in case of non-constant thermodynamic pressure: compute
+    // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
-    {
-      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressure();
-
-      // compute time derivative of thermodynamic pressure
-      ScaTraField().ComputeThermPressureTimeDerivative();
-
-      // compute values at intermediate time steps
-      ScaTraField().ComputeThermPressureIntermediateValues();
-    }
     else if (consthermpress_=="No_mass")
-    {
-      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressureFromMassCons();
-
-      // compute time derivative of thermodynamic pressure
-      ScaTraField().ComputeThermPressureTimeDerivative();
-
-      // compute values at intermediate time steps
-      ScaTraField().ComputeThermPressureIntermediateValues();
-    }
 
     // set scalar and thermodynamic pressure values as well as time derivatives
     // at n+alpha_F and n+alpha_M, respectively, and number of scalars
@@ -295,7 +273,8 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // compute scalar time derivative
     ScaTraField().ComputeTimeDerivative();
 
-    // in case of non-constant thermodynamic pressure: compute and update
+    // in case of non-constant thermodynamic pressure: compute
+    // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
     {
       // compute thermodynamic pressure

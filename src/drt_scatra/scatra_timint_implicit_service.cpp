@@ -482,6 +482,12 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   thermpressdtnp_ = 0.0;
   thermpressdtn_  = 0.0;
 
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  // -> For constant thermodynamic pressure, this is done here once and
+  // for all simulation time.
+  ComputeThermPressureIntermediateValues();
+
   return;
 }
 
@@ -566,6 +572,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   thermpressdtn_ = (-shr*thermpressn_*pardivuint
                     + (shr-1.0)*(pardiffint+parbofint))/pardomint;
 
+  // set time derivative of thermodynamic pressure at n+1 equal to the one at n
+  // for following evaluation of intermediate values
+  thermpressdtnp_ = thermpressdtn_;
+
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  ComputeThermPressureIntermediateValues();
+
   return;
 }
 
@@ -649,6 +663,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
     cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
+
+  // compute values at intermediate time steps
+  // (only for generalized-alpha time-integration scheme)
+  ComputeThermPressureIntermediateValues();
 
   return;
 }

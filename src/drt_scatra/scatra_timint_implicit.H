@@ -158,9 +158,6 @@ public:
   /// predict thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void PredictThermPressure() = 0;
 
-  /// compute values of thermodynamic pressure at intermediate time steps
-  virtual void ComputeThermPressureIntermediateValues() = 0;
-
   /// compute thermodynamic pressure and time derivative for low-Mach-number flow
   virtual void ComputeThermPressure()=0;
 
@@ -435,6 +432,10 @@ protected:
 
   /// compute values at intermediate time steps (required for generalized-alpha)
   virtual void ComputeIntermediateValues() = 0;
+
+  /// compute values of thermodynamic pressure at intermediate time steps
+  /// (required for generalized-alpha)
+  virtual void ComputeThermPressureIntermediateValues() = 0;
 
   /// prepare AVM3-based scale separation
   void AVM3Preparation();
