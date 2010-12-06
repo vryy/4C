@@ -881,15 +881,15 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
     LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
     
-    cout << "sdofrowmap\n" << *gsdofrowmap_;
-    cout << "mdofrowmap\n" << *gmdofrowmap_;
-    cout << "glmdofrowmap_\n"      << *glmdofrowmap_;
-    LINALG::PrintMatrixInMatlabFormat("xxx.contact.dat",*(mergedmt->EpetraMatrix()),true);
-    LINALG::PrintVectorInMatlabFormat("xxx.contact.vec",*mergedrhs,true);
-    LINALG::PrintMapInMatlabFormat("xxx.contact.smap",*gsdofrowmap_,true);
-    LINALG::PrintMapInMatlabFormat("xxx.contact.mmap",*gmdofrowmap_,true);
-    LINALG::PrintMapInMatlabFormat("xxx.contact.lmmap",*glmdofrowmap_,true);
-    LINALG::PrintSparsityToPostscript(*(mergedmt->EpetraMatrix()));
+    //cout << "sdofrowmap\n" << *gsdofrowmap_;
+    //cout << "mdofrowmap\n" << *gmdofrowmap_;
+    //cout << "glmdofrowmap_\n"      << *glmdofrowmap_;
+    //LINALG::PrintMatrixInMatlabFormat("xxx.contact.dat",*(mergedmt->EpetraMatrix()),true);
+    //LINALG::PrintVectorInMatlabFormat("xxx.contact.vec",*mergedrhs,true);
+    //LINALG::PrintMapInMatlabFormat("xxx.contact.smap",*gsdofrowmap_,true);
+    //LINALG::PrintMapInMatlabFormat("xxx.contact.mmap",*gmdofrowmap_,true);
+    //LINALG::PrintMapInMatlabFormat("xxx.contact.lmmap",*glmdofrowmap_,true);
+    //LINALG::PrintSparsityToPostscript(*(mergedmt->EpetraMatrix()));
     
     // standard solver call
     solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
