@@ -13,7 +13,7 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 #ifndef SCATRA_ELE_BOUNDARY_IMPL_H
@@ -309,5 +309,5 @@ public:
 #endif
 
 #endif // CCADISCRET
-#endif // D_FLUID3 or D_FLUID2
+#endif // D_FLUID3
 

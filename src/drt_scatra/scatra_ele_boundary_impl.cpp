@@ -13,7 +13,7 @@ Maintainer: Georg Bauer
  */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 // general Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is off
@@ -569,7 +569,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         else
         {
           dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-        } 
+        }
         break;
       }
       // 3D:
@@ -587,7 +587,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         else
         {
           dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-        } 
+        }
         break;
       }
       default:
@@ -2317,4 +2317,4 @@ template <DRT::Element::DiscretizationType bdistype,
 }
 
 #endif // CCADISCRET
-#endif // D_FLUID3 or D_FLUID2
+#endif // D_FLUID3

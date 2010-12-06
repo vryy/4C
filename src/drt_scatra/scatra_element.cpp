@@ -10,7 +10,7 @@ Maintainer: Georg Bauer
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 #include "scatra_element.H"

@@ -12,7 +12,7 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 #include "scatra_element.H"
@@ -38,4 +38,4 @@ bool DRT::ELEMENTS::Transport::ReadElement(const std::string& eletype,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #if defined(D_FLUID2) || defined(D_FLUID3)
+#endif  // defined(D_FLUID3)

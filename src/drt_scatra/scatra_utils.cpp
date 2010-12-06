@@ -92,7 +92,7 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(
   // element type in order to access the material property
 
   // note: SetMaterial() was reimplemented by the transport element!
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
       DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
       if (trans!=NULL)
       {

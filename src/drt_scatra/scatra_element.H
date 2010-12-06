@@ -14,7 +14,7 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 */
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 #ifndef DRT_SCATRA_ELEMENT_H
 #define DRT_SCATRA_ELEMENT_H
@@ -649,4 +649,4 @@ private:
 
 #endif  // #ifndef DRT_SCATRA_ELEMENT_H
 #endif  // #ifdef CCADISCRET
-#endif  // #if defined(D_FLUID2) || defined(D_FLUID3)
+#endif  // defined(D_FLUID3)

@@ -10,7 +10,7 @@ Maintainer: Georg Bauer
 </pre>
 
 */
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 
@@ -77,4 +77,4 @@ int DRT::ELEMENTS::Transport::EvaluateNeumann(ParameterList& params,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #if defined(D_FLUID2) || defined(D_FLUID3)
+#endif  // defined(D_FLUID3)

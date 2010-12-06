@@ -13,7 +13,7 @@ Maintainer: Georg Bauer
 */
 /*----------------------------------------------------------------------*/
 
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
 #ifdef CCADISCRET
 
 #include "scatra_ele_impl.H"
@@ -5645,4 +5645,4 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
 }
 
 #endif // CCADISCRET
-#endif // D_FLUID3 or D_FLUID2
+#endif // D_FLUID3
