@@ -334,7 +334,7 @@ double MAT::ThermoStVenantKirchhoff::STModulus()
   const double lambda = b1;
 
   // stress-temperature modulus
-  // \f m\, = \, -(2\,\cdot \nu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
+  // \f m\, = \, -(2\,\cdot \mu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
   const double stmodulus = (-1)*(2*mu + 3*lambda)*thermexpans;
 
   return stmodulus;

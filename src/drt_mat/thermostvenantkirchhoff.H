@@ -156,14 +156,14 @@ private:
       Epetra_SerialDenseVector* stress_e
       );
 
-    // evaluates stresses for 3d
+    /// evaluates stresses for 3d
     void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,
       LINALG::Matrix<6,6>& cmat,
       LINALG::Matrix<6,1>& stress
       );
 
-    /// Main 3D material call to determine stress and constitutive tensor ctemp
+    /// main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(
       const LINALG::Matrix<1,1>& Ntemp,  // temperature of element
@@ -171,28 +171,28 @@ private:
       LINALG::Matrix<6,1>& stresstemp
       );
 
-    // computes isotropic elasticity tensor in matrix notion for 3d
+    /// computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
 
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry
     void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
 
-    // computes temperature dependent isotropic elasticity tensor in matrix
-    // notion for 3d
+    /// computes temperature dependent isotropic elasticity tensor in matrix
+    /// notion for 3d
     void SetupCthermo(LINALG::Matrix<6,1>& ctemp);
 
     // computes temperature dependent isotropic elasticity tensor in matrix
     // notion for 2d plane strain, rotational symmetry
     void SetupCthermo2d(Epetra_SerialDenseMatrix* ctemp);
 
-    // computes the constant temperature fraction of the stress
+    /// computes the constant temperature fraction of the stress
     void Stempconst(
       LINALG::Matrix<6,1>& ctemp,
       LINALG::Matrix<6,1>& stempconst
       );
 
-    // calculates stress-temperature modulus
+    /// calculates stress-temperature modulus
     double STModulus();
 
     /// Young's modulus
