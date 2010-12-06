@@ -140,12 +140,6 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance().Name() << " "
 #endif
-#if 0
-#ifdef D_FLUID2
-    << DRT::ELEMENTS::Fluid2Type::Instance().Name() << " "
-    << DRT::ELEMENTS::NURBS::Fluid2NurbsType::Instance().Name() << " "
-#endif
-#endif
 #ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Fluid3Type::Instance().Name() << " "
