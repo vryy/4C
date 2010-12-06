@@ -47,8 +47,12 @@ private:
 
     /// pointer to fluid discretization
     RefCountPtr<DRT::Discretization> fluiddis_;
+    /// pointer to xfluid discretization
+    RefCountPtr<DRT::Discretization> xfluiddis_;
     /// pointer to unknown vector with values
-    RefCountPtr<Epetra_Vector>       mysol_;
+    RefCountPtr<Epetra_Vector>       fluidsol_;
+    /// pointer to unknown vector with values
+    RefCountPtr<Epetra_Vector>       xfluidsol_;
     /// pointer to traction vector with values
     RefCountPtr<Epetra_Vector>       mytraction_;
 };
