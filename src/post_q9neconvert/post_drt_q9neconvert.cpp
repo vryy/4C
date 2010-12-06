@@ -9,7 +9,6 @@
 #if 0
 
 #include "../post_drt_common/post_drt_common.H"
-#include "../drt_f2/fluid2.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
@@ -439,7 +438,7 @@ void FSIConverter::write_pre_vector_result(string result_name, PostField* field,
 	prewriter_->WriteVector(result_name, dstdata);
 }
 
-#endif 
+#endif
 
 /////////////////////////////////////////////
 // Hauptroutine
