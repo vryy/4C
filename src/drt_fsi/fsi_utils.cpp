@@ -617,19 +617,6 @@ bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
   bool isale = false;
   bool found = false;
 
-#if 0
-#ifdef D_FLUID2
-    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
-    if (not found and f2!=NULL)
-    {
-      found = true;
-      isale = f2->IsAle();
-      if (isale and ismyele)
-        eletype.push_back("ALE2");
-    }
-#endif
-#endif
-
 #ifdef D_FLUID3
     DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
     if (not found and f3!=NULL)
