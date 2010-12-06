@@ -756,9 +756,9 @@ void CONTACT::CoInterface::ExportNodalNormals()
 	map<int,double>::iterator iter;
 
   // build info on row map
-  for(int i=0; i<snoderowmap_->NumMyElements();++i)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
   {
-    int gid = snoderowmap_->GID(i);
+    int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
@@ -832,8 +832,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
   }
 
   // communicate from slave node row to column map
-  // (use boundary map to include slave side boundary nodes)
-  DRT::Exporter ex(*snoderowmap_,*snodecolmapbound_,Comm());
+  DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
   ex.Export(triad);
 
   ex.Export(n_x_key);
@@ -862,7 +861,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
   {
   	// only do something for ghosted nodes
   	int gid = snodecolmapbound_->GID(i);
-  	if (snoderowmap_->MyGID(gid)) continue;
+  	if (snoderowmapbound_->MyGID(gid)) continue;
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);

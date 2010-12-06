@@ -1342,9 +1342,10 @@ void MORTAR::MortarInterface::Evaluate()
 
   // loop over proc's slave nodes of the interface
   // use row map and export to column map later
-  for(int i=0; i<snoderowmap_->NumMyElements();++i)
+  // (use boundary map to include slave side boundary nodes)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
   {
-    int gid = snoderowmap_->GID(i);
+    int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     MortarNode* mrtrnode = static_cast<MortarNode*>(node);
@@ -1395,9 +1396,9 @@ void MORTAR::MortarInterface::ExportNodalNormals()
   map<int,RCP<Epetra_SerialDenseMatrix> > triad;
 
   // build info on row map
-  for(int i=0; i<snoderowmap_->NumMyElements();++i)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
   {
-    int gid = snoderowmap_->GID(i);
+    int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     MortarNode* mrtrnode = static_cast<MortarNode*>(node);
@@ -1412,8 +1413,7 @@ void MORTAR::MortarInterface::ExportNodalNormals()
   }
 
   // communicate from slave node row to column map
-  // (use boundary map to include slave side boundary nodes)
-  DRT::Exporter ex(*snoderowmap_,*snodecolmapbound_,Comm());
+  DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
   ex.Export(triad);
 
   // extract info on column map
@@ -1421,7 +1421,7 @@ void MORTAR::MortarInterface::ExportNodalNormals()
   {
   	// only do something for ghosted nodes
   	int gid = snodecolmapbound_->GID(i);
-  	if (snoderowmap_->MyGID(gid)) continue;
+  	if (snoderowmapbound_->MyGID(gid)) continue;
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);

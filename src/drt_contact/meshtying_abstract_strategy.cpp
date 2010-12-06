@@ -431,8 +431,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // export Xslavemod to fully overlapping column map for current interface
-  	RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*gsdofrowmap_);
-  	RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*gsnoderowmap_);
+  	RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
+  	RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
     Epetra_Vector Xslavemodcol(*fullsdofs,false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
     
