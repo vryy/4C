@@ -16,8 +16,6 @@
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_torsion2/torsion2.H"
 #include "../drt_s8/shell8.H"
-#include "../drt_f2/fluid2.H"
-#include "../drt_f2/fluid2_nurbs.H"
 #include "../drt_scatra/scatra_element.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3/fluid3_nurbs.H"
