@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid2_genalpha_resVMM.cpp
+\file fluid3_genalpha_resVMM.cpp
 
 \brief Internal implementation of Fluid2 element with a generalised alpha
        time integration.
@@ -1720,26 +1720,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Sysmat_adv_td_2D(
 #if 1
 
   {
-    /*
-    // use one point gauss rule to calculate volume at element center
-    DRT::UTILS::GaussRule2D integrationrule_stabili=DRT::UTILS::intrule2D_undefined;
-    switch (distype)
-    {
-    case DRT::Element::quad4:
-    case DRT::Element::nurbs4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs9:
-      integrationrule_stabili = DRT::UTILS::intrule_quad_1point;
-      break;
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-      integrationrule_stabili = DRT::UTILS::intrule_tri_1point;
-      break;
-    default:
-      dserror("invalid discretization type for fluid2");
-    }
-*/
     // gaussian points
     //const DRT::UTILS::IntegrationPoints2D intpoints_onepoint(integrationrule_stabili);
     const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_onepoint(DRT::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
@@ -9412,7 +9392,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData_2D
         integrationrule_stabili = DRT::UTILS::intrule_tri_1point;
         break;
       default:
-        dserror("invalid discretization type for fluid2");
+        dserror("invalid discretization type for fluid 2D");
   }
 
   // gaussian points
