@@ -224,7 +224,7 @@ std::string DRT::ParObjectList()
     << CONTACT::CoElementType::Instance().Name() << " "
     << DRT::ELEMENTS::ConstraintElement2Type::Instance().Name() << " "
     << DRT::ELEMENTS::ConstraintElement3Type::Instance().Name() << " "
-#if defined(D_FLUID2) || defined(D_FLUID3)
+#if defined(D_FLUID3)
     << DRT::ELEMENTS::TransportType::Instance().Name() << " "
 #endif
 #ifdef D_THERMO
