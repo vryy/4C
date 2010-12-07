@@ -989,9 +989,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   // Gmsh output on gausspoint
-  //#define GmshOutput_velGP 
-  //#define GmshOutput_presGP 
-  
+  //#define GmshOutput_velGP
+  //#define GmshOutput_presGP
+
   {
     ParameterList eleparams;
     eleparams.set("action","reset");
@@ -1139,7 +1139,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("velGP", step_, 350, screen_out_eps, 0);
     std::ofstream gmshfilecontent(filename.c_str());
     gmshfilecontent << "View \" " << "velGP" << " \" {\n";
-    gmshfilecontent.close();   
+    gmshfilecontent.close();
 #endif
 
     // only for GP pressure gmsh output (Shadan, Jeffrey-Hamel flow)
@@ -1150,9 +1150,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("presGP", step_, 350, screen_out_eps, 0);
     std::ofstream gmshfilecontent(filename.c_str());
     gmshfilecontent << "View \" " << "preGP" << " \" {\n";
-    gmshfilecontent.close();   
+    gmshfilecontent.close();
 #endif
-    
+
     itnum++;
 
     // -------------------------------------------------------------------
@@ -1232,7 +1232,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
 #ifdef GmshOutput_presGP
         eleparams.set("step",step_);
 #endif
-      
+
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
 //      eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
       eleparams.set("monolithic_FSI",false);
@@ -1577,23 +1577,23 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
     }
    }
-  
+
     //only for Gmsh GP output
 #ifdef GmshOutput_velGP
       const bool screen_out = false;
-      const std::string filename = IO::GMSH::GetFileName("velGP", step_, screen_out, 0); 
+      const std::string filename = IO::GMSH::GetFileName("velGP", step_, screen_out, 0);
       std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
       gmshfilecontent << "};\n";
-      gmshfilecontent.close();  
-#endif   
-      
+      gmshfilecontent.close();
+#endif
+
 #ifdef GmshOutput_presGP
       const bool screen_out = false;
-      const std::string filename = IO::GMSH::GetFileName("presGP", step_, screen_out, 0); 
+      const std::string filename = IO::GMSH::GetFileName("presGP", step_, screen_out, 0);
       std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
       gmshfilecontent << "};\n";
-      gmshfilecontent.close();  
-#endif    
+      gmshfilecontent.close();
+#endif
 
    if (fluidfluidCoupling_)
      MovingFluidOutput();
@@ -2465,20 +2465,24 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
-        const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-        const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-        const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
         LINALG::SerialDenseMatrix elementvalues(3, numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
+
+        if ( numparam > 0 )
         {
-          elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
-          elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
-          elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
+          const vector<int>& dofposvelx =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          const vector<int>& dofposvely =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          const vector<int>& dofposvelz =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+
+          for (int iparam=0; iparam<numparam; ++iparam)
+          {
+            elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
+            elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
+            elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
+          }
         }
 
           const GEO::DomainIntCells& domainintcells =
