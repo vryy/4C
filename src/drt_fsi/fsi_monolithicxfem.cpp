@@ -605,8 +605,8 @@ void FSI::MonolithicXFEM::VectorRescue(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::CombinedDBCMap()
 {
-  const Teuchos::RCP<const Epetra_Map >& scondmap = StructureField().GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map >& fcondmap = FluidField().GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map > scondmap = StructureField().GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map > fcondmap = FluidField().GetDBCMapExtractor()->CondMap();
   Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(scondmap, fcondmap, false);
   return condmap;
 }
