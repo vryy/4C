@@ -68,6 +68,14 @@ namespace INPAR
       friction_coulomb  ///< Coulomb friction law
     };
 
+    /// Type of contact wear law
+    /// (this enum represents the input file parameter WEAR)
+    enum WearType
+    {
+      wear_none,    ///< no wear
+      wear_archad   ///< Archad wear law
+    };
+
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

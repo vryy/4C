@@ -984,6 +984,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
+  setStringToIntegralParameter<INPAR::CONTACT::WearType>("WEAR","None","Type of wear law",
+      tuple<std::string>("None","none",
+                         "Archad","archad"),
+      tuple<INPAR::CONTACT::WearType>(
+                 INPAR::CONTACT::wear_none,INPAR::CONTACT::wear_none,
+                 INPAR::CONTACT::wear_archad,INPAR::CONTACT::wear_archad),
+      &scontact);
+
+  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
+
   setStringToIntegralParameter<INPAR::CONTACT::SolvingStrategy>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
@@ -1092,8 +1102,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
                                yesnotuple,yesnovalue,&scontact);
-
-  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
   
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

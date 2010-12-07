@@ -79,18 +79,19 @@ dualquadslave3d_(false)
 
   if (selfcontact) isselfcontact_=true;
 
-  // check for infeasible self contact combinations
-  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
-  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
-    dserror("ERROR: Self contact only implemented for frictionless contact!");
-
   // set frictional contact status
+  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
   
   // set wear contact status
-  if(Params().get<double>("WEARCOEFF", 0.0)!=0.0)
+  INPAR::CONTACT::WearType wtype = Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(Params(),"WEAR");
+  if (wtype != INPAR::CONTACT::wear_none)
     wear_ = true;
+
+  // check for infeasible self contact combinations
+  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
+    dserror("ERROR: Self contact only implemented for frictionless contact!");
 
 	// call setup method with flag redistributed=FALSE, init=TRUE
 	Setup(false,true);
