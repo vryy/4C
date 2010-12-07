@@ -536,13 +536,17 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // contact with wear
   // *********************************************************************
   
+  if (Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") == INPAR::CONTACT::wear_none &&
+      input.get<double>("WEARCOEFF") != 0.0)
+    dserror("ERROR: Wear coefficient only necessary in the context of wear.");
+  
   if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
   		Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
-    dserror("ERROR: Wear models only applicable to frictional contact");
+    dserror("ERROR: Wear models only applicable to frictional contact.");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none &&
-      input.get<double>("WEARCOEFF") < 0.0)
-    dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0");
+      input.get<double>("WEARCOEFF") <= 0.0)
+    dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
