@@ -57,7 +57,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           8
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-10
+CONVTOL          1.0E-14
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-5
@@ -70,7 +70,7 @@ NUMSTASTEPS      0
 MAXTIME          1000.0
 TIMESTEP         1.0
 THETA            0.66
-START_THETA      0.67
+START_THETA      0.66
 ALPHA_F          1.00
 ALPHA_M          1.00
 GAMMA            0.66
@@ -79,9 +79,10 @@ FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
+PREDICTOR        steady_state_predictor //disabled //
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
-DEFINITION_TAU        Bazilevs
+DEFINITION_TAU        Bazilevs   // this tau does not involve streamlengths, hk or similar
 TDS                   quasistatic
 TRANSIENT             no_transient
 PSPG                  yes_pspg
@@ -90,7 +91,7 @@ VSTAB                 no_vstab
 CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
-EVALUATION_TAU        integration_point
+EVALUATION_TAU        integration_point // Peter's GenAlpha can only do this one!
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
 PHYSICAL_MODEL        no_model
@@ -265,13 +266,15 @@ CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 6.0
 CURVE2 on EXPR FUNC 0.5*cos(pi*t/6.0)+0.5  t1 0.0 t2 6.0
 //decreasing ramp function from 1 to 0 with horizontal slopes
 ------------------------------------------------------------CURVE3
+CURVE3 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 10.0
+//time curve with horizontal slopes (from 0 to 1)
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
 //inflow velocity profile with U_max = 0.75
 ------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.75*64.0*(0.125-y)*(0.125+y)
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0*0.75*64.0*(0.125-y)*(0.125+y) // zero initial field
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
@@ -294,23 +297,24 @@ FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0    //magnetic field
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 // these results have to be the same for
-// Af_Gen_alpha or Gen_Alpha or OneStepTheta in fluid !!!
+// Af_Gen_alpha or Gen_Alpha or OneStepTheta for the fluid !!!
 // Gen_Alpha or OneStepTheta in Scatra !!!
-SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE -2.908334418e-02 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  3.507917147e-03 TOLERANCE 1e-9
+// Here is absolutely NO space for (even small) deviation of results!!!
+SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE -2.944391477e-02 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  3.515065889e-03 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 691 POSITION fluxz   NAME fluxz    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.372089308e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  9.960413112e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi2    NAME phi2     VALUE  4.686044654e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi2    NAME phi2     VALUE  4.980206556e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  1.067289735e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  4.505769081e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 695 POSITION phi4    NAME phi4     VALUE  4.160870233e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 121 POSITION phi4    NAME phi4     VALUE  4.708239777e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.069554837e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -6.590294735e-07 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.370731433e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  9.960662591e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi2    NAME phi2     VALUE  4.685365717e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi2    NAME phi2     VALUE  4.980331295e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi3    NAME phi3     VALUE  1.063702890e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  4.506246616e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 695 POSITION phi4    NAME phi4     VALUE  4.162366062e-01 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 121 POSITION phi4    NAME phi4     VALUE  4.708831144e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.091244428e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -4.729638620e-05 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velz     NAME velz     VALUE  0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  3.835657257e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  4.014013540e-02 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
@@ -349,7 +353,7 @@ E 6 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0
 // outflow bottom
 E 7 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // inflow
-E 8 - 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  1 0 0 0 0 0
+E 8 - 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  3 none none none none none  1 0 0 0 0 0
 // anode
 E 9 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // cathode
