@@ -507,6 +507,14 @@ public:
 
   */
   virtual bool SplitActiveDofs();
+  
+  /*!
+  \brief Assemble matrix A 
+
+  This method assembles the matrix A.
+
+  */
+  virtual void AssembleA(LINALG::SparseMatrix& aglobal);
 
   //@}
 

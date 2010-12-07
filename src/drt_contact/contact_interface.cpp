@@ -5453,4 +5453,64 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Assemble matrix A                                      gitterle 12/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if (frinode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleA: Node ownership inconsistency!");
+
+    /**************************************************** A-matrix ******/
+    if ((frinode->FriData().GetA()).size()>0)
+    {
+      vector<map<int,double> > amap = frinode->FriData().GetA();
+      int rowsize = frinode->NumDof();
+      int colsize = (int)amap[0].size();
+
+      for (int j=0;j<rowsize-1;++j)
+        if ((int)amap[j].size() != (int)amap[j+1].size())
+          dserror("ERROR: AssembleA: Column dim. of nodal A-map is inconsistent!");
+
+      map<int,double>::iterator colcurr;
+
+      for (int j=0;j<rowsize;++j)
+      {
+        int row = frinode->Dofs()[j];
+        int k = 0;
+
+        for (colcurr=amap[j].begin();colcurr!=amap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = colcurr->second;
+
+          // do the assembly into global A matrix
+          // create the A matrix, do not assemble zeros
+          aglobal.Assemble(val, row, col);
+    
+          ++k;
+        }
+
+        if (k!=colsize)
+          dserror("ERROR: AssembleA: k = %i but colsize = %i",k,colsize);
+      }
+    }
+  }
+  return;
+}
+
+
 #endif  // #ifdef CCADISCRET

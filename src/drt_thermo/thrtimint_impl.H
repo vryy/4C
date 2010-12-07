@@ -289,8 +289,9 @@ namespace THR
                      RCP<Epetra_Map>& slavedofs,
                      RCP<Epetra_Map>& masterdofs);
 
-    //! apply A matrix for nodes in contact
-    void AssembleA(LINALG::SparseMatrix& amatrix);
+    //! transform matrix A
+    void TransformA(LINALG::SparseMatrix& amatrix,
+                    RCP<Epetra_Map>& slavedofs);
 
     //! apply B matrix for nodes in contact
     void AssembleB(LINALG::SparseMatrix& bmatrix);

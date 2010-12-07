@@ -239,7 +239,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
    
     // assemble Matrix A (in addition to D and M)
     RCP<LINALG::SparseMatrix> amatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
-    AssembleA(*amatrix);
+    TransformA(*amatrix,sdofs);
     
     // Fill Complete
     amatrix->Complete();
@@ -548,7 +548,6 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
 /*----------------------------------------------------------------------*
  | convert maps form structure dofs to thermo dofs            mgit 04/10 |
  *----------------------------------------------------------------------*/
-
 void THR::TimIntImpl::ConvertMaps(RCP<Epetra_Map>& slavedofs,
                          RCP<Epetra_Map>& activedofs,
                          RCP<Epetra_Map>& masterdofs)
@@ -670,7 +669,6 @@ void THR::TimIntImpl::ConvertMaps(RCP<Epetra_Map>& slavedofs,
 /*----------------------------------------------------------------------*
  | transform mortar matrices in thermo dofs                   mgit 04/10 |
  *----------------------------------------------------------------------*/
-
 void THR::TimIntImpl::TransformDM(LINALG::SparseMatrix& dmatrix,
                                   LINALG::SparseMatrix& mmatrix,
                                   RCP<Epetra_Map>& slavedofs,
@@ -805,104 +803,76 @@ void THR::TimIntImpl::TransformDM(LINALG::SparseMatrix& dmatrix,
 }
 
 /*----------------------------------------------------------------------*
- | assemble A matrix in thermo dofs                           mgit 10/10 |
+ | transform matrix A in thermo dofs                          mgit 10/10 |
  *----------------------------------------------------------------------*/
-
-void THR::TimIntImpl::AssembleA(LINALG::SparseMatrix& amatrix)
+void THR::TimIntImpl::TransformA(LINALG::SparseMatrix& amatrix,
+                                 RCP<Epetra_Map>& slavedofs)
 
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
-  // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  // dimension of the problem
+  int dim = cstrategy.Dim();
+  if (dim==2)
+    dserror("ERROR: THR::TimIntImpl::TransformA: Thermal problems only in 3D so far");
+  
+  int myrow;
+  int numentries;
+  
+  /****************************************************** A-matrix ******/
+  
+  // mortar matrix D in structural dofs 
+  RCP<Epetra_CrsMatrix> astruct = (cstrategy.AMatrix())->EpetraMatrix();
+  
+  // row and column map of mortar matrices
+  const Epetra_Map& rowmap = astruct->RowMap();
+  const Epetra_Map& colmap = astruct->ColMap();
+  
+  // set of every dim-th dof (row map)
+  std::set<int> rowsetred;
+  for (myrow=0; myrow<astruct->NumMyRows(); myrow=myrow+dim)
+    rowsetred.insert(rowmap.GID(myrow));
+  
+  // map of every dim-th dof (row map)
+  RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,Comm());
+  
+  // mortar matrices in reduced structural dofs
+  // this means no loss of information
+  RCP<LINALG::SparseMatrix> astructred = rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
 
-  // this currently works only for one interface yet
-  if (interface.size()>1)
-    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
-
-  // This is a little bit complicated and a lot of parallel stuff has to
-  // be done here. The point is that, when assembling the mortar matrix
-  // A, we need the temperature dof from the master node which can lie on
-  // a complete different proc. For this reason, we have tho keep all procs
-  // around
-
-  // loop over all interfaces
-  for (int m=0; m<(int)interface.size(); ++m)
+  // loop over all rows of matrix A
+  for (myrow=0; myrow<astruct->NumMyRows(); myrow=myrow+dim)
   {
-    // slave nodes (full map)
-    const RCP<Epetra_Map> slavenodes = LINALG::AllreduceEMap(*(interface[m]->SlaveRowNodes()));
+    double *Values;
+    int *Indices;
 
-    // loop over all slave nodes of the interface
-    for (int i=0;i<slavenodes->NumMyElements();++i)
+    int err = astruct->ExtractMyRowView(myrow, numentries, Values, Indices);
+    if (err)
+      dserror("ExtractMyRowView failed: err=%d", err);
+
+     // row
+     int row = rowmap.GID(myrow);
+    
+    // loop over entries of the row 
+    for (int i=0;i<numentries; ++i)
     {
-      int gid = slavenodes->GID(i);
-      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
-      DRT::Node* nodeges = discretstruct_->gNode(gid);
-
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
-
-      // row dof of temperature
-      int rowtemp = 0;
-      if(Comm().MyPID()==cnode->Owner())
-        rowtemp = discretstruct_->Dof(1,nodeges)[0];
-
-      /************************************************** A-matrix ******/
-      set<int> anodes;
-      int slavegid=0;
-      set<int>::iterator scurr;
-      int slavesize = 0;
-      vector<map<int,double> > amap;
-
-      if (Comm().MyPID()==cnode->Owner())
-      {
-        amap = cnode->FriData().GetA();
-        anodes = cnode->FriData().GetANodes();
-        slavesize = anodes.size();
-        scurr = anodes.begin();
-      }
-
-      // commiunicate number of master nodes
-      Comm().Broadcast(&slavesize,1,cnode->Owner());
-
-      // loop over all according master nodes
-      for (int l=0;l<slavesize;++l)
-      {
-        if (Comm().MyPID()==cnode->Owner())
-          slavegid=*scurr;
-
-        // communicate GID of masternode
-        Comm().Broadcast(&slavegid,1,cnode->Owner());
-
-        DRT::Node* mnode = (interface[m]->Discret()).gNode(slavegid);
-        DRT::Node* mnodeges = discretstruct_->gNode(slavegid);
-
-        // temperature and displacement dofs
-        int coltemp = 0;
-        int coldis = 0;
-        if(Comm().MyPID()==mnode->Owner())
-        {
-          CONTACT::CoNode* cmnode = static_cast<CONTACT::CoNode*>(mnode);
-          coltemp = discretstruct_->Dof(1,mnodeges)[0];
-          coldis = (cmnode->Dofs())[0];
-        }
-
-        // communicate temperature and displacement dof
-        Comm().Broadcast(&coltemp,1,mnode->Owner());
-        Comm().Broadcast(&coldis,1,mnode->Owner());
-
-        // do the assembly
-        if (Comm().MyPID()==cnode->Owner())
-        {
-          double val = amap[0][coldis];
-          if (abs(val)>1e-12) amatrix.Assemble(val, rowtemp, coltemp);
-          ++scurr;
-        }
-      }
+      // col and val
+      int col  = colmap.GID(Indices[i]);
+      double  val = Values[i];
+      
+      // assembly
+      astructred->Assemble(val,row,col); 
     }
   }
+  
+  // complete the matrix
+  astructred->Complete();
+  
+  // transform reduced structural A matrix in thermo dofs
+  amatrix=*(MORTAR::MatrixRowColTransformGIDs(astructred,slavedofs,slavedofs));
+
   return;
 }
 

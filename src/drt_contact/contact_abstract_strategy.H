@@ -251,6 +251,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     {
     	return Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
 	  }
+    
+    /*!
+    \brief Return matrix A
+
+    */
+    RCP<LINALG::SparseMatrix> AMatrix() { return amatrix_; }
 
     //@}
 
@@ -718,7 +724,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     RCP<Epetra_Vector> stressnormal_;      // vector of normal contact forces at t_n+1
     RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1
-    RCP<Epetra_Vector> wearoutput_;        // vector of wear at t_n+1   
 
     // global storage fields
     bool isincontact_;        // flag indicating global contact status
@@ -726,13 +731,20 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     bool wasincontactlts_;    // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
-    bool wear_;               // flag for contact with wear
     
     bool                       dualquadslave3d_; // flag indicating whether trafo should be applied
     RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case
     RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
     RCP<LINALG::SparseMatrix>  dmatrixmod_;      // modified global Mortar matrix D
     RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
+    
+    // thero-structure-interaction with contact
+    bool tsi_;                             // flag for thermo-structure interaction with contact   
+    RCP<LINALG::SparseMatrix>  amatrix_;   // global matrix A
+    
+    // contact with wear
+    bool wear_;                       // flag for contact with wear
+    RCP<Epetra_Vector> wearoutput_;   // vector of wear at t_n+1   
     
 }; // class CoAbstractStrategy
 } // namespace CONTACT

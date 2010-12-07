@@ -68,8 +68,9 @@ wasincontact_(false),
 wasincontactlts_(false),
 isselfcontact_(false),
 friction_(false),
-wear_(false),
-dualquadslave3d_(false)
+dualquadslave3d_(false),
+tsi_(false),
+wear_(false)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -88,6 +89,10 @@ dualquadslave3d_(false)
   INPAR::CONTACT::WearType wtype = Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(Params(),"WEAR");
   if (wtype != INPAR::CONTACT::wear_none)
     wear_ = true;
+
+  // set thermo-structure-interaction with contact  
+  if (DRT::Problem::Instance()->ProblemType()=="tsi")
+    tsi_ = true;
 
   // check for infeasible self contact combinations
   if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
@@ -681,7 +686,12 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   mmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
   if (friction_) jump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (wear_)     wearvector_ = LINALG::CreateVector(*gsnoderowmap_, true);
+
+  // wear
+  if (wear_) wearvector_ = LINALG::CreateVector(*gsnoderowmap_, true);
+  
+  // matrix A for tsi problems
+  if (tsi_) amatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   
   // in the case of frictional dual quad 3D, also the modified D matrices are setup
   if (friction_ && Dualquadslave3d())
@@ -711,6 +721,9 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     
     // assemble wear vector
     if (wear_) interface_[i]->AssembleWear(*wearvector_);
+    
+    // assemble matrix A for tsi with contact
+    if (tsi_)  interface_[i]->AssembleA(*amatrix_);
     
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
@@ -746,6 +759,8 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+  
+  if (tsi_) amatrix_->Complete();
 
   return;
 }
@@ -1350,7 +1365,7 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // not for thermo-structure-interaction because of partitioned scheme
   // so long
   std::string probtype = DRT::Problem::Instance()->ProblemType();
-  if (probtype!="tsi" and (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged()))
+  if (!tsi_ and (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged()))
     dserror("ERROR: Active set not fully converged!");
   
   // reset active set status for next time step
