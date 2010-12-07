@@ -801,12 +801,15 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     // compute segment wear vector ***************************************
     // loop over all wseg vector entries
     // nrow represents the slave side dofs !!!
-    for (int j=0;j<nrow;++j)
+    if (wear)
     {
-      double prod = lmval[j]*wearvalue;
+			for (int j=0;j<nrow;++j)
+			{
+				double prod = lmval[j]*wearvalue;
 
-      // add current Gauss point's contribution to wseg
-      (*wseg)(j) += prod*dxdsxi*dsxideta*wgt;
+				// add current Gauss point's contribution to wseg
+				(*wseg)(j) += prod*dxdsxi*dsxideta*wgt;
+			}
     }
 
     // compute segment D/M linearization *********************************
@@ -2604,13 +2607,16 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     
     // compute cell wear vector ******************************************
     // loop over all wseg vector entries
-    // nrow represents the slave side dofs !!!  */
-    for (int j=0;j<nrow;++j)
+    // nrow represents the slave side dofs !!!
+    if (wear)
     {
-      double prod = lmval[j]*wearvalue;
-      
-      // add current Gauss point's contribution to gseg
-      (*wseg)(j) += prod*jac*wgt;
+			for (int j=0;j<nrow;++j)
+			{
+				double prod = lmval[j]*wearvalue;
+
+				// add current Gauss point's contribution to gseg
+				(*wseg)(j) += prod*jac*wgt;
+			}
     }
     // compute cell wear vector ******************************************
       

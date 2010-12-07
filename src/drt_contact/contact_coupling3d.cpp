@@ -178,11 +178,25 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-      RCP<Epetra_SerialDenseVector> mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
-      RCP<Epetra_SerialDenseVector> mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
-      RCP<Epetra_SerialDenseMatrix> aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> bseg = rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
-      RCP<Epetra_SerialDenseVector> wseg = rcp(new Epetra_SerialDenseVector(nrow));
+
+      RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
+      RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
+      RCP<Epetra_SerialDenseMatrix> aseg = Teuchos::null;
+      RCP<Epetra_SerialDenseMatrix> bseg = Teuchos::null;
+      if (DRT::Problem::Instance()->ProblemType()=="tsi")
+      {
+        mdisssegs = rcp(new Epetra_SerialDenseVector(nrow));
+        mdisssegm = rcp(new Epetra_SerialDenseVector(ncol));
+        aseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+        bseg = rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
+      }
+
+      RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+      if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+      {
+        wseg = rcp(new Epetra_SerialDenseVector(nrow));
+      }
+
       
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg,bseg,wseg);

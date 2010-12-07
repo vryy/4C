@@ -104,7 +104,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  RCP<Epetra_SerialDenseVector> wseg = rcp(new Epetra_SerialDenseVector(nrow));
+  RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+  if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+    wseg = rcp(new Epetra_SerialDenseVector(nrow));
+
   integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg,wseg);
 
   // do the two assemblies into the slave nodes
