@@ -2147,23 +2147,26 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-
-        LINALG::SerialDenseVector elementvalues(numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
-          elementvalues(iparam) = myvelnp[dofpos[iparam]];
-
-        const GEO::DomainIntCells& domainintcells =
-          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
-        for (GEO::DomainIntCells::const_iterator cell =
-          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        if (numparam > 0)
         {
-          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
+          const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-          IO::GMSH::cellWithScalarFieldToStream(
+          LINALG::SerialDenseVector elementvalues(numparam);
+          for (int iparam=0; iparam<numparam; ++iparam)
+            elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+          const GEO::DomainIntCells& domainintcells =
+            dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
+          for (GEO::DomainIntCells::const_iterator cell =
+                 domainintcells.begin(); cell != domainintcells.end(); ++cell)
+          {
+            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+                                                               *cell, field, elementvalues, cellvalues);
+
+            IO::GMSH::cellWithScalarFieldToStream(
               cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          }
         }
       }
       gmshfilecontent << "};\n";
