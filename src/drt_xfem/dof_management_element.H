@@ -89,12 +89,23 @@ namespace XFEM
       //! return reference to list of local positions in a array of dofs
       const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
       {
-        return paramsLocalEntries_.find(field)->second;
+        std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+        if (tmp == paramsLocalEntries_.end()){
+          dserror( "no local dofs for field %d", field );
+        }
+        return tmp->second;
       };
 
       //! return reference to list of local positions in a array of dofs
       template <XFEM::PHYSICS::Field field>
-      const std::vector<int>& LocalDofPosPerField() const { return paramsLocalEntries_.find(field)->second;}
+      const std::vector<int>& LocalDofPosPerField() const
+      {
+        std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+        if (tmp == paramsLocalEntries_.end()){
+          dserror( "no local dofs for field %d", field );
+        }
+        return tmp->second;
+      }
 
       //! return unique enrichments for this proc
       const std::set<XFEM::Enrichment>& getUniqueEnrichments() const {return unique_enrichments_;}
@@ -105,13 +116,23 @@ namespace XFEM
       //! access to map
       DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
       {
-        return DisTypePerElementField_.find(field)->second;
+        std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator i = DisTypePerElementField_.find(field);
+        if ( i==DisTypePerElementField_.end() )
+        {
+          dserror( "no field %d", field );
+        }
+        return i->second;
       }
 
       //! access to map
       const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
       {
-        return enrichedFieldperPhysField_.find(field)->second;
+        std::map<XFEM::PHYSICS::Field, std::set<XFEM::FieldEnr> >::const_iterator i = enrichedFieldperPhysField_.find(field);
+        if ( i==enrichedFieldperPhysField_.end() )
+        {
+          dserror( "no field %d", field );
+        }
+        return i->second;
       }
 
       //! not equal operator (for use in STL iterators)
@@ -119,16 +140,7 @@ namespace XFEM
       {
         // in principle, they can be only not equal, if the nodalDofSet is not equal
         // everything else is derived from that in the constructor
-        bool not_equal = false;
-        if (nodalDofSet_ != rhs.nodalDofSet_)
-        {
-          not_equal = true;
-        }
-        else
-        {
-          not_equal = false;
-        }
-        return not_equal;
+        return nodalDofSet_ != rhs.nodalDofSet_;
       };
 
     private:
@@ -137,10 +149,10 @@ namespace XFEM
       std::map<int, const std::set<XFEM::FieldEnr> > nodalDofSet_;
 
       //! number of unknowns for each global node id (gid)
-      std::map<int, std::size_t> nodalNumDof_;
+      //std::map<int, std::size_t> nodalNumDof_;
 
       //! number of parameters for each field
-      std::map<XFEM::PHYSICS::Field, std::size_t> numParamsPerField_;
+      //std::map<XFEM::PHYSICS::Field, std::size_t> numParamsPerField_;
 
       //! number of parameters for each field
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> DisTypePerElementField_;

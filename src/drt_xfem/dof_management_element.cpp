@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager() :
-  nodalDofSet_(),
+  numNodeDof_(0),
   numElemDof_(0)
 {
   return;
@@ -59,7 +59,8 @@ XFEM::ElementDofManager::ElementDofManager(
 {
   // nodal dofs for ele
   nodalDofSet_.clear();
-  for (std::size_t inode = 0; inode < (size_t)ele.NumNode(); ++inode)
+  std::size_t numnode = ele.NumNode();
+  for (std::size_t inode = 0; inode < numnode; ++inode)
   {
     const int gid = ele.NodeIds()[inode];
     nodalDofSet_.insert(make_pair(gid,dofman.getNodeDofSet(gid)));
@@ -81,58 +82,60 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz)
 {
   // count number of dofs for each node
-  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
-       tmp != nodalDofSet.end();
-       ++tmp)
-  {
-    const int nodegid = tmp->first;
-    nodalNumDof_[nodegid] = tmp->second.size();
-  }
+//   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
+//        tmp != nodalDofSet.end();
+//        ++tmp)
+//   {
+//     const int nodegid = tmp->first;
+//     //nodalNumDof_[nodegid] = tmp->second.size();
+//   }
 
   // set number of parameters per field to zero
-  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
-       tmp != nodalDofSet.end();
-       ++tmp)
-  {
-    const std::set<XFEM::FieldEnr> lenrfieldset = tmp->second;
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
-         enrfield != lenrfieldset.end();
-         ++enrfield)
-    {
-      const XFEM::PHYSICS::Field field = enrfield->getField();
-      numParamsPerField_[field] = 0;
-      paramsLocalEntries_[field] = vector<int>();
-    }
-  }
-  for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin();
-       enrfield != enrfieldset.end();
-       ++enrfield)
-  {
-    const XFEM::PHYSICS::Field field = enrfield->getField();
-    numParamsPerField_[field] = 0;
-    paramsLocalEntries_[field] = vector<int>();
-  }
+//   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
+//        tmp != nodalDofSet.end();
+//        ++tmp)
+//   {
+//     const std::set<XFEM::FieldEnr> & lenrfieldset = tmp->second;
+//     for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
+//          enrfield != lenrfieldset.end();
+//          ++enrfield)
+//     {
+//       const XFEM::PHYSICS::Field field = enrfield->getField();
+//       //numParamsPerField_[field] = 0;
+//       paramsLocalEntries_[field] = vector<int>();
+//     }
+//   }
+//   for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin();
+//        enrfield != enrfieldset.end();
+//        ++enrfield)
+//   {
+//     const XFEM::PHYSICS::Field field = enrfield->getField();
+//     //numParamsPerField_[field] = 0;
+//     paramsLocalEntries_[field] = vector<int>();
+//   }
 
 
   unique_enrichments_.clear();
+
   // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
   std::size_t dofcounter = 0;
+  std::size_t numnode = ele.NumNode();
   const int* nodeids = ele.NodeIds();
-  for (std::size_t inode=0; inode<(size_t)ele.NumNode(); ++inode)
+  for (std::size_t inode=0; inode<numnode; ++inode)
   {
     const int nodegid = nodeids[inode];
     map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
     if (entry == nodalDofSet.end())
-      dserror("impossible ;-)");
-    const std::set<XFEM::FieldEnr> lenrfieldset = entry->second;
+      dserror("impossible");
+    const std::set<XFEM::FieldEnr> & lenrfieldset = entry->second;
 
     for (std::set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
          enrfield != lenrfieldset.end();
          ++enrfield)
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
-      numParamsPerField_[field] += 1;
+      //numParamsPerField_[field] += 1;
       paramsLocalEntries_[field].push_back(dofcounter);
       unique_enrichments_.insert(enrfield->getEnrichment());
       dofcounter++;
@@ -157,13 +160,15 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
 
     enrichedFieldperPhysField_[field].insert(*enrfield);
 
+    std::vector<int> & local_entries = paramsLocalEntries_[field];
+
     const DRT::Element::DiscretizationType eledofdistype = schnack->second;
     const int numparam = DRT::UTILS::getNumberOfElementNodes(eledofdistype);
     for (int inode=0; inode<numparam; ++inode)
     {
       numElemDof_ +=1;
-      numParamsPerField_[field] += 1;
-      paramsLocalEntries_[field].push_back(dofcounter);
+      //numParamsPerField_[field] += 1;
+      local_entries.push_back(dofcounter);
       unique_enrichments_.insert(enrfield->getEnrichment());
       dofcounter++;
     }
@@ -189,8 +194,8 @@ std::string XFEM::ElementDofManager::toString() const
     for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
       s << "Node: " << gid << ", " << var->toString() << endl;
-    };
-  };
+    }
+  }
   return s.str();
 }
 
@@ -219,9 +224,10 @@ std::size_t XFEM::ElementDofManager::NumDofPerNode(
     const int gid             ///< unique global node id
 ) const
 {
-  map<int,std::size_t>::const_iterator tmp = nodalNumDof_.find(gid);
-  dsassert(tmp != nodalNumDof_.end(), "node not found");
-  return tmp->second;
+  std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
+  //map<int,std::size_t>::const_iterator tmp = nodalNumDof_.find(gid);
+  dsassert(tmp != nodalDofSet_.end(), "node not found");
+  return tmp->second.size();
 }
 
 
@@ -231,12 +237,13 @@ std::size_t XFEM::ElementDofManager::NumDofPerField(
     const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
 ) const
 {
-  map<XFEM::PHYSICS::Field, std::size_t>::const_iterator tmp = numParamsPerField_.find(field);
-  if (tmp == numParamsPerField_.end()){
+  std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+  //map<XFEM::PHYSICS::Field, std::size_t>::const_iterator tmp = numParamsPerField_.find(field);
+  if (tmp == paramsLocalEntries_.end()){
     //cout << XFEM::PHYSICS::physVarToString(field) << endl;
     return 0;
   }
-  return tmp->second;
+  return tmp->second.size();
 }
 
 
