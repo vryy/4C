@@ -464,6 +464,20 @@ public:
     }
 
   /*!
+  \brief return acceleration values at
+         intermediate time step n+alpha_M
+  */
+  Teuchos::RCP<Epetra_Vector> Accam()
+    {
+      // just to be sure we get the current values:
+      // compute current value of accnp_
+      GenAlphaCalcInitialAccelerations();
+      // compute current value of accam_
+      GenAlphaComputeIntermediateSol();
+      return accam_;
+    }
+
+  /*!
   \brief return previous velocity and pressure solutions
 
   */

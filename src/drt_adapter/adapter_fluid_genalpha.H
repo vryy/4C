@@ -83,7 +83,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
-    virtual Teuchos::RCP<const Epetra_Vector> Accam(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accam();
     virtual Teuchos::RCP<const Epetra_Vector> Hist(){ dserror("not implemented"); return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
