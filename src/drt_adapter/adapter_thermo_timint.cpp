@@ -381,7 +381,17 @@ void ADAPTER::ThermoTimInt::ApplyStructVariables(
   Teuchos::RCP<Epetra_Vector> vel
   )
 {
+  // pass current displacements and velocities to the thermo field
   thermo_->ApplyStructVariables(disp,vel);
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate the residual forces, use the last converged      dano 12/10 |
+ | solution for predictor                                               |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::PreparePartitionStep()
+{
+  thermo_->PreparePartitionStep();
 }
 
 

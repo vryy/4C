@@ -159,6 +159,49 @@ void THR::TimIntImpl::Predict()
 }
 
 /*----------------------------------------------------------------------*
+ | prepare partiton step                                     dano 12/10 |
+ | like Predict() but without predict the unknown variables T,R         |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::PreparePartitionStep()
+{
+ // set iteration step to 0
+  iter_ = 0;
+
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, tempn_, raten_, false);
+
+  // compute residual forces fres_ and stiffness tang_
+  EvaluateRhsTangResidual();
+
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+
+  // split norms
+  // build residual force norm
+  normfres_ = THR::AUX::CalculateVectorNorm(iternorm_, fres_);
+
+  // determine characteristic norms
+  // we set the minumum of CalcRefNormForce() and #tolfres_, because
+  // we want to prevent the case of a zero characteristic fnorm
+  normcharforce_ = CalcRefNormForce();
+  if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
+  normchartemp_ = CalcRefNormTemperature();
+  if (normchartemp_ == 0.0) normchartemp_ = toltempi_;
+
+  // output
+  PrintPredictor();
+
+  // enjoy your meal
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | predict solution as constant temperatures,               bborn 08/09 |
  | temperature rates                                                    |
  *----------------------------------------------------------------------*/
@@ -432,9 +475,12 @@ void THR::TimIntImpl::NewtonFull()
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
+    // copie the dbc onto freact_,
+    // everything that is not DBC node ("OtherVector") is blanked
     dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
 
     // blank residual at DOFs on Dirichlet BC
+    // DBC node do not enter the residual, because values are known at the nodes
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
     // build residual force norm
@@ -465,6 +511,24 @@ void THR::TimIntImpl::NewtonFull()
   {
     PrintNewtonConv();
   }
+
+//  // 03.12.10
+//  // matrix printing options (DEBUGGING!)
+//   RCP<LINALG::SparseMatrix> A = Tang();
+//   if (A != Teuchos::null)
+//   {
+//     // print to file in matlab format
+//     const std::string fname = "sparsematrix.mtl";
+//     LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
+//     // print to screen
+//     (A->EpetraMatrix())->Print(cout);
+//     // print sparsity pattern to file
+//     LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
+//   }
+//
+//   // 6.12.10 cout comment
+//  cout << "tang_\n" << tang_  << "\n" <<  endl;
+//  cout << "tempi_\n" << *tempi_ << "\n" <<  endl;
 
   // get out of here
   return;
@@ -811,6 +875,8 @@ void THR::TimIntImpl::TSIMatrix()
     discret_->SetState(0,"temperature", (*temp_)(0));
     if (disn_!=Teuchos::null)
     {
+      // 03.12.10
+      cout << "yes THR knows the displacements" << endl;
       discret_->SetState(1,"displacement",disn_);
     }
     if (veln_!=Teuchos::null)

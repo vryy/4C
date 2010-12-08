@@ -78,6 +78,14 @@ namespace THR
     //! Predict target solution and identify residual
     void Predict();
 
+    //! Identify residual
+    //! This method does not predict the target solution but
+    //! evaluates the residual and the stiffness matrix.
+    //! In partitioned solution schemes, it is better to keep the current
+    //! solution instead of evaluating the initial guess (as the predictor)
+    //! does.
+    void PreparePartitionStep();
+
     //! Predict constant temperature, temperature rate,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs
@@ -269,21 +277,21 @@ namespace THR
 
     //! recalculate the thermal matrices for tsi simulations
     void TSIMatrix();
-    
+
     //! Apply thermal contact
     void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
                             Teuchos::RCP<Epetra_Vector>& feff,
                             Teuchos::RCP<Epetra_Vector>& temp);
-    
+
     // convert maps form structure discretization to thermo discretization
     void ConvertMaps(RCP<Epetra_Map>& slavedofs,
                      RCP<Epetra_Map>& activedofs,
                      RCP<Epetra_Map>& masterdofs);
 
     //! transform mortar matrices from structure dofs in thermo dofs
-    // This needs 
+    // This needs
     // 1. Reduction of mortar matrices
-    // 2. Transformation into thermo dofs  
+    // 2. Transformation into thermo dofs
     void TransformDM(LINALG::SparseMatrix& dmatrix,
                      LINALG::SparseMatrix& mmatrix,
                      RCP<Epetra_Map>& slavedofs,
@@ -301,7 +309,7 @@ namespace THR
 
     //! assemble mechanical dissipation for slave nodes
     void AssembleMechDissSlave(Epetra_Vector& mechdissrate);
-    
+
     //! assemble thermal contact condition
     void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
                                     LINALG::SparseMatrix& thermcontTEMP,

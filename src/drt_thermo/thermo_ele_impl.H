@@ -100,34 +100,34 @@ namespace ELEMENTS
 
   };
 
-    /// Internal Thermo element implementation
-    //!
-    //!  This internal class keeps all the working arrays needed to
-    //!  calculate the thermo element. Additionally the method Sysmat()
-    //!  provides a clean and fast element implementation.
-    //!
-    //!  <h3>Purpose</h3>
-    //!
-    //!  The idea is to separate the element maintenance (class Thermo)
-    //!  from the mathematical contents (this class). Of course there are
-    //!  different implementations of the Thermo element, this is just one
-    //!  such implementation.
-    //!
-    //!  The Thermo element will allocate exactly one object of this class
-    //!  for all thermo elements with the same number of nodes in the mesh.
-    //!  This allows us to use exactly matching working arrays (and keep them
-    //!  around.)
-    //!
-    //!  The code is meant to be as clean as possible. This is the only way
-    //!  to keep it fast. The number of working arrays has to be reduced to
-    //!  a minimum so that the element fits into the cache. (There might be
-    //!  room for improvements.)
-    //!
-    //!  <h3>History</h3>
-    //!
-    //!  \author dano
-    //!  \date 09/09
-    //!
+  /// Internal Thermo element implementation
+  //!
+  //!  This internal class keeps all the working arrays needed to
+  //!  calculate the thermo element. Additionally the method Sysmat()
+  //!  provides a clean and fast element implementation.
+  //!
+  //!  <h3>Purpose</h3>
+  //!
+  //!  The idea is to separate the element maintenance (class Thermo)
+  //!  from the mathematical contents (this class). Of course there are
+  //!  different implementations of the Thermo element, this is just one
+  //!  such implementation.
+  //!
+  //!  The Thermo element will allocate exactly one object of this class
+  //!  for all thermo elements with the same number of nodes in the mesh.
+  //!  This allows us to use exactly matching working arrays (and keep them
+  //!  around.)
+  //!
+  //!  The code is meant to be as clean as possible. This is the only way
+  //!  to keep it fast. The number of working arrays has to be reduced to
+  //!  a minimum so that the element fits into the cache. (There might be
+  //!  room for improvements.)
+  //!
+  //!  <h3>History</h3>
+  //!
+  //!  \author dano
+  //!  \date 09/09
+  //!
   template<DRT::Element::DiscretizationType distype>
   class TemperImpl: public TemperImplInterface
   {
@@ -252,47 +252,46 @@ namespace ELEMENTS
 
     //@}
 
-      //! actual values of temperatures
-      LINALG::Matrix<nen_,1> etemp_;
-      //! capacity matrix
-      LINALG::Matrix<nen_,nen_> ecapa_;
+    //! actual values of temperatures
+    LINALG::Matrix<nen_,1> etemp_;
+    //! capacity matrix
+    LINALG::Matrix<nen_,nen_> ecapa_;
 
-      //! node coordinates
-      LINALG::Matrix<nsd_,nen_> xyze_;
-      //! radiation in element nodes
-      LINALG::Matrix<numdofpernode_,1> radiation_;
-      //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_,1> xsi_;
-      //! array for shape functions
-      LINALG::Matrix<nen_,1> funct_;
-      //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_,nen_> deriv_;
-      //! transposed jacobian "dx/ds"
-      LINALG::Matrix<nsd_,nsd_> xjm_;
-      //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<nsd_,nsd_> xij_;
-      //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_,nen_> derxy_;
-      //! global temperature rate derivatives in gausspoint w.r.t x,y,z
-      LINALG::Matrix<nsd_,nsd_> rderxy_;
-      //! integration factor for current GP: fac = GaussWeight * det(J)
-      double fac_;
-      //! (global) gradient of temperature at integration point
-      LINALG::Matrix<nsd_,1> gradtemp_;
-      //! (global) gradient of temperature at integration point
-      LINALG::Matrix<nsd_,1> heatflux_;
-      //! (global) conductivity 2-tensor
-      LINALG::Matrix<nsd_,nsd_> cmat_;
-      //! capacity density
-      double capacoeff_;
+    //! node coordinates
+    LINALG::Matrix<nsd_,nen_> xyze_;
+    //! radiation in element nodes
+    LINALG::Matrix<numdofpernode_,1> radiation_;
+    //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
+    //! array for shape functions
+    LINALG::Matrix<nen_,1> funct_;
+    //! array for shape function derivatives w.r.t r,s,t
+    LINALG::Matrix<nsd_,nen_> deriv_;
+    //! transposed jacobian "dx/ds"
+    LINALG::Matrix<nsd_,nsd_> xjm_;
+    //! inverse of transposed jacobian "ds/dx"
+    LINALG::Matrix<nsd_,nsd_> xij_;
+    //! global derivatives of shape functions w.r.t x,y,z
+    LINALG::Matrix<nsd_,nen_> derxy_;
+    //! global temperature rate derivatives in gausspoint w.r.t x,y,z
+    LINALG::Matrix<nsd_,nsd_> rderxy_;
+    //! integration factor for current GP: fac = GaussWeight * det(J)
+    double fac_;
+    //! (global) gradient of temperature at integration point
+    LINALG::Matrix<nsd_,1> gradtemp_;
+    //! (global) gradient of temperature at integration point
+    LINALG::Matrix<nsd_,1> heatflux_;
+    //! (global) conductivity 2-tensor
+    LINALG::Matrix<nsd_,nsd_> cmat_;
+    //! capacity density
+    double capacoeff_;
 
-      //! @name TSI related stuff
+    //! @name TSI related stuff
 
-      //! material tangent of the structure
-      LINALG::Matrix<6,1> ctemp_;
+    //! material tangent of the structure
+    LINALG::Matrix<6,1> ctemp_;
 
-      //@}
-
+    //@}
 
   }; //TemperImpl
 

@@ -43,33 +43,34 @@ namespace ELEMENTS
   // forward declarations
   class ThermoBoundary;
 
-class ThermoType : public DRT::ElementType
-{
-public:
+  class ThermoType : public DRT::ElementType
+  {
+  public:
 
-  std::string Name() const { return "ThermoType"; }
+    std::string Name() const { return "ThermoType"; }
 
-  static ThermoType & Instance() { return instance_; };
+    static ThermoType & Instance() { return instance_; };
 
-  virtual DRT::ParObject* Create( const vector<char> & data );
+    virtual DRT::ParObject* Create( const vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
-                                             const int id,
-                                             const int owner );
+    virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                               const string eledistype,
+                                               const int id,
+                                               const int owner );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+    virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+    virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
-private:
+  private:
 
-  static ThermoType instance_;
-};
+    static ThermoType instance_;
+
+  };  // class: ThermoType
 
   //!
   //! \brief A C++ wrapper for the thermo element
@@ -440,32 +441,31 @@ private:
     //! don't want = operator
     Thermo& operator = (const Thermo& old);
 
-
   }; // class Thermo
 
+
   ////=======================================================================
   ////=======================================================================
   ////=======================================================================
   ////=======================================================================
+  class ThermoBoundaryType : public DRT::ElementType
+  {
+  public:
 
-class ThermoBoundaryType : public DRT::ElementType
-{
-public:
+    std::string Name() const { return "ThermoBoundaryType"; }
 
-  std::string Name() const { return "ThermoBoundaryType"; }
+    static ThermoBoundaryType & Instance() { return instance_; };
 
-  static ThermoBoundaryType & Instance() { return instance_; };
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+    virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
 
-  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+    virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+  private:
 
-private:
-
-  static ThermoBoundaryType instance_;
-};
+    static ThermoBoundaryType instance_;
+  };
 
   //! \brief An element representing a boundary element of a thermo element
   //!

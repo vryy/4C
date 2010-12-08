@@ -206,6 +206,14 @@ namespace ADAPTER
       ) = 0;
     //@}
 
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep() = 0;
+
     /// create result test for encapulated thermo algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
   };

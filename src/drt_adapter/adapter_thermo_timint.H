@@ -127,7 +127,7 @@ namespace ADAPTER
     void Evaluate(
       Teuchos::RCP<const Epetra_Vector> temp  ///< current state
       );
-    
+
     /// Set contact manager
     void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                           Teuchos::RCP<DRT::Discretization> discretstruct);
@@ -174,12 +174,22 @@ namespace ADAPTER
 
     //! @name Apply current displacements and velocities (for TSI)
     //@{
+
     /// apply current displacements and velocities thermo field
     void ApplyStructVariables(
       Teuchos::RCP<Epetra_Vector> disp,
       Teuchos::RCP<Epetra_Vector> vel
       );
+
     //@}
+
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    void PreparePartitionStep();
 
     /// create result test for encapsulated thermo algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
