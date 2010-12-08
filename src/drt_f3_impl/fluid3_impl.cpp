@@ -4499,7 +4499,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
        {
          for(int jdim=0;jdim<nsd_;++jdim)
          {
-           temp(jdim)=densaf_*timetauM*momres_old_(jdim);
+	   if (f3Parameter_->is_genalpha_) // rhs is scaled outside, matrix not!
+             temp(jdim)=(f3Parameter_->timefac_)*densaf_*timetauM*momres_old_(jdim);
+           else
+             temp(jdim)=densaf_*timetauM*momres_old_(jdim);
          }
        }
        else
