@@ -635,6 +635,16 @@ void ADAPTER::StructureGenAlpha::ApplyTemperatures(
 
 
 /*----------------------------------------------------------------------*
+ | prepare partition step                                    dano 12/10 |
+ | (iterative staggered partitioned schemes)                            |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::PreparePartitionStep()
+{
+  dserror("no application here");
+}
+
+
+/*----------------------------------------------------------------------*
  | Extract displacements needed for TSI                      dano 05/10 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispn()

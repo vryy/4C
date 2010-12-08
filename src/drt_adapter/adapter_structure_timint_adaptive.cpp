@@ -367,6 +367,14 @@ void ADAPTER::StructureTimIntAda::ApplyTemperatures(
   dserror("not implemented");
 }
 
+/*----------------------------------------------------------------------*/
+/* prepare partition step                                    dano 12/10 */
+/* (iterative staggered partitioned schemes)                            */
+void ADAPTER::StructureTimIntAda::PreparePartitionStep()
+{
+  dserror("not implemented");
+}
+
 
 /*----------------------------------------------------------------------*/
 /* extract displacements needed for coupling in TSI */

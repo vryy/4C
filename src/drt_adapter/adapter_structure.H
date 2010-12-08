@@ -212,7 +212,7 @@ namespace ADAPTER {
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
-    
+
     /// evaluate reference state (for frictional contact)
     virtual void EvaluateReferenceState() = 0;
 
@@ -271,9 +271,10 @@ namespace ADAPTER {
 
     //@}
 
-
-    //! @name Extract coupling values (displacements) for TSI
+    //! @name TSI specific methods
     //@{
+
+    //! Extract coupling values (displacements)
 
     /// extract displacements, stress and velocities for TSI
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() = 0;
@@ -287,11 +288,7 @@ namespace ADAPTER {
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp() = 0;
 
-
-    //@}
-
-    //! @name Apply temperatures
-    //@{
+    //! Apply temperatures  for TSI
 
     /// apply temperatures to structural solver
     ///
@@ -301,8 +298,17 @@ namespace ADAPTER {
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp) = 0;
 
-    //@}
+    //! specific method for iterative staggered partitioned TSI
 
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep() = 0;
+
+    //@}
 
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;

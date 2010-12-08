@@ -531,7 +531,13 @@ void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
 
   // This will add the provided temperature to the structure problem
   structure_->ApplyTemperatures(temp);
-  
+}
+
+
+/*----------------------------------------------------------------------*/
+/* prepare partition step (Partitioned scheme)               dano 12/10 */
+void ADAPTER::StructureTimIntImpl::PreparePartitionStep()
+{
   // evaluate the residual forces
   structure_->PreparePartitionStep();
 }

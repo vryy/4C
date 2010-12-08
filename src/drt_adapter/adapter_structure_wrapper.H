@@ -107,6 +107,8 @@ namespace ADAPTER
 
     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp)
     { structure_->ApplyTemperatures(temp); }
+    virtual void PreparePartitionStep()
+    { structure_->PreparePartitionStep(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp()
     { return structure_->ExtractDispnp(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn()

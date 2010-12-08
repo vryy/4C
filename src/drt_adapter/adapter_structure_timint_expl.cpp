@@ -394,10 +394,18 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVelnp()
 /* apply current temperatures (FSI like)                     dano 03/10 */
 void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
   Teuchos::RCP<Epetra_Vector> temp
-)
+  )
 {
-  // This will add the provided temperature to the structure problem
-  structure_->ApplyTemperatures(temp);
+  dserror("not implemented");
+}
+
+
+/*----------------------------------------------------------------------*/
+/* prepare partition step                                    dano 12/10 */
+/* (iterative staggered partitioned schemes)                            */
+void ADAPTER::StructureTimIntExpl::PreparePartitionStep()
+{
+  dserror("not implemented");
 }
 
 

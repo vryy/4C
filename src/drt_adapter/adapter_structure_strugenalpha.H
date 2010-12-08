@@ -115,7 +115,7 @@ namespace ADAPTER {
     virtual const Epetra_Map& DomainMap();
 
     virtual void ReadRestart(int step);
-    
+
     /// evaluate reference state (for frictional contact)
     virtual void EvaluateReferenceState()
     {
@@ -199,7 +199,10 @@ namespace ADAPTER {
 
     //@}
 
-    //! @name Extract coupling values for TSI
+    //! @name TSI specific methods
+    //@{
+
+    //! Extract coupling values (displacements)
 
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
@@ -213,9 +216,7 @@ namespace ADAPTER {
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
 
-    //@}
-
-    //! @name Apply temperatures
+    //! Apply temperatures  for TSI
 
     /// apply temperatures to structural solver
     ///
@@ -224,6 +225,17 @@ namespace ADAPTER {
     ///
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp);
+
+
+    //! specific method for iterative staggered partitioned TSI
+
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep();
 
      //@}
 

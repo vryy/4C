@@ -177,7 +177,7 @@ namespace ADAPTER {
 
     /// read restart information for given time step
     virtual void EvaluateReferenceState();
-    
+
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()
     {
@@ -259,7 +259,11 @@ namespace ADAPTER {
 
     //@}
 
-    //! @name Extract coupling values (displacements) for TSI
+
+    //! @name TSI specific methods
+    //@{
+
+    //! Extract coupling values (displacements) for TSI
 
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp();
@@ -273,9 +277,7 @@ namespace ADAPTER {
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
 
-    //@}
-
-    /// @name Apply temperatures
+    //! Apply temperatures
 
     /// apply temperatures to structural solver
     ///
@@ -286,6 +288,17 @@ namespace ADAPTER {
     virtual void ApplyTemperatures(
       Teuchos::RCP<Epetra_Vector> temp
       );
+
+    //! specific method for iterative staggered partitioned TSI
+
+    /// Identify residual
+    /// This method does not predict the target solution but
+    /// evaluates the residual and the stiffness matrix.
+    /// In partitioned solution schemes, it is better to keep the current
+    /// solution instead of evaluating the initial guess (as the predictor)
+    /// does.
+    virtual void PreparePartitionStep();
+
     //@}
 
 
