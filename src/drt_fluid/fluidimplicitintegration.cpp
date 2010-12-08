@@ -2909,6 +2909,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
   }
 #endif // D_RED_AIRWAYS
+  discret_->ClearState();
+
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
