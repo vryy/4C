@@ -2670,7 +2670,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   else if (systype==INPAR::CONTACT::system_spsimpler)
   {
-  	dserror("ERROR: Simple(r) not yet tested for mortar contact!");
+  	//dserror("ERROR: Simple(r) not yet tested for mortar contact!");
 
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*problemrowmap_,true));
@@ -2684,6 +2684,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // make solver SIMPLER-ready
     solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
+    solver.Params().sublist("SIMPLER").set<bool>("CONTACT",true);
     
     // build block matrix for SIMPLER
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =

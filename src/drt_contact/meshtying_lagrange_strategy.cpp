@@ -918,6 +918,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
     // make solver SIMPLER-ready
     solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
+    solver.Params().sublist("SIMPLER").set<bool>("MESHTYING",true);
     
     // build block matrix for SIMPLER
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =

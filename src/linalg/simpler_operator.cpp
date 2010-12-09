@@ -37,6 +37,14 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_Operator> A,
   // preconditioner when we do the subblock solvers
   if (vlist_.isSublist("SIMPLER")) vlist_.remove("SIMPLER");
 
+  // check for contact or meshtying,
+  // (no special functionality yet, only checking)
+  const int myrank = A->Comm().MyPID();
+  bool mt = plist_.get<bool>("MESHTYING",false);
+  if (!myrank && mt) cout << "\n**********\nMESHTYING SIMPLER\n**********\n\n";
+  bool co = plist_.get<bool>("CONTACT",false);
+  if (!myrank && co) cout << "\n**********\nCONTACT SIMPLER\n**********\n\n";
+
   Setup(A,velocitylist,pressurelist);
 
   return;

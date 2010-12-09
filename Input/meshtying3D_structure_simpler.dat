@@ -58,8 +58,8 @@ DAMPING      No
 M_DAMP       0.00001 
 K_DAMP       0.00001
 CONV_CHECK   AbsRes_And_AbsDis
-TOLRES       1.0E-6
-TOLDISP      1.0E-6
+TOLRES       1.0E-8
+TOLDISP      1.0E-8
 MAXITER      50
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarMeshtying
@@ -68,17 +68,17 @@ SHAPEFCN             Standard
 SYSTEM               SaddlePointSimpler
 -----------------------------------------------------STRUCT SOLVER
 SOLVER                          Aztec_MSR                    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                              // output every so often, 0 no output
+AZOUTPUT                        10                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         0                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      0.0                             // fill-in for ILUT
-IFPACKGFILL                     4                               // graph fill for ILU
-AZTOL                           1.0E-8                          // tolerance in (un)scaled residual
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-10                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
-AZSUB                           200                             // size of krylov space for gmres
+AZSUB                           50                             // size of krylov space for gmres
 AZOMEGA                         0.67                            // unused
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
@@ -108,10 +108,10 @@ AZREUSE                         0                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      0.0                             // fill-in for ILUT
 IFPACKGFILL                     4                               // graph fill for ILU
-AZTOL                           1.0E-8                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-10                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
-AZSUB                           200                             // size of krylov space for gmres
+AZSUB                           50                             // size of krylov space for gmres
 AZOMEGA                         0.67                            // unused
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
