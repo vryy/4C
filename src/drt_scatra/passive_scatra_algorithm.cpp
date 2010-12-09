@@ -117,7 +117,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   {
     ScaTraField().SetVelocityField(
         FluidField().Velaf(),
-        Teuchos::null, // no support for subgrid velocity at the moment!
+        FluidField().Accam(),
         Teuchos::null,
         FluidField().Discretization());
   }
