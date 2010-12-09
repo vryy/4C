@@ -582,9 +582,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
   
   vector<vector<int> > lmlm(neleinpatch);
-#if 0
-  vector<double> Jeles(neleinpatch);
-#endif
   for (int i=0; i<neleinpatch; ++i)
   {
     const double V = adjele[i]->Vol()/4;
@@ -614,9 +611,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     // build F of this element
     LINALG::TMatrix<FAD,3,3> Fele(true); 
     Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->Nxyz());
-#if 0
-    Jeles[i] = LINALG::Determinant3x3<FAD>(Fele).val();
-#endif
     
     // add up to nodal deformation gradient
     Fele.Scale(V);
@@ -627,20 +621,12 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // do averaging
   fad_FnodeL.Scale(1.0/VnodeL);
 
-#if 0
-  for (int i=0; i<neleinpatch; ++i)
-  {
-    Jeles[i] = pow(fad_Jnode.val()/Jeles[i],-1./3.);
-  }
-#endif
-  
   // copy values of fad to 'normal' values
   LINALG::Matrix<3,3> FnodeL(false);
   for (int j=0; j<3; ++j)
     for (int k=0; k<3; ++k)
       FnodeL(j,k) = fad_FnodeL(j,k).val();
   
-#if 1
   //-----------------------------------------------------------------------
   // build B operator
   Epetra_SerialDenseMatrix bop(6,ndofinpatch);
@@ -689,13 +675,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     
     for (int k=0; k<6; ++k)
       for (int j=0; j<12; ++j)
-#if 0
-        bop(k,lmlm[ele][j]) += Jeles[ele] * ratio * bele(k,j);
-#else        
         bop(k,lmlm[ele][j]) += ratio * bele(k,j);
-#endif
   } // for (int ele=0; ele<neleinpatch; ++ele)
-#endif
 
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
@@ -915,9 +896,6 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   double VnodeL = 0.0;
   vector<vector<int> > lmlm(neleinpatch);
   FAD fad_Jnode = 0.0;
-#if 0
-  vector<double> Jeles(neleinpatch);
-#endif
   for (int i=0; i<neleinpatch; ++i)
   {
     const double V = weight[i] * adjele[i]->Vol();
@@ -947,10 +925,6 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     LINALG::TMatrix<FAD,3,3> Fele = adjele[i]->BuildF<FAD>(eledispmat,adjele[i]->nxyz_);
     FAD Jele = LINALG::Determinant3x3<FAD>(Fele);
     
-#if 0
-    Jeles[i] = Jele.val();
-#endif
-    
     fad_Jnode += V * Jele;
 
   } // for (int i=0; i<neleinpatch; ++i)
@@ -959,12 +933,6 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   fad_Jnode /= VnodeL;
   
   FAD Jpowthird = pow(fad_Jnode,1./3.);
-
-#if 0
-  for (int i=0; i<neleinpatch; ++i)
-//    Jeles[i] = pow(fad_Jnode.val()/Jeles[i],-1./3.);
-    Jeles[i] = pow(Jeles[i]/fad_Jnode.val(),-1./3.);
-#endif
 
   // build volumetric deformation gradient
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
@@ -1025,11 +993,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
 
     for (int k=0; k<6; ++k)
       for (int j=0; j<12; ++j)
-#if 0
-        bop(k,lmlm[ele][j]) += Jeles[ele] * ratio * bele(k,j);
-#else
         bop(k,lmlm[ele][j]) += ratio * bele(k,j);
-#endif        
 
   } // for (int ele=0; ele<neleinpatch; ++ele)
   
@@ -1066,6 +1030,104 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   for (int i=0; i<ndofinpatch; ++i)
     for (int k=0; k<6; ++k)
       bopbar(k,i) = Ebar[k].fastAccessDx(i);
+      
+#if 0
+  Epetra_SerialDenseMatrix bopbar2(6,ndofinpatch);
+  {
+    double Jbar = FnodeL.Determinant();
+    
+    double fac = (1./3.)*pow(Jbar,-2./3.)/VnodeL;
+    
+    //LINALG::Matrix<3,3> Kronecker(true);
+    //Kronecker(0,0) = Kronecker(1,1) = Kronecker(2,2) = 1.0;
+    
+    //LINALG::Matrix<3,3> FKron(false);
+    //FKron.MultiplyTN(FnodeL,Kronecker);
+    
+    Epetra_SerialDenseMatrix sumFinvdFdm(1,ndofinpatch);
+    for (int ele=0; ele<neleinpatch; ++ele)
+    {
+      DRT::ELEMENTS::NStet* actele = adjele[ele];
+      LINALG::Matrix<4,3>& nxyz = actele->Nxyz();
+      LINALG::Matrix<3,3>& F = actele->F();
+      const double Ve = actele->Vol();
+      const double face = Ve * F.Determinant();
+      LINALG::Matrix<3,3>  Finv = F;
+      Finv.Invert();
+      LINALG::Matrix<9,1> FinvT_vgt(false);
+      FinvT_vgt(0) = Finv(0,0);
+      FinvT_vgt(1) = Finv(1,1);
+      FinvT_vgt(2) = Finv(2,2);
+      FinvT_vgt(3) = Finv(1,0);
+      FinvT_vgt(4) = Finv(2,0);
+      FinvT_vgt(5) = Finv(0,1);
+      FinvT_vgt(6) = Finv(2,1);
+      FinvT_vgt(7) = Finv(0,2);
+      FinvT_vgt(8) = Finv(1,2);
+      LINALG::Matrix<9,12> Gradde(true);
+      for (int i=0; i<4; ++i)
+      {
+        Gradde(0,3*i+0) = nxyz(i,0);
+        //Gradde(0,3*i+1) = 0.0;
+        //Gradde(0,3*i+2) = 0.0;
+
+        //Gradde(1,3*i+0) = 0.0;
+        Gradde(1,3*i+1) = nxyz(i,1);
+        //Gradde(1,3*i+2) = 0.0;
+
+        //Gradde(2,3*i+0) = 0.0;
+        //Gradde(2,3*i+1) = 0.0;
+        Gradde(2,3*i+2) = nxyz(i,2);
+
+        Gradde(3,3*i+0) = nxyz(i,1);
+        //Gradde(3,3*i+1) = 0.0;
+        //Gradde(3,3*i+2) = 0.0;
+        Gradde(4,3*i+0) = nxyz(i,2);
+        //Gradde(4,3*i+1) = 0.0;
+        //Gradde(4,3*i+2) = 0.0;
+
+        //Gradde(5,3*i+0) = 0.0;
+        Gradde(5,3*i+1) = nxyz(i,0);
+        //Gradde(5,3*i+2) = 0.0;
+        //Gradde(6,3*i+0) = 0.0;
+        Gradde(6,3*i+1) = nxyz(i,2);
+        //Gradde(6,3*i+2) = 0.0;
+
+        //Gradde(7,3*i+0) = 0.0;
+        //Gradde(7,3*i+1) = 0.0;
+        Gradde(7,3*i+2) = nxyz(i,0);
+        //Gradde(8,3*i+0) = 0.0;
+        //Gradde(8,3*i+1) = 0.0;
+        Gradde(8,3*i+2) = nxyz(i,1);
+      }
+      LINALG::Matrix<1,12> FinvdFdm(true);
+      for (int i=0; i<9; ++i)
+        for (int j=0; j<12; ++j)
+          FinvdFdm(0,j) += FinvT_vgt(i) * Gradde(i,j);
+      FinvdFdm.Scale(face);
+      
+      for (int j=0; j<12; ++j)
+        sumFinvdFdm(0,lmlm[ele][j]) += FinvdFdm(0,j);
+    }
+    //sumFinvdFdm.Scale(fac);
+    //cout << sumFinvdFdm << endl;
+    //cout << FnodeL << FKron << endl;
+    
+    for (int i=0; i<ndofinpatch; ++i)
+    {
+      bopbar2(0,i) = fac * FnodeL(0,0) * sumFinvdFdm(0,i);
+      bopbar2(1,i) = fac * FnodeL(1,1) * sumFinvdFdm(0,i);
+      bopbar2(2,i) = fac * FnodeL(2,2) * sumFinvdFdm(0,i);
+      //bopbar2(3,i) = FKron(0,1) * sumFinvdFdm(0,i);
+      //bopbar2(4,i) = FKron(1,2) * sumFinvdFdm(0,i);
+      //bopbar2(5,i) = FKron(2,0) * sumFinvdFdm(0,i);
+    }
+    
+  
+    //cout << bopbar2 << endl << endl << endl << endl;
+    bopbar = bopbar2;
+  }
+#endif
   
   //----------------------------------------- averaged material and stresses
   LINALG::Matrix<6,6> cmat(true);
