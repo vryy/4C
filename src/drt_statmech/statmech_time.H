@@ -16,6 +16,7 @@ Maintainer: Christian Cyron
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_structure/strugenalpha.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
 /*!
 \brief time integration for structural problems with statistical mechanics
 
@@ -91,6 +92,9 @@ protected:
 
   //! \brief zero if in current time step the iterative solution of the nonlinear system of equations has not converged
   int   isconverged_;
+
+  //! \brief object for managing beam contact
+  RCP<CONTACT::Beam3cmanager> beamcmanager_;
 
 }; // class StatMechTime
 

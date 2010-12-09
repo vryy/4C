@@ -21,7 +21,7 @@ Maintainer: Christian Cyron
 #include "../drt_io/io_control.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
-#include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
@@ -133,6 +133,19 @@ isconverged_(0)
     params_.set("print to screen",false);
     std::cout<<"\n\nPay Attention: from no on regular output to screen suppressed !!!\n\n";
   }
+
+
+  //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
+  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  {
+    //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
+    const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+    if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
+      beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
+    else
+      dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list MESHTYING AND CONTACT!!!");
+  }
+
 
   return;
 } // StatMechTime::StatMechTime
@@ -926,7 +939,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-    if(np < 0.01*resinit) // || numiter > 5
+    if(np < 0.01*resinit || numiter > 5) //
     {
       ctransptc = 0.0;
       crotptc = 0.0;
