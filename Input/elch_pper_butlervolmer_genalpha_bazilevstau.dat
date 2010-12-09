@@ -10,8 +10,7 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-parallel-plate electrochemical reactor
-with Butler-Volmer electrode kinetics -> Test our Gen. Alpha implementations
+Test our fluid Gen. Alpha and OST implementations
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS    672
 NODES       1470
@@ -79,7 +78,7 @@ FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 SIMPLER          No
-PREDICTOR        steady_state_predictor //disabled //
+PREDICTOR        steady_state_predictor
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
 DEFINITION_TAU        Bazilevs   // this tau does not involve streamlengths, hk or similar
@@ -188,8 +187,8 @@ AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
-IFPACKFILL         1.0                // fill-in for ILUT
-IFPACKGFILL        0                  // graph fill for ILU
+IFPACKFILL     1.0                // fill-in for ILUT
+IFPACKGFILL    0                  // graph fill for ILU
 AZTOL          1.0E-4             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         1000               // max iterations
@@ -197,7 +196,7 @@ AZSUB          25                 // size of krylov space for gmres
 AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH        1                  // unused
 AZPOLY         1                  // polynomial order for Neumann
-IFPACKOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+IFPACKOVERLAP  0                  // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL         none               // none sym infnorm scaling of the system
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
@@ -301,7 +300,7 @@ FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0    //magnetic field
 // Gen_Alpha or OneStepTheta in Scatra !!!
 // Here is absolutely NO space for (even small) deviation of results!!!
 SCATRA DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE -2.944391477e-02 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  3.515065889e-03 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE  3.515065889e-03 TOLERANCE 1e-12
 SCATRA DIS 1 NODE 691 POSITION fluxz   NAME fluxz    VALUE  0.000000000e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 695 POSITION phi1    NAME phi1     VALUE  9.370731433e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 121 POSITION phi1    NAME phi1     VALUE  9.960662591e-01 TOLERANCE 1e-9
@@ -312,9 +311,9 @@ SCATRA DIS 1 NODE 121 POSITION phi3    NAME phi3     VALUE  4.506246616e-01 TOLE
 SCATRA DIS 1 NODE 695 POSITION phi4    NAME phi4     VALUE  4.162366062e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 121 POSITION phi4    NAME phi4     VALUE  4.708831144e-01 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.091244428e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -4.729638620e-05 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -4.729638620e-05 TOLERANCE 1e-12
 FLUID DIS 1 NODE 695 POSITION velz     NAME velz     VALUE  0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  4.014013540e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  4.014013540e-02 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
