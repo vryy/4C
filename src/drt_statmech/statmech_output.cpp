@@ -438,33 +438,6 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
     }
     break;
-    //writing data for generating a Gmsh video of the simulation
-    case INPAR::STATMECH::statout_gmsh:
-    {
-      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-      if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
-      {
-        std::ostringstream filename2;
-        filename2 << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        DDCorrOutput(dis, filename2, istep);
-        /*construct unique filename for gmsh output with two indices: the first one marking the time step number
-         * and the second one marking the newton iteration number, where numbers are written with zeros in the front
-         * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
-
-        // first index = time step index
-        std::ostringstream filename;
-
-        //creating complete file name dependent on step number with 6 digits and leading zeros
-        if (istep<1000000)
-        	filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
-        else
-        	dserror("Gmsh output implemented for a maximum of 999999 steps");
-
-        //calling method for writing Gmsh output
-        GmshOutput(dis,filename,istep);
-      }
-    }
-    break;
     case INPAR::STATMECH::statout_densitydensitycorr:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
@@ -481,6 +454,25 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     default:
     break;
   }
+  // handling gmsh output seperately
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"GMSHOUTPUT") && istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
+	{
+		/*construct unique filename for gmsh output with two indices: the first one marking the time step number
+		 * and the second one marking the newton iteration number, where numbers are written with zeros in the front
+		 * e.g. number one is written as 000001, number fourteen as 000014 and so on;*/
+
+		// first index = time step index
+		std::ostringstream filename;
+
+		//creating complete file name dependent on step number with 6 digits and leading zeros
+		if (istep<1000000)
+			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<".pos";
+		else
+			dserror("Gmsh output implemented for a maximum of 999999 steps");
+
+		//calling method for writing Gmsh output
+		GmshOutput(dis,filename,istep);
+	}
 
   return;
 } // StatMechManager::Output()

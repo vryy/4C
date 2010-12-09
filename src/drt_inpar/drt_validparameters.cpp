@@ -1102,7 +1102,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 
@@ -1188,8 +1188,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "orientationcorrelation",
                                                     "endtoend_const",
                                                     "viscoelasticity",
-                                                    "gmsh",
-                                                    "structpolymorph",
                                                     "densitydensitycorr"),
                                  //translating input strings into BACI input parameters
                                  tuple<INPAR::STATMECH::StatOutput>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
@@ -1198,8 +1196,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_orientationcorrelation,
                                             INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,
-                                            INPAR::STATMECH::statout_gmsh,
-                                            INPAR::STATMECH::statout_structpolymorph,
                                             INPAR::STATMECH::statout_densitydensitycorr),
                                  &statmech);
   //Reading which kind of friction model should be applied
@@ -1274,6 +1270,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PlotFactorThick",1.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
+                               yesnotuple,yesnovalue,&statmech);
+  //Reading whether fixed seed for random numbers should be applied
+  setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.",
                                yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
