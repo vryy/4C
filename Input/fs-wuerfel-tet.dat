@@ -42,7 +42,6 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -3417,9 +3416,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 369 POSITION velx NAME velx VALUE -1.145791319e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION vely NAME vely VALUE 1.590353014e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION velz NAME velz VALUE 7.810209498e-04 TOLERANCE 1e-6
-FLUID DIS 1 NODE 369 POSITION pressure NAME pressure VALUE -3.643895014e+02 TOLERANCE 1e-2
+FLUID DIS 1 NODE 369 POSITION velx NAME velx VALUE -1.149236971e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 369 POSITION vely NAME vely VALUE 1.604052531e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 369 POSITION velz NAME velz VALUE 7.789961136e-04 TOLERANCE 1e-6
+FLUID DIS 1 NODE 369 POSITION pressure NAME pressure VALUE -3.659542968e+02 TOLERANCE 1e-2
 ---------------------------------------------------------------END
 // END

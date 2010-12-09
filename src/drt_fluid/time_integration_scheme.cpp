@@ -283,33 +283,6 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     const Teuchos::RCP<Epetra_Vector>          accnp
 )
 {
-  if (step == 1)
-  {
-    switch (timealgo)
-    {
-      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
-      {
-        accnp->PutScalar(0.0);
-        break;
-      }
-      case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
-      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
-      {
-        // do just a linear interpolation within the first timestep
-        accnp->Update( 1.0/dta,*velnp,-1.0/dta,*veln, 0.0);
-        break;
-      }
-      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
-      {
-        // startup is handled separately
-        break;
-      }
-      default:
-        dserror("Time integration scheme unknown!");
-    }
-  }
-  else
-  {
     /*
 
     Following formulations are for n+1; acceleration values, however, are
@@ -366,7 +339,6 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
       default:
         dserror("Time integration scheme unknown!");
     }
-  }
 
   return;
 }

@@ -93,10 +93,10 @@ ALPHA_M                         1.0
 GAMMA                           1.0
 LIFTDRAG                        no
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 6.242715752e+00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -6.994192655e-04 TOLERANCE 1e-6
-FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -1.572657352e-03 TOLERANCE 1e-7
-FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.633600640e+04 TOLERANCE 1e-3
+FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE 6.241645479e+00 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -7.135300732e-04 TOLERANCE 1e-6
+FLUID DIS 1 NODE 3043 POSITION velz NAME velz VALUE -1.569423501e-03 TOLERANCE 1e-7
+FLUID DIS 1 NODE 3043 POSITION pressure NAME pressure VALUE 2.673499982e+04 TOLERANCE 1e-3
 ------------------------------------------------------------PATIENT SPECIFIC
 PATSPEC                         no
 PRESTRESS                       mulf                // mulf id none

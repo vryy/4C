@@ -781,9 +781,9 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1000.0 FACTOR 0.0 100.
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 24 POSITION velx     NAME velx     VALUE  1.386943441e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 24 POSITION vely     NAME vely     VALUE -6.536234188e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 24 POSITION velz     NAME velz     VALUE -6.536234188e-03 TOLERANCE 1e-6
-FLUID DIS 1 NODE 24 POSITION pressure NAME pressure VALUE  6.428485072e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION velx     NAME velx     VALUE  1.387015235e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION vely     NAME vely     VALUE -6.538647831e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION velz     NAME velz     VALUE -6.538647831e-03 TOLERANCE 1e-6
+FLUID DIS 1 NODE 24 POSITION pressure NAME pressure VALUE  6.282034663e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
