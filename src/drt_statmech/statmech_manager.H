@@ -201,19 +201,31 @@ protected:
   std::vector<int> Permutation(const int& N);
 
   /*! \brief writes element orientation and coordinates of fiber elements to an output file
-			\param disrow     (in) displacement in row format
+			\param discol     (in) displacement in column map format
 			\param filename  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
 	 */
-	void StructPolymorphOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+	void FilamentOrientations(const Epetra_Vector& discol, std::vector<LINALG::Matrix<3,1> >* normedvectors, const std::ostringstream& filename, bool fileoutput);
 
 	//! \brief output for density-density-correlation output
-	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep);
 
 	//! \brief Selects raster point with the smallest average distance to all crosslinker elements and makes it the new center of the boundary box
 	void DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift, std::vector<int>* crosslinkerentries);
 
-	//! \brief determine the current network structure
-	int DDCorrCurrentStructure(std::vector<double>* centershift, std::vector<int>* crosslinkerentries);
+	/*! \brief determine the current network structure
+	 * 	\param disrow  (in) displacement in row format
+	 * 	\param centershift (in) shift vector between old and new boundary box center
+	 * 	\param crosslinkerentries (in) crosslinkermap_ lids of crosslinker elements
+	 * 	\param istep (in) i-th time step
+	 * 	\param filename (in) output file name
+	 * 	\param filorientoutput (in) determine whether or not to output filament element directional vectors
+	 */
+	void DDCorrCurrentStructure(const Epetra_Vector& disrow,
+															std::vector<double>* centershift,
+															std::vector<int>* crosslinkerentries,
+															const int& istep,
+															const std::ostringstream& filename,
+															bool filorientoutput=true);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);
