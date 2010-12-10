@@ -57,6 +57,7 @@ Maintainer: Michael Gee
 #include "linalg_solver.H"
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
+#include "simpler_operator_ex.H"
 #include "linalg_downwindmatrix.H"
 #include "linalg_sparsematrix.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -632,13 +633,27 @@ void LINALG::Solver::Solve_aztec(
       // SIMPLER does not use the downwinding installed here, it does
       // its own downwinding inside if desired
 
-      Teuchos::RCP<LINALG::SIMPLER_Operator> SimplerOperator
-          = rcp(new LINALG::SIMPLER_Operator(A_->UnprojectedOperator(),Params(),
+      // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid only) and "new" more general test implementation
+      bool mt = Params().sublist("SIMPLER").get<bool>("MESHTYING",false);
+      bool co = Params().sublist("SIMPLER").get<bool>("CONTACT",false);
+      if(mt || co)
+      {
+          Teuchos::RCP<LINALG::SIMPLER_BlockPreconditioner> SimplerOperator
+              = rcp(new LINALG::SIMPLER_BlockPreconditioner(A_->UnprojectedOperator(),Params(),
                                              Params().sublist("SIMPLER"),
                                              outfile_));
 
-      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
+          P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
+      }
+      else
+      {
+          Teuchos::RCP<LINALG::SIMPLER_Operator> SimplerOperator
+              = rcp(new LINALG::SIMPLER_Operator(A_->UnprojectedOperator(),Params(),
+                                             Params().sublist("SIMPLER"),
+                                             outfile_));
 
+          P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
+      }
       Pmatrix_ = null;
     }
 
