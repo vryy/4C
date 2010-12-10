@@ -53,7 +53,8 @@ MAT::PAR::Growth::Growth(
   kthetaplus_(matdata->GetDouble("KPLUS")),
   mthetaplus_(matdata->GetDouble("MPLUS")),
   kthetaminus_(matdata->GetDouble("KMINUS")),
-  mthetaminus_(matdata->GetDouble("MMINUS"))
+  mthetaminus_(matdata->GetDouble("MMINUS")),
+  hommandel_(matdata->GetDouble("HOMMANDEL"))
 {
 }
 
@@ -127,7 +128,7 @@ void MAT::Growth::Pack(vector<char>& data) const
   // Pack data of elastic material
   vector<char> dataelastic;
   if (matelastic_!=Teuchos::null) {
-  matelastic_->Pack(dataelastic);
+    matelastic_->Pack(dataelastic);
   }
   AddtoPack(data,dataelastic);
 
@@ -201,8 +202,8 @@ void MAT::Growth::Unpack(const vector<char>& data)
 
   // alternative way to unpack, but not in postprocessing
   // if (params_!=NULL) {
-  //   matel_ = MAT::Material::Factory(params_->matelastic_);
-  //   matel_->Unpack(dataelastic);
+  //   matelastic_ = MAT::Material::Factory(params_->matelastic_);
+  //   matelastic_->Unpack(dataelastic);
   // }
 
   if (position != data.size())
@@ -286,8 +287,9 @@ void MAT::Growth::Evaluate
     const double thetaold = thetaold_->at(gp);
     //double theta = theta_->at(gp);
     double theta = thetaold;
-    double mandelcrit = 0.0; //1.0E-6;
-    double signmandel = 1.0; // adjusts sign of mandelcrit to sign of mandel
+    double hommandel = params_->hommandel_;
+    //double mandelcrit = 0.0; //1.0E-6;
+    //double signmandel = 1.0; // adjusts sign of mandelcrit to sign of mandel
 
     // check wether starttime is divisible by dt, if not adapt dt in first growth step
     if (time < params_->starttime_ + dt - eps) dt = time - params_->starttime_;
@@ -315,13 +317,13 @@ void MAT::Growth::Evaluate
     // trace of elastic Mandel stress Mdach = Cdach Sdach
     double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
                     Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
-    if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
+    //if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
 
     // Evaluate growth law
     double ktheta = 0.0;
     double dktheta = 0.0;
-    EvaluateGrowthLaw(&ktheta, &dktheta, mandel, theta, mandelcrit);
-    double residual = thetaold - theta + ktheta*(mandel-signmandel*mandelcrit)*dt;
+    EvaluateGrowthLaw(&ktheta, &dktheta, mandel, theta, hommandel);
+    double residual = thetaold - theta + ktheta*(mandel-hommandel)*dt;
 
     int localistep = 0;
     double thetaquer = 0.0;
@@ -338,7 +340,7 @@ void MAT::Growth::Evaluate
         temp += Cdach(i)*(cmatelastic(i,0)*Cdach(0) + cmatelastic(i,1)*Cdach(1) + cmatelastic(i,2)*Cdach(2)
               + cmatelastic(i,3)*Cdach(3) + cmatelastic(i,4)*Cdach(4) + cmatelastic(i,5)*Cdach(5));
       }
-      thetaquer = 1.0 - (dktheta*(mandel-signmandel*mandelcrit) - ktheta/theta*(2.0*mandel+temp))*dt;
+      thetaquer = 1.0 - (dktheta*(mandel-hommandel) - ktheta/theta*(2.0*mandel+temp))*dt;
 
       // damping strategy
       double omega = 2.0;
@@ -364,12 +366,12 @@ void MAT::Growth::Evaluate
         // trace of mandel stress
         mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
                  Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
-        if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
+        //if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
 
         ktheta = 0.0;
         dktheta = 0.0;
-        EvaluateGrowthLaw(&ktheta, &dktheta, mandel, thetatemp, mandelcrit);
-        residualtemp = thetaold - thetatemp + ktheta*(mandel-signmandel*mandelcrit)*dt;
+        EvaluateGrowthLaw(&ktheta, &dktheta, mandel, thetatemp, hommandel);
+        residualtemp = thetaold - thetatemp + ktheta*(mandel-hommandel)*dt;
       } // end of damping loop
       residual = residualtemp;
       theta = thetatemp;
@@ -388,7 +390,7 @@ void MAT::Growth::Evaluate
       temp += Cdach(i)*(cmatelastic(i,0)*Cdach(0) + cmatelastic(i,1)*Cdach(1) + cmatelastic(i,2)*Cdach(2)
             + cmatelastic(i,3)*Cdach(3) + cmatelastic(i,4)*Cdach(4) + cmatelastic(i,5)*Cdach(5));
     }
-    thetaquer = 1.0 - (dktheta*(mandel-signmandel*mandelcrit) - ktheta/theta*(2.0*mandel+temp))*dt;
+    thetaquer = 1.0 - (dktheta*(mandel-hommandel) - ktheta/theta*(2.0*mandel+temp))*dt;
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
     LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
@@ -505,7 +507,7 @@ void MAT::Growth::EvaluateGrowthLaw
   double * dktheta,
   double traceM,
   double theta,
-  double mandelcrit
+  double hommandel
 )
 {
   // parameters
@@ -516,10 +518,10 @@ void MAT::Growth::EvaluateGrowthLaw
   double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
   double thetaminus = 0.5;
   // ktheta and dktheta should be zero!
-  if (traceM > mandelcrit) {
+  if (traceM > hommandel) {
     *ktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
     *dktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
-  } else if (traceM < -1.0*mandelcrit) {
+  } else if (traceM < hommandel) {
     *ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
     *dktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
   }

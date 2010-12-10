@@ -1388,6 +1388,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
     AddNamedReal(m,"MMINUS","growth law parameter mthetaminus");
+    AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
 
     AppendMaterialDefinition(matlist,m);
   }

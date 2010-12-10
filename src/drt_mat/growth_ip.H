@@ -69,6 +69,8 @@ namespace MAT
       const double kthetaminus_;
       // growth law parameter mthetaminus
       const double mthetaminus_;
+      // homeostatic value for mandelstress
+      const double hommandel_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -221,7 +223,7 @@ namespace MAT
       double * dktheta, ///< derivative of ktheta
       double traceM, ///< trace of Mandel stress
       double theta, ///< growth parameter
-      double mandelcrit ///< stress at which growth begins
+      double hommandel ///< homeostatic value for mandelstress
     );
 
   };
