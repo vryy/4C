@@ -104,29 +104,6 @@ public:
   //! @name Friends
   friend class Fluid3Boundary;
 
-  // TODO: linImpl will be deleted and this friendships will vanish
-
-  friend class Fluid3lin_ImplInterface;
-  // All the template specializations that are used, new ones must be
-  // added here.
-  friend class Fluid3lin_Impl<DRT::Element::hex8>;
-  friend class Fluid3lin_Impl<DRT::Element::hex20>;
-  friend class Fluid3lin_Impl<DRT::Element::hex27>;
-  friend class Fluid3lin_Impl<DRT::Element::tet4>;
-  friend class Fluid3lin_Impl<DRT::Element::tet10>;
-  friend class Fluid3lin_Impl<DRT::Element::wedge6>;
-  friend class Fluid3lin_Impl<DRT::Element::wedge15>;
-  friend class Fluid3lin_Impl<DRT::Element::pyramid5>;
-  // 2D
-  friend class Fluid3lin_Impl<DRT::Element::quad4>;
-  friend class Fluid3lin_Impl<DRT::Element::quad8>;
-  friend class Fluid3lin_Impl<DRT::Element::quad9>;
-  friend class Fluid3lin_Impl<DRT::Element::tri3>;
-  friend class Fluid3lin_Impl<DRT::Element::tri6>;
-  // 1D
-  friend class Fluid3lin_Impl<DRT::Element::line2>;
-  friend class Fluid3lin_Impl<DRT::Element::line3>;
-
   friend class Fluid3SystemEvaluator;
 
   //@}

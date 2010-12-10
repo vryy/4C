@@ -40,25 +40,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid3Type::Create( const string elety
 {
   if ( eletype=="FLUID3" )
   {
-    if ( eledistype!="NURBS8" and eledistype!="NURBS27" )
-    {
       return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
-    }
   }
   else if ( eletype=="FLUID2" )
   {
-    if ( eledistype!="NURBS4" and eledistype!="NURBS9" )
-    {
       return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
-    }
   }
   else if (eletype=="FLUID")
   {
-    if ( eledistype!="NURBS4" and eledistype!="NURBS9" and
-         eledistype!="NURBS8" and eledistype!="NURBS27" )
-    {
       return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
-    }
   }
   return Teuchos::null;
 }
@@ -501,7 +491,7 @@ void DRT::ELEMENTS::Fluid3::ActivateTDS(int nquad,int nsd, double** saccn, doubl
      }
      if ( saccn !=NULL ) *saccn = saccn_.A();
      if ( sveln !=NULL ) *sveln = sveln_.A();
-     if ( svelnp!=NULL ) *sveln = svelnp_.A();
+     if ( svelnp!=NULL ) *svelnp = svelnp_.A();
    }
 
 

@@ -204,17 +204,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_linear_fluid:
       {
-        return DRT::ELEMENTS::Fluid3lin_ImplInterface::Impl(this)->Evaluate(
-               this,
-               params,
-               discretization,
-               lm,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3,
-               mat);
+          dserror("Linear fluid element is deleted. ");
       }
       break;
       case calc_fluid_beltrami_error:
