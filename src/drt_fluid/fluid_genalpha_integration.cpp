@@ -1282,7 +1282,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   {
     // create the parameters for the discretization
     ParameterList condparams;
-    
+
     discret_->ClearState();
     discret_->SetState("velaf",velaf_);
     discret_->SetState("scaaf",scanp_);
@@ -1299,7 +1299,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
                                 Teuchos::null,
                                 Teuchos::null,
                                 condstring);
-    
+
     discret_->ClearState();
   }
 
