@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
+#define STUPIDHACK
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
@@ -2434,20 +2435,22 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-#if 0
-                // transform parallel row distribution of constraint matrix kdz
-		// (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
-#else
+#ifdef STUPIDHACK
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
 
                 // transform parallel row distribution of constraint matrix kdz
 		// (only necessary in the parallel redistribution case)
     if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
+
+#else
+                // transform parallel row distribution of constraint matrix kdz
+		// (only necessary in the parallel redistribution case)
+    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
+
+    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
+
 #endif
 
     // build constraint matrix kzd
@@ -2546,20 +2549,20 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-#if 0
-		// transform parallel row distribution of constraint matrix kdz
-		// (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
-#else
+#ifdef STUPIDHACK
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
 
 		// transform parallel row distribution of constraint matrix kdz
 		// (only necessary in the parallel redistribution case)
     if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
+#else
+		// transform parallel row distribution of constraint matrix kdz
+		// (only necessary in the parallel redistribution case)
+    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
+
+    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
 #endif
 
     // build constraint matrix kzd
@@ -2694,7 +2697,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
     LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
     trkdz->ApplyDirichlet(dirichtoggle,false);
-#if 1
+#ifdef STUPIDHACK
     trkdz->UnComplete();
     trkdz->Complete(*glmdofrowmap_,*problemrowmap_);
 #endif
