@@ -1096,10 +1096,8 @@ set(OBJS_DRT_F3_LIB
   src/drt_f3/fluid3_evaluate.cpp
   src/drt_f3/fluid3_genalpha_resVMM.cpp
   src/drt_f3/fluid3_input.cpp
-  src/drt_f3/fluid3_lin_impl.cpp
   src/drt_f3/fluid3_nurbs.cpp
   src/drt_f3/fluid3_stabilization.cpp
-  #src/drt_f3/fluid3_stationary.cpp
   src/drt_f3/fluid3_weak_dbc.cpp
   src/drt_f3/xfluid3.cpp
   src/drt_f3/xfluid3_evaluate.cpp
