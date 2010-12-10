@@ -3336,7 +3336,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
       DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
       (funct_  ,
           deriv_  ,
-          derxy2_ ,
+          deriv2_ ,
           xsi_    ,
           myknots_,
           weights_,
