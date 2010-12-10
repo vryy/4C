@@ -166,31 +166,38 @@ namespace ELEMENTS
     case DRT::Element::pyramid5:
     case DRT::Element::hex8:
     case DRT::Element::wedge6:
+    case DRT::Element::nurbs8:
       return 0.333333333333333333333;
       break;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::tet10:
     case DRT::Element::wedge15:
+    case DRT::Element::nurbs27:
       return 0.083333333333333333333;
       break;
       // do the 2D case after the more usual 3D case
     case DRT::Element::tri3:
     case DRT::Element::quad4:
+    case DRT::Element::nurbs4:
       return 0.333333333333333333333;
       break;
     case DRT::Element::tri6:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
+    case DRT::Element::nurbs9:
       return 0.083333333333333333333;
       break;
       // finally, do the 1D case
     case DRT::Element::line2:
+    case DRT::Element::nurbs2:
       return 0.333333333333333333333;
       break;
     case DRT::Element::line3:
+    case DRT::Element::nurbs3:
       return 0.083333333333333333333;
       break;
+
     default:
       dserror("Element shape not supported.");
     }
