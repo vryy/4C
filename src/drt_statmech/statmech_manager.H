@@ -209,8 +209,17 @@ protected:
 	//! \brief output for density-density-correlation output
 	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep);
 
+	//! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
+	void DDCorrFunction(Epetra_Vector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
+
+	//! \brief obtain distribution for spherical coordinates (all vectors in and out)
+	void SphericalCoordsDistribution(const Epetra_Vector& disrow, Epetra_Vector& phibinsrow, Epetra_Vector& thetabinsrow, Epetra_Vector& costhetabinsrow);
+
 	//! \brief Selects raster point with the smallest average distance to all crosslinker elements and makes it the new center of the boundary box
-	void DDCorrShift(std::vector<double>* boxcenter, std::vector<double>* centershift, std::vector<int>* crosslinkerentries);
+	void DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
+
+	//! \brief obtain radial crosslinker density distribution
+	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog,  LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
 
 	/*! \brief determine the current network structure
 	 * 	\param disrow  (in) displacement in row format
@@ -221,7 +230,8 @@ protected:
 	 * 	\param filorientoutput (in) determine whether or not to output filament element directional vectors
 	 */
 	void DDCorrCurrentStructure(const Epetra_Vector& disrow,
-															std::vector<double>* centershift,
+															LINALG::Matrix<3,1>* cog,
+															LINALG::Matrix<3,1>* centershift,
 															std::vector<int>* crosslinkerentries,
 															const int& istep,
 															const std::ostringstream& filename,
@@ -231,7 +241,7 @@ protected:
 	bool CheckForKinkedVisual(int eleid);
 
 	//! \brief gmsh output of (periodic boundary) box around "boxcenter" with edgelength "length"
-	void GmshOutputBox(double color, std::vector<double>* boxcenter, double length, const std::ostringstream *filename);
+	void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter, double length, const std::ostringstream *filename);
 
 	//! \brief gmsh output for crosslink molecule diffusion
 	void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
