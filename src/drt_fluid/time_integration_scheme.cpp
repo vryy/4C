@@ -235,11 +235,11 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
       //       (0)             |             dt      |
       //                        \                   /
       // respectively
-      //                       
+      //
       //       n+1    n-1               n
-      //      u    = u    + 2 * dt * acc 
-      //       (0)             
-      //                       
+      //      u    = u    + 2 * dt * acc
+      //       (0)
+      //
       //  and
       //
       //       n+1    n
