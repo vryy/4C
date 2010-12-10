@@ -20,6 +20,8 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_interface.H"
 
 #include "../drt_f3/fluid3_ele_impl_utils.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_f3_impl/fluid3_impl_parameter.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
@@ -781,6 +783,12 @@ namespace ELEMENTS
     bool is_higher_order_ele_;
     //! pointer to parameter list
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
+    //! element type: nurbs
+    bool isNurbs_;
+    //! weights for nurbs elements
+    LINALG::Matrix<nen_,1> weights_;
+    //! knot vector for nurbs elements
+    std::vector<Epetra_SerialDenseVector> myknots_;
   };
 }
 }

@@ -102,6 +102,15 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
   {
     return Fluid3Impl<DRT::Element::tri6>::Instance();
   }
+  // Nurbs support
+  case DRT::Element::nurbs9:
+  {
+    return Fluid3Impl<DRT::Element::nurbs9>::Instance();
+  }
+  case DRT::Element::nurbs27:
+  {
+    return Fluid3Impl<DRT::Element::nurbs27>::Instance();
+  }
   // no 1D elements
   //nurbs are not available yet
   default:
@@ -180,12 +189,17 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     conv_scan_(0.0),
     rotsymmpbc_(NULL),
     //flags
-    is_higher_order_ele_(false)
+    is_higher_order_ele_(false),
+    weights_(true),
+    myknots_(nsd_)
 {
   rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 
   // pointer to class Fluid3ImplParameter (access to the general parameter)
   f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+
+  // Nurbs
+  isNurbs_ = IsNurbs<distype>::isnurbs;
 }
 
 /*----------------------------------------------------------------------*
@@ -211,6 +225,20 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
 
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+
+  if(isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return(0);
+  } // Nurbs specific stuff
 
   if (ele->IsAle())
   {
@@ -344,6 +372,20 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+
+  if(isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
 
   // Call the inner evaluate that does not know about the DRT element or the
   // discretization object.
@@ -1480,8 +1522,37 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
   }
   const double wquad = intpoints_stab.IP().qwgt[0];
 
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if(not isNurbs_)
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+    if (is_higher_order_ele_)
+    {
+      // get the second derivatives of standard element at current GP
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+    }
+  }
+  else
+  {
+    if (is_higher_order_ele_)
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+      (funct_  ,
+          deriv_  ,
+          deriv2_ ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+    else
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+      (funct_  ,
+          deriv_  ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+  }
 
 
   // compute Jacobian matrix and determinant
@@ -1521,7 +1592,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
     DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
@@ -1547,8 +1617,38 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 	  xsi_(idim) = gpcoord[idim];
   }
 
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if(not isNurbs_)
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+    derxy2_.Clear();
+    if (is_higher_order_ele_)
+    {
+      // get the second derivatives of standard element at current GP
+      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+    }
+  }
+  else
+  {
+    if (is_higher_order_ele_)
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+      (funct_  ,
+          deriv_  ,
+          deriv2_ ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+    else
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+      (funct_  ,
+          deriv_  ,
+          xsi_    ,
+          myknots_,
+          weights_,
+          distype );
+  }
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -1584,7 +1684,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    DRT::UTILS::shape_function_deriv2<distype>(xsi_, deriv2_);
     DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
@@ -2802,6 +2901,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
 {
   if (f3Parameter_->is_genalpha_)
   {
+    if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
+      dserror("Gen-Alpha and Boussinesq approximation is not implemented yet");
+
     // rhs of momentum equation: density*bodyforce at n+alpha_F
     rhsmom_.Update(densaf_,bodyforce_,0.0);
 
@@ -2893,6 +2995,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
      *                    classical subgrid closure                    *
      *                                                                 *
      *-----------------------------------------------------------------*/
+    // sgvelint_ is used:
+    //    - Cross & Reynolds -stress stabilization
+    //    - PSPG & SUPG & ViscStab in the case of time-dependent sub-scales
+
     if (f3Parameter_->cross_    != INPAR::FLUID::cross_stress_stab_none or
         f3Parameter_->reynolds_ != INPAR::FLUID::reynolds_stress_stab_none)
     {
