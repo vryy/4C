@@ -51,7 +51,7 @@ DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     field_by_function
 RESSTEP          -1
 STARTFUNCNO      2
-TIMEINTEGR       One_Step_Theta //Gen_Alpha  //Af_Gen_Alpha //One_Step_Theta
+TIMEINTEGR       Gen_Alpha  //Af_Gen_Alpha //One_Step_Theta
 STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           8
