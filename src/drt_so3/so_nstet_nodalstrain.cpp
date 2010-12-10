@@ -580,7 +580,6 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
-  
   vector<vector<int> > lmlm(neleinpatch);
   for (int i=0; i<neleinpatch; ++i)
   {
@@ -720,6 +719,77 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   for (int i=0; i<ndofinpatch; ++i)
     for (int k=0; k<6; ++k)
       bopbar(k,i) = Ebar[k].fastAccessDx(i);
+  
+#if 0
+  Epetra_SerialDenseMatrix bopbar2(6,ndofinpatch);
+  {
+    
+    Epetra_SerialDenseMatrix Graddm(9,ndofinpatch);
+    for (int ele=0; ele<neleinpatch; ++ele)
+    {
+      LINALG::Matrix<4,3>& nxyz = adjele[ele]->Nxyz();
+      const double V = (adjele[ele]->Vol()/4.);
+      LINALG::Matrix<9,12> Gradde(true);
+      for (int i=0; i<4; ++i) // FIXME: do += ratio * directly into Graddm for efficiency
+      {
+        Gradde(0,3*i+0) = nxyz(i,0);
+        //Gradde(0,3*i+1) = 0.0;
+        //Gradde(0,3*i+2) = 0.0;
+
+        //Gradde(1,3*i+0) = 0.0;
+        Gradde(1,3*i+1) = nxyz(i,1);
+        //Gradde(1,3*i+2) = 0.0;
+
+        //Gradde(2,3*i+0) = 0.0;
+        //Gradde(2,3*i+1) = 0.0;
+        Gradde(2,3*i+2) = nxyz(i,2);
+
+        Gradde(3,3*i+0) = nxyz(i,1);
+        //Gradde(3,3*i+1) = 0.0;
+        //Gradde(3,3*i+2) = 0.0;
+        Gradde(4,3*i+0) = nxyz(i,2);
+        //Gradde(4,3*i+1) = 0.0;
+        //Gradde(4,3*i+2) = 0.0;
+
+        //Gradde(5,3*i+0) = 0.0;
+        Gradde(5,3*i+1) = nxyz(i,0);
+        //Gradde(5,3*i+2) = 0.0;
+        //Gradde(6,3*i+0) = 0.0;
+        Gradde(6,3*i+1) = nxyz(i,2);
+        //Gradde(6,3*i+2) = 0.0;
+
+        //Gradde(7,3*i+0) = 0.0;
+        //Gradde(7,3*i+1) = 0.0;
+        Gradde(7,3*i+2) = nxyz(i,0);
+        //Gradde(8,3*i+0) = 0.0;
+        //Gradde(8,3*i+1) = 0.0;
+        Gradde(8,3*i+2) = nxyz(i,1);
+      } // for (int i=0; i<4; ++i)
+      for (int i=0; i<9; ++i)
+        for (int j=0; j<12; ++j)
+          Graddm(i,lmlm[ele][j]) += V * Gradde(i,j);
+    } // for (int ele=0; ele<neleinpatch; ++ele)
+    Graddm.Scale(1./VnodeL);
+    for (int j=0; j<ndofinpatch; ++j)
+    {
+      bopbar2(0,j) = FnodeL(0,0)*Graddm(0,j) + FnodeL(1,0)*Graddm(5,j) + FnodeL(2,0)*Graddm(7,j);
+      bopbar2(1,j) = FnodeL(0,1)*Graddm(3,j) + FnodeL(1,1)*Graddm(1,j) + FnodeL(2,1)*Graddm(8,j);
+      bopbar2(2,j) = FnodeL(0,2)*Graddm(4,j) + FnodeL(1,2)*Graddm(6,j) + FnodeL(2,2)*Graddm(2,j);
+
+      bopbar2(3,j) = FnodeL(0,1)*Graddm(0,j) + FnodeL(1,1)*Graddm(5,j) + FnodeL(2,1)*Graddm(7,j) +
+                     FnodeL(0,0)*Graddm(3,j) + FnodeL(1,0)*Graddm(1,j) + FnodeL(2,0)*Graddm(8,j);
+
+      bopbar2(4,j) = FnodeL(0,2)*Graddm(3,j) + FnodeL(1,2)*Graddm(1,j) + FnodeL(2,2)*Graddm(8,j) +
+                     FnodeL(0,1)*Graddm(4,j) + FnodeL(1,1)*Graddm(6,j) + FnodeL(2,1)*Graddm(2,j);
+                       
+      bopbar2(5,j) = FnodeL(0,0)*Graddm(4,j) + FnodeL(1,0)*Graddm(6,j) + FnodeL(2,0)*Graddm(2,j) +
+                     FnodeL(0,2)*Graddm(0,j) + FnodeL(1,2)*Graddm(5,j) + FnodeL(2,2)*Graddm(7,j);
+    }
+      
+  //bopbar = bopbar2;  
+    
+  }
+#endif
 
   //----------------------------------------- averaged material and stresses
   LINALG::Matrix<6,6> cmat(true);
