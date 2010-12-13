@@ -480,7 +480,7 @@ void STR::TimAda::Print
 std::ostream& operator<<
 (
   std::ostream& str,
-  const STR::TimAda::TimAda& ta
+  const STR::TimAda& ta
 )
 {
   ta.Print(str);

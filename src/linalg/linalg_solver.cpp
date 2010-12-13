@@ -331,7 +331,7 @@ void LINALG::Solver::Solve(
   // set the data passed to the method
   if (refactor)
   {
-    A_ = rcp(new LINALG::LinalgProjectedOperator::LinalgProjectedOperator(matrix,project,projector));
+    A_ = rcp(new LINALG::LinalgProjectedOperator(matrix,project,projector));
   }
 
   x_ = x;
@@ -582,7 +582,7 @@ void LINALG::Solver::Solve_aztec(
       prec->Initialize();
       prec->Compute();
 
-      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(rcp(prec),project,projector));
+      P_ = rcp(new LINALG::LinalgPrecondOperator(rcp(prec),project,projector));
     }
 
     // do ml if desired
@@ -606,21 +606,21 @@ void LINALG::Solver::Solve_aztec(
         Teuchos::RCP<LINALG::AMG_Operator> linalgAMG
           = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
 
-        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project,projector));
+        P_ = rcp(new LINALG::LinalgPrecondOperator(linalgAMG,project,projector));
       }
       else if(doamgpreconditioner)
       {
         Teuchos::RCP<LINALG::AMGPreconditioner> linalgAMG
           = rcp(new LINALG::AMGPreconditioner(A_->UnprojectedOperator(),mllist,outfile_));
 
-        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgAMG,project,projector));
+        P_ = rcp(new LINALG::LinalgPrecondOperator(linalgAMG,project,projector));
       }
       else
       {
         Teuchos::RCP<ML_Epetra::MultiLevelPreconditioner> linalgML
           = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
 
-        P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(linalgML,project,projector));
+        P_ = rcp(new LINALG::LinalgPrecondOperator(linalgML,project,projector));
         // for debugging ML
         //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
       }
@@ -643,7 +643,7 @@ void LINALG::Solver::Solve_aztec(
                                              Params().sublist("SIMPLER"),
                                              outfile_));
 
-          P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
+          P_ = rcp(new LINALG::LinalgPrecondOperator(SimplerOperator,project,projector));
       }
       else
       {
@@ -652,7 +652,7 @@ void LINALG::Solver::Solve_aztec(
                                              Params().sublist("SIMPLER"),
                                              outfile_));
 
-          P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SimplerOperator,project,projector));
+          P_ = rcp(new LINALG::LinalgPrecondOperator(SimplerOperator,project,projector));
       }
       Pmatrix_ = null;
     }
@@ -666,7 +666,7 @@ void LINALG::Solver::Solve_aztec(
       Teuchos::RCP<LINALG::SaddlePointPreconditioner> SaddlePointPrec
         = rcp(new LINALG::SaddlePointPreconditioner(A_->UnprojectedOperator(),Params(),outfile_));
 
-      P_ = rcp(new LINALG::LinalgPrecondOperator::LinalgPrecondOperator(SaddlePointPrec,project,projector));
+      P_ = rcp(new LINALG::LinalgPrecondOperator(SaddlePointPrec,project,projector));
       Pmatrix_ = null;
     }
 

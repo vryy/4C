@@ -30,7 +30,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-  
+
   aleproj_ = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
 
 #ifdef PARALLEL
@@ -201,7 +201,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
   break;
   }
-  
+
   // set up sliding ale if necessary
   switch(aleproj_)
   {
@@ -209,15 +209,15 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     break;
   case INPAR::FSI::ALEprojection_curr:
   case INPAR::FSI::ALEprojection_ref:
-    
+
     // set up sliding ale utils
     slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
                                                   FluidField().Discretization(),
                                                   coupsfm_,
                                                   false));
-    
+
     iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
-    
+
     break;
   default:
     dserror("Strange things happen with ALE projection");
@@ -241,23 +241,23 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
   if (firstcall)
   {
- 
+
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
     if (a==Teuchos::null)
       dserror("expect ale block matrix");
 
     LINALG::SparseMatrix& aig = a->Matrix(0,1);
-  
+
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    
+
     if (aleproj_!= INPAR::FSI::ALEprojection_none)
     {
-      
+
       aig.Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
       rhs->Scale(-1.);
-    
-      Extractor().AddVector(*rhs,2,f);    
+
+      Extractor().AddVector(*rhs,2,f);
     }
     // additional rhs term for ALE equations
     // -dt Aig u(n)
@@ -265,13 +265,13 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
     //
     // And we are concerned with the u(n) part here.
-      
+
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
-    
+
     aig.Apply(*aveln,*rhs);
 
     rhs->Scale(-1.*Dt());
-      
+
     Extractor().AddVector(*rhs,2,f);
 
     // structure
@@ -285,10 +285,10 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     mortar->Apply(*fveln,*tmprhs);
     s->Matrix(0,1).Apply(*tmprhs,*rhs);
     rhs->Scale(-1.*Dt());
-    
+
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
-    
+
 
     Extractor().AddVector(*rhs,0,f);
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(1,1).RowMap()));
@@ -302,7 +302,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     rhs = FluidField().Interface().InsertFSICondVector(tmprhs);
     double scale     = FluidField().ResidualScaling();
     rhs->Scale(-1.*Dt()/scale);
-    
+
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
 
@@ -419,7 +419,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   lsig->Complete(f->DomainMap(),sig->RangeMap());
 
   lsig->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
-  
+
   mat.Assign(0,1,View,*lsig);
 
   RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortar,true,s->Matrix(1,0),false,false,false,true);
@@ -429,14 +429,14 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
 
   lsgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
-  
+
   mat.Assign(1,0,View,*lsgi);
 
   RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortar,false,false,false,true);
   sgg = MLMultiply(*mortar,true,*sgg,false,false,false,true);
-  
+
   sgg->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
-  
+
   f->Add(*sgg,false,1./(scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
 
@@ -529,7 +529,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
 void FSI::MortarMonolithicStructureSplit::Update()
 {
-  
+
   // update history variabels for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
@@ -544,12 +544,12 @@ void FSI::MortarMonolithicStructureSplit::Update()
                         coupsfm_,
                         Comm(),
                         aleproj_);
-  
+
     iprojdispinc_->Update(1.0,*iprojdisp,-1.0,*idispale,0.0);
 
     slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp, coupsfm_);
   }
-  
+
   StructureField().Update();
   FluidField().Update();
   AleField().Update();
@@ -753,7 +753,7 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modfv,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
-    
+
     Extractor().InsertVector(*modfv,1,f);
   }
   else
@@ -797,7 +797,7 @@ FSI::MortarMonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
 #if 1
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(
 #else
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
 #endif
@@ -989,10 +989,10 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(fcx);
-  
+
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
     acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
-  
+
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertFSICondVector(acx, a);
 

@@ -167,25 +167,25 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
    case INPAR::SCATRA::timeint_stationary:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntStationary::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
+     scatra_ = rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
      break;
    }
    case INPAR::SCATRA::timeint_one_step_theta:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+     scatra_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
      break;
    }
    case INPAR::SCATRA::timeint_bdf2:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntBDF2::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
+     scatra_ = rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
    case INPAR::SCATRA::timeint_gen_alpha:
    {
      // create instance of time integration class (call the constructor)
-     scatra_ = rcp(new SCATRA::TimIntGenAlpha::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+     scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
    default:
@@ -208,7 +208,7 @@ SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  return Teuchos::rcp(new SCATRA::ScaTraResultTest::ScaTraResultTest(*scatra_));
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest(*scatra_));
 }
 
 

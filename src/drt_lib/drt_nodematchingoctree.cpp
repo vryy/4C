@@ -107,7 +107,7 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     // all other layers are generated down here by recursive calls
     int initlayer = 0;
 
-    octreeroot_ = rcp(new OctreeElement::OctreeElement(discret_,
+    octreeroot_ = rcp(new OctreeElement(discret_,
                                                        masternodesonthisproc,
                                                        initialboundingbox,
                                                        initlayer,
@@ -806,13 +806,13 @@ DRT::UTILS::OctreeElement::OctreeElement(
     nodeidstoadd.clear();
 
     // append children to parent
-    octreechild1_ = rcp(new OctreeElement::OctreeElement(discret_,
+    octreechild1_ = rcp(new OctreeElement(discret_,
                                                          childnodeids1,
                                                          childboundingbox1,
                                                          layer_+1,
                                                          maxnodeperleaf,
                                                          tol));
-    octreechild2_ = rcp(new OctreeElement::OctreeElement(discret_,
+    octreechild2_ = rcp(new OctreeElement(discret_,
                                                          childnodeids2,
                                                          childboundingbox2,
                                                          layer_+1,

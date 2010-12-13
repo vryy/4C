@@ -1001,7 +1001,7 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
 
     if (alphai!=null && alphao!=null) // update only those elements with EAS
     {
-      Epetra_BLAS::Epetra_BLAS blas;
+      Epetra_BLAS blas;
       blas.SCAL(alphao->M() * alphao->N(), -alphaf_/(1.0-alphaf_), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
       blas.AXPY(alphao->M() * alphao->N(), 1.0/(1.0-alphaf_), alphai->A(), alphao->A());  // alphao += 1.0/(1.0-alphaf) * alpha
       blas.COPY(alphai->M() * alphai->N(), alphao->A(), alphai->A());  // alpha := alphao

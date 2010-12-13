@@ -935,7 +935,7 @@ FSI::MonolithicFS::CreateLinearSystem(ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(
                                                                printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),

@@ -156,7 +156,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
 
   // initialise Spaldings law with parameters chi=0.4 and B=5.5
-  Fluid3SurfaceWeakDBCSpaldingsLaw::Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
+  Fluid3SurfaceWeakDBCSpaldingsLaw SpaldingsLaw(0.4,5.5);
 
   // decide whether to use it or not
   const string* deftauB

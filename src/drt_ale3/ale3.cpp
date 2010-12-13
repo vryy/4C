@@ -20,7 +20,7 @@
 
 using namespace DRT::UTILS;
 
-DRT::ELEMENTS::Ale3Type::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
+DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::Ale3Type::Create( const std::vector<char> & data )
 {

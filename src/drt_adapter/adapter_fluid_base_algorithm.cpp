@@ -78,7 +78,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   if(genprob.probtyp != prb_fsi)
   {
-    PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
+    PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
 
     pbcmapmastertoslave = pbc.ReturnAllCoupledNodesOnThisProc();
@@ -473,7 +473,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
       break;
       case fluid_solver_fluid_xfluid:
-      {   
+      {
         RCP<DRT::Discretization> xfluiddis = DRT::Problem::Instance()->Dis(genprob.numff,1);
         xfluiddis->FillComplete(false,false,false);
         tmpfluid = rcp(new ADAPTER::FluidXFluidImpl(actdis, xfluiddis, solver, fluidtimeparams, output, isale, dirichletcond));

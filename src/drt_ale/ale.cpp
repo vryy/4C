@@ -80,7 +80,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
   // -------------------------------------------------------------------
   // connect degrees of freedom for coupled nodes
   // -------------------------------------------------------------------
-  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(actdis);
+  PeriodicBoundaryConditions pbc(actdis);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
   // -------------------------------------------------------------------
@@ -157,7 +157,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
          coupling == fsi_iter_lung_monolithicfluidsplit or
          coupling == fsi_iter_lung_monolithicstructuresplit or
          coupling == fsi_iter_mortar_monolithicstructuresplit or
-         coupling == fsi_iter_mortar_monolithicfluidsplit)    
+         coupling == fsi_iter_mortar_monolithicfluidsplit)
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =
