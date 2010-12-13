@@ -238,8 +238,8 @@ namespace STR
 
     //! @name Key coefficients
     //@{
-    const double beta_;  //!< must be 0.25
-    const double gamma_;  //!< must be 0.5
+    double beta_;  //!< factor (0,0.5]
+    double gamma_;  //!< factor (0,1]
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [0,1)
     double xi_;  //!< factor [0,1)

@@ -40,8 +40,8 @@ STR::TimIntGEMM::TimIntGEMM
     solver,
     output
   ),
-  beta_(0.25),  // BETA MUST BE 0.25 (A QUARTER)
-  gamma_(0.5),  // GAMMA MUST BE 0.5 (A HALF)
+  beta_(sdynparams.sublist("GEMM").get<double>("BETA")),
+  gamma_(sdynparams.sublist("GEMM").get<double>("GAMMA")),
   alphaf_(sdynparams.sublist("GEMM").get<double>("ALPHA_F")),
   alpham_(sdynparams.sublist("GEMM").get<double>("ALPHA_M")),
   xi_(sdynparams.sublist("GEMM").get<double>("XI")),

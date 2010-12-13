@@ -864,6 +864,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for generalised-energy-momentum structural integrator */
   Teuchos::ParameterList& gemm = sdyn.sublist("GEMM",false,"");
 
+  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,0.5]",&gemm);
+  DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&gemm);
   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&gemm);
   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&gemm);
   DoubleParameter("XI",0.0,"generalisation factor in [0,1)",&gemm);
