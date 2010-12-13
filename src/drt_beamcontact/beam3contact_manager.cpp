@@ -26,25 +26,50 @@ Maintainer: Alexander Popp, Christian Cyron
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
 CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret):
-discret_(discret)
+pdiscret_(discret)
 {
-	// store the node and element row maps
-  noderowmap_ = rcp (new Epetra_Map(*(discret_.NodeRowMap())));
-  elerowmap_ = rcp (new Epetra_Map(*(discret_.ElementRowMap())));
-  
-  // store the node and element column maps (overlap = 1)
-  nodecolmap_ = rcp (new Epetra_Map(*(discret_.NodeColMap())));
-  elecolmap_ = rcp (new Epetra_Map(*(discret_.ElementColMap())));
-  
-  //**********************************************************************
-  // build fully overlapping column maps
-  //**********************************************************************
-  // we do this to ease our search algorithms, yet this of course destroys
-  // any possible parallel efficiency. At the moment, the beam contact
-  // code is written and fully functional in parallel, yet what it does
-  // is basically serial processing.
-  //**********************************************************************
-  
+	// create new (basically copied) discretization for contact
+	// (to ease our search algorithms we afford the luxury of
+	// ghosting all nodes and all elements on all procs, i.e.
+	// we export the discretization to full overlap. However,
+	// we do not want to do this with the actual discretization
+	// and thus create a stripped copy here that only contains
+	// nodes and elements).
+	// Then, within all beam contact specific routines we will
+	// NEVER use the underlying problem discretization but always
+	// the copied beam contact discretization.
+  RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
+  cdiscret_ = rcp(new DRT::Discretization((string)"beam contact",comm));
+
+  // loop over all column nodes of underlying problem discret and add
+  for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
+  {
+  	DRT::Node* node = ProblemDiscret().lColNode(i);
+  	if (!node) dserror("Cannot find node with lid %",i);
+  	RCP<DRT::Node> newnode = rcp(node->Clone());
+  	ContactDiscret().AddNode(newnode);
+  }
+
+  // loop over all column elements of underlying problem discret and add
+  for (int i=0;i<(ProblemDiscret().ElementColMap())->NumMyElements();++i)
+  {
+  	DRT::Element* ele = ProblemDiscret().lColElement(i);
+  	if (!ele) dserror("Cannot find element with lid %",i);
+  	RCP<DRT::Element> newele = rcp(ele->Clone());
+  	ContactDiscret().AddElement(newele);
+  }
+
+	// build maps but do not assign dofs yet, we'll do this below
+	// after shuffling around of nodes and elements (saves time)
+	ContactDiscret().FillComplete(false,false,false);
+
+	// store the node and element row and column maps into this manager
+	noderowmap_ = rcp (new Epetra_Map(*(ContactDiscret().NodeRowMap())));
+	elerowmap_  = rcp (new Epetra_Map(*(ContactDiscret().ElementRowMap())));
+	nodecolmap_ = rcp (new Epetra_Map(*(ContactDiscret().NodeColMap())));
+  elecolmap_  = rcp (new Epetra_Map(*(ContactDiscret().ElementColMap())));
+
+  // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
   vector<int> sdata(noderowmap_->NumMyElements());
   for (int i=0; i<noderowmap_->NumMyElements(); ++i)
@@ -52,30 +77,28 @@ discret_(discret)
   vector<int> esdata(elerowmap_->NumMyElements());
   for (int i=0; i<elerowmap_->NumMyElements(); ++i)
     esdata[i] = elerowmap_->GID(i);
-  
+
   // if current proc is participating it writes row IDs into (e)stproc
   vector<int> stproc(0);
-  vector<int> estproc(0); 
+  vector<int> estproc(0);
   if (noderowmap_->NumMyElements())
-    stproc.push_back(discret_.Comm().MyPID());
+    stproc.push_back(ContactDiscret().Comm().MyPID());
   if (elerowmap_->NumMyElements())
-    estproc.push_back(discret_.Comm().MyPID());
-  
-  // information how many processor participate in total
-  vector<int> allproc(discret_.Comm().NumProc());
-  
-  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0;i<discret_.Comm().NumProc();++i) allproc[i] = i;
-  
+    estproc.push_back(ContactDiscret().Comm().MyPID());
+
+  // information how many processors participate in total
+  vector<int> allproc(ContactDiscret().Comm().NumProc());
+  for (int i=0;i<ContactDiscret().Comm().NumProc();++i) allproc[i] = i;
+
   // declaring new variables into which the info of (e)stproc on all processors is gathered
   vector<int> rtproc(0);
   vector<int> ertproc(0);
-  
-  // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc is
-  // a vector which contains the numbers of all processors which own nodes/elements.
-  LINALG::Gather<int>(stproc,rtproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
-  LINALG::Gather<int>(estproc,ertproc,discret_.Comm().NumProc(),&allproc[0],discret_.Comm());
-    
+
+  // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
+  // is a vector which contains the numbers of all processors which own nodes/elements.
+  LINALG::Gather<int>(stproc,rtproc,ContactDiscret().Comm().NumProc(),&allproc[0],ContactDiscret().Comm());
+  LINALG::Gather<int>(estproc,ertproc,ContactDiscret().Comm().NumProc(),&allproc[0],ContactDiscret().Comm());
+
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
   // numbers which are  stored on different processors in their own variables (e)sdata; thus,
   // each processor gets the information about all the row ID numbers existing in the problem
@@ -83,41 +106,44 @@ discret_(discret)
   vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],discret_.Comm());
-  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],discret_.Comm());
+  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],ContactDiscret().Comm());
+  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],ContactDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
-  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,discret_.Comm()));
+  RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
-  
+
   // build completely overlapping element map (on participating processors)
-  RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,discret_.Comm()));
+  RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();
-  
+
   // store the fully overlapping node and element maps
   nodefullmap_ = rcp (new Epetra_Map(*newnodecolmap));
-  elefullmap_ = rcp (new Epetra_Map(*newelecolmap));
-    
-  // pass new fully overlapping node map to discretization
-  discret_.ExportColumnNodes(*newnodecolmap);
-  
-  // pass new fully overlapping element map to discretization
-  //**********************************************************************
-  // WARNING: This destroys any possible parallel efficiency, Basically
-  // from here onwards, this is serial processing, so choosing more than
-  // one processor for beam contact does not yet make sense (though the
-  // simulation will run and finish perfectly fine)!!!
-  //**********************************************************************
-  discret_.ExportColumnElements(*newelecolmap);
-  
-  // rebuild discretization based on the new column maps
-  discret_.FillComplete(true,false,false);
-  
+  elefullmap_  = rcp (new Epetra_Map(*newelecolmap));
+
+  // pass new fully overlapping node and element maps to beam contact discretization
+  ContactDiscret().ExportColumnNodes(*newnodecolmap);
+  ContactDiscret().ExportColumnElements(*newelecolmap);
+
+  // complete beam contact discretization based on the new column maps
+  // (this also assign new degrees of freedom what we actually do not
+  // want, thus we have to introduce a dof mapping next)
+  ContactDiscret().FillComplete(true,false,false);
+
+  // compute dof offset between problem and contact discretization
+  const Epetra_Map* pddofs = ProblemDiscret().DofRowMap();
+  const Epetra_Map* cddofs = ContactDiscret().DofRowMap();
+  if (pddofs->NumGlobalElements() != cddofs->NumGlobalElements())
+  	dserror("ERROR: Inconsistency in dof mapping between the two discretizations");
+  int pdmin = pddofs->MinAllGID();
+  int cdmin = cddofs->MinAllGID();
+  dofoffset_ = cdmin - pdmin;
+
   // read parameter list from DRT::Problem
   scontact_ = DRT::Problem::Instance()->MeshtyingAndContactParams();
   
@@ -135,12 +161,6 @@ discret_(discret)
   
   // Compute the search radius for searching possible contact pairs
   ComputeSearchRadius();
-  
-  // debug output
-  //Print(cout);  
-  //cout << *RowNodes() << endl;
-  //cout << *ColNodes() << endl;
-  //cout << *FullNodes() << endl;
 
   return;
 }
@@ -150,10 +170,10 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::Print(ostream& os) const
 {
-  if (Discret().Comm().MyPID()==0)
+  if (Comm().MyPID()==0)
     os << "Beam3 Contact Discretization:" << endl;
   
-  os << Discret();
+  os << ProblemDiscret();
   return;
 }
 
@@ -247,24 +267,29 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
   // the current results into currentpositions
   //**********************************************************************
   
+  // we need to address the nodes / dofs via the beam contact
+  // discretization, because only this is exported to full overlap
+	Epetra_Vector disbcrow(disrow);
+  disbcrow.ReplaceMap(*ContactDiscret().DofRowMap());
+
   // export displacements into fully overlapping column map format
-  Epetra_Vector discol(*discret_.DofColMap(),true);
-  LINALG::Export(disrow,discol);
+  Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
+  LINALG::Export(disbcrow,discol);
   
-  // loop over all nodes
+  // loop over all beam contact nodes
   for (int i=0;i<FullNodes()->NumMyElements();++i)
   {
     // get node pointer
-    const DRT::Node* node = discret_.lColNode(i);
+    const DRT::Node* node = ContactDiscret().lColNode(i);
     
     // get GIDs of this node's degrees of freedom
-    std::vector<int> dofnode = discret_.Dof(node);
+    std::vector<int> dofnode = ContactDiscret().Dof(node);
 
     // nodal positions
     LINALG::Matrix<3,1> currpos;
-    currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
-    currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
-    currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+    currpos(0) = node->X()[0] + discol[ContactDiscret().DofColMap()->LID(dofnode[0])];
+    currpos(1) = node->X()[1] + discol[ContactDiscret().DofColMap()->LID(dofnode[1])];
+    currpos(2) = node->X()[2] + discol[ContactDiscret().DofColMap()->LID(dofnode[2])];
     
     // store into currentpositions
     currentpositions[node->Id()] = currpos;
@@ -333,7 +358,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
   { 
     // get global id, node itself and current position
     int firstgid = ColNodes()->GID(i);
-    DRT::Node* firstnode = discret_.gNode(firstgid);
+    DRT::Node* firstnode = ContactDiscret().gNode(firstgid);
     LINALG::Matrix<3,1> firstpos = currentpositions[firstgid];
          
    // create storage for neighbouring nodes to be excluded.
@@ -425,7 +450,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    for (int j=0;j<(int)NearNodesGIDs.size();++j)
    {
      // node pointer
-  	 DRT::Node* tempnode = discret_.gNode(NearNodesGIDs[j]);
+  	 DRT::Node* tempnode = ContactDiscret().gNode(NearNodesGIDs[j]);
   	 
   	 // getting the elements tempnode is linked to
   	 DRT::Element** TempEles = tempnode->Elements();
@@ -475,7 +500,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
 	 for (int j=0;j<(int)FirstElesGIDs.size();++j)
 	 {
 		 // beam element pointer
-  	 DRT::Element* tempele1 = discret_.gElement(FirstElesGIDs[j]);
+  	 DRT::Element* tempele1 = ContactDiscret().gElement(FirstElesGIDs[j]);
   	 
   	 // node ids adjacent to this element
   	 const int* NodesEle1 = tempele1->NodeIds();
@@ -484,7 +509,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
 		 for (int k=0;k<(int)SecondElesGIDsRej.size();++k)
    	 {
 			 // get and cast a pointer on an element
-   		 DRT::Element* tempele2 = discret_.gElement(SecondElesGIDsRej[k]);				
+   		 DRT::Element* tempele2 = ContactDiscret().gElement(SecondElesGIDsRej[k]);
      	 
      	 // close element id
      	 const int* NodesEle2 = tempele2->NodeIds();
@@ -541,7 +566,8 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    			
    			 //***************************************************************
    			 // create a new contact pair object
-   			 pairs_.push_back(rcp (new CONTACT::Beam3contact(discret_,tempele1,tempele2,ele1pos,ele2pos)));
+   			 pairs_.push_back(rcp (new CONTACT::Beam3contact(ProblemDiscret(),
+   			 ContactDiscret(),DofOffset(),tempele1,tempele2,ele1pos,ele2pos)));
    			 //***************************************************************
      	  }
    	  }
@@ -604,7 +630,7 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
   {
 		// get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = discret_.gElement(gid);
+    DRT::Element* thisele = ContactDiscret().gElement(gid);
     
 
     // compute eleradius from moment of inertia
@@ -635,13 +661,13 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
   {
 	  // get pointer onto element
     int gid = RowElements()->GID(i);
-    DRT::Element* thisele = discret_.gElement(gid);
+    DRT::Element* thisele = ContactDiscret().gElement(gid);
     
     // get global IDs of edge nodes and pointers
     int node0_gid = thisele->NodeIds()[0];
     int node1_gid = thisele->NodeIds()[1];
-    DRT::Node* node0 = discret_.gNode(node0_gid);
-    DRT::Node* node1 = discret_.gNode(node1_gid);
+    DRT::Node* node0 = ContactDiscret().gNode(node0_gid);
+    DRT::Node* node1 = ContactDiscret().gNode(node1_gid);
     
     // get coordinates of edge nodes
     vector<double> x_n0(3);
@@ -741,15 +767,20 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   // gsmh output beam elements as prisms
 	// NOT YET AVAILABLE FOR THE PARALLEL CASE!
   //**********************************************************************
-  if (discret_.Comm().NumProc() == 1)
+  if (Comm().NumProc() == 1)
   {
     // approximation of the circular cross section with n prisms
     int n=16;		    // CHOOSE N HERE
   	if (n<3) n=3;		// minimum is 3, else no volume is defined.
     
-  	// export displacment vector to column map format
-    Epetra_Vector  discol(*(discret_.DofColMap()),true);   
-    LINALG::Export(disrow,discol);
+    // we need to address the nodes / dofs via the beam contact
+    // discretization, because only this is exported to full overlap
+  	Epetra_Vector disbcrow(disrow);
+    disbcrow.ReplaceMap(*ContactDiscret().DofRowMap());
+
+    // export displacements into fully overlapping column map format
+    Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
+    LINALG::Export(disbcrow,discol);
 
     // do output to file in c-style
     FILE* fp = NULL;
@@ -769,10 +800,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     gmshfilecontent << " \" {" << endl;
     
     // loop over all column elements on this processor
-    for (int i=0;i<discret_.NumMyColElements();++i)
+    for (int i=0;i<ColNodes()->NumMyElements();++i)
     {
       // get pointer onto current beam element
-      DRT::Element* element = discret_.lColElement(i);
+      DRT::Element* element = ContactDiscret().lColElement(i);
       
       // prepare storage for nodal coordinates
       int nnodes = element->NumNode();
@@ -784,8 +815,8 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       	for (int jd=0;jd<element->NumNode();++jd)
       	{
       		double referenceposition = ((element->Nodes())[jd])->X()[id];
-      		vector<int> dofnode = discret_.Dof((element->Nodes())[jd]);        
-      		double displacement = discol[discret_.DofColMap()->LID(dofnode[id])];
+      		vector<int> dofnode = ContactDiscret().Dof((element->Nodes())[jd]);
+      		double displacement = discol[ContactDiscret().DofColMap()->LID(dofnode[id])];
       		coord(id,jd) =  referenceposition + displacement;
       	}
       }
@@ -1051,10 +1082,17 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
                                        const Epetra_Vector& dirichtoggle,
 		                                   const int& timestep)
 {
+  // we need to address the nodes / dofs via the beam contact
+  // discretization, because only this is exported to full overlap
+	Epetra_Vector fintbc(fint);
+  fintbc.ReplaceMap(*ContactDiscret().DofRowMap());
+  Epetra_Vector dirichtogglebc(dirichtoggle);
+  dirichtogglebc.ReplaceMap(*ContactDiscret().DofRowMap());
+
 	// compute bearing reactions from fint via dirichtoggle
 	// Note: dirichtoggle is 1 for DOFs with DBC and 0 elsewise
-	Epetra_Vector fbearing(fint);
-	fbearing.Multiply(1.0,dirichtoggle,fint,0.0);
+	Epetra_Vector fbearing(*ContactDiscret().DofRowMap());
+	fbearing.Multiply(1.0,dirichtogglebc,fintbc,0.0);
 	
 	// stringstream for filename
 	std::ostringstream filename;
@@ -1073,8 +1111,8 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
 	
 	// only implemented for one single node
 	int i=0;	// CHOOSE YOUR NODE ID HERE!!!
-	const DRT::Node* thisnode = discret_.gNode(i);
-	const vector<int> DofGIDs = discret_.Dof(thisnode);
+	const DRT::Node* thisnode = ContactDiscret().gNode(i);
+	const vector<int> DofGIDs = ContactDiscret().Dof(thisnode);
 	CSVcontent << i;
 	
 	// write reaction forces and moments

@@ -26,12 +26,16 @@ Maintainer: Alexander Popp, Christian Cyron
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3contact::Beam3contact(DRT::Discretization& discret,
+CONTACT::Beam3contact::Beam3contact(const DRT::Discretization& pdiscret,
+		                                const DRT::Discretization& cdiscret,
+		                                const int& dofoffset,
 		                                DRT::Element* element1,
                                     DRT::Element* element2,
                                     const Epetra_SerialDenseMatrix ele1pos,
                                     const Epetra_SerialDenseMatrix ele2pos):
-discret_(discret),
+pdiscret_(pdiscret),
+cdiscret_(cdiscret),
+dofoffset_(dofoffset),
 element1_(element1),
 element2_(element2),
 ele1pos_(ele1pos),
@@ -57,7 +61,9 @@ contactflag_(false)
  |  copy-constructor (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
 CONTACT::Beam3contact::Beam3contact(const Beam3contact& old):
-discret_(old.discret_),
+pdiscret_(old.pdiscret_),
+cdiscret_(old.cdiscret_),
+dofoffset_(old.dofoffset_),
 element1_(old.element1_),
 element2_(old.element2_),
 ele1pos_(old.ele1pos_),
@@ -370,6 +376,22 @@ void CONTACT::Beam3contact::CheckContactStatus(double& pp)
 }
 
 /*----------------------------------------------------------------------*
+ |	Get global dofs of a node                                 popp 12/10|
+ *----------------------------------------------------------------------*/
+vector<int> CONTACT::Beam3contact::GetGlobalDofs(DRT::Node* node)
+{
+  // get dofs in beam contact discretization
+	vector<int> cdofs = ContactDiscret().Dof(node);
+
+	// get dofs in problem discretization via offset
+	vector<int> pdofs((int)(cdofs.size()));
+	for (int k=0;k<(int)(cdofs.size());++k)
+		pdofs[k] = cdofs[k]-DofOffset();
+
+	return pdofs;
+}
+
+/*----------------------------------------------------------------------*
  |  Compute contact forces                                    popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
@@ -407,8 +429,8 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 		for (int i=0;i<numnode1;++i)
 		{
 			// get node pointer and dof ids
-			DRT::Node* node = Discret().gNode(node_ids1[i]);		
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+			vector<int> NodeDofGIDs = GetGlobalDofs(node);
 			
 			// compute force vector Fc1 and prepare assembly
 			for (int j=0;j<NDIM;++j)
@@ -425,8 +447,8 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 		for(int i=0;i<numnode2;++i)
 		{
 			// get node pointer and dof ids
-			DRT::Node* node = Discret().gNode(node_ids2[i]);
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+			vector<int> NodeDofGIDs =  GetGlobalDofs(node);
 			
 			// compute force vector Fc2 and prepare assembly
 			for (int j=0;j<NDIM;++j)
@@ -472,7 +494,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 }
 
 /*----------------------------------------------------------------------*
- |	Evaluate contact stiffness popp                                04/10|
+ |	Evaluate contact stiffness                                popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
      const double& gap, const vector<double>& normal, const double& norm, 
@@ -542,8 +564,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
 		for (int i=0;i<numnode1;++i)
 		{
 			// get pointer and dof ids
-			DRT::Node* node = Discret().gNode(node_ids1[i]);
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+			vector<int> NodeDofGIDs =  GetGlobalDofs(node);
 			
 			for (int j=0;j<NDIM;++j)
 			{
@@ -556,8 +578,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
 		for (int i=0;i<numnode2;++i)
 		{
 			// get pointer and node ids
-			DRT::Node* node = Discret().gNode(node_ids2[i]);
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+			vector<int> NodeDofGIDs =  GetGlobalDofs(node);
 			
 			for (int j=0;j<NDIM;++j)
 			{
@@ -570,8 +592,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
 		for (int i=0;i<numnode1;++i)
 		{	
 			// get pointer and node ids
-			DRT::Node* node = Discret().gNode(node_ids1[i]);
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+			vector<int> NodeDofGIDs =  GetGlobalDofs(node);
 			
 			for (int j=0;j<NDIM;++j)
 			{
@@ -584,8 +606,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
 		for (int i=0;i<numnode2;++i)
 		{
 			// get pointer and node ids
-			DRT::Node* node = Discret().gNode(node_ids2[i]);
-			vector<int> NodeDofGIDs = Discret().Dof(node);
+			DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+			vector<int> NodeDofGIDs =  GetGlobalDofs(node);
 			
 			for (int j=0;j<NDIM;++j)
 			{

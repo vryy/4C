@@ -68,14 +68,18 @@ public:
   /*!
   \brief Standard Constructor
 
-  \param discret (in): the underlying problem discretization
+  \param pdiscret (in): the problem discretization
+  \param cdiscret (in): the beam contact discretization
+  \param dofoffset (in): offset of dof between pdiscret and cdiscret
   \param element1 (in): first element of contact pair
   \param element2 (in): second element of contact pair
   \param ele1pos (in): nodal coordinates of first element
   \param ele2pos (in): nodal coordinates of second element
   
   */
-	Beam3contact(DRT::Discretization& discret,
+	Beam3contact(const DRT::Discretization& pdiscret,
+			         const DRT::Discretization& cdiscret,
+			         const int& dofoffset,
 			         DRT::Element* element1,
                DRT::Element* element2,
                const Epetra_SerialDenseMatrix ele1pos,
@@ -100,11 +104,23 @@ public:
   //! @name Access methods
 	
 	/*!
-  \brief Get discretization
+  \brief Get problem discretization
 
   */
-  inline const DRT::Discretization& Discret() const { return discret_;};
-	  
+  inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_;};
+
+	/*!
+  \brief Get beam contact discretization
+
+  */
+  inline const DRT::Discretization& ContactDiscret() const { return cdiscret_;};
+
+  /*!
+  \brief Get offset of dofs between cdiscret and pdiscret
+
+  */
+  inline const int& DofOffset() const { return dofoffset_;};
+
   /*!
 	\brief Get first element
 	
@@ -117,8 +133,6 @@ public:
 	*/
 	inline const DRT::Element* Element2() { return element2_;};
 
-  //! @name public evaluation methods
-	
 	/*!
 	\brief Get gap of this contact pair
 		
@@ -180,9 +194,15 @@ private:
   
   //! @name member variables
 
-	//! discretization
-	DRT::Discretization& discret_;
+	//! reference to problem discretization
+	const DRT::Discretization& pdiscret_;
+
+	//! reference to beam contact discretization
+	const DRT::Discretization& cdiscret_;
 	
+	//! dof offset between pdiscret and cdiscret
+	const int& dofoffset_;
+
   //! first element of contact pair
   DRT::Element* element1_;
   
@@ -365,7 +385,18 @@ private:
 	  
 	*/
 	void CheckContactStatus(double& pp);
-	  
+
+	/*!
+	\brief Get global dofs of a node
+
+	Internally this method first extracts the dofs of the given node
+	in the beam contact discretization (which has its own dofs) and
+	then transfers these dofs to their actual GIDs in the underlying
+	problem discretization by applying the pre-computed dofoffset_.
+
+	*/
+	vector<int> GetGlobalDofs(DRT::Node* node);
+
 	//@}
 	 
 	//! @name Finite difference checks

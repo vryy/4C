@@ -82,16 +82,28 @@ public:
   virtual void Print(ostream& os) const;
 
   /*!
-  \brief Get discretization
+  \brief Get problem discretization
 
   */
-  inline const DRT::Discretization& Discret() const { return discret_; }
+  inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_; }
+
+  /*!
+  \brief Get beam contact discretization
+
+  */
+  inline DRT::Discretization& ContactDiscret() { return *cdiscret_; }
+
+  /*!
+  \brief Get offset of dofs between cdiscret and pdiscret
+
+  */
+  inline int& DofOffset() { return dofoffset_; }
 
   /*!
   \brief Get communicator
 
   */
-  virtual const Epetra_Comm& Comm() const { return discret_.Comm(); }
+  virtual const Epetra_Comm& Comm() const { return pdiscret_.Comm(); }
 
   /*!
   \brief Get different node or element maps
@@ -228,8 +240,14 @@ private:
 
   //! @name member variables
 
-  //! discretizaton
-  DRT::Discretization& discret_;
+  //! problem discretizaton
+  DRT::Discretization& pdiscret_;
+
+  //! contact discretization (basically a copy)
+  RCP<DRT::Discretization> cdiscret_;
+
+  //! dof offset between pdicsret and cdiscret
+  int dofoffset_;
 
   //! node and element maps
   RCP<Epetra_Map> noderowmap_;
