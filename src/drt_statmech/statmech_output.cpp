@@ -1998,6 +1998,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	 * (3) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
 	 * (4) radial density distribution
 	 */
+	if(!discret_.Comm().MyPID())
+		cout<<"\n\n===Analysis of structural polymorphism==="<<endl;
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	// storage vector for shifted crosslinker LIDs(crosslinkermap)
@@ -2069,6 +2071,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fprintf(fp, histogram.str().c_str());
     fclose(fp);
   }
+	if(!discret_.Comm().MyPID())
+		cout<<"========================================="<<endl;
 }//StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*
@@ -2203,9 +2207,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		// number of nested intervals
 		int maxexponent = (int)ceil(log(periodlength/rlink)/log(2.0));
 		// vector for test volumes (V[0]-sphere, V[1]-cylinder, V[2]-layer/homogenous network)
-		std::vector<double> volumes(3,9e99);
+		std::vector<double> volumes(3,pow(10*periodlength, 3.0));
 		// characteristic lengths of "volumes"
-		std::vector<double> characlength(3,9e99);
+		std::vector<double> characlength(3,10*periodlength);
 
 		if(numcrossele>0)
 		{
@@ -2225,10 +2229,24 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
 
 			// Scale normed vectors to unit length
-			//cout<<"\nnormed vectors:"<<endl;
+			cout<<"Normed vectors:"<<endl;
 			for(int i=0; i<(int)normedvectors.size(); i++)
+			{
 				normedvectors[i].Scale(1/normedvectors[i].Norm2());
+				cout<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
+			}
 
+			// determine number of linearly independent normed vectors
+			int numindepdir = 0;
+			for(int i=0; i<(int)normedvectors.size(); i++)
+				for(int j=0; j<(int)normedvectors.size(); j++)
+					if(j<i)
+					{
+						double angle = acos(normedvectors[i].Dot(normedvectors[j]));
+						if(angle>0.45*M_PI)
+							numindepdir++;
+					}
+			cout<<"\nlin. independent vectors: "<<numindepdir<<endl;
 /// determine network structure
 			// threshold fraction of crosslinkers
 			double pthresh = 0.9;
@@ -2376,26 +2394,31 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 					// cuboid layer volume
 					case 2:
 					{
-						bool leaveloop = false;
 						double thickness = periodlength/2.0;
-						double pr = 0.0;
-						double tol = 0.02;
-						int exponent = 1;
 
-						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
-						double alpha = -1.0;
-						int dir1=-1, dir2=-1;
-						for(int j=0; j<3; j++)
-							for(int k=0; k<3; k++)
-								if(k>j && (normedvectors[j]).Dot(normedvectors[k])>alpha)
-								{
-									alpha = acos(normedvectors[j].Dot(normedvectors[k]));
-									dir1=j;
-									dir2=k;
-								}
-						// if two directions exist
-						if(alpha > 1e-8)
+						// if two independent normed directions exist
+						if(numindepdir==2)
 						{
+							bool leaveloop = false;
+							double pr = 0.0;
+							double tol = 0.02;
+							int exponent = 1;
+
+							//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
+							double alpha = -1.0;
+							int dir1=-1, dir2=-1;
+							for(int j=0; j<3; j++)
+								for(int k=0; k<3; k++)
+									if(k>j)
+									{
+										double dotprod = normedvectors[j].Dot(normedvectors[k]);
+										if(k>j && dotprod>alpha)
+										{
+											alpha = acos(dotprod);
+											dir1=j;
+											dir2=k;
+										}
+									}
 							// cross product n_1 x n_2, plane normal
 							LINALG::Matrix<3,1> normal;
 							normal(0) = normedvectors[dir1](1)*normedvectors[dir2](2) - normedvectors[dir1](2)*normedvectors[dir2](1);
@@ -2441,31 +2464,58 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								surfaceboundaries(j,0) = (*centershift)(j);
 								surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 							}
-
 							// coordinates of intersection points
-							int counter = 0;
 							std::vector<LINALG::Matrix<3,1> > interseccoords;
-							for(int m=0; m<(int)surfaceboundaries.N(); m++) // (two) planes perpendicular to l-direction
-								for(int n=0; n<(int)surfaceboundaries.N(); n++) // (two) boundary cube edges for component k
-								{
-									for(int j=0; j<3; j++) // spatial component j
-										for(int k=0; k<3; k++) // spatial component k
-											if(k>j)// above diagonal
-												for(int l=0; l<3; l++) // spatial component l
-													if(l!=j && l!=k)
-													{
-														counter++;
-														// starting from intersection line of (layer plane) x (boundary volume plane kl): n_xX+n_yY = c,
-														// calculate the value of the remaining component j and check if point lies on the cubic surface
-														LINALG::Matrix<3,1> coords;
-														coords(l) = surfaceboundaries(l,m);
-														coords(k) = surfaceboundaries(k,n);
-														coords(j) = (((*cog)(l)-coords(l))*normal(l)+((*cog)(k)-coords(k))*normal(k))/normal(j) + (*cog)(j);
-														if (fabs(coords(j))<=fabs(surfaceboundaries(j,m)) || fabs(coords(j)-surfaceboundaries(j,m))<1e-8)
-															interseccoords.push_back(coords);
-													}
-								}
+							for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
+							{
+								for(int j=0; j<3; j++) // spatial component j
+									for(int k=0; k<3; k++) // spatial component k
+										if(k>j)// above diagonal
+											for(int l=0; l<3; l++) // spatial component l
+												if(l!=j && l!=k)
+												{
+													LINALG::Matrix<3,1> coords;
+													coords(l) = surfaceboundaries(l,surf);
+													for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
+														for(int m=0; m<(int)surfaceboundaries.M(); m++)
+															if(l!=m)
+															{
+																coords(m) = surfaceboundaries(m,edge);
+																for(int n=0; n<(int)surfaceboundaries.M(); n++)
+																	if(n!=m && n!=l)
+																	{
+																		coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
+																		double lowerbound = surfaceboundaries(n,0);
+																		double upperbound = surfaceboundaries(n,1);
+																		if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
+																		{
+																			bool redundant = false;
+																			// check for redundant entries
+																			if((int)interseccoords.size()>0)
+																			{
+																				LINALG::Matrix<3,1> check = coords;
+																				for(int p=0; p<(int)interseccoords.size(); p++)
+																				{
+																					check -= interseccoords[p];
+																					if(check.Norm2()<1e-4)
+																						redundant = true;
+																					check = coords;
+																				}
+																			}
+																			if(!redundant)
+																			{
+																				interseccoords.push_back(coords);
+																				//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
+																				//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
+																				//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
+																			}
+																		}
+																	}
+															}
+												}
+							}
 
+							//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
 							// calculate volume according to number of intersection points
 							switch((int)interseccoords.size())
 							{
@@ -2509,7 +2559,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
 									double h = dl * sin(alpha);
 
-									volumes[2] = (al+cl)/2.0 * h * thickness;
+									volumes[2] = (al+cl) * h * thickness;
 								}
 								break;
 								// hexahedron
@@ -2568,11 +2618,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		if(structurenumber==0 && characlength[0]>=periodlength/2.0)
 			structurenumber = 3;
 
-		/*cout<<"\nDDCorr Volumes: "<<endl;
+		cout<<"\nVolumes: "<<endl;
 		for(int j=0; j<(int)volumes.size(); j++)
 		{
-			cout<<setprecision(8)<<"V("<<j<<"): "<<volumes[j]<<", l_c("<<j<<"): "<<characlength[j]<<endl;
-		}*/
+			cout<<fixed<<setprecision(6)<<"V("<<j<<"): "<<volumes[j]<<", l_c("<<j<<"): "<<characlength[j]<<endl;
+		}
 
 
 /// cout and return network structure
@@ -2589,19 +2639,19 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   	{
   		// cluster
   		case 0:
-  			cout<<"\nNetwork structure: Cluster\n"<<endl;
+  			cout<<"\nNetwork structure: Cluster"<<endl;
   		break;
   		// bundle
   		case 1:
-  			cout<<"\nNetwork structure: Bundle\n"<<endl;
+  			cout<<"\nNetwork structure: Bundle"<<endl;
   		break;
   		// layer
   		case 2:
-  			cout<<"\nNetwork structure: Layer\n"<<endl;
+  			cout<<"\nNetwork structure: Layer"<<endl;
   		break;
   		// layer
   		case 3:
-  			cout<<"\nNetwork structure: Homogeneous network\n"<<endl;
+  			cout<<"\nNetwork structure: Homogeneous network"<<endl;
   		break;
   	}
   }
