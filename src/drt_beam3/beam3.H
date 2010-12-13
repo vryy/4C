@@ -362,7 +362,8 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_energy //calculate current elastic energy of element
   };
 
   //! kind of integration to be performed
@@ -661,6 +662,12 @@ private:
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
+
+  //!calculation of elastic energy
+  template<int nnode>
+  void b3_energy( ParameterList& params,
+                  vector<double>&           disp,
+                  Epetra_SerialDenseVector* intenergy);
 
   //! lump mass matrix
   template<int nnode>

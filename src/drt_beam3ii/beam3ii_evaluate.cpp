@@ -62,6 +62,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike") act = Beam3ii::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Beam3ii::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")        act = Beam3ii::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy")        act = Beam3ii::calc_struct_energy;
   else dserror("Unknown type of action for Beam3ii");
 
   switch(act)
@@ -87,6 +88,30 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
 
+    }
+    break;
+    //calculate internal energy
+    case Beam3ii::calc_struct_energy:
+    {
+      // need current global displacement and residual forces and get them from discretization
+      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      const int nnode = NumNode();
+
+      switch(nnode)
+      {
+        case 2:
+        {
+          b3_energy<2>(params,mydisp,&elevec1);
+          break;
+        }
+        default:
+          dserror("Only Line2 Elements implemented.");
+      }
     }
     break;
 
@@ -130,23 +155,8 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			break;
   	  		}
-  	  		case 3:
-  	  		{
-  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 4:
-  	  		{
-  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 5:
-  	  		{
-  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			break;
-  	  		}
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		  dserror("Only Line2 Elements implemented.");
     	  }
       }
       else if (act == Beam3ii::calc_struct_nlnstifflmass)
@@ -159,26 +169,8 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   	  			lumpmass<2>(&elemat2);
   	  			break;
   	  		}
-  	  		case 3:
-  	  		{
-  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			lumpmass<3>(&elemat2);
-  	  			break;
-  	  		}
-  	  		case 4:
-  	  		{
-  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			lumpmass<4>(&elemat2);
-  	  			break;
-  	  		}
-  	  		case 5:
-  	  		{
-  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
-  	  			lumpmass<5>(&elemat2);
-  	  			break;
-  	  		}
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		  dserror("Only Line2 Elements implemented.");
     	  }
       }
       else if (act == Beam3ii::calc_struct_nlnstiff)
@@ -190,23 +182,8 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
   	  			break;
   	  		}
-  	  		case 3:
-  	  		{
-  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 4:
-  	  		{
-  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 5:
-  	  		{
-  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
-  	  			break;
-  	  		}
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  		  dserror("Only Line2 Elements implemented.");
     	  }
       }
 
@@ -219,23 +196,8 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(ParameterList& params,
   	  			b3_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
   	  			break;
   	  		}
-  	  		case 3:
-  	  		{
-  	  			b3_nlnstiffmass<3>(params,myvel,mydisp,NULL,NULL,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 4:
-  	  		{
-  	  			b3_nlnstiffmass<4>(params,myvel,mydisp,NULL,NULL,&elevec1);
-  	  			break;
-  	  		}
-  	  		case 5:
-  	  		{
-  	  			b3_nlnstiffmass<5>(params,myvel,mydisp,NULL,NULL,&elevec1);
-  	  			break;
-  	  		}
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  			dserror("Only Line2 Elements implemented.");
     	  }
       }
 
@@ -631,352 +593,99 @@ inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rpr
    return;
 } // DRT::ELEMENTS::Beam3ii::computestrain
 
-
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point            cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------------*
+ | calculation of elastic energy (private)                                                        cyron 12/10|
+ *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
-inline void DRT::ELEMENTS::Beam3ii::computeItilde(const LINALG::Matrix<3,1>& Psil, vector<LINALG::Matrix<3,3> >& Itilde,
-                                                  const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
-                                                  const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct)
+void DRT::ELEMENTS::Beam3ii::b3_energy( ParameterList& params,
+                                        vector<double>& disp,
+                                        Epetra_SerialDenseVector* intenergy)
 {
-  //auxiliary matrices for storing intermediate results
-  LINALG::Matrix<3,3> auxmatrix;
-  auxmatrix.PutScalar(0);
+  //initialize energies (only one kind of energy computed here
+  (*intenergy)(0) = 0.0;
 
-  //make sure that Itildeprime has proper dimensions
-  Itilde.resize(nnode);
+  //const double t_tot = Teuchos::Time::wallTime();
 
-  //compute squared brackets term in (3.18), Jelenic 1999v
-  LINALG::Matrix<3,3> squaredbrackets;
-  squaredbrackets.PutScalar(0);
-  for(int node=0; node<nnode; ++node)
-  {
-    auxmatrix = Tmatrix(Psili[node]);
-    auxmatrix.Scale(funct(node));
-    squaredbrackets -= auxmatrix;
-  }
-  for(int i=0; i<3; i++)
-    squaredbrackets(i,i) += 1;
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+  vector<LINALG::Matrix<1,nnode> > I(nnode-1);
 
-  //loop through all nodes i
-  for (int node=0; node<nnode; ++node)
-  {
+  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
+  vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
 
-    //compute rightmost term in curley brackets in (3.18), Jelenic 1999
-    Itilde[node].PutScalar(0);
-    Itilde[node].Multiply(Tinvmatrix(Psil),Tmatrix(Psili[node]));
-    Itilde[node].Scale(funct(node));
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
 
-    //if node i is node I then add squared bracktets term times v_I
-    if(node == nodeI_)
-    {
-      auxmatrix.Multiply(squaredbrackets,vI(phiIJ));
-      Itilde[node] += auxmatrix;
-    }
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
 
-    //if node i is node J then add squared bracktets term times v_J
-    if(node == nodeJ_)
-    {
-      auxmatrix.Multiply(squaredbrackets,vJ(phiIJ));
-      Itilde[node] += auxmatrix;
-    }
+  //vector with rotation matrices at nnode-1 Gauss points for elasticity
+  vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
 
-    //now the term in the curley bracktets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
-    auxmatrix.MultiplyNT(Itilde[node],Lambdar);
-    Itilde[node].MultiplyNN(Lambdar,auxmatrix);
+  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
+  vector<LINALG::Matrix<1,nnode> > Imass(nnode);
 
-  }
+  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
+  vector<vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
 
+  //r'(x) from (2.1), Jelenic 1999
+  LINALG::Matrix<3,1>  rprime;
+  //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
+  LINALG::Matrix<3,1>  kappa;
+  //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
+  LINALG::Matrix<3,1>  gamma;
 
+  //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
+  LINALG::Matrix<3,1> stressN;
+  LINALG::Matrix<3,1> stressM;
+  LINALG::Matrix<3,3> CN;
+  LINALG::Matrix<3,3> CM;
 
-   return;
-} // DRT::ELEMENTS::Beam3ii::computeItilde
+  //spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
+  LINALG::Matrix<3,1> stressn;
+  LINALG::Matrix<3,1> stressm;
+  LINALG::Matrix<3,3> cn;
+  LINALG::Matrix<3,3> cm;
 
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certaom Gauss point          cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-inline void DRT::ELEMENTS::Beam3ii::computeItildeprime(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, vector<LINALG::Matrix<3,3> >& Itildeprime,
-                                                       const LINALG::Matrix<3,1>& phiIJ, const LINALG::Matrix<3,3>& Lambdar,
-                                                       const vector<LINALG::Matrix<3,1> >& Psili, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
-{
-  //auxiliary matrices for storing intermediate results
-  LINALG::Matrix<3,3> auxmatrix;
+  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+  NodeShift<nnode,3>(params,disp);
 
-  //make sure that Itildeprime has proper dimensions
-  Itildeprime.resize(nnode);
+  //integration points for elasticity (underintegration) and mass matrix (exact integration)
+  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+  DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 
-  //matrix d(T^{-1})/dx
-  LINALG::Matrix<3,3> dTinvdx;
-  computedTinvdx(Psil,Psilprime,dTinvdx);
+  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
 
-  //compute T^{~} according to remark subsequent to (3.19), Jelenic 1999
-  LINALG::Matrix<3,3> Ttilde;
-  Ttilde.PutScalar(0);
-  for(int node=0; node<nnode; ++node)
-  {
-    auxmatrix = Tmatrix(Psili[node]);
-    auxmatrix.Scale(funct(node));
-    Ttilde += auxmatrix;
-  }
-
-  //compute T^{~'} according to remark subsequent to (3.19), Jelenic 1999
-  LINALG::Matrix<3,3> Ttildeprime;
-  Ttildeprime.PutScalar(0);
-  for(int node=0; node<nnode; ++node)
-  {
-    auxmatrix = Tmatrix(Psili[node]);
-    auxmatrix.Scale(deriv(node));
-    Ttildeprime += auxmatrix;
-  }
-
-  //compute first squared brackets term in (3.18), Jelenic 1999v
-  LINALG::Matrix<3,3> squaredbrackets;
-  squaredbrackets.PutScalar(0);
-  squaredbrackets.Multiply(dTinvdx,Ttilde);
-  auxmatrix.Multiply(Tinvmatrix(Psil),Ttildeprime);
-  squaredbrackets += auxmatrix;
-
-  //loop through all nodes i
-  for (int node=0; node<nnode; ++node)
-  {
-
-    //compute first term in second squared brackets
-    Itildeprime[node] = dTinvdx;
-    Itildeprime[node].Scale(funct(node));
-
-    //compute second term in second squared brackets
-    auxmatrix.PutScalar(0);
-    auxmatrix += Tinvmatrix(Psil);
-    auxmatrix.Scale(deriv(node));
-
-    //compute second squared brackets
-    auxmatrix += Itildeprime[node];
-
-    //compute second squared bracketds time T(\Psi^l_j)
-    Itildeprime[node].Multiply(auxmatrix,Tmatrix(Psili[node]));
-
-    //if node i is node I then add first squared bracktets term times v_I
-    if(node == nodeI_)
-    {
-      auxmatrix.Multiply(squaredbrackets,vI(phiIJ));
-      Itildeprime[node] -= auxmatrix;
-    }
-
-    //if node i is node J then add first squared bracktets term times v_J
-    if(node == nodeJ_)
-    {
-      auxmatrix.Multiply(squaredbrackets,vJ(phiIJ));
-      Itildeprime[node] -= auxmatrix;
-    }
-
-    //now the term in the curley bracktets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
-    auxmatrix.MultiplyNT(Itildeprime[node],Lambdar);
-    Itildeprime[node].MultiplyNN(Lambdar,auxmatrix);
-  }
-
-   return;
-} // DRT::ELEMENTS::Beam3ii::computeItildeprime
-
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999                   cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vI(const LINALG::Matrix<3,1>& phiIJ)
-{
-  //matrix v_I
-  LINALG::Matrix<3,3> result;
-
-  computespin(result,phiIJ);
-  if(phiIJ.Norm2() == 0)
-    result.Scale(0.25);
-  else
-    result.Scale(tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
-
-  for(int i=0; i<3; i++)
-    result(i,i) +=1;
-
-  result.Scale(0.5);
-
-  return result;
-} // DRT::ELEMENTS::Beam3ii::vI
-
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999                   cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-inline LINALG::Matrix<3,3> DRT::ELEMENTS::Beam3ii::vJ(const LINALG::Matrix<3,1>& phiIJ)
-{
-  //matrix v_J
-  LINALG::Matrix<3,3> result;
-
-  computespin(result,phiIJ);
-  if(phiIJ.Norm2() == 0)
-    result.Scale(-0.25);
-  else
-    result.Scale(-tan(phiIJ.Norm2()/4.0)/phiIJ.Norm2());
-
-  for(int i=0; i<3; i++)
-    result(i,i) +=1;
-
-  result.Scale(0.5);
-
-  return result;
-} // DRT::ELEMENTS::Beam3ii::vJ
-
-
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)        |
- |                                                                                                           cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-template<int nnode, int dof>
-inline void DRT::ELEMENTS::Beam3ii::curvederivative(const vector<double>& disp, const LINALG::Matrix<1,nnode> deriv, LINALG::Matrix<3,1>& rprime, const double& jacobi)
-{
-  //initialize rprime
-  rprime.PutScalar(0);
-
-  for (int i=0; i<dof; ++i)
-    for (int node=0; node<nnode; ++node)
-      rprime(i) += (Nodes()[node]->X()[i]+disp[6*node+i])*deriv(node);
-
-  /*so far we have computed the derivative of the curve with respect to the element parameter \xi \in [-1;1];
-   *as r' in (2.12) is the derivative with respect to the reference length, we have to divided it by the Jacobi
-   *determinant at the respective point*/
-  rprime.Scale(1.0/jacobi);
-
-   return;
-} // DRT::ELEMENTS::Beam3ii::curvederivative
-
-/*----------------------------------------------------------------------------------------------------------------------*
- |evaluates basis functions and their derivatives at Gauss points for elasticity and basis functions only at Gauss points|
- |for mass matrix; furthermore triads are evaluated at all Gauss points; note that derivatives of basis functions are    |
- |required for elasticity only, but not for mass (or damping) matrix                                          cyron 05/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-inline void DRT::ELEMENTS::Beam3ii::evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D& gausspoints,
-                                                                    vector<LINALG::Matrix<1,nnode> >& I,
-                                                                    vector<LINALG::Matrix<1,nnode> >& Iprime,
-                                                                    vector<vector<LINALG::Matrix<3,3> > >& Itilde,
-                                                                    vector<vector<LINALG::Matrix<3,3> > >& Itildeprime,
-                                                                    vector<LINALG::Matrix<3,3> >& Lambda,
-                                                                    const DRT::UTILS::IntegrationPoints1D& gausspointsmass,
-                                                                    vector<LINALG::Matrix<1,nnode> >& Imass,
-                                                                    vector<vector<LINALG::Matrix<3,3> > >& Itildemass)
-{
-  //declaration of variables
-
-  //quaternion of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::Matrix<4,1> QIJ;
-  //angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::Matrix<3,1> phiIJ;
-  //quaternion of half relative rotation between node I and J according to (3.9), Jelenic 1999
-  LINALG::Matrix<4,1> QIJhalf;
-  //quaternion of reference triad \Lambda_r according to (3.9), Jelenic 1999
-  LINALG::Matrix<4,1> Qr;
-  //rotation quaternion between i-th nodal triadsand refenrece triad according to (3.8), Jelenic 1999
-  LINALG::Matrix<4,1>  Qli;
-  //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
-  vector<LINALG::Matrix<3,1> > Psili(nnode);
-  //interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
-  LINALG::Matrix<3,1> Psil;
-  /*derivative of interpolated local relative rotation \Psi^l at a certain Gauss point according to
-   *(3.11), Jelenic 1999, but not with respect to reference length parameter, but with respect to space of integration
-   *parameter. Hence, the difference between the variable used in this code and the one used in the
-   *equations of Jelenic 1999 is the Jacobi determinant*/
-  LINALG::Matrix<3,1> Psilprime;
-  //rotation quaternion between triad at Gauss point and reference triad Qr
-  LINALG::Matrix<4,1>  Ql;
-  //rotation quaternion at Gauss point
-  LINALG::Matrix<4,1>  Qgauss;
-  //matrix of reference triad \Lambda_r according to (3.9), Jelenic 1999
-  LINALG::Matrix<3,3> Lambdar;
-
-
-
-  //computation of element reference triad and rotations relative to this triad at nodes and Gauss points
-
-  //compute reference rotation quaternion Qr corresponding to triad \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
-  quaternionproduct(Qnew_[nodeJ_],inversequaternion(Qnew_[nodeI_]),QIJ);
-  quaterniontoangle(QIJ,phiIJ);
-  phiIJ.Scale(0.5);
-  angletoquaternion(phiIJ,QIJhalf);
-  phiIJ.Scale(2.0);
-  quaternionproduct(QIJhalf,Qnew_[nodeI_],Qr);
-
-  //compute triad Lambdar corresponding to reference rotation quaternion Qr
-  quaterniontotriad(Qr,Lambdar);
-
-  //Compute relative rotations \Psi^l_i at all nodes i according to (3.8), Jelenic 1999
-  for (int node=0; node<nnode; ++node)
-  {
-    quaternionproduct(Qnew_[node],inversequaternion(Qr),Qli);
-    quaterniontoangle(Qli,Psili[node]);
-  }
-
-
-  //evaluation of basis functions and triads at all Gauss points for elasticity
+  //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
+    //weight of GP in parameter space
+    const double wgt = gausspoints.qwgt[numgp];
 
-    //Get location and weight of GP in parameter space
-    const double xi = gausspoints.qxg[numgp][0];
+    //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
+    curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
 
-    //evaluate Lagrange polynomial basis functions and its derivatives at xi
-    DRT::UTILS::shape_function_1D(I[numgp],xi,this->Shape());
-    DRT::UTILS::shape_function_1D_deriv1(Iprime[numgp],xi,this->Shape());
+    //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
+    computestrain(rprime,Lambda[numgp],gamma,kappa);
 
-    //compute local relative rotation \Psi^l and its derivative at current Gauss point according to (3.11), Jelenic 1999
-    Psil.PutScalar(0);
-    Psilprime.PutScalar(0);
-    for (int node=0; node<nnode; ++node)
-      for(int i=0; i<3; i++)
-      {
-        Psil(i)      += I[numgp](node)*Psili[node](i);
-        Psilprime(i) += Iprime[numgp](node)*Psili[node](i);
-      }
+    //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+    strainstress(gamma,kappa,stressN,CN,stressM,CM);
 
-    //compute relative rotation between triad at Gauss point and reference triad Qr
-    angletoquaternion(Psil,Ql);
-
-    //compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
-    quaternionproduct(Ql,Qr,Qgauss);
-
-    //compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
-    quaterniontotriad(Qgauss,Lambda[numgp]);
-
-    //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
-    computeItilde<nnode>(Psil,Itilde[numgp],phiIJ,Lambdar,Psili,I[numgp]);
-    computeItildeprime<nnode>(Psil,Psilprime,Itildeprime[numgp],phiIJ,Lambdar,Psili,I[numgp],Iprime[numgp]);
+    //adding elastic energy at this Gauss point
+    for(int i=0; i<3; i++)
+    {
+      (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+      (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+    }
 
   }
 
-  //evaluation of basis functions and triads at all Gauss points for mass matrix
-  for(int numgp=0; numgp < gausspointsmass.nquad; numgp++)
-  {
-    //Get location and weight of GP in parameter space
-    const double xi = gausspointsmass.qxg[numgp][0];
+  return;
 
-    //evaluate Lagrange polynomial basis functions and its derivatives at xi
-    DRT::UTILS::shape_function_1D(Imass[numgp],xi,this->Shape());
+} // DRT::ELEMENTS::Beam3ii::b3_energy
 
-    //compute local relative rotation \Psi^l at current Gauss point according to (3.11), Jelenic 1999
-    Psil.PutScalar(0);
-    for (int node=0; node<nnode; ++node)
-      for(int i=0; i<3; i++)
-        Psil(i)      += Imass[numgp](node)*Psili[node](i);
 
-    //compute relative rotation between triad at Gauss point and reference triad Qr
-    angletoquaternion(Psil,Ql);
-
-    //compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
-    quaternionproduct(Ql,Qr,Qnewmass_[numgp]);
-
-    //compute at this Gauss point basis functions \tilde{I}^i in (3.19), page 152, Jelenic 1999, for all nodes
-    computeItilde<nnode>(Psil,Itildemass[numgp],phiIJ,Lambdar,Psili,Imass[numgp]);
-
-  }
-
-   return;
-} // DRT::ELEMENTS::Beam3ii::evaluatebasisfunctionsandtriads
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|

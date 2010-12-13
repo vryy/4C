@@ -55,6 +55,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep") act = Truss3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss3::postprocess_stress;
   else if (action=="calc_struct_ptcstiff") act = Truss3::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy") act = Truss3::calc_struct_energy;
   else
     {
       cout<<action<<endl;
@@ -75,6 +76,19 @@ int DRT::ELEMENTS::Truss3::Evaluate(ParameterList& params,
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
 
+    }
+    break;
+    //calculate internal energy
+    case Truss3::calc_struct_energy:
+    {
+      // need current global displacement and get them from discretization
+      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      t3_energy(params,mydisp,&elevec1);
     }
     break;
 
@@ -366,6 +380,90 @@ int DRT::ELEMENTS::Truss3::EvaluatePTC(ParameterList& params,
 
   return 0;
 } //DRT::ELEMENTS::Truss3::EvaluatePTC
+
+/*--------------------------------------------------------------------------------------*
+ | calculation of elastic energy                                             cyron 12/10|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::t3_energy(ParameterList& params,
+                                      vector<double>& disp,
+                                      Epetra_SerialDenseVector* intenergy)
+{
+  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
+   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
+   / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
+   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
+   / the evaluation functions */
+
+  // get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double ym = 0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this truss
+  switch(currmat->MaterialType())
+  {
+  case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+    }
+    break;
+    default:
+    dserror("unknown or improper type of material law");
+  }
+
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
+  LINALG::Matrix<6,1> xcurr;
+
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  LINALG::Matrix<6,1> aux;
+
+  //strain
+  double epsilon;
+
+  //current nodal position (first
+  for (int j=0; j<3; ++j)
+  {
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
+  }
+
+  //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
+  aux(0) = (xcurr(0) - xcurr(3));
+  aux(1) = (xcurr(1) - xcurr(4));
+  aux(2) = (xcurr(2) - xcurr(5));
+  aux(3) = (xcurr(3) - xcurr(0));
+  aux(4) = (xcurr(4) - xcurr(1));
+  aux(5) = (xcurr(5) - xcurr(2));
+
+  double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+
+
+  switch(kintype_)
+  {
+    case tr3_totlag:
+    {
+      //calculating Green-Lagrange strain epsilon
+      epsilon = 0.5*(pow(lcurr/lrefe_,2) - 1.0);
+
+      //W_int = 1/2*E*A*lrefe*\epsilon^2
+      (*intenergy)(0) = 0.5*(ym*crosssec_*lrefe_*pow(epsilon,2));
+    }
+    break;
+    case tr3_engstrain:
+    {
+      //calculating strain epsilon from node position by scalar product:
+      epsilon = (lcurr-lrefe_)/lrefe_;
+
+      //W_int = 1/2*E*A*lrefe*\epsilon^2
+      (*intenergy)(0) = 0.5*(ym*crosssec_*lrefe_*pow(epsilon,2));
+    }
+    break;
+    default:
+      dserror("Unknown type kintype_ for Truss3");
+  }
+
+   return;
+}
 
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|

@@ -52,6 +52,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep") act = Torsion3::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Torsion3::postprocess_stress;
   else if (action=="calc_struct_ptcstiff") act = Torsion3::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy") act = Torsion3::calc_struct_energy;
   else
   {
     cout<<action<<endl;
@@ -73,6 +74,19 @@ int DRT::ELEMENTS::Torsion3::Evaluate(ParameterList& params,
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
 
+    }
+    break;
+    //calculate internal energy
+    case Torsion3::calc_struct_energy:
+    {
+      // need current global displacement and get them from discretization
+      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      t3_energy(params,mydisp,&elevec1);
     }
     break;
 
@@ -227,6 +241,56 @@ int DRT::ELEMENTS::Torsion3::EvaluateNeumann(ParameterList& params,
    * can be assigned to this element*/
   return 0;
 }
+
+
+/*--------------------------------------------------------------------------------------*
+ | calculation of elastic energy                                             cyron 12/10|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Torsion3::t3_energy(ParameterList& params,
+                                        vector<double>& disp,
+                                        Epetra_SerialDenseVector* intenergy)
+{
+  //current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for third node)
+  LINALG::Matrix<9,1> xcurr;
+
+  //current nodal position
+  for (int j=0; j<3; ++j)
+  {
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[    j];  //first node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3 + j];  //second node
+    xcurr(j+6)   = Nodes()[2]->X()[j] + disp[6 + j];  //third node
+  }
+
+  //auxiliary vector for both internal force and stiffness matrix
+  LINALG::Matrix<6,1> aux;
+  for (int j=0; j<6; ++j)
+    aux(j) = xcurr(j+3)-xcurr(j);
+
+  //current length of vectors 1-->2  and 2-->3
+  LINALG::Matrix<2,1> lcurr;
+  for (int j=0; j<2; ++j)
+    lcurr(j) = sqrt( pow(aux(3*j),2) + pow(aux(3*j+1),2) + pow(aux(3*j+2),2) );
+
+  //computing the change of angle theta (equation 3.3)
+  double deltatheta=0.0;
+  double dotprod=0.0;
+  double s=0.0;
+
+  for (int j=0; j<3; ++j)
+    dotprod +=  aux(j) * aux(3+j);
+
+  s = dotprod/lcurr(0)/lcurr(1);
+  deltatheta=acos(s);
+
+  if (bendingpotential_==quadratic)
+    (*intenergy)(0) = 0.5*springconstant_*pow(deltatheta,2);
+  else if (bendingpotential_==cosine)
+    (*intenergy)(0) =     springconstant_*(1 - s);
+  else
+    dserror("\n No such bending potential. Possible bending potentials: \n quadratic \n cosine");
+
+
+}//t3_energy
 
 /*--------------------------------------------------------------------------------------*
  | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
