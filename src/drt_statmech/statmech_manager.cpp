@@ -407,7 +407,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
  *----------------------------------------------------------------------*/
 void StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt)
 {
-  double starttime = statmechparams_.get<double>("STARTTIME",0.0);
+  double starttime = statmechparams_.get<double>("STARTTIMEACT",0.0);
   //period length of simulated box
   double H = statmechparams_.get<double> ("PeriodLength", 0.0);
 
@@ -934,7 +934,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	double starttime = statmechparams_.get<double>("STARTTIME", 0.0);
+	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
 
 	if(time_ <= starttime || (time_>starttime && fabs(time_-starttime) < dt/1e4))
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
@@ -1327,7 +1327,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	double starttime = statmechparams_.get<double>("STARTTIME", 0.0);
+	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
 
 	if (time_ <= starttime || (time_>starttime && fabs(time_-starttime)<dt/1e4))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
@@ -1799,6 +1799,25 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 } // StatMechManager::Permutation
 
 /*----------------------------------------------------------------------*
+ | Computes current internal energy of discret_ (public)     cyron 12/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy)
+{
+  ParameterList p;
+  p.set("action", "calc_struct_energy");
+  discret_.ClearState();
+  discret_.SetState("displacement", dis);
+  RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+  energies->Scale(0.0);
+  discret_.EvaluateScalars(p, energies);
+  discret_.ClearState();
+  energy = (*energies)(0);
+
+  return;
+
+} // StatMechManager::ComputeInternalEnergy
+
+/*----------------------------------------------------------------------*
  | checks orientation of crosslinker relative to linked filaments       |
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
@@ -2211,7 +2230,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
   // get the current time
 	const double time = params.get<double>("total time", 0.0);
 	double dt = params.get<double>("delta time", 0.01);
-	double starttime = statmechparams_.get<double>("STARTTIME",-1.0);
+	double starttime = statmechparams_.get<double>("STARTTIMEACT",-1.0);
 	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
 	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
 		return;

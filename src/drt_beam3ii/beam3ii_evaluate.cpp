@@ -1071,10 +1071,10 @@ void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(ParameterList& params,  //!<pa
   velbackgroundgrad.PutScalar(0);
 
   double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIME",0.0);
+  double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
 
-  //oscillations start only at params.get<double>("STARTTIME",0.0)
+  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
   if(time>starttime && fabs(time-starttime)>dt/1e4 && params.get<int>("CURVENUMBER",-1) >=  1 && params.get<int>("OSCILLDIR",-1) >= 0 )
   {
     uppervel = (params.get<double>("SHEARAMPLITUDE",0.0)) * (DRT::Problem::Instance()->Curve(params.get<int>("CURVENUMBER",-1)-1).FctDer(params.get<double>("total time",0.0),1))[1];
@@ -1565,7 +1565,7 @@ inline void DRT::ELEMENTS::Beam3ii::NodeShift(ParameterList& params,  //!<parame
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
   double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIME",0.0);
+  double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
 
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this

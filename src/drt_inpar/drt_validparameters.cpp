@@ -1213,8 +1213,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                     INPAR::STATMECH::frictionmodel_isotropicconsistent,
                                                                     INPAR::STATMECH::frictionmodel_anisotropicconsistent),
                                                                     &statmech);
-  //time after which writing of statistical output is started/ DBCs are applied
-  DoubleParameter("STARTTIME",0.0,"Time after which writing of statistical output is started (identical to time curve start value)",&statmech);
+  //time after which writing of statistical output is started
+  DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
+  //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
+  DoubleParameter("STARTTIMEACT",0.0,"Time after which certain action in simulation is started",&statmech);
   //alternative post-STARTTIME time step size
   DoubleParameter("DELTA_T_NEW",0.0,"A new time step size that comes into play once DBCs are have been activated",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place

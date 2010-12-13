@@ -67,7 +67,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
   //the following variable makes sense in case of serial computing only; its use is not allowed for parallel computing!
   int num_dof = dis.GlobalLength();
 
-  double starttime = statmechparams_.get<double>("STARTTIME",0.0);
+  double starttime = statmechparams_.get<double>("STARTTIMEOUT",0.0);
 
   switch (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
   {
@@ -77,7 +77,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       double endtoend = 0; //end to end length at a certain time step in single filament dynamics
       double DeltaR2 = 0;
 
-      //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
+      //as soon as system is equilibrated (after time STARTTIMEOUT) a new file for storing output is generated
       if ( (time > starttime && fabs(time-starttime)>dt/1e4) && (starttimeoutput_ == -1.0))
       {
         endtoendref_ = pow(pow((dis)[num_dof - 3] + 10 - (dis)[0], 2) + pow(
@@ -139,7 +139,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
       double endtoend = 0.0; //end to end length at a certain time step in single filament dynamics
 
-      //as soon as system is equilibrated (after time STARTTIME) a new file for storing output is generated
+      //as soon as system is equilibrated (after time STARTTIMEOUT) a new file for storing output is generated
       if ((time > starttime && fabs(time-starttime)>dt/1e4) && (starttimeoutput_ == -1.0))
       {
         starttimeoutput_ = time;

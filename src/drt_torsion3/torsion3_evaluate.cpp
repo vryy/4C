@@ -504,7 +504,7 @@ inline void DRT::ELEMENTS::Torsion3::NodeShift(ParameterList& params,  //!<param
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
   double time = params.get<double>("total time",0.0);
-  double starttime = params.get<double>("STARTTIME",0.0);
+  double starttime = params.get<double>("STARTTIMEACT",0.0);
   double dt = params.get<double>("delta time");
 
   /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0) > 0.0, this
