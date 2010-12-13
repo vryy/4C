@@ -49,8 +49,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
-#define STUPIDHACK
-
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -2435,23 +2433,30 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-#ifdef STUPIDHACK
+    /*Comm().Barrier();
+    if (Comm().MyPID()==0) cout << "\n***\nProblem-RowMap\n***\n";
+    Comm().Barrier();
+    cout << *problemrowmap_ << endl;
+    Comm().Barrier();
+    if (Comm().MyPID()==0) cout << "\n***\nLM-DomainMap\n***\n";
+    Comm().Barrier();
+    cout << *glmdofrowmap_ << endl;*/
+
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
 
-                // transform parallel row distribution of constraint matrix kdz
+    // transform parallel row distribution of constraint matrix kdz
 		// (only necessary in the parallel redistribution case)
     if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
 
-#else
-                // transform parallel row distribution of constraint matrix kdz
-		// (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
-
-#endif
+    /*Comm().Barrier();
+    if (Comm().MyPID()==0) cout << "\n***\nRow-After2ndTransform\n***\n";
+    Comm().Barrier();
+    cout << trkdz->RangeMap() << endl;
+    Comm().Barrier();
+    if (Comm().MyPID()==0) cout << "\n***\nDomain-After2ndTransform\n***\n";
+    Comm().Barrier();
+    cout << trkdz->DomainMap() << endl;*/
 
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
@@ -2464,7 +2469,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
 		// transform parallel column distribution of constraint matrix kzd
 		// (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd,problemrowmap_);
+  	if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd,problemrowmap_);
 
     // build unity matrix for inactive dofs
     RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
@@ -2549,21 +2554,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-#ifdef STUPIDHACK
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
-
+   
 		// transform parallel row distribution of constraint matrix kdz
 		// (only necessary in the parallel redistribution case)
     if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
-#else
-		// transform parallel row distribution of constraint matrix kdz
-		// (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(kdz,problemrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(trkdz,glmdofrowmap_);
-#endif
 
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
@@ -2697,10 +2693,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
     LINALG::ApplyDirichlettoSystem(stiffmt,sold,rhscopy,zeros,dirichtoggle);
     trkdz->ApplyDirichlet(dirichtoggle,false);
-#ifdef STUPIDHACK
-    trkdz->UnComplete();
-    trkdz->Complete(*glmdofrowmap_,*problemrowmap_);
-#endif
     
     // row map (equals domain map) extractor
     LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,problemrowmap_);
@@ -2718,7 +2710,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     mat->Assign(1,0,View,*trkzd);
     mat->Assign(1,1,View,*trkzz);
     mat->Complete();
-
+    
     // we also need merged rhs here
     RCP<Epetra_Vector> fresmexp = rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*fd,*fresmexp);

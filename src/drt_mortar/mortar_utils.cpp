@@ -305,7 +305,7 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransform(RCP<LINALG::SparseMatrix> i
 	RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,inmat->DomainMap());
 
 	// output matrix
-	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
+	RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat,false));
 
 	return outmat;
 }
@@ -337,7 +337,7 @@ RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(RCP<LINALG::SparseMatrix
   RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,*newdomainmap);
 
   // output matrix
-  RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat));
+  RCP<LINALG::SparseMatrix> outmat = rcp(new LINALG::SparseMatrix(*permmat,false));
 
 	return outmat;
 }

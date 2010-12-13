@@ -138,8 +138,6 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
     }
   }
 
-  if(co) cout << "WARNING!" << endl << "WARNING! not sure what to do for contact problems" << endl << "WARNING!" << endl;
-
   //-------------------------------------------------------------------------
   // Modify lists to reuse subblock preconditioner at least maxiter times
   //-------------------------------------------------------------------------
