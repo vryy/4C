@@ -1999,7 +1999,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	 * (4) radial density distribution
 	 */
 	if(!discret_.Comm().MyPID())
-		cout<<"\n\n===Analysis of structural polymorphism==="<<endl;
+		cout<<"\n\n===============Analysis of structural polymorphism==============="<<endl;
+
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	// storage vector for shifted crosslinker LIDs(crosslinkermap)
@@ -2072,7 +2073,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fclose(fp);
   }
 	if(!discret_.Comm().MyPID())
-		cout<<"========================================="<<endl;
+		cout<<"================================================================="<<endl;
 }//StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*
@@ -2205,11 +2206,15 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		int structurenumber = 0;
 		double rlink = statmechparams_.get<double>("R_LINK", 1.0);
 		// number of nested intervals
-		int maxexponent = (int)ceil(log(periodlength/rlink)/log(2.0));
+		int maxexponent = (int)ceil(log(periodlength/rlink)/log(2.0))*2;
 		// vector for test volumes (V[0]-sphere, V[1]-cylinder, V[2]-layer/homogenous network)
 		std::vector<double> volumes(3,pow(10*periodlength, 3.0));
 		// characteristic lengths of "volumes"
 		std::vector<double> characlength(3,10*periodlength);
+		// crosslinker fraction included in test volume
+		std::vector<double> crossfraction(3,0.0);
+		// number of iterations until crosslinker fraction lies within the given threshold fraction +/- tolerance
+		std::vector<int> niter(3,0);
 
 		if(numcrossele>0)
 		{
@@ -2235,18 +2240,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				normedvectors[i].Scale(1/normedvectors[i].Norm2());
 				cout<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
 			}
-
-			// determine number of linearly independent normed vectors
-			int numindepdir = 0;
-			for(int i=0; i<(int)normedvectors.size(); i++)
-				for(int j=0; j<(int)normedvectors.size(); j++)
-					if(j<i)
-					{
-						double angle = acos(normedvectors[i].Dot(normedvectors[j]));
-						if(angle>0.45*M_PI)
-							numindepdir++;
-					}
-			cout<<"\nlin. independent vectors: "<<numindepdir<<endl;
 /// determine network structure
 			// threshold fraction of crosslinkers
 			double pthresh = 0.9;
@@ -2284,6 +2277,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							pr = double(rcount)/double(numcrossele);
 
 							exponent++;
+							niter[0]++;
 							// new radius
 							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
 							{
@@ -2296,7 +2290,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								radius += sign*periodlength/pow(2.0,(double)exponent);
 							}
 							else
+							{
+								crossfraction[0] = pr;
 								leaveloop = true;
+							}
 						}
 						// store characteristic length and test sphere volume
 						characlength[0] = radius;
@@ -2373,6 +2370,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							pr = double(rcount)/double(numcrossele);
 
 							exponent++;
+							niter[1]++;
 							// new radius
 							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
 							{
@@ -2385,7 +2383,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								radius += sign*periodlength/pow(2.0,(double)exponent);
 							}
 							else
+							{
+								crossfraction[1] = pr;
 								leaveloop = true;
+							}
 						}
 						characlength[1] = radius;
 						volumes[1] = M_PI*radius*radius*cyllength;
@@ -2394,31 +2395,30 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 					// cuboid layer volume
 					case 2:
 					{
+						bool leaveloop = false;
 						double thickness = periodlength/2.0;
+						double pr = 0.0;
+						double tol = 0.02;
+						int exponent = 1;
 
-						// if two independent normed directions exist
-						if(numindepdir==2)
-						{
-							bool leaveloop = false;
-							double pr = 0.0;
-							double tol = 0.02;
-							int exponent = 1;
-
-							//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
-							double alpha = -1.0;
-							int dir1=-1, dir2=-1;
-							for(int j=0; j<3; j++)
-								for(int k=0; k<3; k++)
-									if(k>j)
+						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
+						double alpha = -1.0;
+						int dir1=-1, dir2=-1;
+						for(int j=0; j<3; j++)
+							for(int k=0; k<3; k++)
+								if(k>j)
+								{
+									double dotprod = normedvectors[j].Dot(normedvectors[k]);
+									if(k>j && dotprod>alpha)
 									{
-										double dotprod = normedvectors[j].Dot(normedvectors[k]);
-										if(k>j && dotprod>alpha)
-										{
-											alpha = acos(dotprod);
-											dir1=j;
-											dir2=k;
-										}
+										alpha = acos(dotprod);
+										dir1=j;
+										dir2=k;
 									}
+								}
+						// if at least two independent normed directions exist
+						if(fabs(alpha)>M_PI/18.0)
+						{
 							// cross product n_1 x n_2, plane normal
 							LINALG::Matrix<3,1> normal;
 							normal(0) = normedvectors[dir1](1)*normedvectors[dir2](2) - normedvectors[dir1](2)*normedvectors[dir2](1);
@@ -2442,6 +2442,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								pr = double(rcount)/double(numcrossele);
 
 								exponent++;
+								niter[2]++;
 
 								if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
 								{
@@ -2453,7 +2454,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									thickness += sign*periodlength/pow(2.0,(double)exponent);
 								}
 								else
+								{
+									crossfraction[2] = pr;
 									leaveloop = true;
+								}
 							}
 
 							// calculation of the volume
@@ -2621,7 +2625,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		cout<<"\nVolumes: "<<endl;
 		for(int j=0; j<(int)volumes.size(); j++)
 		{
-			cout<<fixed<<setprecision(6)<<"V("<<j<<"): "<<volumes[j]<<", l_c("<<j<<"): "<<characlength[j]<<endl;
+			cout<<fixed<<setprecision(6)<<"V("<<j<<"): "<<volumes[j]<<"  l_c("<<j<<"): "<<characlength[j]<<"  p_cross: "<<crossfraction[j]<<"  niter: "<<niter[j]<<endl;
 		}
 
 
@@ -2666,7 +2670,7 @@ void StatMechManager::DDCorrFunction(Epetra_Vector& crosslinksperbinrow, LINALG:
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// number of overall crosslink molecules
 	int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
-	// number of overall independent combinations
+	// number of overall independent combinations (in central box and its 26 surrounding mirrored boxes)
 	int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
 	// combinations on each processor
 	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
