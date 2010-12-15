@@ -2265,6 +2265,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 /// determine network structure
 			// threshold fraction of crosslinkers
 			double pthresh = 0.9;
+			// tolerance
+			double tol = 0.02;
 
 			// calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
 			for(int i=0; i<(int)volumes.size(); i++)
@@ -2279,8 +2281,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						double radius = periodlength/2.0;
 						// fraction of crosslinks within test volume
 						double pr = 0.0;
-						// tolerance
-						double tol = 0.02;
 						int exponent = 1;
 
 						// loop as long as pr has not yet reached pthresh
@@ -2325,12 +2325,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 					// cylindrical volume
 					case 1:
 					{
-						// cylinder
 						bool leaveloop = false;
 						double radius = periodlength/2.0;
 						double cyllength = 0.0;
 						double pr = 0.0;
-						double tol = 0.02;
 						int exponent = 1;
 
 						// get the intersections of normed[0] with the cube faces
@@ -2343,6 +2341,12 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 						}
 
+						LINALG::Matrix<3,1> avnormedvec;
+						avnormedvec.Clear();
+						for(int j=0; j<(int)normedvectors.size(); j++)
+							avnormedvec += normedvectors[j];
+						avnormedvec.Scale(1/(double)normedvectors.size());
+
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
 								for(int l=0; l<3; l++)
@@ -2354,9 +2358,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 												// known intersection component
 												currentintersection(m) = surfaceboundaries(m,j);
 												// get line parameter
-												double lambdaline = (currentintersection(m)-(*cog)(m))/(normedvectors[0])(m);
-												currentintersection(k) = (*cog)(k)+lambdaline*(normedvectors[0])(k);
-												currentintersection(l) = (*cog)(l)+lambdaline*(normedvectors[0])(l);
+												double lambdaline = (currentintersection(m)-(*cog)(m))/avnormedvec(m);
+												currentintersection(k) = (*cog)(k)+lambdaline*avnormedvec(k);
+												currentintersection(l) = (*cog)(l)+lambdaline*avnormedvec(l);
 												// check if intersection lies on volume boundary
 												if(currentintersection(k)<=surfaceboundaries(k,1) && currentintersection(k)>=surfaceboundaries(k,0) &&
 													 currentintersection(l)<=surfaceboundaries(l,1) && currentintersection(l)>=surfaceboundaries(l,0))
@@ -2378,11 +2382,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								LINALG::Matrix<3,1> crosstocog = shiftedpositions[j];
 								crosstocog -= *cog;
 
-								double numerator = crosstocog.Dot(normedvectors[0]);
-								double denominator = (normedvectors[0]).Dot(normedvectors[0]);
+								double numerator = crosstocog.Dot(avnormedvec);
+								double denominator = (avnormedvec).Dot(avnormedvec);
 								double lambda = numerator/denominator;
 								// intersection and distance of crosslinker to intersection
-								LINALG::Matrix<3,1> distance = normedvectors[0];
+								LINALG::Matrix<3,1> distance = avnormedvec;
 								distance.Scale(lambda);
 								distance += *cog;
 								distance -= shiftedpositions[j];
@@ -2420,7 +2424,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						bool leaveloop = false;
 						double thickness = periodlength/2.0;
 						double pr = 0.0;
-						double tol = 0.02;
 						int exponent = 1;
 
 						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
