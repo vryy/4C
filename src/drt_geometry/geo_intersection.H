@@ -10,9 +10,6 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#include "../drt_cut/cut_mesh.H"
-
-
 #include "integrationcell.H"
 
 namespace DRT
@@ -48,36 +45,6 @@ namespace GEO
     const std::vector<int>&                        MovingFluideleGIDs
     );
 
-
-  class CellGenerator : public GEO::CUT::CellGenerator
-  {
-  public:
-
-    CellGenerator( DRT::Discretization & dis,
-                   GEO::CUT::MeshIntersection & intersection,
-                   std::map< int, DomainIntCells >   & domainintcells,
-                   std::map< int, BoundaryIntCells > & boundaryintcells )
-      : dis_( dis ),
-        intersection_( intersection ),
-        domainintcells_( domainintcells ),
-        boundaryintcells_( boundaryintcells )
-    {}
-
-    virtual void Generate( GEO::CUT::Element* element, const tetgenio & out );
-
-  private:
-
-    /// xfem discretization
-    DRT::Discretization & dis_;
-
-    GEO::CUT::MeshIntersection & intersection_;
-
-    /// domainintegrationcells for each intersected element
-    std::map< int, DomainIntCells >   & domainintcells_;
-
-    /// boundaryintegrationcells for each intersected element
-    std::map< int, BoundaryIntCells > & boundaryintcells_;
-  };
 }
 
 #endif
