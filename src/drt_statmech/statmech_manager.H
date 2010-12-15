@@ -210,7 +210,7 @@ protected:
 	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep);
 
 	//! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
-	void DDCorrFunction(Epetra_Vector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
+	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
 
 	//! \brief obtain distribution for spherical coordinates (all vectors in and out)
 	void SphericalCoordsDistribution(const Epetra_Vector& disrow, Epetra_Vector& phibinsrow, Epetra_Vector& thetabinsrow, Epetra_Vector& costhetabinsrow);
