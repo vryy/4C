@@ -241,6 +241,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
     fluidstate_.dispn_  = LINALG::CreateVector(*fluiddofrowmap,true);
     fluidstate_.dispnm_ = LINALG::CreateVector(*fluiddofrowmap,true);
     gridv_  = LINALG::CreateVector(*fluiddofrowmap,true);
+    fluiddis_->SetState("dispnp", fluidstate_.dispn_);
   }
 
   // Vectors associated to boundary conditions
