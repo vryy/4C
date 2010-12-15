@@ -471,6 +471,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   ParameterList&               params,
   DRT::Discretization&         discretization,
   vector<int>&                 lm,
+  Epetra_SerialDenseVector&    rhs,
   RefCountPtr<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
@@ -657,20 +658,22 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           BCin /= double(numOfElems);
 
           // get rhs
-          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          if (rhs==null)
-          {
-            dserror("Cannot get state vector 'rhs'");
-            exit(1);
-          }
+          //          RefCountPtr<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          //          if (rhs==null)
+          //          {
+          //            dserror("Cannot get state vector 'rhs'");
+          //            exit(1);
+          //          }
           
           // set pressure at node i
-          int    gid; 
-          double val; 
+          //          int    gid; 
+          //          double val; 
           
-          gid =  lm[i];
-          val = -BCin + (*rhs)[gid];
-          rhs->ReplaceGlobalValues(1,&val,&gid);
+          //          gid =  lm[i];
+          cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<endl;
+          rhs(i) += -BCin + rhs(i);
+
+          //          rhs->ReplaceGlobalValues(1,&val,&gid);
         }
         else
         {

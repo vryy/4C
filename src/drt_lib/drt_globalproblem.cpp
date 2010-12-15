@@ -835,9 +835,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #ifdef D_ARTNET
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-#endif
-#ifdef D_ARTNET
     AddDis(genprob.numartf, arterydis);
+#endif
+#ifdef D_RED_AIRWAYS
+    // create empty discretizations
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    AddDis(genprob.numawf, airwaydis);
 #endif
 
     std::set<std::string> fluidelementtypes;
@@ -853,6 +856,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
 #ifdef D_ARTNET
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+#endif
+#ifdef D_RED_AIRWAYS
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 #endif
 
     nodereader.Read();
@@ -1004,22 +1010,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
   case prb_elch:
   {
+    // allocate and input general old stuff....
     // create empty discretizations
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-    if(distype == "Nurbs")
-    {
-      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
-      aledis = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
-    }
-    else
-    {
-      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-      aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
-    }
+    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
+
+    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
+
+    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
     AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");

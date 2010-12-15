@@ -65,6 +65,7 @@ namespace ELEMENTS
                                     ParameterList&                params,
                                     DRT::Discretization&          discretization,
                                     vector<int>&                  lm,
+                                    Epetra_SerialDenseVector& elevec1_epetra,
                                     RefCountPtr<MAT::Material>    mat) = 0;
 
     virtual void CalcFlowRates(RedAirway*                    ele,
@@ -150,6 +151,7 @@ namespace ELEMENTS
                                     ParameterList&               params,
                                     DRT::Discretization&         disctretization,
                                     vector<int>&                 lm,
+                                    Epetra_SerialDenseVector&    elevec1_epetra,
                                     RefCountPtr<MAT::Material>   mat);
 
     /*!

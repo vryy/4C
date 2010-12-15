@@ -54,18 +54,19 @@ void dyn_red_airways_drt()
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
 {
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-
   actdis = DRT::Problem::Instance()->Dis(genprob.numawf,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled())
+  {
+    actdis->FillComplete();
+  }
 
   // -------------------------------------------------------------------
   // check if descretization exits
@@ -135,7 +136,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // solution output
   airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
 
-
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time
   // integration (call the constructor);
@@ -158,7 +158,6 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   {
 
   }
-
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 

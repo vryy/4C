@@ -139,13 +139,14 @@ void DRT::ELEMENTS::RedAirway::Pack(vector<char>& data) const
   AddtoPack(data,elemType_);
 
   map<std::string,double>::const_iterator it;
-  AddtoPack(data,elemVars_.size());
+  AddtoPack(data,(int)(elemVars_.size()));
   for (it = elemVars_.begin(); it!= elemVars_.end(); it++)
   {
     AddtoPack(data,it->first);
     AddtoPack(data,it->second);
   }
-  AddtoPack(data,elemParams_.size());
+
+  AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
   {
     AddtoPack(data,it->first);
@@ -178,6 +179,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   map<std::string,double> it;
   int n = 0;
   ExtractfromPack(position,data,n);
+
   for (int i = 0; i<n; i++)
   {
     std::string name;
@@ -188,6 +190,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   }
 
   ExtractfromPack(position,data,n);
+
   for (int i = 0; i<n; i++)
   {
     std::string name;
@@ -200,6 +203,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   //  cout<<"Var size: "<<elemVars_.size();
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
   return;
 }
 

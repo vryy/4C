@@ -336,6 +336,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
 {
+  rhs_->PutScalar(0.0);
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -463,7 +464,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
     //    eleparams.set("abc",abc_);
-    eleparams.set("rhs",rhs_);
+    //    eleparams.set("rhs",rhs_);
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
