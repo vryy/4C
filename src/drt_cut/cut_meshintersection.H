@@ -42,7 +42,7 @@ public:
 
   void AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
-  void Cut( CellGenerator * generator=NULL );
+  void Cut();
 
   void SelfCut();
 

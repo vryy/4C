@@ -234,117 +234,6 @@ bool GEO::CUT::LinearElement::IsCut()
   return false;
 }
 
-void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, CellGenerator * generator )
-{
-  GenerateTetgen( mesh, this, generator );
-}
-
-void GEO::CUT::LinearElement::GenerateTetgen( Mesh & mesh, Element * parent, CellGenerator * generator )
-{
-#ifdef QHULL
-  const int dim = 3;
-  tetgenio in;
-
-  std::set<Point*, PointPidLess> points;
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet & f = **i;
-    f.GetPoints( mesh, points );
-  }
-
-  // allocate pointlist
-  in.numberofpoints = points.size();
-  in.pointlist = new double[in.numberofpoints * dim];
-
-  int pos = 0;
-  for ( std::set<Point*, PointPidLess>::iterator i=points.begin();
-        i!=points.end();
-        ++i )
-  {
-    Point & p = **i;
-    p.Coordinates( & in.pointlist[pos*dim] );
-    for ( int j=0; j<dim; ++j )
-    {
-      in.pointlist[pos*dim+j] *= TETGENPOINTSCALE;
-    }
-    pos += 1;
-  }
-
-  in.pointmarkerlist = new int[in.numberofpoints];
-  std::fill( in.pointmarkerlist, in.pointmarkerlist+in.numberofpoints, 0 );
-
-  in.numberoffacets = 0;
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet & facet = **i;
-    in.numberoffacets += facet.NumTetgenFacets( mesh );
-  }
-  in.facetlist = new tetgenio::facet[in.numberoffacets];
-  in.facetmarkerlist = new int[in.numberoffacets];
-  std::fill( in.facetmarkerlist, in.facetmarkerlist+in.numberoffacets, 2 );
-
-  std::vector<Point*> pointlist;
-  pointlist.reserve( points.size() );
-  std::copy( points.begin(), points.end(), std::back_inserter( pointlist ) );
-
-  pos = 0;
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet & facet = **i;
-    int numtets = facet.NumTetgenFacets( mesh );
-    for ( int j=0; j<numtets; ++j )
-    {
-      tetgenio::facet & f = in.facetlist[pos];
-
-      facet.GenerateTetgen( mesh, this, f, j, in.facetmarkerlist[pos], pointlist );
-
-      pos += 1;
-    }
-  }
-
-  if ( generator==NULL )
-  {
-    // debug
-    const char * name = "tet";
-    in.save_nodes( const_cast<char*>( name ) );
-    in.save_poly( const_cast<char*>( name ) );
-  }
-
-  char switches[] = "pQ";    // pQ o2 Y R nn
-  tetgenio out;
-
-  try
-  {
-    tetrahedralize( switches, &in, &out );
-  }
-  catch ( int & err )
-  {
-    if ( generator!=NULL )
-    {
-      const char * name = "tet";
-      in.save_nodes( const_cast<char*>( name ) );
-      in.save_poly( const_cast<char*>( name ) );
-    }
-
-    throw;
-  }
-
-  if ( generator!=NULL )
-  {
-    generator->Generate( parent, out );
-  }
-  else
-  {
-    // debug
-    // Output mesh
-    const char * name = "tetout";
-    out.save_nodes( const_cast<char*>( name ) );
-    out.save_elements( const_cast<char*>( name ) );
-    out.save_faces( const_cast<char*>( name ) );
-  }
-#endif
-}
-
 bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
 {
   const std::vector<Node*> & nodes = Nodes();
@@ -592,16 +481,6 @@ bool GEO::CUT::QuadraticElement::IsCut()
       return true;
   }
   return false;
-}
-
-void GEO::CUT::QuadraticElement::GenerateTetgen( Mesh & mesh, CellGenerator * generator )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-    //for ( std::vector<Element*>::reverse_iterator i=subelements_.rbegin(); i!=subelements_.rend(); ++i )
-  {
-    LinearElement * e = dynamic_cast<LinearElement*>( *i );
-    e->GenerateTetgen( mesh, this, generator );
-  }
 }
 
 bool GEO::CUT::QuadraticElement::OnSide( const std::vector<Point*> & facet_points )

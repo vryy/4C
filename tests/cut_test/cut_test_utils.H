@@ -34,4 +34,8 @@ void create_quad4_mesh( GEO::CUT::Mesh & mesh, int rows, int cols, std::vector<G
 
 void create_quad4_cylinder_mesh( GEO::CUT::MeshIntersection & intersection, double x, double y, int rows, int cols );
 
+void cutmesh( GEO::CUT::Mesh & mesh );
+
+void cutelement( GEO::CUT::Mesh & mesh, GEO::CUT::Element * element );
+
 #endif

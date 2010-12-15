@@ -6,6 +6,8 @@
 #include "cut_boundingbox.H"
 #include "cut_element.H"
 
+#if 0
+
 GEO::CUT::TetCutGenerator::TetCutGenerator( GEO::CUT::MeshIntersection & intersection,
                                             CellGenerator * parent,
                                             Mesh & cut_mesh,
@@ -84,3 +86,4 @@ void GEO::CUT::TetCutConverter::Generate( Element* e, const tetgenio & out )
 }
 #endif
 
+#endif

@@ -3,6 +3,8 @@
 #include <string>
 #include "cut_test_generator.H"
 
+#if 0
+
 void OutputGenerator::Generate( GEO::CUT::Element* element, const tetgenio & out )
 {
   std::stringstream str;
@@ -15,3 +17,5 @@ void OutputGenerator::Generate( GEO::CUT::Element* element, const tetgenio & out
   const_cast<tetgenio &>( out ).save_elements( const_cast<char*>( name.c_str() ) );
   const_cast<tetgenio &>( out ).save_faces( const_cast<char*>( name.c_str() ) );
 }
+
+#endif

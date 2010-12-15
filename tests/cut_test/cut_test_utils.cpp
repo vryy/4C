@@ -297,3 +297,28 @@ void create_quad4_cylinder_mesh( GEO::CUT::MeshIntersection & intersection, doub
 
   numnode += rownodes*colnodes;
 }
+
+void cutmesh( GEO::CUT::Mesh & mesh )
+{
+  mesh.Status();
+
+  mesh.MakeFacets();
+  mesh.MakeVolumeCells();
+  mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
+}
+
+void cutelement( GEO::CUT::Mesh & mesh, GEO::CUT::Element * element )
+{
+  mesh.Status();
+
+  element->MakeFacets( mesh );
+//   element->MakeVolumeCells( mesh );
+
+//   mesh.FindNodePositions();
+//   mesh.FindNodalDOFSets();
+//   mesh.CreateIntegrationCells();
+//   mesh.DumpGmshIntegrationcells( "integrationcells" );
+}

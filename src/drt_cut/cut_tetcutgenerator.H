@@ -4,6 +4,8 @@
 #include "cut_mesh.H"
 #include "cut_meshintersection.H"
 
+#if 0
+
 namespace GEO
 {
   namespace CUT
@@ -49,5 +51,7 @@ private:
 
   }
 }
+
+#endif
 
 #endif

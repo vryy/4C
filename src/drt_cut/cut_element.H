@@ -15,7 +15,6 @@ namespace GEO
 
 namespace CUT
 {
-  class CellGenerator;
   class VolumeCell;
   class IntegrationCell;
   class BoundaryCell;
@@ -66,8 +65,6 @@ public:
   virtual void FindNodePositions() = 0;
 
   virtual bool IsCut() = 0;
-
-  virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator ) = 0;
 
 #ifdef QHULL
   virtual void FillTetgen( tetgenio & out )
@@ -138,10 +135,6 @@ public:
 
   virtual bool IsCut();
 
-  virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator );
-
-  void GenerateTetgen( Mesh & mesh, Element * parent, CellGenerator * generator );
-
   virtual bool OnSide( const std::vector<Point*> & facet_points );
 
   virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
@@ -188,8 +181,6 @@ public:
   virtual void FindNodePositions();
 
   virtual bool IsCut();
-
-  virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator );
 
   virtual bool OnSide( const std::vector<Point*> & facet_points );
 

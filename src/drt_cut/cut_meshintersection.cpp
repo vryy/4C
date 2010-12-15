@@ -68,7 +68,7 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
   cut_mesh.CreateSide( sid, nids, distype );
 }
 
-void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
+void GEO::CUT::MeshIntersection::Cut()
 {
   for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -111,8 +111,6 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
   mesh_.CreateIntegrationCells();
 
   Status();
-
-  //mesh_.GenerateTetgen( generator );
 }
 
 void GEO::CUT::MeshIntersection::SelfCut()

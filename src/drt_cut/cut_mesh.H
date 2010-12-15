@@ -49,19 +49,6 @@ class Tet4IntegrationCell;
 class Wedge6IntegrationCell;
 class Pyramid5IntegrationCell;
 
-/// cell generator callback
-class CellGenerator
-{
-public:
-
-  virtual ~CellGenerator() {}
-
-  virtual void NonCut( Element* element ) {}
-
-#ifdef QHULL
-  virtual void Generate( Element* element, const tetgenio & out ) = 0;
-#endif
-};
 
 /// Keeps the whole thing. Volume mesh, cut surface, cuts
 class Mesh
@@ -159,8 +146,6 @@ public:
   void DumpGmsh( std::string name );
 
   void DumpGmshIntegrationcells( std::string name );
-
-  void GenerateTetgen( CellGenerator * generator=NULL );
 
   Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
 

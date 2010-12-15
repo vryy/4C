@@ -35,7 +35,7 @@ public:
                    const double * lsv,
                    DRT::Element::DiscretizationType distype );
 
-  void Cut( CellGenerator * generator=NULL );
+  void Cut();
 
 private:
 

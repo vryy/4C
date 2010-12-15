@@ -37,7 +37,7 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
   }
 }
 
-void GEO::CUT::LevelSetIntersection::Cut( CellGenerator * generator)
+void GEO::CUT::LevelSetIntersection::Cut()
 {
   mesh_.FillComplete();
   mesh_.Cut( side_ );
@@ -45,5 +45,4 @@ void GEO::CUT::LevelSetIntersection::Cut( CellGenerator * generator)
   mesh_.MakeFacets();
   mesh_.FindLSNodePositions();
   mesh_.DumpGmsh( "mesh" );
-  mesh_.GenerateTetgen( generator );
 }

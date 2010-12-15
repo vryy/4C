@@ -1283,27 +1283,6 @@ void GEO::CUT::Mesh::DumpGmshIntegrationcells( std::string name )
   file << "};\n";
 }
 
-void GEO::CUT::Mesh::GenerateTetgen( CellGenerator * generator )
-{
-  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();
-        ++i )
-  {
-    Element & e = *i->second;
-    if ( e.IsCut() )
-    {
-      e.GenerateTetgen( *this, generator );
-    }
-    else
-    {
-      if ( generator!=NULL )
-      {
-        generator->NonCut( &e );
-      }
-    }
-  }
-}
-
 bool GEO::CUT::Mesh::WithinBB( const Epetra_SerialDenseMatrix & xyz )
 {
   return bb_.Within( norm_, xyz );

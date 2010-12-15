@@ -3,6 +3,8 @@
 
 #include "../../src/drt_cut/cut_mesh.H"
 
+#if 0
+
 class OutputGenerator : public GEO::CUT::CellGenerator
 {
 public:
@@ -16,5 +18,7 @@ public:
 private:
   int counter_;
 };
+
+#endif
 
 #endif
