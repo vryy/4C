@@ -2556,20 +2556,24 @@ void FLD::FluidXFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
-        const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-        const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-        const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
         LINALG::SerialDenseMatrix elementvalues(3, numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
+               
+        if ( numparam > 0 )
         {
-          elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
-          elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
-          elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
+          const vector<int>& dofposvelx =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          const vector<int>& dofposvely =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          const vector<int>& dofposvelz =
+            eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+          
+          for (int iparam=0; iparam<numparam; ++iparam)
+          {
+            elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
+            elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
+            elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
+          }
         }
 
           const GEO::DomainIntCells& domainintcells =
@@ -2915,22 +2919,25 @@ void FLD::FluidXFluidImplicitTimeInt::OutputToGmsh(
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-
-        LINALG::SerialDenseVector elementvalues(numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
-          elementvalues(iparam) = myvelnp[dofpos[iparam]];
-
-        const GEO::DomainIntCells& domainintcells =
-          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
-        for (GEO::DomainIntCells::const_iterator cell =
-          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        if (numparam > 0)
         {
-          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
-          IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+          LINALG::SerialDenseVector elementvalues(numparam);
+          for (int iparam=0; iparam<numparam; ++iparam)
+            elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+          const GEO::DomainIntCells& domainintcells =
+              dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
+          for (GEO::DomainIntCells::const_iterator cell =
+              domainintcells.begin(); cell != domainintcells.end(); ++cell)
+          {
+            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+                *cell, field, elementvalues, cellvalues);
+            IO::GMSH::cellWithScalarFieldToStream(
+                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          }
         }
       }
       gmshfilecontent << "};\n";
@@ -2963,23 +2970,26 @@ void FLD::FluidXFluidImplicitTimeInt::OutputToGmsh(
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-
-        LINALG::SerialDenseVector elementvalues(numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
-          elementvalues(iparam) = myvelnp[dofpos[iparam]];
-
-        const GEO::DomainIntCells& domainintcells =
-          dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
-        for (GEO::DomainIntCells::const_iterator cell =
-          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        if (numparam > 0)
         {
-          LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
-              *cell, field, elementvalues, cellvalues);
+          const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
-          IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          LINALG::SerialDenseVector elementvalues(numparam);
+          for (int iparam=0; iparam<numparam; ++iparam)
+            elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+          const GEO::DomainIntCells& domainintcells =
+              dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
+          for (GEO::DomainIntCells::const_iterator cell =
+             domainintcells.begin(); cell != domainintcells.end(); ++cell)
+          {
+            LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
+                  *cell, field, elementvalues, cellvalues);
+
+            IO::GMSH::cellWithScalarFieldToStream(
+                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          }
         }
       }
       gmshfilecontent << "};\n";
