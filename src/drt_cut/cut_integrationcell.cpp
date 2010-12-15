@@ -167,8 +167,8 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
     LINALG::Matrix<3,4> bot_xyze;
     LINALG::Matrix<3,4> top_xyze;
 
-    bot->Coordinates( bot_xyze.A() );
-    top->Coordinates( top_xyze.A() );
+    bot->CornerCoordinates( bot_xyze.A() );
+    top->CornerCoordinates( top_xyze.A() );
 
     int distance_counter = 0;
     for ( int i=0; i<4; ++i )
@@ -278,7 +278,7 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
     LINALG::Matrix<3,3> bot_xyze;
     LINALG::Matrix<3,1> top_xyze;
 
-    bot->Coordinates( bot_xyze.A() );
+    bot->CornerCoordinates( bot_xyze.A() );
     top_point->Coordinates( top_xyze.A() );
 
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
@@ -597,8 +597,8 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
     LINALG::Matrix<3,3> bot_xyze;
     LINALG::Matrix<3,3> top_xyze;
 
-    bot->Coordinates( bot_xyze.A() );
-    top->Coordinates( top_xyze.A() );
+    bot->CornerCoordinates( bot_xyze.A() );
+    top->CornerCoordinates( top_xyze.A() );
 
     int distance_counter = 0;
     for ( int i=0; i<3; ++i )
@@ -729,7 +729,7 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
     LINALG::Matrix<3,3> bot_xyze;
     LINALG::Matrix<3,1> top_xyze;
 
-    bot->Coordinates( bot_xyze.A() );
+    bot->CornerCoordinates( bot_xyze.A() );
     top_point->Coordinates( top_xyze.A() );
 
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );

@@ -63,6 +63,8 @@ public:
 
   void Coordinates( double * x );
 
+  void CornerCoordinates( double * x );
+
   void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
 #ifdef QHULL
@@ -171,7 +173,20 @@ private:
                    LINALG::Matrix<3,1> & b2,
                    LINALG::Matrix<3,1> & b3 );
 
+  void FindCornerPoints();
+
+  unsigned FindNextCornerPoint( const std::vector<Point*> & points,
+                                LINALG::Matrix<3,1> & x1,
+                                LINALG::Matrix<3,1> & x2,
+                                LINALG::Matrix<3,1> & x3,
+                                LINALG::Matrix<3,1> & b1,
+                                LINALG::Matrix<3,1> & b2,
+                                LINALG::Matrix<3,1> & b3,
+                                unsigned i );
+
   std::vector<Point*> points_;
+
+  std::vector<Point*> corner_points_;
 
   std::set<std::vector<Point*> > holes_;
 

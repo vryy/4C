@@ -170,6 +170,17 @@ void GEO::CUT::Facet::Coordinates( double * x )
   }
 }
 
+void GEO::CUT::Facet::CornerCoordinates( double * x )
+{
+  FindCornerPoints();
+  for ( std::vector<Point*>::const_iterator i=corner_points_.begin(); i!=corner_points_.end(); ++i )
+  {
+    Point * p = *i;
+    p->Coordinates( x );
+    x += 3;
+  }
+}
+
 void GEO::CUT::Facet::GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points )
 {
   if ( IsPlanar( mesh ) )
@@ -262,49 +273,6 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   LINALG::Matrix<3,1> b1;
   LINALG::Matrix<3,1> b2;
   LINALG::Matrix<3,1> b3;
-
-#if 0
-  if ( points.size() <= 3 )
-    return true;
-
-  points[0]->Coordinates( x1.A() );
-  points[1]->Coordinates( x2.A() );
-
-  b1.Update( 1, x2, -1, x1, 0 );
-  b1.Scale( 1./b1.Norm2() );
-
-  if ( b1.Norm2() < std::numeric_limits<double>::min() )
-    throw std::runtime_error( "same point in facet not supported" );
-
-  bool found = false;
-  unsigned i=2;
-  for ( ; i<points.size(); ++i )
-  {
-    Point * p = points[i];
-    p->Coordinates( x3.A() );
-
-    b2.Update( 1, x3, -1, x1, 0 );
-    b2.Scale( 1./b2.Norm2() );
-
-    // cross product to get the normal at the point
-    b3( 0 ) = b1( 1 )*b2( 2 ) - b1( 2 )*b2( 1 );
-    b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
-    b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
-
-    if ( b3.Norm2() > PLANARTOL )
-    {
-      found = true;
-      break;
-    }
-  }
-  if ( not found )
-  {
-    // all on one line is ok
-    return true;
-  }
-
-  b3.Scale( 1./b3.Norm2() );
-#endif
 
   unsigned i = Normal( points, x1, x2, x3, b1, b2, b3 );
   if ( i==0 )
@@ -683,14 +651,18 @@ void GEO::CUT::Facet::Neighbors( Point * p,
 
 bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
 {
-  switch ( distype )
+  if ( holes_.size()==0 )
   {
-  case DRT::Element::quad4:
-    return points_.size()==4 and holes_.size()==0;
-  case DRT::Element::tri3:
-    return points_.size()==3 and holes_.size()==0;
-  default:
-    throw std::runtime_error( "unsupported distype requested" );
+    FindCornerPoints();
+    switch ( distype )
+    {
+    case DRT::Element::quad4:
+      return corner_points_.size()==4;
+    case DRT::Element::tri3:
+      return corner_points_.size()==3;
+    default:
+      throw std::runtime_error( "unsupported distype requested" );
+    }
   }
   return false;
 }
@@ -704,7 +676,7 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
                                   LINALG::Matrix<3,1> & b3 )
 {
   unsigned pointsize = points.size();
-  if ( pointsize <= 3 )
+  if ( pointsize < 3 )
     return 0;
 
   points[0]->Coordinates( x1.A() );
@@ -805,4 +777,93 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh )
 void GEO::CUT::Facet::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
 {
   std::copy( bcells_.begin(), bcells_.end(), std::inserter( bcells, bcells.begin() ) );
+}
+
+void GEO::CUT::Facet::FindCornerPoints()
+{
+  if ( corner_points_.size()==0 )
+  {
+    LINALG::Matrix<3,1> x1;
+    LINALG::Matrix<3,1> x2;
+    LINALG::Matrix<3,1> x3;
+    LINALG::Matrix<3,1> b1;
+    LINALG::Matrix<3,1> b2;
+    LINALG::Matrix<3,1> b3;
+
+    for ( unsigned i=0; true; i = FindNextCornerPoint( points_, x1, x2, x3, b1, b2, b3, i ) )
+    {
+      Point * p = points_[i];
+      if ( corner_points_.size()>0 and corner_points_.front()==p )
+        break;
+      corner_points_.push_back( p );
+    }
+  }
+}
+
+unsigned GEO::CUT::Facet::FindNextCornerPoint( const std::vector<Point*> & points,
+                                               LINALG::Matrix<3,1> & x1,
+                                               LINALG::Matrix<3,1> & x2,
+                                               LINALG::Matrix<3,1> & x3,
+                                               LINALG::Matrix<3,1> & b1,
+                                               LINALG::Matrix<3,1> & b2,
+                                               LINALG::Matrix<3,1> & b3,
+                                               unsigned i )
+{
+  unsigned pointsize = points.size();
+  unsigned j = ( i+1 ) % pointsize;
+  if ( pointsize < 3 )
+  {
+    return j;
+  }
+
+  points[i]->Coordinates( x1.A() );
+  points[j]->Coordinates( x2.A() );
+
+  b1.Update( 1, x2, -1, x1, 0 );
+
+  double norm = b1.Norm2();
+  if ( norm < std::numeric_limits<double>::min() )
+    throw std::runtime_error( "same point in facet not supported" );
+
+  b1.Scale( 1./norm );
+
+  if ( b1.Norm2() < std::numeric_limits<double>::min() )
+    throw std::runtime_error( "same point in facet not supported" );
+
+  i = j;
+  for ( unsigned k=2; k<pointsize; ++k )
+  {
+    i = ( i+1 ) % pointsize;
+    Point * p = points[i];
+    p->Coordinates( x3.A() );
+
+    b2.Update( 1, x3, -1, x1, 0 );
+
+    norm = b2.Norm2();
+    if ( norm < std::numeric_limits<double>::min() )
+      throw std::runtime_error( "same point in facet not supported" );
+
+    b2.Scale( 1./norm );
+
+    // cross product to get the normal at the point
+    b3( 0 ) = b1( 1 )*b2( 2 ) - b1( 2 )*b2( 1 );
+    b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
+    b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
+
+    if ( b3.Norm2() > PLANARTOL )
+    {
+      // Found. Return last node on this line.
+      return ( i+pointsize-1 ) % pointsize;
+    }
+  }
+
+  // All on one line. Return first and last point.
+  if ( j==0 )
+  {
+    return 0;
+  }
+  else
+  {
+    return pointsize-1;
+  }
 }
