@@ -429,8 +429,8 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
   const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
-  // get time parameter
-  const double thsl = params.get("thsl",0.0);
+  // get time factor for Neumann term
+  const double timefac = params.get("thsl",0.0);
 
   // get flag for type of fluid flow
   const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
@@ -511,7 +511,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
       // This is a hack for low-Mach-number flow with temperature
       // equation until material data will be available here
       // get thermodynamic pressure and its time derivative or history
-      double thermpress = params.get<double>("thermpress at n+1",0.0);
+      double thermpress  = params.get<double>("thermodynamic pressure",0.0);
       double gasconstant = 287.0;
 
       double temp = 0.0;
@@ -524,7 +524,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
       dens = funct.Dot(escanp);
     }
 
-    const double fac_drs_curvefac_thsl_dens =  fac_drs *(curvefac * thsl * dens);
+    const double fac_drs_curvefac_timefac_dens = fac_drs*curvefac*timefac*dens;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -552,11 +552,11 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
           else
             functfac = 1.0;
         }
-        const double val_fac_drs_curvefac_thsl_dens_functfac = (*val)[idim]*fac_drs_curvefac_thsl_dens*functfac;
+        const double valfac = (*val)[idim]*fac_drs_curvefac_timefac_dens*functfac;
 
         for(int inode=0; inode < bdrynen_; ++inode )
         {
-        elevec1_epetra[inode*numdofpernode_+idim] += funct(inode)*val_fac_drs_curvefac_thsl_dens_functfac;
+          elevec1_epetra[inode*numdofpernode_+idim] += funct(inode)*valfac;
         }
       }  // if (*onoff)
     }
@@ -830,12 +830,25 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   // check whether we have a generalized-alpha time-integration scheme
   const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
 
-  // get timefactor for left hand side
+  // get timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
   // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
   const double timefac = params.get<double>("thsl",-1.0);
   if (timefac < 0.0) dserror("No thsl supplied");
+
+  // get timefactor for right-hand side
+  // One-step-Theta:            timefacrhs = theta*dt
+  // BDF2:                      timefacrhs = 2/3 * dt
+  // af-generalized-alpha:      timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  // Peter's generalized-alpha: timefacrhs = 1.0
+  double timefacrhs;
+  if (is_genalpha)
+  {
+     timefacrhs = params.get<double>("rhs time factor",-1.0);
+     if (timefacrhs < 0.0) dserror("incorrect time factor for right-hand side!");
+  }
+  else timefacrhs = timefac;
 
   // get flag for type of fluid flow
   const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
@@ -959,10 +972,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
 
       // integration factor for left- and right-hand side
       const double lhsfac = dens*normvel*timefac*fac_drs;
-      double rhsfac = dens*normvel*fac_drs;
-
-      // genalpha does not use a time factor for the rhs
-      if (not is_genalpha) rhsfac *= timefac;
+      const double rhsfac = dens*normvel*timefacrhs*fac_drs;
 
       // matrix
       // fill diagonal elements
@@ -2575,6 +2585,11 @@ template <DRT::Element::DiscretizationType bndydistype,
      Epetra_SerialDenseMatrix&       elemat_epetra,
      Epetra_SerialDenseVector&       elevec_epetra)
 {
+  // check whether we have a generalized-alpha time-integration scheme
+  // and give a warning
+  const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
+  if (is_genalpha) dserror("Mixed-hybrid formulation not yet available for af-gen-alpha!");
+
   //--------------------------------------------------
   // time integration related parameters
   const double timefac= params.get<double>("timefac");

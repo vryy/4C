@@ -356,7 +356,8 @@ namespace ELEMENTS
     void GetResidualMomentumEq(
         const LINALG::Matrix<nsd_,nen_>&              eaccam,     ///< acceleration at time n+alpha_a / n
         const double &                                timefac,    ///< time factor
-        double &                                      rhsfac      ///< right hand side factor
+        double &                                      rhsfac,     ///< right-hand-side factor
+        double &                                      rhsresfac   ///< right-hand-side factor for residuals
         );
 
     //! update the subscale velocity
@@ -401,7 +402,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &             velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
         LINALG::Matrix<nsd_,1> &                resM_Du,        ///< linearisation of the Garlerkin momentum residual
-        const double &                          rhsfac          ///< right hand side factor
+        const double &                          rhsfac          ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: for the viscous terms of the Galerkin part
@@ -409,7 +410,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nsd_,nsd_> &             viscstress,     ///< viscous stresses
         const double &                          timefacfac,     ///< = timefac x fac
-        const double &                          rhsfac          ///< right hand side factor
+        const double &                          rhsfac          ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: div-grad stabilization and the rhs of the viscous term
@@ -419,8 +420,8 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nsd_> &               viscstress,     ///< viscous stresses
         const double &                            timefac,        ///< time factor
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            tau_C,          ///< (stabilization parameter continuity equation) x (integration factor)
-        const double &                            rhsfac          ///< right hand side factor
+        const double &                            rhsfac,         ///< right-hand-side factor
+        const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: pressure terms of the Garlerkin part and rhs
@@ -428,7 +429,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x pressure)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            rhsfac,         ///< right hand side factor = integration factor
+        const double &                            rhsfac,         ///< right-hand-side factor
         const double &                            press           ///< pressure at integration point
         );
 
@@ -437,12 +438,13 @@ namespace ELEMENTS
         LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,    ///< block (weighting function q x u)
         LINALG::Matrix<nen_,1> &                  preforce,     ///< rhs forces pressure
         const double &                            timefacfac,   ///< = timefac x fac
-        const double &                            rhsfac        ///< right hand side factor
+        const double &                            rhsfac        ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: body force terms on rhs
     void BodyForceRhsTerm(
-        LINALG::Matrix<nsd_,nen_> &               velforce      ///< rhs forces velocity
+        LINALG::Matrix<nsd_,nen_> &               velforce,     ///< rhs forces velocity
+        const double &                            rhsresfac     ///< right-hand-side factor for residuals
         );
 
     //TODO: look over it
@@ -451,7 +453,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,      ///< block (weighting function v x u)
         LINALG::Matrix<nsd_,nen_> &               velforce,     ///< rhs forces velocity
         const double&                             timefacfac,   ///< = timefac x fac
-        const double &                            rhsfac        ///< right hand side factor
+        const double &                            rhsfac        ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: LOMA
@@ -459,7 +461,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,      ///< block (weighting function q x u)
         LINALG::Matrix<nen_,1> &                preforce,       ///< rhs forces pressure
         const double &                          timefacfac,     ///< = timefac x fac
-        const double &                          rhsfac          ///< right hand side factor
+        const double &                          rhsresfac       ///< right-hand-side factor for residuals
         );
 
     //! Provide linearization of stabilization residual with respect to the velocities
@@ -476,8 +478,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
-        const double &                            rhsfac          ///< right hand side factor
+        const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: SUPG
@@ -488,7 +489,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            timetauM        ///< = timefac x Tau_M = timefac x tau(0) x fac
+        const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: viscous stabilization
@@ -498,8 +499,8 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefac,        ///< time factor
-        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
         const double &                            vstabfac,       ///< in case of viscous stabilization decide whether to use GLS or USFEM
+        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
@@ -511,7 +512,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefac,        ///< time factor
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            tau_Mp,         ///< tau_Mp = tau(1) x fac
+        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
@@ -520,7 +521,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
-        const double &                            timefacfac,     ///< tau_Mp = tau(1) x fac
+        const double &                            timefacfac,     ///< timefac x fac
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 

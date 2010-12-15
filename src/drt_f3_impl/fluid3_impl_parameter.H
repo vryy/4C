@@ -86,9 +86,11 @@ public:
   double time_;
   //! time-step length
   double dt_;
-  //! timefac = dt_ * theta_
+  //! timefac = dt_ * ("pseudo"-)theta_
   double timefac_;
-  //! factor for right-hand side due to time-integration scheme
+  //! factor for left-hand side due to one-step-theta time-integration scheme
+  double theta_;
+  //! factor for right-hand side due to one-step-theta time-integration scheme
   double omtheta_;
   //! generalised-alpha parameter (connecting velocity and acceleration)
   double gamma_;

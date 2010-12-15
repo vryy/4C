@@ -1287,6 +1287,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->SetState("velaf",velaf_);
     discret_->SetState("scaaf",scanp_);
     condparams.set("thsl",alphaF_*gamma_*dt_);
+    condparams.set("rhs time factor",1.0);
     condparams.set("action","calc_Neumann_inflow");
     condparams.set("Physical Type",physicaltype_);
     condparams.set("using generalized-alpha time integration",true);

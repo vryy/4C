@@ -875,11 +875,11 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     // set all parameters and states required for Neumann conditions
     eleparams.set("Physical Type",physicaltype_);
-    eleparams.set("thermpress at n+1",thermpressaf_);
+    eleparams.set("thermodynamic pressure",thermpressaf_);
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       eleparams.set("total time",time_-(1-alphaF_)*dta_);
-      eleparams.set("thsl",1.0);
+      eleparams.set("thsl",(gamma_/alphaM_)*dta_);
     }
     else
     {
@@ -926,7 +926,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
       }
     }
 
-    // set "pseudo-theta" for af-generalized-alpha scheme
+    // compute "pseudo-theta" for af-generalized-alpha scheme
     theta_ = alphaF_*gamma_/alphaM_;
 
     // --------------------------------------------------
@@ -1180,9 +1180,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList mhdbcparams;
 
           // set action for elements
-          mhdbcparams.set("action"    ,"MixedHybridDirichlet");
-          mhdbcparams.set("timefac"   ,theta_*dta_           );
-          mhdbcparams.set("total time",time_                 );
+          mhdbcparams.set("action"         ,"MixedHybridDirichlet");
+          mhdbcparams.set("lhs time factor",theta_*dta_           );
+          mhdbcparams.set("total time"     ,time_                 );
+
+          // not yet available for af-gen-alpha -> check in element routine
+          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+            mhdbcparams.set("using generalized-alpha time integration",true);
+          else
+            mhdbcparams.set("using generalized-alpha time integration",false);
 
           // set the only required state vectors
           discret_->SetState("u and p (trial)",velnp_);
@@ -1231,6 +1237,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
           {
             condparams.set("using generalized-alpha time integration",true);
+            condparams.set("rhs time factor",(gamma_/alphaM_)*dta_);
             discret_->SetState("velaf",velaf_);
           }
           else
@@ -1244,19 +1251,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->ClearState();
         }
 
-        if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-        {
-          // For af-generalized-alpha scheme, we already have the true residual,...
-          trueresidual_->Update(1.0,*residual_,0.0);
-
-          // ...but the residual vector for the solution rhs has to be scaled.
-          residual_->Scale(gamma_*dta_/alphaM_);
-        }
-        else
-        {
-          // scaling to get true residual vector for all other schemes
-          trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-        }
+        // scaling to get true residual vector
+        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -2479,6 +2475,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
       condparams.set("using generalized-alpha time integration",true);
+      condparams.set("rhs time factor",(gamma_/alphaM_)*dta_);
       discret_->SetState("velaf",velaf_);
     }
     else
@@ -2492,19 +2489,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     discret_->ClearState();
   }
 
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-  {
-    // For af-generalized-alpha scheme, we already have the true residual,...
-    trueresidual_->Update(1.0,*residual_,0.0);
-
-    // ...but the residual vector for the solution rhs has to be scaled.
-    residual_->Scale(gamma_*dta_/alphaM_);
-  }
-  else
-  {
-    // scaling to get true residual vector for all other schemes
-    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-  }
+  // scaling to get true residual vector
+  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // finalize the complete matrix
   sysmat_->Complete();
@@ -4038,7 +4024,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     }
 
     // -------------------------------------------------------------------
-    //         evaluate dirichlet and neumann boundary conditions
+    //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
     {
       ParameterList eleparams;
@@ -4046,7 +4032,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       // other parameters needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("delta time",dta_);
-      eleparams.set("thsl",1.0); // no timefac in stationary case
+      eleparams.set("thsl",1.0);
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("Physical Type", physicaltype_);

@@ -303,7 +303,10 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
   double ResidualScaling() const
-  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary) return density_;
+  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
+         return density_;
+    else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
+         return alphaM_/(gamma_*dta_);
     else return density_/dta_/theta_;}
   double Dt() const { return dta_; }
 

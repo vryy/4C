@@ -111,41 +111,42 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
   // set global variable timefac to zero
   timefac_ = 0.0;
 
-  if (is_stationary_ == false)
+  if (not is_stationary_)
   {
     // get time-step length and time-integration parameters
-    dt_                = params.get<double>("dt");
-    const double theta = params.get<double>("theta",-1.0);
-    omtheta_           = params.get<double>("omtheta",-1.0);
+    dt_      = params.get<double>("dt");
+    theta_   = params.get<double>("theta",-1.0);
+    omtheta_ = params.get<double>("omtheta",-1.0);
 
-    // compute timefactor for left-hand side
-    // in the case of BDF2 and generalized-alpha:
-    // theta is set to the characteristic values in FLD::FluidImplicitTimeInt::PrepareTimeStep()
-
-    // One-step-Theta:    timefac = theta*dt
+    // compute timefactor for left-hand side:
+    // one-step-Theta:    timefac = theta*dt
     // BDF2:              timefac = 2/3 * dt
     // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-    timefac_ = theta*dt_;
+    // (For BDF2 and generalized-alpha, theta was already computed
+    //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
+    timefac_ = theta_*dt_;
 
-    if(is_genalpha_)
+    // compute generalized-alpha-related values and set them appropriately
+    // otherwise
+    if (is_genalpha_)
     {
-      gamma_ =params.get<double>("gamma");
-      alphaF_=params.get<double>("alphaF");
-      alphaM_=params.get<double>("alphaM");
+      gamma_  = params.get<double>("gamma");
+      alphaF_ = params.get<double>("alphaF");
+      alphaM_ = params.get<double>("alphaM");
     }
     else
     {
-      gamma_ =theta;
-      alphaF_=1.0;
-      alphaM_=1.0;
+      gamma_  = theta_;
+      alphaF_ = 1.0;
+      alphaM_ = 1.0;
     }
 
-    // in the case of not genalpha: afgdt = theta * dt_ = timefac_
+    // if not generalized-alpha: afgdt = theta * dt_ = timefac_
     afgdt_=alphaF_*gamma_*dt_;
   }
   else
   {
-    // timefac stationary = 1.0
+    // set timefactor for stationary case to 1.0
     timefac_ = 1.0;
   }
 
