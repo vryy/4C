@@ -47,7 +47,7 @@ Maintainer: Alexander Popp
 
 //#define CONTACTFRICTIONLESSFIRST  /* flag for frictionless contact in first contact step */
 #define CONTACTCOMPHUEBER           /* flag for enhanced complementarity function mu(zn-cn.g) */
-//#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
+#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 
 /************************************************************************/
 /* Debugging options                                                    */
@@ -55,7 +55,7 @@ Maintainer: Alexander Popp
 
 // GENERAL DEBUGGING OPTIONS
 //#define CONTACTASOUTPUT             /* flag for detailed active set output */
-//#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */     
+//#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */

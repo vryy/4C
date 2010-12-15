@@ -2,6 +2,7 @@
 #define LINALG_GAUSS_H
 
 #include <limits>
+#include <stdexcept>
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace LINALG
@@ -23,6 +24,10 @@ double gaussElimination(
 {
   if (dim > 1)
   {
+#if 0
+    LINALG::Matrix<dim, dim> cA( A );
+    LINALG::Matrix<dim, 1>   cb( b );
+#endif
     if ( not do_piv )
     {
       for ( unsigned k=0; k<dim; ++k )
@@ -108,6 +113,22 @@ double gaussElimination(
     double det = 1.0;
     for ( unsigned i = 0 ; i < dim; ++i )
       det *= 1.0/A(i,i);
+
+#if 0
+    double nx = x.Norm2();
+    if ( nx != 0 )
+    {
+      LINALG::Matrix<dim, 1> res;
+      res.Multiply( cA, x );
+      res.Update( -1, cb, 1 );
+      double nres = res.Norm2();
+      if ( fabs( nres/nx ) > 1e-15 )
+      {
+        std::cout << nres/nx << "\n";
+        throw std::runtime_error( "failed to solve linear system" );
+      }
+    }
+#endif
 
     return det;
   }

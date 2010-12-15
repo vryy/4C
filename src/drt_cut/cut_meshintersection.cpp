@@ -81,12 +81,12 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
 
   //Status();
 
-  std::vector<Teuchos::RCP<CellGenerator> > cutgens;
-  for ( int i=cut_mesh_.size()-1; i>0; --i )
-  {
-    cutgens.push_back( Teuchos::rcp( new TetCutGenerator( *this, generator, CutMesh( i ), pp_ ) ) );
-    generator = &*cutgens.back();
-  }
+//   std::vector<Teuchos::RCP<CellGenerator> > cutgens;
+//   for ( int i=cut_mesh_.size()-1; i>0; --i )
+//   {
+//     cutgens.push_back( Teuchos::rcp( new TetCutGenerator( *this, generator, CutMesh( i ), pp_ ) ) );
+//     generator = &*cutgens.back();
+//   }
 
   std::set<Element*> elements_done;
 
@@ -100,11 +100,19 @@ void GEO::CUT::MeshIntersection::Cut( CellGenerator * generator )
   }
 
   mesh_.MakeFacets();
+  mesh_.MakeVolumeCells();
+
+  // find inside and outside positions of nodes
   mesh_.FindNodePositions();
 
-  //Status();
+  // find number and connection of dofsets at nodes from cut volumes
+  mesh_.FindNodalDOFSets();
 
-  mesh_.GenerateTetgen( generator );
+  mesh_.CreateIntegrationCells();
+
+  Status();
+
+  //mesh_.GenerateTetgen( generator );
 }
 
 void GEO::CUT::MeshIntersection::SelfCut()
@@ -112,7 +120,12 @@ void GEO::CUT::MeshIntersection::SelfCut()
   CutMesh().SelfCut();
 }
 
-GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSides( int sid, int mi )
+GEO::CUT::Element * GEO::CUT::MeshIntersection::GetElement( int eid )
+{
+  return mesh_.GetElement( eid );
+}
+
+GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
 {
   const std::vector<GEO::CUT::Side*> & cut_sides = CutMesh( mi ).GetSides( sid );
   if ( cut_sides.size()==1 )
@@ -151,4 +164,6 @@ void GEO::CUT::MeshIntersection::Status()
     cut_mesh.DumpGmsh( str.str().c_str() );
     count++;
   }
+
+  mesh_.DumpGmshIntegrationcells( "integrationcells" );
 }

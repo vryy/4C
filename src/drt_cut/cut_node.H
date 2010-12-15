@@ -11,6 +11,7 @@ namespace GEO
 {
 namespace CUT
 {
+  class VolumeCell;
 
 class Node
 {
@@ -23,6 +24,8 @@ public:
   void Register( Edge* edge ) { edges_.insert( edge ); point_->AddEdge( edge ); }
 
   void Register( Side* side ) { point_->AddSide( side ); }
+
+  void Register( Element* element ) { point_->AddElement( element ); }
 
   const std::set<Edge*> & Edges() { return edges_; }
 
@@ -43,13 +46,28 @@ public:
 
   double LSV() const { return lsv_; }
 
+  const std::set<Element*> & Elements() const { return point_->Elements(); }
+
+  void FindDOFSets();
+
+  int DofSetNumber( VolumeCell * cell );
+
+  const std::vector<std::set<VolumeCell*> > & DofSets() const { return dofsets_; }
+
 private:
+
+  void BuildDOFCellSets( Point * p,
+                         const std::set<VolumeCell*> & cells,
+                         const std::set<VolumeCell*> & nodal_cells,
+                         std::set<VolumeCell*> & done );
 
   int nid_;
   Point* point_;
   double lsv_;
 
   std::set<Edge*> edges_;
+
+  std::vector<std::set<VolumeCell*> > dofsets_;
 };
 
 }

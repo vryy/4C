@@ -37,7 +37,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 
   // Gmsh output on gausspoint
-  //#define GmshOutput_velGP   
+  //#define GmshOutput_velGP
   //#define GmshOutput_presGP
 
   using namespace XFEM::PHYSICS;
@@ -830,12 +830,12 @@ void SysmatDomainSigma(
         const bool screen_out = false;
         int step = params.get<int >("step");
         const std::string filename = IO::GMSH::GetFileName("velGP", step, screen_out,0);
-        std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);       
+        std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
         LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()),true);
         IO::GMSH::cellWithVectorFieldToStream(cell->Shape(),cellvalues,cellpos,gmshfilecontent);
         gmshfilecontent.close();
-#endif 
-        
+#endif
+
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
@@ -1104,7 +1104,7 @@ void SysmatDomainSigma(
             // gmsh output of Gauss point velocities
 #ifdef GmshOutput_velGP
             LINALG::Matrix<3,1> physpos(true);
-            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);  
+            GEO::elementToCurrentCoordinates(DISTYPE, xyze, posXiDomain, physpos);
             const bool screen_out = false;
             int step = params.get<int >("step");
             const std::string filename = IO::GMSH::GetFileName("velGP", step, screen_out, 0);
@@ -1112,8 +1112,8 @@ void SysmatDomainSigma(
             gmshfilecontent << "VP(" << scientific << physpos(0) << "," << physpos(1) << "," << physpos(2) << ")";
             gmshfilecontent << "{" << scientific << gpvelnp(0) << "," << gpvelnp(1) << "," << gpvelnp(2) << "};" << endl;
             gmshfilecontent.close();
-#endif          
-            
+#endif
+
             // get bodyforce in gausspoint
 //            LINALG::Matrix<3,1> bodyforce;
 //            bodyforce = 0.0;
@@ -1219,23 +1219,23 @@ void SysmatDomainSigma(
               position[0] = physpos(0);
               position[1] = physpos(1);
               const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
-              const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);             
-                                            
+              const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
+
               if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
               {
                 const double epsilon_x = (gpvelnp(0) - u_exact_x);
                 const double epsilon_y = (gpvelnp(1) - u_exact_y);
 
                 L2 += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac;
-                // print the pressure values in file to compare them with the interpolation of a fine mesh              
+                // print the pressure values in file to compare them with the interpolation of a fine mesh
 //                {
 //                  const std::string fname("/home/shahmiri/Cubit/jeffery_hamel_flow/pressureFiles/pres_hex27_4.txt");
 //                  std::ofstream f(fname.c_str(),ios::out|ios::app);
 //                  f.setf(ios::scientific,ios::floatfield);
-//                  f.precision(12);                 
-//                  f << ele->Id() << " " << position[0] << " " << position[1]  << " "<< physpos(2) << " " << pres << " " << fac << endl;                  
+//                  f.precision(12);
+//                  f << ele->Id() << " " << position[0] << " " << position[1]  << " "<< physpos(2) << " " << pres << " " << fac << endl;
 //                  f.close();
-//                }            
+//                }
                // Gmsh output for pressure on eash Gausspoint
 #ifdef GmshOutput_presGP
                 const bool screen_out = false;
@@ -1245,7 +1245,7 @@ void SysmatDomainSigma(
                 IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pres, physpos, gmshfilecontent);
                 gmshfilecontent.close();
 #endif
-              }             
+              }
             }
 
             //////////////////////////////////////
@@ -1330,9 +1330,23 @@ void SysmatBoundarySigma(
     // loop over boundary integration cells
     for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
+      const DRT::Element::DiscretizationType distype = cell->Shape();
 
-        // gaussian points
-        const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
+      // gaussian points
+      DRT::UTILS::GaussRule2D intrule;
+      switch ( distype )
+      {
+      case DRT::Element::tri3:
+        intrule = DRT::UTILS::intrule_tri_37point;
+        break;
+      case DRT::Element::quad4:
+        intrule = DRT::UTILS::intrule_quad_4point;
+        break;
+      default:
+        dserror( "unsupported distype %d", distype );
+      }
+
+      const DRT::UTILS::IntegrationPoints2D intpoints( intrule );
 
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
@@ -1800,7 +1814,7 @@ void SysmatSigma(
     static LINALG::Matrix<3,shpVecSize> evelnm;
     static LINALG::Matrix<3,shpVecSize> eaccn;
     static LINALG::Matrix<6,shpVecSizeStress> etau;
-    
+
     static LINALG::Matrix<3,shpVecSize> egridv;
 
     fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau);

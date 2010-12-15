@@ -11,6 +11,8 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include "../drt_lib/drt_element.H"
+
 // #include "../drt_lib/drt_element.H"
 
 #include "cut_tetgen.H"
@@ -19,8 +21,17 @@
 
 namespace GEO
 {
+  namespace CELL
+  {
+    class Facet;
+    class FacetSet;
+    class Cell;
+  }
+
 namespace CUT
 {
+class BoundaryCell;
+class VolumeCell;
 class LinearElement;
 class Mesh;
 
@@ -29,6 +40,8 @@ class Facet
 public:
 
   Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface );
+
+  void Register( VolumeCell * cell ) { cells_.insert( cell ); }
 
   void Print()
   {
@@ -44,7 +57,11 @@ public:
 
   int SideId();
 
+  int PositionSideId();
+
   Side* ParentSide() const { return parentside_; }
+
+  void Coordinates( double * x );
 
   void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
@@ -99,6 +116,31 @@ public:
 
 //   DRT::Element::DiscretizationType Shape();
 
+  void CreateFacets( GEO::CELL::Cell * cell, std::set<GEO::CELL::Facet *> & nf );
+
+  bool Contains( Point * p );
+
+  bool Touches( Facet * f );
+
+  //bool PositiveDistance( Facet * f );
+
+  void Neighbors( Point * p,
+                  const std::set<VolumeCell*> & cells,
+                  std::set<VolumeCell*> & connected,
+                  std::set<Element*> & elements );
+
+  bool Equals( DRT::Element::DiscretizationType distype );
+
+  const std::vector<Point*> & Points() const { return points_; }
+
+  void NewTri3Cell( Mesh & mesh );
+
+  void NewTri3Cells( Mesh & mesh, const std::vector<Epetra_SerialDenseMatrix> & xyz );
+
+  void NewQuad4Cell( Mesh & mesh );
+
+  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+
 private:
 
   Facet( const Facet & );
@@ -119,6 +161,16 @@ private:
 
   void GetNodalIds( Mesh & mesh, const std::vector<Point*> & points, std::vector<int> & nids );
 
+  GEO::CELL::Facet * CreateCellFacet( GEO::CELL::Cell * cell, const std::vector<Point*> & points );
+
+  unsigned Normal( const std::vector<Point*> & points,
+                   LINALG::Matrix<3,1> & x1,
+                   LINALG::Matrix<3,1> & x2,
+                   LINALG::Matrix<3,1> & x3,
+                   LINALG::Matrix<3,1> & b1,
+                   LINALG::Matrix<3,1> & b2,
+                   LINALG::Matrix<3,1> & b3 );
+
   std::vector<Point*> points_;
 
   std::set<std::vector<Point*> > holes_;
@@ -132,6 +184,10 @@ private:
   bool planar_known_;
 
   Point::PointPosition position_;
+
+  std::set<BoundaryCell*> bcells_;
+
+  std::set<VolumeCell*> cells_;
 };
 
 

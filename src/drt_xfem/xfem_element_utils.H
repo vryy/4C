@@ -219,9 +219,17 @@ namespace XFEM
           dserror("no rule defined for this xele");
         }
       }
+      else if (celldistype == DRT::Element::wedge6)
+      {
+        rule = DRT::UTILS::intrule_wedge_9point;
+      }
+      else if (celldistype == DRT::Element::pyramid5)
+      {
+        rule = DRT::UTILS::intrule_pyramid_8point;
+      }
       else
       {
-        dserror("gaussrule only for tetrahedral integration cells defined. Please add additional rules here!");
+        dserror("Please add additional rules here!");
       }
     }
 

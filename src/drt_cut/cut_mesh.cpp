@@ -15,7 +15,9 @@
 #include "cut_element.H"
 #include "cut_facet.H"
 #include "cut_levelsetside.H"
+#include "cut_boundarycell.H"
 #include "cut_volumecell.H"
+#include "cut_integrationcell.H"
 
 GEO::CUT::Mesh::Mesh( double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
   : setup_( true ),
@@ -532,6 +534,16 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
   return s;
 }
 
+GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid )
+{
+  std::map<int, Teuchos::RCP<Element> >::iterator ie = elements_.find( eid );
+  if ( ie != elements_.end() )
+  {
+    return &*ie->second;
+  }
+  return NULL;
+}
+
 GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
                                                const std::vector<int> & nids,
                                                const CellTopologyData & top_data )
@@ -744,6 +756,87 @@ GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & fa
   return c;
 }
 
+GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
+{
+  Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, facet );
+  boundarycells_.push_back( Teuchos::rcp( bc ) );
+  return bc;
+}
+
+GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
+{
+  Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, facet );
+  boundarycells_.push_back( Teuchos::rcp( bc ) );
+  return bc;
+}
+
+GEO::CUT::Hex8IntegrationCell* GEO::CUT::Mesh::NewHex8Cell( Point::PointPosition position,
+                                                            const std::vector<Point*> & points,
+                                                            VolumeCell * cell )
+{
+  Epetra_SerialDenseMatrix xyz( 3, points.size() );
+  for ( unsigned i=0; i<points.size(); ++i )
+  {
+    points[i]->Coordinates( &xyz( 0, i ) );
+  }
+  Hex8IntegrationCell * c = new Hex8IntegrationCell( position, xyz, points, cell );
+  integrationcells_.push_back( Teuchos::rcp( c ) );
+  return c;
+}
+
+GEO::CUT::Tet4IntegrationCell* GEO::CUT::Mesh::NewTet4Cell( Point::PointPosition position,
+                                                            const std::vector<Point*> & points,
+                                                            VolumeCell * cell )
+{
+  Epetra_SerialDenseMatrix xyz( 3, points.size() );
+  for ( unsigned i=0; i<points.size(); ++i )
+  {
+    points[i]->Coordinates( &xyz( 0, i ) );
+  }
+  Tet4IntegrationCell * c = new Tet4IntegrationCell( position, xyz, points, cell );
+  integrationcells_.push_back( Teuchos::rcp( c ) );
+  return c;
+}
+
+GEO::CUT::Tet4IntegrationCell* GEO::CUT::Mesh::NewTet4Cell( Point::PointPosition position,
+                                                            const Epetra_SerialDenseMatrix & xyz,
+                                                            VolumeCell * cell )
+{
+  std::vector<Point*> points;   // empty list of points
+  Tet4IntegrationCell * c = new Tet4IntegrationCell( position, xyz, points, cell );
+  integrationcells_.push_back( Teuchos::rcp( c ) );
+  return c;
+}
+
+GEO::CUT::Wedge6IntegrationCell* GEO::CUT::Mesh::NewWedge6Cell( Point::PointPosition position,
+                                                                const std::vector<Point*> & points,
+                                                                VolumeCell * cell )
+{
+  Epetra_SerialDenseMatrix xyz( 3, points.size() );
+  for ( unsigned i=0; i<points.size(); ++i )
+  {
+    points[i]->Coordinates( &xyz( 0, i ) );
+  }
+  Wedge6IntegrationCell * c = new Wedge6IntegrationCell( position, xyz, points, cell );
+  integrationcells_.push_back( Teuchos::rcp( c ) );
+  return c;
+}
+
+GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::PointPosition position,
+                                                                    const std::vector<Point*> & points,
+                                                                    VolumeCell * cell )
+{
+  Epetra_SerialDenseMatrix xyz( 3, points.size() );
+  for ( unsigned i=0; i<points.size(); ++i )
+  {
+    points[i]->Coordinates( &xyz( 0, i ) );
+  }
+  Pyramid5IntegrationCell * c = new Pyramid5IntegrationCell( position, xyz, points, cell );
+  integrationcells_.push_back( Teuchos::rcp( c ) );
+  return c;
+}
+
+
 void GEO::CUT::Mesh::SelfCut()
 {
   std::set<Facet*> facets;
@@ -879,6 +972,17 @@ void GEO::CUT::Mesh::MakeFacets()
   }
 }
 
+void GEO::CUT::Mesh::MakeVolumeCells()
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    e.MakeVolumeCells( *this );
+  }
+}
+
 void GEO::CUT::Mesh::FindNodePositions()
 {
   // On multiple cuts former outside positions can become inside
@@ -933,6 +1037,36 @@ void GEO::CUT::Mesh::FindLSNodePositions()
         throw std::runtime_error( "undecided nodal point on levelset surface" );
       }
     }
+  }
+}
+
+void GEO::CUT::Mesh::FindNodalDOFSets()
+{
+  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+        i!=nodes_.end();
+        ++i )
+  {
+    Node * n = &*i->second;
+    n->FindDOFSets();
+  }
+
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
+        ++i )
+  {
+    VolumeCell * cell = &**i;
+    cell->ConnectNodalDOFSets();
+  }
+}
+
+void GEO::CUT::Mesh::CreateIntegrationCells()
+{
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
+        ++i )
+  {
+    VolumeCell * cell = &**i;
+    cell->CreateIntegrationCells( *this );
   }
 }
 
@@ -1124,11 +1258,28 @@ void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & 
   for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
   {
     Node * n = *i;
-    Point * p = n->point();
+    //Point * p = n->point();
     if ( i!=nodes.begin() )
       file << ",";
-    file << p->Position();
+    //file << p->Position();
+    file << n->DofSets().size();
   }
+  file << "};\n";
+}
+
+void GEO::CUT::Mesh::DumpGmshIntegrationcells( std::string name )
+{
+  std::ofstream file( name.c_str() );
+  file << "View \"" << name << "\" {\n";
+
+  for ( std::list<Teuchos::RCP<IntegrationCell> >::iterator i=integrationcells_.begin();
+        i!=integrationcells_.end();
+        ++i )
+  {
+    IntegrationCell * ic = &**i;
+    ic->DumpGmsh( file );
+  }
+
   file << "};\n";
 }
 

@@ -5,11 +5,14 @@
 #include "cut_intersection.H"
 #include "cut_position.H"
 #include "cut_facet.H"
+#include "cut_volumecell.H"
 
 #include <string>
 #include <stack>
 
 #include "cut_element.H"
+
+#include "cell_cell.H"
 
 void GEO::CUT::Element::FillComplete( Mesh & mesh )
 {
@@ -372,6 +375,28 @@ bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
   return false;
 }
 
+
+void GEO::CUT::LinearElement::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+{
+  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+    VolumeCell * vc = *i;
+    vc->GetIntegrationCells( cells );
+  }
+}
+
+void GEO::CUT::LinearElement::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+{
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( cut_faces_.count( f->ParentSide() )!= 0 )
+    {
+      f->GetBoundaryCells( bcells );
+    }
+  }
+}
+
 void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
 {
   for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
@@ -398,6 +423,8 @@ void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
 
 void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
 {
+  //cell_ = Teuchos::rcp( new GEO::CELL::Cell( this ) );
+
   std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -407,7 +434,7 @@ void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
 
   // Alle Facets einsammeln, die sich zu zweit eine Linie teilen. Jede Seite
   // nur ein Facet. Das sollte im Element eindeutig sein. Damit sollten die
-  // Volumina erstellt werden können. Löcher sind noch ein extra Thema.
+  // Volumina erstellt werden können. Die Facets der Löcher sind mitzunehmen.
 
   std::set<Facet*> facets_done;
 
@@ -439,29 +466,43 @@ void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
           const std::pair<Point*, Point*> & line = i->first;
           std::set<Facet*> & facets = lines[line];
 
-          Facet * found_facet = NULL;
-          for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+          if ( facets.size()==2 )
           {
-            Facet * f = *i;
-            if ( collected_facets.count( f )==0 and
-                 ( not OwnedSide( f->ParentSide() ) or
-                   sides_done.count( f->ParentSide() )==0 ) )
+            for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
             {
-              if ( found_facet==NULL )
+              Facet * f = *i;
+              if ( collected_facets.count( f )==0 )
               {
-                found_facet = f;
-              }
-              else
-              {
-                // undecided. Ignore all matches.
-                found_facet = NULL;
-                break;
+                new_facets.push( f );
               }
             }
           }
-          if ( found_facet!=NULL )
+          else
           {
-            new_facets.push( found_facet );
+            Facet * found_facet = NULL;
+            for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+            {
+              Facet * f = *i;
+              if ( collected_facets.count( f )==0 and
+                   not OwnedSide( f->ParentSide() ) )
+              {
+                if ( found_facet==NULL )
+                {
+                  found_facet = f;
+                }
+                else
+                {
+                  // undecided. Ignore all matches. Hope we are able to close
+                  // the volume anyway. We should be.
+                  found_facet = NULL;
+                  break;
+                }
+              }
+            }
+            if ( found_facet!=NULL )
+            {
+              new_facets.push( found_facet );
+            }
           }
         }
       }
@@ -495,6 +536,8 @@ void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
                  std::inserter( facets_done, facets_done.begin() ) );
 
       cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
+
+      //cell_->AddVolume( collected_facets, volume_lines );
     }
   }
 }
@@ -519,6 +562,15 @@ void GEO::CUT::QuadraticElement::MakeFacets( Mesh & mesh )
   {
     Element * e = *i;
     e->MakeFacets( mesh );
+  }
+}
+
+void GEO::CUT::QuadraticElement::MakeVolumeCells( Mesh & mesh )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->MakeVolumeCells( mesh );
   }
 }
 
@@ -557,6 +609,23 @@ bool GEO::CUT::QuadraticElement::OnSide( const std::vector<Point*> & facet_point
   throw std::runtime_error( "not supposed to end up here" );
 }
 
+void GEO::CUT::QuadraticElement::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->GetIntegrationCells( cells );
+  }
+}
+
+void GEO::CUT::QuadraticElement::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    e->GetBoundaryCells( bcells );
+  }
+}
 
 void GEO::CUT::ConcreteElement<DRT::Element::tet10>::FillComplete( Mesh & mesh )
 {
@@ -1082,4 +1151,3 @@ void GEO::CUT::ConcreteElement<DRT::Element::tet10>::LocalCoordinates( const LIN
   }
   rst = pos.LocalCoordinates();
 }
-

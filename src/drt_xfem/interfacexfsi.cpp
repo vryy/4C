@@ -452,7 +452,8 @@ void XFEM::InterfaceHandleXFSI::PrintStatistics() const
       numcellsmin = std::min(cells.size(),numcellsmin);
       numcellsmax = std::max(cells.size(),numcellsmax);
     }
-    const std::size_t avgnumcellperele = numcells/numintersectedele;
+    double avgnumcellperele = numcells;
+    avgnumcellperele /= numintersectedele;
     cout << " Number of DomainIntCells per intersected xfem element (avg,min,max): ("
          << avgnumcellperele << "," << numcellsmin << "," << numcellsmax << ")" << endl;
   }

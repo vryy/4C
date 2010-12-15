@@ -11,6 +11,7 @@ namespace CUT
 {
   class Facet;
   class LineSegment;
+  class BoundaryCell;
 
 class Side
 {
@@ -82,6 +83,8 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points ) = 0;
 
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
+
   void Print();
 
   Node * OnNode( const LINALG::Matrix<3,1> & x );
@@ -137,6 +140,8 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+
   void CreateLineSegment( Mesh & mesh, Element * element );
 
   bool FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & other );
@@ -188,6 +193,8 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points )
   { throw std::runtime_error( "not supposed to end up here" ); }
+
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
 protected:
 

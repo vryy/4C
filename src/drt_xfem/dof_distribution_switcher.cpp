@@ -181,7 +181,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
     }
 #endif
 
-#ifdef DEBUG
+#if 0
     if (completely_unchanged)
       cout << "completely unchanged vector" << endl;
     else
@@ -687,7 +687,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
     }
 #endif
 
-#ifdef DEBUG
+#if 0
     if (completely_unchanged)
       cout << "completely unchanged vector" << endl;
     else
@@ -820,7 +820,7 @@ void XFEM::DofDistributionSwitcher::generateTransferInformation(
       }
     }
 
-#ifdef DEBUG
+#if 0
     if (completely_unchanged)
       cout << "completely unchanged vector" << endl;
     else

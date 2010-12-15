@@ -827,6 +827,18 @@ namespace UTILS
             pos = 1.0/4.0;
             break;
         }
+        case DRT::Element::wedge6 : case DRT::Element::wedge15 :
+        {
+            pos = 1.0/3.0;
+            pos( 2, 0 ) = 0;
+            break;
+        }
+        case DRT::Element::pyramid5 :
+        {
+            pos = 0.0;
+            pos( 2, 0 ) = 0.25;
+            break;
+        }
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }

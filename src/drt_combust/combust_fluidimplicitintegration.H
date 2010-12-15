@@ -64,6 +64,7 @@ public:
   virtual void PrintTimeStepInfo()
   {
     if (myrank_==0)
+    {
       if(timealgo_ == INPAR::FLUID::timeint_one_step_theta){
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s (theta = %3f) STEP = %4d/%4d \n",
             time_,maxtime_,dta_,TimIntTitle().c_str(), theta_, step_,stepmax_);
@@ -72,8 +73,9 @@ public:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d \n",
             time_,maxtime_,dta_,TimIntTitle().c_str(),step_,stepmax_);
       }
+    }
   }
-  
+
   /*!
   \brief solve stationary problem
          Even though it does not make much sense, this member function belongs to the implicit time
@@ -191,7 +193,7 @@ public:
          numerical solution of a test problems
   */
   void EvaluateErrorComparedToAnalyticalSol();
-  
+
   /*!
   \brief calculate error between an analytical solution and the numerical solution of a test problem
   */
@@ -385,7 +387,7 @@ protected:
   // surface tension coefficient
   const double surftenscoeff_;
   const bool connected_interface_;
-  
+
   // smoothed normal vectors for boudary integration
   const bool smoothed_boundary_integration_;
 
@@ -406,7 +408,7 @@ protected:
 
   /// time algorithm flag for first time step
   //INPAR::FLUID::TimeIntegrationScheme startalgo_;
-  
+
   //! @name time-integration-scheme factors
   double theta_;
 //  double alphaM_;

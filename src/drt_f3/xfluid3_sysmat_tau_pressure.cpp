@@ -1412,9 +1412,23 @@ void SysmatBoundaryTauPressure(
     // loop over boundary integration cells
     for (GEO::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
+      const DRT::Element::DiscretizationType distype = cell->Shape();
 
-        // gaussian points
-        const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
+      // gaussian points
+      DRT::UTILS::GaussRule2D intrule;
+      switch ( distype )
+      {
+      case DRT::Element::tri3:
+        intrule = DRT::UTILS::intrule_tri_37point;
+        break;
+      case DRT::Element::quad4:
+        intrule = DRT::UTILS::intrule_quad_4point;
+        break;
+      default:
+        dserror( "unsupported distype %d", distype );
+      }
+
+      const DRT::UTILS::IntegrationPoints2D intpoints( intrule );
 
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
@@ -1821,7 +1835,7 @@ void SysmatTauPressure(
     static LINALG::Matrix<3,shpVecSize> eaccn;
     static LINALG::Matrix<6,shpVecSizeStress> etau;
     static LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
-    
+
     static LINALG::Matrix<3,shpVecSize> egridv;
 
     fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, etau, ediscpres);

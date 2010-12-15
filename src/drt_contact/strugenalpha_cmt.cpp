@@ -3408,8 +3408,7 @@ void CONTACT::CmtStruGenAlpha::ReadRestart(int step)
   dserror("ERROR: ReadRestart: Not yet implemented for FINTLIKETR!");
 #endif // #ifdef STRUGENALPHA_FINTLIKETR
 
-  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
-  rcpdiscret.release();
+  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_, false);
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");

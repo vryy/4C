@@ -1,6 +1,8 @@
 #ifndef CUT_POSITION2D_H
 #define CUT_POSITION2D_H
 
+#include <iterator>
+
 #include "../linalg/linalg_gauss.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -24,6 +26,14 @@ public:
     : px_( xyz )
   {
     side.Coordinates( xyze_ );
+    Scale();
+  }
+
+  Position2d( const LINALG::Matrix<3,numNodesElement> & side_xyze,
+              const LINALG::Matrix<3,1> & xyz )
+    : px_( xyz ),
+      xyze_( side_xyze )
+  {
     Scale();
   }
 
@@ -52,6 +62,21 @@ private:
 
     px_.Scale( 1./scale_ );
     xyze_.Scale( 1./scale_ );
+
+    shift_ = 0;
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_( 0, i ),  true );
+      shift_.Update( 1, x1, 1 );
+    }
+    shift_.Scale( 1./numNodesElement );
+
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_( 0, i ),  true );
+      x1.Update( -1, shift_, 1 );
+    }
+    px_.Update( -1, shift_, 1 );
   }
 
   LINALG::Matrix<3,1> px_;
@@ -61,6 +86,8 @@ private:
   LINALG::Matrix<3, numNodesElement> xyze_;
 
   double scale_;
+
+  LINALG::Matrix<3,1> shift_;
 };
 
 
@@ -81,6 +108,13 @@ bool Position2d<elementtype,numNodesElement>::Compute()
   LINALG::Matrix<3,1> cross;
 
   xsi_ = 0;
+
+  const double tol = LINSOLVETOL; // / scale_;
+
+#ifdef DEBUG
+  std::vector<double> res;
+  res.push_back( tol );
+#endif
 
   for ( int iter = 0; iter < 20; ++iter )
   {
@@ -165,7 +199,11 @@ bool Position2d<elementtype,numNodesElement>::Compute()
 
     double residual = b.Norm2();
 
-    if ( fabs( residual ) < LINSOLVETOL )
+#ifdef DEBUG
+    res.push_back( residual );
+#endif
+
+    if ( fabs( residual ) < tol )
     {
       return WithinLimits();
     }
@@ -174,7 +212,7 @@ bool Position2d<elementtype,numNodesElement>::Compute()
 
     dx = 0;
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
-    if ( fabs( det ) < LINSOLVETOL )
+    if ( fabs( det ) < tol )
     {
       throw std::runtime_error( "no side-point distance?" );
     }
@@ -183,6 +221,10 @@ bool Position2d<elementtype,numNodesElement>::Compute()
 
     xsi_ += dx;
   }
+#ifdef DEBUG
+  std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
+  std::cout << "\n";
+#endif
   throw std::runtime_error( "Newton scheme did not converge" );
 }
 

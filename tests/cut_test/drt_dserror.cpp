@@ -153,12 +153,7 @@ void cpp_dslatest(const char* file, const int line)
 extern "C"
 void cpp_dserror_func(const char* text, ...)
 {
-  int myrank;
-#ifdef PARALLEL
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-#else
-  myrank=0;
-#endif
+  int myrank=0;
 
   char errbuf[2048];
 
@@ -205,12 +200,7 @@ void cpp_dserror_func(const char* text, ...)
  *----------------------------------------------------------------------*/
 void cpp_dserror_func(const std::string text, ...)
 {
-  int myrank;
-#ifdef PARALLEL
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-#else
-  myrank=0;
-#endif
+  int myrank=0;
 
   char errbuf[2048];
 

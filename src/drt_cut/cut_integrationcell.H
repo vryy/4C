@@ -1,9 +1,13 @@
 #ifndef CUT_INTEGRATIONCELL_H
 #define CUT_INTEGRATIONCELL_H
 
+#include <fstream>
 #include <vector>
 #include <set>
 
+#include <Epetra_SerialDenseMatrix.h>
+
+#include "cut_point.H"
 #include "cut_element.H"
 #include "cut_boundingbox.H"
 
@@ -11,8 +15,11 @@ namespace GEO
 {
 namespace CUT
 {
+  class Mesh;
+  class VolumeCell;
 
 /// Base of (non-tetgen) integration cells
+#if 0
 /*!
   Die sich selbst in Unterzellen zerlegende Zelle. Das Kriterium für die
   Zerlegung ist jeweils verschieden. Es gibt die
@@ -30,14 +37,114 @@ namespace CUT
   Geometrie braucht hier nicht mehr ausgewertet werden, da die Elemente selbst
   bereits geschnitten sind. Die Aufteilung findet in Elementkoordinaten statt.
  */
+#endif
 class IntegrationCell
 {
 public:
 
+  IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
+    : position_( position ),
+      xyz_( xyz ),
+      points_( points ),
+      cell_( cell )
+  {}
+
   virtual ~IntegrationCell() {}
+
+  virtual DRT::Element::DiscretizationType Shape() const = 0;
+
+  virtual void DumpGmsh( std::ofstream & file ) = 0;
+
+  Point::PointPosition Position() const { return position_; }
+
+  const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
+
+  static Point::PointPosition VolumePosition( const std::set<Facet*> & facets );
+
+protected:
+
+  Point::PointPosition position_;
+  Epetra_SerialDenseMatrix xyz_;
+  std::vector<Point*> points_;
+  VolumeCell * cell_;
 };
 
 
+class Hex8IntegrationCell : public IntegrationCell
+{
+public:
+
+  Hex8IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
+    : IntegrationCell( position, xyz, points, cell )
+  {
+  }
+
+  static Hex8IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
+
+  virtual void DumpGmsh( std::ofstream & file );
+
+};
+
+class Tet4IntegrationCell : public IntegrationCell
+{
+public:
+
+  Tet4IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
+    : IntegrationCell( position, xyz, points, cell )
+  {
+  }
+
+  static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+
+  static void CreateCells( Mesh & mesh,
+                           LinearElement * element,
+                           VolumeCell * cell,
+                           const std::set<Facet*> & facets,
+                           std::set<IntegrationCell*> & integrationcells );
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
+
+  virtual void DumpGmsh( std::ofstream & file );
+
+};
+
+class Wedge6IntegrationCell : public IntegrationCell
+{
+public:
+
+  Wedge6IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
+    : IntegrationCell( position, xyz, points, cell )
+  {
+  }
+
+  static Wedge6IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
+
+  virtual void DumpGmsh( std::ofstream & file );
+
+};
+
+class Pyramid5IntegrationCell : public IntegrationCell
+{
+public:
+
+  Pyramid5IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
+    : IntegrationCell( position, xyz, points, cell )
+  {
+  }
+
+  static Pyramid5IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
+
+  virtual void DumpGmsh( std::ofstream & file );
+
+};
+
+#if 0
 /// empty cells that have no cut nor any subcells
 class EmptyIntegrationCell : public IntegrationCell
 {
@@ -153,6 +260,7 @@ private:
   ConcreteElement<DRT::Element::pyramid5> * element_;
 };
 
+#endif
 
 }
 }

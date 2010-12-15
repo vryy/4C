@@ -9,6 +9,8 @@
 #include <string>
 #include <sstream>
 
+//#include <mpi.h>
+
 void test_hex8_simple();
 void test_tet4_simple();
 void test_pyramid5_simple();
@@ -48,8 +50,10 @@ void test_hex8_quad4_touch7();
 void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 
-void test_hex8_quad8_mesh_many();
-void test_hex8_quad8_mesh_edgecut();
+void test_hex8_quad4_mesh_many();
+void test_hex8_quad4_mesh_edgecut();
+void test_hex8_quad4_mesh_edgecut2();
+void test_hex8_quad4_mesh_inner();
 void test_hex27_quad9_simple();
 void test_hex20_quad9_simple();
 void test_hex20_quad9_moved();
@@ -68,6 +72,9 @@ void test_unit_intersection_touch();
 
 int main( int argc, char ** argv )
 {
+  //MPI_Init( &argc, &argv );
+  //MPI::Init( argc, argv );
+
   typedef void ( *testfunct )();
 
   std::map<std::string, testfunct> functable;
@@ -110,8 +117,10 @@ int main( int argc, char ** argv )
   //functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
 
-  functable["hex8_quad8_mesh_edgecut"] = test_hex8_quad8_mesh_edgecut;
-  functable["hex8_quad8_mesh_many"] = test_hex8_quad8_mesh_many;
+  functable["hex8_quad4_mesh_edgecut"] = test_hex8_quad4_mesh_edgecut;
+  functable["hex8_quad4_mesh_edgecut2"] = test_hex8_quad4_mesh_edgecut2;
+  //functable["hex8_quad4_mesh_inner"] = test_hex8_quad4_mesh_inner;
+  functable["hex8_quad4_mesh_many"] = test_hex8_quad4_mesh_many;
   functable["hex27_quad9_simple"] = test_hex27_quad9_simple;
   functable["hex20_quad9_simple"] = test_hex20_quad9_simple;
   functable["hex20_quad9_moved"] = test_hex20_quad9_moved;
@@ -176,5 +185,7 @@ int main( int argc, char ** argv )
     }
   }
 
+  //MPI_Finalize();
+  //MPI::Finalize();
   return 0;
 }

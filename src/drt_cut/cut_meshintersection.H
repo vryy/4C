@@ -46,7 +46,9 @@ public:
 
   void SelfCut();
 
-  GEO::CUT::Side * GetCutSides( int sid, int mi=0 );
+  Element * GetElement( int eid );
+
+  Side * GetCutSide( int sid, int mi=0 );
 
   void Status();
 

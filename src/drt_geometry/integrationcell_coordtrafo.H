@@ -93,6 +93,9 @@ namespace GEO
       case DRT::Element::hex8:    return detEtaToXi3DT<DRT::Element::hex8>(xyze_cell,pos_eta_domain);
       case DRT::Element::hex20:   return detEtaToXi3DT<DRT::Element::hex20>(xyze_cell,pos_eta_domain);
       case DRT::Element::hex27:   return detEtaToXi3DT<DRT::Element::hex27>(xyze_cell,pos_eta_domain);
+      case DRT::Element::wedge6:  return detEtaToXi3DT<DRT::Element::wedge6>(xyze_cell,pos_eta_domain);
+      case DRT::Element::wedge15: return detEtaToXi3DT<DRT::Element::wedge15>(xyze_cell,pos_eta_domain);
+      case DRT::Element::pyramid5:return detEtaToXi3DT<DRT::Element::pyramid5>(xyze_cell,pos_eta_domain);
       default:
         std::cout << DistypeToString(cell.Shape()) << endl;
         dserror("add your 3D distype to this switch!");

@@ -98,6 +98,12 @@ public:
   */
   SerialDenseMatrix(const SerialDenseMatrix& Source);
 
+  /*!
+  \brief Standard Copy Constructor wraps
+         Epetra_SerialDenseMatrix(const SerialDenseMatrix& Source);
+
+  */
+  SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source);
 
 
   /*!

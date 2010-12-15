@@ -188,7 +188,7 @@ endif (NOT Trilinos_DIR)
 
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-find_package(MPI REQUIRED)
+#find_package(MPI REQUIRED)
 find_package(Trilinos REQUIRED)
 
 #find_package(Blitz)
@@ -1208,6 +1208,13 @@ set(OBJS_DRT_STK
   src/drt_stk/stk_gmsh.cpp
 )
 set(OBJS_DRT_CUT
+  src/drt_cut/cell_cell.cpp  
+  src/drt_cut/cell_facet.cpp  
+  src/drt_cut/cell_facetset.cpp  
+  src/drt_cut/cell_line.cpp  
+  src/drt_cut/cell_point.cpp  
+  src/drt_cut/cell_volume.cpp
+  src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
@@ -1562,7 +1569,8 @@ include(CTest)
 
 if (QHULL)
   add_executable(cut_test ${OBJS_CUT_TEST})
-  target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
+  #target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
+  target_link_libraries(cut_test drt_lib_cut ${TETGEN_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 endif (QHULL)
 

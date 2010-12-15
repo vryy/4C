@@ -7,11 +7,17 @@
 #include "geo_intersection.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "searchtree.H"
-#include "searchtree_geometry_service.H"
+// #include "searchtree.H"
+// #include "searchtree_geometry_service.H"
 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+#include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_element.H"
+#include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_meshintersection.H"
+#include "../drt_cut/cut_side.H"
+#include "../drt_cut/cut_facet.H"
 
 void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
                                const Teuchos::RCP<DRT::Discretization> cutterdis,
@@ -28,17 +34,6 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
     std::cout << "\nGEO::Intersection:" << std::flush;
 
   const double t_start = Teuchos::Time::wallTime();
-
-//   // initialize tree for intersection candidates search
-//   Teuchos::RCP<GEO::SearchTree> octTree = rcp( new GEO::SearchTree( 20 ) );
-
-//   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis( *cutterdis, currentcutterpositions );
-//   octTree->initializeTree( rootBox, *cutterdis, GEO::OCTTREE );
-
-//   std::vector< LINALG::Matrix<3,2> > structure_AABBs
-//       = GEO::computeXAABBForLabeledStructures( *cutterdis,
-//                                                currentcutterpositions,
-//                                                octTree->getRoot()->getElementList() );
 
   GEO::CUT::MeshIntersection intersection;
 
@@ -112,8 +107,131 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
   // Call tetgen on all cut elements. The integration cells are gathered via
   // the callback generator object
 
-  CellGenerator generator( *xfemdis, intersection, domainintcells, boundaryintcells );
-  intersection.Cut( &generator );
+  //CellGenerator generator( *xfemdis, intersection, domainintcells, boundaryintcells );
+  intersection.Cut();
+
+  for ( int k = 0; k < xfemdis->NumMyColElements(); ++k )
+  {
+    DRT::Element* xfemElement = xfemdis->lColElement( k );
+    int eid = xfemElement->Id();
+    GEO::CUT::Element * e = intersection.GetElement( eid );
+
+    if ( e!=NULL and e->IsCut() )
+    {
+      std::set<GEO::CUT::IntegrationCell*> cells;
+      e->GetIntegrationCells( cells );
+
+      std::set<GEO::CUT::BoundaryCell*> bcells;
+      e->GetBoundaryCells( bcells );
+
+      BoundaryIntCells & bics = boundaryintcells[eid];
+      DomainIntCells   & dics = domainintcells  [eid];
+
+      LINALG::Matrix<3,1> physCoordCorner;
+      LINALG::Matrix<3,1> eleCoordDomainCorner;
+      LINALG::Matrix<3,1> eleCoordBoundaryCorner;
+
+      for ( std::set<GEO::CUT::BoundaryCell*>::iterator i=bcells.begin();
+            i!=bcells.end();
+            ++i )
+      {
+        GEO::CUT::BoundaryCell * bc = *i;
+        DRT::Element::DiscretizationType distype = bc->Shape();
+        int numnodes = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        GEO::CUT::Facet * f = bc->GetFacet();
+        GEO::CUT::Side * s = f->ParentSide();
+
+        LINALG::SerialDenseMatrix physDomainCoord = bc->Coordinates();
+
+        LINALG::SerialDenseMatrix eleDomainCoord(3, numnodes); // in xfem parent element domain
+        LINALG::SerialDenseMatrix eleBoundaryCoord(3, numnodes);
+
+        for ( int j=0; j<numnodes; ++j )
+        {
+          std::copy( &physDomainCoord( 0, j ), &physDomainCoord( 0, j ) + 3, physCoordCorner.A() );
+
+          e->LocalCoordinates( physCoordCorner, eleCoordDomainCorner );
+          s->LocalCoordinates( physCoordCorner, eleCoordBoundaryCorner );
+
+          std::copy( eleCoordDomainCorner  .A(), eleCoordDomainCorner  .A()+3, &eleDomainCoord  ( 0, j ) );
+          std::copy( eleCoordBoundaryCorner.A(), eleCoordBoundaryCorner.A()+3, &eleBoundaryCoord( 0, j ) );
+        }
+        bics.push_back( BoundaryIntCell( distype, s->Id(), eleDomainCoord, eleBoundaryCoord, physDomainCoord ) );
+      }
+
+      for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::IntegrationCell * ic = *i;
+        DRT::Element::DiscretizationType distype = ic->Shape();
+        int numnodes = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        LINALG::SerialDenseMatrix physCoord = ic->Coordinates();
+        LINALG::SerialDenseMatrix coord( 3, numnodes );
+
+        for ( int j=0; j<numnodes; ++j )
+        {
+          std::copy( &physCoord( 0, j ), &physCoord( 0, j ) + 3, physCoordCorner.A() );
+
+          e->LocalCoordinates( physCoordCorner, eleCoordDomainCorner );
+
+          std::copy( eleCoordDomainCorner.A(), eleCoordDomainCorner.A()+3, &coord( 0, j ) );
+        }
+
+        if ( distype==DRT::Element::tet4 )
+        {
+          // create planes consisting of 3 nodes each
+          LINALG::Matrix<3,1> p0( coord.A()  , true );
+          LINALG::Matrix<3,1> p1( coord.A()+3, true );
+          LINALG::Matrix<3,1> p2( coord.A()+6, true );
+          LINALG::Matrix<3,1> p3( coord.A()+9, true );
+
+          LINALG::Matrix<3,1> v01;
+          LINALG::Matrix<3,1> v02;
+          LINALG::Matrix<3,1> v03;
+
+          v01.Update( 1, p1, -1, p0, 0 );
+          v02.Update( 1, p2, -1, p0, 0 );
+          v03.Update( 1, p3, -1, p0, 0 );
+
+          // create 4 normal vectors to each tet surface plane
+          LINALG::Matrix<3,1> nplane012;
+
+          // cross product
+          nplane012(0) = v01(1)*v02(2) - v01(2)*v02(1);
+          nplane012(1) = v01(2)*v02(0) - v01(0)*v02(2);
+          nplane012(2) = v01(0)*v02(1) - v01(1)*v02(0);
+
+          // compute norm (area) of plane
+          double norm012 = nplane012.Norm2();
+
+          // compute normal distance of point to plane of the three remaining points
+          double distance = nplane012.Dot( v03 );
+
+          double vol_tet = distance / 6.0;
+
+          // smallest volume
+          if ( fabs( vol_tet ) < 1e-10 )
+            continue;
+
+          if ( fabs( distance / norm012 ) < 1e-7 )
+            continue;
+
+          // tet numbering wrong exchange 1 with 3
+          if ( distance < 0 )
+          {
+            for ( int i = 0; i < 3; ++i )
+            {
+              std::swap( coord    ( i, 1 ), coord    ( i, 3 ) );
+              std::swap( physCoord( i, 1 ), physCoord( i, 3 ) );
+            }
+          }
+        }
+
+        dics.push_back( DomainIntCell( distype, coord, physCoord, ic->Position()==GEO::CUT::Point::outside ) );
+      }
+    }
+  }
 
   // cleanup
 
@@ -149,7 +267,7 @@ void GEO::CellGenerator::Generate( GEO::CUT::Element* element, const tetgenio & 
   {
     if ( out.trifacemarkerlist[i] > -1 )
     {
-      GEO::CUT::Side * cut_side = intersection_.GetCutSides( out.trifacemarkerlist[i] );
+      GEO::CUT::Side * cut_side = intersection_.GetCutSide( out.trifacemarkerlist[i] );
       for ( int j=0; j<3; ++j )
       {
         int pointidx = out.trifacelist[i*3+j] * 3;

@@ -17,6 +17,7 @@
 
 #include "cut_tetgen.H"
 #include "cut_boundingbox.H"
+#include "cut_point.H"
 
 namespace GEO
 {
@@ -37,6 +38,16 @@ class Point;
 class Line;
 class Facet;
 class VolumeCell;
+
+class BoundaryCell;
+class Tri3BoundaryCell;
+class Quad4BoundaryCell;
+
+class IntegrationCell;
+class Hex8IntegrationCell;
+class Tet4IntegrationCell;
+class Wedge6IntegrationCell;
+class Pyramid5IntegrationCell;
 
 /// cell generator callback
 class CellGenerator
@@ -107,6 +118,20 @@ public:
                              const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
                              LinearElement * element );
 
+  Tri3BoundaryCell* NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet );
+
+  Quad4BoundaryCell* NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet );
+
+  Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+
+  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+
+  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, VolumeCell * cell );
+
+  Wedge6IntegrationCell* NewWedge6Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+
+  Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+
   void SelfCut();
 
   void Cut( Mesh & mesh, std::set<Element*> & elements_done );
@@ -117,15 +142,23 @@ public:
 
   void MakeFacets();
 
+  void MakeVolumeCells();
+
   void FindNodePositions();
 
   void FindLSNodePositions();
+
+  void FindNodalDOFSets();
+
+  void CreateIntegrationCells();
 
   void Status();
 
   void PrintFacets();
 
   void DumpGmsh( std::string name );
+
+  void DumpGmshIntegrationcells( std::string name );
 
   void GenerateTetgen( CellGenerator * generator=NULL );
 
@@ -142,6 +175,8 @@ public:
   Side* GetSide( int sid,
                  const std::vector<int> & nids,
                  const CellTopologyData * top_data );
+
+  Element* GetElement( int eid );
 
   Element* GetElement( int eid,
                        const std::vector<int> & nids,
@@ -174,6 +209,8 @@ private:
   std::list<Teuchos::RCP<Line > > lines_;
   std::list<Teuchos::RCP<Facet> > facets_;
   std::list<Teuchos::RCP<VolumeCell> > cells_;
+  std::list<Teuchos::RCP<BoundaryCell> > boundarycells_;
+  std::list<Teuchos::RCP<IntegrationCell> > integrationcells_;
 
   std::map<int, Teuchos::RCP<Node> > nodes_;
   std::map<std::set<int>, Teuchos::RCP<Edge> > edges_;

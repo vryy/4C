@@ -279,7 +279,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
   LINALG::SerialDenseVector funct(numnode);
 
   cellvalues.Zero();
-  
+
   for (int inode = 0; inode < cell.NumNode(); ++inode)
   {
     // evaluate shape functions
@@ -291,9 +291,9 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
     const XFEM::ElementEnrichmentValues enrvals(ele, dofman, phi, cell, funct, derxy, derxy2);
     LINALG::SerialDenseVector enr_funct(numparam);
     enr_funct.Zero();
-    
+
     enrvals.ComputeModifiedEnrichedNodalShapefunction(field, funct, enr_funct);
-    
+
     switch (field)
     {
     // scalar fields
@@ -539,9 +539,9 @@ double DomainCoverageRatioT(
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
     const LINALG::Matrix<3,1> cellcenter(cell->GetPhysicalCenterPosition());
-    
+
     const int label = ih.PositionWithinConditionNP(cellcenter);
-    
+
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     switch (cell->Shape())
     {
@@ -553,6 +553,16 @@ double DomainCoverageRatioT(
       case DRT::Element::tet4: case DRT::Element::tet10:
       {
         gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      case DRT::Element::wedge6: case DRT::Element::wedge15:
+      {
+        gaussrule = DRT::UTILS::intrule_wedge_6point;
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        gaussrule = DRT::UTILS::intrule_pyramid_8point;
         break;
       }
       default:
@@ -625,6 +635,12 @@ double XFEM::DomainCoverageRatio(
       return DomainCoverageRatioT<DRT::Element::tet4>(ele,ih);
     case DRT::Element::tet10:
       return DomainCoverageRatioT<DRT::Element::tet10>(ele,ih);
+    case DRT::Element::wedge6:
+      return DomainCoverageRatioT<DRT::Element::wedge6>(ele,ih);
+    case DRT::Element::wedge15:
+      return DomainCoverageRatioT<DRT::Element::wedge15>(ele,ih);
+    case DRT::Element::pyramid5:
+      return DomainCoverageRatioT<DRT::Element::pyramid5>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -671,6 +687,16 @@ vector<double> DomainCoverageRatioPerNodeT(
       case DRT::Element::tet4: case DRT::Element::tet10:
       {
         gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      case DRT::Element::wedge6: case DRT::Element::wedge15:
+      {
+        gaussrule = DRT::UTILS::intrule_wedge_6point;
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        gaussrule = DRT::UTILS::intrule_pyramid_8point;
         break;
       }
       default:
@@ -734,6 +760,12 @@ vector<double> XFEM::DomainCoverageRatioPerNode(
       return DomainCoverageRatioPerNodeT<DRT::Element::tet4>(ele,ih);
     case DRT::Element::tet10:
       return DomainCoverageRatioPerNodeT<DRT::Element::tet10>(ele,ih);
+    case DRT::Element::wedge6:
+      return DomainCoverageRatioPerNodeT<DRT::Element::wedge6>(ele,ih);
+    case DRT::Element::wedge15:
+      return DomainCoverageRatioPerNodeT<DRT::Element::wedge15>(ele,ih);
+    case DRT::Element::pyramid5:
+      return DomainCoverageRatioPerNodeT<DRT::Element::pyramid5>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -763,6 +795,14 @@ template <DRT::Element::DiscretizationType DISTYPE>
   {
     base_area = 4.0;
   }
+  else if (DISTYPE == DRT::Element::wedge6 or DISTYPE == DRT::Element::wedge15)
+  {
+    base_area = 2.0;
+  }
+  else if (DISTYPE == DRT::Element::pyramid5)
+  {
+    base_area = 4.0;
+  }
   else
   {
     dserror("think about it. factor at the end of this function needs another values");
@@ -778,6 +818,11 @@ template <DRT::Element::DiscretizationType DISTYPE>
     case DRT::Element::tri3: case DRT::Element::tri6:
     {
       gaussrule = DRT::UTILS::intrule_tri_1point;
+      break;
+    }
+    case DRT::Element::quad4: case DRT::Element::quad9:
+    {
+      gaussrule = DRT::UTILS::intrule_quad_4point;
       break;
     }
     default:
@@ -807,9 +852,9 @@ template <DRT::Element::DiscretizationType DISTYPE>
       LINALG::SerialDenseMatrix deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, pos_eta_boundary(0),pos_eta_boundary(1),cell->Shape());
 
-      // shape functions and their first derivatives
-      LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
-      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+//       // shape functions and their first derivatives
+//       LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> funct;
+//       DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
       // get jacobian matrix d x / d \xi  (3x2)
       // dxyzdrs = xyze_boundary(i,k)*deriv_boundary(j,k);
@@ -862,6 +907,12 @@ double XFEM::BoundaryCoverageRatio(
       return BoundaryCoverageRatioT<DRT::Element::tet4>(xele,boundaryIntCells,ih);
     case DRT::Element::tet10:
       return BoundaryCoverageRatioT<DRT::Element::tet10>(xele,boundaryIntCells,ih);
+    case DRT::Element::wedge6:
+      return BoundaryCoverageRatioT<DRT::Element::wedge6>(xele,boundaryIntCells,ih);
+    case DRT::Element::wedge15:
+      return BoundaryCoverageRatioT<DRT::Element::wedge15>(xele,boundaryIntCells,ih);
+    case DRT::Element::pyramid5:
+      return BoundaryCoverageRatioT<DRT::Element::pyramid5>(xele,boundaryIntCells,ih);
     default:
       dserror("add you distype here...");
       exit(1);
@@ -908,6 +959,16 @@ vector<double> DomainIntCellCoverageRatioT(
       case DRT::Element::tet4: case DRT::Element::tet10:
       {
         gaussrule = DRT::UTILS::intrule_tet_4point;
+        break;
+      }
+      case DRT::Element::wedge6: case DRT::Element::wedge15:
+      {
+        gaussrule = DRT::UTILS::intrule_wedge_6point;
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        gaussrule = DRT::UTILS::intrule_pyramid_8point;
         break;
       }
       default:
@@ -972,6 +1033,12 @@ std::vector<double> XFEM::DomainIntCellCoverageRatio(
       return DomainIntCellCoverageRatioT<DRT::Element::tet4>(ele,ih);
     case DRT::Element::tet10:
       return DomainIntCellCoverageRatioT<DRT::Element::tet10>(ele,ih);
+    case DRT::Element::wedge6:
+      return DomainIntCellCoverageRatioT<DRT::Element::wedge6>(ele,ih);
+    case DRT::Element::wedge15:
+      return DomainIntCellCoverageRatioT<DRT::Element::wedge15>(ele,ih);
+    case DRT::Element::pyramid5:
+      return DomainIntCellCoverageRatioT<DRT::Element::pyramid5>(ele,ih);
     default:
       dserror("add you distype here...");
       exit(1);

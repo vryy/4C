@@ -22,7 +22,8 @@ void test_hex8_quad4_double_cut()
 
   GEO::CUT::Mesh & mesh = intersection.NormalMesh();
 
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  //GEO::CUT::Element * hex8 =
+  create_hex8( mesh );
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -44,7 +45,8 @@ void test_hex8_quad4_double_cut()
   xyze( 1, 3 ) =  1.2;
   xyze( 2, 3 ) = -0.2;
 
-  GEO::CUT::Side* quad4_1 = create_quad4( cut_mesh1, xyze );
+  //GEO::CUT::Side* quad4_1 =
+  create_quad4( cut_mesh1, xyze );
 
   GEO::CUT::Mesh & cut_mesh2 = intersection.CutMesh( 1 );
 
@@ -64,7 +66,8 @@ void test_hex8_quad4_double_cut()
   xyze( 1, 3 ) =  1.2;
   xyze( 2, 3 ) = -0.2;
 
-  GEO::CUT::Side* quad4_2 = create_quad4( cut_mesh2, xyze );
+  //GEO::CUT::Side* quad4_2 =
+  create_quad4( cut_mesh2, xyze );
 
   //intersection.SelfCut();
   intersection.Status();

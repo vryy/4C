@@ -100,6 +100,15 @@ static inline void elementToCurrentCoordinatesInPlace(
   case DRT::Element::tet10:
       elementToCurrentCoordinatesInPlaceT<DRT::Element::tet10>(xyze, eleCoord);
       break;
+  case DRT::Element::wedge6:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::wedge6>(xyze, eleCoord);
+      break;
+  case DRT::Element::wedge15:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::wedge15>(xyze, eleCoord);
+      break;
+  case DRT::Element::pyramid5:
+      elementToCurrentCoordinatesInPlaceT<DRT::Element::pyramid5>(xyze, eleCoord);
+      break;
   default:
       std::cout << DistypeToString(distype) << endl;
       dserror("add your 3D distype to this switch!");
@@ -193,6 +202,15 @@ static inline void elementToCurrentCoordinates(
   case DRT::Element::tet10:
       elementToCurrentCoordinatesT<DRT::Element::tet10>(xyze, xsi, x);
       break;
+  case DRT::Element::wedge6:
+      elementToCurrentCoordinatesT<DRT::Element::wedge6>(xyze, xsi, x);
+      break;
+  case DRT::Element::wedge15:
+      elementToCurrentCoordinatesT<DRT::Element::wedge15>(xyze, xsi, x);
+      break;
+  case DRT::Element::pyramid5:
+      elementToCurrentCoordinatesT<DRT::Element::pyramid5>(xyze, xsi, x);
+      break;
   default:
       std::cout << DistypeToString(distype) << endl;
       dserror("add your 3D distype to this switch!");
@@ -236,6 +254,13 @@ static inline void startingValueCurrentToElementCoords(
     break;
   }
   case DRT::Element::line2 : case DRT::Element::line3 :
+  {
+    xsi.Clear();
+    break;
+  }
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+  case DRT::Element::pyramid5:
   {
     xsi.Clear();
     break;
@@ -290,6 +315,23 @@ bool checkPositionWithinElementParameterSpace(
       return false;   //TODO check tolerance
     break;
   }
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    if(eleCoord(0) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // r = 0 ... 1
+      return false;
+    if(eleCoord(1) > (1.0 - eleCoord(0) + 2*GEO::TOL7) || eleCoord(1) < (-1)*GEO::TOL7 )   // s = 0 ... 1 -r
+      return false;
+    if(eleCoord(2) > (1.0+GEO::TOL7) || eleCoord(2) < (-1)*(1.0+GEO::TOL7) )
+      return false;
+    break;
+  case DRT::Element::pyramid5:
+    if(eleCoord(2) > (1.0 + GEO::TOL7) || eleCoord(0) < (-1)*GEO::TOL7 )    // t = 0 ... 1
+      return false;
+    if(eleCoord(0) > (1.0 - eleCoord(2) + GEO::TOL7) || eleCoord(0) < ( -1.0 + eleCoord(2) - GEO::TOL7 ) ) // r
+      return false;
+    if(eleCoord(1) > (1.0 - eleCoord(2) + GEO::TOL7) || eleCoord(1) < ( -1.0 + eleCoord(2) - GEO::TOL7 ) ) // s
+      return false;
+    break;
   default:
     dserror("distype not yet implemented");
   }
@@ -441,6 +483,15 @@ bool currentToVolumeElementCoordinates(
     case DRT::Element::tet10:
         nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet10>(xyze, x, xsi);
         break;
+    case DRT::Element::wedge6:
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge6>(xyze, x, xsi);
+        break;
+    case DRT::Element::wedge15:
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge15>(xyze, x, xsi);
+        break;
+    case DRT::Element::pyramid5:
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::pyramid5>(xyze, x, xsi);
+        break;
     default:
         std::cout << DistypeToString(distype) << endl;
         dserror("add your 3D distype to this switch!");
@@ -492,6 +543,33 @@ LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
 
       if( fabs( xsi(2)-(1.0 - xsi(0) - xsi(1)) ) < 3*tol )    xsi(2) = 1.0 -  xsi(0) - xsi(1);
       if( fabs( xsi(2)     ) < 2*tol )    xsi(2) = 0.0;
+
+      break;
+    }
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
+    {
+      if( fabs( xsi(0)     ) < tol )    xsi(0) = 0.0;
+      if( fabs( xsi(0)-1.0 ) < tol )    xsi(0) = 1.0;
+
+      if( fabs( xsi(1)     ) < tol )    xsi(1) = 0.0;
+      if( fabs( xsi(1)-1.0 ) < tol )    xsi(1) = 1.0;
+
+      if( fabs((fabs(xsi(2))-1.0)) < tol &&  xsi(2) < 0)    xsi(2) = -1.0;
+      if( fabs((fabs(xsi(2))-1.0)) < tol &&  xsi(2) > 0)    xsi(2) =  1.0;
+
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      if( fabs( xsi(2)     ) < tol )    xsi(2) = 0.0;
+      if( fabs( xsi(2)-1.0 ) < tol )    xsi(2) = 1.0;
+
+      if( fabs( xsi(0) ) < -1.0 + xsi(2) - tol )    xsi(0) = -1.0 + xsi(2);
+      if( fabs( xsi(0) ) >  1.0 - xsi(2) + tol )    xsi(0) =  1.0 - xsi(2);
+
+      if( fabs( xsi(1) ) < -1.0 + xsi(2) - tol )    xsi(1) = -1.0 + xsi(2);
+      if( fabs( xsi(1) ) >  1.0 - xsi(2) + tol )    xsi(1) =  1.0 - xsi(2);
 
       break;
     }

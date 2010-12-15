@@ -11,8 +11,10 @@ namespace CUT
 {
   class Point;
   class Facet;
+  class Element;
   class LinearElement;
   class IntegrationCell;
+  class Mesh;
 
 class VolumeCell
 {
@@ -22,11 +24,30 @@ public:
               const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
               LinearElement * element );
 
+  bool Contains( Point * p );
+
+  void Neighbors( Point * p,
+                  const std::set<VolumeCell*> & cells,
+                  std::set<VolumeCell*> & connected,
+                  std::set<Element*> & elements );
+
+  LinearElement * ParentElement() { return element_; }
+
+  void CreateIntegrationCells( Mesh & mesh );
+
+  void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+
+  void ConnectNodalDOFSets();
+
 private:
 
   LinearElement * element_;
 
   std::set<Facet*> facets_;
+
+  std::set<IntegrationCell*> integrationcells_;
+
+  std::vector<int> nodaldofset_;
 };
 
 }

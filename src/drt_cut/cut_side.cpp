@@ -177,6 +177,16 @@ GEO::CUT::Facet * GEO::CUT::LinearSide::FindFacet( const std::vector<Point*> & f
   return NULL;
 }
 
+
+void GEO::CUT::LinearSide::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+{
+  for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->GetBoundaryCells( bcells );
+  }
+}
+
 void GEO::CUT::LinearSide::CreateLineSegmentList( Mesh & mesh,
                                                   Element * element,
                                                   std::vector<Teuchos::RCP<LineSegment> > & segments,
@@ -638,6 +648,15 @@ bool GEO::CUT::QuadraticSide::IsCut()
   throw std::runtime_error( "not supposed to end up here" );
 }
 
+void GEO::CUT::QuadraticSide::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+{
+  for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
+  {
+    Side * s = *i;
+    s->GetBoundaryCells( bcells );
+  }
+}
+
 bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
@@ -697,4 +716,3 @@ bool GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG
   rst = pos.LocalCoordinates();
   return success;
 }
-

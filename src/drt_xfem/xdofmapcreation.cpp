@@ -98,15 +98,14 @@ void XFEM::separateByLabel(
   for (std::map<int, std::set<int> >::const_iterator entry = elementsByLabel.begin(); entry != elementsByLabel.end();++entry)
   {
     const int label = entry->first;
-    const std::set<int> eleGiDs = entry->second;
+    const std::set<int> & eleGiDs = entry->second;
     for (std::set<int>::const_iterator ibele = eleGiDs.begin(); ibele != eleGiDs.end(); ++ibele)
     {
       const DRT::Element* bele = ih.cutterdis()->gElement(*ibele);
       const int* bnodeids = bele->NodeIds();
-      for (int inode = 0; inode < bele->NumNode(); ++inode)
-      {
-        nodesByLabel[label].insert(bnodeids[inode]);
-      }
+      std::copy(bnodeids,
+                bnodeids+bele->NumNode(),
+                std::inserter(nodesByLabel[label],nodesByLabel[label].begin()));
     }
   }
 }

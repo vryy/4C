@@ -62,7 +62,11 @@ void test_hex8_simple()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
   mesh.GenerateTetgen();
 }
 
@@ -98,7 +102,11 @@ void test_tet4_simple()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
   mesh.GenerateTetgen();
 }
 
@@ -138,7 +146,11 @@ void test_pyramid5_simple()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
   mesh.GenerateTetgen();
 }
 
@@ -182,7 +194,11 @@ void test_wedge6_simple()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
   mesh.GenerateTetgen();
 }
 
@@ -200,7 +216,11 @@ void test_hex8_fullside()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
   mesh.GenerateTetgen();
 }
 
@@ -217,7 +237,12 @@ void test_hex8_diagonal()
   mesh.Status();
 
   mesh.MakeFacets();
+  mesh.MakeVolumeCells();
   mesh.FindNodePositions();
+  mesh.FindNodalDOFSets();
+  mesh.CreateIntegrationCells();
+  mesh.DumpGmshIntegrationcells( "integrationcells" );
+
   mesh.GenerateTetgen();
 }
 

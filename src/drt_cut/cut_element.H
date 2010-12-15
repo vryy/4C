@@ -8,10 +8,17 @@
 
 namespace GEO
 {
+  namespace CELL
+  {
+    class Cell;
+  }
+
 namespace CUT
 {
   class CellGenerator;
   class VolumeCell;
+  class IntegrationCell;
+  class BoundaryCell;
 
 class Element
 {
@@ -31,6 +38,13 @@ public:
       Side * s = *i;
       s->Register( this );
     }
+//     for ( std::vector<Node*>::const_iterator i=nodes.begin();
+//           i!=nodes.end();
+//           ++i )
+//     {
+//       Node * n = *i;
+//       n->Register( this );
+//     }
   }
 
   virtual ~Element() {}
@@ -47,6 +61,8 @@ public:
 
   virtual void MakeFacets( Mesh & mesh ) = 0;
 
+  virtual void MakeVolumeCells( Mesh & mesh ) = 0;
+
   virtual void FindNodePositions() = 0;
 
   virtual bool IsCut() = 0;
@@ -59,6 +75,10 @@ public:
 #endif
 
   virtual bool OnSide( const std::vector<Point*> & facet_points ) = 0;
+
+  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells ) = 0;
+
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
 
   const std::vector<Side*> & Sides() { return sides_; }
 
@@ -106,7 +126,7 @@ public:
     for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
     {
       Node * n = *i;
-      n->point()->AddElement( this );
+      n->Register( this );
     }
   }
 
@@ -124,9 +144,15 @@ public:
 
   virtual bool OnSide( const std::vector<Point*> & facet_points );
 
+  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+
   void GetCutPoints( std::set<Point*> & cut_points );
 
   void MakeVolumeCells( Mesh & mesh );
+
+  const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
 
 private:
 
@@ -138,6 +164,7 @@ private:
 
   std::set<Facet*> facets_;
 
+  //Teuchos::RCP<GEO::CELL::Cell> cell_;
   std::set<VolumeCell*> cells_;
 };
 
@@ -156,6 +183,8 @@ public:
 
   virtual void MakeFacets( Mesh & mesh );
 
+  virtual void MakeVolumeCells( Mesh & mesh );
+
   virtual void FindNodePositions();
 
   virtual bool IsCut();
@@ -163,6 +192,10 @@ public:
   virtual void GenerateTetgen( Mesh & mesh, CellGenerator * generator );
 
   virtual bool OnSide( const std::vector<Point*> & facet_points );
+
+  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
 protected:
 
