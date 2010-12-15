@@ -446,7 +446,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
         std::ostringstream filename;
         filename << "./DensityDensityCorrFunction_"<<std::setw(6) << setfill('0') << istep <<".dat";
-        DDCorrOutput(dis, filename, istep);
+        DDCorrOutput(dis, filename, istep, dt);
       }
     }
     break;
@@ -1990,14 +1990,15 @@ void StatMechManager::InitOutput(const int ndim, const double& dt)
 /*----------------------------------------------------------------------*
  | output for density-density-correlation-function(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep)
+void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt)
 {
 	/*Output:
 	 * (1) structure number and characteristic length (radius, thickness)
-	 * (2) histogram of inter-crosslinker distance of crosslinker elements -> Density-Density-Correlation
+	 * (2) internal energy
+	 * (3) histogram of inter-crosslinker distance of crosslinker elements -> Density-Density-Correlation
 	 *     in three columns (length of one column: numbins) due to periodic continuation of the boundary volume
-	 * (3) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
-	 * (4) radial density distribution
+	 * (4) histograms of spherical coordinates (azimuth angle phi, polar angle theta/ cos(theta)
+	 * (5) radial density distribution
 	 */
 	if(!discret_.Comm().MyPID())
 		cout<<"\n\n============== Analysis of structural polymorphism =============="<<endl;
@@ -2015,13 +2016,10 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	LINALG::Matrix<3,1> cog;
   DDCorrCurrentStructure(disrow, &cog, &centershift, &crosslinkerentries, istep, filename);
 
-  /*/ Compute internal energy
+  // Compute internal energy
   double internalenergy;
-  const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  for(int i=0; i<disp->MyLength(); i++)
-  	(*disp)[i] = disrow[i];
-  ComputeInternalEnergy(disp, internalenergy);
-  cout<<"internal energy = "<<internalenergy<<endl;*/
+  const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
+  ComputeInternalEnergy(disp, internalenergy,dt);
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
@@ -2075,6 +2073,10 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream histogram;
+    histogram<<internalenergy;
+    for(int i=0; i<7; i++)
+    	histogram<<"    "<<0;
+    histogram<<endl;
 
     // first part of output
     for(int i=0; i<numbins; i++)
@@ -2632,21 +2634,20 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		// smallest volume
 		double minimalvol = 9e99;
 		int minimum = 0;
-		for(int j=0; j<(int)volumes.size(); j++)
-			if(volumes[j]<minimalvol)
+		for(int i=0; i<(int)volumes.size(); i++)
+			if(volumes[i]<minimalvol)
 			{
-				minimalvol = volumes[j];
-				structurenumber = j;
-				minimum = j;
+				minimalvol = volumes[i];
+				structurenumber = i;
+				minimum = i;
 			}
 		if(structurenumber==0 && characlength[0]>=periodlength/2.0)
 			structurenumber = 3;
 
 		cout<<"\nVolumes: "<<endl;
-		for(int j=0; j<(int)volumes.size(); j++)
-		{
-			cout<<fixed<<setprecision(6)<<"V("<<j<<"): "<<volumes[j]<<"  l_c("<<j<<"): "<<characlength[j]<<"  p_cross: "<<crossfraction[j]<<"  niter: "<<niter[j]<<endl;
-		}
+		for(int i=0; i<(int)volumes.size(); i++)
+			cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<"  niter: "<<niter[i]<<endl;
+
 
 
 /// cout and return network structure
@@ -2655,7 +2656,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		FILE* fp = NULL;
 		fp = fopen(filename.str().c_str(), "w");
 		std::stringstream structuretype;
-		structuretype<<structurenumber<<"    "<<characlength[minimum]<<"    "<<0.0<<"    "<<0.0<<"    "<<0.0<<endl;
+		structuretype<<structurenumber<<"    "<<characlength[minimum];
+		for(int j=0; j<6; j++)
+			structuretype<<"    "<<0.0;
+		structuretype<<endl;
 		fprintf(fp, structuretype.str().c_str());
 		fclose(fp);
 

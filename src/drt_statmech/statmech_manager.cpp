@@ -1801,10 +1801,22 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy)
+void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
+
+  //add statistical vector to parameter list for statistical forces and damping matrix computation
+  p.set("delta time",dt);
+  p.set("ETA",statmechparams_.get<double>("ETA",0.0));
+  p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
+  p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
+  p.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
+  p.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
+  p.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
+  p.set("PeriodLength",statmechparams_.get<double>("PeriodLength",0.0));
+
+
   discret_.ClearState();
   discret_.SetState("displacement", dis);
   RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));

@@ -140,6 +140,11 @@ public:
 																		RCP<Epetra_Vector> invtoggle,
 																		Epetra_Vector& deltadbc);
 
+	 /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
+		 *  \param currentpositions     (in)      column map node positions
+		 *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
+	void ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy, const double& dt);
+
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
@@ -207,7 +212,7 @@ protected:
 	void FilamentOrientations(const Epetra_Vector& discol, std::vector<LINALG::Matrix<3,1> >* normedvectors, const std::ostringstream& filename, bool fileoutput);
 
 	//! \brief output for density-density-correlation output
-	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep);
+	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt);
 
 	//! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
 	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
@@ -281,11 +286,6 @@ protected:
 	 * 	\param currentpositions			(in) 			column map node positions
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
 	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
-
-	 /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
-	   *  \param currentpositions     (in)      column map node positions
-	   *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
-	void ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy);
 
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
