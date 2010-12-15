@@ -2345,7 +2345,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						avnormedvec.Clear();
 						for(int j=0; j<(int)normedvectors.size(); j++)
 							avnormedvec += normedvectors[j];
-						avnormedvec.Scale(1/(double)normedvectors.size());
+						avnormedvec.Scale(1/avnormedvec.Norm2());
 
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
