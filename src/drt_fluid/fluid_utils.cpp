@@ -633,10 +633,8 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     //if(dofrowmap->Comm().MyPID()==0)
     //	cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << endl;
 
-    //ATTENTION: the flow rate computed in ComputeFlowRate() was defined negative: -h = n*u;
-    //           this was changed to h= n*u
-    //           therefore, a neg. sign was introduced here (ehrl 12/10)
-    volumeflowrateperline[condID] = -flowrate;
+    //ATTENTION: new definition: outflow is positive and inflow is negative
+    volumeflowrateperline[condID] = flowrate;
   }
   return volumeflowrateperline;
 }
