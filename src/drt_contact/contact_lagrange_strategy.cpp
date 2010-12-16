@@ -2391,10 +2391,19 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
                   RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
                   int numiter)
 {
+  // get system type
+  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+
   // check if contact contributions are present,
   // if not we make a standard solver call to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
+  	// remove SIMPLER sublist if still around
+  	// (this is important in the case where contact is released again)
+  	if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
+  		solver.Params().remove("SIMPLER");
+
+  	// standard solver call
   	solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
   	return;
   }
@@ -2402,9 +2411,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // prepare saddle point system
   //**********************************************************************
-  // get system type
-  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-    
   // the standard stiffness matrix
   RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
       
