@@ -200,13 +200,13 @@ void FLD::UTILS::SetupXFluidSplit(
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
-void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis,int ndim, 
+void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis,int ndim,
                                    const DRT::Discretization& xfluiddis, const RCP<XFEM::DofManager> dofman,
                                    LINALG::MapExtractor& extractor,Teuchos::RCP<Epetra_Map> fullmap)
 {
   std::set<int> veldofset;
   std::set<int> presdofset;
-  
+
   // for fluid elements
   int numfluidrownodes = fluiddis.NumMyRowNodes();
   for (int i=0; i<numfluidrownodes; ++i)
@@ -225,11 +225,11 @@ void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddi
       {
         presdofset.insert(fluiddof[j]);
       }
-     }   
+     }
    }
-  
+
   // for xfluid elements
-  for (int i=0; i<xfluiddis.NumMyRowNodes(); ++i) 
+  for (int i=0; i<xfluiddis.NumMyRowNodes(); ++i)
   {
      const DRT::Node* xfluidnode = xfluiddis.lRowNode(i);
      const std::set<XFEM::FieldEnr>& enrvarset(dofman->getNodeDofSet(xfluidnode->Id()));
@@ -254,7 +254,7 @@ void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddi
        countdof++;
      }
    }
-  
+
   std::vector<int> veldofmapvec;
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
@@ -263,7 +263,7 @@ void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddi
                                   veldofmapvec.size(),&veldofmapvec[0],0,
                                   xfluiddis.Comm()));
   veldofmapvec.clear();
-  
+
   std::vector<int> presdofmapvec;
   presdofmapvec.reserve(presdofset.size());
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
@@ -582,70 +582,6 @@ void FLD::UTILS::WriteLiftDragToFile(
   }
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-std::map<int,double> FLD::UTILS::ComputeSurfaceFlowRates(
-    DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp
-    )
-{
-  ParameterList eleparams;
-  // set action for elements
-  //eleparams.set("action","calc_flow_rate");
-  eleparams.set("action","flowrate calculation");
-
-  std::map<int,double> volumeflowratepersurface;
-
-  // get condition
-  std::vector< DRT::Condition * >      conds;
-  dis.GetCondition ("SurfFlowRate", conds);
-
-  // collect elements by xfem coupling label
-  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
-  {
-    const DRT::Condition* cond = *conditer;
-
-    const int condID = cond->GetInt("ConditionID");
-
-    eleparams.set<double>("Outlet flowrate", 0.0);
-
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    //                 local <-> global dof numbering
-    const Epetra_Map* dofrowmap = dis.DofRowMap();
-
-    // create vector (+ initialization with zeros)
-    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
-
-    // call loop over elements
-    dis.ClearState();
-    dis.SetState("velnp",velnp);
-    dis.EvaluateCondition(eleparams,flowrates,"SurfFlowRate",condID);
-    dis.ClearState();
-
-    // ... as well as actual total flowrate on this proc
-     double actflowrate = eleparams.get<double>("Outlet flowrate");
-
-     // get total flowrate in parallel case
-     double parflowrate = 0.0;
-     dofrowmap->Comm().SumAll(&actflowrate,&parflowrate,1);
-
-  /*  double locflowrate = 0.0;
-    for (int i=0; i < dofrowmap->NumMyElements(); i++)
-    {
-      locflowrate += (*flowrates)[i];
-    }
-
-    double flowrate = 0.0;
-    dofrowmap->Comm().SumAll(&locflowrate,&flowrate,1);*/
-    // do not use += for the following since map is not initialized!
-    volumeflowratepersurface[condID] = parflowrate;
-  }
-
-  return volumeflowratepersurface;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -693,9 +629,14 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
 
     double flowrate = 0.0;
     dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+
     //if(dofrowmap->Comm().MyPID()==0)
     //	cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << endl;
-    volumeflowrateperline[condID] = flowrate;
+
+    //ATTENTION: the flow rate computed in ComputeFlowRate() was defined negative: -h = n*u;
+    //           this was changed to h= n*u
+    //           therefore, a neg. sign was introduced here (ehrl 12/10)
+    volumeflowrateperline[condID] = -flowrate;
   }
   return volumeflowrateperline;
 }

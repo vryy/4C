@@ -886,8 +886,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","flowrate calculation");
-  eleparams.set<double>("Outlet flowrate", 0.0);
+  eleparams.set("action","calc_flowrate");
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
@@ -895,19 +894,21 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
 
-  // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
   const string condstring("Art_3D_redD_CouplingCond");
-  discret_3D_->EvaluateCondition(eleparams,myStoredFlowrates,condstring,condid);
+  discret_3D_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
-  // ... as well as actual total flowrate on this proc
-  double actflowrate = eleparams.get<double>("Outlet flowrate");
+  double local_flowrate = 0.0;
+  for (int i=0; i < dofrowmap->NumMyElements(); i++)
+  {
+    local_flowrate +=((*flowrates)[i]);
+  }
 
-  // get total flowrate in parallel case
-  double parflowrate = 0.0;
-  discret_3D_->Comm().SumAll(&actflowrate,&parflowrate,1);
+  double flowrate = 0.0;
+  dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
-  return parflowrate;
+  return flowrate;
 }//FluidImplicitTimeInt::FlowRateCalculation
 
 

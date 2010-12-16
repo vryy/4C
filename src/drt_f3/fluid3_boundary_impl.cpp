@@ -140,9 +140,6 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::integrate_Shapefunction;
     else if (action == "area calculation")
         act = Fluid3Boundary::areacalc;
-    // TODO: remove this action -> talk with Mahmoud
-    else if (action == "flowrate calculation")
-        act = Fluid3Boundary::flowratecalc;
     else if (action == "calc_flowrate")
       act = Fluid3Boundary::calc_flowrate;
     else if (action == "flowrate_deriv")
@@ -198,12 +195,6 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
     {
       if (ele->Owner() == discretization.Comm().MyPID())
         AreaCaculation(ele, params, discretization,lm);
-      break;
-    }
-    case flowratecalc:
-    {
-      if (ele->Owner() == discretization.Comm().MyPID())
-         FlowRateParameterCalculation(ele, params,discretization,lm);
       break;
     }
     case integ_pressure_calc:
@@ -1600,108 +1591,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
 }//DRT::ELEMENTS::Fluid3Surface::AreaCaculation
 
 
-// TODO: Replace function by ComputeFlowRate
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::FlowRateParameterCalculation(
-                                                                DRT::ELEMENTS::Fluid3Boundary*    ele,
-                                                                ParameterList&                    params,
-                                                                DRT::Discretization&              discretization,
-                                                                vector<int>&                      lm)
-{
-  // allocate vector for shape functions and for derivatives
-  LINALG::Matrix<bdrynen_,1> funct(true);
-  LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
-
-  // global node coordinates
-  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
-
-  // coordinates of current integration point in reference coordinates
-  LINALG::Matrix<bdrynsd_,1> xsi(true);
-
-  // normal vector
-  LINALG::Matrix<nsd_,1> unitnormal(true);
-
-  //get gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-
-  // extract local values from the global vectors
-  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  if (velnp==null)
-    dserror("Cannot get state vector 'velnp'");
-
-  vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-  // alocate local velocity vector
-  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
-
-  // split velocity and pressure, insert into element arrays
-  for (int inode=0; inode<bdrynen_; ++inode)
-  {
-    for (int idim=0; idim<nsd_; ++idim)
-    {
-      evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
-    }
-  }
-
-  // get  actual outflowrate
-  double flowrate    = params.get<double>("Outlet flowrate");
-
-  // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
-  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
-
-#ifdef D_ALE_BFLOW
-  // Add the deformation of the ALE mesh to the nodes coordinates
-  // displacements
-  RCP<const Epetra_Vector>      dispnp;
-  vector<double>                mydispnp;
-
-  if (ele->ParentElement()->IsAle())
-  {
-    dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
-    {
-      mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-    }
-    dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<bdrynen_;++inode)
-    {
-      for (int idim=0; idim<nsd_; ++idim)
-      {
-        xyze(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
-      }
-    }
-  }
-#endif // D_ALE_BFLOW
-  //const IntegrationPoints2D  intpoints(gaussrule);
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of the unit normal vector at the Gauss points
-    // Computation of nurb specific stuff is not activated here
-    double drs = 0.0;
-     EvalShapeFuncAndIntFac(intpoints, gpid, xyze, NULL, NULL, xsi, funct, deriv, drs, &unitnormal);
-     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
-
-    //Compute elment flowrate (add to actual frow rate obtained before
-    for (int inode=0;inode<bdrynen_;++inode)
-    {
-      for(int idim=0; idim<nsd_; ++idim)
-      {
-        flowrate += funct(inode) * evelnp(idim,inode)*unitnormal(idim) *fac_drs;
-      }
-    }
-  }  // end Gauss loop
-  // set new flow rate
-  params.set<double>("Outlet flowrate", flowrate);
-}//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCalculation
-
-
 /*----------------------------------------------------------------------*
  |                                                        ismail 04/2010|
  *----------------------------------------------------------------------*/
@@ -2054,7 +1943,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
     // use negative value so that inflow is positiv
     for (int inode=0;inode<bdrynen_;++inode)
     {
-      elevec1[inode*numdofpernode_] -= funct(inode)* fac_drs * flowrate; //
+      elevec1[inode*numdofpernode_] += funct(inode)* fac_drs * flowrate; //
     }
   }
 }//DRT::ELEMENTS::Fluid3Surface::ComputeFlowRate

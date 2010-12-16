@@ -347,7 +347,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   vector<DRT::Condition*> impedance_calb_cond;
   discret_->GetCondition("ImpedanceCalbCond",impedance_calb_cond);
   IsPrecalibrated_ = false;
- 
+
   // ---------------------------------------------------------------------
   // get time period length, steps per cycle and initialise flowratespos
   // ---------------------------------------------------------------------
@@ -357,7 +357,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   pressurespos_ = 0;
   dP_           = 0.0;
   dta_          = dta;
-  
+
   // ---------------------------------------------------------------------
   // get relevant data from impedance condition
   // ---------------------------------------------------------------------
@@ -368,7 +368,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   k1_ = (impedancecond[numcond])->GetDouble("k1");
   k2_ = (impedancecond[numcond])->GetDouble("k2");
   k3_ = (impedancecond[numcond])->GetDouble("k3");
-  
+
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
@@ -380,7 +380,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);    
+  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
 
   if(treetype_ == "windkessel_freq_indp")
   {
@@ -401,7 +401,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
         Pc_np_  = impedance_calb_cond[i]->GetDouble("Pc_np");
       }
     }
-    
+
     Qin_np_ = (Pin_np_ - Pc_np_)/k1_;
     // This par might look little messy but could be fixed in the future
     if (myrank_ == 0)
@@ -416,10 +416,10 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   }
   else
   {
-    
+
     flowrates_    = rcp(new vector<double>);
     flowrates_->push_back(0.0);
-   
+
     // -------------------------------------------------------------------
     // determine area of actual outlet and get material data
     // -------------------------------------------------------------------
@@ -438,8 +438,8 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   // ---------------------------------------------------------------------
   pressures_ = rcp(new  vector<double>);
   pressures_->push_back(0.0);
-  
-  
+
+
   return;
 }
 
@@ -544,14 +544,14 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // -------------------------------------------------------------------
   stream4 << "pressuresId"<<condnum;
   stream5 << "pressuresposId" << condnum;
-  
+
   // read in pressure difference
   dpstream <<"dP"<<condnum;
   dP_ = reader.ReadDouble(dpstream.str());
 
   // read in pressures
   reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
-  
+
   // read in the pressures' position
   pressurespos_ = reader.ReadInt(stream5.str());
 
@@ -612,15 +612,15 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // Get old flowrates Vector size
     int oQSize = (int)flowrates_->size();
-    
+
     // Calculate new flowrates Vector size
     int nQSize = (int)(double(oQSize)*odta/ndta);
 
-  
+
     // check if vector of flowrates is not empty
     if (flowrates_->size() == 0)
     dserror("could not re-read vector of flowrates");
-    
+
     // old number of flowrates in vector
 
 #if 1
@@ -641,7 +641,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     // store new values in class
     flowratespos_ = nfr_pos;
     flowrates_    = nfr;
-  
+
     // finally, recompute the outflow boundary condition from last step
     // this way the vector need not to be stored
     OutflowBoundary(t,ndta,0.66,condnum);
@@ -857,30 +857,31 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","flowrate calculation");
-  eleparams.set<double>("Outlet flowrate", 0.0);
+  eleparams.set("action","calc_flowrate");
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
+  // vectors and matrices local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
   const string condstring("ImpedanceCond");
-  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring,condid);
+  discret_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
-  // ... as well as actual total flowrate on this proc
-  double actflowrate = eleparams.get<double>("Outlet flowrate");
+  double local_flowrate = 0.0;
+  for (int i=0; i < dofrowmap->NumMyElements(); i++)
+  {
+    local_flowrate +=((*flowrates)[i]);
+  }
 
-  // get total flowrate in parallel case
-  double parflowrate = 0.0;
-  discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
+  double flowrate = 0.0;
+  dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
   if(treetype_ == "windkessel_freq_indp")
   {
-    Qin_np_ = parflowrate;
+    Qin_np_ = flowrate;
   }
   else
   {
@@ -890,7 +891,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
       // we are now in the initial fill-in phase
       // new data is appended to our flowrates vector
       flowratespos_++;
-      flowrates_->push_back(parflowrate);
+      flowrates_->push_back(flowrate);
     }
     else
     {
@@ -898,12 +899,12 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
       // replace the element that was computed exactly a cycle ago
       flowratespos_++;
       int pos = flowratespos_ % cyclesteps_;
-      (*flowrates_)[pos] = parflowrate;
+      (*flowrates_)[pos] = flowrate;
     }
   }
   if (myrank_ == 0)
   {
-    printf("Impedance condition Id: %d Flowrate = %f \t time: %f \n",condid,parflowrate, time);
+    printf("Impedance condition Id: %d Flowrate = %f \t time: %f \n",condid,flowrate, time);
   }
 
 #if 0 // This is kept for some minor debugging purposes
@@ -977,14 +978,14 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     pressure = Pin_np_;
   }
   else
-  {  
+  {
     // evaluate convolution integral
-    
+
     // the convolution integral
     for (int j=0; j<cyclesteps_; j++)
     {
       int qindex = ( flowratespos_+j ) % cyclesteps_;
-      
+
       // flowrate is zero if not yet a full cycle is calculated
       double actflowrate = 0.0;
       if (qindex > (int)flowrates_->size()-1)
@@ -995,7 +996,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
       int zindex = -1-j+cyclesteps_;
       pressure += impvalues_[zindex] * actflowrate * dta; // units: pressure x time
     }
-    
+
     pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
   }
   // call the element to apply the pressure
@@ -1027,12 +1028,12 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   // -------------------------------------------------------------------
   // fill the pressure vector
   // -------------------------------------------------------------------
-  
+
   // we are now in the post-initial phase
 
   // set the begining of the flowrate vector as the end
   // this is due to the periodicity reason
-  
+
   // fill vector of flowrates calculated within the last cycle
   if (time < period_) // we are within the very first cycle
   {
@@ -1059,7 +1060,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 
     (*pressures_)[pos] = pressure;
   }
-  
+
   discret_->ClearState();
 
   return;
@@ -1608,19 +1609,19 @@ void FLD::UTILS::FluidImpedanceBc::getResultsOfAPeriod(
   ParameterList & params,
   int             condid)
 {
-  
+
   std::stringstream pstream, qstream, dpstream, endCystream;
 
   pstream<<"pressures"<<condid;
   qstream<<"flowrates"<<condid;
   dpstream<<"dP"<<condid;
   endCystream<<"EndOfCycle"<<condid;
-  
+
   params.set<RCP<vector<double> > >(pstream.str(),pressures_ );
   params.set<RCP<vector<double> > >(qstream.str(),flowrates_);
   params.set<double> (dpstream.str(),dP_);
   params.set<bool> (endCystream.str(),endOfCycle_);
-  
+
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1683,7 +1684,7 @@ void FLD::UTILS::FluidImpedanceBc::interpolate(RCP<std::vector<double> > V1,
     TotalTime = time;
   else
     TotalTime = period_;
-    
+
   // Get time step size of V1 and V2
   double dt1 = (TotalTime)/double(n1 - 1);
   double dt2 = (TotalTime)/double(n2 - 1);
@@ -1717,12 +1718,12 @@ void FLD::UTILS::FluidImpedanceBc::interpolate(RCP<std::vector<double> > V1,
       // Evaluate value of V2 using Interpolation
       (*V2)[k] = (t1_2 - t)/dt1*v1_1 + (t - t1_1)/dt1*v1_2;
       // Increment k
-      k++; 
+      k++;
       // Increment t
-      t += dt2; 
+      t += dt2;
     }
   }
-    
+
   // -------------------------------------------------------------------
   // Finally resolve the last step where V2(n2) = V1(n1)
   // -------------------------------------------------------------------

@@ -64,7 +64,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   vector<DRT::Condition*> womersley_border_nodes_cond;
   discret_->GetCondition("VolumetricFlowBorderNodesCond",womersley_border_nodes_cond);
   int num_of_borders   = womersley_border_nodes_cond.size();
-  
+
   //--------------------------------------------------------------------
   // Make sure that both each surface has one and only one border
   //--------------------------------------------------------------------
@@ -107,7 +107,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
       exit(1);
     }
   }
- 
+
   return;
 } // end FluidVolumetricSurfaceFlowWrapper
 
@@ -336,7 +336,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   else
   {
     dserror("[%s]: is not a defined normal evaluation type",normal_info.c_str());
-    exit(1);    
+    exit(1);
   }
 
   // get the center of mass
@@ -363,7 +363,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   else
   {
     dserror("[%s]: is not a defined center-of-mass evaluation type",normal_info.c_str());
-    exit(1);    
+    exit(1);
   }
 
 
@@ -380,7 +380,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   else
   {
     dserror("[%s]: is not a defined flow-direction-type",normal_info.c_str());
-    exit(1);    
+    exit(1);
   }
 
   // check if the flow is with correction
@@ -393,7 +393,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   int num_steps = int(period_/dta) + 1;
 
   flowrates_ = rcp(new vector<double>(num_steps,0.0));
-  
+
 
   // -------------------------------------------------------------------
   // get the node row maps of the condition node
@@ -472,7 +472,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(RCP<std::
     // get the actaul coordinate values on the local processor
     double act_val = (*coords)[i] * act_area;
     double act_n_val = (*normal)[i] * act_area;
-    
+
     // define the parallel values that will be summed ove all of the processors
     double par_area  = 0.0;
     double par_val   = 0.0;
@@ -619,7 +619,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
   // loop over each node and compare its distance to the
   // [CenterOfMass BorderNodes)
   // -------------------------------------------------------------------
-  
+
   int nearest_nd_from_right = border_nodes_coords.begin()->first;
   int nearest_nd_from_left  = border_nodes_coords.begin()->first;
 
@@ -637,9 +637,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
 
   // define the vector that is the nearest from left
   LINALG::Matrix< (dim) ,1>  v_left(true);
-  
 
-  // define a direction vector perpendicular to the vector 
+
+  // define a direction vector perpendicular to the vector
   // of center-of-mass and current-node and to the surface normal.
   // This vector is also used to define whether a certain vector
   // is in the [0,pi] or [pi,2pi] awy from the
@@ -660,23 +660,23 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
       // check if the node is not a gohst node
       if (discret_->gNode(gid)->Owner() == myrank)
       {
-        
+
         double border_raduis = 0.0;
         const double * curr_xyze = discret_->gNode(gid)->X();
-        
+
         //----------------------------------------------------------------
         // loop over all of the border nodes
         //----------------------------------------------------------------
         double diff_error_l = 2.0;
         double diff_error_r = 2.0;
-        
+
         bool isBorderNode = false;
         for (std::map<int, vector<double> >::iterator it = border_nodes_coords.begin(); it!=border_nodes_coords.end(); it++)
         {
           isBorderNode = false;
-          
+
           const std::vector <double> bord_xyze = it->second;
-          
+
           //--------------------------------------------------------------
           // build the cener-of-mass to current-node vector
           // build the cener-of-mass to border-node vector
@@ -686,35 +686,35 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
             c_cnd(index) = curr_xyze[index] - (*cmass_)[index];
             c_bnd(index) = bord_xyze[index] - (*cmass_)[index];
           }
-          
+
           // calculate the raduis of the border node
           R             = c_cnd.Norm2();
           border_raduis = c_bnd.Norm2();
-          
+
           if(it->first == gid)
           {
             isBorderNode = true;
             break;
           }
-        
+
           // normalize the two vectors
           c_cnd.Scale(1.0/c_cnd.Norm2());
           c_bnd.Scale(1.0/c_bnd.Norm2());
-          
+
           //--------------------------------------------------------------
-          // find the closest two vectors by calculating the norm of the 
+          // find the closest two vectors by calculating the norm of the
           // difference between the two vectors
           //--------------------------------------------------------------
           LINALG::Matrix< (dim) ,1> diff = c_cnd;
           diff -= c_bnd;
-          
+
           //--------------------------------------------------------------
-          // evaluate the direction vector = normal_vec X ref_vec 
+          // evaluate the direction vector = normal_vec X ref_vec
           //--------------------------------------------------------------
           dir_vec(0) = c_cnd(1)*(*normal_)[2] - c_cnd(2)*(*normal_)[1];
           dir_vec(1) = c_cnd(2)*(*normal_)[0] - c_cnd(0)*(*normal_)[2];
           dir_vec(2) = c_cnd(0)*(*normal_)[1] - c_cnd(1)*(*normal_)[0];
-          
+
           // if the boundary is from the left
           if(dir_vec.Dot(c_bnd)> 0)
           {
@@ -743,16 +743,16 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
         //  2- Calculate the angle between R_left and R_right
         //  3- Calculate the local Raduis by interpolation
         //  P.S: intersection method might be more accurate. But since
-        //       some nodes might be slightly out of the plane, such a 
-        //       method might fail. 
+        //       some nodes might be slightly out of the plane, such a
+        //       method might fail.
         // ---------------------------------------------------------------
-        
+
         if (!isBorderNode)
         {
           double angle_rl = acos(v_right.Dot(v_left));
           double angle_r  = acos(v_right.Dot(c_cnd ));
           double border_raduis = R_r + (R_l - R_r)*angle_r/angle_rl;
-          
+
           // update local raduis
           R /= border_raduis;
 
@@ -774,7 +774,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
         }
         // update local raduis
         local_radii_->ReplaceGlobalValues(1,&R,&gid);
-        
+
         // update border raduis
         border_radii_->ReplaceGlobalValues(1,&border_raduis,&gid);
       }
@@ -844,7 +844,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   {
     cout<<"MAP: "<<endl<<*cond_noderowmap<<endl;
     cout<<"+ on Proc nodes: "<<endl;
-    
+
     for (unsigned int i = 0; i < nodeids.size(); i++)
     {
       cout<<nodeids[i]<<" ";
@@ -921,7 +921,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   {
     cout<<"MAP: "<<endl<<*cond_dofrowmap<<endl;
     cout<<"+ on Proc dofs: "<<endl;
-    
+
     for (unsigned int i = 0; i < dofids.size(); i++)
     {
       cout<<dofids[i]<<" ";
@@ -944,12 +944,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Output( IO::DiscretizationWriter&  output, int condnum )
 {
-  
+
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
 
   std::stringstream stream1, stream2;
-  
+
 
   // write the flowrates of the previous period
   output.WriteVector("radii",local_radii_);
@@ -960,7 +960,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Output( IO::DiscretizationWriter&
   stream1 << "VolumetricSurfFlow_flowrates"<<condnum;
   output.WriteRedundantDoubleVector(stream1.str(),flowrates_);
 
-  
+
   // write the time step
   output.WriteDouble("VolumetricSurfFlow_dta", dta_);
 
@@ -994,10 +994,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
   // Read in the flowrates values and the flowrates position
   // -------------------------------------------------------------------
   stream1 << "VolumetricSurfFlow_flowrates"<<condnum;
-  
+
   // read in flowrates
   reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
-  
+
   // read in the flowrates' position
   flowratespos_ = 0;
 
@@ -1007,10 +1007,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
   {
     // Get old flowrates Vector size
     int oQSize = (int)flowrates_->size();
-    
+
     // Calculate new flowrates Vector size
     int nQSize = (int)(double(oQSize)*odta/ndta);
-    
+
     // evaluate the new flowrates vector
     int nq_pos = 0;
     RCP<std::vector<double> > nq = rcp(new vector<double>(nQSize,0.0));
@@ -1048,12 +1048,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
   vector<DRT::Condition*> conditions;
   discret_->GetCondition("VolumetricSurfaceFlowCond",conditions);
   DRT::Condition* condition = conditions[condnum_s_];
-  
+
   // get curve and curve_factor
   const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
   double curvefac = 1.0;
   const  vector<double>* vals   = condition->Get<vector<double> >("val");
-  
+
   // evaluate the current flowrate value
   double flowrate = 0.0;
   if((*curve)[0]>=0)
@@ -1066,7 +1066,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
   double time_in_a_period = fmod(time,period_);//time - period_*floor(time/period_);
   // get the flowrate position
   int position = int(time_in_a_period/dta_+0.5);
-  
+
   // insert flowrate into the flowrates vector
   (*flowrates_)[position] = flowrate;
   if(time_in_a_period < dta_)
@@ -1089,18 +1089,18 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
   {
     (*Vn)[i] /= area_;
   }
-  
+
   if (flowprofile_type_ == "WOMERSLEY")
   {
     this->DFT(Vn,Qn);
-    
+
     Bn  = vector<double>(n_harmonics_,0.0);
-    
+
     double rl = real((*Qn)[0]);
     double im = imag((*Qn)[0]);
-    
+
     Bn[0] = 0.5* sqrt(rl*rl + im*im);
-    
+
     for(unsigned int k = 1; k<Bn.size(); k++)
     {
       //    double Mk   = sqrt(norm((*Qn)[k]));
@@ -1122,7 +1122,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
     im = imag((*Qn)[0]);
     cout<<"BN[0]"<< 0.5* sqrt(rl*rl + im*im)<<endl;
     cout<<"local time: "<<time_in_a_period<<"\t index: "<<position<<endl;
-    
+
     cout<<"Flowrates: [ ";
     for (unsigned int fl=0; fl< flowrates_->size();fl++)
     {
@@ -1143,7 +1143,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
     cout<<" ]"<<endl;
   }
 #endif
-   
+
 
   // -------------------------------------------------------------------
   // evaluate the avarage velocity and apply it to the design surface
@@ -1165,11 +1165,11 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
         // eval the velocity of a dof
         double velocity = 0.0;
         double r = (*local_radii_)[cond_surfnoderowmap_->LID(gid)];
-        
+
         //------------------------------------------------------------
         // Check for the velocity profile type
         //------------------------------------------------------------
-        
+
         // check for the polynomial type
         if (flowprofile_type_ == "POLYNOMIAL")
         {
@@ -1202,12 +1202,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
         {
           // get the global dof from using the local one
           int gdof = discret_->Dof(node, ldof);
-          
+
           //------------------------------------------------------------
           // Apply the velocity in the normal direction
           //------------------------------------------------------------
           double Vdof = flow_dir_ * velocity * (*normal_)[ldof];
-          
+
           bcdof->ReplaceGlobalValues(1,&Vdof,&gdof);
         }
 
@@ -1275,14 +1275,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   if (flowType == "WOMERSLEY")
   {
     this->DFT(velocities,Vn);
-    
+
     Bn  = vector<double>(n_harmonics,0.0);
-    
+
     double rl = real((*Vn)[0]);
     double im = imag((*Vn)[0]);
-    
+
     Bn[0] = 0.5* sqrt(rl*rl + im*im);
-    
+
     for(unsigned int k = 1; k<Bn.size(); k++)
     {
       //    double Mk   = sqrt(norm((*Qn)[k]));
@@ -1314,11 +1314,11 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
         // eval the velocity of a dof
         double velocity = 0.0;
         double r = (*local_radii)[cond_noderowmap->LID(gid)];
-        
+
         //------------------------------------------------------------
         // Check for the velocity profile type
         //------------------------------------------------------------
-        
+
         // check for the polynomial type
         if (flowType == "POLYNOMIAL")
         {
@@ -1350,12 +1350,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
         {
           // get the global dof from using the local one
           int gdof = disc->Dof(node, ldof);
-          
+
           //------------------------------------------------------------
           // Apply the velocity in the normal direction
           //------------------------------------------------------------
           double Vdof = flow_dir * velocity * (*normal)[ldof];
-          
+
           bcdof->ReplaceGlobalValues(1,&Vdof,&gdof);
         }
 
@@ -1402,25 +1402,25 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(RCP<Epetra_Vector
   vector<DRT::Condition*> conditions;
   discret_->GetCondition("VolumetricSurfaceFlowCond",conditions);
   DRT::Condition* condition = conditions[condnum_s_];
-  
+
   const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
   double curvefac = 1.0;
   const  vector<double>* vals   = condition->Get<vector<double> >("val");
-  
+
   double flowrate = 0.0;
   if((*curve)[0]>=0)
   {
     curvefac    = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
     flowrate    = flow_dir_*(*vals)[0]*curvefac;
   }
-  
+
 
   if(myrank == 0 )
   {
     double flow_error = 0.0;
     flow_error = actflowrate - flowrate;
     printf("Flow_estimated = %f : Flow_wanted = %f : Flow_correction = %f\n",actflowrate,flowrate,flow_error);
-  } 
+  }
 #if 0
   //----------------------------------------------------------------------
   // evaluate the correction factor
@@ -1501,7 +1501,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(RCP<Epetra_Vector
   discret_->SetState("velnp",correction_velnp);
 
   double corrective_flowrate = this->FlowRateCalculation(time, condid_);
-  
+
   correction_factor_ = (flowrate  - actflowrate)/(corrective_flowrate);
 
 
@@ -1546,29 +1546,29 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(double time
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set("action","flowrate calculation");
-  eleparams.set<double>("Outlet flowrate", 0.0);
+  eleparams.set("action","calc_flowrate");
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
+  // vectors and matrices local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
   const string condstring("VolumetricSurfaceFlowCond");
-  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring,condid);
+  discret_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
-  // ... as well as actual total flowrate on this proc
-  double actflowrate = eleparams.get<double>("Outlet flowrate");
+  double local_flowrate = 0.0;
+  for (int i=0; i < dofrowmap->NumMyElements(); i++)
+  {
+    local_flowrate +=((*flowrates)[i]);
+  }
 
-  // get total flowrate in parallel case
-  double parflowrate = 0.0;
-  discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
+  double flowrate = 0.0;
+  dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
-
-  return parflowrate;
+  return flowrate;
 
 }//FluidImplicitTimeInt::FlowRateCalculation
 
@@ -1620,8 +1620,8 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r,
   //double constexp = 2.0*M_PI*double(n)*time;
   //  double realpart = cos(constexp);
   //  double imagpart = sin(constexp);
-  //  std::complex<double> eiwt (realpart,imagpart);  
-  
+  //  std::complex<double> eiwt (realpart,imagpart);
+
   // Jo_z
   complex<double> Jo_z;
 
@@ -1646,7 +1646,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r,
   Jo_z  = this->BesselJ01(z  ,false);
   J1_z  = this->BesselJ01(z  ,true );
   Jo_rz = this->BesselJ01(z*r,false);
-    
+
   // velocity
   velocity =  (Bn)*(z*(Jo_z - Jo_rz)/(z*Jo_z - 2.0*J1_z));//*eiwt;
 
@@ -1859,7 +1859,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Interpolate(RCP<std::vector<doubl
   int n2 = V2->size();
 
   double TotalTime = period;
-    
+
   // Get time step size of V1 and V2
   double dt1 = (TotalTime)/double(n1 - 1);
   double dt2 = (TotalTime)/double(n2 - 1);
@@ -1893,12 +1893,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Interpolate(RCP<std::vector<doubl
       // Evaluate value of V2 using Interpolation
       (*V2)[k] = (t1_2 - t)/dt1*v1_1 + (t - t1_1)/dt1*v1_2;
       // Increment k
-      k++; 
+      k++;
       // Increment t
-      t += dt2; 
+      t += dt2;
     }
   }
-    
+
   // -------------------------------------------------------------------
   // Finally resolve the last step where V2(n2) = V1(n1)
   // -------------------------------------------------------------------

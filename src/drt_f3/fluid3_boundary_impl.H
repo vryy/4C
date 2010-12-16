@@ -245,19 +245,6 @@ private:
                         DRT::Discretization&              discretization,
                         vector<int>&                      lm);
 
-   /*!
-    brief integrate elemental flow rates over a surface
-
-    \param params (in/out)    : ParameterList for communication between control routine
-                                and elements
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    */
-    void FlowRateParameterCalculation(
-                    DRT::ELEMENTS::Fluid3Boundary*    ele,
-                    ParameterList&                    params,
-                    DRT::Discretization&              discretization,
-                    vector<int>&                      lm);
 
    /*!
     brief integrate elemental pressure over a surface
