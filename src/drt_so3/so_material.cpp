@@ -604,6 +604,19 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_growth: /*------- integration point based growth */
+    {
+      MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+      double dt = params.get<double>("delta time",-1.0);
+      double t = params.get<double>("total time",-1.0);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      *density = grow->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of material");
     break;

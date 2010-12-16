@@ -26,6 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/growth_ip.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -270,6 +271,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
@@ -290,11 +296,17 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     //==================================================================================
     case calc_struct_update_imrlike:
     {
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->Update();
+      }
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
-      RCP<MAT::Material> mat = Material();
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
