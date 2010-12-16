@@ -74,6 +74,8 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   inrelaxation_(false)
 {
 
+  xfluidoutput_ = rcp(new IO::DiscretizationWriter(xfluiddis));
+      
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -524,7 +526,7 @@ void FLD::FluidXFluidImplicitTimeInt::TimeLoop(
     //  lift'n'drag forces, statistics time sample and output of solution
     //  and statistics
     // -------------------------------------------------------------------
-   // StatisticsAndOutput();
+    StatisticsAndOutput();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -1244,8 +1246,9 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     LINALG::Export(*fluidincvel_,*fxfiincvel_);
     fluidxfluidboundarydis->SetState("ivelcolnp",fxfivelnp_);
   }      
-  
-  Output();
+   
+  //Gmsh Output
+  OutputToGmsh(step_, time_);
   MovingFluidOutput();
   FluidXFluidBoundaryOutput(fluidxfluidboundarydis);
   
@@ -1408,12 +1411,12 @@ void FLD::FluidXFluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          calculate lift'n'drag forces from the residual
   // -------------------------------------------------------------------
-  LiftDrag();
+  //LiftDrag();
 
   // -------------------------------------------------------------------
   //                        compute flow rates
   // -------------------------------------------------------------------
-  ComputeFlowRates();
+  //ComputeFlowRates();
 
   // -------------------------------------------------------------------
   //                         output of solution
@@ -1527,8 +1530,6 @@ void FLD::FluidXFluidImplicitTimeInt::Output()
     output_.WriteVector("veln", fluidstate_.veln_);
     output_.WriteVector("velnm",fluidstate_.velnm_);
   }
-  
-  OutputToGmsh(step_, time_);
 
   return;
 } // FluidXFluidImplicitTimeInt::Output

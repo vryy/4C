@@ -356,6 +356,8 @@ public:
   ParameterList&                xparams_;
   IO::DiscretizationWriter&     output_; 
   
+  Teuchos::RCP<IO::DiscretizationWriter>   xfluidoutput_; 
+  
   //! the processor ID from the communicator
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -623,7 +625,7 @@ public:
   //! Extractor used for output
   LINALG::MapExtractor      xfluidvelpressplitterForOutput_;
   
-  //! store dofset for unintersected domain!!!!????
+  // store dofset for unintersected domain!!!!????
   DRT::DofSet                xfluiddofset_out_;
   
 }; // class FluidXFluidImplicitTimeInt
