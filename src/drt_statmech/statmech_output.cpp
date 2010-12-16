@@ -2212,14 +2212,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				currposition(j) -= periodlength;
 			if (currposition(j) < 0.0+(*centershift)(j))
 				currposition(j) += periodlength;
-
-			(*cog)(j) += currposition(j);
 		}
+		(*cog) += currposition;
 		if(discret_.Comm().MyPID()==0)
 			shiftedpositions.push_back(currposition);
 	}
 	if(numcrossele != 0)
-		cog->Scale(1/(double)numcrossele);
+		cog->Scale(1.0/(double)numcrossele);
 
   // calculations done by Proc 0 only
   if(discret_.Comm().MyPID()==0)
@@ -2346,6 +2345,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						for(int j=0; j<(int)normedvectors.size(); j++)
 							avnormedvec += normedvectors[j];
 						avnormedvec.Scale(1/avnormedvec.Norm2());
+						cout<<"\nn_cyl: "<<avnormedvec(0)<<" "<<avnormedvec(1)<<" "<<avnormedvec(2)<<endl;
 
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
@@ -2366,9 +2366,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 													 currentintersection(l)<=surfaceboundaries(l,1) && currentintersection(l)>=surfaceboundaries(l,0))
 													intersections.push_back(currentintersection);
 											}
-						LINALG::Matrix<3,1> difference = intersections[1];
-						difference -= intersections[0];
-						cyllength = difference.Norm2();
+						cout<<"\nno. of intersection: "<<intersections.size()<<"/2"<<endl;
+						LINALG::Matrix<3,1> deltaisecs = intersections[1];
+						deltaisecs -= intersections[0];
+						cyllength = deltaisecs.Norm2();
 
 						// consider only normedvector[0] as the other normed directions are parallel or antiparallel
 						while(!leaveloop)
@@ -2384,13 +2385,16 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 								double numerator = crosstocog.Dot(avnormedvec);
 								double denominator = (avnormedvec).Dot(avnormedvec);
-								double lambda = numerator/denominator;
+								double lambdaisec = numerator/denominator;
 								// intersection and distance of crosslinker to intersection
-								LINALG::Matrix<3,1> distance = avnormedvec;
-								distance.Scale(lambda);
-								distance += *cog;
-								distance -= shiftedpositions[j];
-								if(distance.Norm2()<=radius)
+								LINALG::Matrix<3,1> isecpt = avnormedvec;
+								isecpt.Scale(lambdaisec);
+								isecpt += (*cog);
+								LINALG::Matrix<3,1> deltaiseccog = shiftedpositions[j];
+								deltaiseccog -= isecpt;
+								double distance = deltaiseccog.Norm2();
+
+								if(distance<=radius)
 									rcount++;
 							}
 							pr = double(rcount)/double(numcrossele);
@@ -2407,14 +2411,21 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								else
 									sign = -1.0;
 								radius += sign*periodlength/pow(2.0,(double)exponent);
+								cout<<"radius("<<exponent<<"): "<<radius<<", pr: "<<pr<<endl;
 							}
 							else
 							{
+								cout<<"r_final  : "<<radius<<endl;
+								cout<<"pr_final : "<<pr<<endl;
 								crossfraction[1] = pr;
 								leaveloop = true;
 							}
 						}
 						characlength[1] = radius;
+						cout<<"---"<<endl;
+						cout<<"r        : "<<characlength[1]<<endl;
+						cout<<"pr       : "<<pr<<endl;
+						cout<<"l_cyl    : "<<cyllength<<endl;
 						volumes[1] = M_PI*radius*radius*cyllength;
 					}
 					break;
