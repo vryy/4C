@@ -34,16 +34,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_GENALPHA_H
 
 #include "fluid3.H"
-#include "fluid3_ele_impl_utils.H"
-#include "fluid3_nurbs.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
-#include "../drt_inpar/inpar_fluid.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 namespace DRT
 {

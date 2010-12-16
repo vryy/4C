@@ -18,29 +18,26 @@ Maintainer: Andreas Ehrl
 
 #include "fluid3_boundary_impl.H"
 #include "fluid3_weak_dbc.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "fluid3_ele_impl_utils.H"
+
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+// TODO: remove after Nurbs functions are changed
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
+#include "../linalg/linalg_utils.H"
+#include "../drt_geometry/position_array.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 
-#include "fluid3_ele_impl_utils.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_globalproblem.H"
-
-
 #include <blitz/array.h>
 
-#include <cstdlib>
+//#include <cstdlib>
 
 using namespace DRT::UTILS;
 

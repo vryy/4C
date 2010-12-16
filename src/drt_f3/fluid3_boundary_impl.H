@@ -20,11 +20,6 @@ Maintainer: Andreas Ehrl
 #define FLUID3_BOUNDARY_IMPL_H
 
 #include "fluid3.H"
-#include "fluid3_ele_impl_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_scatra.H"
-
-
 
 namespace DRT
 {

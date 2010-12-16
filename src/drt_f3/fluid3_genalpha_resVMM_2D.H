@@ -16,16 +16,22 @@ Maintainer: Peter Gamnitzer
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+#include "fluid3_ele_impl_utils.H"
+
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
-#include "../drt_lib/drt_timecurve.H"
+
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 
-#include <Epetra_SerialDenseSolver.h>
-#include <Epetra_LAPACK.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
   |  calculate system matrix for a generalised alpha time integration   |

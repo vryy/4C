@@ -15,7 +15,6 @@ Maintainer: Andreas Ehrl
 #define FLUID3_ELE_IMPL_UTILS_H
 
 
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_element.H"
 
 

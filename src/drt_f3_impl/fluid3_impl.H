@@ -18,24 +18,13 @@ Maintainer: Ulrich Kuettler
 #define FLUID3_IMPL_H
 
 #include "fluid3_interface.H"
-
-#include "../drt_f3/fluid3_ele_impl_utils.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_f3_impl/fluid3_impl_parameter.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_serialdensematrix.H"
-
-#include "../drt_inpar/inpar_fluid.H"
 
 namespace DRT
 {
 namespace ELEMENTS
 {
-
-  class Fluid3ImplParameter;
 
   /// Internal Fluid3 implementation
   /*!

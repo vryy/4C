@@ -32,22 +32,6 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid3.H"
 
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_function.H"
-
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/modpowerlaw.H"
-
 namespace DRT
 {
   namespace ELEMENTS

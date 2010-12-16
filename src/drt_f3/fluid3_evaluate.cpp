@@ -14,19 +14,19 @@ Maintainer: Georg Bauer
 
 
 #include "fluid3.H"
+#include "fluid3_ele_impl_utils.H"
+#include "fluid3_genalpha_resVMM.H"
 #include "../drt_f3_impl/fluid3_interface.H"
 #include "../drt_f3_impl/fluid3_impl_parameter.H"
-#include "fluid3_genalpha_resVMM.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
+// TODO: remove after Nurbs functions are changed
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_exporter.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
+#include "../drt_geometry/position_array.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -36,13 +36,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-
 #include "../linalg/linalg_utils.H"
-
-#include "../drt_geometry/position_array.H"
-
-#include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
 

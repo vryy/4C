@@ -2,7 +2,22 @@
 #ifdef CCADISCRET
 
 #include "fluid3_weak_dbc.H"
+
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+
+// TODO: remove after Nurbs functions are changed
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
+
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
+
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------

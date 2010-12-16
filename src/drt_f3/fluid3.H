@@ -23,18 +23,16 @@ Maintainer: Georg Bauer
 #ifndef DRT_FLUID3_H
 #define DRT_FLUID3_H
 
-#include "../linalg/linalg_serialdensematrix.H"
 #include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
+
 using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "../drt_lib/drt_node.H"
+
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -49,10 +47,7 @@ namespace ELEMENTS
 
 class Fluid3ImplParameter;
 template<DRT::Element::DiscretizationType distype> class Fluid3Impl;
-template<DRT::Element::DiscretizationType distype> class Fluid3lin_Impl;
 template<DRT::Element::DiscretizationType distype> class Fluid3GenalphaResVMM;
-//class DRT::ELEMENTS::Fluid3ImplInterface;
-
 class Fluid3Boundary;
 
 class Fluid3Type : public DRT::ElementType
