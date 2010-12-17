@@ -87,13 +87,16 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   // feeding master nodes to the interface including ghosted nodes
+  // only consider the first 'dim' dofs
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
+    vector<int> dofids(dim);
+    for (int k=0;k<dim;++k) dofids[k] = masterdis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, masterdis.Dof(node), false));
+                    dim, dofids, false));
 
     interface->AddMortarNode(mrtrnode);
   }
@@ -102,9 +105,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
+    vector<int> dofids(dim);
+    for (int k=0;k<dim;++k) dofids[k] = slavedis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, slavedis.Dof(node), true));
+                    dim, dofids, true));
 
     interface->AddMortarNode(mrtrnode);
   }
