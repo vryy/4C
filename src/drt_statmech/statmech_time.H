@@ -52,6 +52,9 @@ public:
   //!\brief solve non-linear problem by means of PTC method
   virtual void PTC(RCP<Epetra_MultiVector> randomnumbers);
 
+  //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
+  void InitializeNewtonUzawa();
+
   //!\brief writing output including restart information
   virtual void Output();
 
@@ -95,6 +98,9 @@ protected:
 
   //! \brief object for managing beam contact
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
+
+  //! uzawa iteration counter
+  int uzawaiter_;
 
 }; // class StatMechTime
 

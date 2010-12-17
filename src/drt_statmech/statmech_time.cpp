@@ -52,7 +52,8 @@ StatMechTime::StatMechTime(ParameterList& params,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output),
-isconverged_(0)
+isconverged_(0),
+uzawaiter_(0)
 {
 	Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -162,13 +163,6 @@ void StatMechTime::Integrate()
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
 
-  // can have values takes values "constant" consistent"
-  string pred  = params_.get<string>("predictor","constant");
-  int predictor=-1;
-  if      (pred=="constant")   predictor = 1;
-  else if (pred=="consistent") predictor = 2;
-  else dserror("Unknown type of predictor");
-
 
   double dt = params_.get<double>("delta time" ,0.01);
 
@@ -178,6 +172,11 @@ void StatMechTime::Integrate()
 
   // debug cout
 	Epetra_Vector discol(*discret_.DofColMap(), true);
+
+  //defining solution strategz for beam contact
+	INPAR::CONTACT::SolvingStrategy soltype;
+  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
 
   for (int i=step; i<nstep; ++i)
   {
@@ -209,6 +208,7 @@ void StatMechTime::Integrate()
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
       std::cout<<"\nbegin time step "<<i+1<<":";
 
+    //redo time step in case of bad random configuration
     do
     {
       //set and delete crosslinkers compared to converged configuration of last time step
@@ -237,12 +237,86 @@ void StatMechTime::Integrate()
       //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
       statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
 
-      ConsistentPredictor(randomnumbers);
 
-      if(ndim ==3)
-        PTC(randomnumbers);
+
+      //in case that beam contact is activated special solution strategies are required
+      if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+      {
+        switch (soltype)
+        {
+          //solving strategy using regularization with penalty method (nonlinear solution approach: ordinary NEWTON)
+          case INPAR::CONTACT::solution_penalty:
+          {
+            ConsistentPredictor(randomnumbers);
+
+            if(ndim ==3)
+              PTC(randomnumbers);
+            else
+              FullNewton(randomnumbers);
+
+            // update constraint norm
+            beamcmanager_->UpdateConstrNorm();
+
+            break;
+          }
+          //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON)
+          case INPAR::CONTACT::solution_auglag:
+          {
+            // Initialize all lmuzawa to zero at beginning of new time step
+            beamcmanager_->ResetAlllmuzawa();
+
+            ConsistentPredictor(randomnumbers);
+
+            // get tolerance and maximum number of Uzawa steps from input file
+            double eps = beamcmanager_->InputParameters().get<double>("UZAWACONSTRTOL");
+            int maxuzawaiter = beamcmanager_->InputParameters().get<int>("UZAWAMAXSTEPS");
+
+            // LOOP2: augmented Lagrangian (Uzawa)
+            uzawaiter_=0;
+            do
+            {
+              // increase iteration index
+              ++uzawaiter_;
+              if (uzawaiter_ > maxuzawaiter)
+                dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+
+              if (discret_.Comm().MyPID() == 0)
+                cout << endl << "Starting Uzawa step No. " << uzawaiter_ << endl;
+
+              // LOOP3: nonlinear iteration (Newton)
+              if(ndim ==3)
+                PTC(randomnumbers);
+              else
+                FullNewton(randomnumbers);
+
+              // update constraint norm and penalty parameter
+              beamcmanager_->UpdateConstrNorm(uzawaiter_);
+
+              // update Uzawa Lagrange multipliers
+              beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
+
+            } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
+
+            // reset penalty parameter
+            beamcmanager_->ResetCurrentpp();
+
+            break;
+          }
+          default:
+            dserror("Only penaltz and augmented Lagrange implemented in statmech_time.cpp for beam contact");
+          }
+      }
       else
-        FullNewton(randomnumbers);
+      {
+
+        ConsistentPredictor(randomnumbers);
+
+        if(ndim ==3)
+          PTC(randomnumbers);
+        else
+          FullNewton(randomnumbers);
+      }
+
 
       /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
        *and the state of the discretization to status at the beginning of this time step*/
@@ -261,6 +335,20 @@ void StatMechTime::Integrate()
     statmechmanager_->PeriodicBoundaryShift(*dism_, ndim, dt);
 
     UpdateandOutput();
+
+    //**********************************************************************
+    //**********************************************************************
+    // update beam contact-specific quantities
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    {
+      beamcmanager_->Update(*dis_,params_.get<int>("step",0),99,99);
+      // output reaction forces and moments
+      #ifdef REACTIONFORCES
+      beamcmanager_->Reactions(*fint_,*dirichtoggle_,params_.get<int>("step",0));
+      #endif
+    }
+    //**********************************************************************
+     //**********************************************************************
 
     //special output for statistical mechanics
     statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
@@ -286,7 +374,6 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -387,14 +474,6 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
 
 
-  // zerofy velocity and acceleration in case of statics
-  if (dynkindstat)
-  {
-    velm_->PutScalar(0.0);
-    veln_->PutScalar(0.0);
-    vel_->PutScalar(0.0);
-  }
-
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -444,39 +523,36 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     p.set("action","calc_struct_nlnstiff");
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
     discret_.ClearState();
-
-    // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
   //-------------------------------------------- compute residual forces
-  // build residual
-  if (dynkindstat)
-  {
-    // static residual
-    // Res = F_int - F_ext
-    fresm_->PutScalar(0.0);
-  }
-  else
-  {
-    // dynamic residual
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add mid-inertial force
-
-  }
-  // add static mid-balance
-
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
+  //**********************************************************************
+  //**********************************************************************
+  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  {
+    // evaluate beam contact
+    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
 
+#ifdef GMSHNEWTONSTEPS
+    // create gmsh-output to visualize predictor step
+    int step  = params_.get<int>("step",0);
+    int istep = step + 1;
+    beamcmanager_->GmshOutput(*disn_,istep,0,0);
+    beamcmanager_->ConsoleOutput();
+#endif
+  }
+  //**********************************************************************
+  //**********************************************************************
 
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
+
+
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
@@ -541,6 +617,9 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
+
+  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
+  InitializeNewtonUzawa();
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
@@ -648,6 +727,24 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
+    //**********************************************************************
+    //**********************************************************************
+    // evaluate beam contact
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    {
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+
+#ifdef GMSHNEWTONSTEPS
+      // Create gmsh-output to visualize every step of newton iteration
+      int step  = params_.get<int>("step",0);
+      int istep = step + 1;
+      beamcmanager_->GmshOutput(*disn_,istep,uzawaiter_,numiter+1);
+      beamcmanager_->ConsoleOutput();
+#endif
+    }
+    //**********************************************************************
+    //**********************************************************************
+
 
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -713,7 +810,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 } // StatMechTime::FullNewton()
 
 /*----------------------------------------------------------------------*
- |  do Newton iteration (public)                             mwgee 03/07|
+ |  do Newton iteration (public)                             cyron 12/10|
  *----------------------------------------------------------------------*/
 void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 {
@@ -751,6 +848,9 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   if (dynkindstat) dserror("Static case not implemented");
 
 
+  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
+  InitializeNewtonUzawa();
+
   // hard wired ptc parameters
   double ctransptc = (statmechmanager_->statmechparams_).get<double>("CTRANSPTC0",0.0);
   double crotptc   = (statmechmanager_->statmechparams_).get<double>("CROTPTC0",0.145);
@@ -771,6 +871,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
+
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
@@ -894,7 +995,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       discret_.ClearState();
 
-      // do NOT finalize the stiffness matrix to add damping to it later
     }
 
     //------------------------------------------ compute residual forces
@@ -908,6 +1008,24 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
+
+    //**********************************************************************
+    //**********************************************************************
+    // evaluate beam contact
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    {
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+
+#ifdef GMSHNEWTONSTEPS
+      // Create gmsh-output to visualize every step of newton iteration
+      int step  = params_.get<int>("step",0);
+      int istep = step + 1;
+      beamcmanager_->GmshOutput(*disn_,istep,uzawaiter_,numiter+1);
+      beamcmanager_->ConsoleOutput();
+#endif
+    }
+    //**********************************************************************
+    //**********************************************************************
 
 
     // blank residual DOFs that are on Dirichlet BC
@@ -978,6 +1096,105 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
   return;
 } // StatMechTime::PTC()
+
+/*----------------------------------------------------------------------*
+ |  initialize Newton for 2nd, 3rd, ... Uzawa iteration      cyron 12/10|
+ *----------------------------------------------------------------------*/
+void StatMechTime::InitializeNewtonUzawa()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  if (!errfile) printerr = false;
+  bool  loadlin    = params_.get<bool>("LOADLIN",false);
+
+  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
+  if (uzawaiter_>1)
+  {
+    //--------------------------- recompute external forces if nonlinear
+    // at state n, the external forces and linearization are interpolated at
+    // time 1-alphaf in a TR fashion
+    if (loadlin)
+    {
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_eleload");
+      // other parameters needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
+//      discret_.SetState("displacement",dism_); // mid point
+//      discret_.SetState("velocity",velm_);
+      fextn_->PutScalar(0.0); // TR
+//      fextm_->PutScalar(0.0);
+      fextlin_->Zero();
+//      discret_.EvaluateNeumann(p,fextm_,fextlin_);
+      discret_.EvaluateNeumann(p,fextn_,fextlin_);
+      fextlin_->Complete();
+      discret_.ClearState();
+      fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+    }
+
+    //---------------------------- compute internal forces and stiffness
+    {
+      // zero out stiffness
+      stiff_->Zero();
+
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      p.set("alpha f",alphaf);
+      // set vector values needed by elements
+      discret_.ClearState();
+
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+
+      discret_.SetState("residual displacement",disi_);
+      discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
+
+      //discret_.SetState("velocity",velm_); // not used at the moment
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
+
+      discret_.ClearState();
+    }
+
+    //------------------------------------------ compute residual forces
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
+
+    //**********************************************************************
+    //**********************************************************************
+    // evaluate beam contact
+    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+    //**********************************************************************
+    //**********************************************************************
+
+    // blank residual DOFs that are on Dirichlet BC
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
+  }
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
