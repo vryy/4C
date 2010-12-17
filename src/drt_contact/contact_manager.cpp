@@ -484,11 +484,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                      Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON") != 1 &&
                                                                             dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
-  
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_spsimpler)  
-    dserror("Solution of saddle point system for frictional contact with simple(r) preconditioner has not been tested yet!");
-  
+
 #ifndef CONTACTCOMPHUEBER
   if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                                                             dim == 3)

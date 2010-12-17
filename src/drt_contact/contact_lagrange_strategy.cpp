@@ -2439,30 +2439,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
     kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-    /*Comm().Barrier();
-    if (Comm().MyPID()==0) cout << "\n***\nProblem-RowMap\n***\n";
-    Comm().Barrier();
-    cout << *problemrowmap_ << endl;
-    Comm().Barrier();
-    if (Comm().MyPID()==0) cout << "\n***\nLM-DomainMap\n***\n";
-    Comm().Barrier();
-    cout << *glmdofrowmap_ << endl;*/
-
     // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
     trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
 		// (only necessary in the parallel redistribution case)
     if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,problemrowmap_);
-
-    /*Comm().Barrier();
-    if (Comm().MyPID()==0) cout << "\n***\nRow-After2ndTransform\n***\n";
-    Comm().Barrier();
-    cout << trkdz->RangeMap() << endl;
-    Comm().Barrier();
-    if (Comm().MyPID()==0) cout << "\n***\nDomain-After2ndTransform\n***\n";
-    Comm().Barrier();
-    cout << trkdz->DomainMap() << endl;*/
 
     // build constraint matrix kzd
     RCP<LINALG::SparseMatrix> kzd = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
