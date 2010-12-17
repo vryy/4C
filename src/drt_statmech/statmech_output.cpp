@@ -2357,7 +2357,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								}
 						// calculate average bundle direction vector
 						LINALG::Matrix<3,1> avnormedvec = normedvectors[dir1];
-						if(alpha>M_PI_2)
+						if(alpha>M_PI/2.0)
 							avnormedvec.Scale(-1.0);
 						avnormedvec += normedvectors[dir2];
 						if(avnormedvec.Norm2()>0.0)
