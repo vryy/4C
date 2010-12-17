@@ -2340,12 +2340,28 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 						}
 
-						LINALG::Matrix<3,1> avnormedvec;
-						avnormedvec.Clear();
+						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
+						double alpha = -1.0;
+						int dir1=-1, dir2=-1;
 						for(int j=0; j<(int)normedvectors.size(); j++)
-							avnormedvec += normedvectors[j];
-						avnormedvec.Scale(1/avnormedvec.Norm2());
-						cout<<"\nn_cyl: "<<avnormedvec(0)<<" "<<avnormedvec(1)<<" "<<avnormedvec(2)<<endl;
+							for(int k=0; k<(int)normedvectors.size(); k++)
+								if(k>j)
+								{
+									double dotprod = normedvectors[j].Dot(normedvectors[k]);
+									if(k>j && dotprod>alpha)
+									{
+										alpha = acos(dotprod);
+										dir1=j;
+										dir2=k;
+									}
+								}
+						// calculate average bundle direction vector
+						LINALG::Matrix<3,1> avnormedvec = normedvectors[dir1];
+						if(alpha>M_PI_2)
+							avnormedvec.Scale(-1.0);
+						avnormedvec += normedvectors[dir2];
+						if(avnormedvec.Norm2()>0.0)
+							avnormedvec.Scale(1/avnormedvec.Norm2());
 
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
@@ -2747,6 +2763,14 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 				boxnumber++;
 			}
 
+	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
+	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+	if(discret_.Comm().MyPID()!=0)
+		crosslinkerbond_->PutScalar(0.0);
+	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
+	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+
 	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
 	// obtain crosslinker-crosslinker distances and sort them into histogram bins
 	for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
@@ -2759,7 +2783,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 			if(mypid==discret_.Comm().NumProc()-1)
 				appendix = remainder;
 
-			for(int i=0; i<(int)positions.size(); i++)
+			for(int i=0; i<transfermap_->NumMyElements(); i++)
 			{
 				for(int j=0; j<(int)positions.size(); j++)
 				{
