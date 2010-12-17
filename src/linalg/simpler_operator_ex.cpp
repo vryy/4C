@@ -44,6 +44,8 @@ LINALG::SIMPLER_BlockPreconditioner::SIMPLER_BlockPreconditioner(RCP<Epetra_Oper
   if (!myrank && mt) cout << "\n**********\nMESHTYING SIMPLER\n**********\n\n";
   bool co = schurSolver_list_.get<bool>("CONTACT",false);
   if (!myrank && co) cout << "\n**********\nCONTACT SIMPLER\n**********\n\n";
+//  bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
+//  if (!myrank && cstr) cout << "\n**********\nCONSTRAINT SIMPLER\n**********\n\n";
 
   Setup(A,velocitylist,pressurelist);
 
@@ -119,7 +121,8 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
     time.ResetStartTime();*/
   bool mt = schurSolver_list_.get<bool>("MESHTYING",false);
   bool co = schurSolver_list_.get<bool>("CONTACT",false);
-  if(mt || co) // provide nullspaces for meshtying problems
+  bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
+  if(mt || co || cstr) // provide nullspaces for meshtying problems
   {
     if(visml)
     {

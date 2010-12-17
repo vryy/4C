@@ -100,7 +100,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
+ML_MAXCOARSESIZE                5
 ML_MAXLEVEL                     2
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
@@ -123,7 +123,7 @@ AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                       0
 AZPOLY                          3
-AZPREC                          ML
+AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -135,7 +135,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
+ML_MAXCOARSESIZE                5
 ML_MAXLEVEL                     2
 ML_PRINT                        0
 ML_PROLONG_SMO                  0

@@ -424,6 +424,7 @@ void UTILS::ConstraintSolver::SolveSimple
   //make solver SIMPLE-ready
   solver_->PutSolverParamsToSubParams("SIMPLER",
       DRT::Problem::Instance()->FluidPressureSolverParams());
+  solver_->Params().sublist("SIMPLER").set<bool>("CONSTRAINT",true);
   
   //build block matrix for SIMPLE
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=
