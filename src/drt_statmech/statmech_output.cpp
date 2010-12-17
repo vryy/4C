@@ -2035,7 +2035,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   Epetra_Vector radialdistancesrow(*ddcorrrowmap_, true);
   RadialDensityDistribution(radialdistancesrow, &cog, &centershift, &crosslinkerentries);
 
-  // Export
+  // Import
   Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,3, true);
   Epetra_Vector phibinscol(*ddcorrcolmap_, true);
   Epetra_Vector thetabinscol(*ddcorrcolmap_, true);
@@ -2348,7 +2348,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								if(k>j)
 								{
 									double dotprod = normedvectors[j].Dot(normedvectors[k]);
-									if(k>j && dotprod>alpha)
+									if(k>j && acos(dotprod)>alpha)
 									{
 										alpha = acos(dotprod);
 										dir1=j;
@@ -2362,7 +2362,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						avnormedvec += normedvectors[dir2];
 						if(avnormedvec.Norm2()>0.0)
 							avnormedvec.Scale(1/avnormedvec.Norm2());
-
+						cout<<"alpha = "<<alpha<<endl;
+						cout<<"avnormedvec: "<<avnormedvec(0)<<" "<<avnormedvec(1)<<" "<<avnormedvec(2)<<endl;
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
 								for(int l=0; l<3; l++)
@@ -2461,7 +2462,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								if(k>j)
 								{
 									double dotprod = normedvectors[j].Dot(normedvectors[k]);
-									if(k>j && dotprod>alpha)
+									if(k>j && acos(dotprod)>alpha)
 									{
 										alpha = acos(dotprod);
 										dir1=j;
@@ -2732,45 +2733,8 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
 	int remainder = numcombinations%combinationsperproc;
 	int combicount = 0;
-	int crosscount = 0;
 
-	//Build positions vector
-	std::vector<std::vector<double> > positions;
-	std::vector<std::vector<int> > boxindices;
-	std::vector<int> boxnumbers;
-	int boxnumber=0;
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			for(int k=0; k<3; k++)
-			{
-				// store the boxes
-				std::vector<int> ijk;
-				ijk.push_back(i);
-				ijk.push_back(j);
-				ijk.push_back(k);
-				boxindices.push_back(ijk);
-
-				for(int l=0; l<crosslinkermap_->NumMyElements(); l++)
-				{
-					// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
-					std::vector<double> positionijk(3,0.0);
-					for(int m=0; m<(int)positionijk.size(); m++)
-						positionijk[m] = (*crosslinkerpositions_)[m][l]+(ijk[m]-1)*periodlength;
-
-					positions.push_back(positionijk);
-					boxnumbers.push_back(boxnumber);
-				}
-				boxnumber++;
-			}
-
-	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
-	if(discret_.Comm().MyPID()!=0)
-		crosslinkerbond_->PutScalar(0.0);
-	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
-
+/// Part 1: only central box
 	// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
 	// obtain crosslinker-crosslinker distances and sort them into histogram bins
 	for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
@@ -2778,31 +2742,27 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 		bool quitloop = false;
 		if(mypid==discret_.Comm().MyPID())
 		{
-			bool begin = false;
+			bool continueloop = false;
 			int appendix = 0;
 			if(mypid==discret_.Comm().NumProc()-1)
 				appendix = remainder;
 
-			for(int i=0; i<transfermap_->NumMyElements(); i++)
+			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
 			{
-				for(int j=0; j<(int)positions.size(); j++)
+				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 				{
-					// start adding crosslinks from here
+					// start adding crosslink from here
 					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
-						begin = true;
+						continueloop = true;
 
 					// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
-					if(j>i && begin)
+					if(j>i && continueloop)
 						if(combicount<combinationsperproc+appendix)
 						{
 							combicount++;
-							// remapped crosslinkerbond_ indices
-							int indexi = i%ncrosslink;
-							int indexj = j%ncrosslink;
-							// only calculate deltaxij if the following if both indices i and j stand for crosslinker elements
-							if((*crosslinkerbond_)[0][indexi]>-0.9 && (*crosslinkerbond_)[1][indexi]>-0.9 && (*crosslinkerbond_)[0][indexj]>-0.9 && (*crosslinkerbond_)[1][indexj]>-0.9)
+							// only do calculate deltaxij if the following if both indices i and j stand for crosslinker elements
+							if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
 							{
-								crosscount++;
 								double deltaxij = 0.0;
 								std::vector<int> indices(2,0);
 								LINALG::Matrix<3,2> currpositions;
@@ -2810,18 +2770,15 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 								indices[0] = i;
 								indices[1] = j;
 
-								// shift it according to new boundary box (and with respect to center box (boxindices={1,1,1})
+								// shift it according to new boundary box
 								for(int m=0; m<(int)currpositions.M(); m++)
 								{
-									// shift both crosslinker positions with respect to the newly calculated centers of the boxes they belongs to
 									for(int n=0; n<(int)currpositions.N(); n++)
 									{
-										// get corresponding box number
-										int currboxnumber = boxnumbers[indices[n]];
-										currpositions(m,n) = positions[indices[n]][m];
-										if (currpositions(m,n) > (*centershift)(m) + (1.0+(boxindices[currboxnumber][m]-1))*periodlength)
+										currpositions(m,n) = (*crosslinkerpositions_)[m][indices[n]];
+										if (currpositions(m,n) > periodlength+(*centershift)(m))
 											currpositions(m,n) -= periodlength;
-										if (currpositions(m,n) < (*centershift)(m) + (boxindices[currboxnumber][m]-1)*periodlength)
+										if (currpositions(m,n) < 0.0+(*centershift)(m))
 											currpositions(m,n) += periodlength;
 									}
 									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
@@ -2851,6 +2808,107 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 			if(quitloop)
 				break;
 		}
+	}
+
+/// Part 2: inter-crosslink distances between central box and surrounding box crosslinker elements
+	//Build positions vector
+	std::vector<std::vector<double> > positions;
+	std::vector<std::vector<int> > boxindices;
+	std::vector<int> boxnumbers;
+	int boxnumber=0;
+	for(int i=0; i<3; i++)
+		for(int j=0; j<3; j++)
+			for(int k=0; k<3; k++)
+			{
+
+				// store the boxes
+				std::vector<int> ijk;
+				ijk.push_back(i);
+				ijk.push_back(j);
+				ijk.push_back(k);
+				boxindices.push_back(ijk);
+				// ignore central box
+				if(i!=1 && j!=1 && k!=1)
+					for(int l=0; l<crosslinkermap_->NumMyElements(); l++)
+					{
+						// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
+						std::vector<double> positionijk(3,0.0);
+						for(int m=0; m<(int)positionijk.size(); m++)
+							positionijk[m] = (*crosslinkerpositions_)[m][l]+(ijk[m]-1)*periodlength;
+
+						positions.push_back(positionijk);
+						boxnumbers.push_back(boxnumber);
+					}
+				boxnumber++;
+			}
+
+	// tranfer map format of crosslinkerbond_
+	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
+	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+	if(discret_.Comm().MyPID()!=0)
+		crosslinkerbond_->PutScalar(0.0);
+	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
+	// reproduce redundancy prior to Export
+	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+
+	//parallel brute force from here on
+	// transfer map loop
+	for(int i=0; i<transfermap_->NumMyElements(); i++)
+	{
+		// shift positions for central box crosslinker element
+		LINALG::Matrix<3,1> cboxpos;
+		for(int m=0; m<(int)cboxpos.M(); m++)
+		{
+			cboxpos(m) = (*crosslinkerpositions_)[m][i];
+			if (cboxpos(m) > periodlength+(*centershift)(m))
+				cboxpos(m) -= periodlength;
+			if (cboxpos(m) < 0.0+(*centershift)(m))
+				cboxpos(m) += periodlength;
+		}
+		// surrounding box crosslinker element loop
+		for(int j=0; j<(int)positions.size(); j++)
+		{
+			// remapped crosslinkerbond_ indices
+			int indexj = j%ncrosslink;
+			// only calculate deltaxij if the following if both indices i and j stand for crosslinker elements
+			if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9 && (*crosslinkerbond_)[0][indexj]>-0.9 && (*crosslinkerbond_)[1][indexj]>-0.9)
+			{
+				std::vector<int> indices(2,0);
+				LINALG::Matrix<3,1> surrboxpos;
+
+				// number of the surrounding box
+				int surrboxnumber = boxnumbers[j];
+
+				// shift it according to new boundary box (and with respect to central box (boxindices={1,1,1})
+				for(int m=0; m<(int)surrboxpos.M(); m++)
+				{
+					// spatial index of the current box
+					int surrboxindex = boxindices[surrboxnumber][m];
+					surrboxpos(m) = positions[j][m];
+					if (surrboxpos(m) > (*centershift)(m) + (1.0+(surrboxindex-1))*periodlength)
+						surrboxpos(m) -= periodlength;
+					if (surrboxpos(m) < (*centershift)(m) + (surrboxindex-1)*periodlength)
+						surrboxpos(m) += periodlength;
+				}
+
+				// distance between crosslinkers
+				LINALG::Matrix<3,1> distance = surrboxpos;
+				distance -= cboxpos;
+				double deltaxij = distance.Norm2();
+
+				// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
+				int absbin = (int)floor(deltaxij/maxdist*3.0*(double)numbins);
+				// in case the distance is exactly 3*periodlength*sqrt(3)
+				if(absbin==3*numbins)
+					absbin--;
+				// sort into correct bin
+				int thebin = absbin%numbins;
+				int thecol = (int)floor((double)absbin/(double)numbins);
+				crosslinksperbinrow[thecol][thebin] += 1.0;
+			}
+		}
+
 	}
 	return;
 }//StatMechManager::DDCorrFunction()
