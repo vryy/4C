@@ -1574,7 +1574,7 @@ if (QHULL)
   add_executable(cut_test ${OBJS_CUT_TEST})
   #target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
   target_link_libraries(cut_test drt_lib_cut ${TETGEN_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
-  add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
+  #add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 endif (QHULL)
 
 if (STKADAPTIVE)
