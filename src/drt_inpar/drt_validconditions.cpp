@@ -786,16 +786,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffsi);
 
   /*--------------------------------------------------------------------*/
-  // FSI
+  // FSI without sliding
 
-  Teuchos::RCP<ConditionDefinition> linefsis =
+  Teuchos::RCP<ConditionDefinition> linefsins =
     Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS",
                                          "FSICouplingNoSlide",
                                          "FSI Coupling No Slide",
                                          DRT::Condition::FSICouplingNoSlide,
                                          true,
                                          DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surffsis =
+  Teuchos::RCP<ConditionDefinition> surffsins =
     Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS",
                                          "FSICouplingNoSlide",
                                          "FSI Coupling No Slide",
@@ -803,8 +803,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  condlist.push_back(linefsis);
-  condlist.push_back(surffsis);
+  condlist.push_back(linefsins);
+  condlist.push_back(surffsins);
+
+  /*--------------------------------------------------------------------*/
+  // FSI define centerdisp for sliding interfaces
+
+  Teuchos::RCP<ConditionDefinition> linefsicd =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS",
+                                         "FSICouplingCenterDisp",
+                                         "FSI Coupling Center Disp",
+                                         DRT::Condition::FSICouplingCenterDisp,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surffsicd =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS",
+                                         "FSICouplingCenterDisp",
+                                         "FSI Coupling Center Disp",
+                                         DRT::Condition::FSICouplingCenterDisp,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(linefsicd);
+  condlist.push_back(surffsicd);
 
   /*--------------------------------------------------------------------*/
   // FREESURF

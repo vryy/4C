@@ -136,6 +136,7 @@ public:
     SurfaceConservativeOutflowConsistency,
     FSICoupling,
     FSICouplingNoSlide,
+    FSICouplingCenterDisp,
     FREESURFCoupling,
     SurfaceTension,
     Surfactant,

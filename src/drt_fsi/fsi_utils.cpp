@@ -666,15 +666,18 @@ slideeleredmap_(null)
   // declare struct objects in interface
   map<int, RefCountPtr<DRT::Element> > structelements;
   map<int, RefCountPtr<DRT::Element> > structmelements;
+  map<int, RefCountPtr<DRT::Element> > structdelements;
   map<int, DRT::Node*> structnodes; // dummy map
   map<int, DRT::Node*> structmnodes; // partial map of sticking structure nodes
+  map<int, DRT::Node*> structdnodes; // partial map of centerdisp structure nodes
   map<int, DRT::Node*> structgnodes; // complete map of strucutre nodes
 
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*structdis, structnodes, structgnodes, structelements,"FSICoupling");
   DRT::UTILS::FindConditionObjects(*structdis, structnodes, structmnodes, structmelements,"FSICouplingNoSlide");
-  istructdispnodes_ = structgnodes;
-  istructdispeles_ = structelements;
+  DRT::UTILS::FindConditionObjects(*structdis, structnodes, structdnodes, structdelements,"FSICouplingCenterDisp");
+  istructdispnodes_ = structdnodes;
+  istructdispeles_ = structdelements;
   istructslidnodes_ = structgnodes;
   istructslideles_ = structelements;
 
@@ -846,7 +849,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing
                   fluiddis,
                   aletype);
 
-  //For the NON sliding ALE Nodes, use structure displacements
+  //For the NON sliding ALE Nodes, use standard ALE displacements
 
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = ifluidconfnodes_.begin(); nodeiter != ifluidconfnodes_.end(); ++nodeiter)
