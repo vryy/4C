@@ -596,8 +596,11 @@ DRT::ELEMENTS::TransportBoundary::~TransportBoundary()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
 {
-  os << "TransportBoundary ";
+  os << "TransportBoundary element";
   Element::Print(os);
+  cout << endl;
+  cout << "DiscretizationType:  "<<Shape()<<endl;
+  cout << endl;
   return;
 }
 
