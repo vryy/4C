@@ -163,7 +163,6 @@ private:
   /// flag for physical type of fluid flow (standard: incompressible)
   INPAR::FLUID::PhysicalType physicaltype_;
 
-  int dyntype_;
   bool alefluid_;
 
   //! use (or not) linearisation of reactive terms on the element

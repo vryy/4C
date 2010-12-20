@@ -38,8 +38,6 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
   DRT::ELEMENTS::Combust3::ActionType act = Combust3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Combust3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_linear_fluid")
-    act = Combust3::calc_linear_fluid;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = Combust3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")
@@ -395,7 +393,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
       const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
-      
+
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");

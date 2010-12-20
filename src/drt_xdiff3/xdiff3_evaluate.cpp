@@ -36,8 +36,6 @@ DRT::ELEMENTS::XDiff3::ActionType DRT::ELEMENTS::XDiff3::convertStringToActionTy
   DRT::ELEMENTS::XDiff3::ActionType act = XDiff3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = XDiff3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_linear_fluid")
-    act = XDiff3::calc_linear_fluid;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = XDiff3::calc_fluid_stationary_systemmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")

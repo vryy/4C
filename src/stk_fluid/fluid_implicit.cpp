@@ -127,7 +127,6 @@ STK::FLD::Fluid::Fluid( STK::Discretization & dis, Teuchos::RCP<LINALG::Solver> 
 
   physicaltype_ = Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
   timealgo_     = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
-  dyntype_      = Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP");
   stepmax_      = fdyn.get<int>("NUMSTEP");
   maxtime_      = fdyn.get<double>("MAXTIME");
   dta_          = fdyn.get<double>("TIMESTEP");
@@ -250,24 +249,11 @@ void STK::FLD::Fluid::Integrate()
       }
     }
 
-    switch (dyntype_)
-    {
-    case 0:
-      // -----------------------------------------------------------------
-      //                     solve nonlinear equation
-      // -----------------------------------------------------------------
-      //NonlinearSolve();
-      AdaptiveNonlinearSolve();
-      break;
-    case 1:
-      // -----------------------------------------------------------------
-      //                     solve linearised equation
-      // -----------------------------------------------------------------
-      LinearSolve();
-      break;
-    default:
-      dserror("type of dynamics unknown");
-    }
+    // -----------------------------------------------------------------
+    //                     solve nonlinear equation
+    // -----------------------------------------------------------------
+    //NonlinearSolve();
+    AdaptiveNonlinearSolve();
 
     // -------------------------------------------------------------------
     //                         update solution

@@ -687,20 +687,6 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
-  // how do we want to solve or fluid equations?
-  const int dyntype = params_.get<int>("type of nonlinear solve");
-
-  if (dyntype==1)
-  {
-    if (alefluid_)
-      dserror("no ALE possible with linearised fluid");
-    if (fssgv_ != "No")
-      dserror("no fine-scale solution implemented with linearised fluid");
-    /* additionally it remains to mention that for the linearised
-       fluid the stbilisation is hard coded to be SUPG/PSPG */
-  }
-
-
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -728,23 +714,10 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
       } /* end of switch(timealgo) */
     }
 
-    switch (dyntype)
-    {
-    case 0:
-      // -----------------------------------------------------------------
-      //                     solve nonlinear equation
-      // -----------------------------------------------------------------
-      NonlinearSolve();
-      break;
-    case 1:
-      // -----------------------------------------------------------------
-      //                     solve linearised equation
-      // -----------------------------------------------------------------
-      LinearSolve();
-      break;
-    default:
-      dserror("Type of dynamics unknown!!");
-    }
+    // -----------------------------------------------------------------
+    //                     solve nonlinear equation
+    // -----------------------------------------------------------------
+    NonlinearSolve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -1780,113 +1753,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
   }
 } // FluidImplicitTimeInt::NonlinearSolve
 
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | the time step of a linearised fluid                      chfoe 02/08 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*
-This fluid implementation is designed to be quick(er) but has a couple of
-drawbacks:
-- currently it is incapable of ALE fluid solutions
-- the order of accuracy in time is fixed to 1, i.e. some more steps may be required
-- some effort has to be made if correct nodal forces are required as this
-  implementation does a total solve rather than an incremental one.
-*/
-void FLD::FluidImplicitTimeInt::LinearSolve()
-{
-  // time measurement: linearised fluid
-  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
-
-  if (myrank_ == 0)
-    cout << "solution of linearised fluid   ";
-
-  // -------------------------------------------------------------------
-  // call elements to calculate system matrix
-  // -------------------------------------------------------------------
-
-  // get cpu time
-  const double tcpuele = Teuchos::Time::wallTime();
-  {
-    // time measurement: element
-    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
-
-    sysmat_->Zero();
-
-    // add Neumann loads
-    rhs_->Update(1.0,*neumann_loads_,0.0);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_linear_fluid");
-
-    // other parameters that might be needed by the elements
-    eleparams.set("total time",time_);
-    eleparams.set("thsl",theta_*dta_);
-    eleparams.set("Physical Type",physicaltype_);
-
-    eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-    eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-    eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("velaf",velnp_);
-    discret_->SetState("scaaf",scaaf_);
-    discret_->SetState("accam",accam_);
-    discret_->SetState("hist" ,hist_ );
-
-    // call standard loop over linear elements
-    discret_->Evaluate(eleparams,sysmat_,rhs_);
-    discret_->ClearState();
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-  }
-  // end time measurement for element
-  const double dtele_ = Teuchos::Time::wallTime() - tcpuele;
-
-  //--------- Apply dirichlet boundary conditions to system of equations
-  //          residual velocities (and pressures) are supposed to be zero at
-  //          boundary conditions
-  //velnp_->PutScalar(0.0);
-  {
-    // time measurement: application of dbc
-    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-
-    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,*(dbcmaps_->CondMap()));
-  }
-  {
-    // apply the womersley velocity profile as a dirichlet bc
-    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,*(vol_surf_flow_bcmaps_));
-  }
-
-  //-------solve for total new velocities and pressures
-  // get cpu time
-  const double tcpusolve = Teuchos::Time::wallTime();
-  {
-    // time measurement: solver
-    TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
-
-    /* possibly we could accelerate it if the reset variable
-       is true only every fifth step, i.e. set the last argument to false
-       for 4 of 5 timesteps or so. */
-    solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
-  }
-  // end time measurement for solver
-  dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
-
-  if (myrank_ == 0)
-    cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
-
-} // FluidImplicitTimeInt::LinearSolve
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

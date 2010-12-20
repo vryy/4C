@@ -1565,18 +1565,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::boussinesq),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("DYNAMICTYP","Nlin_Time_Int",
-                               "Nonlinear Time Integration Scheme",
-                               tuple<std::string>(
-                                 "Nlin_Time_Int",
-                                 "Lin_Time_Int"
-                                 ),
-                               tuple<int>(
-                                dyntyp_nln_time_int,
-                                dyntyp_lin_time_int
-                                ),
-                               &fdyn);
-
   setStringToIntegralParameter<int>("FLUID_SOLVER", "Implicit",
                                     "Solving strategy for fluid",
                                     tuple<std::string>("Implicit",

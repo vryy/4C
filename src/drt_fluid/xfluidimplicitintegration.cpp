@@ -432,17 +432,6 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
-  // how do we want to solve or fluid equations?
-  const int dyntype = params_.get<int>("type of nonlinear solve");
-
-  if (dyntype==1)
-  {
-    if (alefluid_)
-      dserror("no ALE possible with linearised fluid");
-    /* additionally it remains to mention that for the linearised
-       fluid the stbilisation is hard coded to be SUPG/PSPG */
-  }
-
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
 
   cutterdiscret->SetState("idispcolnp", LINALG::CreateVector(*fluidsurface_dofcolmap,true));
@@ -479,23 +468,10 @@ void FLD::XFluidImplicitTimeInt::TimeLoop(
       } /* end of switch(timealgo) */
     }
 
-    switch (dyntype)
-    {
-    case 0:
-      // -----------------------------------------------------------------
-      //                     solve nonlinear equation
-      // -----------------------------------------------------------------
-      NonlinearSolve(cutterdiscret);
-      break;
-    case 1:
-      // -----------------------------------------------------------------
-      //                     solve linearised equation
-      // -----------------------------------------------------------------
-      //LinearSolve(cutterdiscret);
-      break;
-    default:
-      dserror("Type of dynamics unknown!!");
-    }
+    // -----------------------------------------------------------------
+    //                     solve nonlinear equation
+    // -----------------------------------------------------------------
+    NonlinearSolve(cutterdiscret);
 
     // -------------------------------------------------------------------
     //                         update solution

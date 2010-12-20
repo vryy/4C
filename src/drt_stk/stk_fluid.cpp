@@ -121,7 +121,6 @@ STK::Fluid::Fluid( DRT::Discretization & dis,
 
   physicaltype_ = Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
   timealgo_     = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
-  dyntype_      = Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP");
   stepmax_      = fdyn.get<int>("NUMSTEP");
   maxtime_      = fdyn.get<double>("MAXTIME");
   dta_          = fdyn.get<double>("TIMESTEP");
@@ -221,24 +220,11 @@ void STK::Fluid::Integrate()
       }
     }
 
-    switch (dyntype_)
-    {
-    case 0:
-      // -----------------------------------------------------------------
-      //                     solve nonlinear equation
-      // -----------------------------------------------------------------
-      //NonlinearSolve();
-      AdaptiveNonlinearSolve();
-      break;
-    case 1:
-      // -----------------------------------------------------------------
-      //                     solve linearised equation
-      // -----------------------------------------------------------------
-      LinearSolve();
-      break;
-    default:
-      dserror("type of dynamics unknown");
-    }
+    // -----------------------------------------------------------------
+    //                     solve nonlinear equation
+    // -----------------------------------------------------------------
+
+    AdaptiveNonlinearSolve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -413,87 +399,6 @@ void STK::Fluid::PrepareTimeStep()
     throw std::runtime_error( "not supported" );
   }
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STK::Fluid::LinearSolve()
-{
-  stk::mesh::BulkData & bulk_data = GetMesh().BulkData();
-
-  // -------------------------------------------------------------------
-  // call elements to calculate system matrix
-  // -------------------------------------------------------------------
-
-  // get cpu time
-  const double tcpuele = Teuchos::Time::wallTime();
-
-  // create the parameters for the discretization
-  Teuchos::ParameterList eleparams;
-  DRT::Discretization & discret = Discretization();
-
-  std::vector<stk::mesh::FieldBase*> v;
-  v.push_back( velnp_ );
-  v.push_back( pressure_ );
-
-  Teuchos::RCP<Epetra_Vector> velnp = GatherFieldData( v );
-
-  v[0] = accnp_;
-  Teuchos::RCP<Epetra_Vector> accnp = GatherFieldData( v );
-
-  v[0] = hist_;
-  Teuchos::RCP<Epetra_Vector> hist  = GatherFieldData( v );
-
-  Teuchos::RCP<Epetra_Vector> rhs   = Teuchos::rcp( new Epetra_Vector( *discret.DofRowMap() ) );
-
-  // action for elements
-  eleparams.set("action","calc_linear_fluid");
-
-  // other parameters that might be needed by the elements
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("Physical Type",physicaltype_);
-
-//   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-//   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
-//   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
-
-  // set vector values needed by elements
-  discret.ClearState();
-  discret.SetState("velaf",velnp);
-  //discret.SetState("scaaf",scaaf);
-  discret.SetState("accam",accnp);
-  discret.SetState("hist" ,hist );
-
-  // call standard loop over linear elements
-  discret.Evaluate( eleparams, drt_->sysmat_, Teuchos::null, rhs, Teuchos::null, Teuchos::null );
-  discret.ClearState();
-
-  // finalize the complete matrix
-  drt_->sysmat_->Complete();
-
-  // end time measurement for element
-  const double dtele = Teuchos::Time::wallTime() - tcpuele;
-
-  //-------solve for total new velocities and pressures
-  // get cpu time
-  const double tcpusolve = Teuchos::Time::wallTime();
-
-  LINALG::ApplyDirichlettoSystem( drt_->sysmat_, velnp, rhs, velnp,
-                                  *drt_->dbcmaps_->DirichletMap() );
-
-  solver_->Solve( drt_->sysmat_->EpetraOperator(), velnp, rhs, true, true );
-
-  v[0] = velnp_;
-  ScatterFieldData( velnp, v );
-
-  // end time measurement for solver
-  const double dtsolve = Teuchos::Time::wallTime() - tcpusolve;
-
-  if ( bulk_data.parallel_rank() == 0 )
-    std::cout << "te=" << dtele << ", ts=" << dtsolve << "\n\n" ;
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

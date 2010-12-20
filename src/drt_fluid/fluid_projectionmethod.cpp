@@ -230,10 +230,6 @@ void FLD::FluidProjectionMethod::TimeLoop()
     // time measurement: time loop
     TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
-    // how do we want to solve or fluid equations?
-    const int dyntype = params_.get<int>("type of nonlinear solve");
-
-
     while (step_<stepmax_ and time_<maxtime_)
     {
         PrepareTimeStep();
@@ -261,17 +257,10 @@ void FLD::FluidProjectionMethod::TimeLoop()
             } /* end of switch(timealgo) */
         }
 
-        switch (dyntype)
-        {
-        case 0:
-            // -----------------------------------------------------------------
-            //                     solve nonlinear equation
-            // -----------------------------------------------------------------
-            ProjectionSolve();
-            break;
-        default:
-            dserror("Type of dynamics unknown!!");
-        }
+        // -----------------------------------------------------------------
+        //                     solve nonlinear equation
+        // -----------------------------------------------------------------
+        ProjectionSolve();
 
         // -------------------------------------------------------------------
         //                         update solution

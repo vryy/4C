@@ -166,10 +166,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<INPAR::FLUID::PhysicalType>("Physical Type",
       Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
-  // ------------------------------------------------ basic scheme, i.e.
-  // --------------------- solving nonlinear or linearised flow equation
-  fluidtimeparams->set<int>("type of nonlinear solve" ,
-      Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
   // -------------------------------------------------- time integration
   // note: here, the values are taken out of the problem-dependent ParameterList prbdyn
