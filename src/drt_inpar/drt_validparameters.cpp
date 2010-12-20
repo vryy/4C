@@ -1742,6 +1742,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
+  setStringToIntegralParameter<int>("MESHTYING",
+                               "no",
+                               "Flag to (de)activate mesh tying algorithm",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "No mesh tying",
+                                 "mesh tying"),
+                               tuple<int>(0,1),
+                               &fdyn);
+
   setStringToIntegralParameter<INPAR::FLUID::FineSubgridVisc>("FSSUGRVISC","No","fine-scale subgrid viscosity",
                                tuple<std::string>(
                                  "No",

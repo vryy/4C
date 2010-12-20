@@ -172,6 +172,42 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       map<int, DRT::Node*>& nodes,
                                       map<int, DRT::Node*>& gnodes,
                                       map<int, RCP<DRT::Element> >& elements,
+                                      vector<DRT::Condition*>& conds)
+{
+  FindConditionedNodes(dis, conds, nodes);
+
+  for (unsigned i = 0; i < conds.size(); ++i)
+  {
+    // get this condition's elements
+    map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    map< int, RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements.begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      // get all elements locally known, including ghost elements
+      pos = elements.insert(pos, *iter);
+      const int* n = iter->second->NodeIds();
+      for (int j=0; j < iter->second->NumNode(); ++j)
+      {
+        const int gid = n[j];
+        if (dis.HaveGlobalNode(gid))
+        {
+          gnodes[gid] = dis.gNode(gid);
+        }
+        else
+          dserror("All nodes of known elements must be known. Panic.");
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+                                      map<int, DRT::Node*>& nodes,
+                                      map<int, DRT::Node*>& gnodes,
+                                      map<int, RCP<DRT::Element> >& elements,
                                       const string& condname)
 {
   vector<DRT::Condition*> conds;

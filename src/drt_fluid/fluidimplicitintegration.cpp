@@ -145,6 +145,25 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     extrapolationpredictor_=false;
   }
 
+  if(params_.get<int>("Mesh Tying"))
+  {
+    meshtying_.Setup( *discret_,
+                      discret_->Comm(),
+                      false);
+    if(myrank_==0)
+    {
+      // Output:
+      cout << endl << "masterDofRowMap:" << endl;
+      cout << *(meshtying_.MasterDofRowMap())<< endl << endl;
+      cout << "slaveDofRowMap:" << endl;
+      cout << *(meshtying_.SlaveDofRowMap())<< endl << endl;
+      cout << "Projection matrix:" << endl;
+      cout << *(meshtying_.GetMortarTrafo())<< endl << endl;
+    }
+
+    dserror("Implementation mesh tying ends here");
+  }
+
   predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // form of convective term

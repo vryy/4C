@@ -90,7 +90,7 @@ namespace DRT
     void FindConditionedNodes(const DRT::Discretization& dis,
                               std::string condname,
                               map<int, DRT::Node*>& nodes);
-    
+
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                                   std::string condname,
@@ -117,7 +117,7 @@ namespace DRT
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
                               map<int, DRT::Node*>& nodes);
-    
+
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
@@ -135,6 +135,21 @@ namespace DRT
                               map<int, DRT::Node*>& nodes,
                               map<int, RCP<DRT::Element> >& elements,
                               const string& condname);
+
+    /// collect all nodes (in- and excluding 'ghosts') and
+    /// elements (including ghosts) in a condition
+    /*!
+      \param dis discretization
+      \param nodes unique map of nodes
+      \param ghostnodes overlapping map of nodes
+      \param elements overlapping map of elements
+      \param condname name of condition
+     */
+    void FindConditionObjects(const DRT::Discretization& dis,
+                              map<int, DRT::Node*>& nodes,
+                              map<int, DRT::Node*>& ghostnodes,
+                              map< int, RCP<DRT::Element> >& elements,
+                              vector<DRT::Condition*>& conds);
 
     /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition

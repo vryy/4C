@@ -37,7 +37,7 @@ namespace ADAPTER
 {
   /// Couple nonmatching FSI interfaces using mortar method
   /*!
-    This is a special class used FSI coupling algorithms to interpolate 
+    This is a special class used FSI coupling algorithms to interpolate
     between fluid and structure fields at the interface. The
     hard work is done by the MORTAR::MortarInterface.
     (Thus we use the mortar method here.)
@@ -64,6 +64,11 @@ namespace ADAPTER
                 DRT::Discretization& slavedis,
                 DRT::Discretization& aledis, ///> we need this for mesh initialization
                 Epetra_Comm& comm,
+                bool structslave = false);
+
+    /// setup the machinery
+    void Setup( DRT::Discretization& dis,
+                const Epetra_Comm& comm,
                 bool structslave = false);
 
     /// perform mesh initialization
@@ -109,7 +114,7 @@ namespace ADAPTER
 
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
-    
+
     /// the mortar projection operator
     RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
 
@@ -119,7 +124,7 @@ namespace ADAPTER
     RCP<MORTAR::MortarInterface>  interface_;        ///< interface
     RefCountPtr<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
     RefCountPtr<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
-    
+
     RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
     RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
     RefCountPtr<LINALG::SparseMatrix> M_;            ///< mortar matrix

@@ -39,6 +39,8 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
 #include "fluid_utils_mapextractor.H" // should go away
+// TODO: forward declaration??
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -654,6 +656,9 @@ protected:
 
   /// maps for womersley flow profile which is applied as a Dirichlet condition
   RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
+
+  /// coupling of fluid-fluid at an internal interface
+  ADAPTER::CouplingMortar               meshtying_;
 
   //@}
 

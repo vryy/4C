@@ -242,6 +242,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ------------------------------------ potential Neumann inflow terms
   fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
 
+  //--------------------------------------mesh tying for fluid
+  fluidtimeparams->set<int>("Mesh Tying",
+      Teuchos::getIntegralValue<int>(fdyn,"MESHTYING"));
+
   // ---------------------------- fine-scale subgrid viscosity approach
   fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 
