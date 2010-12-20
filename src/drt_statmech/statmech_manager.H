@@ -215,7 +215,7 @@ protected:
 	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt);
 
 	//! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
-	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
+	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RCP<Epetra_MultiVector> positions, LINALG::Matrix<3,1>* centershift);
 
 	//! \brief obtain distribution for spherical coordinates (all vectors in and out)
 	void SphericalCoordsDistribution(const Epetra_Vector& disrow, Epetra_Vector& phibinsrow, Epetra_Vector& thetabinsrow, Epetra_Vector& costhetabinsrow);
@@ -224,7 +224,7 @@ protected:
 	void DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
 
 	//! \brief obtain radial crosslinker density distribution
-	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog,  LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
+	void RadialDensityDistribution(Epetra_MultiVector& radialdistancesrow, RCP<Epetra_MultiVector> positions, LINALG::Matrix<3,1>* cog,  LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
 
 	/*! \brief determine the current network structure
 	 * 	\param disrow  (in) displacement in row format

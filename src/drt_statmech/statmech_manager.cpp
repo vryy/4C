@@ -2059,7 +2059,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 
 		// calculation of start indices for each processor
 		// number of overall independent combinations (central boundary box + 26 surrounding mirrored boxes)
-		int numcombinations = 27*(27*ncrosslink*ncrosslink-ncrosslink)/2;
+		int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
 		// combinations on each processor
 		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
 		// remainder of above division (will be distributed equally among processors)
@@ -2079,9 +2079,9 @@ void StatMechManager::CrosslinkerMoleculeInit()
 				appendix = remainder;
 
 			// loop over crosslinker pairs
-			for(int i=0; i<27*crosslinkermap_->NumMyElements(); i++)
+			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
 			{
-				for(int j=0; j<27*crosslinkermap_->NumMyElements(); j++)
+				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 				{
 					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
 						continueloop = true;
@@ -2092,7 +2092,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 						else
 						{
 							// new start index j
-							if(j==27*(crosslinkermap_->NumMyElements())-1)
+							if(j==crosslinkermap_->NumMyElements()-1)
 								start[1] = 0;
 							else
 								start[1] = j;
