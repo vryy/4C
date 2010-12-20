@@ -1624,6 +1624,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         (*sumnormfluxintegral_)[condid] += parnormfluxintegral[0]; // only first scalar!
         int samstep = step_-samstart_+1;
 
+        if (dumperiod_ < 1)
+          dserror("dumperiod_ is zero or even negative!");
+
         // dump every dumperiod steps
         if (samstep%dumperiod_==0)
         {
