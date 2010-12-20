@@ -53,7 +53,6 @@ MONITORING        No
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        4
 IPRERHS      1

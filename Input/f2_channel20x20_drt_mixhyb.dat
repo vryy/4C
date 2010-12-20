@@ -24,7 +24,6 @@ NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPOUT        1
 UPRES        1

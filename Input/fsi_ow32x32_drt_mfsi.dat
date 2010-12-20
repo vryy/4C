@@ -52,7 +52,6 @@ TOLDISP      1.0E-10
 MAXITER      50
 PREDICT      ConstDisVelAcc
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPPSS        1
 UPOUT        1

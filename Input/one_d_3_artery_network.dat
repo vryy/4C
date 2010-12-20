@@ -22,7 +22,6 @@ TIMESTEP     1.0e-4
 RESTARTEVRY  100
 UPRES        100
 ---------------------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP                      Nlin_Time_Int
 INITIALFIELD                    zero_field
 RESSTEP                         -1
 STARTFUNCNO                     2

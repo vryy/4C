@@ -44,7 +44,6 @@ IARC         No
 ARCSCL       1.0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05
 NUMSTEP      100
 MAXTIME      5.0

@@ -56,7 +56,6 @@ LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIME_RHS     mass
 TIMEINTEGR   BDF2
 VISCSTRESS   yes

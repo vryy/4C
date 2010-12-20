@@ -50,7 +50,6 @@ FLUID_VIS_FILE         No
 ALE_DISP_FILE          No
 ALE_DISP_GID           No
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 INITIALFIELD zero_field
 RESSTEP      -1
 STARTFUNCNO  2

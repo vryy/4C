@@ -67,7 +67,6 @@ TOLDISP      1.0E-10
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 SOLVE_FLUID  No
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2
 NUMDF        3
 VISCSTRESS   no

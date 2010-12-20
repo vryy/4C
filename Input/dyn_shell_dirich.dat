@@ -37,7 +37,6 @@ STRUCT_STRESS_GID  Yes
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.0001
 NUMSTEP      20
 MAXTIME      0.016

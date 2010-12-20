@@ -65,7 +65,6 @@ REINITFUNCNO                    2
 REINITIALIZATION                None
 REINITINTERVAL                  10
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field // field_by_function
 STARTFUNCNO      -1
 TIMEINTEGR       Stationary // One_Step_Theta

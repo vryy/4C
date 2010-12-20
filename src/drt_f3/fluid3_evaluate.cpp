@@ -68,8 +68,6 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = Fluid3::calc_fluid_stationary_systemmat_and_residual;
-  else if (action == "calc_linear_fluid")
-    act = Fluid3::calc_linear_fluid;
   else if (action == "calc_fluid_afgenalpha_systemmat_and_residual")
     act = Fluid3::calc_fluid_afgenalpha_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
@@ -193,11 +191,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec2,
                elevec3,
                mat);
-      }
-      break;
-      case calc_linear_fluid:
-      {
-          dserror("Linear fluid element is deleted. ");
       }
       break;
       case calc_fluid_beltrami_error:

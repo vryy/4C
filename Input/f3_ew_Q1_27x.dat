@@ -43,7 +43,6 @@ FLUID_VIS_FILE     No
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 SOLVE_FLUID  Yes
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        4
 IPRERHS      1

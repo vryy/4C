@@ -81,7 +81,6 @@ ITWANT       4
 MAXDT        0.07
 RESULTDT     0.05
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2
 VISCSTRESS   no
 FREESURFACE  no

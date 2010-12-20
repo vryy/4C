@@ -65,7 +65,6 @@ TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 SOLVE_FLUID  No
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        3
 IPRERHS      1

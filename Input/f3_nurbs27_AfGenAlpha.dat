@@ -35,7 +35,6 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 --------------------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP                      Nlin_Time_Int
 TIMEINTEGR                      Af_Gen_Alpha
 ALPHA_F                         0.666666
 ALPHA_M                         0.833333

@@ -27,7 +27,6 @@ NUMALEDIS    0
 ----------------------------------------------------------------IO
 FLUID_SOL         Yes
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPRES        1
 RESTARTEVRY  5

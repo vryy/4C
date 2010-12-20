@@ -40,7 +40,6 @@ NUMTHERMDIS  0
 ----------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE 	 Loma
-DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     field_by_function
 RESSTEP          -1
 STARTFUNCNO      2

@@ -86,7 +86,6 @@ ALPHA_F                         1
 ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-DYNAMICTYP                      Nlin_Time_Int
 FSSUGRVISC                      No
 GAMMA                           1
 GRIDVEL                         1

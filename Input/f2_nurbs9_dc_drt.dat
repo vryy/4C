@@ -24,7 +24,6 @@ TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------------------IO
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   Gen_Alpha
 UPRES        1
 RESTARTEVRY  1

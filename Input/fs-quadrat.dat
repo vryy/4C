@@ -53,7 +53,6 @@ FILESTEPS              1000
 ---------------------------------------------MESHTYING AND CONTACT
 ---------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
 RESSTEP          -1
 STARTFUNCNO      2

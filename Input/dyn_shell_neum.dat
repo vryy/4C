@@ -37,7 +37,6 @@ STRUCT_STRESS_GID  Yes
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  1

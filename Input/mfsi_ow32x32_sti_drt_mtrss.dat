@@ -56,7 +56,6 @@ GAMMA        1.0
 ALPHA_M      0.0
 ALPHA_F      0.0
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPPSS        1
 UPOUT        1

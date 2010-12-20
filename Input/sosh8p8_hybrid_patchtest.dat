@@ -88,7 +88,6 @@ NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFINCO              And
 MAXITER      100
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPPSS        1
 UPOUT        1

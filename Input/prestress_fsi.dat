@@ -64,7 +64,6 @@ MAXITER                         50
 TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
 ---------------------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP                      Nlin_Time_Int
 INITIALFIELD                    zero_field
 RESSTEP                         -1
 STARTFUNCNO                     2

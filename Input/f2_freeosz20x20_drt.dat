@@ -43,7 +43,6 @@ ITERATION                       full
 TOLDISP                         1.0E-08
 MAXITER                         50
 ---------------------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP                      Nlin_Time_Int
 TIMEINTEGR                      One_Step_Theta
 UPPSS                           1
 UPOUT                           1

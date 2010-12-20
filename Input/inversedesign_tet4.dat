@@ -83,7 +83,6 @@ UZAWAMAXITER 20
 UZAWAALGO    direct
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     zero_field
 RESSTEP          -1
 STARTFUNCNO      2

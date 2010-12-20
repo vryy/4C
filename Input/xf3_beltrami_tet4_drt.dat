@@ -32,7 +32,6 @@ NUMTHERMDIS  0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2
 UPRES        1
 RESTARTEVRY  2

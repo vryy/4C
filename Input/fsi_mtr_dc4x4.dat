@@ -77,7 +77,6 @@ ITWANT       4
 MAXDT        0.07
 RESULTDT     0.05
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        3
 VISCSTRESS   no

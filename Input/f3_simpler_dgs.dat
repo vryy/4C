@@ -38,7 +38,6 @@ ALE_DISP          No
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP       Nlin_Time_Int
 TIMEINTEGR       BDF2
 LIFTDRAG         Yes
 UPPSS            1

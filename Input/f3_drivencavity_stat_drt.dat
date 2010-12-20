@@ -49,7 +49,6 @@ FILESTEPS         1000
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 INITIALFIELD zero_field
 RESSTEP      -1
 STARTFUNCNO  2

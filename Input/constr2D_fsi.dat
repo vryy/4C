@@ -85,7 +85,6 @@ TOLCONSTR    1.0e-06
 UZAWAALGO    direct
 NLNSOL       newtonlinuzawa
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 UPPSS        1
 UPOUT        1

@@ -48,7 +48,6 @@ MONITORING         No
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMESTEP     0.05
 NUMSTEP      100
 MAXTIME      5.0
@@ -63,7 +62,6 @@ ITERATION    full
 TOLDISP      1.0E-08
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
 NUMDF        3
 VISCSTRESS   no
