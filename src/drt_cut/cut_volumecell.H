@@ -12,7 +12,6 @@ namespace CUT
   class Point;
   class Facet;
   class Element;
-  class LinearElement;
   class IntegrationCell;
   class Mesh;
 
@@ -22,7 +21,7 @@ public:
 
   VolumeCell( const std::set<Facet*> & facets,
               const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
-              LinearElement * element );
+              Element * element );
 
   bool Contains( Point * p );
 
@@ -31,7 +30,7 @@ public:
                   std::set<VolumeCell*> & connected,
                   std::set<Element*> & elements );
 
-  LinearElement * ParentElement() { return element_; }
+  Element * ParentElement() { return element_; }
 
   void CreateIntegrationCells( Mesh & mesh );
 
@@ -41,7 +40,7 @@ public:
 
 private:
 
-  LinearElement * element_;
+  Element * element_;
 
   std::set<Facet*> facets_;
 

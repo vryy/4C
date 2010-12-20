@@ -13,7 +13,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_cut/cut_boundarycell.H"
-#include "../drt_cut/cut_element.H"
+#include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_facet.H"
 #include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_mesh.H"
@@ -114,7 +114,7 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
   {
     DRT::Element* xfemElement = xfemdis->lColElement( k );
     int eid = xfemElement->Id();
-    GEO::CUT::Element * e = intersection.GetElement( eid );
+    GEO::CUT::ElementHandle * e = intersection.GetElement( eid );
 
     if ( e!=NULL and e->IsCut() )
     {

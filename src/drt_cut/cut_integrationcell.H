@@ -99,7 +99,7 @@ public:
   static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
 
   static void CreateCells( Mesh & mesh,
-                           LinearElement * element,
+                           Element * element,
                            VolumeCell * cell,
                            const std::set<Facet*> & facets,
                            std::set<IntegrationCell*> & integrationcells );

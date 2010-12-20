@@ -60,7 +60,7 @@ void test_unit_intersection_touch()
 
     GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4>
       intersection( mesh,
-                    *dynamic_cast<GEO::CUT::ConcreteEdge<DRT::Element::line2>*>( e ),
+                    *( e ),
                     *dynamic_cast<GEO::CUT::ConcreteSide<DRT::Element::quad4>*>( s1 ) );
 
     std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess> cuts;

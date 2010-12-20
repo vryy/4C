@@ -16,7 +16,7 @@ namespace GEO
   {
     class Point;
     class Facet;
-    class LinearElement;
+    class Element;
   }
 
 namespace CELL
@@ -26,7 +26,7 @@ class Cell
 {
 public:
 
-  Cell( GEO::CUT::LinearElement * element );
+  Cell( GEO::CUT::Element * element );
 
   void AddVolume( const std::set<GEO::CUT::Facet*> & collected_facets,
                   const std::map<std::pair<GEO::CUT::Point*, GEO::CUT::Point*>, std::set<GEO::CUT::Facet*> > & volume_lines );
@@ -43,7 +43,7 @@ public:
 
 private:
 
-  GEO::CUT::LinearElement * element_;
+  GEO::CUT::Element * element_;
 
   std::map<const GEO::CUT::Point*, Teuchos::RCP<Point> > points_;
   std::vector<Teuchos::RCP<Line> >     lines_;

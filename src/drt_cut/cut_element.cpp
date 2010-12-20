@@ -14,16 +14,7 @@
 
 #include "cell_cell.H"
 
-void GEO::CUT::Element::FillComplete( Mesh & mesh )
-{
-  for ( std::vector<Side*>::iterator i=sides_.begin(); i!=sides_.end(); ++i )
-  {
-    Side & myside = **i;
-    myside.FillComplete( mesh );
-  }
-}
-
-bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
+bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 {
   bool cut = false;
 
@@ -52,13 +43,13 @@ bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
-    LinearSide * s = dynamic_cast<LinearSide*>( *i );
+    Side * s = dynamic_cast<Side*>( *i );
     FindCutPoints( mesh, *s, side );
   }
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
-    LinearSide * s = dynamic_cast<LinearSide*>( *i );
+    Side * s = dynamic_cast<Side*>( *i );
     if ( FindCutLines( mesh, *s, side ) )
     {
       cut = true;
@@ -97,21 +88,21 @@ bool GEO::CUT::LinearElement::Cut( Mesh & mesh, LinearSide & side )
   }
 }
 
-bool GEO::CUT::LinearElement::FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other )
+bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other )
 {
   bool cut = side.FindCutPoints( mesh, this, other );
   bool reverse_cut = other.FindCutPoints( mesh, this, side );
   return cut or reverse_cut;
 }
 
-bool GEO::CUT::LinearElement::FindCutLines( Mesh & mesh, LinearSide & side, LinearSide & other )
+bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & side, Side & other )
 {
   bool cut = side.FindCutLines( mesh, this, other );
   bool reverse_cut = other.FindCutLines( mesh, this, side );
   return cut or reverse_cut;
 }
 
-void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
+void GEO::CUT::Element::MakeFacets( Mesh & mesh )
 {
   if ( facets_.size()==0 )
   {
@@ -135,7 +126,7 @@ void GEO::CUT::LinearElement::MakeFacets( Mesh & mesh )
   }
 }
 
-void GEO::CUT::LinearElement::FindNodePositions()
+void GEO::CUT::Element::FindNodePositions()
 {
   LINALG::Matrix<3,1> xyz;
   LINALG::Matrix<3,1> rst;
@@ -217,7 +208,7 @@ void GEO::CUT::LinearElement::FindNodePositions()
   }
 }
 
-bool GEO::CUT::LinearElement::IsCut()
+bool GEO::CUT::Element::IsCut()
 {
   if ( cut_faces_.size()>0 )
   {
@@ -234,7 +225,7 @@ bool GEO::CUT::LinearElement::IsCut()
   return false;
 }
 
-bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
+bool GEO::CUT::Element::OnSide( const std::vector<Point*> & facet_points )
 {
   const std::vector<Node*> & nodes = Nodes();
   for ( std::vector<Point*>::const_iterator i=facet_points.begin();
@@ -265,7 +256,7 @@ bool GEO::CUT::LinearElement::OnSide( const std::vector<Point*> & facet_points )
 }
 
 
-void GEO::CUT::LinearElement::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+void GEO::CUT::Element::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
 {
   for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
@@ -274,7 +265,7 @@ void GEO::CUT::LinearElement::GetIntegrationCells( std::set<GEO::CUT::Integratio
   }
 }
 
-void GEO::CUT::LinearElement::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::Element::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
 {
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -286,12 +277,12 @@ void GEO::CUT::LinearElement::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*
   }
 }
 
-void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
+void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
 {
   for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
   {
     Side * side = *i;
-    LinearSide * ls = dynamic_cast<LinearSide*>( side );
+    Side * ls = dynamic_cast<Side*>( side );
     if ( ls==NULL )
     {
       throw std::runtime_error( "linear element needs linear sides" );
@@ -300,7 +291,7 @@ void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
     for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side * other = *i;
-      LinearSide * ls_other = dynamic_cast<LinearSide*>( other );
+      Side * ls_other = dynamic_cast<Side*>( other );
       if ( ls_other==NULL )
       {
         throw std::runtime_error( "linear element needs linear side cuts" );
@@ -310,7 +301,7 @@ void GEO::CUT::LinearElement::GetCutPoints( std::set<Point*> & cut_points )
   }
 }
 
-void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
+void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
   //cell_ = Teuchos::rcp( new GEO::CELL::Cell( this ) );
 
@@ -431,434 +422,6 @@ void GEO::CUT::LinearElement::MakeVolumeCells( Mesh & mesh )
   }
 }
 
-bool GEO::CUT::QuadraticElement::Cut( Mesh & mesh, LinearSide & side )
-{
-  bool cut = false;
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    if ( e->Cut( mesh, side ) )
-    {
-      cut = true;
-    }
-  }
-  return cut;
-}
-
-void GEO::CUT::QuadraticElement::MakeFacets( Mesh & mesh )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->MakeFacets( mesh );
-  }
-}
-
-void GEO::CUT::QuadraticElement::MakeVolumeCells( Mesh & mesh )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->MakeVolumeCells( mesh );
-  }
-}
-
-void GEO::CUT::QuadraticElement::FindNodePositions()
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->FindNodePositions();
-  }
-}
-
-bool GEO::CUT::QuadraticElement::IsCut()
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    if ( e->IsCut() )
-      return true;
-  }
-  return false;
-}
-
-bool GEO::CUT::QuadraticElement::OnSide( const std::vector<Point*> & facet_points )
-{
-  throw std::runtime_error( "not supposed to end up here" );
-}
-
-void GEO::CUT::QuadraticElement::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->GetIntegrationCells( cells );
-  }
-}
-
-void GEO::CUT::QuadraticElement::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
-{
-  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
-  {
-    Element * e = *i;
-    e->GetBoundaryCells( bcells );
-  }
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::tet10>::FillComplete( Mesh & mesh )
-{
-  if ( subelements_.size()==0 )
-  {
-    subelements_.reserve( 8 );
-
-    Element::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Tetrahedron<4> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    std::vector<int> nids( 4 );
-
-    nids[0] = nodes[ 0]->Id();
-    nids[1] = nodes[ 4]->Id();
-    nids[2] = nodes[ 6]->Id();
-    nids[3] = nodes[ 7]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 4]->Id();
-    nids[1] = nodes[ 1]->Id();
-    nids[2] = nodes[ 5]->Id();
-    nids[3] = nodes[ 8]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 6]->Id();
-    nids[1] = nodes[ 5]->Id();
-    nids[2] = nodes[ 2]->Id();
-    nids[3] = nodes[ 9]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 7]->Id();
-    nids[1] = nodes[ 8]->Id();
-    nids[2] = nodes[ 9]->Id();
-    nids[3] = nodes[ 3]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    /////////////////////////////////////////////////////////////////
-
-    nids[0] = nodes[ 4]->Id();
-    nids[1] = nodes[ 5]->Id();
-    nids[2] = nodes[ 6]->Id();
-    nids[3] = nodes[ 8]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 6]->Id();
-    nids[1] = nodes[ 9]->Id();
-    nids[2] = nodes[ 7]->Id();
-    nids[3] = nodes[ 8]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 4]->Id();
-    nids[1] = nodes[ 8]->Id();
-    nids[2] = nodes[ 7]->Id();
-    nids[3] = nodes[ 6]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 9]->Id();
-    nids[1] = nodes[ 8]->Id();
-    nids[2] = nodes[ 5]->Id();
-    nids[3] = nodes[ 6]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-  }
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::hex20>::FillComplete( Mesh & mesh )
-{
-  if ( subelements_.size()==0 )
-  {
-    subelements_.reserve( 8 );
-
-    Element::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Hexahedron<8> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    // create middle nodes
-
-    std::set<int> node_nids;
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 0]->Id() );
-    node_nids.insert( nodes[ 8]->Id() );
-    node_nids.insert( nodes[ 1]->Id() );
-    node_nids.insert( nodes[ 9]->Id() );
-    node_nids.insert( nodes[ 2]->Id() );
-    node_nids.insert( nodes[10]->Id() );
-    node_nids.insert( nodes[ 3]->Id() );
-    node_nids.insert( nodes[11]->Id() );
-    Node* node20 = mesh.GetNode( node_nids, NULL );
-    int node20_id = node20->Id();
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 0]->Id() );
-    node_nids.insert( nodes[ 8]->Id() );
-    node_nids.insert( nodes[ 1]->Id() );
-    node_nids.insert( nodes[13]->Id() );
-    node_nids.insert( nodes[ 5]->Id() );
-    node_nids.insert( nodes[16]->Id() );
-    node_nids.insert( nodes[ 4]->Id() );
-    node_nids.insert( nodes[12]->Id() );
-    Node* node21 = mesh.GetNode( node_nids, NULL );
-    int node21_id = node21->Id();
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 1]->Id() );
-    node_nids.insert( nodes[ 9]->Id() );
-    node_nids.insert( nodes[ 2]->Id() );
-    node_nids.insert( nodes[14]->Id() );
-    node_nids.insert( nodes[ 6]->Id() );
-    node_nids.insert( nodes[17]->Id() );
-    node_nids.insert( nodes[ 5]->Id() );
-    node_nids.insert( nodes[13]->Id() );
-    Node* node22 = mesh.GetNode( node_nids, NULL );
-    int node22_id = node22->Id();
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 2]->Id() );
-    node_nids.insert( nodes[10]->Id() );
-    node_nids.insert( nodes[ 3]->Id() );
-    node_nids.insert( nodes[15]->Id() );
-    node_nids.insert( nodes[ 7]->Id() );
-    node_nids.insert( nodes[18]->Id() );
-    node_nids.insert( nodes[ 6]->Id() );
-    node_nids.insert( nodes[14]->Id() );
-    Node* node23 = mesh.GetNode( node_nids, NULL );
-    int node23_id = node23->Id();
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 3]->Id() );
-    node_nids.insert( nodes[11]->Id() );
-    node_nids.insert( nodes[ 0]->Id() );
-    node_nids.insert( nodes[12]->Id() );
-    node_nids.insert( nodes[ 4]->Id() );
-    node_nids.insert( nodes[19]->Id() );
-    node_nids.insert( nodes[ 7]->Id() );
-    node_nids.insert( nodes[15]->Id() );
-    Node* node24 = mesh.GetNode( node_nids, NULL );
-    int node24_id = node24->Id();
-
-    node_nids.clear();
-    node_nids.insert( nodes[ 4]->Id() );
-    node_nids.insert( nodes[16]->Id() );
-    node_nids.insert( nodes[ 5]->Id() );
-    node_nids.insert( nodes[17]->Id() );
-    node_nids.insert( nodes[ 6]->Id() );
-    node_nids.insert( nodes[18]->Id() );
-    node_nids.insert( nodes[ 7]->Id() );
-    node_nids.insert( nodes[19]->Id() );
-    Node* node25 = mesh.GetNode( node_nids, NULL );
-    int node25_id = node25->Id();
-
-    LINALG::Matrix<3,20> xyze;
-    Coordinates( xyze );
-
-    LINALG::Matrix<20,1> funct;
-    DRT::UTILS::shape_function_3D( funct, 0, 0, 0, DRT::Element::hex20 );
-
-    LINALG::Matrix<3,1> xyz;
-    xyz.Multiply( xyze, funct );
-    node_nids.clear();
-    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-    {
-      Node * n = *i;
-      node_nids.insert( n->Id() );
-    }
-    Node* node26 = mesh.GetNode( node_nids, xyz.A() );
-    int node26_id = node26->Id();
-
-
-    std::vector<int> nids( 8 );
-
-    nids[0] = nodes[ 0]->Id();
-    nids[1] = nodes[ 8]->Id();
-    nids[2] = node20_id;
-    nids[3] = nodes[11]->Id();
-    nids[4] = nodes[12]->Id();
-    nids[5] = node21_id;
-    nids[6] = node26_id;
-    nids[7] = node24_id;
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 8]->Id();
-    nids[1] = nodes[ 1]->Id();
-    nids[2] = nodes[ 9]->Id();
-    nids[3] = node20_id;
-    nids[4] = node21_id;
-    nids[5] = nodes[13]->Id();
-    nids[6] = node22_id;
-    nids[7] = node26_id;
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = node20_id;
-    nids[1] = nodes[ 9]->Id();
-    nids[2] = nodes[ 2]->Id();
-    nids[3] = nodes[10]->Id();
-    nids[4] = node26_id;
-    nids[5] = node22_id;
-    nids[6] = nodes[14]->Id();
-    nids[7] = node23_id;
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[11]->Id();
-    nids[1] = node20_id;
-    nids[2] = nodes[10]->Id();
-    nids[3] = nodes[ 3]->Id();
-    nids[4] = node24_id;
-    nids[5] = node26_id;
-    nids[6] = node23_id;
-    nids[7] = nodes[15]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    /////////////////////////////////////////////////////////////////
-
-    nids[0] = nodes[12]->Id();
-    nids[1] = node21_id;
-    nids[2] = node26_id;
-    nids[3] = node24_id;
-    nids[4] = nodes[ 4]->Id();
-    nids[5] = nodes[16]->Id();
-    nids[6] = node25_id;
-    nids[7] = nodes[19]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = node21_id;
-    nids[1] = nodes[13]->Id();
-    nids[2] = node22_id;
-    nids[3] = node26_id;
-    nids[4] = nodes[16]->Id();
-    nids[5] = nodes[ 5]->Id();
-    nids[6] = nodes[17]->Id();
-    nids[7] = node25_id;
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = node26_id;
-    nids[1] = node22_id;
-    nids[2] = nodes[14]->Id();
-    nids[3] = node23_id;
-    nids[4] = node25_id;
-    nids[5] = nodes[17]->Id();
-    nids[6] = nodes[ 6]->Id();
-    nids[7] = nodes[18]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = node24_id;
-    nids[1] = node26_id;
-    nids[2] = node23_id;
-    nids[3] = nodes[15]->Id();
-    nids[4] = nodes[19]->Id();
-    nids[5] = node25_id;
-    nids[6] = nodes[18]->Id();
-    nids[7] = nodes[ 7]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-  }
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::hex27>::FillComplete( Mesh & mesh )
-{
-  if ( subelements_.size()==0 )
-  {
-    subelements_.reserve( 8 );
-
-    Element::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Hexahedron<8> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    std::vector<int> nids( 8 );
-
-    nids[0] = nodes[ 0]->Id();
-    nids[1] = nodes[ 8]->Id();
-    nids[2] = nodes[20]->Id();
-    nids[3] = nodes[11]->Id();
-    nids[4] = nodes[12]->Id();
-    nids[5] = nodes[21]->Id();
-    nids[6] = nodes[26]->Id();
-    nids[7] = nodes[24]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[ 8]->Id();
-    nids[1] = nodes[ 1]->Id();
-    nids[2] = nodes[ 9]->Id();
-    nids[3] = nodes[20]->Id();
-    nids[4] = nodes[21]->Id();
-    nids[5] = nodes[13]->Id();
-    nids[6] = nodes[22]->Id();
-    nids[7] = nodes[26]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[20]->Id();
-    nids[1] = nodes[ 9]->Id();
-    nids[2] = nodes[ 2]->Id();
-    nids[3] = nodes[10]->Id();
-    nids[4] = nodes[26]->Id();
-    nids[5] = nodes[22]->Id();
-    nids[6] = nodes[14]->Id();
-    nids[7] = nodes[23]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[11]->Id();
-    nids[1] = nodes[20]->Id();
-    nids[2] = nodes[10]->Id();
-    nids[3] = nodes[ 3]->Id();
-    nids[4] = nodes[24]->Id();
-    nids[5] = nodes[26]->Id();
-    nids[6] = nodes[23]->Id();
-    nids[7] = nodes[15]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    /////////////////////////////////////////////////////////////////
-
-    nids[0] = nodes[12]->Id();
-    nids[1] = nodes[21]->Id();
-    nids[2] = nodes[26]->Id();
-    nids[3] = nodes[24]->Id();
-    nids[4] = nodes[ 4]->Id();
-    nids[5] = nodes[16]->Id();
-    nids[6] = nodes[25]->Id();
-    nids[7] = nodes[19]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[21]->Id();
-    nids[1] = nodes[13]->Id();
-    nids[2] = nodes[22]->Id();
-    nids[3] = nodes[26]->Id();
-    nids[4] = nodes[16]->Id();
-    nids[5] = nodes[ 5]->Id();
-    nids[6] = nodes[17]->Id();
-    nids[7] = nodes[25]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[26]->Id();
-    nids[1] = nodes[22]->Id();
-    nids[2] = nodes[14]->Id();
-    nids[3] = nodes[23]->Id();
-    nids[4] = nodes[25]->Id();
-    nids[5] = nodes[17]->Id();
-    nids[6] = nodes[ 6]->Id();
-    nids[7] = nodes[18]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-
-    nids[0] = nodes[24]->Id();
-    nids[1] = nodes[26]->Id();
-    nids[2] = nodes[23]->Id();
-    nids[3] = nodes[15]->Id();
-    nids[4] = nodes[19]->Id();
-    nids[5] = nodes[25]->Id();
-    nids[6] = nodes[18]->Id();
-    nids[7] = nodes[ 7]->Id();
-    subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
-  }
-}
-
 #ifdef QHULL
 void GEO::CUT::ConcreteElement<DRT::Element::tet4>::FillTetgen( tetgenio & out )
 {
@@ -935,24 +498,6 @@ bool GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::PointInside( Point* p )
   return pos.Compute();
 }
 
-bool GEO::CUT::ConcreteElement<DRT::Element::hex20>::PointInside( Point* p )
-{
-  Position<DRT::Element::hex20> pos( *this, *p );
-  return pos.Compute();
-}
-
-bool GEO::CUT::ConcreteElement<DRT::Element::hex27>::PointInside( Point* p )
-{
-  Position<DRT::Element::hex27> pos( *this, *p );
-  return pos.Compute();
-}
-
-bool GEO::CUT::ConcreteElement<DRT::Element::tet10>::PointInside( Point* p )
-{
-  Position<DRT::Element::tet10> pos( *this, *p );
-  return pos.Compute();
-}
-
 
 void GEO::CUT::ConcreteElement<DRT::Element::tet4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
@@ -990,39 +535,6 @@ void GEO::CUT::ConcreteElement<DRT::Element::wedge6>::LocalCoordinates( const LI
 void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position<DRT::Element::pyramid5> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::hex20>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position<DRT::Element::hex20> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::hex27>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position<DRT::Element::hex27> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-}
-
-void GEO::CUT::ConcreteElement<DRT::Element::tet10>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position<DRT::Element::tet10> pos( *this, xyz );
   bool success = pos.Compute();
   if ( not success )
   {

@@ -309,7 +309,7 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
 }
 
 void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
-                                                 LinearElement * element,
+                                                 Element * element,
                                                  VolumeCell * cell,
                                                  const std::set<Facet*> & facets,
                                                  std::set<IntegrationCell*> & integrationcells )

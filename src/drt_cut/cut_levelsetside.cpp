@@ -18,30 +18,30 @@ bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, 
 
 void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
-  LinearSide::MakeOwnedSideFacets( mesh, filter, facets );
+  Side::MakeOwnedSideFacets( mesh, filter, facets );
 }
 
 void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  LinearSide::MakeSideCutFacets( mesh, element, facets );
+  Side::MakeSideCutFacets( mesh, element, facets );
 }
 
 void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  LinearSide::MakeInternalFacets( mesh, element, facets );
+  Side::MakeInternalFacets( mesh, element, facets );
 }
 
 bool GEO::CUT::LevelSetSide::IsCut()
 {
-  return LinearSide::IsCut();
+  return Side::IsCut();
 }
 
 void GEO::CUT::LevelSetSide::AddLine( Line* cut_line )
 {
-  LinearSide::AddLine( cut_line );
+  Side::AddLine( cut_line );
 }
 
 GEO::CUT::Facet * GEO::CUT::LevelSetSide::FindFacet( const std::vector<Point*> & facet_points )
 {
-  return LinearSide::FindFacet( facet_points );
+  return Side::FindFacet( facet_points );
 }

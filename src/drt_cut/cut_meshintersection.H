@@ -9,7 +9,7 @@
 
 #include "../drt_lib/drt_element.H"
 
-#include "cut_mesh.H"
+#include "cut_meshhandle.H"
 #include "cut_pointpool.H"
 
 namespace GEO
@@ -20,6 +20,7 @@ namespace CUT
   class Edge;
   class Side;
   class Element;
+  class ElementHandle;
 
 class MeshIntersection
 {
@@ -32,7 +33,7 @@ public:
     cut_mesh_.reserve( numcutmesh );
     for ( int i=0; i<numcutmesh; ++i )
     {
-      cut_mesh_.push_back( Teuchos::rcp( new Mesh( 1, pp_, true ) ) );
+      cut_mesh_.push_back( Teuchos::rcp( new MeshHandle( 1, pp_, true ) ) );
     }
   }
 
@@ -46,22 +47,22 @@ public:
 
   void SelfCut();
 
-  Element * GetElement( int eid );
+  ElementHandle * GetElement( int eid );
 
-  Side * GetCutSide( int sid, int mi=0 );
+  SideHandle * GetCutSide( int sid, int mi=0 );
 
   void Status();
 
-  Mesh & NormalMesh() { return mesh_; }
+  Mesh & NormalMesh() { return mesh_.LinearMesh(); }
 
-  Mesh & CutMesh( int i=0 ) { return *cut_mesh_[i]; }
+  Mesh & CutMesh( int i=0 ) { return cut_mesh_[i]->LinearMesh(); }
 
 private:
 
   Teuchos::RCP<PointPool> pp_;
 
-  Mesh mesh_;
-  std::vector<Teuchos::RCP<Mesh> > cut_mesh_;
+  MeshHandle mesh_;
+  std::vector<Teuchos::RCP<MeshHandle> > cut_mesh_;
 };
 
 }

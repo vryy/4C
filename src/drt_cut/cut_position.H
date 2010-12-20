@@ -35,6 +35,14 @@ public:
     Scale();
   }
 
+  Position( const LINALG::Matrix<3,numNodesElement> & xyze,
+            const LINALG::Matrix<3,1> & xyz )
+    : px_( xyz ),
+      xyze_( xyze )
+  {
+    Scale();
+  }
+
   bool Compute();
 
   bool WithinLimits();

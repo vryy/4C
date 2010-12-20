@@ -8,12 +8,12 @@ namespace GEO
   namespace CUT
   {
 
-class LevelSetSide : public LinearSide
+class LevelSetSide : public Side
 {
 public:
 
   LevelSetSide( int sid )
-    : LinearSide( sid, std::vector<Node*>(), std::vector<Edge*>() )
+    : Side( sid, std::vector<Node*>(), std::vector<Edge*>() )
   {
   }
 

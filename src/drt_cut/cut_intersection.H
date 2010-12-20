@@ -30,7 +30,7 @@ class Intersection
 public:
 
   Intersection( Mesh & mesh,
-                ConcreteEdge<edgetype> & edge,
+                Edge & edge,
                 ConcreteSide<sidetype> & side )
     : mesh_( mesh ),
       edge_( edge ),
@@ -94,7 +94,7 @@ private:
   }
 
   Mesh & mesh_;
-  ConcreteEdge<edgetype> & edge_;
+  Edge & edge_;
   ConcreteSide<sidetype> & side_;
 
   LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;

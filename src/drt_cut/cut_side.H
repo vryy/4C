@@ -24,6 +24,11 @@ public:
       nodes_( nodes ),
       edges_( edges )
   {
+    for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+    {
+      Edge * e = *i;
+      e->Register( this );
+    }
   }
 
   virtual ~Side() {}
@@ -46,8 +51,6 @@ public:
 
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
-  virtual void FillComplete( Mesh & mesh );
-
   void Coordinates( double * xyze )
   {
     double * x = xyze;
@@ -59,13 +62,13 @@ public:
     }
   }
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets ) = 0;
+  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
 
-  virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets ) = 0;
+  virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets ) = 0;
+  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
-  virtual bool IsCut() = 0;
+  virtual bool IsCut();
 
   //bool FullSideCut() { return cut_lines_.size()==edges_.size() and facets_.size()==1; }
 
@@ -79,11 +82,11 @@ public:
 
 //   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;
 
-  virtual void AddLine( Line* cut_line ) = 0;
+  virtual void AddLine( Line* cut_line );
 
-  virtual Facet * FindFacet( const std::vector<Point*> & facet_points ) = 0;
+  virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
   void Print();
 
@@ -95,58 +98,11 @@ public:
 
   const std::vector<Node*> & Nodes() const { return nodes_; }
 
-protected:
-
-private:
-
-  int sid_;
-
-  std::vector<Node*> nodes_;
-
-  std::vector<Edge*> edges_;
-
-  std::set<Element*> elements_;
-};
-
-
-class LinearSide : public Side
-{
-public:
-
-  LinearSide( int sid,
-              const std::vector<Node*> & nodes,
-              const std::vector<Edge*> & edges )
-    : Side( sid, nodes, edges )
-  {
-    for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
-    {
-      Edge * e = *i;
-      e->Register( this );
-    }
-  }
-
-  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
-
-  virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
-
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
-
-  virtual bool IsCut();
-
-//   virtual void ExchangeFacetSide( Side * side, bool cutsurface );
-
-  // add cut_line to cut_lines_ if not yet included
-  virtual void AddLine( Line* cut_line );
-
-  virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
-
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
-
   void CreateLineSegment( Mesh & mesh, Element * element );
 
-  bool FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & other );
+  bool FindCutPoints( Mesh & mesh, Element * element, Side & other );
 
-  bool FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other );
+  bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 
   void GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts );
 
@@ -162,48 +118,21 @@ protected:
   std::vector<Line*> cut_lines_;
 
   std::vector<Facet*> facets_;
-};
 
+private:
 
-class QuadraticSide : public Side
-{
-public:
+  int sid_;
 
-  QuadraticSide( int sid,
-                 const std::vector<Node*> & nodes,
-                 const std::vector<Edge*> & edges )
-    : Side( sid, nodes, edges )
-  {}
+  std::vector<Node*> nodes_;
 
-  //virtual void FillComplete( Mesh & mesh );
+  std::vector<Edge*> edges_;
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
-
-  virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
-
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
-
-  virtual bool IsCut();
-
-//   virtual void ExchangeFacetSide( Side * side, bool cutsurface )
-//   { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual void AddLine( Line* cut_line )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual Facet * FindFacet( const std::vector<Point*> & facet_points )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
-
-protected:
-
-  std::vector<Side*> subsides_;
+  std::set<Element*> elements_;
 };
 
 
 template <>
-class ConcreteSide<DRT::Element::tri3> : public LinearSide
+class ConcreteSide<DRT::Element::tri3> : public Side
 {
 public:
 
@@ -212,7 +141,7 @@ public:
   ConcreteSide<DRT::Element::tri3>( int sid,
                                     const std::vector<Node*> & nodes,
                                     const std::vector<Edge*> & edges )
-    : LinearSide( sid, nodes, edges )
+    : Side( sid, nodes, edges )
   {}
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
@@ -235,7 +164,7 @@ public:
 
 
 template <>
-class ConcreteSide<DRT::Element::quad4> : public LinearSide
+class ConcreteSide<DRT::Element::quad4> : public Side
 {
 public:
 
@@ -244,7 +173,7 @@ public:
   ConcreteSide<DRT::Element::quad4>( int sid,
                                      const std::vector<Node*> & nodes,
                                      const std::vector<Edge*> & edges )
-    : LinearSide( sid, nodes, edges )
+    : Side( sid, nodes, edges )
   {}
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
@@ -263,90 +192,6 @@ public:
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 4> & xyze_surfaceElement )
-  { Side::Coordinates( xyze_surfaceElement.A() ); }
-};
-
-
-template <>
-class ConcreteSide<DRT::Element::tri6> : public QuadraticSide
-{
-public:
-
-  //const int numNodesSurface = 6;
-
-  ConcreteSide<DRT::Element::tri6>( int sid,
-                                    const std::vector<Node*> & nodes,
-                                    const std::vector<Edge*> & edges )
-    : QuadraticSide( sid, nodes, edges )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 6> & xyze_surfaceElement )
-  { Side::Coordinates( xyze_surfaceElement.A() ); }
-};
-
-
-template <>
-class ConcreteSide<DRT::Element::quad8> : public QuadraticSide
-{
-public:
-
-  //const int numNodesSurface = 8;
-
-  ConcreteSide<DRT::Element::quad8>( int sid,
-                                     const std::vector<Node*> & nodes,
-                                     const std::vector<Edge*> & edges )
-    : QuadraticSide( sid, nodes, edges )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 8> & xyze_surfaceElement )
-  { Side::Coordinates( xyze_surfaceElement.A() ); }
-};
-
-
-template <>
-class ConcreteSide<DRT::Element::quad9> : public QuadraticSide
-{
-public:
-
-  //const int numNodesSurface = 9;
-
-  ConcreteSide<DRT::Element::quad9>( int sid,
-                                     const std::vector<Node*> & nodes,
-                                     const std::vector<Edge*> & edges )
-    : QuadraticSide( sid, nodes, edges )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
-  { throw std::runtime_error( "not supposed to end up here" ); }
-
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 9> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
 };
 

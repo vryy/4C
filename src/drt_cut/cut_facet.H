@@ -32,7 +32,7 @@ namespace CUT
 {
 class BoundaryCell;
 class VolumeCell;
-class LinearElement;
+class Element;
 class Mesh;
 
 class Facet
@@ -68,7 +68,7 @@ public:
   void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
 #ifdef QHULL
-  void GenerateTetgen( Mesh & mesh, LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
+  void GenerateTetgen( Mesh & mesh, Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
 #endif
 
   void CreateLinearElements( Mesh & mesh );

@@ -27,10 +27,8 @@ namespace CUT
 class Node;
 class Edge;
 class Side;
-class LinearSide;
 class LevelSetSide;
 class Element;
-class LinearElement;
 
 class PointPool;
 
@@ -65,15 +63,11 @@ public:
 
 #endif
 
-  void FillComplete();
-
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
   Side * CreateSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
   Element * CreateTet4( int eid, const std::vector<int> & nids );
-
-  Element * CreateTet10( int eid, const std::vector<int> & nids );
 
   Element * CreatePyramid5( int eid, const std::vector<int> & nids );
 
@@ -81,19 +75,11 @@ public:
 
   Element * CreateHex8( int eid, const std::vector<int> & nids );
 
-  Element * CreateHex20( int eid, const std::vector<int> & nids );
-
-  Element * CreateHex27( int eid, const std::vector<int> & nids );
-
   Side * CreateTri3( int sid, const std::vector<int> & nids );
 
   Side * CreateTri6( int sid, const std::vector<int> & nids );
 
   Side * CreateQuad4( int sid, const std::vector<int> & nids );
-
-  Side * CreateQuad8( int sid, const std::vector<int> & nids );
-
-  Side * CreateQuad9( int sid, const std::vector<int> & nids );
 
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
@@ -103,7 +89,7 @@ public:
 
   VolumeCell* NewVolumeCell( const std::set<Facet*> & facets,
                              const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
-                             LinearElement * element );
+                             Element * element );
 
   Tri3BoundaryCell* NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet );
 
@@ -123,7 +109,7 @@ public:
 
   void Cut( Mesh & mesh, std::set<Element*> & elements_done );
 
-  void Cut( LinearSide & side, const std::set<Element*> & done, std::set<Element*> & elements_done );
+  void Cut( Side & side, const std::set<Element*> & done, std::set<Element*> & elements_done );
 
   void Cut( LevelSetSide & side );
 

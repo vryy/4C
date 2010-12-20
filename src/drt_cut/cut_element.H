@@ -37,13 +37,13 @@ public:
       Side * s = *i;
       s->Register( this );
     }
-//     for ( std::vector<Node*>::const_iterator i=nodes.begin();
-//           i!=nodes.end();
-//           ++i )
-//     {
-//       Node * n = *i;
-//       n->Register( this );
-//     }
+    for ( std::vector<Node*>::const_iterator i=nodes.begin();
+          i!=nodes.end();
+          ++i )
+    {
+      Node * n = *i;
+      n->Register( this );
+    }
   }
 
   virtual ~Element() {}
@@ -54,28 +54,26 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
-  virtual void FillComplete( Mesh & mesh );
+  virtual bool Cut( Mesh & mesh, Side & side );
 
-  virtual bool Cut( Mesh & mesh, LinearSide & side ) = 0;
+  virtual void MakeFacets( Mesh & mesh );
 
-  virtual void MakeFacets( Mesh & mesh ) = 0;
+  virtual void MakeVolumeCells( Mesh & mesh );
 
-  virtual void MakeVolumeCells( Mesh & mesh ) = 0;
+  virtual void FindNodePositions();
 
-  virtual void FindNodePositions() = 0;
-
-  virtual bool IsCut() = 0;
+  virtual bool IsCut();
 
 #ifdef QHULL
   virtual void FillTetgen( tetgenio & out )
   { throw std::runtime_error( "not supported" ); }
 #endif
 
-  virtual bool OnSide( const std::vector<Point*> & facet_points ) = 0;
+  virtual bool OnSide( const std::vector<Point*> & facet_points );
 
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells ) = 0;
+  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
+  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
   const std::vector<Side*> & Sides() { return sides_; }
 
@@ -97,61 +95,25 @@ public:
 
   const std::vector<Node*> & Nodes() { return nodes_; }
 
+  void GetCutPoints( std::set<Point*> & cut_points );
+
+  const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }
 
 private:
 
+  bool FindCutPoints( Mesh & mesh, Side & side, Side & other );
+
+  bool FindCutLines( Mesh & mesh, Side & side, Side & other );
+
   int eid_;
 
   std::vector<Side*> sides_;
 
   std::vector<Node*> nodes_;
-};
-
-
-class LinearElement : public Element
-{
-public:
-
-  LinearElement( int eid,
-                 const std::vector<Side*> & sides,
-                 const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
-  {
-    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-    {
-      Node * n = *i;
-      n->Register( this );
-    }
-  }
-
-  virtual bool Cut( Mesh & mesh, LinearSide & side );
-
-  virtual void MakeFacets( Mesh & mesh );
-
-  virtual void FindNodePositions();
-
-  virtual bool IsCut();
-
-  virtual bool OnSide( const std::vector<Point*> & facet_points );
-
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
-
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
-
-  void GetCutPoints( std::set<Point*> & cut_points );
-
-  void MakeVolumeCells( Mesh & mesh );
-
-  const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
-
-private:
-
-  bool FindCutPoints( Mesh & mesh, LinearSide & side, LinearSide & other );
-
-  bool FindCutLines( Mesh & mesh, LinearSide & side, LinearSide & other );
 
   std::set<Side*> cut_faces_;
 
@@ -162,47 +124,15 @@ private:
 };
 
 
-class QuadraticElement : public Element
-{
-public:
-
-  QuadraticElement( int eid,
-                    const std::vector<Side*> & sides,
-                    const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
-  {}
-
-  virtual bool Cut( Mesh & mesh, LinearSide & side );
-
-  virtual void MakeFacets( Mesh & mesh );
-
-  virtual void MakeVolumeCells( Mesh & mesh );
-
-  virtual void FindNodePositions();
-
-  virtual bool IsCut();
-
-  virtual bool OnSide( const std::vector<Point*> & facet_points );
-
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
-
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
-
-protected:
-
-  std::vector<Element*> subelements_;
-};
-
-
 template <>
-class ConcreteElement<DRT::Element::tet4> : public LinearElement
+class ConcreteElement<DRT::Element::tet4> : public Element
 {
 public:
 
   ConcreteElement<DRT::Element::tet4>( int eid,
                                        const std::vector<Side*> & sides,
                                        const std::vector<Node*> & nodes )
-    : LinearElement( eid, sides, nodes )
+    : Element( eid, sides, nodes )
   {}
 
   virtual bool PointInside( Point* p );
@@ -220,14 +150,14 @@ public:
 
 
 template <>
-class ConcreteElement<DRT::Element::wedge6> : public LinearElement
+class ConcreteElement<DRT::Element::wedge6> : public Element
 {
 public:
 
   ConcreteElement<DRT::Element::wedge6>( int eid,
                                          const std::vector<Side*> & sides,
                                          const std::vector<Node*> & nodes )
-    : LinearElement( eid, sides, nodes )
+    : Element( eid, sides, nodes )
   {}
 
   virtual bool PointInside( Point* p );
@@ -241,14 +171,14 @@ public:
 
 
 template <>
-class ConcreteElement<DRT::Element::pyramid5> : public LinearElement
+class ConcreteElement<DRT::Element::pyramid5> : public Element
 {
 public:
 
   ConcreteElement<DRT::Element::pyramid5>( int eid,
                                            const std::vector<Side*> & sides,
                                            const std::vector<Node*> & nodes )
-    : LinearElement( eid, sides, nodes )
+    : Element( eid, sides, nodes )
   {}
 
   virtual bool PointInside( Point* p );
@@ -262,14 +192,14 @@ public:
 
 
 template <>
-class ConcreteElement<DRT::Element::hex8> : public LinearElement
+class ConcreteElement<DRT::Element::hex8> : public Element
 {
 public:
 
   ConcreteElement<DRT::Element::hex8>( int eid,
                                        const std::vector<Side*> & sides,
                                        const std::vector<Node*> & nodes )
-    : LinearElement( eid, sides, nodes )
+    : Element( eid, sides, nodes )
   {}
 
   virtual bool PointInside( Point* p );
@@ -280,96 +210,6 @@ public:
   { Element::Coordinates( xyze.A() ); }
 
 };
-
-
-template <>
-class ConcreteElement<DRT::Element::hex20> : public QuadraticElement
-{
-public:
-
-  ConcreteElement<DRT::Element::hex20>( int eid,
-                                        const std::vector<Side*> & sides,
-                                        const std::vector<Node*> & nodes )
-    : QuadraticElement( eid, sides, nodes )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual bool PointInside( Point* p );
-
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 20> & xyze )
-  { Element::Coordinates( xyze.A() ); }
-
-private:
-
-};
-
-template <>
-class ConcreteElement<DRT::Element::hex27> : public QuadraticElement
-{
-public:
-
-  ConcreteElement<DRT::Element::hex27>( int eid,
-                                        const std::vector<Side*> & sides,
-                                        const std::vector<Node*> & nodes )
-    : QuadraticElement( eid, sides, nodes )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual bool PointInside( Point* p );
-
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 27> & xyze )
-  { Element::Coordinates( xyze.A() ); }
-
-private:
-
-};
-
-template <>
-class ConcreteElement<DRT::Element::tet10> : public QuadraticElement
-{
-public:
-
-  ConcreteElement<DRT::Element::tet10>( int eid,
-                                        const std::vector<Side*> & sides,
-                                        const std::vector<Node*> & nodes )
-    : QuadraticElement( eid, sides, nodes )
-  {}
-
-  virtual void FillComplete( Mesh & mesh );
-
-  virtual bool PointInside( Point* p );
-
-  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
-
-  void Coordinates( LINALG::Matrix<3, 10> & xyze )
-  { Element::Coordinates( xyze.A() ); }
-
-private:
-
-};
-
-#if 0
-
-template <>
-class ConcreteElement<DRT::Element::wedge15> : public QuadraticElement
-{
-public:
-
-  ConcreteElement<DRT::Element::wedge15>( int eid,
-                                          const std::vector<Side*> & sides,
-                                          const std::vector<Node*> & nodes )
-    : QuadraticElement( eid, sides, nodes )
-  {}
-
-};
-
-#endif
 
 
 }

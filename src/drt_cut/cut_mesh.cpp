@@ -196,53 +196,18 @@ void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
 
 #endif
 
-void GEO::CUT::Mesh::FillComplete()
-{
-  setup_ = false;
-
-  // make a local copy of me list of elements since the main list might change
-  // inside the fill loop.
-
-  std::map<std::set<int>, Teuchos::RCP<Side> > sides( sides_ );
-
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides.begin();
-        i!=sides.end();
-        ++i )
-  {
-    Side & s = *i->second;
-    s.FillComplete( *this );
-  }
-
-  std::map<int, Teuchos::RCP<Element> > elements( elements_ );
-
-  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements.begin();
-        i!=elements.end();
-        ++i )
-  {
-    Element & e = *i->second;
-    e.FillComplete( *this );
-  }
-}
-
 GEO::CUT::Element * GEO::CUT::Mesh::CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype )
 {
   switch ( distype )
   {
   case DRT::Element::hex8:
     return CreateHex8( eid, nids );
-  case DRT::Element::hex20:
-    return CreateHex20( eid, nids );
-  case DRT::Element::hex27:
-    return CreateHex27( eid, nids );
   case DRT::Element::tet4:
     return CreateTet4( eid, nids );
-  case DRT::Element::tet10:
-    return CreateTet10( eid, nids );
   case DRT::Element::pyramid5:
     return CreatePyramid5( eid, nids );
   case DRT::Element::wedge6:
     return CreateWedge6( eid, nids );
-  case DRT::Element::wedge15:
   default:
     throw std::runtime_error( "unsupported distype" );
   }
@@ -255,14 +220,8 @@ GEO::CUT::Side * GEO::CUT::Mesh::CreateSide( int sid, const std::vector<int> & n
   {
   case DRT::Element::quad4:
     return CreateQuad4( sid, nids );
-  case DRT::Element::quad8:
-    return CreateQuad8( sid, nids );
-  case DRT::Element::quad9:
-    return CreateQuad9( sid, nids );
   case DRT::Element::tri3:
     return CreateTri3( sid, nids );
-  case DRT::Element::tri6:
-    return CreateTri6( sid, nids );
   default:
     throw std::runtime_error( "unsupported distype" );
   }
@@ -272,15 +231,6 @@ GEO::CUT::Side * GEO::CUT::Mesh::CreateSide( int sid, const std::vector<int> & n
 GEO::CUT::Element * GEO::CUT::Mesh::CreateTet4( int eid, const std::vector<int> & nids )
 {
   const CellTopologyData * top_data = shards::getCellTopologyData< shards::Tetrahedron<4> >();
-
-  Element * e = GetElement( eid, nids, *top_data );
-
-  return e;
-}
-
-GEO::CUT::Element * GEO::CUT::Mesh::CreateTet10( int eid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Tetrahedron<10> >();
 
   Element * e = GetElement( eid, nids, *top_data );
 
@@ -314,52 +264,15 @@ GEO::CUT::Element * GEO::CUT::Mesh::CreateHex8( int eid, const std::vector<int> 
   return e;
 }
 
-GEO::CUT::Element * GEO::CUT::Mesh::CreateHex20( int eid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Hexahedron<20> >();
-
-  Element * e = GetElement( eid, nids, *top_data );
-
-  return e;
-}
-
-GEO::CUT::Element * GEO::CUT::Mesh::CreateHex27( int eid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Hexahedron<27> >();
-
-  Element * e = GetElement( eid, nids, *top_data );
-
-  return e;
-}
-
-
 GEO::CUT::Side * GEO::CUT::Mesh::CreateTri3( int sid, const std::vector<int> & nids )
 {
   const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<3> >();
   return GetSide( sid, nids, top_data );
 }
 
-GEO::CUT::Side * GEO::CUT::Mesh::CreateTri6( int sid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<6> >();
-  return GetSide( sid, nids, top_data );
-}
-
 GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad4( int sid, const std::vector<int> & nids )
 {
   const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<4> >();
-  return GetSide( sid, nids, top_data );
-}
-
-GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad8( int sid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<8> >();
-  return GetSide( sid, nids, top_data );
-}
-
-GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad9( int sid, const std::vector<int> & nids )
-{
-  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<9> >();
   return GetSide( sid, nids, top_data );
 }
 
@@ -420,10 +333,7 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const std::set<int> & nids, const std::
   switch ( edge_topology.key )
   {
   case shards::Line<2>::key :
-    e = new ConcreteEdge<DRT::Element::line2>( nodes );
-    break;
-  case shards::Line<3>::key :
-    e = new ConcreteEdge<DRT::Element::line3>( nodes );
+    e = new Edge( nodes );
     break;
   default:
     throw std::runtime_error( "unsupported edge topology" );
@@ -511,17 +421,8 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
   case shards::Triangle<3>::key :
     s = new ConcreteSide<DRT::Element::tri3>( sid, nodes, edges );
     break;
-  case shards::Triangle<6>::key :
-    s = new ConcreteSide<DRT::Element::tri6>( sid, nodes, edges );
-    break;
   case shards::Quadrilateral<4>::key :
     s = new ConcreteSide<DRT::Element::quad4>( sid, nodes, edges );
-    break;
-  case shards::Quadrilateral<8>::key :
-    s = new ConcreteSide<DRT::Element::quad8>( sid, nodes, edges );
-    break;
-  case shards::Quadrilateral<9>::key :
-    s = new ConcreteSide<DRT::Element::quad9>( sid, nodes, edges );
     break;
   default:
     throw std::runtime_error( "unsupported side topology" );
@@ -655,22 +556,6 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
     e = new ConcreteElement<DRT::Element::wedge6>( eid, sides, nodes );
     break;
 
-  case shards::Hexahedron<20>::key :
-    e = new ConcreteElement<DRT::Element::hex20>( eid, sides, nodes );
-    break;
-
-  case shards::Hexahedron<27>::key :
-    e = new ConcreteElement<DRT::Element::hex27>( eid, sides, nodes );
-    break;
-
-  case shards::Tetrahedron<10>::key :
-    e = new ConcreteElement<DRT::Element::tet10>( eid, sides, nodes );
-    break;
-
-  case shards::Pyramid<13>::key :
-  case shards::Pyramid<14>::key :
-  case shards::Wedge<15>::key :
-  case shards::Wedge<18>::key :
   default:
     throw std::runtime_error( "unsupported element topology" );
   }
@@ -749,7 +634,7 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
 
 GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & facets,
                                                      const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
-                                                     LinearElement * element )
+                                                     Element * element )
 {
   VolumeCell * c = new VolumeCell( facets, volume_lines, element );
   cells_.push_back( Teuchos::rcp( c ) );
@@ -845,17 +730,15 @@ void GEO::CUT::Mesh::SelfCut()
         ++i )
   {
     Side & side = *i->second;
-    LinearSide * ls1 = dynamic_cast<LinearSide*>( &side );
-    if ( ls1!=NULL )
     {
       BoundingBox sidebox( side );
       std::set<Side*> sides;
       pp_->CollectSides( sidebox, sides );
-      sides.erase( ls1 );
+      sides.erase( &side );
       for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); )
       {
         Side * s = *i;
-        if ( ls1->HaveCommonEdge( *s ) )
+        if ( side.HaveCommonEdge( *s ) )
         {
           sides.erase( i++ );
         }
@@ -867,22 +750,18 @@ void GEO::CUT::Mesh::SelfCut()
       for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
       {
         Side * s = *i;
-        LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
-        if ( ls2!=NULL )
         {
-          ls1->FindCutPoints( *this, NULL, *ls2 );
-          ls2->FindCutPoints( *this, NULL, *ls1 );
+          side.FindCutPoints( *this, NULL, *s );
+          s->FindCutPoints( *this, NULL, side );
         }
       }
       bool cut = false;
       for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
       {
         Side * s = *i;
-        LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
-        if ( ls2!=NULL )
         {
-          bool normal_cut  = ls1->FindCutLines( *this, NULL, *ls2 );
-          bool reverse_cut = ls2->FindCutLines( *this, NULL, *ls1 );
+          bool normal_cut  = side.FindCutLines( *this, NULL, *s );
+          bool reverse_cut = s->FindCutLines( *this, NULL, side );
           if ( normal_cut or reverse_cut )
             cut = true;
         }
@@ -892,14 +771,12 @@ void GEO::CUT::Mesh::SelfCut()
         for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
         {
           Side * s = *i;
-          LinearSide * ls2 = dynamic_cast<LinearSide*>( s );
-          if ( ls2!=NULL )
           {
-            SideSideCutFilter filter( ls1, ls2 );
-            ls1->MakeOwnedSideFacets( *this, filter, facets );
+            SideSideCutFilter filter( &side, s );
+            side.MakeOwnedSideFacets( *this, filter, facets );
           }
         }
-        ls1->MakeSideCutFacets( *this, NULL, facets );
+        side.MakeSideCutFacets( *this, NULL, facets );
       }
     }
   }
@@ -919,11 +796,7 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
         ++i )
   {
     Side & side = *i->second;
-    LinearSide * ls = dynamic_cast<LinearSide*>( &side );
-    if ( ls!=NULL )
-    {
-      mesh.Cut( *ls, elements_done, my_elements_done );
-    }
+    mesh.Cut( side, elements_done, my_elements_done );
   }
 
   std::copy( my_elements_done.begin(),
@@ -931,7 +804,7 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
              std::inserter( elements_done, elements_done.begin() ) );
 }
 
-void GEO::CUT::Mesh::Cut( LinearSide & side, const std::set<Element*> & done, std::set<Element*> & elements_done )
+void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set<Element*> & elements_done )
 {
   BoundingBox sidebox( side );
   std::set<Element*> elements;
@@ -1165,8 +1038,6 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
     {
       Element & e = *i->second;
       //e.DumpGmsh( file );
-      LinearElement * le = dynamic_cast<LinearElement*>( &e );
-      if ( le!=NULL )
       {
         const std::vector<Node*> & nodes = e.Nodes();
         char elementtype;
@@ -1218,10 +1089,8 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
           ++i )
     {
       Side & s = *i->second;
-      LinearSide * ls = dynamic_cast<LinearSide*>( &s );
-      if ( ls!=NULL )
       {
-        const std::vector<Node*> & nodes = ls->Nodes();
+        const std::vector<Node*> & nodes = s.Nodes();
         char elementtype;
         switch ( nodes.size() )
         {

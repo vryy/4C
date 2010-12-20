@@ -57,7 +57,7 @@ void test_hex8_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   mesh.Status();
 
@@ -97,7 +97,7 @@ void test_tet4_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   mesh.Status();
 
@@ -141,7 +141,7 @@ void test_pyramid5_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   mesh.Status();
 
@@ -189,7 +189,7 @@ void test_wedge6_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   cutmesh( mesh );
 }
@@ -203,7 +203,7 @@ void test_hex8_fullside()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   cutmesh( mesh );
 }
@@ -216,7 +216,7 @@ void test_hex8_diagonal()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+  e->Cut( mesh, *( s ) );
 
   cutmesh( mesh );
 }
@@ -257,10 +257,10 @@ void test_hex8_tet4()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8->Cut( mesh, *( s ) );
   }
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -279,7 +279,7 @@ void test_hex8_hex8()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -299,7 +299,7 @@ void test_hex8_touch()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -319,7 +319,7 @@ void test_hex8_touch2()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -352,7 +352,7 @@ void test_hex8_schraeg()
 
   mesh.Status();
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   mesh.Status();
 
@@ -412,10 +412,10 @@ void test_hex8_tet4_touch()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8->Cut( mesh, *( s ) );
   }
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -453,7 +453,7 @@ void test_hex8_tet4_touch2()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8 );
@@ -471,7 +471,7 @@ void test_hex8_mesh()
 
   std::set<GEO::CUT::Element*> done;
   std::set<GEO::CUT::Element*> elements_done;
-  mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( s ), done, elements_done );
+  mesh.Cut( *( s ), done, elements_done );
 
   cutmesh( mesh );
 }
@@ -485,8 +485,8 @@ void test_hex8_double()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s1 ) );
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s2 ) );
+  e->Cut( mesh, *( s1 ) );
+  e->Cut( mesh, *( s2 ) );
 
   cutmesh( mesh );
 }
@@ -503,7 +503,7 @@ void test_hex8_multiple()
 
     //mesh.Status();
 
-    e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    e->Cut( mesh, *( s ) );
 
     //mesh.Status();
   }
@@ -571,7 +571,7 @@ void test_hex8_bad1()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  e->Cut( mesh, *( quad4 ) );
 
   cutmesh( mesh );
 }
@@ -636,7 +636,7 @@ void test_hex8_bad2()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  e->Cut( mesh, *( quad4 ) );
 
   cutmesh( mesh );
 }
@@ -701,7 +701,7 @@ void test_hex8_bad3()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  e->Cut( mesh, *( quad4 ) );
 
   cutmesh( mesh );
 }
@@ -748,7 +748,7 @@ void test_hex8_bad4()
 
   mesh.Status();
 
-  e->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  e->Cut( mesh, *( quad4 ) );
 
   cutmesh( mesh );
 }
@@ -792,7 +792,7 @@ void test_hex8_wedge6()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8 );
@@ -825,7 +825,7 @@ void test_hex8_quad4_touch()
 
   mesh.Status();
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -857,7 +857,7 @@ void test_hex8_quad4_touch2()
 
   mesh.Status();
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -889,7 +889,7 @@ void test_hex8_quad4_touch3()
 
   mesh.Status();
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -921,7 +921,7 @@ void test_hex8_quad4_cut()
 
   mesh.Status();
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -961,7 +961,7 @@ void test_hex8_quad4_gedreht()
   for ( std::vector<GEO::CUT::Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     GEO::CUT::Side* quad4 = *i;
-    hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+    hex8->Cut( mesh, *( quad4 ) );
   }
 
   cutelement( mesh, hex8 );
@@ -1036,10 +1036,10 @@ void test_hex8_hex8_durchstoss()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
-  hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8_1->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8_1 );
 }
@@ -1113,10 +1113,10 @@ void test_hex8_hex8_onside()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
-  hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8_1->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8_1 );
 }
@@ -1203,7 +1203,7 @@ void test_hex8_hex8_internal()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -1292,7 +1292,7 @@ void test_hex8_hex8_sideintersection()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -1381,7 +1381,7 @@ void test_hex8_hex8_inside()
   {
     GEO::CUT::Side * s = *i;
     s->SetId( 1 );
-    hex8_1->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( s ) );
+    hex8_1->Cut( mesh, *( s ) );
   }
 
   cutelement( mesh, hex8_1 );
@@ -1412,7 +1412,7 @@ void test_hex8_quad4_schnitt()
 
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -1442,7 +1442,7 @@ void test_hex8_quad4_touch4()
 
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -1472,7 +1472,7 @@ void test_hex8_quad4_touch5()
 
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -1522,8 +1522,8 @@ void test_hex8_quad4_touch6()
 
   GEO::CUT::Side* quad4_2 = create_quad4( mesh, xyze );
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4_2 ) );
+  hex8->Cut( mesh, *( quad4 ) );
+  hex8->Cut( mesh, *( quad4_2 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -1553,7 +1553,7 @@ void test_hex8_quad4_touch7()
 
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 
-  hex8->Cut( mesh, *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ) );
+  hex8->Cut( mesh, *( quad4 ) );
 
   cutelement( mesh, hex8 );
 }
@@ -1625,7 +1625,7 @@ void test_hex8_quad4_mesh()
     GEO::CUT::Side* quad4 = *i;
     std::set<GEO::CUT::Element*> done;
     std::set<GEO::CUT::Element*> elements_done;
-    mesh.Cut( *dynamic_cast<GEO::CUT::LinearSide*>( quad4 ), done, elements_done );
+    mesh.Cut( *( quad4 ), done, elements_done );
   }
 
   cutmesh( mesh );

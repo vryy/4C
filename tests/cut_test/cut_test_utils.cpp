@@ -20,31 +20,31 @@ GEO::CUT::Element* create_hex8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix 
   return mesh.CreateHex8( numele++, nids );
 }
 
-GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
-{
-  std::vector<int> nids;
-  nids.reserve( 20 );
-  for ( int i=0; i<20; ++i )
-  {
-    mesh.GetNode( numnode, &xyze( 0, i ) );
-    nids.push_back( numnode++ );
-  }
+// GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
+// {
+//   std::vector<int> nids;
+//   nids.reserve( 20 );
+//   for ( int i=0; i<20; ++i )
+//   {
+//     mesh.GetNode( numnode, &xyze( 0, i ) );
+//     nids.push_back( numnode++ );
+//   }
 
-  return mesh.CreateHex20( numele++, nids );
-}
+//   return mesh.CreateHex20( numele++, nids );
+// }
 
-GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
-{
-  std::vector<int> nids;
-  nids.reserve( 27 );
-  for ( int i=0; i<27; ++i )
-  {
-    mesh.GetNode( numnode, &xyze( 0, i ) );
-    nids.push_back( numnode++ );
-  }
+// GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
+// {
+//   std::vector<int> nids;
+//   nids.reserve( 27 );
+//   for ( int i=0; i<27; ++i )
+//   {
+//     mesh.GetNode( numnode, &xyze( 0, i ) );
+//     nids.push_back( numnode++ );
+//   }
 
-  return mesh.CreateHex27( numele++, nids );
-}
+//   return mesh.CreateHex27( numele++, nids );
+// }
 
 GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
 {
@@ -98,31 +98,31 @@ GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & 
   return mesh.CreateQuad4( numele++, nids );
 }
 
-GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
-{
-  std::vector<int> nids;
-  nids.reserve( 8 );
-  for ( int i=0; i<8; ++i )
-  {
-    mesh.GetNode( numnode, &xyze( 0, i ) );
-    nids.push_back( numnode++ );
-  }
+// GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
+// {
+//   std::vector<int> nids;
+//   nids.reserve( 8 );
+//   for ( int i=0; i<8; ++i )
+//   {
+//     mesh.GetNode( numnode, &xyze( 0, i ) );
+//     nids.push_back( numnode++ );
+//   }
 
-  return mesh.CreateQuad8( numele++, nids );
-}
+//   return mesh.CreateQuad8( numele++, nids );
+// }
 
-GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
-{
-  std::vector<int> nids;
-  nids.reserve( 9 );
-  for ( int i=0; i<9; ++i )
-  {
-    mesh.GetNode( numnode, &xyze( 0, i ) );
-    nids.push_back( numnode++ );
-  }
+// GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze )
+// {
+//   std::vector<int> nids;
+//   nids.reserve( 9 );
+//   for ( int i=0; i<9; ++i )
+//   {
+//     mesh.GetNode( numnode, &xyze( 0, i ) );
+//     nids.push_back( numnode++ );
+//   }
 
-  return mesh.CreateQuad9( numele++, nids );
-}
+//   return mesh.CreateQuad9( numele++, nids );
+// }
 
 GEO::CUT::Element* create_hex8( GEO::CUT::Mesh & mesh, double dx, double dy, double dz )
 {

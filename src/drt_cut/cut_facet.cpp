@@ -95,7 +95,7 @@ int GEO::CUT::Facet::PositionSideId()
 }
 
 #ifdef QHULL
-void GEO::CUT::Facet::GenerateTetgen( Mesh & mesh, LinearElement * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist )
+void GEO::CUT::Facet::GenerateTetgen( Mesh & mesh, Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist )
 {
   f.numberofpolygons = 1 + holes_.size();
   f.polygonlist = new tetgenio::polygon[f.numberofpolygons];

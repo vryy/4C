@@ -7,11 +7,12 @@ void GEO::CUT::MeshIntersection::AddElement( int eid,
                                              const Epetra_SerialDenseMatrix & xyz,
                                              DRT::Element::DiscretizationType distype )
 {
-  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+  for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
         ++i )
   {
-    Mesh & cut_mesh = **i;
+    MeshHandle & cut_mesh_handle = **i;
+    Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
     if ( cut_mesh.WithinBB( xyz ) )
     {
       int numnode = nids.size();
@@ -23,7 +24,7 @@ void GEO::CUT::MeshIntersection::AddElement( int eid,
       // make sure all nodes are there
       for ( int i=0; i<numnode; ++i )
       {
-        mesh_.GetNode( nids[i], &xyz( 0, i ) );
+        NormalMesh().GetNode( nids[i], &xyz( 0, i ) );
       }
 
       // create element
@@ -40,8 +41,7 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
                                              int mi )
 {
   // create side
-  Mesh & cut_mesh = CutMesh( mi );
-  cut_mesh.CreateSide( sid, nids, distype );
+  cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
 void GEO::CUT::MeshIntersection::AddCutSide( int sid,
@@ -65,20 +65,11 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
   }
 
   // create side
-  cut_mesh.CreateSide( sid, nids, distype );
+  cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
 void GEO::CUT::MeshIntersection::Cut()
 {
-  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
-        i!=cut_mesh_.end();
-        ++i )
-  {
-    Mesh & cut_mesh = **i;
-    cut_mesh.FillComplete();
-  }
-  mesh_.FillComplete();
-
   //Status();
 
 //   std::vector<Teuchos::RCP<CellGenerator> > cutgens;
@@ -91,26 +82,27 @@ void GEO::CUT::MeshIntersection::Cut()
   std::set<Element*> elements_done;
 
   // loop cut sides and cut against elements at the same position in space
-  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+  for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
         ++i )
   {
-    Mesh & cut_mesh = **i;
-    cut_mesh.Cut( mesh_, elements_done );
+    MeshHandle & cut_mesh_handle = **i;
+    Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
+    cut_mesh.Cut( NormalMesh(), elements_done );
   }
 
-  mesh_.MakeFacets();
-  mesh_.MakeVolumeCells();
+  NormalMesh().MakeFacets();
+  NormalMesh().MakeVolumeCells();
 
   // find inside and outside positions of nodes
-  mesh_.FindNodePositions();
+  NormalMesh().FindNodePositions();
 
 #if 0
   // find number and connection of dofsets at nodes from cut volumes
-  mesh_.FindNodalDOFSets();
+  NormalMesh().FindNodalDOFSets();
 #endif
 
-  mesh_.CreateIntegrationCells();
+  NormalMesh().CreateIntegrationCells();
 
   Status();
 }
@@ -120,50 +112,46 @@ void GEO::CUT::MeshIntersection::SelfCut()
   CutMesh().SelfCut();
 }
 
-GEO::CUT::Element * GEO::CUT::MeshIntersection::GetElement( int eid )
+GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid )
 {
   return mesh_.GetElement( eid );
 }
 
-GEO::CUT::Side * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
 {
-  const std::vector<GEO::CUT::Side*> & cut_sides = CutMesh( mi ).GetSides( sid );
-  if ( cut_sides.size()==1 )
+  SideHandle * cut_side = cut_mesh_[mi]->GetSide( sid );
+  if ( cut_side!=NULL )
   {
-    return cut_sides[0];
-  }
-  if ( cut_sides.size()>1 )
-  {
-    // the first entry has to be the quadratic element, the following entries
-    // its linear parts
-    return cut_sides[0];
+    return cut_side;
   }
   throw std::runtime_error( "no such side" );
 }
 
 void GEO::CUT::MeshIntersection::Status()
 {
-  mesh_.Status();
-  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+  NormalMesh().Status();
+  for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
         ++i )
   {
-    Mesh & cut_mesh = **i;
+    MeshHandle & cut_mesh_handle = **i;
+    Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
     cut_mesh.Status();
   }
 
-  mesh_.DumpGmsh( "mesh" );
+  NormalMesh().DumpGmsh( "mesh" );
   int count = 0;
-  for ( std::vector<Teuchos::RCP<Mesh> >::iterator i=cut_mesh_.begin();
+  for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
         ++i )
   {
-    Mesh & cut_mesh = **i;
+    MeshHandle & cut_mesh_handle = **i;
+    Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
     std::stringstream str;
     str << "cut_mesh" << count;
     cut_mesh.DumpGmsh( str.str().c_str() );
     count++;
   }
 
-  mesh_.DumpGmshIntegrationcells( "integrationcells" );
+  NormalMesh().DumpGmshIntegrationcells( "integrationcells" );
 }

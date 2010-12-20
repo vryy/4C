@@ -1218,6 +1218,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
+  src/drt_cut/cut_elementhandle.cpp
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_levelsetintersection.cpp
@@ -1226,11 +1227,13 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_linesegment.cpp
   src/drt_cut/cut_mesh.cpp
   src/drt_cut/cut_meshintersection.cpp
+  src/drt_cut/cut_meshhandle.cpp
   src/drt_cut/cut_node.cpp
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointcycle.cpp
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
+  src/drt_cut/cut_sidehandle.cpp
   src/drt_cut/cut_tetcutgenerator.cpp
   src/drt_cut/cut_volumecell.cpp
 )

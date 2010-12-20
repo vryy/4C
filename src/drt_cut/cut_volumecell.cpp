@@ -5,7 +5,7 @@
 
 GEO::CUT::VolumeCell::VolumeCell( const std::set<Facet*> & facets,
                                   const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
-                                  LinearElement * element )
+                                  Element * element )
   : element_( element ),
     facets_( facets )
 {

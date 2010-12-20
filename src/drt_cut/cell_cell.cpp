@@ -8,7 +8,7 @@
 #include "cell_cell.H"
 
 
-GEO::CELL::Cell::Cell( GEO::CUT::LinearElement * element )
+GEO::CELL::Cell::Cell( GEO::CUT::Element * element )
   : element_( element )
 {
 

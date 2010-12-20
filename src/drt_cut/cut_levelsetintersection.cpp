@@ -39,7 +39,6 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
 
 void GEO::CUT::LevelSetIntersection::Cut()
 {
-  mesh_.FillComplete();
   mesh_.Cut( side_ );
   mesh_.Status();
   mesh_.MakeFacets();

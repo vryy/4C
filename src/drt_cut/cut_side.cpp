@@ -15,15 +15,6 @@
 
 #include "cut_side.H"
 
-void GEO::CUT::Side::FillComplete( Mesh & mesh )
-{
-  for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
-  {
-    Edge * edge = *i;
-    edge->FillComplete( mesh );
-  }
-}
-
 GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
 {
   for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
@@ -37,13 +28,13 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   return NULL;
 }
 
-bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement * element, LinearSide & other )
+bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other )
 {
   bool cut = false;
   const std::vector<Edge*> & edges = Edges();
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
-    ConcreteEdge<DRT::Element::line2> * e = dynamic_cast<ConcreteEdge<DRT::Element::line2>*>( *i );
+    Edge * e = *i;
     if ( e->FindCutPoints( mesh, element, *this, other ) )
     {
       cut = true;
@@ -52,7 +43,7 @@ bool GEO::CUT::LinearSide::FindCutPoints( Mesh & mesh, LinearElement * element, 
   return cut;
 }
 
-bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, LinearSide & other )
+bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other )
 {
 #if 0
   bool cut = false;
@@ -132,7 +123,7 @@ bool GEO::CUT::LinearSide::FindCutLines( Mesh & mesh, LinearElement * element, L
   }
 }
 
-bool GEO::CUT::LinearSide::AllOnNodes( const std::set<Point*> & points )
+bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )
 {
   const std::vector<Node*> & nodes = Nodes();
   for ( std::set<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
@@ -146,17 +137,17 @@ bool GEO::CUT::LinearSide::AllOnNodes( const std::set<Point*> & points )
   return true;
 }
 
-void GEO::CUT::LinearSide::GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts )
+void GEO::CUT::Side::GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts )
 {
   const std::vector<Edge*> & edges = Edges();
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
-    ConcreteEdge<DRT::Element::line2> * e = dynamic_cast<ConcreteEdge<DRT::Element::line2>*>( *i );
+    Edge * e = *i;
     e->GetCutPoints( element, *this, other, cuts );
   }
 }
 
-void GEO::CUT::LinearSide::AddLine( Line* cut_line )
+void GEO::CUT::Side::AddLine( Line* cut_line )
 {
   if ( std::find( cut_lines_.begin(), cut_lines_.end(), cut_line )==cut_lines_.end() )
   {
@@ -164,7 +155,7 @@ void GEO::CUT::LinearSide::AddLine( Line* cut_line )
   }
 }
 
-GEO::CUT::Facet * GEO::CUT::LinearSide::FindFacet( const std::vector<Point*> & facet_points )
+GEO::CUT::Facet * GEO::CUT::Side::FindFacet( const std::vector<Point*> & facet_points )
 {
   for ( std::vector<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -178,7 +169,7 @@ GEO::CUT::Facet * GEO::CUT::LinearSide::FindFacet( const std::vector<Point*> & f
 }
 
 
-void GEO::CUT::LinearSide::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
 {
   for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -187,7 +178,7 @@ void GEO::CUT::LinearSide::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> &
   }
 }
 
-void GEO::CUT::LinearSide::CreateLineSegmentList( Mesh & mesh,
+void GEO::CUT::Side::CreateLineSegmentList( Mesh & mesh,
                                                   Element * element,
                                                   std::vector<Teuchos::RCP<LineSegment> > & segments,
                                                   bool inner )
@@ -210,7 +201,7 @@ void GEO::CUT::LinearSide::CreateLineSegmentList( Mesh & mesh,
   }
 }
 
-void GEO::CUT::LinearSide::CreateLineSegment( Mesh & mesh, Element * element )
+void GEO::CUT::Side::CreateLineSegment( Mesh & mesh, Element * element )
 {
   std::vector<Teuchos::RCP<LineSegment> > segments;
 
@@ -243,7 +234,7 @@ void GEO::CUT::LinearSide::CreateLineSegment( Mesh & mesh, Element * element )
 #endif
 }
 
-void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
   if ( facets_.size()==0 )
   {
@@ -287,7 +278,7 @@ void GEO::CUT::LinearSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilt
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
 
-void GEO::CUT::LinearSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   std::vector<Teuchos::RCP<LineSegment> > segments;
 //   CreateLineSegmentList( mesh, element, segments, false );
@@ -331,7 +322,7 @@ void GEO::CUT::LinearSide::MakeSideCutFacets( Mesh & mesh, Element * element, st
   }
 }
 
-void GEO::CUT::LinearSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   std::vector<Teuchos::RCP<LineSegment> > segments;
   CreateLineSegmentList( mesh, element, segments, false );
@@ -465,196 +456,13 @@ GEO::CUT::Node * GEO::CUT::Side::OnNode( const LINALG::Matrix<3,1> & x )
   return NULL;
 }
 
-bool GEO::CUT::LinearSide::IsCut()
+bool GEO::CUT::Side::IsCut()
 {
   if ( facets_.size()>1 )
     return true;
   if ( facets_[0]->SideId() > -1 )
     return true;
   return false;
-}
-
-// void GEO::CUT::LinearSide::ExchangeFacetSide( Side * side, bool cutsurface )
-// {
-//   for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-//   {
-//     Facet * f = *i;
-//     f->ExchangeSide( side, cutsurface );
-//   }
-// }
-
-
-void GEO::CUT::ConcreteSide<DRT::Element::tri6>::FillComplete( Mesh & mesh )
-{
-  if ( subsides_.size()==0 )
-  {
-    subsides_.reserve( 4 );
-
-    Side::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<3> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    std::vector<int> nids( 3 );
-
-    nids[0] = nodes[0]->Id();
-    nids[1] = nodes[3]->Id();
-    nids[2] = nodes[5]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[3]->Id();
-    nids[1] = nodes[1]->Id();
-    nids[2] = nodes[4]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[3]->Id();
-    nids[1] = nodes[4]->Id();
-    nids[2] = nodes[5]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[5]->Id();
-    nids[1] = nodes[4]->Id();
-    nids[2] = nodes[2]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-  }
-}
-
-void GEO::CUT::ConcreteSide<DRT::Element::quad8>::FillComplete( Mesh & mesh )
-{
-  if ( subsides_.size()==0 )
-  {
-    subsides_.reserve( 4 );
-
-    Side::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<4> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    // create middle node
-
-    LINALG::Matrix<3,8> xyze;
-    Coordinates( xyze );
-
-    LINALG::Matrix<8,1> funct;
-    DRT::UTILS::shape_function_2D( funct, 0, 0, DRT::Element::quad8 );
-
-    LINALG::Matrix<3,1> xyz;
-    xyz.Multiply( xyze, funct );
-
-    std::set<int> node_nids;
-    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-    {
-      Node * n = *i;
-      node_nids.insert( n->Id() );
-    }
-    Node* middle = mesh.GetNode( node_nids, xyz.A() );
-    int middle_id = middle->Id();
-
-    std::vector<int> nids( 4 );
-
-    nids[0] = nodes[0]->Id();
-    nids[1] = nodes[4]->Id();
-    nids[2] = middle_id;
-    nids[3] = nodes[7]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[4]->Id();
-    nids[1] = nodes[1]->Id();
-    nids[2] = nodes[5]->Id();
-    nids[3] = middle_id;
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = middle_id;
-    nids[1] = nodes[5]->Id();
-    nids[2] = nodes[2]->Id();
-    nids[3] = nodes[6]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[7]->Id();
-    nids[1] = middle_id;
-    nids[2] = nodes[6]->Id();
-    nids[3] = nodes[3]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-  }
-}
-
-void GEO::CUT::ConcreteSide<DRT::Element::quad9>::FillComplete( Mesh & mesh )
-{
-  if ( subsides_.size()==0 )
-  {
-    subsides_.reserve( 4 );
-
-    Side::FillComplete( mesh );
-
-    const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<4> >();
-    const std::vector<Node*> & nodes = Nodes();
-
-    std::vector<int> nids( 4 );
-
-    nids[0] = nodes[0]->Id();
-    nids[1] = nodes[4]->Id();
-    nids[2] = nodes[8]->Id();
-    nids[3] = nodes[7]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[4]->Id();
-    nids[1] = nodes[1]->Id();
-    nids[2] = nodes[5]->Id();
-    nids[3] = nodes[8]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[8]->Id();
-    nids[1] = nodes[5]->Id();
-    nids[2] = nodes[2]->Id();
-    nids[3] = nodes[6]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-
-    nids[0] = nodes[7]->Id();
-    nids[1] = nodes[8]->Id();
-    nids[2] = nodes[6]->Id();
-    nids[3] = nodes[3]->Id();
-    subsides_.push_back( mesh.GetSide( Id(), nids, top_data ) );
-  }
-}
-
-
-void GEO::CUT::QuadraticSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
-{
-  throw std::runtime_error( "not supposed to end up here" );
-//   for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
-//   {
-//     Side * s = *i;
-//     s->MakeOwnedSideFacets( mesh, element, facets );
-//   }
-}
-
-void GEO::CUT::QuadraticSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
-{
-  throw std::runtime_error( "not supposed to end up here" );
-}
-
-void GEO::CUT::QuadraticSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
-{
-  throw std::runtime_error( "not supposed to end up here" );
-//   for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
-//   {
-//     Side * s = *i;
-//     s->MakeInternalFacets( mesh, element, facets );
-//   }
-}
-
-bool GEO::CUT::QuadraticSide::IsCut()
-{
-  throw std::runtime_error( "not supposed to end up here" );
-}
-
-void GEO::CUT::QuadraticSide::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
-{
-  for ( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i )
-  {
-    Side * s = *i;
-    s->GetBoundaryCells( bcells );
-  }
 }
 
 bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
@@ -669,45 +477,9 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG:
   return success;
 }
 
-bool GEO::CUT::ConcreteSide<DRT::Element::tri6>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position2d<DRT::Element::tri6> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-  return success;
-}
-
 bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-  return success;
-}
-
-bool GEO::CUT::ConcreteSide<DRT::Element::quad8>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position2d<DRT::Element::quad8> pos( *this, xyz );
-  bool success = pos.Compute();
-  if ( not success )
-  {
-//     throw std::runtime_error( "global point not within element" );
-  }
-  rst = pos.LocalCoordinates();
-  return success;
-}
-
-bool GEO::CUT::ConcreteSide<DRT::Element::quad9>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
-{
-  Position2d<DRT::Element::quad9> pos( *this, xyz );
   bool success = pos.Compute();
   if ( not success )
   {
