@@ -2233,6 +2233,46 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volumetric_border_nodes_cond);
 
 
+
+  /*--------------------------------------------------------------------*/
+  // Convective heat transfer (Newton's law of heat transfer)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > thermoconvectcomponents;
+
+  // heat transfer coefficient
+  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));
+  // surrounding temperature
+  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
+
+  Teuchos::RCP<ConditionDefinition> linethermoconvect =
+    Teuchos::rcp(new ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",
+                                         "ThermoConvections",
+                                         "Line Thermo Convections",
+                                         DRT::Condition::ThermoConvections,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfthermoconvect =
+    Teuchos::rcp(new ConditionDefinition("DESIGN THERMO CONVECTION SURF CONDITIONS",
+                                         "ThermoConvections",
+                                         "Surface Thermo Convections",
+                                         DRT::Condition::ThermoConvections,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<thermoconvectcomponents.size(); ++i)
+  {
+    linethermoconvect->AddComponent(thermoconvectcomponents[i]);
+    surfthermoconvect->AddComponent(thermoconvectcomponents[i]);
+  }
+
+  condlist.push_back(linethermoconvect);
+  condlist.push_back(surfthermoconvect);
+
+  /*--------------------------------------------------------------------*/
+
+
   return vc;
 
 }

@@ -202,7 +202,8 @@ public:
     RedLungAcinusCond,
     PatientSpecificData,
     VolumetricSurfaceFlowCond,
-    VolumetricFlowBorderNodes
+    VolumetricFlowBorderNodes,
+    ThermoConvections
   };
 
   /*!

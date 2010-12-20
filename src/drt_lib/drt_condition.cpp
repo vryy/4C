@@ -195,7 +195,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==VolumetricSurfaceFlowCond)     os << "Volumetric Surface Flow Profile";
   else if (Type()==VolumetricFlowBorderNodes)     os << "Border Nodes of the volumetric flow Surface";
   else if (Type()==VolSTCLayer)                   os << "Number of current STC layer";
-    
+  else if (Type()==ThermoConvections)             os << "ThermoConvections boundary condition: ";
+
   else dserror("no output string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
