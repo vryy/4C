@@ -355,9 +355,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
+    vector<int> dofids(dim);
+    for (int k=0;k<dim;++k) dofids[k] = dis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, dis.Dof(node), false));
+                    dim, dofids, false));
 
     interface->AddMortarNode(mrtrnode);
   }
@@ -366,9 +368,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
+    vector<int> dofids(dim);
+    for (int k=0;k<dim;++k) dofids[k] = dis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, dis.Dof(node), true));
+                    dim, dofids, true));
 
     interface->AddMortarNode(mrtrnode);
   }
