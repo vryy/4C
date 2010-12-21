@@ -1,20 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluidxfluidimplicitintegration.cpp
+\FILE FLUIDXFLUIDIMPLICITINTEGRATION.CPP
 
 
-<pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+<PRE>
+MAINTAINER: SHADAN SHAHMIRI
+            SHAHMIRI@LNM.MW.TUM.DE
+            HTTP://WWW.LNM.MW.TUM.DE
             089 - 289-15240
-</pre>
+</PRE>
 */
 /*----------------------------------------------------------------------*/
-#ifdef CCADISCRET
+#ifdef  CCADISCRET
 
 
-#undef WRITEOUTSTATISTICS
+#undef   WRITEOUTSTATISTICS
 
 #include "fluidxfluidimplicitintegration.H"
 #include "time_integration_scheme.H"
@@ -74,7 +74,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   inrelaxation_(false)
 {
 
-  xfluidoutput_ = rcp(new IO::DiscretizationWriter(xfluiddis));
+  xfluidoutput_ = rcp(new IO::DiscretizationWriter(xfluiddis_));
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -301,8 +301,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
 
   xfluiddis_->FillComplete();
 
- // still doesn't work
- // xfluidoutput_->WriteMesh(0,0.0);
+  xfluidoutput_->WriteMesh(0,0.0);
 
   if (xfluiddis_->Comm().MyPID()==0)
   {
@@ -1427,7 +1426,6 @@ void FLD::FluidXFluidImplicitTimeInt::Output()
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data       = uprestart_ != 0 and step_%uprestart_ == 0;
 
-  //  ART_exp_timeInt_->Output();
   // output of solution
   if (write_visualization_data)
   {
@@ -1476,6 +1474,31 @@ void FLD::FluidXFluidImplicitTimeInt::Output()
       {
         output_.WriteVector("dispn", fluidstate_.dispn_);
         output_.WriteVector("dispnm",fluidstate_.dispnm_);
+      }
+    }
+
+    //xfluid output
+    {
+      xfluidoutput_->NewStep(step_,time_);
+
+      Teuchos::RCP<Epetra_Vector> xfluidvelnp_out = dofmanager_np_->fillPhysicalOutputVector(
+             *xfluidstate_.velnp_, xfluiddofset_out_, xfluidstate_.nodalDofDistributionMap_, physprob_.fieldset_);
+
+      xfluidoutput_->WriteVector("velocity_smoothed",xfluidvelnp_out);
+
+      Teuchos::RCP<Epetra_Vector> xfluidpressure = xfluidvelpressplitterForOutput_.ExtractCondVector(xfluidvelnp_out);
+      xfluidpressure->Scale(density_);
+      xfluidoutput_->WriteVector("pressure_smoothed", xfluidpressure);
+
+      if (step_==upres_) xfluidoutput_->WriteElementData();
+
+      if (write_restart_data) //add restart data
+      {
+        xfluidoutput_->WriteVector("velnp", xfluidstate_.velnp_);
+        xfluidoutput_->WriteVector("veln" , xfluidstate_.veln_);
+        xfluidoutput_->WriteVector("velnm", xfluidstate_.velnm_);
+        xfluidoutput_->WriteVector("accnp", xfluidstate_.accnp_);
+        xfluidoutput_->WriteVector("accn" , xfluidstate_.accn_);
       }
     }
 
@@ -2029,7 +2052,8 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    //Output();
+    Output();
+
     {
       // compute acceleration at n+1 for xfluid
       TIMEINT_THETA_BDF2::CalculateAcceleration(

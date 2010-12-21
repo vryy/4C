@@ -349,7 +349,7 @@ void DatFileReader::ReadKnots(
 
         // only the knotvector section of this discretisation
         // type is of interest
-        if(name=="fluid")
+        if(name=="fluid" or name=="xfluid")
         {
           loc= tmp.rfind("FLUID");
         }
@@ -498,7 +498,7 @@ void DatFileReader::ReadKnots(
 
         // only the knotvector section of this discretisation
         // type is of interest
-        if(name=="fluid")
+        if(name=="fluid" or name=="xfluid")
         {
           loc= tmp.rfind("FLUID");
         }

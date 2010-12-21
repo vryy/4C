@@ -719,7 +719,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     {
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("xfluid"    ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
@@ -825,7 +825,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     else
     {
       fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("xfluid",reader.Comm()));
     }
 
     AddDis(genprob.numff, fluiddis);
