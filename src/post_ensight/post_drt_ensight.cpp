@@ -64,7 +64,7 @@ int main(
         //PostField* alefield = problem.get_discretization(2);
         //AleEnsightWriter alewriter(alefield, basename);
         //alewriter.WriteFiles();
-        
+#ifdef D_ARTNET        
         // 1d artery
         if (problem.num_discr()== 4)
         {
@@ -73,6 +73,7 @@ int main(
           writer.WriteFiles();
         }
         break;
+#endif //D_ARTNET
     }
     case prb_structure:
     {
@@ -83,6 +84,7 @@ int main(
     }
     case prb_fluid:
     {
+#ifdef D_ARTNET     
       // 1d artery
       if (problem.num_discr()== 2)
       {
@@ -91,6 +93,7 @@ int main(
         StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
       }
+#endif //D_ARTNET
     }
     case prb_fluid_ale:
     case prb_freesurf:
