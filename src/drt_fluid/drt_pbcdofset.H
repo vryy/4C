@@ -81,6 +81,9 @@ public:
   /// create a copy of this object
   virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
 
+  /// Assign dof numbers using all elements and nodes of the discretization.
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
+
 protected:
 
   /// get number of nodal dofs for this element at this node
