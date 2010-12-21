@@ -2445,14 +2445,14 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						int exponent = 1;
 
 						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
-						double alpha = -1.0;
+						double alpha = 3.0*M_PI;
 						int dir1=-1, dir2=-1;
 						for(int j=0; j<3; j++)
 							for(int k=0; k<3; k++)
 								if(k>j)
 								{
 									double dotprod = normedvectors[j].Dot(normedvectors[k]);
-									if(k>j && acos(dotprod)>alpha)
+									if(k>j && fabs(M_PI/2.0-acos(dotprod))<fabs(M_PI/2.0-alpha))
 									{
 										alpha = acos(dotprod);
 										dir1=j;
