@@ -2024,9 +2024,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,3 , true);
-	// vector holding the positions of all crosslinkers in the enlarged boundary volume
-	RCP<Epetra_MultiVector> enlargedvolpositions = rcp(new Epetra_MultiVector(*crosslinkermap_, 3*27, true));
-	DDCorrFunction(crosslinksperbinrow, enlargedvolpositions, &centershift);
+	DDCorrFunction(crosslinksperbinrow, &centershift);
 
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
@@ -2034,15 +2032,15 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   Epetra_Vector costhetabinsrow(*ddcorrrowmap_, true);
   SphericalCoordsDistribution(disrow, phibinsrow, thetabinsrow, costhetabinsrow);
 
-  Epetra_MultiVector radialdistancesrow(*ddcorrrowmap_,3 , true);
-  RadialDensityDistribution(radialdistancesrow, enlargedvolpositions, &cog, &centershift, &crosslinkerentries);
+  Epetra_Vector radialdistancesrow(*ddcorrrowmap_, true);
+  RadialDensityDistribution(radialdistancesrow, &cog, &centershift, &crosslinkerentries);
 
   // Import
   Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,3 , true);
   Epetra_Vector phibinscol(*ddcorrcolmap_, true);
   Epetra_Vector thetabinscol(*ddcorrcolmap_, true);
   Epetra_Vector costhetabinscol(*ddcorrcolmap_, true);
-  Epetra_MultiVector radialdistancescol(*ddcorrcolmap_,3 , true);
+  Epetra_Vector radialdistancescol(*ddcorrcolmap_, true);
   Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
   crosslinksperbincol.Import(crosslinksperbinrow, importer, Insert);
   phibinscol.Import(phibinsrow, importer, Insert);
@@ -2055,19 +2053,17 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   std::vector<int> phibins(numbins, 0);
   std::vector<int> thetabins(numbins, 0);
   std::vector<int> costhetabins(numbins, 0);
-  std::vector<std::vector<int> > radialdistbins(numbins, std::vector<int>(3,0));
+  std::vector<int> radialdistbins(numbins, 0);
   //int total = 0;
   for(int i=0; i<numbins; i++)
     for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
     {
     	for(int col=0; col<crosslinksperbincol.NumVectors(); col++)
-    	{
     		crosslinksperbin[i][col] += (int)crosslinksperbincol[col][pid*numbins+i];
-    		radialdistbins[i][col] += (int)radialdistancescol[col][pid*numbins+i];
-    	}
       phibins[i] += (int)phibinscol[pid*numbins+i];
       thetabins[i] += (int)thetabinscol[pid*numbins+i];
       costhetabins[i] += (int)costhetabinscol[pid*numbins+i];
+      radialdistbins[i] += (int)radialdistancescol[pid*numbins+i];
     }
 
 
@@ -2091,15 +2087,8 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
       	histogram<<crosslinksperbin[i][j]<<"    ";
       	//cout<<crosslinksperbin[i][j]<<"    ";
       }
-      histogram<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    ";
-      //cout<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    ";
-      for(int j=0; j<(int)radialdistbins[i].size(); j++)
-      {
-      	histogram<<radialdistbins[i][j]<<"    ";
-      	//cout<<radialdistbins[i][j]<<"    ";
-      }
-      histogram<<endl;
-      //cout<<endl;
+      histogram<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    "<<radialdistbins[i]<<endl;
+      //cout<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    "<<radialdistbins[i]<<endl;
     }
 
     fprintf(fp, histogram.str().c_str());
@@ -2720,7 +2709,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 /*------------------------------------------------------------------------------*                                                 |
  | density-density correlation function                   (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RCP<Epetra_MultiVector> positions, LINALG::Matrix<3,1>* centershift)
+void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift)
 {
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
@@ -2813,7 +2802,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RC
 
 /// Part 2: inter-crosslink distances between central box and surrounding box crosslinker elements
 	// get crosslinker positions vector
-
+	Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
 	std::vector<std::vector<int> > boxindices;
 	int boxnumber=0;
 	for(int i=0; i<3; i++)
@@ -2830,7 +2819,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RC
 				// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
 				for(int l=0; l<crosslinkermap_->NumMyElements(); l++)
 					for(int m=0; m<crosslinkerpositions_->NumVectors(); m++)
-						(*positions)[boxnumber*3+m][l] = (*crosslinkerpositions_)[m][l]+(ijk[m]-1)*periodlength;
+						positions[boxnumber*3+m][l] = (*crosslinkerpositions_)[m][l]+(ijk[m]-1)*periodlength;
 				boxnumber++;
 			}
 
@@ -2840,12 +2829,16 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RC
 	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
 	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	if(discret_.Comm().MyPID()!=0)
+	{
 		crosslinkerbond_->PutScalar(0.0);
+		crosslinkerpositions_->PutScalar(0.0);
+	}
 	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
 
 	// reproduce redundancy prior to Export
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
 	//parallel brute force from here on
 	// transfer map loop
@@ -2881,7 +2874,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RC
 						{
 							// spatial index of the current box
 							int surrboxindex = boxindices[boxnum][m];
-							surrboxpos(m) = (*positions)[boxnum*3+m][j];
+							surrboxpos(m) = positions[boxnum*3+m][j];
 							if (surrboxpos(m) > (*centershift)(m) + (1.0+(surrboxindex-1))*periodlength)
 								surrboxpos(m) -= periodlength;
 							if (surrboxpos(m) < (*centershift)(m) + (surrboxindex-1)*periodlength)
@@ -2900,6 +2893,9 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, RC
 						// sort into correct bin
 						int thebin = absbin%numbins;
 						int thecol = (int)floor((double)absbin/(double)numbins);
+						if(thebin<0 || thebin>=numbins || thecol<0 || thecol>=3)
+						//cout<<"thebin = "<<thebin<<", thecol = "<<thecol<<endl;
+							cout<<deltaxij<<endl;
 						crosslinksperbinrow[thecol][thebin] += 1.0;
 					}
 				}
@@ -2977,8 +2973,9 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 /*------------------------------------------------------------------------------*
  | radial crosslinker density distribution                (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::RadialDensityDistribution(Epetra_MultiVector& radialdistancesrow, RCP<Epetra_MultiVector> positions, LINALG::Matrix<3,1>* cog, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
+void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
 {
+	/* This version uses the enlarged volume (applying the RCP<Epetra_MultiVector> positions)
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	double maxdistance = 3.0*periodlength*sqrt(3.0);
 	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -3052,6 +3049,54 @@ void StatMechManager::RadialDensityDistribution(Epetra_MultiVector& radialdistan
 		}
 		discret_.Comm().Barrier();
 	}
+	return;*/
+
+	// simpler version taking into account only the original boundary volume
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	double maxdistance = periodlength*sqrt(3.0);
+	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+
+	// Export to transfer map format
+	Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
+	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
+	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+	Epetra_Export crosslinkimporter(*crosslinkermap_, *transfermap_);
+	// note: it seems to be necessary to clear all vectors other than on Proc 0.
+	// otherwise, i.e. using method "Insert" on Export, from time to time (no clear pattern has emerged so far)
+	// incorrect data is written to transfer vectors. Odd!
+	if(discret_.Comm().MyPID()!=0)
+	{
+		crosslinkerbond_->PutScalar(0.0);
+		crosslinkerpositions_->PutScalar(0.0);
+	}
+	//Export
+	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
+	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
+	// Reimport to create pre-Export status on all procs
+	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
+
+	// calculate distance of crosslinkers to center of gravity
+	for(int i=0; i<crosslinkerbondtrans.MyLength(); i++)
+		if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9)
+		{
+			LINALG::Matrix<3,1> distance;
+			// shift coordinates according to new boundary box center
+			for(int j=0; j<crosslinkerpositionstrans.NumVectors(); j++)
+			{
+				distance(j) = crosslinkerpositionstrans[j][i];
+				if (distance(j) > periodlength+(*centershift)(j))
+					distance(j) -= periodlength;
+				if (distance(j) < 0.0+(*centershift)(j))
+					distance(j) += periodlength;
+			}
+			distance -= (*cog);
+			// determine histogram bin for current crosslinker element
+			int currbin = (int)floor(distance.Norm2()/maxdistance * numbins);
+			if(currbin==numbins)
+				currbin--;
+			radialdistancesrow[currbin] += 1.0;
+		}
 	return;
 }//RadialDensityDistribution()
 
