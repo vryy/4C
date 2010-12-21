@@ -128,6 +128,7 @@ public:
 
   void Neighbors( Point * p,
                   const std::set<VolumeCell*> & cells,
+                  const std::set<VolumeCell*> & done,
                   std::set<VolumeCell*> & connected,
                   std::set<Element*> & elements );
 

@@ -832,6 +832,13 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
     Element & e = *i->second;
     e.Cut( *this, side );
   }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+    e.Cut( *this, side );
+  }
 }
 
 void GEO::CUT::Mesh::MakeFacets()
@@ -843,6 +850,13 @@ void GEO::CUT::Mesh::MakeFacets()
     Element & e = *i->second;
     e.MakeFacets( *this );
   }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+    e.MakeFacets( *this );
+  }
 }
 
 void GEO::CUT::Mesh::MakeVolumeCells()
@@ -852,6 +866,13 @@ void GEO::CUT::Mesh::MakeVolumeCells()
         ++i )
   {
     Element & e = *i->second;
+    e.MakeVolumeCells( *this );
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
     e.MakeVolumeCells( *this );
   }
 }
@@ -868,6 +889,13 @@ void GEO::CUT::Mesh::FindNodePositions()
         ++i )
   {
     Element & e = *i->second;
+    e.FindNodePositions();
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
     e.FindNodePositions();
   }
 

@@ -55,34 +55,38 @@ bool GEO::CUT::VolumeCell::Contains( Point * p )
 
 void GEO::CUT::VolumeCell::Neighbors( Point * p,
                                       const std::set<VolumeCell*> & cells,
+                                      const std::set<VolumeCell*> & done,
                                       std::set<VolumeCell*> & connected,
                                       std::set<Element*> & elements )
 {
-  // this volume is included
-  connected.insert( this );
-  elements.insert( element_ );
-
-  // Do the facets that include the point first. This ensures we choose the
-  // right volumes (the ones attached to the point), if there are multiple
-  // connections possible (we are faced with a thin structure cut.)
-
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  if ( done.count( this )==0 )
   {
-    Facet * f = *i;
-    if ( p==NULL or f->Contains( p ) )
-    {
-      f->Neighbors( p, cells, connected, elements );
-    }
-  }
+    // this volume is included
+    connected.insert( this );
+    elements.insert( element_ );
 
-  if ( p!=NULL )
-  {
+    // Do the facets that include the point first. This ensures we choose the
+    // right volumes (the ones attached to the point), if there are multiple
+    // connections possible (we are faced with a thin structure cut.)
+
     for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
-      if ( not f->Contains( p ) )
+      if ( p==NULL or f->Contains( p ) )
       {
-        f->Neighbors( p, cells, connected, elements );
+        f->Neighbors( p, cells, done, connected, elements );
+      }
+    }
+
+    if ( p!=NULL )
+    {
+      for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      {
+        Facet * f = *i;
+        if ( not f->Contains( p ) )
+        {
+          f->Neighbors( p, cells, done, connected, elements );
+        }
       }
     }
   }

@@ -97,10 +97,8 @@ void GEO::CUT::MeshIntersection::Cut()
   // find inside and outside positions of nodes
   NormalMesh().FindNodePositions();
 
-#if 0
   // find number and connection of dofsets at nodes from cut volumes
   NormalMesh().FindNodalDOFSets();
-#endif
 
   NormalMesh().CreateIntegrationCells();
 

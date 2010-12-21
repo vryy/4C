@@ -631,6 +631,7 @@ bool GEO::CUT::Facet::Touches( Facet * f )
 
 void GEO::CUT::Facet::Neighbors( Point * p,
                                  const std::set<VolumeCell*> & cells,
+                                 const std::set<VolumeCell*> & done,
                                  std::set<VolumeCell*> & connected,
                                  std::set<Element*> & elements )
 {
@@ -639,11 +640,13 @@ void GEO::CUT::Facet::Neighbors( Point * p,
     VolumeCell * c = *i;
     if ( cells.count( c )>0 )
     {
-      if ( connected.count( c )==0 and elements.count( c->ParentElement() )==0 )
+      if ( done.count( c )==0 and
+           connected.count( c )==0 and
+           elements.count( c->ParentElement() )==0 )
       {
         connected.insert( c );
         elements.insert( c->ParentElement() );
-        c->Neighbors( p, cells, connected, elements );
+        c->Neighbors( p, cells, done, connected, elements );
       }
     }
   }

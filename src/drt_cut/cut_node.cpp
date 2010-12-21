@@ -85,7 +85,7 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
     {
       std::set<VolumeCell*> connected;
       std::set<Element*> elements;
-      cell->Neighbors( p, cells, connected, elements );
+      cell->Neighbors( p, cells, done, connected, elements );
 
       if ( connected.size()>0 )
       {

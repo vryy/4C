@@ -206,6 +206,8 @@ namespace XFEM
         switch (XELEDISTYPE)
         {
         case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
         {
           rule = getOptimalVelocityGaussrule(celldistype);
           // Ich habe xeleGeoType == GEO::LINEAR
