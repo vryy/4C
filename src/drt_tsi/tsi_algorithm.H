@@ -2,8 +2,8 @@
 /*!
 \file tsi_algorithm.H
 
-\brief Basis of all TSI algorithms that perform a coupling between the structure field
-       equation and temperature field equations
+\brief Basis of all TSI algorithms that perform a coupling between the
+       structural field equation and temperature field equations
 
 <pre>
 Maintainer: Caroline Danowski
@@ -100,40 +100,16 @@ namespace TSI
 
     //! @name Solve
 
-    // one-way coupling
+    /// solve temperature equations for current time step
+    void DoThermoStep();
 
-    /// solve tempterature equations for current time step
-    /// and return temperatures (coupling towards structure field)
-    Teuchos::RCP<Epetra_Vector> DoThermoStep();
+    /// solve displacement equations for current time step
+    void DoStructureStep();
 
-    /// solve structure equations for current time step
-    void DoStructureStep(Teuchos::RCP<Epetra_Vector> temp);
+    // two-way coupling (iterative staggered)
 
-    /// solve structure equation and return displacements
-    /// (coupling towards thermo field)
-    Teuchos::RCP<Epetra_Vector> DoStructureStep();
-
-    /// solve tempterature equations for current time step with respect to
-    /// current velocities
-    void DoThermoStep(
-      Teuchos::RCP<Epetra_Vector> disp,
-      Teuchos::RCP<Epetra_Vector> vel
-      );
-
-    // two-way coupling (sequential staggered, iterative)
-
-    /// Outer Iteration loop
+    /// outer iteration loop
     void OuterIterationLoop();
-
-    /// solve structure equations for current time step
-    Teuchos::RCP<Epetra_Vector> DoFullStructureStep(Teuchos::RCP<Epetra_Vector> temp);
-
-    /// solve tempterature equations for current time step with respect to
-    /// current velocities
-    Teuchos::RCP<Epetra_Vector> DoFullThermoStep(
-      Teuchos::RCP<Epetra_Vector> disp,
-      Teuchos::RCP<Epetra_Vector> vel
-      );
 
     //@}
 
@@ -141,7 +117,7 @@ namespace TSI
 
     /// velocity calculation given the displacements (like in FSI)
     Teuchos::RCP<Epetra_Vector> CalcVelocity(
-      Teuchos::RCP<const Epetra_Vector> idispnp
+      Teuchos::RCP<const Epetra_Vector> dispnp
       ) const;
 
     //@}
@@ -171,13 +147,13 @@ namespace TSI
     /// temperature from time step begin (t_n)
     Teuchos::RCP<Epetra_Vector> tempn_;
 
-    //! we couple based on displacements
+    /// we couple based on displacements
     bool displacementcoupling_;
-    //! quasi-static solution of the mechancial equation
+    /// quasi-static solution of the mechancial equation
     bool quasistatic_;
 
-  };
-} // namespace TSI
+  };  // Algorithm
+}  // namespace TSI
 
 /*----------------------------------------------------------------------*/
 #endif  // TSI_ALGORITHM_H

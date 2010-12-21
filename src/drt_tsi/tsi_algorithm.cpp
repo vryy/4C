@@ -159,6 +159,45 @@ void TSI::Algorithm::ReadRestart(int step)
 
 
 /*----------------------------------------------------------------------*
+ | update (protected)                                        dano 12/09 |
+ *----------------------------------------------------------------------*/
+void TSI::Algorithm::Update()
+{
+  StructureField().Update();
+  ThermoField().Update();
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | output (protected)                                        dano 12/09 |
+ *----------------------------------------------------------------------*/
+void TSI::Algorithm::Output()
+{
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
+  StructureField().Output();
+
+  // write the thermo output (temperatures at the moment) to the the structure output
+  // get disc writer from structure field
+  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
+
+  // get the temperature and the noderowmap of thermo discretization
+  Epetra_Vector temperature = *(ThermoField().Tempn());
+  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
+
+  // replace map and write it to output
+  temperature.ReplaceMap(*temprowmap);
+  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(temperature));
+  output->WriteVector("temperature",temp);
+
+  ThermoField().Output();
+}
+
+
+/*----------------------------------------------------------------------*
  | time loop                                                 dano 12/09 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoop()
@@ -170,7 +209,7 @@ void TSI::Algorithm::TimeLoop()
   veln_ = StructureField().ExtractVeln();
 
   // ==================================================================
-  
+
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn
     = DRT::Problem::Instance()->TSIDynamicParams();
@@ -178,7 +217,7 @@ void TSI::Algorithm::TimeLoop()
   // decide if apply one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields method =
     Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
-  
+
   // get active nodes from structural contact simulation
   RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();
 
@@ -186,18 +225,38 @@ void TSI::Algorithm::TimeLoop()
   // only tsi
   if (cmtman == Teuchos::null)
   {
-    // switch TSI algorithm (synchronous)
-    // only the coupling field knows the 2nd (coupling) field
-    if (method == INPAR::TSI::OneWay)
-      TimeLoopOneWay();
-    // complete volume coupling system
-    // sequential staggered scheme
-    else if (method == INPAR::TSI::SequStagg)
-      TimeLoopSequStagg();
-    // iterative staggered scheme
-    else if (method == INPAR::TSI::IterStagg)
-      TimeLoopFull();
-  } // tsi
+    // time loop
+    while (NotFinished())
+    {
+      // counter and print header
+      IncrementTimeAndStep();
+      PrintHeader();
+
+      // normally PrepareTimeStep() should be called outside the nonlinear loop,
+      // but at this point the coupling variables are not known, yet!
+      // call PrepareTimeStep() after ApplyTemperatures()/ApplyStructVariables()
+
+      // switch TSI algorithm (synchronous)
+      // only the one field knows the 2nd field, that contains the coupling
+      // variable
+      if (method == INPAR::TSI::OneWay)
+        TimeLoopOneWay();
+      // complete volume coupling system
+      // sequential staggered scheme
+      else if (method == INPAR::TSI::SequStagg)
+        TimeLoopSequStagg();
+      // iterative staggered scheme
+      else if (method == INPAR::TSI::IterStagg)
+        TimeLoopFull();
+      else
+        dserror("desired type of thermo-structure interaction algorithm not supported");
+
+      // write output to screen and files
+      Output();
+
+    }  // time loop
+
+  }  // tsi
 
   // thermo-structure interaction with contact in seperate routine
   else
@@ -227,21 +286,21 @@ void TSI::Algorithm::TimeLoop()
         // predict and solve structural system
         StructureField().PrepareTimeStep();
         StructureField().Solve();
-  
+
         // initialize contact manager of thermo field
         ThermoField().SetStructContact(cmtman,StructureField().Discretization());
-  
+
         ThermoField().PrepareTimeStep();
         ThermoField().Solve();
       }
       //****************************************************************//
-      // this algorithm consists of the iteration between the           //   
-      // two single fields until convergence is achieved. The two fields// 
-      // influence each other:                                          //   
-      // 1) The thermal field is influenced by the structural field with// 
+      // this algorithm consists of the iteration between the           //
+      // two single fields until convergence is achieved. The two fields//
+      // influence each other:                                          //
+      // 1) The thermal field is influenced by the structural field with//
       //    the contact surface (mortar matrices, active nodes....) and //
-      //    frictional heating.                                         // 
-      // 2) The structural field is influenced by the thermal field     //   
+      //    frictional heating.                                         //
+      // 2) The structural field is influenced by the thermal field     //
       //    with a temperature dependent material law.                  //
       //******************************************************************
       else if (method == INPAR::TSI::IterStagg)
@@ -249,32 +308,32 @@ void TSI::Algorithm::TimeLoop()
         // prepare time step
         ThermoField().PrepareTimeStep();
         StructureField().PrepareTimeStep();
-        
+
         // iterate between the two fields
         int  itnum = 0;
         bool stopnonliniter = false;
-        
+
         while (stopnonliniter == false)
         {
           itnum ++;
-              
+
           // store temperature from first solution for convergence check (like in
           // elch_algorithm: use current values)
           tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
           dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
-        
+
           // initialize contact manager of thermo field
           ThermoField().SetStructContact(cmtman,StructureField().Discretization());
-        
+
           ThermoField().PrepareTimeStep();
           ThermoField().Solve();
 
           // extract current temperature field
           const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField().ExtractTempnp();
-          
+
           // apply current temperatur field
           StructureField().ApplyTemperatures(tempnp);
-          
+
           // solve structure system
           StructureField().Solve();
 
@@ -284,7 +343,7 @@ void TSI::Algorithm::TimeLoop()
       }
       else
         dserror("No sequential staggered coupling algorithm with contact");
- 
+
       // update all single field solvers
       Update();
 
@@ -295,7 +354,7 @@ void TSI::Algorithm::TimeLoop()
 
   // ==================================================================
 
-}
+}  // TSI::Algorithm::TimeLoop()
 
 
 /*----------------------------------------------------------------------*
@@ -303,163 +362,219 @@ void TSI::Algorithm::TimeLoop()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoopOneWay()
 {
-  // time loop
-  while (NotFinished())
+  if (displacementcoupling_) // (temperature change due to deformation)
   {
-    // counter and print header
-    IncrementTimeAndStep();
-    PrintHeader();
+    /// structure field
 
-    if (displacementcoupling_) // (temperature change due to deformation)
+    // predict the structure field without influence of temperatures
+    StructureField().PrepareTimeStep();
+
+    /// solve structural system
+    // get current displacement due to solve structure step
+    DoStructureStep();
+
+    // now extract the current displacements/velocities
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+
+    // extract the velocities of the current solution
+    Teuchos::RCP<Epetra_Vector> velnp;
+    // major switch to different time integrators
+    if (quasistatic_)
     {
-      // predict the structure field without influence of temperatures
-      StructureField().PrepareTimeStep();
-
-      // get current displacement due to Solve Structure Step
-      const Teuchos::RCP<Epetra_Vector> dispnp = DoStructureStep();
-
-      // extract the velocities of the current solution
-      Teuchos::RCP<Epetra_Vector> velnp;
-      // major switch to different time integrators
-      if (quasistatic_)
-      {
-        // the displacement -> velocity conversion
-        // Use this kind of calculation for quasi-static structure calculation
-        velnp = CalcVelocity(dispnp);
-      }
-      else
-      {
-        velnp = StructureField().ExtractVelnp();
-      }
-
-      // solve thermo system
-      // and therefore use the u-solution calculated in DoStructureStep
-      // including: - ApplyDisplacements()
-      //            - PrepareTimeStep()
-      //            - Solve()
-      DoThermoStep(dispnp, velnp);
-
-      // update all single field solvers
-      Update();
-
-      // extract final displacements,
-      // since we did update, this is very easy to extract
-      dispn_ = StructureField().ExtractDispn();
-
-    } // displacement coupling
-
-    else // temperature coupling (deformation due to heating)
+      // the displacement -> velocity conversion
+      // use this kind of calculation for quasi-static structure calculation
+      velnp = CalcVelocity(dispnp);
+    }
+    else
     {
-      // predict the thermal field without influence of structure
-      ThermoField().PrepareTimeStep();
+      velnp = StructureField().ExtractVelnp();
+    }
 
-      // get current temperatures due to Solve ThermoStep
-      const Teuchos::RCP<Epetra_Vector> tempnp = DoThermoStep();
+    /// thermo field
 
-      // solve structure system
-      // and therefore use the temperature solution calculated in DoThermoStep
-      // including: - ApplyTemperatures()
-      //            - PrepareTimeStep()
-      //            - Solve()
-      DoStructureStep(tempnp);
+    // use the structural solution calculated in DoStructureStep
 
-      // update all single field solvers
-      Update();
+    // call the current displacements and velocities and pass it to THR
+    ThermoField().ApplyStructVariables(dispnp, velnp);
 
-      // extract final temperatures,
-      // since we did update, this is very easy to extract
-      tempn_ = ThermoField().ExtractTempn();
+    // call the predictor here, because the displacement field is now also
+    // available
+    ThermoField().PrepareTimeStep();
 
-    }  // temperature coupling
+    /// solve temperature system
+    // do the solve for the time step. All boundary conditions have been set
+    DoThermoStep();
 
-    // write output to screen and files
-    Output();
+    // update all single field solvers
+    Update();
 
-  } // time loop
-}
+    // extract final displacements,
+    // since we did update, this is very easy to extract
+    dispn_ = StructureField().ExtractDispn();
+
+  } // displacement coupling
+
+  else // temperature coupling (deformation due to heating)
+  {
+    /// thermo field
+
+    // predict the thermal field without influence of structure
+    ThermoField().PrepareTimeStep();
+
+    /// solve temperature system
+    // get current temperatures due to Solve Thermo Step
+    DoThermoStep();
+
+    // now extract the current temperatures and pass it to the structure
+    const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField().ExtractTempnp();
+
+    /// structure field
+
+    // pass the current temperatures to the structural field
+    StructureField().ApplyTemperatures(tempnp);
+
+    // call the predictor here, because the temperature is now also available
+    StructureField().PrepareTimeStep();
+
+    /// solve structure system
+    // do the nonlinear solve for the time step. All boundary conditions have
+    // been set.
+    DoStructureStep();
+
+    // update all single field solvers
+    Update();
+
+    // extract final temperatures,
+    // since we did update, this is very easy to extract
+    tempn_ = ThermoField().ExtractTempn();
+
+  }  // temperature coupling
+
+}  // TSI::Algorithm::TimeLoopOneWay()
 
 /*----------------------------------------------------------------------*
  | One-way coupling between the fields                       dano 09/10 |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoopSequStagg()
 {
-  // time loop
-  while (NotFinished())
+  // like implicit-implicit staggered scheme, compare Farhat & Park, 1991
+  if (displacementcoupling_) // (temperature change due to deformation)
   {
-    // counter and print header
-    IncrementTimeAndStep();
-    PrintHeader();
+    // Begin Nonlinear Solver / Outer Iteration ******************************
 
-    // like implicit-implicit staggered scheme, compare Farhat & Park, 1991
-    if (displacementcoupling_) // (temperature change due to deformation)
-    {
-      // Begin Nonlinear Solver / Outer Iteration ******************************
+    // predict the displacement field (structural predictor for TSI)
 
-      // Predict the displacement field
-      // get structure variables of old time step (d_n, v_n)
-      dispn_ = StructureField().ExtractDispn();
-      if(Step()==0) veln_ = StructureField().ExtractVeln();
+    // get structure variables of old time step (d_n, v_n)
+    dispn_ = StructureField().ExtractDispn();
+    if( Step()==0 ) veln_ = StructureField().ExtractVeln();
 
-      // Solve thermo field with predicted structural values (Apply d_n,v_n to
-      // THR, Solve coupled equation, extract new temperatures T_n+1)
-      tempn_ = DoFullThermoStep(dispn_, veln_);
+    /// thermo field
 
-      // Correct structure field with just calculates temperatures T_n+1 (Apply
-      // T_n+1 to STR, Solve coupled equation
-      const Teuchos::RCP<Epetra_Vector> dispnp = DoFullStructureStep(tempn_);
+    // solve thermo field with predicted structural values (Apply d_n,v_n to
+    // THR, solve coupled equation, extract new temperatures T_n+1)
 
-      // End Nonlinear Solver **************************************
+    // pass the current displacements and velocities to the thermo field
+    ThermoField().ApplyStructVariables(dispn_,veln_);
 
-      if(quasistatic_)
-        veln_ = CalcVelocity(StructureField().ExtractDispnp());
-      else
-        veln_ = StructureField().ExtractVelnp();
+    // prepare time step with coupled variables
+    ThermoField().PrepareTimeStep();
 
-      // update all single field solvers
-      Update();
+    /// solve temperature system
 
-      // extract final displacements,
-      // since we did update, this is very easy to extract
-      dispn_ = StructureField().ExtractDispn();
+    // do the solve for the time step. All boundary conditions have been set.
+    DoThermoStep();
 
-    } // end displacement coupling
+    // now extract the current temperatures and pass it to the structure
+    tempn_ = ThermoField().ExtractTempnp();
 
-    // temperature is coupling variable
-    else  // (deformation due to heating)
-    {
-      // Begin Nonlinear Solver / Outer Iteration ******************************
+    /// structure field
 
-      // get temperature solution of old time step
-      tempn_ = ThermoField().ExtractTempn();
+    // pass the current temperatures to the structure field
+    StructureField().ApplyTemperatures(tempn_);
 
-      // get current displacement due to Solve Structure Step
-      const Teuchos::RCP<Epetra_Vector> dispnp = DoFullStructureStep(tempn_);
-      // extract the velocities of the current solution
-      // the displacement -> velocity conversion
-      if(quasistatic_)
-        velnp_ = CalcVelocity(dispnp);
-      // quasistatic to exlude oszillation
-      else
-        velnp_ = StructureField().ExtractVelnp();
+    // prepare time step with coupled variables
+    StructureField().PrepareTimeStep();
 
-      const Teuchos::RCP<Epetra_Vector> tempnp = DoFullThermoStep(dispnp, velnp_);
+    // solve coupled equation
+    DoStructureStep();
 
-      // End Nonlinear Solver **************************************
+    // End Nonlinear Solver **************************************
 
-      // update all single field solvers
-      Update();
+    // get the velocities needed as predictor for the thermo field for the next
+    // time step
+    if(quasistatic_)
+      veln_ = CalcVelocity(StructureField().ExtractDispnp());
+    else
+      veln_ = StructureField().ExtractVelnp();
 
-      // extract final displacements,
-      // since we did update, this is very easy to extract
-      tempn_ = ThermoField().ExtractTempn();
-    } // temperature coupling
+    // update all single field solvers
+    Update();
 
-    // write output to screen and files
-    Output();
+    // extract final displacements,
+    // since we did update, this is very easy to extract
+    dispn_ = StructureField().ExtractDispn();
 
-  } // time loop
+  } // end displacement coupling
 
-} // End TimeLoopSequStagg
+  // temperature is coupling variable
+  else  // (deformation due to heating)
+  {
+    // Begin Nonlinear Solver / Outer Iteration ******************************
+
+    // predict the temperature field (thermal predictor for TSI)
+
+    // get temperature solution of old time step
+    tempn_ = ThermoField().ExtractTempn();
+
+    /// structure field
+
+    // get current displacement due to solve structure step
+
+    // pass the current temperatures to the structure field
+    StructureField().ApplyTemperatures(tempn_);
+
+    // prepare time step with coupled variables
+    StructureField().PrepareTimeStep();
+
+    // solve structural coupled equation
+    DoStructureStep();
+
+    // extract current displacements
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+
+    // extract the velocities of the current solution
+    // the displacement -> velocity conversion
+    if(quasistatic_)
+      velnp_ = CalcVelocity(dispnp);
+    // quasistatic to exlude oszillation
+    else
+      velnp_ = StructureField().ExtractVelnp();
+
+    /// thermo field
+
+    // pass the current displacements and velocities to the thermo field
+    ThermoField().ApplyStructVariables(dispnp,velnp_);
+
+    // prepare time step with coupled variables
+    ThermoField().PrepareTimeStep();
+
+    /// solve temperature system
+    /// do the nonlinear solve for the time step. All boundary conditions have
+    /// been set.
+    DoThermoStep();
+
+    // End Nonlinear Solver **************************************
+
+    // update all single field solvers
+    Update();
+
+    // extract final displacements,
+    // since we did update, this is very easy to extract
+    tempn_ = ThermoField().ExtractTempn();
+
+  } // temperature coupling
+
+} // TSI::Algorithm::TimeLoopSequStagg()
 
 
 /*----------------------------------------------------------------------*
@@ -467,30 +582,18 @@ void TSI::Algorithm::TimeLoopSequStagg()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::TimeLoopFull()
 {
-  // time loop
-  while (NotFinished())
-  {
-    // counter and print header
-    IncrementTimeAndStep();
-    PrintHeader();
+  // outer iteration loop
+  OuterIterationLoop();
 
-    // Outer iteration loop
-    OuterIterationLoop();
+  // update all single field solvers
+  Update();
 
-    // update all single field solvers
-    Update();
+  // extract final displacement and velocity
+  // since we did update, this is very easy to extract
+  dispn_ = StructureField().ExtractDispn();
+  tempn_ = ThermoField().ExtractTempn();
 
-    // extract final displacement and velocity
-    // since we did update, this is very easy to extract
-    dispn_ = StructureField().ExtractDispn();
-    tempn_ = ThermoField().ExtractTempn();
-
-    // write output to screen and files
-    Output();
-
-  } // time loop
-
-} // TimeLoopFull
+} // TSI::Algorithm::TimeLoopFull()
 
 
 /*----------------------------------------------------------------------*
@@ -502,7 +605,7 @@ void TSI::Algorithm::OuterIterationLoop()
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  // Outer Iteration loop starts
+  // outer iteration loop starts
   if (Comm().MyPID()==0)
   {
     cout<<"\n";
@@ -513,22 +616,21 @@ void TSI::Algorithm::OuterIterationLoop()
     cout<<"**************************************************************\n";
   }
 
-  // displacement predictor
+  // structural predictor
   if (displacementcoupling_) // (temperature change due to deformation)
   {
     // mechanical predictor for the coupling iteration outside the loop
     // get structure variables of old time step (d_n, v_n)
     // d^p_n+1 = d_n, v^p_n+1 = v_n
-    dispn_ = StructureField().ExtractDispn();
     Teuchos::RCP<Epetra_Vector> dispnp;
-    if (Step()==1)
+    if ( Step()==1 )
     {
       dispnp = StructureField().ExtractDispn();
       veln_ = StructureField().ExtractVeln();
     }
-    // else the velocity of the last converged step
+    // else: use the velocity of the last converged step
 
-    // Start OUTER ITERATION
+    // start OUTER ITERATION
     while (stopnonliniter == false)
     {
       itnum ++;
@@ -541,18 +643,52 @@ void TSI::Algorithm::OuterIterationLoop()
       // kind of mechanical predictor
       // 1st iteration: get structure variables of old time step (d_n, v_n)
       if (itnum == 1) dispnp = StructureField().ExtractDispn();
-      // set dispnp for the next time step
-      else if (itnum != 1) dispnp = StructureField().ExtractDispnp();
+      // for itnum>1 use the current solution dispnp of old iteration step
+
+      cout << "dispnp\n" << dispnp << *dispnp << endl;
 
       // Begin Nonlinear Solver / Outer Iteration ******************************
 
-      // Solve thermo field with predicted structural values (Apply d_n,v_n to
-      // THR, Solve coupled equation, extract new temperatures T_n+1)
-      tempn_ = DoFullThermoStep(dispnp, veln_);
+      // thermo field
 
-      // Correct structure field with just calculates temperatures T_n+1 (Apply
-      // T_n+1 to STR, Solve coupled equation
-      dispnp = DoFullStructureStep(tempn_);
+      // pass the current displacements and velocities to the thermo field
+      ThermoField().ApplyStructVariables(dispnp,veln_);
+
+      // prepare time step with coupled variables
+      if (itnum == 1)
+        ThermoField().PrepareTimeStep();
+      // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+      else if (itnum != 1)
+        ThermoField().PreparePartitionStep();
+
+      /// solve temperature system
+
+      /// do the nonlinear solve for the time step. All boundary conditions have
+      /// been set.
+      DoThermoStep();
+
+      // now extract the current temperatures and pass it to the structure
+      tempn_ = ThermoField().ExtractTempnp();
+
+      /// structure field
+
+      // pass the current temperatures to the structure field
+      // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
+      // just calculated incremental solutions
+      StructureField().ApplyTemperatures(tempn_);
+
+      // prepare time step with coupled variables
+      if (itnum == 1)
+        StructureField().PrepareTimeStep();
+      // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+      else if (itnum != 1)
+        StructureField().PreparePartitionStep();
+
+      // solve coupled structural equation
+      DoStructureStep();
+
+      // extract current displacements
+      const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
 
       // End Nonlinear Solver **************************************
 
@@ -575,11 +711,11 @@ void TSI::Algorithm::OuterIterationLoop()
     // T^p_n+1 = T_n
     tempn_ = ThermoField().ExtractTempn();
 
-    // Start OUTER ITERATION
+    // start OUTER ITERATION
     while (stopnonliniter == false)
     {
       itnum ++;
-      // get current temperatures due to Solve ThermoStep, like predictor in FSI
+      // get current temperatures due to solve thermo step, like predictor in FSI
       if (itnum == 1){ tempn_ = ThermoField().ExtractTempn(); }
       else { tempn_ = ThermoField().ExtractTempnp(); }
 
@@ -588,12 +724,26 @@ void TSI::Algorithm::OuterIterationLoop()
       tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
       dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
 
-      // solve structure system and extract current displacements
-      // and therefore use the temperature solution calculated in DoThermoStep
-      // including: - ApplyTemperatures()
-      //            - PrepareTimeStep()
-      //            - Solve()
-      const Teuchos::RCP<Epetra_Vector> dispnp = DoFullStructureStep(tempn_);
+      /// structure field
+
+      // pass the current temperatures to the structure field
+      // ApplyTemperatures() also calls PreparePartitionStep() for prediction with
+      // just calculated incremental solutions
+      StructureField().ApplyTemperatures(tempn_);
+
+      // prepare time step with coupled variables
+      if (itnum == 1)
+        StructureField().PrepareTimeStep();
+      // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+      else if (itnum != 1)
+        StructureField().PreparePartitionStep();
+
+      // solve coupled structural equation
+      DoStructureStep();
+
+      // Extract current displacements
+      const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
+
       // extract the velocities of the current solution
       // the displacement -> velocity conversion
       if(quasistatic_)
@@ -602,14 +752,23 @@ void TSI::Algorithm::OuterIterationLoop()
       else
         velnp_ = StructureField().ExtractVelnp();
 
-      // solve thermo system
-      // and therefore use the u-solution calculated in DoStructureStep
-      // including: - ApplyDisplacements()
-      //            - PrepareTimeStep()
-      //            - Solve()
-      tempn_ = DoFullThermoStep(dispnp, velnp_);
+      /// thermo field
 
-      // End Nonlinear Solver **************************************
+      // pass the current displacements and velocities to the thermo field
+      ThermoField().ApplyStructVariables(dispnp,velnp_);
+
+      // prepare time step with coupled variables
+      if (itnum == 1)
+        ThermoField().PrepareTimeStep();
+      // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
+      else if (itnum != 1)
+        ThermoField().PreparePartitionStep();
+
+      /// solve coupled thermal system
+      /// do the solve for the time step. All boundary conditions have been set.
+      DoThermoStep();
+
+      // end Nonlinear Solver **************************************
 
       // check convergence of both field for "partitioned scheme"
       stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -623,10 +782,9 @@ void TSI::Algorithm::OuterIterationLoop()
 
 
 /*----------------------------------------------------------------------*
- | Solve the structure system (protected)                    dano 03/10 |
- | apply temperatures, coupling variable in structure field             |
+ | solve the structural system (protected)                    dano 12/10 |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> temp)
+void TSI::Algorithm::DoStructureStep()
 {
   if (Comm().MyPID()==0)
   {
@@ -635,136 +793,22 @@ void TSI::Algorithm::DoStructureStep(Teuchos::RCP<Epetra_Vector> temp)
     cout<<"    STRUCTURE SOLVER    \n";
     cout<<"************************\n";
   }
-  // call the current temperatures
-  StructureField().ApplyTemperatures(temp);
 
-  // call the predictor here, because the temperature is considered too
-  StructureField().PrepareTimeStep();
-
-  // solve structure system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
+  /// solve structural system
+  // do the nonlinear solve for the time step. All boundary conditions have
+  // been set.
   StructureField().Solve();
+
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | Solve the thermo system (protected)                       dano 05/10 |
- | extract end temperatures for coupling to displacement field          |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> TSI::Algorithm::DoThermoStep()
-{
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n";
-    cout<<"*********************\n";
-    cout<<"    THERMO SOLVER    \n";
-    cout<<"*********************\n";
-  }
-  /// solve temperature system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
-  ThermoField().Solve();
-  // now extract the current temperatures and pass it to the structure
-  return ThermoField().ExtractTempnp();
-}
-
-
-/*----------------------------------------------------------------------*
- | Solve the structure system (protected)                    dano 05/10 |
- | extract current displacements needed for coupling to thermo field    |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoStructureStep()
-{
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n";
-    cout<<"************************\n";
-    cout<<"    STRUCTURE SOLVER    \n";
-    cout<<"************************\n";
-  }
-
-  // solve structure system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
-  StructureField().Solve();
-  // now extract the current temperatures and pass it to the structure
-  return StructureField().ExtractDispnp();
-}
-
-
-/*----------------------------------------------------------------------*
- | Solve the thermo system (protected)                       dano 05/10 |
- | coupling of displacements to thermo field                            |
- *----------------------------------------------------------------------*/
-void TSI::Algorithm::DoThermoStep(
-  Teuchos::RCP<Epetra_Vector> disp,
-  Teuchos::RCP<Epetra_Vector> vel
-  )
-{
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n";
-    cout<<"*********************\n";
-    cout<<"    THERMO SOLVER    \n";
-    cout<<"*********************\n";
-  }
-
-  // call the current displacements and velocities
-  ThermoField().ApplyStructVariables(disp,vel);
-
-  // call the predictor here, because displacement field is considered, too
-  ThermoField().PrepareTimeStep();
-
-  /// solve temperature system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
-  ThermoField().Solve();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Solve the structure system (protected)                    dano 06/10 |
- | extract current displacements needed for coupling to thermo field    |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullStructureStep(
-  Teuchos::RCP<Epetra_Vector> temp
-  )
-{
-  if (Comm().MyPID()==0)
-  {
-    cout<<"\n";
-    cout<<"************************\n";
-    cout<<"    STRUCTURE SOLVER    \n";
-    cout<<"************************\n";
-  }
-  // call the current temperatures
-  StructureField().ApplyTemperatures(temp);
-
-  // call the predictor here, because the temperature is considered too
-  StructureField().PrepareTimeStep();
-  // solve structure system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
-  StructureField().Solve();
-
-  // now extract the current temperatures and pass it to the structure
-  return StructureField().ExtractDispnp();
-
-}
-
-
-/*----------------------------------------------------------------------*
- | Solve the thermo system (protected)                       dano 06/10 |
+ | solve the thermal system (protected)                       dano 12/10 |
  | coupling of displacements to thermo field and extract current        |
  | displacements needed for coupling to thermo field                    |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullThermoStep(
-  Teuchos::RCP<Epetra_Vector> disp,
-  Teuchos::RCP<Epetra_Vector> vel
-  )
+void TSI::Algorithm::DoThermoStep()
 {
   if (Comm().MyPID()==0)
   {
@@ -774,58 +818,12 @@ Teuchos::RCP<Epetra_Vector>  TSI::Algorithm::DoFullThermoStep(
     cout<<"*********************\n";
   }
 
-  // call the current displacements and velocities
-  ThermoField().ApplyStructVariables(disp,vel);
-
-  // call the predictor here, because displacement field is considered, too
-  ThermoField().PrepareTimeStep();
-
-  /// solve temperature system
-  /// Do the nonlinear solve for the time step. All boundary conditions have
-  /// been set.
+  /// solve thermal system
+  // do the solve for the time step. All boundary conditions have
+  // been set.
   ThermoField().Solve();
 
-  // now extract the current temperatures and pass it to the structure
-  return ThermoField().ExtractTempnp();
-}
-
-
-/*----------------------------------------------------------------------*
- | (protected)                                               dano 12/09 |
- *----------------------------------------------------------------------*/
-void TSI::Algorithm::Update()
-{
-  StructureField().Update();
-  ThermoField().Update();
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- | (protected)                                               dano 12/09 |
- *----------------------------------------------------------------------*/
-void TSI::Algorithm::Output()
-{
-  // Note: The order is important here! In here control file entries are
-  // written. And these entries define the order in which the filters handle
-  // the Discretizations, which in turn defines the dof number ordering of the
-  // Discretizations.
-  StructureField().Output();
-
-  // write the thermo output (temperatures at the moment) to the the structure output
-  // get disc writer from structure field
-  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
-
-  // get the temperature and the noderowmap of thermo discretization
-  Epetra_Vector temperature = *(ThermoField().Tempn());
-  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
-
-  // replace map and write it to output
-  temperature.ReplaceMap(*temprowmap);
-  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(temperature));
-  output->WriteVector("temperature",temp);
-
-  ThermoField().Output();
 }
 
 
@@ -846,7 +844,7 @@ bool TSI::Algorithm::ConvergenceCheck(
   //  -------------------------------- < Tolerance
   //     | temperature_n+1 |_2
 
-  // Variables to save different L2 - Norms
+  // variables to save different L2 - Norms
   // define L2-norm of incremental temperature and temperature
   // here: only the temperature field is checked for convergence!!!
   double tempincnorm_L2(0.0);
@@ -870,7 +868,7 @@ bool TSI::Algorithm::ConvergenceCheck(
   if (tempnorm_L2 < 1e-6) tempnorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
-  // Print the incremental based convergence check to the screen
+  // print the incremental based convergence check to the screen
   if (Comm().MyPID() == 0)
   {
     cout<<"\n";
@@ -885,7 +883,7 @@ bool TSI::Algorithm::ConvergenceCheck(
     printf("+--------------+------------------------+--------------------+--------------------+\n");
   }
 
-  // Converged
+  // converged
   if ((tempincnorm_L2/tempnorm_L2 <= ittol) &&
       (dispincnorm_L2/dispnorm_L2 <= ittol))
   {
@@ -920,7 +918,7 @@ bool TSI::Algorithm::ConvergenceCheck(
 
 /*----------------------------------------------------------------------*
  | calculate velocities                                      dano 05/10 |
- | like InterfaceVelocity(disp) in FSI::DirichletNeumann                |
+ | cf. InterfaceVelocity(disp) in FSI::DirichletNeumann                 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   Teuchos::RCP<const Epetra_Vector> dispnp
@@ -935,7 +933,8 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   vel->Update(1./Dt(), *dispnp, -1./Dt());
 
   return vel;
-}
+}  // TSI::Algorithm::CalcVelocity
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
