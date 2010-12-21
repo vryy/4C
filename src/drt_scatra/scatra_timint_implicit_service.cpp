@@ -1612,7 +1612,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         // print out results
         if (myrank_ == 0)
         {
-          printf("| %2d | %2d  |       %10.3E        |    %10.3E    |        %10.3E        |\n",
+          printf("| %2d | %2d  |       %10.4E        |    %10.4E    |        %10.4E        |\n",
               condid,idof,parnormfluxintegral[idof],parboundaryint,parnormfluxintegral[idof]/parboundaryint);
         }
         normfluxsum[idof]+=parnormfluxintegral[idof];
@@ -1682,7 +1682,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   {
     for (int idof = 0; idof < numscal_; ++idof)
     {
-      printf("Sum of all normal flux boundary integrals for scalar %d: %10.3E\n",idof,normfluxsum[idof]);
+      printf("Sum of all normal flux boundary integrals for scalar %d: %10.5E\n",idof,normfluxsum[idof]);
     }
     cout<<endl;
   }
