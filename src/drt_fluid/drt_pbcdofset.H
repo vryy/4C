@@ -81,37 +81,24 @@ public:
   /// create a copy of this object
   virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
 
-
-  //! @name Construction
-
-
-  /*!
-  \brief Assign dof numbers to all elements and nodes of the discretization.
-
-  <pre>
-
-  Assign dof numbers to all elements and nodes of the discretization.
-  This version of AssignDegreesOfFreedom takes care of the numbering
-  of coupled degrees of freedom (for periodic boundary conditions,
-  several coupled nodes have the same degrees of freedom)   gammi 05/07
-
-  </pre>
-
-  \param  dis   (i) discretisation
-  \param  start (i) start numbering of dofs with this index
-
-
-  \return int highest dof number assigned up to now
-
-  */
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
-
-  //@}
-
 protected:
+
+  /// get number of nodal dofs for this element at this node
+  virtual int NumDofPerNode( const DRT::Element & element, const DRT::Node & node, unsigned dspos ) const
+  {
+    if ( slavenodeids_.count( node.Id() )==0 )
+    {
+      return DRT::DofSet::NumDofPerNode( element, node, dspos );
+    }
+    return 0;
+  }
+
+private:
 
   //!\brief master and slave node connectivity for periodic boundary conditions
   RefCountPtr<map<int,vector<int> > >           perbndcouples_;
+
+  std::set<int> slavenodeids_;
 }; // class PBCDofSet
 
 

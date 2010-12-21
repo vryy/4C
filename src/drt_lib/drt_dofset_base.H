@@ -118,7 +118,7 @@ protected:
   /// unique row map of degrees of freedom (node and element dofs))
   Teuchos::RCP<Epetra_Map>                       dofrowmap_;
 
-  /// unique column map of degrees of freedom (node and element dofs))
+  /// unique column map of degrees of freedom (node and element dofs)
   Teuchos::RCP<Epetra_Map>                       dofcolmap_;
 
 private:

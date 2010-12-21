@@ -105,7 +105,7 @@ void DRT::DofSet::Print(ostream& os) const
         int idx   = (*idxcolelements_)[i];
         os << i << ": ";
         for (int j=0; j<numdf; ++j)
-          os << dofcolmap_->GID(idx+j) << " ";
+          os << (idx+j) << " ";
         os << "\n";
       }
       os << endl;
@@ -124,7 +124,7 @@ void DRT::DofSet::Print(ostream& os) const
         int idx   = (*idxcolnodes_)[i];
         os << i << ": ";
         for (int j=0; j<numdf; ++j)
-          os << dofcolmap_->GID(idx+j) << " ";
+          os << (idx+j) << " ";
         os << "\n";
       }
       os << endl;
@@ -216,167 +216,134 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   // do the nodes first
 
-  map<int,int> nidx;
-  LINALG::AllreduceEMap(nidx, *dis.NodeRowMap());
+  Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
+  Epetra_IntVector idxrownodes(*dis.NodeRowMap());
 
-  // build a redundant that holds all the node's numdof
-  vector<int> sredundantnodes(dis.NumGlobalNodes());
-  fill(sredundantnodes.begin(), sredundantnodes.end(), 0);
-
-  int lnumdof = 0;
-
-  vector<int> localnodenumdf(dis.NumMyRowNodes());
-
-  // loop my row nodes and remember the number of degrees of freedom
-  for (int i=0; i<dis.NumMyRowNodes(); ++i)
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
   {
     DRT::Node* actnode = dis.lRowNode(i);
     const int numele = actnode->NumElement();
     DRT::Element** myele = actnode->Elements();
     int numdf=0;
     for (int j=0; j<numele; ++j)
-      numdf = max(numdf,myele[j]->NumDofPerNode(dspos,*actnode));
-    const int gid = actnode->Id();
-    sredundantnodes[nidx[gid]] = numdf;
-    lnumdof += numdf;
+      numdf = max(numdf,NumDofPerNode(*myele[j],*actnode,dspos));
+    //const int gid = actnode->Id();
+    numdfrownodes[i] = numdf;
   }
 
-  // make all nodal numdfs globally known
-  vector<int> rredundantnodes(dis.NumGlobalNodes());
-  dis.Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],dis.NumGlobalNodes());
+  int minnodegid = dis.NodeRowMap()->MinAllGID();
+  int maxnodenumdf = numdfrownodes.MaxValue();
 
-  int localcolpos=0;
+  std::map<int,std::vector<int> > nodedofset;
 
-  // Vectors to keep the dof gid of both nodes and elements. We need
-  // both the row and column fashion to create the row and column map
-  // later on.
-  vector<int> localrowdofs;
-  localrowdofs.reserve(lnumdof); // exact
-
-  vector<int> localcoldofs;
-  localcoldofs.reserve(lnumdof); // just a guess
-
-  // We know all the numdfs of all the nodes and we even know the
-  // nodes from our local row map. Use that information.
-  // We have to loop the gids in order. This way we will get an
-  // ordered set of dofs.
-  for (map<int,int>::const_iterator i=nidx.begin(); i!=nidx.end(); ++i)
+  for (int i=0; i<numrownodes; ++i)
   {
-    int numdf = sredundantnodes[i->second];
-
-    // we know our row nodes from the redundant vector
-    if (numdf!=0)
+    DRT::Node* actnode = dis.lRowNode(i);
+    const int gid = actnode->Id();
+    int numdf = numdfrownodes[i];
+    int dof = count + ( gid-minnodegid )*maxnodenumdf;
+    idxrownodes[i] = dof;
+    std::vector<int> & dofs = nodedofset[gid];
+    dofs.reserve( numdf );
+    for ( int j=0; j<numdf; ++j )
     {
-      for (int j=0; j<numdf; ++j)
-      {
-        localrowdofs.push_back(count+j);
-      }
+      dofs.push_back( dof+j );
     }
-
-    // the col nodes we might have to look up
-    if ((numdf!=0) || dis.NodeColMap()->MyGID(i->first))
-    {
-      numdf = rredundantnodes[i->second];
-
-      // remember numdf and index for nodal based lookup
-      int lid = dis.NodeColMap()->LID(i->first);
-      (*numdfcolnodes_)[lid] = numdf;
-      (*idxcolnodes_)[lid] = localcolpos;
-      localcolpos += numdf;
-
-      for (int j=0; j<numdf; ++j)
-      {
-        localcoldofs.push_back(count+j);
-      }
-    }
-    else
-    {
-      // but in any case we need to increase our dof count
-      numdf = rredundantnodes[i->second];
-    }
-
-    count += numdf;
   }
 
-  sredundantnodes.clear();
-  rredundantnodes.clear();
-  nidx.clear();
+  Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
+  int err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
+  if (err) dserror( "Import using importer returned err=%d", err );
+  err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
+  if (err) dserror( "Import using importer returned err=%d", err );
+
+  count = idxrownodes.MaxValue() + maxnodenumdf + 1;
 
   //////////////////////////////////////////////////////////////////
 
-  // Now do all this fun again for the elements
+  // Now do it again for the elements
 
-  map<int,int> eidx;
-  LINALG::AllreduceEMap(eidx, *dis.ElementRowMap());
+  Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
+  Epetra_IntVector idxrowelements(*dis.ElementRowMap());
 
-  vector<int> sredundantelements(dis.NumGlobalElements());
-  fill(sredundantelements.begin(), sredundantelements.end(), 0);
-
-  vector<int> localelenumdf(dis.NumMyRowElements());
-
-  // loop my row elements and set number of degrees of freedom
-  for (int i=0; i<dis.NumMyRowElements(); ++i)
+  int numrowelements = dis.NumMyRowElements();
+  for (int i=0; i<numrowelements; ++i)
   {
     DRT::Element* actele = dis.lRowElement(i);
-    const int gid = actele->Id();
-    int numdf = actele->NumDofPerElement(dspos);
-    sredundantelements[eidx[gid]] = numdf;
-    localelenumdf[i] = numdf;
-    lnumdof += numdf;
+    //const int gid = actele->Id();
+    int numdf = NumDofPerElement(*actele,dspos);
+    numdfrowelements[i] = numdf;
   }
 
-  vector<int> rredundantelements(dis.NumGlobalElements());
-  dis.Comm().SumAll(&sredundantelements[0],&rredundantelements[0],dis.NumGlobalElements());
+  int minelementgid = dis.ElementRowMap()->MinAllGID();
+  int maxelementnumdf = numdfrowelements.MaxValue();
 
-  // enlarge the big dof vectors
-  localrowdofs.reserve(lnumdof); // exact
-  localcoldofs.reserve(lnumdof); // guess
+  std::map<int,std::vector<int> > elementdofset;
 
-  // We have to loop the gids in order. This way we will get an
-  // ordered set of dofs.
-  for (map<int,int>::const_iterator i=eidx.begin(); i!=eidx.end(); ++i)
+  for (int i=0; i<numrowelements; ++i)
   {
-    int numdf = sredundantelements[i->second];
-
-    // we know our row elements from the redundant vector
-    if (numdf!=0)
+    DRT::Element* actelement = dis.lRowElement(i);
+    const int gid = actelement->Id();
+    int numdf = numdfrowelements[i];
+    int dof = count + ( gid-minelementgid )*maxelementnumdf;
+    idxrowelements[i] = dof;
+    std::vector<int> & dofs = elementdofset[gid];
+    dofs.reserve( numdf );
+    for ( int j=0; j<numdf; ++j )
     {
-      for (int j=0; j<numdf; ++j)
-      {
-        localrowdofs.push_back(count+j);
-      }
+      dofs.push_back( dof+j );
     }
-
-    // the col elements we might have to look up
-    if ((numdf!=0) || dis.ElementColMap()->MyGID(i->first))
-    {
-      numdf = rredundantelements[i->second];
-
-      // remember numdf and index for elemental based lookup
-      int lid = dis.ElementColMap()->LID(i->first);
-      (*numdfcolelements_)[lid] = numdf;
-      (*idxcolelements_)[lid] = localcolpos;
-      localcolpos += numdf;
-
-      for (int j=0; j<numdf; ++j)
-      {
-        localcoldofs.push_back(count+j);
-      }
-    }
-    else
-    {
-      // but in any case we need to increase our dof count
-      numdf = rredundantelements[i->second];
-    }
-
-    count += numdf;
   }
 
-  sredundantelements.clear();
-  rredundantelements.clear();
-  eidx.clear();
+  Epetra_Import elementimporter( numdfcolelements_->Map(), numdfrowelements.Map() );
+  err = numdfcolelements_->Import( numdfrowelements, elementimporter, Insert );
+  if (err) dserror( "Import using importer returned err=%d", err );
+  err = idxcolelements_->Import( idxrowelements, elementimporter, Insert );
+  if (err) dserror( "Import using importer returned err=%d", err );
 
   // Now finally we have everything in place to build the maps.
+
+  std::vector<int> localrowdofs;
+  std::vector<int> localcoldofs;
+  localrowdofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
+  localcoldofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
+
+  for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
+        i!=nodedofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+  }
+  for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
+        i!=elementdofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+  }
+
+  Exporter nodeexporter( *dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm() );
+  nodeexporter.Export( nodedofset );
+
+  Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
+  elementexporter.Export( elementdofset );
+
+  for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
+        i!=nodedofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+  }
+  for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
+        i!=elementdofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+  }
 
   dofrowmap_ = rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");

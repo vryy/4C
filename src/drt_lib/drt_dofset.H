@@ -177,7 +177,7 @@ public:
       int lid = node->LID();
       if (lid==-1)
         return -1;
-      return dofcolmap_->GID((*idxcolnodes_)[lid]+dof);
+      return (*idxcolnodes_)[lid]+dof;
     }
 
   /// Get the gid of a dof for given element
@@ -186,7 +186,7 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return -1;
-      return dofcolmap_->GID((*idxcolelements_)[lid]+dof);
+      return (*idxcolelements_)[lid]+dof;
     }
 
   /// Get the gid of all dofs of a node
@@ -198,7 +198,7 @@ public:
       const int idx = (*idxcolnodes_)[lid];
       vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
-        dof[i] = dofcolmap_->GID(idx+i);
+        dof[i] = idx+i;
       return dof;
     }
 
@@ -211,7 +211,7 @@ public:
       int idx = (*idxcolelements_)[lid];
       vector<int> dof((*numdfcolelements_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
-        dof[i] = dofcolmap_->GID(idx+i);
+        dof[i] = idx+i;
       return dof;
     }
 
@@ -224,7 +224,7 @@ public:
       int idx = (*idxcolnodes_)[lid];
       int size = (*numdfcolnodes_)[lid];
       for (int i=0; i<size; ++i)
-        lm.push_back(dofcolmap_->GID(idx+i));
+        lm.push_back(idx+i);
     }
 
   /// Get the gid of all dofs of a node
@@ -239,9 +239,9 @@ public:
       return;
     const int idx = (*idxcolnodes_)[lid];
     const int size = (*numdfcolnodes_)[lid];
-    dsassert(lm.size() >= (startindex+size), "Sorry Dave, I can't do that! Your vector<int> lm is too small!");
+    dsassert(lm.size() >= (startindex+size), "vector<int> lm too small");
     for (int i=0; i<size; ++i)
-      lm[startindex+i] = dofcolmap_->GID(idx+i);
+      lm[startindex+i] = idx+i;
   }
 
   /// Get the gid of all dofs of a element
@@ -253,7 +253,7 @@ public:
       int idx = (*idxcolelements_)[lid];
       int size = (*numdfcolelements_)[lid];
       for (int i=0; i<size; ++i)
-        lm.push_back(dofcolmap_->GID(idx+i));
+        lm.push_back(idx+i);
     }
 
   /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
@@ -267,9 +267,9 @@ public:
     if (lid==-1)
       return;
     const int idx = (*idxcolnodes_)[lid];
-    const int size = element->NumDofPerNode(*(node));
+    const int size = NumDofPerNode(*element,*node,0);
     for (int i=0; i<size; ++i)
-      lm.push_back(dofcolmap_->GID(idx+i));
+      lm.push_back(idx+i);
   }
 
   /*!
@@ -306,6 +306,18 @@ private:
 
 protected:
 
+  /// get number of nodal dofs for this element at this node
+  virtual int NumDofPerNode( const Element & element, const Node & node, unsigned dspos ) const
+  {
+    return element.NumDofPerNode( dspos, node );
+  }
+
+  /// get number of element dofs for this element
+  virtual int NumDofPerElement( const Element & element, unsigned dspos ) const
+  {
+    return element.NumDofPerElement( dspos );
+  }
+
   //! @name Proxy management
 
   /// Notify proxies of new dofs
@@ -325,10 +337,12 @@ protected:
   /// number of dofs for each element
   RefCountPtr<Epetra_IntVector>                 numdfcolelements_;
 
-  /// column map lid of first dof for each node
+private:
+
+  /// column map gid of first dof for each node
   RefCountPtr<Epetra_IntVector>                 idxcolnodes_;
 
-  /// column map lid of first dof for each element
+  /// column map gid of first dof for each element
   RefCountPtr<Epetra_IntVector>                 idxcolelements_;
 
   /// list of my proxies
