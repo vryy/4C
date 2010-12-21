@@ -2,23 +2,14 @@
 /*!
 \file drt_nurbs_utils.H
 
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations.
-
-Since nurbs shape functions are not interpolating, it is not as
-straightforward to apply initial conditions to the degrees of freedom.
-(dofs are always associated with control points, i.e. the location
-associated with the 'node'=control point is not the physical location
-and the value at the control point is not the prescribed value at this
-position since dofs associated with neighbouring control points influence
-the function value as well)
-
+\brief service methods for accessing knot vector and weights for a given
+       element of a nurbs discretisations
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15252
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -43,7 +34,7 @@ namespace NURBS
 \param dis         (i) the discretisation
 \param ele         (i) a pointer to the element
 \param myknots     (o) knot vector (to be filled)
-\param weights     (o) knot vector (to be filled)
+\param weights     (o) weight vector (to be filled)
 
 \date 12/10
 */
@@ -83,10 +74,10 @@ bool GetMyNurbsKnotsAndWeights(
 
   // goodbye
   return zero_size;
-}
+} // GetMyNurbsKnotsAndWeights()
 
 
-//! determine whether this is an NURBS element or not
+//! determine whether a given element is a NURBS element or not
 inline bool IsNurbs(DRT::Element::DiscretizationType distype)
 {
   switch(distype)
@@ -105,6 +96,68 @@ inline bool IsNurbs(DRT::Element::DiscretizationType distype)
     return false;
   }
 };
+
+
+/*!
+\brief A service method for accessing knotvector and weights for
+       an isogeometric boundary element
+
+</pre>
+
+\param boundaryele      (i) a pointer to the boundary element
+\param localsurfaceid   (i) local id of this boundary element
+\param parenteleid      (i) global id of parent element
+\param dis              (i) the discretisation
+\param myknots          (o) parent knot vector (to be filled)
+\param myknots          (o) knot vector for boundary element (to be filled)
+\param weights          (o) weight vector (to be filled)
+\param normalfac        (o) normalfac (to be filled)
+
+\date 12/10
+*/
+template <class WG>
+bool GetKnotVectorAndWeightsForNurbsBoundary(
+    DRT::Element*                               boundaryele,
+    const int                                   localsurfaceid,
+    const int                                   parenteleid,
+    DRT::Discretization&                        discretization,
+    std::vector<Epetra_SerialDenseVector>&      mypknots,
+    std::vector<Epetra_SerialDenseVector>&      myknots,
+    WG&                                         weights,
+    double&                                     normalfac)
+{
+  // get knotvector(s)
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+  RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+  bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
+      myknots      ,
+      normalfac    ,
+      parenteleid  ,
+      localsurfaceid);
+
+  // if we have a zero sized element due to a interpolated
+  // point --- exit here and tell the outside world about that
+  if(zero_size)
+  {
+    return(zero_size);
+  }
+  // you are still here? So get the node weights as well
+  DRT::Node** nodes = boundaryele->Nodes();
+  const int boundarynen = boundaryele->NumNode();
+  for (int inode=0; inode<boundarynen; inode++)
+  {
+    DRT::NURBS::ControlPoint* cp
+    = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+    weights(inode) = cp->W();
+  }
+
+  // goodbye
+  return zero_size;
+} // GetKnotVectorAndWeightsForNurbsBoundary()
+
 
 } // namespace NURBS
 

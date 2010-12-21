@@ -70,12 +70,12 @@ public:
     This class does not provide a definition for this function, it
     must be defined in ScaTraBoundaryImpl.
    */
-  virtual int EvaluateNeumann(DRT::Element*              ele,
-                              ParameterList&             params,
-                              DRT::Discretization&       discretization,
-                              DRT::Condition&            condition,
-                              vector<int>&               lm,
-                              Epetra_SerialDenseVector&  elevec1_epetra
+  virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
+                              ParameterList&                    params,
+                              DRT::Discretization&              discretization,
+                              DRT::Condition&                   condition,
+                              vector<int>&                      lm,
+                              Epetra_SerialDenseVector&         elevec1_epetra
                               ) = 0;
 
   /// Internal implementation class for scalar transport elements
@@ -148,12 +148,12 @@ public:
                        );
 
   //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(DRT::Element*              ele,
-                              ParameterList&             params,
-                              DRT::Discretization&       discretization,
-                              DRT::Condition&            condition,
-                              vector<int>&               lm,
-                              Epetra_SerialDenseVector&  elevec1_epetra
+  virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
+                              ParameterList&                    params,
+                              DRT::Discretization&              discretization,
+                              DRT::Condition&                   condition,
+                              vector<int>&                      lm,
+                              Epetra_SerialDenseVector&         elevec1_epetra
                               );
 
   private:
@@ -275,6 +275,10 @@ public:
     LINALG::Matrix<nen_,1> weights_;
     //! knot vector for nurbs elements
     std::vector<Epetra_SerialDenseVector> myknots_;
+    //! knot vector of corresponding parent element
+    std::vector<Epetra_SerialDenseVector> mypknots_;
+    //! for nurbs elements the normal vector is multiplied with normalfac_!
+    double normalfac_;
     //! nodal displacement values for ALE
     LINALG::Matrix<nsd_+1,nen_> edispnp_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity

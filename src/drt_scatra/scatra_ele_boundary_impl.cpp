@@ -138,7 +138,14 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     : numdofpernode_(numdofpernode),
     numscal_(numscal),
     isale_(false),
+    is_stationary_(false),
+    is_genalpha_(false),
+    is_incremental_(true),
     xyze_(true),  // initialize to zero
+    weights_(true),
+    myknots_(nsd_),
+    mypknots_(nsd_+1),
+    normalfac_(1.0),
     edispnp_(true),
     diffus_(numscal_,0),
     valence_(numscal_,0),
@@ -149,7 +156,8 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     derxy_(true),
     normal_(true),
     velint_(true),
-    metrictensor_(true)
+    metrictensor_(true),
+    thermpress_(0.0)
     {
         return;
     }
@@ -199,12 +207,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   // Now do the nurbs specific stuff (for isogeometric elements)
   if(DRT::NURBS::IsNurbs(distype))
   {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+    // for isogeometric elements --- get knotvectors for parent
+    // element and boundary element, get weights
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->BeleNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
+    if(zero_size) return(0);
   } // Nurbs specific stuff
 
   // Now, check for the action parameter
@@ -217,6 +226,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // determine constant normal to this element
     GetConstNormal(normal_,xyze_);
+
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      normal_.Scale(normalfac_);
 
     // loop over the element nodes
     for (int j=0;j<nen_;j++)
@@ -423,6 +436,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // determine normal to this element
     GetConstNormal(normal_,xyze_);
 
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      normal_.Scale(normalfac_);
+
     // extract temperature flux vector for each node of the parent element
     LINALG::SerialDenseMatrix eflux(3,nenparent);
     DRT::Element* peleptr = (DRT::Element*) parentele;
@@ -608,12 +625,12 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
-    DRT::Element*             ele,
-    ParameterList&            params,
-    DRT::Discretization&      discretization,
-    DRT::Condition&           condition,
-    vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::ELEMENTS::TransportBoundary*   ele,
+    ParameterList&                      params,
+    DRT::Discretization&                discretization,
+    DRT::Condition&                     condition,
+    vector<int>&                        lm,
+    Epetra_SerialDenseVector&           elevec1)
 {
   // get node coordinates (we have a nsd_+1 dimensional computational domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
@@ -633,26 +650,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   // Now do the nurbs specific stuff (for isogeometric elements)
   if(DRT::NURBS::IsNurbs(distype))
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-    bool zero_size(false);
-    // get local knot vector entries and check for zero sized elements
-    zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id());
+    // for isogeometric elements --- get knotvectors for parent
+    // element and boundary element, get weights
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->BeleNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-    {
-      return(0);
-    }
-    // you are still here? So get the node weights for nurbs elements as well
-    DRT::Node** nodes = ele->Nodes();
-    for (int inode=0; inode<nen_; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp
-      = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-      weights_(inode) = cp->W();
-    }
+    if(zero_size) return(0);
   } // Nurbs specific stuff
 
   // integrations points and weights
@@ -737,20 +741,24 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
-    const DRT::Element*                   ele,
-    Teuchos::RCP<const MAT::Material>     material,
-    const vector<LINALG::Matrix<nen_,1> >& ephinp,
-    const LINALG::Matrix<nsd_+1,nen_>&     evelnp,
-    Epetra_SerialDenseMatrix&             emat,
-    Epetra_SerialDenseVector&             erhs,
-    const double                          timefac,
-    const double                          alphaF)
+    const DRT::Element*                     ele,
+    Teuchos::RCP<const MAT::Material>       material,
+    const vector<LINALG::Matrix<nen_,1> >&  ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&      evelnp,
+    Epetra_SerialDenseMatrix&               emat,
+    Epetra_SerialDenseVector&               erhs,
+    const double                            timefac,
+    const double                            alphaF)
 {
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // determine constant normal to this element
   GetConstNormal(normal_,xyze_);
+
+  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+  if(DRT::NURBS::IsNurbs(distype))
+    normal_.Scale(normalfac_);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1473,6 +1481,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
     )
 {
   // determine normal to this element
+  if(not DRT::NURBS::IsNurbs(distype))
+  {
   switch(nsd_)
   {
   case 2:
@@ -1498,11 +1508,20 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   default:
     dserror("Illegal number of space dimensions: %d",nsd_);
   } // switch(nsd)
+  }
+  else // NURBS case
+  {
+    normal(0)= 1.0; //dserror("no surface normal for NURBS");
+  }
 
   // length of normal to this element
   const double length = normal.Norm2();
   // outward-pointing normal of length 1.0
-  normal.Scale(1/length);
+  if (length > EPS10)
+    normal.Scale(1/length);
+  //ToDo  normals for NURBS + include normalfac here!
+  else
+    dserror("Zero length for element normal");
 
   return;
 } // ScaTraBoundaryImpl<distype>::
@@ -2024,6 +2043,10 @@ template <DRT::Element::DiscretizationType bdistype,
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
     DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      bnormal.Scale(normalfac_);
 
     // compute integration factor
     const double fac = bintpoints.IP().qwgt[iquad]*drs;
