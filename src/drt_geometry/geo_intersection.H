@@ -24,6 +24,26 @@ namespace GEO
     class MeshIntersection;
   }
 
+  /// contains the cut
+  class CutManager
+  {
+  public:
+
+    CutManager( DRT::Discretization & dis, int numcutmesh=1 );
+
+    void AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
+
+    void AddElement( DRT::Element * ele );
+
+    void Cut( std::map< int, DomainIntCells >& domainintcells,
+              std::map< int, BoundaryIntCells >& boundaryintcells );
+
+  private:
+
+    DRT::Discretization & dis_;
+    Teuchos::RCP<GEO::CUT::MeshIntersection> mesh_;
+  };
+
   /*!
    * \brief  computes the intersection of two discretizations.
    *

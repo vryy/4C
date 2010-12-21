@@ -21,100 +21,50 @@
 #include "../drt_cut/cut_side.H"
 
 
-void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
-                               const Teuchos::RCP<DRT::Discretization> cutterdis,
-                               const std::map<int,LINALG::Matrix<3,1> >& currentcutterpositions,
-                               const std::map<int,LINALG::Matrix<3,2> >& currentXAABBs,
-                               std::map< int, DomainIntCells >& domainintcells,
-                               std::map< int, BoundaryIntCells >& boundaryintcells,
-                               const std::map<int,int>& labelPerElementId,
-                               const std::vector<int>& MovingFluideleGIDs )
+GEO::CutManager::CutManager( DRT::Discretization & dis, int numcutmesh )
+  : dis_( dis )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::computeIntersection" );
+  mesh_ = Teuchos::rcp( new GEO::CUT::MeshIntersection( numcutmesh ) );
+}
 
-  if ( xfemdis->Comm().MyPID() == 0 )
-    std::cout << "\nGEO::Intersection:" << std::flush;
+void GEO::CutManager::AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
+{
+  const int numnode = ele->NumNode();
+  const int * nodeids = ele->NodeIds();
 
-  const double t_start = Teuchos::Time::wallTime();
+  std::vector<int> nids( nodeids, nodeids+numnode );
+  mesh_->AddCutSide( ele->Id(), nids, xyze, ele->Shape(), mi );
+}
 
-  GEO::CUT::MeshIntersection intersection;
+void GEO::CutManager::AddElement( DRT::Element * ele )
+{
+  const int numnode = ele->NumNode();
+  const DRT::Node * const * nodes = ele->Nodes();
+  const int * nodeids = ele->NodeIds();
 
-  for ( int k = 0; k < cutterdis->NumMyColElements(); ++k )
+  Epetra_SerialDenseMatrix xyze( 3, numnode );
+
+  for ( int i=0; i < numnode; ++i )
   {
-    DRT::Element* ele = cutterdis->lColElement( k );
-
-    std::map<int,int>::const_iterator k = labelPerElementId.find( ele->Id() );
-    if ( k==labelPerElementId.end() )
-    {
-      dserror( "no label for cutter element %d", ele->Id() );
-    }
-    if ( k->second < 1 )
-      continue;
-
-    const int numnode = ele->NumNode();
-    const DRT::Node * const * nodes = ele->Nodes();
-
-    Epetra_SerialDenseMatrix xyze( 3, numnode );
-
-    for ( int i=0; i < numnode; ++i )
-    {
-      const DRT::Node & node = *nodes[i];
-      //std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
-      std::map<int,LINALG::Matrix<3,1> >::const_iterator j = currentcutterpositions.find( node.Id() );
-      if ( j==currentcutterpositions.end() )
-      {
-        dserror( "no positions to node %d", node.Id() );
-      }
-      const LINALG::Matrix<3,1> & x = j->second;
-      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
-    }
-
-    std::vector<int> nids( ele->NodeIds(), ele->NodeIds()+numnode );
-
-    intersection.AddCutSide( ele->Id(), nids, xyze, ele->Shape() );
+    const DRT::Node & node = *nodes[i];
+    std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
   }
 
-  for ( int k = 0; k < xfemdis->NumMyColElements(); ++k )
+  std::vector<int> nids( nodeids, nodeids+numnode );
+  mesh_->AddElement( ele->Id(), nids, xyze, ele->Shape() );
+}
+
+
+void GEO::CutManager::Cut( std::map< int, DomainIntCells >& domainintcells,
+                           std::map< int, BoundaryIntCells >& boundaryintcells )
+{
+  mesh_->Cut();
+
+  for ( int k = 0; k < dis_.NumMyColElements(); ++k )
   {
-    DRT::Element* xfemElement = xfemdis->lColElement( k );
-
-    // for fluid-fluid-coupling consider just the elements of background fluid
-    if ( cutterdis->Name() == "FluidFluidboundary" or
-         cutterdis->Name() == "ALEFluidboundary" )
-    {
-      if ( std::find( MovingFluideleGIDs.begin(),
-                      MovingFluideleGIDs.end(),
-                      xfemElement->Id() ) != MovingFluideleGIDs.end() )
-      {
-        continue;
-      }
-    }
-
-    const int numnode = xfemElement->NumNode();
-    const DRT::Node * const * nodes = xfemElement->Nodes();
-
-    Epetra_SerialDenseMatrix xyze( 3, numnode );
-
-    for ( int i=0; i < numnode; ++i )
-    {
-      const DRT::Node & node = *nodes[i];
-      std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
-    }
-
-    std::vector<int> nids( xfemElement->NodeIds(), xfemElement->NodeIds()+numnode );
-
-    intersection.AddElement( xfemElement->Id(), nids, xyze, xfemElement->Shape() );
-  }
-
-  // Call tetgen on all cut elements.
-
-  intersection.Cut();
-
-  for ( int k = 0; k < xfemdis->NumMyColElements(); ++k )
-  {
-    DRT::Element* xfemElement = xfemdis->lColElement( k );
-    int eid = xfemElement->Id();
-    GEO::CUT::ElementHandle * e = intersection.GetElement( eid );
+    DRT::Element* ele = dis_.lColElement( k );
+    int eid = ele->Id();
+    GEO::CUT::ElementHandle * e = mesh_->GetElement( eid );
 
     if ( e!=NULL and e->IsCut() )
     {
@@ -232,6 +182,81 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
       }
     }
   }
+}
+
+
+void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
+                               const Teuchos::RCP<DRT::Discretization> cutterdis,
+                               const std::map<int,LINALG::Matrix<3,1> >& currentcutterpositions,
+                               const std::map<int,LINALG::Matrix<3,2> >& currentXAABBs,
+                               std::map< int, DomainIntCells >& domainintcells,
+                               std::map< int, BoundaryIntCells >& boundaryintcells,
+                               const std::map<int,int>& labelPerElementId,
+                               const std::vector<int>& MovingFluideleGIDs )
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::computeIntersection" );
+
+  if ( xfemdis->Comm().MyPID() == 0 )
+    std::cout << "\nGEO::Intersection:" << std::flush;
+
+  const double t_start = Teuchos::Time::wallTime();
+
+  CutManager manager( *xfemdis );
+
+  for ( int k = 0; k < cutterdis->NumMyColElements(); ++k )
+  {
+    DRT::Element* ele = cutterdis->lColElement( k );
+
+    std::map<int,int>::const_iterator k = labelPerElementId.find( ele->Id() );
+    if ( k==labelPerElementId.end() )
+    {
+      dserror( "no label for cutter element %d", ele->Id() );
+    }
+    if ( k->second < 1 )
+      continue;
+
+    const int numnode = ele->NumNode();
+    const DRT::Node * const * nodes = ele->Nodes();
+
+    Epetra_SerialDenseMatrix xyze( 3, numnode );
+
+    for ( int i=0; i < numnode; ++i )
+    {
+      const DRT::Node & node = *nodes[i];
+      std::map<int,LINALG::Matrix<3,1> >::const_iterator j = currentcutterpositions.find( node.Id() );
+      if ( j==currentcutterpositions.end() )
+      {
+        dserror( "no positions to node %d", node.Id() );
+      }
+      const LINALG::Matrix<3,1> & x = j->second;
+      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
+    }
+
+    manager.AddCutSide( 0, ele, xyze );
+  }
+
+  for ( int k = 0; k < xfemdis->NumMyColElements(); ++k )
+  {
+    DRT::Element* xfemElement = xfemdis->lColElement( k );
+
+    // for fluid-fluid-coupling consider just the elements of background fluid
+    if ( cutterdis->Name() == "FluidFluidboundary" or
+         cutterdis->Name() == "ALEFluidboundary" )
+    {
+      if ( std::find( MovingFluideleGIDs.begin(),
+                      MovingFluideleGIDs.end(),
+                      xfemElement->Id() ) != MovingFluideleGIDs.end() )
+      {
+        continue;
+      }
+    }
+
+    manager.AddElement( xfemElement );
+  }
+
+  // Call tetgen on all cut elements.
+
+  manager.Cut( domainintcells, boundaryintcells );
 
   // cleanup
 
