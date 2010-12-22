@@ -179,6 +179,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   if (numdofpernode == 1)
   {
     EnsightWriter::WriteResult("phinp","phi",dofbased,1);
+    EnsightWriter::WriteResult("trueresidual","normalflux",dofbased,1);
     // write flux vectors (always 3D)
     EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
   }
@@ -190,6 +191,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
       temp << k;
       string name = "phi_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
+      EnsightWriter::WriteResult("trueresidual","normalflux"+name,dofbased,1,k-1);
       // write flux vectors (always 3D)
       EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
     }

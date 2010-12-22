@@ -224,12 +224,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
-    // determine constant normal to this element
+    // determine constant outer normal to this element
     GetConstNormal(normal_,xyze_);
-
-    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if(DRT::NURBS::IsNurbs(distype))
-      normal_.Scale(normalfac_);
 
     // loop over the element nodes
     for (int j=0;j<nen_;j++)
@@ -433,12 +429,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     vector<double> mydiffflux(lm.size());
     vector<double> mydivu(lm.size());
 
-    // determine normal to this element
+    // determine constant outer normal to this element
     GetConstNormal(normal_,xyze_);
-
-    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if(DRT::NURBS::IsNurbs(distype))
-      normal_.Scale(normalfac_);
 
     // extract temperature flux vector for each node of the parent element
     LINALG::SerialDenseMatrix eflux(3,nenparent);
@@ -753,17 +745,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // determine constant normal to this element
-  GetConstNormal(normal_,xyze_);
-
-  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-  if(DRT::NURBS::IsNurbs(distype))
-    normal_.Scale(normalfac_);
-
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
 
     for(int k=0;k<numdofpernode_;++k)
     {
@@ -894,7 +879,8 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int                                    iquad,      ///< id of current Gauss point
-    const int                                    eleid       ///< the element id
+    const int                                    eleid,      ///< the element id
+    LINALG::Matrix<1 + nsd_,1>*         normalvec ///< normal vector at Gauss point(optional)
 )
 {
   // coordinates of the current integration point
@@ -920,8 +906,16 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
   }
 
   // the metric tensor and the area of an infinitesimal surface/line element
+  // optional: get normal at integration point as well
   double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
+
+  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    if (normalvec != NULL)
+      normal_.Scale(normalfac_);
+  }
 
   // return the integration factor
   return intpoints.IP().qwgt[iquad] * drs;
@@ -1511,7 +1505,17 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   }
   else // NURBS case
   {
-    normal(0)= 1.0; //dserror("no surface normal for NURBS");
+    // ToDo: this is only a temporary solution in order to have something here.
+    // Current handling of node-based normal vectors not applicable in NURBS case
+#if 0
+    // use one integration point at element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+    // hack: ele-id = -1
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    // this is already part of this function call
+    EvalShapeFuncAndIntFac(intpoints,0,-1,&normal);
+#endif
+    normal(0)= 1.0;
   }
 
   // length of normal to this element
@@ -1519,7 +1523,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   // outward-pointing normal of length 1.0
   if (length > EPS10)
     normal.Scale(1/length);
-  //ToDo  normals for NURBS + include normalfac here!
   else
     dserror("Zero length for element normal");
 

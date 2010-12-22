@@ -162,7 +162,8 @@ public:
     double EvalShapeFuncAndIntFac(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
         const int                                    iquad,      ///< id of current Gauss point
-        const int                                    eleid       ///< the element id
+        const int                                    eleid,      ///< the element id
+        LINALG::Matrix<1 + nsd_,1>*  normalvec = NULL  ///< normal vector at Gauss point(optional)
     );
 
     //! evaluate an electrode kinetics boundary condition

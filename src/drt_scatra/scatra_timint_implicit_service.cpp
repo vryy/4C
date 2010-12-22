@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -1233,6 +1234,18 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
 {
+  // WORK-AROUND FOR NURBS DISCRETIZATIONS
+  // using noderowmap is problematic. Thus, we do not add normal vectors
+  // to the scalar result field (scalar information is enough anyway)
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  if(nurbsdis!=NULL)
+  {
+    RCP<Epetra_Vector> normalflux = rcp(((*flux)(0)),false);
+    output_->WriteVector("trueresidual", normalflux, IO::DiscretizationWriter::dofvector);
+    return; // leave here
+  }
+
   // post_drt_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filter
 

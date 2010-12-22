@@ -1949,6 +1949,12 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         int numdofpernode = actele->NumDofPerNode(*n);
         coldofset.insert(lm[inode*numdofpernode+k]+offset);
       }
+      else if(name == "normalflux")
+      {
+        DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = actele->NumDofPerNode(*n);
+        coldofset.insert(lm[inode*numdofpernode]+offset);
+      }
       else
       {
         dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
@@ -2113,6 +2119,17 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         DRT::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+k]+offset)];
+      }
+    }
+    else if(name == "normalflux")
+    {
+      my_data.resize(numnp);
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        //DRT::Node* n = nurbsdis->lRowNode(inode);
+        int numdofpernode = 1; //actele->NumDofPerNode(*n);
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode]+offset)];
       }
     }
     else

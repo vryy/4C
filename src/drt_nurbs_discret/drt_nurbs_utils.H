@@ -46,8 +46,7 @@ bool GetMyNurbsKnotsAndWeights(
     WG&                                       weights
 )
 {
-  // try to cast dis to a nurbs discretisation --- if possible, proceed
-  // with setting initial conditions. Otherwise we have a problem.
+  // try to cast dis to a nurbs discretisation
   DRT::NURBS::NurbsDiscretization* nurbsdis
   = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
   if(nurbsdis==NULL)
