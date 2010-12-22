@@ -273,20 +273,6 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); }
 
   /*!
-  \brief Get the gid of all dofs of a node.
-
-  Ask the current DofSet for the gids of the dofs of this node. The
-  required vector is created and filled on the fly. So better keep it
-  if you need more than one dof gid.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param element (in)   : the element operated on
-  \param node (in)      : the node
-  \param lm (in/out)    : lm vector the dofs are appended to
-  */
-  virtual void Dof(const Element* element, const Node* node, vector<int>& lm) const
-  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,node,lm); }
-
-  /*!
   \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
@@ -444,21 +430,6 @@ public:
   */
   virtual void Dof(unsigned nds, const Node* node, vector<int>& lm) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,lm); }
-
-  /*!
-  \brief Get the gid of all dofs of a node.
-
-  Ask the current DofSet for the gids of the dofs of this node. The
-  required vector is created and filled on the fly. So better keep it
-  if you need more than one dof gid.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param nds (in)       : number of dofset
-  \param element (in)   : the element operated on
-  \param node (in)      : the node
-  \param lm (in/out)    : lm vector the dofs are appended to
-  */
-  virtual void Dof(unsigned nds, const Element* element, const Node* node, vector<int>& lm) const
-  { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,node,lm); }
 
   /*!
   \brief Get the gid of all dofs of a element.

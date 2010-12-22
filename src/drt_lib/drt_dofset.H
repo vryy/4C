@@ -256,22 +256,6 @@ public:
         lm.push_back(idx+i);
     }
 
-  /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-  virtual void Dof(
-      const Element* element,     ///< element which provides its expected number of DOFs per node
-      const Node* node,           ///< node, for which you want the DOF positions
-      vector<int>& lm             ///< already allocated vector to be filled with DOF positions
-      ) const
-  {
-    const int lid = node->LID();
-    if (lid==-1)
-      return;
-    const int idx = (*idxcolnodes_)[lid];
-    const int size = NumDofPerNode(*element,*node,0);
-    for (int i=0; i<size; ++i)
-      lm.push_back(idx+i);
-  }
-
   /*!
   \brief Print this class
   */
