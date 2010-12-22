@@ -1242,7 +1242,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   if(nurbsdis!=NULL)
   {
     RCP<Epetra_Vector> normalflux = rcp(((*flux)(0)),false);
-    output_->WriteVector("trueresidual", normalflux, IO::DiscretizationWriter::dofvector);
+    output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
     return; // leave here
   }
 
