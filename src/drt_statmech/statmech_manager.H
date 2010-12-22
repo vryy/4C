@@ -262,6 +262,9 @@ protected:
 	//! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
 	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color, bool ignoreeleid=true);
 
+	//! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
+	void GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color);
+
 
 	/*! \brief Handles Crosslinker diffusion
 	 *  \param dis             (in) latest displacement
@@ -383,7 +386,12 @@ protected:
   RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
   RCP<Epetra_Vector> searchforneighboursconv_;
 
-
+  // store test volume visualization data for Gmsh Output
+  std::vector<LINALG::Matrix<3,1> > testvolumepos_;
+  // characteristic length (radii, thickness) of the detected structure
+  double characlength_;
+  // center of gravity of the detected structure
+  LINALG::Matrix<3,1> cog_;
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/

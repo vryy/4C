@@ -684,6 +684,10 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 
     gmshfileend << "SP(" << scientific;
     gmshfileend << center(0)<<","<<center(1)<<","<<center(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+    // gmsh output of detected network structure volume
+    int nline = 8;
+    GmshNetworkStructVolume(nline, gmshfileend, 0.75);
+
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -1607,6 +1611,296 @@ void StatMechManager::GMSH_2_noded(const int& n,
   return;
 }//GMSH_2_noded
 
+/*----------------------------------------------------------------------*
+ | Gmsh Output of detected network structure volume        mueller 12/10|
+ *----------------------------------------------------------------------*/
+void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
+{
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	// plot the test volume determined by DDCorrCurrentStructure()
+	switch((int)testvolumepos_.size())
+	{
+		// either cluster or homogeneous network
+		case 0:
+		{
+			//cluster
+			if(characlength_<periodlength/2.0)
+			{
+				// draw three octagons/hexadecagon lying in the base planes
+				for(int i=0; i<3; i++)//spatial comp i
+					for(int j=0; j<3; j++)//spatial comp j
+						if(j<i)
+							for(int k=0; k<3; k++)//spatial comp k perp. to the others
+								if(k!=i && k!=j)
+								{
+									double radius = characlength_;
+									// some local variables
+									LINALG::Matrix<3,2> edge;
+									LINALG::Matrix<3,1> axis;
+									LINALG::Matrix<3,1> radiusvec1;
+									LINALG::Matrix<3,1> radiusvec2;
+									LINALG::Matrix<3,1> auxvec;
+									LINALG::Matrix<3,1> theta;
+									LINALG::Matrix<3,3> R;
+
+									// compute three dimensional angle theta
+									for (int l=0;l<3;++l)
+										if(l==k)
+											axis(l) = 1.0;
+										else
+											axis(l) = 0.0;
+									double norm_axis = axis.Norm2();
+									for (int l=0;l<3;++j)
+										theta(l) = axis(l) * 2 * M_PI / n;
+
+									// Compute rotation matirx R from rotation angle theta
+									angletotriad(theta,R);
+
+									// compute radius vector for first surface node of first edges
+									for (int l=0;l<3;++l)
+										auxvec(l) = cog_(l) + norm_axis;
+
+									// radiusvector for point on surface
+									radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+									radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+									radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+
+									// initialize all edge points to nodes
+									for (int l=0;l<3;++l)
+									{
+										edge(l,0) = cog_(l);
+										edge(l,1) = cog_(l);
+									}
+
+									// get first point on surface for node1 and node2
+									for (int l=0;l<3;++l)
+										edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
+
+
+									// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+									radiusvec2.Multiply(R,radiusvec1);
+
+									// get second point on surface for node1 and node2
+									for(int l=0;l<3;l++)
+										edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+
+									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+									// and the connecting lines between the prism bases -> rectangle
+									gmshfilecontent << "SL(" << scientific;
+									gmshfilecontent << edge(0,0) << "," << edge(1,0) << "," << edge(2,0) << ",";
+									gmshfilecontent << edge(0,1) << "," << edge(1,1) << "," << edge(2,1);
+									gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+
+									// now the other edges will be computed
+									for (int sector=0;sector<n-1;++sector)
+									{
+										// initialize for next edge
+										for (int l=0;l<3;++l)
+										{
+											edge(l,0)=edge(l,1);
+											edge(l,1)=cog_(l);
+										}
+
+										// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+										for (int l=0;l<3;++l)
+										{
+											radiusvec1(l) = radiusvec2(l);
+											radiusvec2(l) = 0.0;
+										}
+
+										// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+										radiusvec2.Multiply(R,radiusvec1);
+
+
+										// get second point on surface for node1 and node2
+										for (int l=0;l<3;++l)
+											edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+
+										// put coordinates into filecontent-stream
+										gmshfilecontent << "SL(" << scientific;
+										gmshfilecontent << edge(0,0) << "," << edge(1,0) << "," << edge(2,0) << ",";
+										gmshfilecontent << edge(0,1) << "," << edge(1,1) << "," << edge(2,1);
+										gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+									}
+								}
+			}
+		}
+		break;
+		// bundle network
+		case 2:
+		{
+			double radius = characlength_;
+			LINALG::Matrix<3,2> coord;
+			for(int i=0; i<(int)coord.M(); i++)
+				for(int j=0; j<(int)coord.N(); j++)
+				coord(i,j) = testvolumepos_[j](i);
+
+			// some local variables
+			LINALG::Matrix<3,4> edges;
+			LINALG::Matrix<3,1> axis;
+			LINALG::Matrix<3,1> radiusvec1;
+			LINALG::Matrix<3,1> radiusvec2;
+			LINALG::Matrix<3,1> auxvec;
+			LINALG::Matrix<3,1> theta;
+			LINALG::Matrix<3,3> R;
+
+			// compute three dimensional angle theta
+			for (int j=0;j<3;++j)
+				axis(j) = coord(j,1) - coord(j,0);
+			double norm_axis = axis.Norm2();
+			for (int j=0;j<3;++j)
+				theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
+
+			// Compute rotation matirx R from rotation angle theta
+			angletotriad(theta,R);
+
+			// compute radius vector for first surface node of first edges
+			for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
+
+			// radiusvector for point on surface
+			radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+			radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+			radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+
+			// initialize all edge points to nodes
+			for (int j=0;j<3;++j)
+			{
+				edges(j,0) = coord(j,0);
+				edges(j,1) = coord(j,0);
+				edges(j,2) = coord(j,1);
+				edges(j,3) = coord(j,1);
+			}
+
+			// get first point on surface for node1 and node2
+			for (int j=0;j<3;++j)
+			{
+				edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+				edges(j,2) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+			}
+
+			// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+			radiusvec2.Multiply(R,radiusvec1);
+
+			// get second point on surface for node1 and node2
+			for(int j=0;j<3;j++)
+			{
+				edges(j,1) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+				edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+			}
+			// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+			// and the connecting lines between the prism bases -> rectangle
+			gmshfilecontent << "SL(" << scientific;
+			gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
+			gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1);
+			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			gmshfilecontent << "SL(" << scientific;
+			gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2) << ",";
+			gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
+			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			gmshfilecontent << "SL(" << scientific;
+			gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
+			gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2);
+			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			gmshfilecontent << "SL(" << scientific;
+			gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1) << ",";
+			gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
+			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+
+			// now the other edges will be computed
+			for (int sector=0;sector<n-1;++sector)
+			{
+				// initialize for next edge
+				for (int j=0;j<3;++j)
+				{
+					edges(j,0)=edges(j,1);
+					edges(j,2)=edges(j,3);
+					edges(j,1)=coord(j,0);
+					edges(j,3)=coord(j,1);
+				}
+
+				// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+				for (int j=0;j<3;++j)
+				{
+					radiusvec1(j) = radiusvec2(j);
+					radiusvec2(j) = 0.0;
+				}
+
+				// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+				radiusvec2.Multiply(R,radiusvec1);
+
+
+				// get second point on surface for node1 and node2
+				for (int j=0;j<3;++j)
+				{
+					edges(j,1) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+					edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+				}
+
+				// put coordinates into filecontent-stream
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
+				gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2) << ",";
+				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
+				gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1) << ",";
+				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			}
+		}
+		break;
+		// layer
+		default:
+		{
+			// compute normal
+			// cross product n_1 x n_2, plane normal
+			LINALG::Matrix<3,1> normal;
+			LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
+			LINALG::Matrix<3,1> secdir = testvolumepos_[2];
+			firstdir -= testvolumepos_[0];
+			secdir -= testvolumepos_[0];
+			normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
+			normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
+			normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
+			// upper and lower bound
+			for(int i=1; i<(int)testvolumepos_.size()+1; i++)
+			{
+				int index0 = i;
+				int index1 = i-1;
+				// edge from "last" to "first" point
+				if(index0 == (int)testvolumepos_.size())
+					index0 = 0;
+				// upper edge
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				// lower edge
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				// connections
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
+				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			}
+		}
+		break;
+	}
+}//GmshNetworkStructVolume()
 
 /*----------------------------------------------------------------------*
  | initialize special output for statistical mechanics(public)cyron 12/08|
@@ -2015,6 +2309,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // Determine current network structure
 	LINALG::Matrix<3,1> cog;
   DDCorrCurrentStructure(disrow, &cog, &centershift, &crosslinkerentries, istep, filename);
+  cog_ = cog;
 
   // Compute internal energy
   double internalenergy;
@@ -2237,6 +2532,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		// number of iterations until crosslinker fraction lies within the given threshold fraction +/- tolerance
 		std::vector<int> niter(3,0);
 
+		// get the intersections of the axis of a cylinder with the (two) cube faces
+		std::vector<LINALG::Matrix<3,1> > intersections;
+		// coordinates of intersection points of layer-type volume with the cube edges
+		std::vector<LINALG::Matrix<3,1> > interseccoords;
+
 		if(numcrossele>0)
 		{
 /// calculate normed vectors and output filament element orientations
@@ -2330,8 +2630,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						double pr = 0.0;
 						int exponent = 1;
 
-						// get the intersections of normed[0] with the cube faces
-						std::vector<LINALG::Matrix<3,1> > intersections;
 						// cube face boundaries of jk-surface of cubical volume
 						LINALG::Matrix<3,2> surfaceboundaries;
 						for(int j=0; j<(int)surfaceboundaries.M(); j++)
@@ -2511,8 +2809,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								surfaceboundaries(j,0) = (*centershift)(j);
 								surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 							}
-							// coordinates of intersection points
-							std::vector<LINALG::Matrix<3,1> > interseccoords;
+
 							for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
 							{
 								for(int j=0; j<3; j++) // spatial component j
@@ -2688,19 +2985,35 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   	{
   		// cluster
   		case 0:
+  		{
   			cout<<"\nNetwork structure: Cluster"<<endl;
+  			characlength_ = characlength[structurenumber];
+  		}
   		break;
   		// bundle
   		case 1:
+  		{
   			cout<<"\nNetwork structure: Bundle"<<endl;
+  			characlength_ = characlength[structurenumber];
+  			for(int i=0; i<(int)intersections.size(); i++)
+  				testvolumepos_.push_back(intersections[i]);
+  		}
   		break;
   		// layer
   		case 2:
+  		{
   			cout<<"\nNetwork structure: Layer"<<endl;
+  			characlength_ = characlength[structurenumber];
+  			for(int i=0; i<(int)interseccoords.size(); i++)
+  				testvolumepos_.push_back(interseccoords[i]);
+  		}
   		break;
   		// layer
   		case 3:
+  		{
   			cout<<"\nNetwork structure: Homogeneous network"<<endl;
+  			characlength_ = characlength[0];
+  		}
   		break;
   	}
   }
