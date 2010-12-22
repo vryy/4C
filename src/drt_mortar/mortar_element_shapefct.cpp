@@ -580,8 +580,6 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   // *********************************************************************
   // 1D dual quadratic shape functions (line3)
   // 2D dual bilinear shape functions (quad4)
-  // 2D dual quadratic shape functions (tri6)
-  // 2D dual serendipity shape functions (quad8)
   // 2D dual biquadratic shape functions (quad9)
   // (used for interpolation of Lagrange mutliplier field)
   // (including adaption process for distorted elements)
@@ -625,14 +623,19 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     // need standard shape functions at xi first
     EvaluateShape(xi, val, deriv, nnodes);
 
+    // check whether this is a 1D or 2D mortar element
+    int dim = 2;
+    if (shape==MortarElement::quaddual1D) dim = 1;
+
+    // evaluate dual shape functions
     LINALG::SerialDenseVector valtemp(nnodes,true);
-    LINALG::SerialDenseMatrix derivtemp(nnodes,2,true);
+    LINALG::SerialDenseMatrix derivtemp(nnodes,dim,true);
     for (int i=0;i<nnodes;++i)
       for (int j=0;j<nnodes;++j)
       {
         valtemp[i]+=ae(i,j)*val[j];
         derivtemp(i,0)+=ae(i,j)*deriv(j,0);
-        derivtemp(i,1)+=ae(i,j)*deriv(j,1);
+        if (dim==2) derivtemp(i,1)+=ae(i,j)*deriv(j,1);
       }
 
     val=valtemp;
