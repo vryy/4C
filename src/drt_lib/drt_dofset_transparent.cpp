@@ -52,8 +52,8 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
     //build dofrowmap
-    vector<int> dofrowvec(dofrowmap_->NumMyElements());
-    int counter = 0;
+    vector<int> dofrowvec;
+    dofrowvec.reserve(dofrowmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
     {
         const DRT::Node* newnode = newdis.lRowNode(inode);
@@ -63,17 +63,20 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 
         const int newlid = newnode->LID();
         const int numdofs = (*numdfcolnodes_)[newlid];
-        for (int idof = 0; idof < numdofs; ++idof)
+        if (numdofs > 0)
         {
-            dofrowvec[counter] = dofs[idof];
-            counter++;
+          (*idxcolnodes_)[newlid] = dofs[0];
+          for (int idof = 0; idof < numdofs; ++idof)
+          {
+            dofrowvec.push_back(dofs[idof]);
+          }
         }
     }
     dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
     //build dofcolvec
-    vector<int> dofcolvec(dofcolmap_->NumMyElements());
-    int colcounter = 0;
+    vector<int> dofcolvec;
+    dofcolvec.reserve(dofcolmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
     {
         const DRT::Node* newnode = newdis.lColNode(inode);
@@ -82,10 +85,13 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
         const int newlid = newnode->LID();
         //const int newfirstidx = (*idxcolnodes_)[newlid];
         const int numdofs = (*numdfcolnodes_)[newlid];
-        for (int idof = 0; idof < numdofs; ++idof)
+        if (numdofs > 0)
         {
-            dofcolvec[colcounter] = dofs[idof];
-            colcounter++;
+          (*idxcolnodes_)[newlid] = dofs[0];
+          for (int idof = 0; idof < numdofs; ++idof)
+          {
+            dofcolvec.push_back(dofs[idof]);
+          }
         }
     }
     dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));

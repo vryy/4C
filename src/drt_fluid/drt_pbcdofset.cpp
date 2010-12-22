@@ -46,7 +46,7 @@ PBCDofSet::~PBCDofSet()
 
 int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
-  DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
   // loop all master nodes and set the degrees of freedom of
   // the slaves to the degrees of freedom of the master
@@ -83,6 +83,8 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsi
       }
     }
   }
+
+  return count;
 }
 
 #endif  // #ifdef CCADISCRET

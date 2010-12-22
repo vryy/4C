@@ -340,10 +340,10 @@ protected:
   /// column map gid of first dof for each node
   RefCountPtr<Epetra_IntVector>                 idxcolnodes_;
 
-private:
-
   /// column map gid of first dof for each element
   RefCountPtr<Epetra_IntVector>                 idxcolelements_;
+
+private:
 
   /// list of my proxies
   std::list<DofSetProxy*> proxies_;
