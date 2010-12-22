@@ -223,13 +223,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   for (int i=0; i<numrownodes; ++i)
   {
     DRT::Node* actnode = dis.lRowNode(i);
-    const int numele = actnode->NumElement();
-    DRT::Element** myele = actnode->Elements();
-    int numdf=0;
-    for (int j=0; j<numele; ++j)
-      numdf = max(numdf,NumDofPerNode(*myele[j],*actnode,dspos));
     //const int gid = actnode->Id();
-    numdfrownodes[i] = numdf;
+    numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
   }
 
   int minnodegid = dis.NodeRowMap()->MinAllGID();

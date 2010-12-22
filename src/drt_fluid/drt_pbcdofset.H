@@ -87,11 +87,11 @@ public:
 protected:
 
   /// get number of nodal dofs for this element at this node
-  virtual int NumDofPerNode( const DRT::Element & element, const DRT::Node & node, unsigned dspos ) const
+  virtual int NumDofPerNode( const DRT::Node & node, unsigned dspos ) const
   {
     if ( slavenodeids_.count( node.Id() )==0 )
     {
-      return DRT::DofSet::NumDofPerNode( element, node, dspos );
+      return DRT::DofSet::NumDofPerNode( node, dspos );
     }
     return 0;
   }

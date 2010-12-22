@@ -306,6 +306,17 @@ private:
 
 protected:
 
+  /// get number of nodal dofs
+  virtual int NumDofPerNode( const Node & node, unsigned dspos ) const
+  {
+    const int numele = node.NumElement();
+    const DRT::Element* const * myele = node.Elements();
+    int numdf=0;
+    for (int j=0; j<numele; ++j)
+      numdf = std::max(numdf,NumDofPerNode(*myele[j],node,dspos));
+    return numdf;
+  }
+
   /// get number of nodal dofs for this element at this node
   virtual int NumDofPerNode( const Element & element, const Node & node, unsigned dspos ) const
   {
