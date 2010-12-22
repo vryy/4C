@@ -2,6 +2,7 @@
 
 #include "pre_exodus_centerline.H"
 #include <iostream>
+#include "../drt_mat/matpar_bundle.H" //
 #include "pre_exodus_soshextrusion.H"// for Gmsh plot
 
 
@@ -11,61 +12,67 @@ using namespace EXODUS;
 /*----------------------------------------------------------------------*/
 map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const vector<double> coordcorr)
 {
+	if (cline=="mesh")
+	{ // create Centerline object from NodeSet
+	  int centerlineid = -1;
 
-  if (cline=="mesh"){ // create Centerline object from NodeSet
-    int centerlineid = -1;
-
-    map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
-    map<int,EXODUS::NodeSet>::const_iterator i_ns;
-    // check for Centerline or Centerpoint Nodeset
-    bool clbool=true;
-    for(i_ns=nss.begin();i_ns!=nss.end();++i_ns){
-      const string myname = i_ns->second.GetName();
-      if (myname.find("centerline") != string::npos)
-      {
-        centerlineid = i_ns->first;
-        clbool=true;
-      }
-      else if (myname.find("centerpoint") != string::npos)
-      {
-        clbool=false;
-        centerlineid = i_ns->first;
-      }
+	  map<int,EXODUS::NodeSet> nss = mymesh.GetNodeSets();
+	  map<int,EXODUS::NodeSet>::const_iterator i_ns;
+	  // check for Centerline or Centerpoint Nodeset
+	  bool clbool=true;
+	  for(i_ns=nss.begin();i_ns!=nss.end();++i_ns)
+    {
+	    const string myname = i_ns->second.GetName();
+	    if(myname.find("centerline") != string::npos)
+	    {
+	      centerlineid = i_ns->first;
+	      clbool=true;
+	    }
+	   else if (myname.find("centerpoint") != string::npos)
+	   {
+	     clbool=false;
+	     centerlineid = i_ns->first;
+	   }
     }
-    if (centerlineid == -1) dserror("Have not found centerline NodeSet");
-    EXODUS::Centerline myCLine(nss.find(centerlineid)->second,mymesh.GetNodes());
-    myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
+	  if (centerlineid == -1) dserror("Have not found centerline NodeSet");
 
-    // get rid of helper eb where the centerline ns was based on
-    map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-    map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
-    vector<int> eb_ids;
-    // check for Centerline ElementBlock
-    for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb){
-      const string myname = i_eb->second->GetName();
-      if (myname.find("centerline") != string::npos) mymesh.EraseElementBlock(i_eb->first);
-      // check for CenterPoints block
-      else if (myname.find("centerpoint") != string::npos) mymesh.EraseElementBlock(i_eb->first);
-      else eb_ids.push_back(i_eb->first);
+	  EXODUS::Centerline myCLine(nss.find(centerlineid)->second,mymesh.GetNodes());
+	  myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
+
+	  // get rid of helper eb where the centerline ns was based on
+	  map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+	  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+	  vector<int> eb_ids;
+	  // check for Centerline ElementBlock
+	  for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
+	  {
+	    const string myname = i_eb->second->GetName();
+	    if (myname.find("centerline") != string::npos) mymesh.EraseElementBlock(i_eb->first);
+	    // check for CenterPoints block
+	    else if (myname.find("centerpoint") != string::npos) mymesh.EraseElementBlock(i_eb->first);
+	    else eb_ids.push_back(i_eb->first);
     }
 
-    //generation of coordinate systems
-    map<int,map<int,vector<vector<double> > > > centlineinfo;
-    if (clbool)
-      centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
-    //generation of degenerated coordinate systems
-    else
-      centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
-    if (clbool)
-      EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
-    // plot mesh to gmsh
-    string meshname = "centerlinemesh.gmsh";
-    mymesh.PlotElementBlocksGmsh(meshname,mymesh);
+	  //generation of coordinate systems
+	  map<int,map<int,vector<vector<double> > > > centlineinfo;
+	  if (clbool)
+	    centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
+	  //generation of degenerated coordinate systems
+	  else
+	    centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
+	  if (clbool)
+	    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
+	  // plot mesh to gmsh
+	  string meshname = "centerlinemesh.gmsh";
+	  mymesh.PlotElementBlocksGmsh(meshname,mymesh);
 
 
-    return centlineinfo;
+	  return centlineinfo;
 
-  } else if (cline.find(".exo") != string::npos){ // read centerline from another exodus file
+	}
+	else if (cline.find(".exo") != string::npos)
+	{
+	  // read centerline from another exodus file
     EXODUS::Mesh centerlinemesh(cline);
 
     int centerlineid = -1;
@@ -96,7 +103,8 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     vector<int> eb_ids;
     // check for Centerline ElementBlock
-    for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb){
+    for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
+    {
       const string myname = i_eb->second->GetName();
       if (myname.find("centerline") != string::npos) centerlinemesh.EraseElementBlock(i_eb->first);
       // check for CenterPoints block
@@ -129,19 +137,40 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
       // get all node ids from this nodeset
       else
       {
-        cout << "Found surface nodes NodeSet! Fibre directions computed accordingly" << endl ;
+        cout << RED << "Found surface nodes NodeSet! Fiber directions computed accordingly" << END_COLOR << endl;
+
         set<int> all_surfnodes=nss.find(surfnodes_id)->second.GetNodeSet();
+
+        //int node_id_first_node = *all_surfnodes.begin();
+        // select only one element block for fiber direction calculation
+        eb_ids.clear();
+        for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
+        {
+        	//search for node_id in all el_block
+        	//i_eb->second->GetEleConn()->find(node_id_first_node);
+        	// set key featuer o be the name for now
+        	const string myname = i_eb->second->GetName();
+        	if (myname.find("exth3") != string::npos)
+             {
+            	 eb_ids.push_back((i_eb)->first);
+             }
+        }
+        // check if there is more than one element block
+        if (eb_ids.size()!=1) dserror("ERROR: COMPUTATION OF FIBER DIRECTIONS IS ONLY SUPPORTED FOR ONE ELEMENT BLOCK");
+        // check if Elementblock is of shape HEX8
+        if (mymesh.GetElementBlock(eb_ids[0])->GetShape()!= EXODUS::ElementBlock::hex8)
+        	dserror("ERROR: COMPUATION OF FIBER DIRECTION SUPPORTS ONLY HEX 8 ELEMENTS");
         centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids,all_surfnodes);
       }
-    }  
-    //generation of degenerated coordinate systems
-    else
-      centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
-    if (clbool)
+   }
+   //generation of degenerated coordinate systems
+   else
+     centlineinfo = EXODUS::element_degcosys(myCLine,mymesh,eb_ids);
+   if (clbool)
       EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
-    // plot mesh to gmsh
-    string meshname = "centerlinemesh.gmsh";
-    centerlinemesh.PlotElementBlocksGmsh(meshname,mymesh);
+   // plot mesh to gmsh
+   string meshname = "centerlinemesh.gmsh";
+   centerlinemesh.PlotElementBlocksGmsh(meshname,mymesh);
 
 
     return centlineinfo;
@@ -158,6 +187,7 @@ map<int,map<int,vector<vector<double> > > > EXODUS::EleCenterlineInfo(string& cl
     map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
     map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     vector<int> eb_ids;
+
     for (i_eb=ebs.begin(); i_eb!=ebs.end(); ++i_eb) {
       string actname = i_eb->second->GetName();
       size_t found;
@@ -440,6 +470,17 @@ vector<double> EXODUS::cross_product3d(vector<double> v1,vector<double> v2)
 }
 
 /*------------------------------------------------------------------------*
+ |calculates scalar product of two 3-dim vectors                   JB 06/08|
+ *------------------------------------------------------------------------*/
+double EXODUS::scalar_product3d(vector<double> v1,vector<double> v2)
+{
+  double result;
+
+  result= v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2];
+  return result;
+}
+
+/*------------------------------------------------------------------------*
  |normalizes a 3-dim vector                                       SP 06/08|
  *------------------------------------------------------------------------*/
 void EXODUS::normalize3d(vector<double>& v)
@@ -456,13 +497,12 @@ void EXODUS::normalize3d(vector<double>& v)
  |- returns a map containing calc. directions referred to each element    |
  *------------------------------------------------------------------------*/
 map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Centerline& mycline,
-    const EXODUS::Mesh& mymesh, const vector<int>& eb_ids, set<int>& mysurfnodes)
+    const EXODUS::Mesh& mymesh, const vector <int>& eb_ids, set<int>& mysurfnodes)
 {
-
   // map which stores the surface normals for each element
   map<int,vector<double> > ele_normals;
   
-  map<int,pair<int,int> > np_eb_el;
+  map <pair<int,int> ,vector <double> > np_eb_el;
   // Get all Element Blocks 
   map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
@@ -472,65 +512,71 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   map<int,vector<int> > EleConn;
   map<int,vector<int> >::const_iterator it_2;
   vector<int>::const_iterator it_3;
-  vector<double> ele_vec_1, ele_vec_2, ele_vec_norm;
+  // store node connecting vectors
+  vector<double> ele_vec_12, ele_vec_14, ele_vec_23, ele_vec_21, ele_vec_34, ele_vec_32, ele_vec_41, ele_vec_43;
+  //vectors to store the nodal normal vectors
+  vector<double>  ele_vec_norm_1,ele_vec_norm_2,ele_vec_norm_3,ele_vec_norm_4;
+  vector<double> ele_vec_norm(3,0);
   //int counter_ele_surfnodes =0;
   int ele_counter=0;
-  //begin loop over all element blocks
-  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs )
+
+
+  EleConn = *(mymesh.GetElementBlock(eb_ids[0])->GetEleConn());
+  // start loop over all elements
+  //Loop over all elements in Block
+  for(it_2 = EleConn.begin(); it_2 != EleConn.end(); ++it_2)
   {
-    //quick check if current element block is a hex8 block
-   	RCP<EXODUS::ElementBlock> hexblock = i_ebs->second;
-   	EXODUS::ElementBlock::Shape hexshape = hexblock->GetShape();
-   	if ((hexshape != EXODUS::ElementBlock::hex8))
-   	{
-  		cout<<"WARNING: only hex8 elements supported"<< "\n";
-  		//add n elements in eb to elecounter 	
-  		EleConn = *(i_ebs->second->GetEleConn());
-  		ele_counter=EleConn.size();
-   	}
-   	else
-   	{
-   	  // start loop over all elements
-   	  EleConn = *(i_ebs->second->GetEleConn());
-   	  //Loop over all elements in Block
-   	  for(it_2 = EleConn.begin(); it_2 != EleConn.end(); ++it_2)
-   	  {
-   	    ele_counter++;
-   	    counter_ele_surfnodes =ele_surf_nodes.begin();
-   	    ele_surf_nodes.clear();
-   	    //Loop over a single element
-   	    for(it_3 = it_2->second.begin(); it_3 != it_2->second.end(); ++it_3)
-   	    {
-   	      //Find the nodes that are in surface nodes nodeset
-			
-   	      //if(all_surfnodes.find(*it_3)!=all_surfnodes.end())
-   	      if(mysurfnodes.find(*it_3)!=mysurfnodes.end())
-   	      {
-   	        ele_surf_nodes.insert(counter_ele_surfnodes, (mymesh.GetNode(*it_3)));
-   	        counter_ele_surfnodes= ele_surf_nodes.begin();;
-   	      }	
-   	    } //loop over element
-	    
-   	    //Calculate  element normal vector from element surface nodes
-   	    // only if more than 2 nodes lie on the surface
-   	    if((ele_surf_nodes.size())>2)
-   	    {	
-   	      // Get two vectors in element plane
-   	      ele_vec_1=substract3d(ele_surf_nodes.at(1),ele_surf_nodes.at(0));	
-   	      ele_vec_2=substract3d(ele_surf_nodes.at(2),ele_surf_nodes.at(0));
-   	      // create element normal vector by cross product
-   	      ele_vec_norm=cross_product3d(ele_vec_1,ele_vec_2);
-   	      //normalize normal vector
-   	      normalize3d(ele_vec_norm);	
-   	      ele_normals.insert(std::pair<int,vector<double> >(ele_counter,ele_vec_norm));
-   	      // Write data in map which stores ele Block data as well
-   	      //np_eb_el contains (normal-ID, (eblock-ID, element-ID))
-   	      pair<int,int> eb_e = make_pair(i_ebs->first,it_2->first);
-   	      np_eb_el.insert(pair<int,pair<int,int> >(ele_counter,eb_e));
-   	    }
-   	  }
-   	}
-	}
+    ele_counter++;
+    counter_ele_surfnodes =ele_surf_nodes.begin();
+    ele_surf_nodes.clear();
+    //Loop over a single element
+    for(it_3 = it_2->second.begin(); it_3 != it_2->second.end(); ++it_3)
+    {
+      //Find the nodes that are in surface nodes nodeset
+
+      //if(all_surfnodes.find(*it_3)!=all_surfnodes.end())
+      if(mysurfnodes.find(*it_3)!=mysurfnodes.end())
+      {
+        ele_surf_nodes.insert(counter_ele_surfnodes, (mymesh.GetNode(*it_3)));
+        counter_ele_surfnodes= ele_surf_nodes.begin();;
+      }
+    } //loop over element
+
+    //Calculate  element normal vector from element surface nodes
+    // only if more than 2 nodes lie on the surface
+    if((ele_surf_nodes.size())>2)
+    {
+      // Get two vectors in element plane node 1
+      ele_vec_12=substract3d(ele_surf_nodes.at(1),ele_surf_nodes.at(0));
+      ele_vec_14=substract3d(ele_surf_nodes.at(3),ele_surf_nodes.at(0));
+      // Get two vectors in element plane node 2
+      ele_vec_23=substract3d(ele_surf_nodes.at(2),ele_surf_nodes.at(1));
+      ele_vec_21=substract3d(ele_surf_nodes.at(0),ele_surf_nodes.at(1));
+      // Get two vectors in element plane node 3
+      ele_vec_34=substract3d(ele_surf_nodes.at(3),ele_surf_nodes.at(2));
+      ele_vec_32=substract3d(ele_surf_nodes.at(1),ele_surf_nodes.at(2));
+      // Get two vectors in element plane node 4
+      ele_vec_41=substract3d(ele_surf_nodes.at(0),ele_surf_nodes.at(3));
+      ele_vec_43=substract3d(ele_surf_nodes.at(2),ele_surf_nodes.at(3));
+      // create nodal normal vectors
+      ele_vec_norm_1=cross_product3d(ele_vec_12,ele_vec_14);
+      ele_vec_norm_2=cross_product3d(ele_vec_23,ele_vec_21);
+      ele_vec_norm_3=cross_product3d(ele_vec_34,ele_vec_32);
+      ele_vec_norm_4=cross_product3d(ele_vec_41,ele_vec_43);
+      //build average element normal vector
+      ele_vec_norm[0]=0.25*(ele_vec_norm_1[0]+ele_vec_norm_2[0]+ele_vec_norm_3[0]+ele_vec_norm_4[0]);
+      ele_vec_norm[1]=0.25*(ele_vec_norm_1[1]+ele_vec_norm_2[1]+ele_vec_norm_3[1]+ele_vec_norm_4[1]);
+      ele_vec_norm[2]=0.25*(ele_vec_norm_1[2]+ele_vec_norm_2[2]+ele_vec_norm_3[2]+ele_vec_norm_4[2]);
+      //normalize normal vector
+      normalize3d(ele_vec_norm);
+      ele_normals.insert(std::pair<int,vector<double> >(ele_counter,ele_vec_norm));
+      // Write data in map which stores ele Block data as well
+      //pair<int,int> eb_e = make_pair(i_ebs->first,it_2->first);
+      pair<int,int> eb_e = make_pair(eb_ids[0],it_2->first);
+      //np_eb_el contains ((eblock-ID, element-ID),ele_normal)
+      np_eb_el.insert(pair < pair<int,int>,vector <double> >(eb_e,ele_vec_norm));
+    }
+  }
 
   map<int,vector<double> > midpoints;  // here midpoints are stored
   //mp_eb_el contains (midpoint-ID, (eblock-ID, element-ID))
@@ -541,122 +587,122 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_cosys(EXODUS::Center
   int clID=-1;
   int clID_2=-1;
   vector<int> ids(2,0);
-  double min_distance,temp;
+  vector<double> mean_cl_dir(3,0);
+  list< pair<int,double> > distances;
+  list< pair< double, vector <double> > > cl_direction;
   map<int,vector<double> > clpoints = *(mycline.GetPoints());
 
-	// this search should later be replaced by a nice search-tree!
-	//in this section for each element the nearest point on the centerline is searched
-	//and the ids of each element midpoint and the accordant centerline points are stored
-	//
-	//loop over all midpoints of all elements
-	for(map<int,vector<double> >::const_iterator el_iter = midpoints.begin(); el_iter != midpoints.end(); ++el_iter)
-	{
-		min_distance = -1;
+  //calculate mean direction of centerline to determine fiber direction
+  //loop over all points of the centerline to find the two nearest
+  for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
+  {
+    cl_direction.push_back(make_pair(EXODUS::distance3d((*clpoints.begin()).second,cl_iter->second),EXODUS::substract3d((*clpoints.begin()).second,cl_iter->second)));
+  }
+  cl_direction.sort();
+  mean_cl_dir=cl_direction.back().second;
+  normalize3d(mean_cl_dir);
 
-		//loop over all points of the centerline to find nearest
-		for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
-		{
-			temp = EXODUS::distance3d(el_iter->second,cl_iter->second);
+  //loop over all midpoints of all elements
+  for(map<int,vector<double> >::const_iterator el_iter = midpoints.begin(); el_iter != midpoints.end(); ++el_iter)
+  {
+    distances.clear();
 
-			if(min_distance == -1) //just for the first step
-			{
-				min_distance = temp;
-				clID = cl_iter->first;
-			}
-			else
-			{
-				if(min_distance > temp)
-				{
-				  min_distance = temp;
-				  clID = cl_iter->first;
-				}
-			}
-		}
-		//storage of IDs in conn_mp_cp
-		if (clID == ((int) mycline.GetPoints()->size())-1 )
-			clID_2 = clID - 1;
-		else
-			clID_2 = clID + 1;
-		
-		ids[0] = clID;
-		ids[1] = clID_2;
-		conn_mp_cp[el_iter->first]=ids;
-	}
+    //loop over all points of the centerline to find the two nearest
+    for(map<int,vector<double> >::const_iterator cl_iter = clpoints.begin(); cl_iter != clpoints.end(); ++cl_iter)
+    {
+      distances.push_back(make_pair(cl_iter->first, EXODUS::distance3d(el_iter->second,cl_iter->second)));
+    }
+    // sort distance map not by key but by value of second entry (here distance)
+    distances.sort(MyDataSortPredicate);
 
-	//in this section the three directions of all local coordinate systems are calculated
-	//with the aid of conn_mp_cp
-	//map that will be returned containing (eblock-ID, element-ID, directions of local coordinate systems)
-	map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
+    // get id of closest cl point
+    clID = distances.front().first;
+    // remove first element form list
+    distances.pop_front();
+    // get id of second closest cl point
+    clID_2 = distances.front().first;
 
-	vector<double> r_0(3,0);
-	vector<double> r_1(3,0);
-	vector<double> r_2(3,0);
-	vector<double> r_3(3,0);
-	vector<double> r_4(3,0);
-	vector<vector<double> > directions;
+    ids[0] = clID;
+    ids[1] = clID_2;
+    conn_mp_cp[el_iter->first]=ids;
+  }
 
-	//loop over conn_mp_cp
-	//for(map<int,vector<int> >::const_iterator it = conn_mp_cp.begin(); it != conn_mp_cp.end(); ++it)
-	for(map<int,vector<int> >::const_iterator it = conn_mp_cp.begin(); it != conn_mp_cp.end(); ++it)
-	{
-		directions.clear();
-		//position vector from centerline point 1 to midpoint of element
-		r_0 = EXODUS::substract3d(midpoints.find(it->first)->second,mycline.GetPoints()->find(it->second[0])->second);
-		// introduce vector to check normal direction
-		r_4 = r_0;
-		normalize3d(r_0);
-		//take the normal vector calculated from surface nodes if existent
-		if(ele_normals.find(it->first)!=ele_normals.end())
-		{
-		  r_0[0]=ele_normals.find(it->first)->second[0]; 
-		  r_0[1]=ele_normals.find(it->first)->second[1];
-		  r_0[2]=ele_normals.find(it->first)->second[2];	
-		}
+  //in this section the three directions of all local coordinate systems are calculated
+  //with the aid of conn_mp_cp
+  //map that will be returned containing (eblock-ID, element-ID, directions of local coordinate systems)
+  map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
 
-		//position vector from centerline point 1 to centerline point 2 (axial direction)
-		r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,mycline.GetPoints()->find(it->second[0])->second);
-		normalize3d(r_1);
+  vector<double> r_0(3,0);
+  vector<double> r_1(3,0);
+  vector<double> r_2(3,0);
+  vector<double> r_3(3,0);
+  vector<double> r_4(3,0);
+  vector<vector<double> > directions;
 
-		//if last CLPoint has been reached
-		if (it->second[0] == ((int) mycline.GetPoints()->size())-1 )
-		{
-			r_1[0]=-r_1[0];
-			r_1[1]=-r_1[1];
-			r_1[2]=-r_1[2];
-		}
+  //loop over conn_mp_cp
+  for(map<int,vector<int> >::const_iterator it = conn_mp_cp.begin(); it != conn_mp_cp.end(); ++it)
+  {
+    directions.clear();
+    //position vector from centerline point 1 to midpoint of element
+    r_0 = EXODUS::substract3d(midpoints.find(it->first)->second,mycline.GetPoints()->find(it->second[0])->second);
+    // introduce vector to check normal direction
+    r_4 = r_0;
+    normalize3d(r_0);
+    //take the normal vector calculated from surface nodes if existent
+    pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+    map < pair<int,int> ,vector <double> >::iterator normal;
+    normal= np_eb_el.find(eb_el);
 
-		//r_2 = r_0 x r_1 (calculate circumferential direction)
-		r_2 = EXODUS::cross_product3d(r_0,r_1);
-		normalize3d(r_2);
+    if(np_eb_el.find(eb_el)!=np_eb_el.end())
+    {
+      r_0 = np_eb_el.find(eb_el)->second;
+      //cout << RED << r_0[0] << r_0[1] << r_0[2] << END_COLOR << endl;
+    }
 
-		//r_3 = r_1 x r_2 (radial direction)
-		r_3 = EXODUS::cross_product3d(r_1,r_2);
-		normalize3d(r_3);
-		//take calculated normal vector instead
-		if(ele_normals.find(it->first)!=ele_normals.end())
-		{
-		  r_3[0] =ele_normals.find(it->first)->second[0]; 
-		  r_3[1] =ele_normals.find(it->first)->second[1]; 
-		  r_3[2] =ele_normals.find(it->first)->second[2]; 
-		}
-		
-		directions.push_back(r_3);
-		directions.push_back(r_1);
-		directions.push_back(r_2);
+    //position vector from centerline point 1 to centerline point 2 (axial direction)
+    r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,mycline.GetPoints()->find(it->second[0])->second);
+    normalize3d(r_1);
 
-		//ebID_elID_local_cosy(ebID,elID,directions)
-	  pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
-          ebID_elID_local_cosy[eb_el.first][eb_el.second] = directions;
+    // check direction of fiber with mean_cl_dir by scalar product
+    if (EXODUS::scalar_product3d(mean_cl_dir,r_1)<0.0)
+    {
+      r_1[0]=-r_1[0];
+      r_1[1]=-r_1[1];
+      r_1[2]=-r_1[2];
+    }
 
-	}
-	return ebID_elID_local_cosy;
+    //r_2 = r_0 x r_1 (calculate circumferential direction)
+    r_2 = EXODUS::cross_product3d(r_0,r_1);
+    normalize3d(r_2);
 
+      //r_3 = r_1 x r_2 (radial direction)
+    r_3 = EXODUS::cross_product3d(r_1,r_2);
+    normalize3d(r_3);
+    //take calculated normal vector instead
+    if(ele_normals.find(it->first)!=ele_normals.end())
+    {
+      r_3[0] =ele_normals.find(it->first)->second[0];
+      r_3[1] =ele_normals.find(it->first)->second[1];
+      r_3[2] =ele_normals.find(it->first)->second[2];
+    }
+
+    directions.push_back(r_3);
+    directions.push_back(r_1);
+    directions.push_back(r_2);
+
+    //ebID_elID_local_cosy(ebID,elID,directions)
+    //pair<int,int> eb_el = mp_eb_el.find(it->first)->second;
+    ebID_elID_local_cosy[eb_el.first][eb_el.second] = directions;
+
+  }
+  return ebID_elID_local_cosy;
 }
 
-
-
-
-
+// function for sorting pairs by value of -> second
+ bool MyDataSortPredicate( pair<int, double> lhs,  pair<int, double> rhs)
+{
+  return lhs.second < rhs.second;
+}
 
 
 /*------------------------------------------------------------------------*
@@ -828,9 +874,9 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
   map<int,map<int,vector<vector<double> > > > ebID_elID_local_cosy;
 
   vector<double> r_0(3,0);
-//  vector<double> r_1(3,0);
-//  vector<double> r_2(3,0);
-//  vector<double> r_3(3,0);
+  //  vector<double> r_1(3,0);
+  //  vector<double> r_2(3,0);
+  //  vector<double> r_3(3,0);
   vector<vector<double> > directions;
 
   //loop over conn_mp_cp
@@ -841,25 +887,25 @@ map<int,map<int,vector<vector<double> > > > EXODUS::element_degcosys
     //position vector from centerline point 1 to midpoint of element
     r_0 = EXODUS::substract3d(midpoints.find(it->first)->second,mycline.GetPoints()->find(it->second)->second);
     normalize3d(r_0);
-//    //position vector from centerline point 1 to centerline point 2 (axial direction)
-//    r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,mycline.GetPoints()->find(it->second[0])->second);
-//    normalize3d(r_1);
-//
-//    //if last CLPoint has been reached
-//    if (it->second[0] == ((int) mycline.GetPoints()->size())-1 )
-//    {
-//      r_1[0]=-r_1[0];
-//      r_1[1]=-r_1[1];
-//      r_1[2]=-r_1[2];
-//    }
-//
-//    //r_2 = r_0 x r_1 (circumferential direction)
-//    r_2 = EXODUS::cross_product3d(r_0,r_1);
-//    normalize3d(r_2);
-//
-//    //r_3 = r_1 x r_2 (radial direction)
-//    r_3 = EXODUS::cross_product3d(r_1,r_2);
-//    normalize3d(r_3);
+    //    //position vector from centerline point 1 to centerline point 2 (axial direction)
+    //    r_1 = EXODUS::substract3d(mycline.GetPoints()->find(it->second[1])->second,mycline.GetPoints()->find(it->second[0])->second);
+    //    normalize3d(r_1);
+    //
+    //    //if last CLPoint has been reached
+    //    if (it->second[0] == ((int) mycline.GetPoints()->size())-1 )
+    //    {
+    //      r_1[0]=-r_1[0];
+    //      r_1[1]=-r_1[1];
+    //      r_1[2]=-r_1[2];
+    //    }
+    //
+    //    //r_2 = r_0 x r_1 (circumferential direction)
+    //    r_2 = EXODUS::cross_product3d(r_0,r_1);
+    //    normalize3d(r_2);
+    //
+    //    //r_3 = r_1 x r_2 (radial direction)
+    //    r_3 = EXODUS::cross_product3d(r_1,r_2);
+    //    normalize3d(r_3);
 
     //directions = {r_0,r_0,r_0}
     directions.push_back(r_0);
@@ -959,7 +1005,7 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 			r_1[1]=-r_1[1];
 			r_1[2]=-r_1[2];
 		}
-
+        
 		//r_2 = r_0 x r_1 (circumferential direction)
 		r_2 = EXODUS::cross_product3d(r_0,r_1);
 		normalize3d(r_2);

@@ -12,6 +12,8 @@
 #include "pre_exodus_reader.H" //contains class Mesh (necessary for method - element_cosys)
 using namespace std;
 
+// Helper function to sort list of pairs according to second entry of the pair
+bool MyDataSortPredicate(pair<int, double> lhs,pair<int, double> rhs);
 
 namespace EXODUS
 {
@@ -51,6 +53,8 @@ vector<double> substract3d(vector<double>,vector<double>);
 vector<double> add3d(vector<double>,vector<double>);
 //! calculates cross product of two 3-dim vectors
 vector<double> cross_product3d(vector<double>,vector<double>);
+//! calculates scalar product of two 3-dim vectors
+double scalar_product3d(vector<double> v1,vector<double> v2);
 //! normalizes a vector
 void normalize3d(vector<double>&);
 //! creates local coordinate systems for each element and returns resulting map
@@ -71,6 +75,10 @@ map<int,map<int,vector<vector<double> > > > element_degcosys
 //! creates local coordinate systems for each element and creates gmsh-file for visualizing
 void PlotCosys(EXODUS::Centerline&,const EXODUS::Mesh&,const vector<int>&);
 
+// Helper function to sort list of pairs according to second entry of the pair
+//bool MyDataSortPredicate(const pair<int, double>& lhs, const pair<int, double>& rhs);
+
 }// of namespace EXODUS
 
 #endif /*PRE_EXODUS_CENTERLINE_H_*/
+
