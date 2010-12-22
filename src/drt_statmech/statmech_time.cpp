@@ -1057,7 +1057,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-    if(np < 0.01*resinit || numiter > 5) //
+    if(np < 0.001*resinit || numiter > 5) //
     {
       ctransptc = 0.0;
       crotptc = 0.0;
