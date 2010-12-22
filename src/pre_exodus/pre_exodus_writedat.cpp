@@ -539,11 +539,15 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
     dat << "   " << acte.desc;              // e.g. "MAT 1"
     if(elescli.size()!=0){
-      // write local cosy from centerline to each element
-      vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
-      dat << " RAD " << fixed << setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
-      dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
-      dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
+    	// quick check wether elements in ele Block have a fiber direction
+    	if(elescli.find(eb_id)!=elescli.end())
+    	{
+    		// write local cosy from centerline to each element
+    		vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
+		  dat << " RAD " << fixed << setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
+		  dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
+		  dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
+    	}
     }
     dat << endl;  // finish this element line
 
