@@ -93,6 +93,7 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
     // import localrowdofs into localcoldofs
     // in this way the the original dofcolmap is preserved
     Epetra_Import importer(localcoldofs->Map(),localrowdofs->Map());
+
     err = localcoldofs->Import((*localrowdofs),importer,Insert);
     if (err) dserror("Import using importer returned err=%d",err);
 

@@ -94,7 +94,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
     }
     if (gdofs.size()>0)
     {
-      (*idxcolnodes_)[node->LID()] = newdofs[0];
+      (*idxcolnodes_)[i] = newdofs[0];
     }
   }
 
