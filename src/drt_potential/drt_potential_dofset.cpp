@@ -61,6 +61,8 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
     Teuchos::RCP< Epetra_IntVector > localrowdofs = rcp(new Epetra_IntVector(*newdis.DofRowMap()));
     Teuchos::RCP< Epetra_IntVector > localcoldofs = rcp(new Epetra_IntVector(*newdis.DofColMap()));
 
+    Epetra_IntVector idxrownodes(*newdis.NodeRowMap());
+
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
     {
       const DRT::Node* newnode = newdis.lRowNode(inode);
@@ -79,12 +81,19 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
       dsassert(sourcedis.NumDof(sourcenode)==newdis.NumDof(newnode), "number of dofs does not match!");
       std::copy(dofs.begin(),dofs.end(),&(*localrowdofs)[countrowdof]);
       countrowdof += numdofs;
+
+      if (dofs.size()>0)
+        idxrownodes[inode] = dofs[0];
     }
+
+    Epetra_Import nodeimporter( idxcolnodes_->Map(), idxrownodes.Map() );
+    int err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
 
     // import localrowdofs into localcoldofs
     // in this way the the original dofcolmap is preserved
     Epetra_Import importer(localcoldofs->Map(),localrowdofs->Map());
-    int err = localcoldofs->Import((*localrowdofs),importer,Insert);
+    err = localcoldofs->Import((*localrowdofs),importer,Insert);
     if (err) dserror("Import using importer returned err=%d",err);
 
     dofrowmap_ = rcp(new Epetra_Map(-1,(*localrowdofs).MyLength(),&(*localrowdofs)[0],0,newdis.Comm()));
