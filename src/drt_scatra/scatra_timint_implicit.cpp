@@ -1316,7 +1316,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
 
   // solution output and potentially restart data and/or flux data
-  if ((step_%upres_==0 )or (step_%uprestart_==0))
+  if (DoOutput())
   {
     // step number and time (only after that data output is possible)
     output_->NewStep(step_,time_);
@@ -1338,7 +1338,7 @@ void SCATRA::ScaTraTimIntImpl::Output()
     // write flux vector field (only writing, calculation was done during Update() call)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
-      // for flux output of inital field (before first solve) do:
+      // for flux output of initial field (before first solve) do:
       if (step_==0) flux_=CalcFlux(true);
 
       OutputFlux(flux_);
@@ -1355,12 +1355,9 @@ void SCATRA::ScaTraTimIntImpl::Output()
     if (magneticfield_ != Teuchos::null)
       output_->WriteVector("magnetic_field", magneticfield_,IO::DiscretizationWriter::nodevector);
   }
-  else
-  {
-    // calculation of statistics for normal fluxes (no output to file!)
-    if ((step_>=samstart_) and (step_<=samstop_) and (writeflux_!=INPAR::SCATRA::flux_no))
-      CalcFlux(false);
-  }
+
+  // NOTE:
+  // statistics output for normal fluxes at boundaries was already done during Update()
 
   return;
 } // ScaTraTimIntImpl::Output

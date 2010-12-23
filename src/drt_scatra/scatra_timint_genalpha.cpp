@@ -406,7 +406,7 @@ void SCATRA::TimIntGenAlpha::Update()
   // is performed below !!
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
-    if ((step_%upres_==0 )or (step_%uprestart_==0))// output wanted?
+    if (DoOutput() or DoBoundaryFluxStatistics())
       flux_ = CalcFlux(true);
   }
 

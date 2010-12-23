@@ -318,6 +318,7 @@ public:
   /// routine to calculate mass/heat flux vectors (in domain / at boundary)
   Teuchos::RCP<Epetra_MultiVector> CalcFlux(const bool writetofile);
 
+  /// return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux(){return flux_;};
 
 protected:
@@ -445,6 +446,16 @@ protected:
 
   /// scaling of AVM3-based subgrid-diffusivity matrix
   void AVM3Scaling(ParameterList& eleparams);
+
+  /// is output needed for the current time step?
+  bool DoOutput()
+    {return ((step_%upres_==0 )or (step_%uprestart_==0));};
+
+  /// do we need a statistical sampling for boundary flux at the current time step?
+  bool DoBoundaryFluxStatistics()
+    { return ((step_>=samstart_) and (step_<=samstop_)
+        and ((writeflux_==INPAR::SCATRA::flux_total_boundary)
+          or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)));};
 
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
