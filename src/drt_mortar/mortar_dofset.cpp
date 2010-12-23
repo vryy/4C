@@ -92,6 +92,10 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
       lid = dofrowmap_->LID(gdofs[j]);
       myrow[lid] = newdofs[j];
     }
+    if (gdofs.size()>0)
+    {
+      (*idxcolnodes_)[node->LID()] = newdofs[0];
+    }
   }
 
   // we have new vectors, so recreate epetra maps and replace old ones with them
