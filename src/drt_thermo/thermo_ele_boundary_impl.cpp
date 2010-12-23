@@ -33,6 +33,8 @@ Maintainer: Caroline Danowski
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_function.H"
 
+#include "../drt_inpar/inpar_thermo.H"
+
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -118,72 +120,147 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
   return;
 }
 
-///*----------------------------------------------------------------------*
-// |                                                           dano 09/09 |
-// *----------------------------------------------------------------------*/
-//template <DRT::Element::DiscretizationType distype>
-//int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
-//  DRT::ELEMENTS::ThermoBoundary* ele,
-//  Teuchos::ParameterList& params,
-//  DRT::Discretization& discretization,
-//  std::vector<int>& lm,
-//  Epetra_SerialDenseMatrix& elemat1_epetra,
-//  Epetra_SerialDenseMatrix& elemat2_epetra,
-//  Epetra_SerialDenseVector& elevec1_epetra,
-//  Epetra_SerialDenseVector& elevec2_epetra,
-//  Epetra_SerialDenseVector& elevec3_epetra
-//  )
-//{
-//  // First, do the things that are needed for all actions:
-//  // get the material (of the parent element)
-//  DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();
-//  Teuchos::RCP<MAT::Material> mat = parentele->Material();
-//
-//  // Now, check for the action parameter
-//  const std::string action = params.get<std::string>("action","none");
-//  if (action == "calc_normal_vectors")
-//  {
-//    // access the global vector
-//    const Teuchos::RCP<Epetra_MultiVector> normals
-//      = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
-//    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
-//
-//    // get node coordinates (we have a nsd_+1 dimensional domain!)
-//    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-//
-//    // determine constant normal to this element
-//    GetConstNormal(normal_,xyze_);
-//
-//    // loop over the element nodes
-//    for (int j=0;j<nen_;j++)
-//    {
-//      const int nodegid = (ele->Nodes()[j])->Id();
-//      if (normals->Map().MyGID(nodegid) )
-//      { // OK, the node belongs to this processor
-//
-//        // scaling to a unit vector is performed on the global level after
-//        // assembly of nodal contributions since we have no reliable information
-//        // about the number of boundary elements adjacent to a node
-//        for (int dim=0; dim<(nsd_+1); dim++)
-//        {
-//          normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
-//        }
-//      }
-//      // else: the node belongs to another processor; the ghosted
-//      //       element will contribute the right value on that proc
-//    }
-//  }
-//  else if (action =="integrate_shape_functions")
-//  {
-//    // NOTE: add area value only for elements which are NOT ghosted!
-//    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
-//    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
-//  }
-//  else
-//    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
-//
-//  return 0;
-//} // Evaluate
+/*----------------------------------------------------------------------*
+ |                                                           dano 09/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
+  DRT::ELEMENTS::ThermoBoundary* ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  std::vector<int>& lm,
+  Epetra_SerialDenseMatrix& elemat1_epetra,
+  Epetra_SerialDenseMatrix& elemat2_epetra,
+  Epetra_SerialDenseVector& elevec1_epetra,
+  Epetra_SerialDenseVector& elevec2_epetra,
+  Epetra_SerialDenseVector& elevec3_epetra
+  )
+{
+  // First, do the things that are needed for all actions:
+  // get the material (of the parent element)
+  DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();
+  Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+  // Now, check for the action parameter
+  const std::string action = params.get<std::string>("action","none");
+  if (action == "calc_normal_vectors")
+  {
+    // access the global vector
+    const Teuchos::RCP<Epetra_MultiVector> normals
+      = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
+    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+
+    // get node coordinates (we have a nsd_+1 dimensional domain!)
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+
+    // determine constant normal to this element
+    GetConstNormal(normal_,xyze_);
+
+    // loop over the element nodes
+    for (int j=0;j<nen_;j++)
+    {
+      const int nodegid = (ele->Nodes()[j])->Id();
+      if (normals->Map().MyGID(nodegid) )
+      { // OK, the node belongs to this processor
+
+        // scaling to a unit vector is performed on the global level after
+        // assembly of nodal contributions since we have no reliable information
+        // about the number of boundary elements adjacent to a node
+        for (int dim=0; dim<(nsd_+1); dim++)
+        {
+          normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
+        }
+      }
+      // else: the node belongs to another processor; the ghosted
+      //       element will contribute the right value on that proc
+    }
+  }
+  else if (action =="integrate_shape_functions")
+  {
+    // NOTE: add area value only for elements which are NOT ghosted!
+    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
+  }
+  else if (action == "calc_thermo_fextconvection")
+  {
+    // get node coordinates (we have a nsd_+1 dimensional domain!)
+    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+
+    // set views
+    LINALG::Matrix<nen_,nen_> etang(elemat1_epetra.A(),true);  // view only!
+    LINALG::Matrix<nen_,1> erhs(elevec1_epetra.A(),true);  // view only!
+
+    // disassemble temperature
+    if (discretization.HasState("temperature"))
+    {
+      // get actual values of temperature from global location vector
+      std::vector<double> mytempnp(lm.size());
+      Teuchos::RCP<const Epetra_Vector> tempnp
+       = discretization.GetState("temperature");
+      if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+
+      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+      // build the element temperature
+      LINALG::Matrix<nen_,1> etemp(&(mytempnp[0]),true);  // view only!
+      etemp_.Update(etemp);  // copy
+
+      // get current condition
+      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+      if (cond == Teuchos::null) dserror("Cannot access condition 'ThermoConvections'");
+
+      // access parameters of the condition
+      double coeff = cond->GetDouble("coeff");
+      double surtemp = cond->GetDouble("surtemp");
+
+      // and now check if there is a convection heat transfer boundary condition
+      EvaluateThermoConvection(
+        ele, // current boundary element
+        &etang, // element-matrix
+        &erhs, // element-rhs
+        coeff,
+        surtemp
+        );
+    } // discretization.HasState("temperature")
+
+    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
+    // check the time integrator
+    const INPAR::THR::DynamicType timint
+      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+    switch (timint)
+    {
+      case INPAR::THR::dyna_statics :
+      {
+        // continue
+        break;
+      }
+      case INPAR::THR::dyna_onesteptheta :
+      {
+        // Note: erhs is scaled with theta in thrtimint_ost.cpp. Because the
+        // convective boundary condition is nonlinear and produces a term in the
+        // tangent, consider the factor theta here, too
+        const double theta = params.get<double>("theta");
+        // combined tangent and conductivity matrix to one global matrix
+        etang.Scale(theta);
+        break;
+      }
+      case INPAR::THR::dyna_genalpha :
+      {
+        dserror("Genalpha not yet implemented");
+        break;
+      }
+      case INPAR::THR::dyna_undefined :
+      default :
+      {
+        dserror("Don't know what to do...");
+        break;
+      }
+    }  // end of switch(timint)
+  }  // calc_thermo_fextconvection
+  else
+    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+
+  return 0;
+} // Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -241,11 +318,15 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       //       element will contribute the right value on that proc
     }
   }
-  else if (action =="integrate_shape_functions")
+  else if (action == "integrate_shape_functions")
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
+  }
+  else if (action == "calc_thermo_fextconvection")
+  {
+    dserror("EvaluateCondition is used with the location vector lm");
   }
   else
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
@@ -310,6 +391,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
       coordgp[i] = 0.0;
       for (int j = 0; j < nen_; j++)
       {
+        // node coordinate * shape function
         coordgp[i] += xyze_(i,j) * funct_(j);
       }
     }
@@ -337,7 +419,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
         for (int node=0;node<nen_;++node)
         {
-          //                        _
           // fext  = fext +  N^T  * q * detJ * w(gp) * spatial_fac * timecurve_fac
           elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
         }
@@ -347,6 +428,82 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
   return 0;
 }
+
+/*----------------------------------------------------------------------*
+ | evaluate an convective thermo boundary condition (private) dano 12/10|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
+  const DRT::Element* ele,
+  LINALG::Matrix<nen_,nen_>* etang,
+  LINALG::Matrix<nen_,1>* erhs,
+  const double coeff,
+  const double surtemp
+  )
+{
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_)
+    dserror("Trouble with number of Gauss points");
+
+  // integration loop
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int iquad=0; iquad<intpoints.IP().nquad; iquad++)
+  {
+    EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
+    // multiply fac_ * coeff
+    // --> must be insert in balance equation es positive term, but fext is included as negative --> scale with (-1)
+    double coefffac_ = fac_ * coeff;
+
+    // get the current temperature
+    // Theta = Ntemp = N . T
+    // caution: funct_ implemented as (8,1)--> use transposed in code for
+    // theoretic part
+    // (1x1)= (1x8)(8x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
+    LINALG::Matrix<1,1> Ntemp;
+    Ntemp.MultiplyTN(funct_,etemp_);
+
+    // ------------right-hand-side
+    // q . n = h ( T - T_sur )
+    if (erhs != NULL)
+    {
+      // erhs = erhs + N^T . coeff . (T - T_sur) . detJ * w(gp)
+
+      // erhs = erhs + N^T . coeff . T . detJ * w(gp)
+      erhs->Multiply(coefffac_,funct_,Ntemp,1.0);  // (8x1) = (8x1)(1x1)
+
+      // erhs = erhs - N^T . coeff . T_sur . detJ * w(gp)
+      double coeffTsur = 0.0;
+      coeffTsur = coefffac_ * (-1) * surtemp;
+      erhs->Update(coeffTsur,funct_,1.0);
+
+      // scale the external force contribution because this term enters with a
+      // positive sign
+      erhs->Scale(-1);
+    }
+
+    // ---------------------matrix
+    if (etang != NULL)
+    {
+      // ke = ke + (N^T . coeff . N) * detJ * w(gp)
+      etang->MultiplyNT(coefffac_,funct_,funct_,1.0);
+      etang->Scale(-1);
+    }
+
+   /* =======================================================================*/
+  }/* ================================================== end of Loop over GP */
+   /* =======================================================================*/
+
+  return;
+
+} // TemperBoundaryImpl<distype>::EvaluateThermoConvection()
+
 
 
 /*----------------------------------------------------------------------*
@@ -374,6 +531,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // set the integration factor
   fac_ = intpoints.IP().qwgt[iquad] * drs;
+
+//  // 21.12.10
+//  cout << "EvalShapeFuncAndIntFac fac_ " << fac_ << endl;
 
   // say goodbye
   return;
@@ -446,9 +606,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  for (int iquad=0; iquad<intpoints.IP().nquad; iquad++)
   {
-    EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     // compute integral of shape functions
     for (int node=0; node<nen_; ++node)

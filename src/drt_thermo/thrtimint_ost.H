@@ -199,6 +199,14 @@ namespace THR
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
       );
 
+    //! Evaluate a convective boundary condition
+    // (nonlinear --> add term to tangent)
+    void ApplyForceExternalConv(
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      Teuchos::RCP<Epetra_Vector> fext,  //!< internal force
+      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+      );
+
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
 

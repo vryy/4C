@@ -20,24 +20,16 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  |  headers                                                 bborn 06/08 |
  *----------------------------------------------------------------------*/
-#include <string>
 #include <iostream>
-#include <fstream>
 
-#include "Teuchos_RefCountPtr.hpp"
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_thermo.H"
-#include "../drt_io/io.H"
+//#include "../drt_io/io.H"
 #include "../drt_mortar/mortar_manager_base.H"
 
 #include "thrtimint_mstep.H"
@@ -136,7 +128,7 @@ namespace THR
                         //!< This needs to be true if the bounded DOFs
                         //!< have been changed.
       );
-    
+
     //! Set contact manager
     void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                           Teuchos::RCP<DRT::Discretization> discretstruct);
@@ -245,10 +237,19 @@ namespace THR
     //! Apply external force
     void ApplyForceExternal(
 //      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
-     const double time,  //!< evaluation time
-     const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-     Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-     );
+      const double time,  //!< evaluation time
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+      );
+
+
+    //! Apply convective boundary conditions force
+    void ApplyForceExternalConv(
+      Teuchos::ParameterList& p,
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
+      Teuchos::RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
+      );
 
     //! Evaluate ordinary internal force, its tangent at state
     void ApplyForceTangInternal(
@@ -387,6 +388,7 @@ namespace THR
 
     //! Return tangent,
     //! i.e. force residual differentiated by temperatures
+    //! (SystemMatrix()/stiff_ in STR)
     Teuchos::RCP<LINALG::SparseMatrix> Tang() { return tang_; }
 
     //! Return domain map
@@ -406,7 +408,7 @@ namespace THR
 
     //! Get number of time steps
     int GetTimeNumStep() const { return stepmax_; }
-    
+
     //! Get communicator
     virtual inline const Epetra_Comm& Comm() const {return discret_->Comm();}
 
@@ -424,7 +426,7 @@ namespace THR
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;           //!< attached discretisation
     Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
-    
+
     int myrank_;  //!< ID of actual processor in parallel
     const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
                                    //!< to construct matching
@@ -482,34 +484,34 @@ namespace THR
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
     Teuchos::RCP<TimIntMStep<Epetra_Vector> > rate_;
     Teuchos::RCP<Epetra_Vector> tempn_;  //!< global temperatures
-                                        //!< \f${T}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
+                                         //!< \f${T}_{n+1}\f$
+                                         //!< at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> raten_;  //!< global temperature rates
-                                        //!< \f${R}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
+                                         //!< \f${R}_{n+1}\f$
+                                         //!< at \f$t_{n+1}\f$
 
     // global coupling variables of the structure field
-    Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
-                                        //!< \f${D}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                        //!< \f${V}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> disn_;  //!< global displacements
+                                              //!< \f${D}_{n+1}\f$
+                                              //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> veln_;  //!< global velocities
+                                              //!< \f${V}_{n+1}\f$
+                                              //!< at \f$t_{n+1}\f$
 
     //@}
-    
+
     //! @name Managed stuff
     //@{
-    
+
     //! contact / meshtying manager
-    Teuchos::RCP<MORTAR::ManagerBase>   cmtman_;
-    
+    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
+
     //@}
 
 
     //! @name System matrices
     //@{
-    //! holds eventually effective tangent
+    //! holds eventually effective tangent (STR: stiff_)
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
     //Teuchos::RCP<LINALG::SparseMatrix> capa_;

@@ -29,7 +29,6 @@ Maintainer: Burkhard Bornemann
 #include "thrtimint.H"
 
 #include "../drt_io/io_control.H"
-#include "../drt_fluid/fluid_utils.H"
 
 /*----------------------------------------------------------------------*
  |  print thermal time logo                                  dano 08/09 |
@@ -736,6 +735,38 @@ void THR::TimInt::ApplyForceExternal(
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate convection boundary conditions at t_{n+1}       dano 12/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::ApplyForceExternalConv(
+  Teuchos::ParameterList& p,
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
+  RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
+  )
+{
+  // action for elements
+  const std::string action = "calc_thermo_fextconvection";
+  p.set("action", action);
+  // type of calling time integrator
+  p.set("time integrator", MethodName());
+  // other parameters needed by the elements
+//  p.set("total time", time);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState("temperature", temp);
+  // get load vector
+  // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
+  std::string condstring("ThermoConvections");
+  discret_->EvaluateCondition(p,tang,Teuchos::null,fext,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  // go away
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal(
@@ -814,7 +845,7 @@ void THR::TimInt::ApplyForceTangInternal(
   {
     discret_->SetState(1,"velocity",veln_);
   }
-
+  // call the element Evaluate()
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
   discret_->ClearState();
 
@@ -856,6 +887,7 @@ void THR::TimInt::ApplyForceInternal(
   {
     discret_->SetState(1,"velocity",veln_);
   }
+  // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();

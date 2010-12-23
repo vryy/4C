@@ -87,6 +87,9 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
+  // set initial external force vector of convective heat transfer boundary conditions
+  ApplyForceExternalConv((*temp_)(0), fext_, tang_);
+
   // have a nice day
   return;
 }
@@ -134,6 +137,10 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // initialise tangent matrix to zero
   tang_->Zero();
 
+  // set initial external force vector of convective heat transfer boundary
+  // conditions
+  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
                          tang_);
@@ -148,9 +155,10 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // here the time derivative is introduced needed for fcap depending on T'!
   fres_->Scale(1.0/(*dt_)[0]);
   fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+  // here is the negative sign for the external forces (heatfluxes)
   fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 1.0);
-  
-  // apply modifications due to thermal contact  
+
+  // apply modifications due to thermal contact
   ApplyThermoContact(tang_,fres_,tempn_);
 
   tang_->Complete();  // close tangent matrix
@@ -372,6 +380,25 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
   p.set("theta", theta_);
   // call the base function
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
+  // finish
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate the convective boundary condition               dano 12/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::ApplyForceExternalConv(
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  Teuchos::RCP<Epetra_Vector> fext,  //!< external force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+  )
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  p.set<double>("theta", theta_);
+  // call the base function
+  TimInt::ApplyForceExternalConv(p,temp,fext,tang);
   // finish
   return;
 }

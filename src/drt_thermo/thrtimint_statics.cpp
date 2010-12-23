@@ -102,6 +102,10 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! initialize tangent matrix to zero
   tang_->Zero();
 
+  // set initial external force vector of convective heat transfer boundary
+  // conditions
+  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
   //! ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
 
@@ -113,10 +117,10 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! build tangent matrix : effective dynamic tangent matrix
   //!    K_{Teffdyn} = K_{T}
   //! i.e. do nothing here
-  
-  // apply modifications due to thermal contact  
+
+  // apply modifications due to thermal contact
   ApplyThermoContact(tang_,fres_,tempn_);
-  
+
   tang_->Complete();  // close tangent matrix
 
   //! hallelujah
@@ -289,6 +293,26 @@ void THR::TimIntStatics::ApplyForceInternal(
   //! call the base function
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
   //! finish
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate the convective boundary condition               dano 12/10 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntStatics::ApplyForceExternalConv(
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  Teuchos::RCP<Epetra_Vector> fext,  //!< external force
+  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
+  )
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // set parameters
+  // ...
+  // call the base function
+  TimInt::ApplyForceExternalConv(p,temp,fext,tang);
+  // finish
   return;
 }
 

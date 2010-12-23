@@ -56,21 +56,21 @@ namespace ELEMENTS
     //! Empty destructor
     virtual ~TemperBoundaryImplInterface() {}
 
-//    //! Evaluate the element
-//    //!
-//    //! This class does not provide a definition for this function, it
-//    //! must be defined in TemperBoundaryImpl.
-//    virtual int Evaluate(
-//      DRT::ELEMENTS::ThermoBoundary* ele,
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1_epetra,
-//      Epetra_SerialDenseMatrix& elemat2_epetra,
-//      Epetra_SerialDenseVector& elevec1_epetra,
-//      Epetra_SerialDenseVector& elevec2_epetra,
-//      Epetra_SerialDenseVector& elevec3_epetra
-//      ) = 0;
+    //! Evaluate the element
+    //!
+    //! This class does not provide a definition for this function, it
+    //! must be defined in TemperBoundaryImpl.
+    virtual int Evaluate(
+      DRT::ELEMENTS::ThermoBoundary* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix& elemat1_epetra,
+      Epetra_SerialDenseMatrix& elemat2_epetra,
+      Epetra_SerialDenseVector& elevec1_epetra,
+      Epetra_SerialDenseVector& elevec2_epetra,
+      Epetra_SerialDenseVector& elevec3_epetra
+      ) = 0;
 
     //! Evaluate the element in the case of multiple dofsets
     //!
@@ -152,18 +152,23 @@ namespace ELEMENTS
     //! number of space dimensions
     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-//    //! Evaluate
-//    virtual int Evaluate(
-//      DRT::ELEMENTS::ThermoBoundary* ele,
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1_epetra,
-//      Epetra_SerialDenseMatrix& elemat2_epetra,
-//      Epetra_SerialDenseVector& elevec1_epetra,
-//      Epetra_SerialDenseVector& elevec2_epetra,
-//      Epetra_SerialDenseVector& elevec3_epetra
-//      );
+    // 17.12.10 TODO
+    //! number of Gauss points
+    static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
+
+
+    //! Evaluate
+    virtual int Evaluate(
+      DRT::ELEMENTS::ThermoBoundary* ele,
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix& elemat1_epetra,
+      Epetra_SerialDenseMatrix& elemat2_epetra,
+      Epetra_SerialDenseVector& elevec1_epetra,
+      Epetra_SerialDenseVector& elevec2_epetra,
+      Epetra_SerialDenseVector& elevec3_epetra
+      );
 
     //! Evaluate in case of multiple dofsets
     virtual int Evaluate(
@@ -211,26 +216,38 @@ namespace ELEMENTS
       const LINALG::Matrix<nsd_+1,nen_>& xyze    ///< element node coordinates
       );
 
-      //! number of dof per node
-      const int numdofpernode_;
-      //! node coordinates
-      LINALG::Matrix<nsd_+1,nen_> xyze_;
-       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_,1> xsi_;
-      //! array for shape functions
-      LINALG::Matrix<nen_,1> funct_;
-      //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_,nen_> deriv_;
-      //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_,nen_> derxy_;
-      //! unit normal vector at integration point
-      LINALG::Matrix<nsd_+1,1> normal_;
-      //! metric tensor at integration point
-      LINALG::Matrix<nsd_,nsd_>  metrictensor_;
-      //! integration factor for current GP: fac = GaussWeight * drs
-      double fac_;
+    //! evaluate an electrode kinetics boundary condition
+    void EvaluateThermoConvection(
+      const DRT::Element* ele,  ///< the actual boundary element
+      LINALG::Matrix<nen_,nen_>* etang,  // view only!
+      LINALG::Matrix<nen_,1>* erhs,  // view only!
+      const double coeff,  ///< heat transfer coefficient
+      const double surtemp  ///< surrounding temperature
+      );
 
-    }; // TemperBoundaryImpl
+    //! actual values of temperatures
+    LINALG::Matrix<nen_,1> etemp_;
+
+    //! number of dof per node
+    const int numdofpernode_;
+    //! node coordinates
+    LINALG::Matrix<nsd_+1,nen_> xyze_;
+     //! coordinates of current integration point in reference coordinates
+    LINALG::Matrix<nsd_,1> xsi_;
+    //! array for shape functions
+    LINALG::Matrix<nen_,1> funct_;
+    //! array for shape function derivatives w.r.t r,s,t
+    LINALG::Matrix<nsd_,nen_> deriv_;
+    //! global derivatives of shape functions w.r.t x,y,z
+    LINALG::Matrix<nsd_,nen_> derxy_;
+    //! unit normal vector at integration point
+    LINALG::Matrix<nsd_+1,1> normal_;
+    //! metric tensor at integration point
+    LINALG::Matrix<nsd_,nsd_>  metrictensor_;
+    //! integration factor for current GP: fac = GaussWeight * drs
+    double fac_;
+
+  }; // TemperBoundaryImpl
 
 } // ELEMENTS
 

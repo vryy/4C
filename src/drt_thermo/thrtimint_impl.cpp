@@ -615,21 +615,21 @@ void THR::TimIntImpl::PrintPredictor()
     // relative check of force residual
     if ( normtypefres_ == INPAR::THR::convnorm_rel )
     {
-      std::cout << "Predictor scaled res-norm "
+      std::cout << "Predictor thermo scaled res-norm "
                 << normfres_/normcharforce_
                 << std::endl;
     }
     // absolute check of force residual
     else if ( normtypefres_ == INPAR::THR::convnorm_abs )
     {
-      std::cout << "Predictor absolute res-norm "
+      std::cout << "Predictor thermo absolute res-norm "
                 << normfres_
                 << std::endl;
     }
     // mixed absolute-relative check of force residual
     else if ( normtypefres_ == INPAR::THR::convnorm_mix )
     {
-      std::cout << "Predictor mixed res-norm "
+      std::cout << "Predictor thermo mixed res-norm "
                 << min(normfres_, normfres_/normcharforce_)
                 << std::endl;
     }

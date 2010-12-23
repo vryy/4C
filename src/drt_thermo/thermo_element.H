@@ -623,40 +623,40 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
-//    //! \brief Evaluate an element
-//    //!
-//    //! Evaluate Thermo element tangent, capacity, internal forces etc
-//    //!
-//    //! \param params (in/out): ParameterList for communication between control routine
-//    //!                         and elements
-//    //! \param discretization (in): A reference to the underlying discretization
-//    //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
-//    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element to fill
-//    //!                         this matrix.
-//    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element to fill
-//    //!                         this matrix.
-//    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \return 0 if successful, negative otherwise
-//    int Evaluate(
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1,
-//      Epetra_SerialDenseMatrix& elemat2,
-//      Epetra_SerialDenseVector& elevec1,
-//      Epetra_SerialDenseVector& elevec2,
-//      Epetra_SerialDenseVector& elevec3
-//      );
+    //! \brief Evaluate an element
+    //!
+    //! Evaluate Thermo element tangent, capacity, internal forces etc
+    //!
+    //! \param params (in/out): ParameterList for communication between control routine
+    //!                         and elements
+    //! \param discretization (in): A reference to the underlying discretization
+    //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
+    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+    //!                         the controlling method does not expect the element to fill
+    //!                         this matrix.
+    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+    //!                         the controlling method does not expect the element to fill
+    //!                         this matrix.
+    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+    //!                         the controlling method does not expect the element
+    //!                         to fill this vector
+    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+    //!                         the controlling method does not expect the element
+    //!                         to fill this vector
+    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+    //!                         the controlling method does not expect the element
+    //!                         to fill this vector
+    //! \return 0 if successful, negative otherwise
+    int Evaluate(
+      Teuchos::ParameterList& params,
+      DRT::Discretization& discretization,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
 
     // 29.01.10 new method for volume coupling
     //! \brief Evaluate an element
