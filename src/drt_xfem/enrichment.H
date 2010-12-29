@@ -179,11 +179,6 @@ namespace XFEM
 
           switch (Type())
           {
-          case XFEM::Enrichment::typeStandard:
-          {
-              enrval = 1.0;
-              break;
-          }
           case XFEM::Enrichment::typeVoid:
           {
               if (phi(inode) < 0.0) {
@@ -202,10 +197,12 @@ namespace XFEM
               }
               break;
           }
+          case XFEM::Enrichment::typeStandard:
           case XFEM::Enrichment::typeKink:
           {
               enrval = 0.0;
-              dserror("(modified) kink enrichments are zero at all nodes!");
+              dserror("dont't call this function for standard or kink enrichments!");
+              break;
           }
           default:
               dserror("unsupported type of enrichment!");

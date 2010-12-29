@@ -26,7 +26,7 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
   /*!
-   * \brief pre-calculate enrichment values for an element and store it in this class
+   * \brief pre-calculate enrichment values for an element and store them in this class
    */
   class ElementEnrichmentValues
   {
@@ -41,7 +41,7 @@ namespace XFEM
     */
     explicit ElementEnrichmentValues(
         const DRT::Element&                   ele,
-        XFEM::InterfaceHandle*     ih,               ///< interface information
+        XFEM::InterfaceHandle*                ih,               ///< interface information
         const XFEM::ElementDofManager&        dofman,
         const LINALG::Matrix<3,1>&            actpos,           ///< a 3d position
         const bool                            boundary_integral,
@@ -49,9 +49,10 @@ namespace XFEM
     );
 
     /*!
-     * \brief compute enrichment value for domain integration cell
+     * \brief compute enrichment value for domain integration cell based on level set function
      *
-     * constructor called for combustion problems (jump enrichment)
+     * - enrichment value is constant within a domain integration cell (for jump enrichments)
+     * - constructor called for combustion problems (jump enrichment, level set)
      *
      * \author henke 06/09
      */
@@ -67,21 +68,27 @@ namespace XFEM
     {
       enrvals_.clear();
       enrvalnodes_.clear();
-      enrvalderxy_.clear();  // not used for jump enrichment
-      enrvalderxy2_.clear(); // not used for jump enrichment
+      enrvalderxy_.clear();  // not used for jump enrichment (Heaviside function)
+      enrvalderxy2_.clear(); // not used for jump enrichment (Heaviside function)
 
       const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
       const int numnode = ele_.NumNode();
-      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
 
+      //--------------------------------------------------
+      // prepare temporary variables for enrichment values
+      //--------------------------------------------------
+      // enrichment values at nodes
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+      // first derivatives of enrichment function
       std::vector<double> enrvalderxy(3);
       enrvalderxy[0] = 0.0;
-      enrvalderxy[1] = 0.0;
+      enrvalderxy[1] = 0.0; // zero for Heaviside function
       enrvalderxy[2] = 0.0;
+      // second derivatives of enrichment function
       std::vector<double> enrvalderxy2(6);
       for (int isd=0; isd<6; isd++)
       {
-        enrvalderxy2[isd] = 0.0;
+        enrvalderxy2[isd] = 0.0; // zero for Heaviside function
       }
 
       //------------------------------------------------------
@@ -136,11 +143,11 @@ namespace XFEM
       return;
     }
 
-
     /*!
-     * \brief compute enrichment value at one side of an embedded interface
+     * \brief compute enrichment value at one side of an embedded interface based on level set function
      *
-     * constructor called for evaluation of boundary integrals in combustion problems (jump enrichment)
+     * - enrichment value is constant on both sides of the interface (for jump enrichments)
+     * - constructor called for evaluation of boundary integrals in combustion problems (jump enrichment, level set)
      *
      * \author henke 09/09
      */
@@ -161,16 +168,22 @@ namespace XFEM
 
       const std::set<XFEM::Enrichment>& enrset(dofman.getUniqueEnrichments());
       const int numnode = ele_.NumNode();
-      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
 
+      //--------------------------------------------------
+      // prepare temporary variables for enrichment values
+      //--------------------------------------------------
+      // enrichment values at nodes
+      std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes;
+      // first derivatives of enrichment function
       std::vector<double> enrvalderxy(3);
       enrvalderxy[0] = 0.0;
-      enrvalderxy[1] = 0.0;
+      enrvalderxy[1] = 0.0; // zero for Heaviside function
       enrvalderxy[2] = 0.0;
+      // second derivatives of enrichment function
       std::vector<double> enrvalderxy2(6);
       for (int isd=0; isd<6; isd++)
       {
-        enrvalderxy2[isd] = 0.0;
+        enrvalderxy2[isd] = 0.0; // zero for Heaviside function
       }
 
       //------------------------------------------------------
@@ -311,13 +324,13 @@ namespace XFEM
         const XFEM::Enrichment::ApproachFrom  approachdirection, ///< side of embedded interface
         const V1&                             phi,                ///< vector of level set values
         const V1&                             funct,   ///< vector of shape functions evaluated at Gauss point
-        const M1&                             derxy,	/// Matrix of derivatives of shape functions evaluated at Gauss point
-        const M2&                             derxy2	// second derivatives
+        const M1&                             derxy,   ///< Matrix of derivatives of shape functions evaluated at Gauss point
+        const M2&                             derxy2   ///< second derivatives
     ) :
     ele_(ele),
     dofman_(dofman)
     {
-      enrvals_.clear();		// tmp variable for enrvalnodes_
+      enrvals_.clear();      // tmp variable for enrvalnodes_
       enrvalnodes_.clear();
       enrvalderxy_.clear();  // 0 for jump enrichment, not 0 for kink enrichment
       enrvalderxy2_.clear(); // 0 for jump enrichment, not 0 for kink enrichment
@@ -331,8 +344,6 @@ namespace XFEM
       //------------------------------------------------------
       for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
       {
-        //const double enrvalside = enriter->EnrValueAtInterface(approachdirection);
-
         // get enrichment values all types of enrichment
         double enrvalside = 0.0;
 
@@ -346,19 +357,17 @@ namespace XFEM
           enrvalderxy2[isd] = 0.0;
         }
 
-        
         if(enriter->Type() != XFEM::Enrichment::typeKink){
-          enrvalside = enriter->EnrValueAtInterface(approachdirection); 		//version Flo
-          //enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);   //version Ursula
+          enrvalside = enriter->EnrValueAtInterface(approachdirection);       //version Flo
+          //enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct); //version Ursula
           // no derivatives needed for not kink enrichments
         }
-        else{ // get kink enrichment
+        else{ // kink enrichment
           enrvalside = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
           enrvalderxy = enriter->EnrValueGaussPointDerivative(ele_,phi,funct,derxy);
           enrvalderxy2 = enriter->EnrValueGaussPointDerivative2(ele_,phi,funct,derxy2);
         }
 
-        //const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
         enrvals_[*enriter] = enrvalside;
         enrvalderxy_[*enriter] = enrvalderxy;
         enrvalderxy2_[*enriter] = enrvalderxy2;
@@ -439,7 +448,6 @@ namespace XFEM
         std::map<XFEM::Enrichment, double> enrvalues;
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
-//          const double enrval = enriter->ModifiedKinkEnrValue(actpos, inode, *ih, approachdirection, ele_);
           const double enrval = enriter->EnrValueGaussPointLevelSet(ele_,phi,funct);
           double enrvalnode = 0.0;
           // modified enrichment in the case of jump enrichment to maintain the interpolant properties
@@ -507,15 +515,9 @@ namespace XFEM
     }
 
     /*!
-    * \brief compute the enriched shape functions
+    * \brief compute the modified enriched shape functions
     *
-    * the new one!
-    *
-    * remarks:
-    * - simplest case: jump or void enrichment
-    *   -> no chain rule, since derivative of enrichment function is zero
-    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
-    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
+    * derivatives are not computed
     */
     template<class VI, class VO>
     inline void ComputeModifiedEnrichedNodalShapefunction(
@@ -550,13 +552,16 @@ namespace XFEM
 
 
     /*!
-    * \brief compute the enriched shape functions
+    * \brief compute the enriched shape functions and the first derivative
     *
     * remarks:
-    * - simplest case: jump or void enrichment
-    *   -> no chain rule, since derivative of enrichment function is zero
-    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
-    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
+    * - these are not the modified, or shifted, enriched shape functions
+    * - the chain rule is not applied here for the first derivative
+    * - this is correct for jump or void enrichments, since the derivative of the enrichment
+    *   function is zero
+    *
+    * /!\ be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *     -> for kink enrichment use ComputeModifiedEnrichedNodalShapefunction(...,enr_derxy,enr_derxy2)
     */
     template<class VI, class MI, class VO, class MO>
     inline void ComputeEnrichedNodalShapefunction(
@@ -594,13 +599,16 @@ namespace XFEM
     }
 
     /*!
-    * \brief compute the enriched shape functions
+    * \brief compute the enriched shape functions and the derivatives
     *
     * remarks:
-    * - simplest case: jump or void enrichment
-    *   -> no chain rule, since derivative of enrichment function is zero
-    * - be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
-    *   -> for kink enrichment use ComputeKinkEnrichedNodalShapefunction()
+    * - these are not the modified, or shifted, enriched shape functions
+    * - the chain rule is not applied here for the first derivative
+    * - this is correct for jump or void enrichments, since the derivative of the enrichment
+    *   function is zero
+    *
+    * /!\ be carefull: if enrichment function has derivatives not equal to zero, we need the chain rule here!
+    *     -> for kink enrichment use ComputeModifiedEnrichedNodalShapefunction(...,enr_derxy,enr_derxy2)
     */
     template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
     inline void ComputeEnrichedNodalShapefunction(
@@ -643,13 +651,15 @@ namespace XFEM
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
 
-    /*!
-     * \brief compute the enriched shape functions for kink enrichment
-     *
-     * due to the kink enrichment, the chain rule is applied here
-     *
-     * \author rasthofer
-     */
+   /*!
+    * \brief compute the modified enriched shape functions and derivatives
+    *
+    * remarks:
+    * - these are the modified, or shifted, enriched shape functions
+    * - the chain rule is applied here for the derivatives
+    * - for jump or void enrichments, zero terms are added, since the derivative of the enrichment
+    *   function is zero
+    */
     template<class VI, class MI1, class MI2, class VO, class MO1, class MO2 >
     inline void ComputeModifiedEnrichedNodalShapefunction(
         const XFEM::PHYSICS::Field field,
@@ -843,7 +853,7 @@ namespace XFEM
     //! map holding values for enrichments for every node
     std::map<int,std::map<XFEM::Enrichment, double> > enrvalnodes_;
 
-    // member variables required for kink enrichment
+    // maps required for enrichment functions with non-zero derivatives (e.g. kink)
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy_;
     std::map<XFEM::Enrichment, std::vector<double> > enrvalderxy2_;
 
