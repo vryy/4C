@@ -13,7 +13,7 @@ Maintainer: Mahmoud Ismail
 #ifdef CCADISCRET
 
 //#ifdef D_COUPLED_ARTNET
-#ifdef D_ARTNET
+#ifdef D_RED_AIRWAYS
 
 #include <stdio.h>
 #include <math.h>
@@ -752,7 +752,7 @@ void FLD::UTILS::Fluid_couplingBc::WriteRestart( IO::DiscretizationWriter&  outp
 
 
   // write time steps size
-  output.WriteDouble("3D_dta", dt_f3_);
+  output.WriteDouble("dta_3D", dt_f3_);
   output.WriteDouble("reduced_D_dta", dt_rm_);
 
   return;
@@ -787,7 +787,7 @@ void FLD::UTILS::Fluid_couplingBc::ReadRestart( IO::DiscretizationReader& reader
   reader.ReadVector(couplingbc_,stream3.str());
 
   // read time steps size
-  dt_f3_ = reader.ReadDouble("3D_dta");
+  dt_f3_ = reader.ReadDouble("dta_3D");
   dt_rm_ = reader.ReadDouble("reduced_D_dta");
 
   return;

@@ -303,7 +303,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -----------------------------------------
 
   // create the volumetric-surface-flow condition
-#if 1 //def D_ALE_BFLOW
+#ifdef D_ALE_BFLOW
   if (alefluid_)
   {
     discret_->SetState("dispnp", dispn_);
@@ -356,7 +356,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     }
 #endif //D_ARTNET
 
-#if 0 //def D_RED_AIRWAYS
+#ifdef D_RED_AIRWAYS
     airway_imp_timeInt_ = dyn_red_airways_drt(true);
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)

@@ -305,7 +305,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     const double R = 8.0*PI*visc*dens*L/(pow(A,2));
     sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
-    
+
     rhs(0) = 0.0;
     rhs(1) = 0.0;
 
@@ -440,6 +440,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double E2 = condition->GetDouble("Stiffness2");
         const double B  = condition->GetDouble("Viscosity");
 
+#if 0
         const double K = E1*E2/2.0 + (E2*B+B*E1)/dt;
         const double Kp= E2/dt + B/pow(dt,2);
         double Qeq_n, Qeq_nm;
@@ -450,6 +451,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         
         sysmat(i,i) += pow(-1.0,i)*(Kp/K);
         rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
+#endif
+        const double C1 = E1;
+        const double C2 = E2;
+        const double R  = B;
+        const double K = (C1+C2)/(C1*dt) + R/(C1*dt*dt);
+        const double Kp= R/dt + C2;
+        double Qeq_n, Qeq_nm;
+        double pnm = epn(i);
+
+        Qeq_nm = -pnm*R/(dt*dt*C1);
+        Qeq_n  = epnp(i) * ((C1+C2)/(dt*C1) + 2.0*R/(dt*dt*C1)) - R/dt*q_out;
+        
+        sysmat(i,i) += pow(-1.0,i)*(K/Kp);
+        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm)/Kp;
         
       }
       else
@@ -741,6 +756,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
+
+          const double* X = ele->Nodes()[i]->X();
+          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
         #endif
 

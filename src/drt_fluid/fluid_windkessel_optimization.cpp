@@ -159,7 +159,6 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
     step_ = 0;
     
   }
-
 } // end FluidWkOptimizationWrapper
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -311,7 +310,23 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
     flow_T = (*flowrates)[0];
     pressures->push_back(pres_T);
     flowrates->push_back(flow_T);
+    cout<<"AP: Number of opt conditions: "<<optwkmap_.size()<<endl;
 
+    // -----------------------------------------------------------------
+    // do some tests unless someone messed up the code some where
+    // -----------------------------------------------------------------
+    {
+      if (pressures->size() != flowrates->size())
+      {
+        dserror("[Can't optimise]:Flowrates and pressures have two different dimensions");
+      }
+      else if (pressures->size()*optwkmap_.size() != dN_du_->RowDim())
+      {
+        dserror("[Can't optimise]: Pressures (%d) and state-variables (%d) size don't match",pressures->size(),dN_du_->RowDim()/optwkmap_.size());
+      }
+    }
+
+#if 0
     cout<<"COND("<<itr->first<<"): pushing pressure [0]: "<<(*pressures)[0]<<endl;
     cout<<"COND("<<itr->first<<"): pushing flowrate [0]: "<<(*flowrates)[0]<<endl;
     // -----------------------------------------------------------------
@@ -326,6 +341,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
         cout<<"\t"<<(*flowrates)[i]<<endl;
       }
     }
+#endif
 
     // -----------------------------------------------------------------
     // evaluate xnm_
