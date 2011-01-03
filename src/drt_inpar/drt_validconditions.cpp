@@ -2151,6 +2151,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(acinus_bc,"Stiffness2");
   AddNamedReal(acinus_bc,"Viscosity");
 
+  // add the pleural pressure
+  std::vector<Teuchos::RCP<ConditionComponent> > acinus_pleural_p_components;
+  acinus_pleural_p_components.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  acinus_pleural_p_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<acinus_pleural_p_components.size(); ++i)
+    acinus_bc->AddComponent(acinus_pleural_p_components[i]);
+
   condlist.push_back(acinus_bc);
 
   /*--------------------------------------------------------------------*/

@@ -144,6 +144,7 @@ namespace ELEMENTS
                 Epetra_SerialDenseMatrix&                estif,
                 Epetra_SerialDenseVector&                eforce,
                 Teuchos::RCP<const MAT::Material>        material,
+                double                                   time,
                 double                                   dt);
 
 

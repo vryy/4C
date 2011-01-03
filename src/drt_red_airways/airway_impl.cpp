@@ -95,6 +95,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
+  // get time
+  const double time = params.get<double>("total time");
+
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
@@ -146,6 +149,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
          elemat1_epetra,
          elevec1_epetra,
          mat,
+         time,
          dt);
 
 
@@ -240,6 +244,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
+  double                                   time,
   double                                   dt)
 {
 
@@ -459,13 +464,42 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kp= R/dt + C2;
         double Qeq_n, Qeq_nm;
         double pnm = epn(i);
+        double pn  = epnp(i);
 
+
+        // -------------------------------------------------------------
+        // Read in the pleural pressure
+        // -------------------------------------------------------------
+        const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+        const  vector<double>* vals   = condition->Get<vector<double> >("val");
+    
+        double Pp_nm = 0.0;
+        double Pp_n  = 0.0;
+        double Pp_np = 0.0;
+
+        // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
+        if((*curve)[0]>=0)
+        {
+          Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - dt);
+          Pp_nm *= (*vals)[0];
+          Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+          Pp_n  *= (*vals)[0];
+          Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time + dt);
+          Pp_np *= (*vals)[0];
+
+          // Evaluate the pleural contribution
+          pn  -= Pp_n;
+          pnm -= Pp_nm;
+        }
+        
         Qeq_nm = -pnm*R/(dt*dt*C1);
-        Qeq_n  = epnp(i) * ((C1+C2)/(dt*C1) + 2.0*R/(dt*dt*C1)) - R/dt*q_out;
+        Qeq_n  = pn * ((C1+C2)/(dt*C1) + 2.0*R/(dt*dt*C1)) - R/dt*q_out;
         
+        // -------------------------------------------------------------
+        // Evaluate sysmat and rhs
+        // -------------------------------------------------------------
         sysmat(i,i) += pow(-1.0,i)*(K/Kp);
-        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm)/Kp;
-        
+        rhs(i)      += pow(-1.0,i)*((Qeq_n + Qeq_nm)/Kp + K/Kp*Pp_np);
       }
       else
       {
