@@ -396,6 +396,28 @@ public:
   */
   void ApplyFilterForDynamicComputationOfCs();
 
+  //@}
+
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+  /*!
+
+  \brief mesh tying: matrix condensation
+
+  */
+
+  void MeshTyingMatrixCondenstation();
+
+  //@}
+
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+  /*!
+
+  \brief mesh tying: matrix condensation
+
+  */
+
+  void GetSlaveVelocity();
+
 protected:
 
   // don't want = operator and cctor
