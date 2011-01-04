@@ -70,7 +70,7 @@ bool XFEM::ApplyJumpEnrichment(
       {
 #endif
         nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
-        //          std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
+        //std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
 #ifdef COMBUST_NORMAL_ENRICHMENT
       }
 #endif
@@ -449,7 +449,7 @@ void XFEM::createDofMapCombust(
     // apply standard enrichments to every node in every call
     //-------------------------------------------------------
     ApplyStandardEnrichmentCombust(xfemele, fieldset, nodeDofMap);
-    //std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments (= 4 dofs)" << std::endl;
+    //std::cout << "dof initialization: element "<< xfemele->Id() << " gets standard enrichments" << std::endl;
 
     //--------------------------------------------------------------------
     // apply non-standard enrichments to every node, in every regular call
