@@ -838,31 +838,35 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   }
   else timefacrhs = timefac;
 
+  // set flag for type of linearization to default value (fixed-point-like)
+  bool is_newton = false;
+  // reset flag for Newton linearization
+  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
+    is_newton = true;
+
   // get flag for type of fluid flow
   const INPAR::FLUID::PhysicalType physicaltype = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
 
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
-  // (density-weighted) shape functions and first derivatives
+  // shape functions and first derivatives
   LINALG::Matrix<bdrynen_,1>        funct(true);
-  LINALG::Matrix<bdrynen_,1>        densfunct(true);
   LINALG::Matrix<bdrynsd_,bdrynen_> deriv(true);
 
-  // node coordinate
-  LINALG::Matrix<nsd_,bdrynen_>     xyze(true);
+  // node coordinates
+  LINALG::Matrix<nsd_,bdrynen_> xyze(true);
 
   // coordinates of current integration point in reference coordinates
-  LINALG::Matrix<bdrynsd_,1>   xsi(true);
+  LINALG::Matrix<bdrynsd_,1> xsi(true);
 
-  // the element's normal vector
-  LINALG::Matrix<nsd_,1>       unitnormal(true);
+  // unit normal vector to element
+  LINALG::Matrix<nsd_,1> unitnormal(true);
 
-  // velocity and momentum at gausspoint
-  LINALG::Matrix<nsd_,1>       momint(true);
-  LINALG::Matrix<nsd_,1>       velint(true);
+  // velocity vector
+  LINALG::Matrix<nsd_,1> velint(true);
 
-  // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  // get node coordinates for nsd_-dimensional domain
+  // (nsd_: number of spatial dimensions of Fluid3Boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze);
 
   // get velocity and scalar vector at time n+alpha_F/n+1
@@ -879,7 +883,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
 
   // create Epetra objects for scalar array and velocities
   LINALG::Matrix<nsd_,bdrynen_> evelaf(true);
-  LINALG::Matrix<bdrynen_,1> escaaf(true);
+  LINALG::Matrix<bdrynen_,1>    escaaf(true);
 
   // insert velocity and scalar into element array
   for (int inode=0;inode<bdrynen_;++inode)
@@ -892,17 +896,16 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   }
 
   // --------------------------------------------------
-  // Now do the nurbs specific stuff
+  // nurbs-specific stuff
   // --------------------------------------------------
-
-  // In the case of nurbs the normal vector is miultiplied with normalfac
+  // normal vector multiplied by normalfac for nurbs
   double normalfac = 0.0;
   std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
   Epetra_SerialDenseVector weights(bdrynen_);
 
-  // for isogeometric elements --- get knotvectors for parent
-  // element and surface element, get weights
+  // get knotvectors for parent element and surface element as well as weights
+  // for isogeometric elements
   if(IsNurbs<distype>::isnurbs)
   {
      bool zero_size = GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
@@ -917,53 +920,61 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
    *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of the unit normal vector at the Gauss points
-    // Computation of nurb specific stuff is not activated here
+    // initialize infinitesimal area element drs to zero
     double drs = 0.0;
 
+    // evaluate shape functions and their derivatives,
+    // compute unit normal vector and infinitesimal area element drs
+    // (evaluation of nurbs-specific stuff not activated here)
     EvalShapeFuncAndIntFac(intpoints, gpid, xyze, &myknots, &weights, xsi, funct, deriv, drs, &unitnormal);
 
-    // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs)
-      unitnormal.Scale(normalfac);
+    // normal vector scaled by special factor in case of nurbs
+    if (IsNurbs<distype>::isnurbs) unitnormal.Scale(normalfac);
 
+    // compute integration factor
     const double fac_drs = intpoints.IP().qwgt[gpid]*drs;
 
-    // compute velocity and normal velocity
+    // compute velocity vector and normal velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    // velocity at gausspoint
-
     double normvel = 0.0;
     velint.Multiply(evelaf,funct);
     normvel = velint.Dot(unitnormal);
 
-    // computation only required for negative normal velocity
+    // check normal velocity -> further computation only required for
+    // negative normal velocity, that is, inflow at this Neumann boundary
     if (normvel<-0.0001)
     {
-      // compute temperature and density for low-Mach-number flow
+      // set density to 1.0 -> remains unchanged for incompressible flow
       double dens = 1.0;
-      if(physicaltype == INPAR::FLUID::loma)
+
+      // compute actual density for low-Mach-number flow based on temperature
+      if (physicaltype == INPAR::FLUID::loma)
       {
-        // This is a hack for low-Mach-number flow with temperature
-        // equation until material data will be available here
+        // caution: this is a hack for low-Mach-number flow with temperature
+        // equation until material data will be available here!
         // get thermodynamic pressure and its time derivative or history
         double thermpress = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
-        double gasconstant = 287.0;
+        const double gasconstant = 287.0;
 
         double temp = 0.0;
         temp = funct.Dot(escaaf);
         dens = thermpress/(gasconstant*temp);
       }
-      else if(physicaltype == INPAR::FLUID::varying_density)
+      else if (physicaltype == INPAR::FLUID::varying_density)
         dserror("The actual density is not calculated for the BC NeumannInflow in the case of VaryingDensity");
 
-      // integration factor for left- and right-hand side
+      // extended integration factors for left- and right-hand side, respectively
       const double lhsfac = dens*normvel*timefac*fac_drs;
       const double rhsfac = dens*normvel*timefacrhs*fac_drs;
 
-      // matrix
-      // fill diagonal elements
+      // compute matrix contribution (fill diagonal elements)
+      /*
+              /                        \
+             |                          |
+           - |  v , rho * Du ( u o n )  |
+             |                          |
+              \                        /
+      */
       for (int idim = 0; idim < nsd_; ++idim) // loop over dimensions
       {
         for (int vi=0; vi<bdrynen_; ++vi) // loop over rows
@@ -976,21 +987,62 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
           {
             const int fui = numdofpernode_*ui+idim;
 
-            // negative contribution to the matrix
-            elemat1(fvi  ,fui  ) -= vlhs*funct(ui);
+            elemat1(fvi,fui) -= vlhs*funct(ui);
           } // end loop over columns
         }  // end loop over rows
       }  // end loop over dimensions
 
-      // rhs
+      // compute additional matrix contribution for Newton linearization
+      if (is_newton)
+      {
+        // integration factor
+        const double lhsnewtonfac = dens*timefac*fac_drs;
+
+        // dyadic product of unit normal vector and velocity vector
+        LINALG::Matrix<nsd_,nsd_>  n_x_u(true);
+        n_x_u.MultiplyNT(velint,unitnormal);
+
+        /*
+                /                        \
+               |                          |
+             - |  v , rho * u ( Du o n )  |
+               |                          |
+                \                        /
+        */
+        double vlhs = lhsnewtonfac;
+        for (int vi=0; vi<bdrynen_; ++vi) // loop rows
+        {
+          vlhs *= funct(vi);
+
+          for (int idimrow=0; idimrow < nsd_; ++idimrow) // loop row dim.
+          {
+            const int fvi = numdofpernode_*vi+idimrow;
+
+            for (int ui=0; ui<bdrynen_; ++ui) // loop columns
+            {
+              vlhs *= funct(ui);
+
+              for (int idimcol = 0; idimcol < nsd_; ++idimcol) // loop column dim.
+              {
+                const int fui = numdofpernode_*ui+idimcol;
+
+                elemat1(fvi,fui) -= vlhs*n_x_u(idimrow,idimcol);
+              } // end loop row dimensions
+            } // end loop rows
+          } // end loop column dimensions
+        } // end loop columns
+      } // end of Newton loop
+
+      // compute rhs contribution
       LINALG::Matrix<nsd_,1> vrhs(velint, false);
       vrhs.Scale(rhsfac);
 
-      for (int vi=0; vi<bdrynen_; ++vi) //loop over rows
+      for (int vi=0; vi<bdrynen_; ++vi) // loop over rows
       {
-        for (int idim = 0; idim < nsd_; ++idim)  //loop over dimensions
+        for (int idim = 0; idim < nsd_; ++idim)  // loop over dimensions
         {
-          const int fvi   = numdofpernode_*vi+idim;
+          const int fvi = numdofpernode_*vi+idim;
+
           elevec1(fvi) += funct(vi)*vrhs(idim);
         } // end loop over dimensions
       }  // end loop over rows

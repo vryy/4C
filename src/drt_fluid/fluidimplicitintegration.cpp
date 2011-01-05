@@ -1220,6 +1220,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // action for elements
           condparams.set("action","calc_Neumann_inflow");
           condparams.set("thsl",theta_*dta_);
+          condparams.set("Linearisation",newton_);
           condparams.set("Physical Type",physicaltype_);
           condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
@@ -2370,6 +2371,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // action for elements
     condparams.set("action","calc_Neumann_inflow");
     condparams.set("thsl",theta_*dta_);
+    condparams.set("Linearisation",newton_);
     condparams.set("Physical Type", physicaltype_);
     condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
