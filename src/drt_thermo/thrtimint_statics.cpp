@@ -66,6 +66,10 @@ THR::TimIntStatics::TimIntStatics(
   //! set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
+  // set initial external force vector of convective heat transfer boundary
+  // conditions
+  ApplyForceExternalConv((*temp_)(0), fext_, tang_);
+
   //! have a nice day
   return;
 }
@@ -104,7 +108,13 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
+  // if the boundary condition shall be dependent on the current temperature
+  // solution T_n+1 --> linearisation must be uncommented
+//  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
+  // if the old temperature T_n is sufficient --> no linearisation needed!
+  ApplyForceExternalConv((*temp_)(0), fextn_, tang_);
 
   //! ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);

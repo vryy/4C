@@ -217,10 +217,16 @@ namespace ELEMENTS
       );
 
     //! evaluate an electrode kinetics boundary condition
+    //!
+    //! This is a non-linear heat load type, due to its dependence on the
+    //! current heat state (follower load-like).
+    //! Using the current temperature solution requires the linearisation.
     void EvaluateThermoConvection(
       const DRT::Element* ele,  ///< the actual boundary element
       LINALG::Matrix<nen_,nen_>* etang,  // view only!
-      LINALG::Matrix<nen_,1>* erhs,  // view only!
+                                         ///< tangent of the thermal problem
+      LINALG::Matrix<nen_,1>* efext,  // view only!
+                                     ///< heat flux to be applied
       const double coeff,  ///< heat transfer coefficient
       const double surtemp  ///< surrounding temperature
       );

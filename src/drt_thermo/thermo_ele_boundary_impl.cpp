@@ -188,7 +188,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 
     // set views
     LINALG::Matrix<nen_,nen_> etang(elemat1_epetra.A(),true);  // view only!
-    LINALG::Matrix<nen_,1> erhs(elevec1_epetra.A(),true);  // view only!
+    LINALG::Matrix<nen_,1> efext(elevec1_epetra.A(),true);  // view only!
 
     // disassemble temperature
     if (discretization.HasState("temperature"))
@@ -206,7 +206,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 
       // get current condition
       Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-      if (cond == Teuchos::null) dserror("Cannot access condition 'ThermoConvections'");
+      if (cond == Teuchos::null)
+        dserror("Cannot access condition 'ThermoConvections'");
 
       // access parameters of the condition
       double coeff = cond->GetDouble("coeff");
@@ -216,7 +217,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       EvaluateThermoConvection(
         ele, // current boundary element
         &etang, // element-matrix
-        &erhs, // element-rhs
+        &efext, // element-rhs
         coeff,
         surtemp
         );
@@ -235,7 +236,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       }
       case INPAR::THR::dyna_onesteptheta :
       {
-        // Note: erhs is scaled with theta in thrtimint_ost.cpp. Because the
+        // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
         // convective boundary condition is nonlinear and produces a term in the
         // tangent, consider the factor theta here, too
         const double theta = params.get<double>("theta");
@@ -436,7 +437,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
   const DRT::Element* ele,
   LINALG::Matrix<nen_,nen_>* etang,
-  LINALG::Matrix<nen_,1>* erhs,
+  LINALG::Matrix<nen_,1>* efext,
   const double coeff,
   const double surtemp
   )
@@ -449,6 +450,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
   if (intpoints.IP().nquad != nquad_)
     dserror("Trouble with number of Gauss points");
 
+  // TODO: if a time curve shall be considered
+//  // find out whether we will use a time curve
+//  bool usetime = true;
+//  const double time = params.get("total time",-1.0);
+//  if (time<0.0) usetime = false;
+
   // integration loop
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -457,44 +464,49 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
   {
     EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
     // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
+
+    // ------------right-hand-side
+    // q . n = h ( T - T_sur )
+
     // multiply fac_ * coeff
     // --> must be insert in balance equation es positive term, but fext is included as negative --> scale with (-1)
     double coefffac_ = fac_ * coeff;
 
     // get the current temperature
     // Theta = Ntemp = N . T
-    // caution: funct_ implemented as (8,1)--> use transposed in code for
+    // caution: funct_ implemented as (4,1)--> use transposed in code for
     // theoretic part
-    // (1x1)= (1x8)(8x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
+    // funct_ describes a 2D area, for hex8: 4 nodes
+    // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
     LINALG::Matrix<1,1> Ntemp;
     Ntemp.MultiplyTN(funct_,etemp_);
 
+    // - T_surf * I
+    LINALG::Matrix<1,1> Tsurf(true);
+    for (int i=0; i<1; ++i)
+    {
+      Tsurf(i) = ((-1) * surtemp);
+    }
+
+    // Ntemp = T - T_surf
+    Ntemp.Update(1.0,Tsurf,1.0);
+
     // ------------right-hand-side
-    // q . n = h ( T - T_sur )
-    if (erhs != NULL)
+    if (efext != NULL)
     {
-      // erhs = erhs + N^T . coeff . (T - T_sur) . detJ * w(gp)
-
-      // erhs = erhs + N^T . coeff . T . detJ * w(gp)
-      erhs->Multiply(coefffac_,funct_,Ntemp,1.0);  // (8x1) = (8x1)(1x1)
-
-      // erhs = erhs - N^T . coeff . T_sur . detJ * w(gp)
-      double coeffTsur = 0.0;
-      coeffTsur = coefffac_ * (-1) * surtemp;
-      erhs->Update(coeffTsur,funct_,1.0);
-
-      // scale the external force contribution because this term enters with a
-      // positive sign
-      erhs->Scale(-1);
+      // efext = efext + N^T . coeff . ( N . T - T_surf) . detJ * w(gp)
+      efext->Multiply(coefffac_,funct_,Ntemp,1.0);
     }
 
-    // ---------------------matrix
-    if (etang != NULL)
-    {
-      // ke = ke + (N^T . coeff . N) * detJ * w(gp)
-      etang->MultiplyNT(coefffac_,funct_,funct_,1.0);
-      etang->Scale(-1);
-    }
+//    // if the boundary condition shall be dependent on the current temperature
+//    // solution T_n+1 --> linearisation must be uncommented
+//    // ---------------------matrix
+//    if (etang != NULL)
+//    {
+//      // ke = ke + (N^T . coeff . N) * detJ * w(gp)
+//      etang->MultiplyNT(coefffac_,funct_,funct_,1.0);
+//      etang->Scale(-1);
+//    }
 
    /* =======================================================================*/
   }/* ================================================== end of Loop over GP */

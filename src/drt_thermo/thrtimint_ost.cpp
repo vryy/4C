@@ -84,10 +84,12 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
-  // set initial external force vector of convective heat transfer boundary conditions
+  // set initial external force vector of convective heat transfer boundary
+  // conditions
   ApplyForceExternalConv((*temp_)(0), fext_, tang_);
 
   // have a nice day
@@ -128,6 +130,7 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
+
   ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
   // initialise internal forces
@@ -139,7 +142,13 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
+  // if the boundary condition shall be dependent on the current temperature
+  // solution T_n+1 --> linearisation must be uncommented
+//  ApplyForceExternalConv(tempn_, fextn_, tang_);
+
+  // if the old temperature T_n is sufficient --> no linearisation needed!
+  ApplyForceExternalConv((*temp_)(0), fextn_, tang_);
 
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
