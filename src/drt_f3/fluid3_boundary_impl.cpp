@@ -817,11 +817,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
     Epetra_SerialDenseMatrix&  elemat1,
     Epetra_SerialDenseVector&  elevec1)
 {
-  INPAR::FLUID::PSPG pspg = f3Parameter_->pspg_;
-
-  if (pspg == INPAR::FLUID::pstab_use_pspg)
-    dserror("Test");
-
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
