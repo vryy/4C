@@ -234,7 +234,7 @@ private:
  *
  * specialization for standard assembly
  */
-template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
+template <DRT::Element::DiscretizationType DISTYPE, std::size_t NUMDOF>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
 {
 public:

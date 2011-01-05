@@ -146,7 +146,7 @@ private:
  * specialization for standard assembly. Here, we can use fixed size matrices that
  * are views on Epetra serial dense matrices and vectors
  */
-template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
+template <DRT::Element::DiscretizationType DISTYPE, std::size_t NUMDOF>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
 {
 public:
