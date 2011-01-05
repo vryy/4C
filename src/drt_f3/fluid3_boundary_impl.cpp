@@ -20,6 +20,8 @@ Maintainer: Andreas Ehrl
 #include "fluid3_weak_dbc.H"
 #include "fluid3_ele_impl_utils.H"
 
+#include "../drt_inpar/inpar_fluid.H"
+
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -115,6 +117,9 @@ DRT::ELEMENTS::Fluid3BoundaryImpl<distype> * DRT::ELEMENTS::Fluid3BoundaryImpl<d
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Fluid3BoundaryImpl()
 {
+  // pointer to class Fluid3ImplParameter (access to the general parameter)
+  f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+
   return;
 }
 
@@ -812,6 +817,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
     Epetra_SerialDenseMatrix&  elemat1,
     Epetra_SerialDenseVector&  elevec1)
 {
+  INPAR::FLUID::PSPG pspg = f3Parameter_->pspg_;
+
+  if (pspg == INPAR::FLUID::pstab_use_pspg)
+    dserror("Test");
+
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
@@ -1135,6 +1145,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
                                                      Epetra_SerialDenseVector&        elevec1,
                                                      const std::vector<double>&       edispnp)
 {
+  // TODO: double check
   // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
 

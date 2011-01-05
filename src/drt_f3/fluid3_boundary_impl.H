@@ -20,6 +20,7 @@ Maintainer: Andreas Ehrl
 #define FLUID3_BOUNDARY_IMPL_H
 
 #include "fluid3.H"
+#include "../drt_f3_impl/fluid3_impl_parameter.H"
 
 namespace DRT
 {
@@ -115,6 +116,8 @@ public:
 template<DRT::Element::DiscretizationType distype>
 class Fluid3BoundaryImpl: public Fluid3BoundaryImplInterface
 {
+  friend class Fluid3ImplParameter;
+
 public:
 
   /// Singleton access method
@@ -438,6 +441,9 @@ private:
       Epetra_SerialDenseVector&                   weights,          ///< nurbs specific weights
       double&                                     normalfac       ///< nurbs specific factor for normal
   );
+
+  //! pointer to parameter list
+  DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
   };  // end class fluid3boundaryImpl
 
 }
