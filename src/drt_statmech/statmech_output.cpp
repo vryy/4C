@@ -686,8 +686,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     gmshfileend << center(0)<<","<<center(1)<<","<<center(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
     // gmsh output of detected network structure volume
     int nline = 8;
-    GmshNetworkStructVolume(nline, gmshfileend, 0.75);
-
+    if(step>0)
+    	GmshNetworkStructVolume(nline, gmshfileend, 0.75);
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -1616,9 +1616,11 @@ void StatMechManager::GMSH_2_noded(const int& n,
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	/*double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// plot the test volume determined by DDCorrCurrentStructure()
-	switch((int)testvolumepos_.size())
+	int numpositions = (int)testvolumepos_.size();
+	cout<<"numpositions = "<<numpositions<<", characlength = "<<characlength_<<endl;
+	switch(numpositions)
 	{
 		// either cluster or homogeneous network
 		case 0:
@@ -1626,6 +1628,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			//cluster
 			if(characlength_<periodlength/2.0)
 			{
+				cout<<"Cluster";
 				// draw three octagons/hexadecagon lying in the base planes
 				for(int i=0; i<3; i++)//spatial comp i
 					for(int j=0; j<3; j++)//spatial comp j
@@ -1723,12 +1726,14 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 										gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 									}
 								}
+				cout<<"...written!"<<endl;
 			}
 		}
 		break;
 		// bundle network
 		case 2:
 		{
+			cout<<"Bundle";
 			double radius = characlength_;
 			LINALG::Matrix<3,2> coord;
 			for(int i=0; i<(int)coord.M(); i++)
@@ -1751,7 +1756,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			for (int j=0;j<3;++j)
 				theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
 
-			// Compute rotation matirx R from rotation angle theta
+			// Compute rotation matrix R from rotation angle theta
 			angletotriad(theta,R);
 
 			// compute radius vector for first surface node of first edges
@@ -1854,11 +1859,13 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
 				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 			}
+			cout<<"...written"<<endl;
 		}
 		break;
 		// layer
 		default:
 		{
+			cout<<"Layer...";
 			// compute normal
 			// cross product n_1 x n_2, plane normal
 			LINALG::Matrix<3,1> normal;
@@ -1897,9 +1904,12 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 			}
+			cout<<"...written"<<endl;
 		}
-		break;
 	}
+	cout<<"Test Volume written to gmsh output file..."<<endl;*/
+	// clear the vector
+	testvolumepos_.clear();
 }//GmshNetworkStructVolume()
 
 /*----------------------------------------------------------------------*
@@ -2309,6 +2319,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // Determine current network structure
 	LINALG::Matrix<3,1> cog;
   DDCorrCurrentStructure(disrow, &cog, &centershift, &crosslinkerentries, istep, filename);
+  // store center of gravity for later use in GmshOutput()
   cog_ = cog;
 
   // Compute internal energy
@@ -2550,9 +2561,20 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			}
 
 /// determine normed vectors as well as output filament element vectors
+			int startiterindex = 0;
 			std::ostringstream orientfilename;
 			orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
 			FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
+
+			// select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
+			// enclosed angle with the cylder axis
+			double veclength = 0.0;
+			for(int i=0; i<(int)normedvectors.size(); i++)
+				if(normedvectors[i].Norm2() > veclength)
+				{
+					veclength = normedvectors[i].Norm2();
+					startiterindex = i;
+				}
 
 			// Scale normed vectors to unit length
 			cout<<"Normed vectors:"<<endl;
@@ -2561,6 +2583,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				normedvectors[i].Scale(1/normedvectors[i].Norm2());
 				cout<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
 			}
+
 /// determine network structure
 			// threshold fraction of crosslinkers
 			double pthresh = 0.9;
@@ -2630,6 +2653,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						double pr = 0.0;
 						int exponent = 1;
 
+						// iterate to obtain fitting normed direction
+						LINALG::Matrix<3,1> normj = normedvectors[startiterindex];
+						const int maxiterations = 10;
+						DDCorrIterateVector(discol, &normj, maxiterations);
+
 						// cube face boundaries of jk-surface of cubical volume
 						LINALG::Matrix<3,2> surfaceboundaries;
 						for(int j=0; j<(int)surfaceboundaries.M(); j++)
@@ -2637,29 +2665,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							surfaceboundaries(j,0) = (*centershift)(j);
 							surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 						}
-
-						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
-						double alpha = -1.0;
-						int dir1=-1, dir2=-1;
-						for(int j=0; j<(int)normedvectors.size(); j++)
-							for(int k=0; k<(int)normedvectors.size(); k++)
-								if(k>j)
-								{
-									double dotprod = normedvectors[j].Dot(normedvectors[k]);
-									if(k>j && acos(dotprod)>alpha)
-									{
-										alpha = acos(dotprod);
-										dir1=j;
-										dir2=k;
-									}
-								}
-						// calculate average bundle direction vector
-						LINALG::Matrix<3,1> avnormedvec = normedvectors[dir1];
-						if(alpha>M_PI/2.0)
-							avnormedvec.Scale(-1.0);
-						avnormedvec += normedvectors[dir2];
-						if(avnormedvec.Norm2()>0.0)
-							avnormedvec.Scale(1/avnormedvec.Norm2());
 						for(int j=0; j<(int)surfaceboundaries.N(); j++)
 							for(int k=0; k<3; k++)
 								for(int l=0; l<3; l++)
@@ -2671,9 +2676,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 												// known intersection component
 												currentintersection(m) = surfaceboundaries(m,j);
 												// get line parameter
-												double lambdaline = (currentintersection(m)-(*cog)(m))/avnormedvec(m);
-												currentintersection(k) = (*cog)(k)+lambdaline*avnormedvec(k);
-												currentintersection(l) = (*cog)(l)+lambdaline*avnormedvec(l);
+												double lambdaline = (currentintersection(m)-(*cog)(m))/normj(m);
+												currentintersection(k) = (*cog)(k)+lambdaline*normj(k);
+												currentintersection(l) = (*cog)(l)+lambdaline*normj(l);
 												// check if intersection lies on volume boundary
 												if(currentintersection(k)<=surfaceboundaries(k,1) && currentintersection(k)>=surfaceboundaries(k,0) &&
 													 currentintersection(l)<=surfaceboundaries(l,1) && currentintersection(l)>=surfaceboundaries(l,0))
@@ -2683,7 +2688,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						deltaisecs -= intersections[0];
 						cyllength = deltaisecs.Norm2();
 
-						// consider only normedvector[0] as the other normed directions are parallel or antiparallel
+						// calculate fraction of crosslinkers within cylinder
 						while(!leaveloop)
 						{
 							int rcount = 0;
@@ -2695,11 +2700,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								LINALG::Matrix<3,1> crosstocog = shiftedpositions[j];
 								crosstocog -= *cog;
 
-								double numerator = crosstocog.Dot(avnormedvec);
-								double denominator = (avnormedvec).Dot(avnormedvec);
+								double numerator = crosstocog.Dot(normj);
+								double denominator = (normj).Dot(normj);
 								double lambdaisec = numerator/denominator;
 								// intersection and distance of crosslinker to intersection
-								LINALG::Matrix<3,1> isecpt = avnormedvec;
+								LINALG::Matrix<3,1> isecpt = normj;
 								isecpt.Scale(lambdaisec);
 								isecpt += (*cog);
 								LINALG::Matrix<3,1> deltaiseccog = shiftedpositions[j];
@@ -2742,206 +2747,217 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						double pr = 0.0;
 						int exponent = 1;
 
-						//determine the two normed vectors with the largest inter-vector angle (two vectors are (anti)parallel, the third is perpendicular)
-						double alpha = 3.0*M_PI;
+						//determine the two normed vectors with the largest cross product 2-Norm (closest to being perpendicular)
+						std::vector<LINALG::Matrix<3,1> > layervectors;
 						int dir1=-1, dir2=-1;
+						double crossprodnorm = 0.0;
 						for(int j=0; j<3; j++)
 							for(int k=0; k<3; k++)
 								if(k>j)
 								{
-									double dotprod = normedvectors[j].Dot(normedvectors[k]);
-									if(k>j && fabs(M_PI/2.0-acos(dotprod))<fabs(M_PI/2.0-alpha))
+									// cross product
+									LINALG::Matrix<3,1> crossvec;
+									crossvec(0) = normedvectors[j](1)*normedvectors[k](2) - normedvectors[j](2)*normedvectors[k](1);
+									crossvec(1) = normedvectors[j](2)*normedvectors[k](0) - normedvectors[j](0)*normedvectors[k](2);
+									crossvec(2) = normedvectors[j](0)*normedvectors[k](1) - normedvectors[j](1)*normedvectors[k](0);
+									if(crossvec.Norm2()>crossprodnorm)
 									{
-										alpha = acos(dotprod);
+										crossprodnorm = crossvec.Norm2();
 										dir1=j;
 										dir2=k;
+										layervectors.clear();
+										layervectors.push_back(normedvectors[dir1]);
+										layervectors.push_back(normedvectors[dir2]);
 									}
 								}
-						// if at least two independent normed directions exist
-						if(fabs(alpha)>M_PI/18.0)
+
+						// iterate both vectors in order to obtain projections into the layer plane
+						const int maxiterations = 10;
+						DDCorrIterateVector(discol, &layervectors[0], maxiterations);
+						DDCorrIterateVector(discol, &layervectors[1], maxiterations);
+
+						// cross product n_1 x n_2, plane normal
+						LINALG::Matrix<3,1> normal;
+						normal(0) = layervectors[0](1)*layervectors[1](2) - layervectors[0](2)*layervectors[1](1);
+						normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
+						normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
+
+						while(!leaveloop)
 						{
-							// cross product n_1 x n_2, plane normal
-							LINALG::Matrix<3,1> normal;
-							normal(0) = normedvectors[dir1](1)*normedvectors[dir2](2) - normedvectors[dir1](2)*normedvectors[dir2](1);
-							normal(1) = normedvectors[dir1](2)*normedvectors[dir2](0) - normedvectors[dir1](0)*normedvectors[dir2](2);
-							normal(2) = normedvectors[dir1](0)*normedvectors[dir2](1) - normedvectors[dir1](1)*normedvectors[dir2](0);
-							while(!leaveloop)
+							int rcount = 0;
+							for(int j=0; j<numcrossele; j++)
 							{
-								int rcount = 0;
-								for(int j=0; j<numcrossele; j++)
-								{
-									// given, that cog E plane with normal vector "normal"
-									// constant in Hessian normal form
-									double d = normal.Dot((*cog));
-									// distance of crosslinker element to plane
-									double pn = normal.Dot(shiftedpositions[j]);
-									double disttoplane = fabs(pn-d);
+								// given, that cog E plane with normal vector "normal"
+								// constant in Hessian normal form
+								double d = normal.Dot((*cog));
+								// distance of crosslinker element to plane
+								double pn = normal.Dot(shiftedpositions[j]);
+								double disttoplane = fabs(pn-d);
 
-									if(disttoplane <= thickness)
-										rcount++;
-								}
-								pr = double(rcount)/double(numcrossele);
+								if(disttoplane <= thickness)
+									rcount++;
+							}
+							pr = double(rcount)/double(numcrossele);
 
-								exponent++;
-								niter[2]++;
+							exponent++;
+							niter[2]++;
 
-								if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
-								{
-									double sign;
-									if(pr<pthresh)
-										sign = 1.0;
-									else
-										sign = -1.0;
-									thickness += sign*periodlength/pow(2.0,(double)exponent);
-								}
+							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
+							{
+								double sign;
+								if(pr<pthresh)
+									sign = 1.0;
 								else
-								{
-									crossfraction[2] = pr;
-									leaveloop = true;
-								}
+									sign = -1.0;
+								thickness += sign*periodlength/pow(2.0,(double)exponent);
 							}
-
-							// calculation of the volume
-							// cube face boundaries of jk-surface of cubical volume
-							LINALG::Matrix<3,2> surfaceboundaries;
-							for(int j=0; j<(int)surfaceboundaries.M(); j++)
+							else
 							{
-								surfaceboundaries(j,0) = (*centershift)(j);
-								surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
+								crossfraction[2] = pr;
+								leaveloop = true;
 							}
+						}
 
-							for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
-							{
-								for(int j=0; j<3; j++) // spatial component j
-									for(int k=0; k<3; k++) // spatial component k
-										if(k>j)// above diagonal
-											for(int l=0; l<3; l++) // spatial component l
-												if(l!=j && l!=k)
-												{
-													LINALG::Matrix<3,1> coords;
-													coords(l) = surfaceboundaries(l,surf);
-													for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
-														for(int m=0; m<(int)surfaceboundaries.M(); m++)
-															if(l!=m)
-															{
-																coords(m) = surfaceboundaries(m,edge);
-																for(int n=0; n<(int)surfaceboundaries.M(); n++)
-																	if(n!=m && n!=l)
+						// calculation of the volume
+						// cube face boundaries of jk-surface of cubical volume
+						LINALG::Matrix<3,2> surfaceboundaries;
+						for(int j=0; j<(int)surfaceboundaries.M(); j++)
+						{
+							surfaceboundaries(j,0) = (*centershift)(j);
+							surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
+						}
+
+						for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
+						{
+							for(int j=0; j<3; j++) // spatial component j
+								for(int k=0; k<3; k++) // spatial component k
+									if(k>j)// above diagonal
+										for(int l=0; l<3; l++) // spatial component l
+											if(l!=j && l!=k)
+											{
+												LINALG::Matrix<3,1> coords;
+												coords(l) = surfaceboundaries(l,surf);
+												for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
+													for(int m=0; m<(int)surfaceboundaries.M(); m++)
+														if(l!=m)
+														{
+															coords(m) = surfaceboundaries(m,edge);
+															for(int n=0; n<(int)surfaceboundaries.M(); n++)
+																if(n!=m && n!=l)
+																{
+																	coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
+																	double lowerbound = surfaceboundaries(n,0);
+																	double upperbound = surfaceboundaries(n,1);
+																	if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
 																	{
-																		coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
-																		double lowerbound = surfaceboundaries(n,0);
-																		double upperbound = surfaceboundaries(n,1);
-																		if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
+																		bool redundant = false;
+																		// check for redundant entries
+																		if((int)interseccoords.size()>0)
 																		{
-																			bool redundant = false;
-																			// check for redundant entries
-																			if((int)interseccoords.size()>0)
+																			LINALG::Matrix<3,1> check = coords;
+																			for(int p=0; p<(int)interseccoords.size(); p++)
 																			{
-																				LINALG::Matrix<3,1> check = coords;
-																				for(int p=0; p<(int)interseccoords.size(); p++)
-																				{
-																					check -= interseccoords[p];
-																					if(check.Norm2()<1e-4)
-																						redundant = true;
-																					check = coords;
-																				}
-																			}
-																			if(!redundant)
-																			{
-																				interseccoords.push_back(coords);
-																				//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
-																				//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
-																				//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
+																				check -= interseccoords[p];
+																				if(check.Norm2()<1e-4)
+																					redundant = true;
+																				check = coords;
 																			}
 																		}
+																		if(!redundant)
+																		{
+																			interseccoords.push_back(coords);
+																			//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
+																			//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
+																			//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
+																		}
 																	}
-															}
-												}
-							}
+																}
+														}
+											}
+						}
 
-							//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
-							// calculate volume according to number of intersection points
-							switch((int)interseccoords.size())
+						//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
+						// calculate volume according to number of intersection points
+						switch((int)interseccoords.size())
+						{
+							// triangle
+							case 3:
 							{
-								// triangle
-								case 3:
+								// area of the triangle via cosine rule
+								LINALG::Matrix<3,1> c = interseccoords[0];
+								c -= interseccoords[1];
+								LINALG::Matrix<3,1> a = interseccoords[1];
+								a -= interseccoords[2];
+								LINALG::Matrix<3,1> b = interseccoords[0];
+								b -= interseccoords[2];
+								double cl = c.Norm2();
+								double al = a.Norm2();
+								double bl = b.Norm2();
+								double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
+								double h = bl * sin(alpha);
+
+								// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
+								volumes[2] = cl*h*thickness;
+							}
+							break;
+							// square/rectangle/trapezoid
+							case 4:
+							{
+								// edges
+								LINALG::Matrix<3,1> a = interseccoords[0];
+								a -= interseccoords[1];
+								LINALG::Matrix<3,1> c = interseccoords[2];
+								c -= interseccoords[3];
+								LINALG::Matrix<3,1> d = interseccoords[3];
+								d -= interseccoords[0];
+								// diagonal
+								LINALG::Matrix<3,1> f = interseccoords[1];
+								f -= interseccoords[3];
+								double al = a.Norm2();
+								double cl = c.Norm2();
+								double dl = d.Norm2();
+								double fl = f.Norm2();
+								double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
+								double h = dl * sin(alpha);
+
+								volumes[2] = (al+cl) * h * thickness;
+							}
+							break;
+							// hexahedron
+							case 6:
+							{
+								double hexvolume = 0.0;
+								for(int j=0; j<6; j++)
 								{
-									// area of the triangle via cosine rule
-									LINALG::Matrix<3,1> c = interseccoords[0];
-									c -= interseccoords[1];
-									LINALG::Matrix<3,1> a = interseccoords[1];
-									a -= interseccoords[2];
-									LINALG::Matrix<3,1> b = interseccoords[0];
-									b -= interseccoords[2];
-									double cl = c.Norm2();
+									// get edge of j-th triangle wihtin hexagon
+									LINALG::Matrix<3,1> c = interseccoords[j];
+									LINALG::Matrix<3,1> a;
+									LINALG::Matrix<3,1> b = interseccoords[j];
+									b -= *cog;
+									if(j==5)
+									{
+										c -= interseccoords[0];
+										a = interseccoords[0];
+										a -= interseccoords[5];
+
+									}
+									else
+									{
+										c -= interseccoords[j+1];
+										a = interseccoords[j+1];
+										a -= *cog;
+									}
 									double al = a.Norm2();
 									double bl = b.Norm2();
+									double cl = c.Norm2();
 									double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
 									double h = bl * sin(alpha);
 
-									// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
-									volumes[2] = cl*h*thickness;
+									hexvolume += cl*h*thickness;
 								}
-								break;
-								// square/rectangle/trapezoid
-								case 4:
-								{
-									// edges
-									LINALG::Matrix<3,1> a = interseccoords[0];
-									a -= interseccoords[1];
-									LINALG::Matrix<3,1> c = interseccoords[2];
-									c -= interseccoords[3];
-									LINALG::Matrix<3,1> d = interseccoords[3];
-									d -= interseccoords[0];
-									// diagonal
-									LINALG::Matrix<3,1> f = interseccoords[1];
-									f -= interseccoords[3];
-									double al = a.Norm2();
-									double cl = c.Norm2();
-									double dl = d.Norm2();
-									double fl = f.Norm2();
-									double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
-									double h = dl * sin(alpha);
-
-									volumes[2] = (al+cl) * h * thickness;
-								}
-								break;
-								// hexahedron
-								case 6:
-								{
-									double hexvolume = 0.0;
-									for(int j=0; j<6; j++)
-									{
-										// get edge of j-th triangle wihtin hexagon
-										LINALG::Matrix<3,1> c = interseccoords[j];
-										LINALG::Matrix<3,1> a;
-										LINALG::Matrix<3,1> b = interseccoords[j];
-										b -= *cog;
-										if(j==5)
-										{
-											c -= interseccoords[0];
-											a = interseccoords[0];
-											a -= interseccoords[5];
-
-										}
-										else
-										{
-											c -= interseccoords[j+1];
-											a = interseccoords[j+1];
-											a -= *cog;
-										}
-										double al = a.Norm2();
-										double bl = b.Norm2();
-										double cl = c.Norm2();
-										double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
-										double h = bl * sin(alpha);
-
-										hexvolume += cl*h*thickness;
-									}
-									volumes[2] = hexvolume;
-								}
-								break;
+								volumes[2] = hexvolume;
 							}
+							break;
 						}
 						characlength[2] = 2.0*thickness;
 					}
@@ -3020,7 +3036,76 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 }//DDCorrCurrentStructure()
 
 /*------------------------------------------------------------------------------*                                                 |
- | density-density correlation function                   (public) mueller 12/10|
+ | density-density correlation function                   (private) mueller 01/11|
+ *------------------------------------------------------------------------------*/
+void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations)
+{
+	// get filament number conditions
+	vector<DRT::Condition*> filaments(0);
+	discret_.GetCondition("FilamentNumber", filaments);
+	bool vectorconverged = false;
+	int iteration = 0;
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	double tolangle = M_PI/36.0; // 5°
+
+	while(!vectorconverged)
+		if(iteration<maxiterations)
+		{
+			LINALG::Matrix<3,1> vectorjp;
+			vectorjp.Clear();
+			for(int fil=0; fil<(int)filaments.size(); fil++)
+			{
+				// get next filament
+				DRT::Condition* currfilament = filaments[fil];
+				for(int node=1; node<(int)currfilament->Nodes()->size(); node++)
+				{
+					// obtain column map LIDs
+					int gid0 = currfilament->Nodes()->at(node-1);
+					int gid1 = currfilament->Nodes()->at(node);
+					int nodelid0 = discret_.NodeColMap()->LID(gid0);
+					int nodelid1 = discret_.NodeColMap()->LID(gid1);
+					DRT::Node* node0 = discret_.lColNode(nodelid0);
+					DRT::Node* node1 = discret_.lColNode(nodelid1);
+
+					// calculate directional vector between nodes
+					LINALG::Matrix<3, 1> dirvec;
+					for(int dof=0; dof<3; dof++)
+					{
+						int dofgid0 = discret_.Dof(node0)[dof];
+						int dofgid1 = discret_.Dof(node1)[dof];
+						double poscomponent0 = node0->X()[dof]+discol[discret_.DofColMap()->LID(dofgid0)];
+						double poscomponent1 = node1->X()[dof]+discol[discret_.DofColMap()->LID(dofgid1)];
+						// check for periodic boundary shift and correct accordingly
+						if (fabs(poscomponent1 - periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+							poscomponent1 -= periodlength;
+						else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
+							poscomponent1 += periodlength;
+
+						dirvec(dof) = poscomponent1-poscomponent0;
+					}
+					// normed vector
+					dirvec.Scale(1/dirvec.Norm2());
+
+					if(acos(dirvec.Dot((*vectorj)))>M_PI/2.0)
+						dirvec.Scale(-1.0);
+					vectorjp += dirvec;
+				}
+			}
+			vectorjp.Scale(1.0/vectorjp.Norm2());
+			// check angle between old and n_j and n_(j+1)
+			double vecvecangle = acos(vectorj->Dot(vectorjp));
+			if(vecvecangle < tolangle)
+				vectorconverged = true;
+			*vectorj = vectorjp;
+		}
+		else
+		{
+			cout<<"...Vector did not converge after "<<maxiterations<<" iterations. Continuing..."<<endl;
+			vectorconverged = true;
+		}
+}//DDCorrIterateVector()
+/*------------------------------------------------------------------------------*                                                 |
+ | density-density correlation function                  (private) mueller 12/10|
  *------------------------------------------------------------------------------*/
 void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift)
 {

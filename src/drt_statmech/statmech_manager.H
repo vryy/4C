@@ -242,6 +242,9 @@ protected:
 															const std::ostringstream& filename,
 															bool filorientoutput=true);
 
+	//! \brief iterate vector in order to obtain close approximation to actual (structure) vector
+	void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
+
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);
 
