@@ -84,8 +84,8 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::~ScaTraFluidCouplingAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 {
-  ScaTraField().ReadRestart(step);
   FluidField().ReadRestart(step);
+  ScaTraField().ReadRestart(step);
   SetTimeStep(FluidField().Time(),step);
   return;
 }
