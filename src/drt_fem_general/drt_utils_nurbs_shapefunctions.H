@@ -254,7 +254,7 @@ namespace UTILS
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight;
 
-  sum_funct_weight=0;
+  sum_funct_weight=0.0;
 
   /*loop all control points, compute sums
 
@@ -550,8 +550,8 @@ namespace UTILS
   double sum_funct_weight;
   double sum_deriv_weight;
 
-  sum_funct_weight=0;
-  sum_deriv_weight=0;
+  sum_funct_weight=0.0;
+  sum_deriv_weight=0.0;
 
   /*loop all control points, compute sums
 
@@ -906,7 +906,7 @@ void nurbs_get_2D_funct(
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight;
 
-  sum_funct_weight=0;
+  sum_funct_weight=0.0;
 
   /*loop all control points, compute sums
 
@@ -1255,9 +1255,9 @@ void nurbs_get_2D_funct_deriv(
   double                 sum_funct_weight;
   double                 sum_deriv_weight[2];
 
-  sum_funct_weight=0;
-  sum_deriv_weight[0]=0;
-  sum_deriv_weight[1]=0;
+  sum_funct_weight=0.0;
+  sum_deriv_weight[0]=0.0;
+  sum_deriv_weight[1]=0.0;
 
   /*loop all control points, compute sums
 
@@ -1714,12 +1714,12 @@ void nurbs_get_2D_funct_deriv_deriv2(
   double                 sum_deriv_weight [2];
   double                 sum_deriv2_weight[3];
 
-  sum_funct_weight    =0;
-  sum_deriv_weight [0]=0;
-  sum_deriv_weight [1]=0;
-  sum_deriv2_weight[0]=0;
-  sum_deriv2_weight[1]=0;
-  sum_deriv2_weight[2]=0;
+  sum_funct_weight    =0.0;
+  sum_deriv_weight [0]=0.0;
+  sum_deriv_weight [1]=0.0;
+  sum_deriv2_weight[0]=0.0;
+  sum_deriv2_weight[1]=0.0;
+  sum_deriv2_weight[2]=0.0;
 
   /*loop all control points, compute sums
 
@@ -2305,7 +2305,7 @@ void nurbs_get_3D_funct(
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight;
 
-  sum_funct_weight =0;
+  sum_funct_weight =0.0;
 
   /*loop all control points, compute sums
 
@@ -2751,11 +2751,13 @@ void nurbs_get_3D_funct_deriv(
   // -----------------------------------------------
 
   // alloc temporary doubles, initialise to zero
-  double                   sum_funct_weight    ;
-  Epetra_SerialDenseVector sum_deriv_weight (3);
+  double sum_funct_weight   ;
+  double sum_deriv_weight[3];
 
-  sum_funct_weight =0;
-  sum_deriv_weight =0;
+  sum_funct_weight    = 0.0;
+  sum_deriv_weight[0] = 0.0;
+  sum_deriv_weight[1] = 0.0;
+  sum_deriv_weight[2] = 0.0;
 
   /*loop all control points, compute sums
 
@@ -2792,7 +2794,7 @@ void nurbs_get_3D_funct_deriv(
 
     for(int mm=0;mm<3;++mm)
     {
-      sum_deriv_weight(mm)+=weights(rr)*bezier_shape_deriv(mm,rr);
+      sum_deriv_weight[mm]+=weights(rr)*bezier_shape_deriv(mm,rr);
     }
   }
 
@@ -2838,7 +2840,7 @@ void nurbs_get_3D_funct_deriv(
 	=
 	bezier_shape_deriv(mm,rr)*sum_funct_weight
 	-
-	bezier_shape_funct(rr)*sum_deriv_weight(mm);
+	bezier_shape_funct(rr)*sum_deriv_weight[mm];
 
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
@@ -3274,7 +3276,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
   DRT::NURBS::UTILS::BsplinePolynomial bspline_nu (degree,knots[2]);
 
   // get temporary doubles for derivatives and
-  // values of the above devlared polynomials
+  // values of the above declared polynomials
   double bspline_xi_value;
   double bspline_eta_value;
   double bspline_nu_value;
@@ -3433,16 +3435,16 @@ void nurbs_get_3D_funct_deriv_deriv2(
   double                 sum_deriv_weight [3];
   double                 sum_deriv2_weight[6];
 
-  sum_funct_weight    =0;
-  sum_deriv_weight [0]=0;
-  sum_deriv_weight [1]=0;
-  sum_deriv_weight [2]=0;
-  sum_deriv2_weight[0]=0;
-  sum_deriv2_weight[1]=0;
-  sum_deriv2_weight[2]=0;
-  sum_deriv2_weight[3]=0;
-  sum_deriv2_weight[4]=0;
-  sum_deriv2_weight[5]=0;
+  sum_funct_weight    =0.0;
+  sum_deriv_weight [0]=0.0;
+  sum_deriv_weight [1]=0.0;
+  sum_deriv_weight [2]=0.0;
+  sum_deriv2_weight[0]=0.0;
+  sum_deriv2_weight[1]=0.0;
+  sum_deriv2_weight[2]=0.0;
+  sum_deriv2_weight[3]=0.0;
+  sum_deriv2_weight[4]=0.0;
+  sum_deriv2_weight[5]=0.0;
 
   /*loop all control points, compute sums
 
