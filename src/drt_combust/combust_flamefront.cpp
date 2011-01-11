@@ -40,6 +40,7 @@ Maintainer: Florian Henke
 #endif
 
 #include "../drt_cut/cut_levelsetintersection.H"
+#include "../drt_cut/cut_meshintersection.H"
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_integrationcell.H"
 
@@ -3524,6 +3525,102 @@ void COMBUST::FlameFront::buildPLC(
 
     int numnode = DRT::UTILS::getNumberOfElementNodes( cell_distype );
 
+    std::vector<int> nids;
+    nids.reserve(numnode);
+    for ( int i=0; i<numnode; ++i )
+    {
+      nids.push_back(i);
+    }
+
+#if 1
+
+    // Use the existing cut triangles and preserve the surface that way.
+
+    // use element local coordinates since we want to avoid roundoff errors
+
+    GEO::CUT::MeshIntersection intersection;
+
+    LINALG::SerialDenseMatrix trianglecoord(3,3); // 3 directions, 3 nodes
+
+    for ( unsigned i=0; i!=trianglelist.size(); ++i )
+    {
+      const std::vector<int> & t = trianglelist[i];
+      for (int inode=0; inode<3; inode++)
+      {
+        std::copy( pointlist[t[inode]].begin(),
+                   pointlist[t[inode]].end(),
+                   &trianglecoord(0,inode) );
+      }
+
+      intersection.AddCutSide( i+1, t, trianglecoord, DRT::Element::tri3, 0 );
+    }
+
+    LINALG::SerialDenseMatrix cellcoord(3,numnode);
+
+    for (int ivert=0; ivert<numnode; ivert++)
+    {
+      std::copy(vertexcoord[ivert].begin(),
+                vertexcoord[ivert].end(),
+                &cellcoord(0,ivert));
+    }
+
+    intersection.AddElement( 1, nids, cellcoord, cell_distype );
+
+    intersection.Cut();
+
+    GEO::CUT::ElementHandle * e = intersection.GetElement( 1 );
+
+    if ( e!=NULL and e->IsCut() )
+    {
+      std::set<GEO::CUT::IntegrationCell*> cells;
+      e->GetIntegrationCells( cells );
+
+      //std::set<GEO::CUT::BoundaryCell*> bcells;
+      //e->GetBoundaryCells( bcells );
+
+      LINALG::Matrix<3,1> physCoordCorner;
+      LINALG::Matrix<3,1> eleCoordDomainCorner;
+
+      for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::IntegrationCell * ic = *i;
+        DRT::Element::DiscretizationType distype = ic->Shape();
+        int numnodes = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        LINALG::SerialDenseMatrix physCoord( 3, numnodes );
+        LINALG::SerialDenseMatrix coord = ic->Coordinates();
+
+        for (int ivert=0; ivert<numnodes; ivert++)
+        {
+          LINALG::Matrix<3,1> vertcoord;
+
+          std::copy(&coord(0,ivert),
+                    &coord(0,ivert)+3,
+                    vertcoord.A());
+
+          // transform vertex from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
+
+          std::copy(vertcoord.A(),
+                    vertcoord.A()+3,
+                    &physCoord(0,ivert));
+        }
+
+        // if degenerated don't store
+        if ( distype==DRT::Element::tet4 )
+          if(GEO::checkDegenerateTet(numnodes, coord, physCoord))
+            continue;
+
+        bool inGplus = GetIntCellDomainInElement(coord, gfuncvalues, DRT::Element::hex8, distype);
+
+        domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
+      }
+    }
+    else
+    {
+      dserror("cut expected");
+    }
+#else
     //-----------------------------------------
     // get global coordinates of cell vertices
     //-----------------------------------------
@@ -3544,13 +3641,6 @@ void COMBUST::FlameFront::buildPLC(
       std::copy(vertcoord.A(),
                 vertcoord.A()+3,
                 &globalcellcoord(0,ivert));
-    }
-
-    std::vector<int> nids;
-    nids.reserve(numnode);
-    for ( int i=0; i<numnode; ++i )
-    {
-      nids.push_back(i);
     }
 
     // get G-function values at vertices from cell
@@ -3609,6 +3699,7 @@ void COMBUST::FlameFront::buildPLC(
     {
       dserror("cut expected");
     }
+#endif
   }
 
 #else

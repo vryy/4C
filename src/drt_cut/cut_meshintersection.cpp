@@ -102,7 +102,7 @@ void GEO::CUT::MeshIntersection::Cut()
 
   NormalMesh().CreateIntegrationCells();
 
-  Status();
+  //Status();
 }
 
 void GEO::CUT::MeshIntersection::SelfCut()
