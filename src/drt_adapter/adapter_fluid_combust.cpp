@@ -25,6 +25,9 @@ Maintainer: Florian Henke
 #include "../drt_lib/standardtypes_cpp.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include "../drt_combust/combust_fluidresulttest.H"
+#include "../drt_combust/combust_interface.H"
+
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 08/08 |
  |

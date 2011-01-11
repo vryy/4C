@@ -29,7 +29,7 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
     // make sure all nodes are there
     for ( int i=0; i<numnode; ++i )
     {
-      mesh_.GetNode( nids[i], &xyz( 0, i ), lsv[i] );
+      NormalMesh().GetNode( nids[i], &xyz( 0, i ), lsv[i] );
     }
 
     // create element
@@ -39,9 +39,21 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
 
 void GEO::CUT::LevelSetIntersection::Cut()
 {
-  mesh_.Cut( side_ );
-  mesh_.Status();
-  mesh_.MakeFacets();
-  mesh_.FindLSNodePositions();
-  mesh_.DumpGmsh( "mesh" );
+  Mesh & m = NormalMesh();
+
+  m.Cut( side_ );
+  //m.Status();
+  m.MakeFacets();
+  m.MakeVolumeCells();
+
+  m.FindLSNodePositions();
+
+  //m.DumpGmsh( "mesh" );
+
+  m.CreateIntegrationCells();
+}
+
+GEO::CUT::ElementHandle * GEO::CUT::LevelSetIntersection::GetElement( int eid )
+{
+  return mesh_.GetElement( eid );
 }

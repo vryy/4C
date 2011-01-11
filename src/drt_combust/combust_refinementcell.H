@@ -64,7 +64,7 @@ namespace COMBUST
     void SetGfuncValues(std::vector<double> gfuncvalues);
 
     //! remote access method to G-function values; could be spared by declaring "gfuncvalues" protected/public
-    std::vector<double>  GetGfuncValues() const { return gfuncvalues_; }
+    const std::vector<double> & GetGfuncValues() const { return gfuncvalues_; }
 
     //! find out, whether this refinement cell is intersected by flame G-function or not
     void IdentifyIntersectionStatus();

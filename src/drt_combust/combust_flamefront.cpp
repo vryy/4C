@@ -39,6 +39,9 @@ Maintainer: Florian Henke
 #include <Epetra_SerialComm.h>
 #endif
 
+#include "../drt_cut/cut_levelsetintersection.H"
+#include "../drt_cut/cut_elementhandle.H"
+#include "../drt_cut/cut_integrationcell.H"
 
 // extern struct _FILES  allfiles;
 
@@ -3510,6 +3513,86 @@ void COMBUST::FlameFront::buildPLC(
         Teuchos::null, phystrianglecoord, true));
   }
 
+#if 1
+
+  if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
+  {
+    GEO::CUT::LevelSetIntersection levelset;
+
+    DRT::Element::DiscretizationType cell_distype = cell->Shape();
+
+    // get vertex coordinates (local fluid element coordinates) from refinement cell
+    const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
+
+    //int numnodes = DRT::UTILS::getNumberOfElementNodes( cell_distype );
+
+    Epetra_SerialDenseMatrix xyz(3,vertexcoord.size());
+    std::vector<int> nids;
+    nids.reserve(vertexcoord.size());
+    for ( unsigned i=0; i<vertexcoord.size(); ++i )
+    {
+      nids.push_back(i);
+      if (vertexcoord[i].size()!=3)
+        dserror("strange nodal coordinate");
+      std::copy(vertexcoord[i].begin(),vertexcoord[i].end(),&xyz(0,i));
+    }
+
+    // get G-function values at vertices from cell
+    const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
+    levelset.AddElement( 1, nids, xyz, &gfuncvalues[0], cell_distype );
+
+    levelset.Cut();
+
+    GEO::CUT::ElementHandle * e = levelset.GetElement( 1 );
+
+    if ( e!=NULL and e->IsCut() )
+    {
+      std::set<GEO::CUT::IntegrationCell*> cells;
+      e->GetIntegrationCells( cells );
+
+      //std::set<GEO::CUT::BoundaryCell*> bcells;
+      //e->GetBoundaryCells( bcells );
+
+      LINALG::Matrix<3,1> physCoordCorner;
+      LINALG::Matrix<3,1> eleCoordDomainCorner;
+
+      for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::IntegrationCell * ic = *i;
+        DRT::Element::DiscretizationType distype = ic->Shape();
+        int numnodes = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        LINALG::SerialDenseMatrix physCoord = ic->Coordinates();
+        LINALG::SerialDenseMatrix coord( 3, numnodes );
+
+        for ( int j=0; j<numnodes; ++j )
+        {
+          std::copy( &physCoord( 0, j ), &physCoord( 0, j ) + 3, physCoordCorner.A() );
+
+          e->LocalCoordinates( physCoordCorner, eleCoordDomainCorner );
+
+          std::copy( eleCoordDomainCorner.A(), eleCoordDomainCorner.A()+3, &coord( 0, j ) );
+        }
+
+        // if degenerated don't store
+        if ( distype==DRT::Element::tet4 )
+          if(GEO::checkDegenerateTet(numnodes, coord, physCoord))
+            continue;
+
+        bool inGplus = GetIntCellDomainInElement(coord, gfuncvalues, DRT::Element::hex8, distype);
+
+        //domainintcelllist.push_back(GEO::DomainIntCell(distype, tetrahedroncoord, phystetrahedroncoord, inGplus));
+        domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus /*ic->Position()==GEO::CUT::Point::outside*/ ) );
+      }
+    }
+    else
+    {
+      dserror("cut expected");
+    }
+  }
+
+#else
+
   //------------------------------------------------------------------------------------
   // call external program TetGen based on CDT (Constrained Delaunay Tetrahedralization)
   //------------------------------------------------------------------------------------
@@ -3530,9 +3613,9 @@ void COMBUST::FlameFront::buildPLC(
 #endif
   }
 
+#endif
   // Gmsh output for flame front
   //FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
-
 }
 
 

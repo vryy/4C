@@ -935,7 +935,9 @@ void GEO::CUT::Mesh::FindLSNodePositions()
       }
       else
       {
-        throw std::runtime_error( "undecided nodal point on levelset surface" );
+        //throw std::runtime_error( "undecided nodal point on levelset
+        //surface" );
+        p->Position( Point::oncutsurface );
       }
     }
   }

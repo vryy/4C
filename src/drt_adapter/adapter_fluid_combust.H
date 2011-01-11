@@ -18,10 +18,19 @@ Maintainer: Florian Henke
 #define ADAPTER_FLUID_COMBUST_H
 
 #include "../drt_combust/combust_fluidimplicitintegration.H"
-#include "../drt_combust/combust_fluidresulttest.H"
 #include "adapter_fluid.H"
-#include "../drt_combust/combust_interface.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+
+namespace DRT
+{
+  class ResultTest;
+}
+
+namespace COMBUST
+{
+  class FlameFront;
+  class InterfaceHandleCombust;
+}
 
 namespace ADAPTER
 {

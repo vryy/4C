@@ -5,7 +5,7 @@
 
 #include "../drt_lib/drt_element.H"
 
-#include "cut_mesh.H"
+#include "cut_meshhandle.H"
 #include "cut_pointpool.H"
 #include "cut_levelsetside.H"
 
@@ -37,11 +37,15 @@ public:
 
   void Cut();
 
+  ElementHandle * GetElement( int eid );
+
 private:
+
+  Mesh & NormalMesh() { return mesh_.LinearMesh(); }
 
   Teuchos::RCP<PointPool> pp_;
 
-  Mesh mesh_;
+  MeshHandle mesh_;
   LevelSetSide side_;
 };
 
