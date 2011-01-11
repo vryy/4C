@@ -737,7 +737,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
           for (int idimrow = 0; idimrow < nsd_; ++idimrow) // loop over dimensions for the rows
           {
             const int fvi = numdofpernode_*vi+idimrow;
-            elemat1_epetra(fvi  ,fui  ) = temp(fvi, fui);
+            elemat1_epetra(fvi  ,fui  ) += temp(fvi, fui);
           }  // end loop over dimensions for the rows
         } // end loop over rows (vi)
       } // end oop over dimensions for the columns
