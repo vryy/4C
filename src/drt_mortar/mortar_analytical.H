@@ -50,6 +50,7 @@ Maintainer: Alexander Popp
 // 0 = no output of error norms
 // 1 = 3D beam bending example
 // 2 = 3D pressurized hollow sphere example
+// 3 = 3D pressurized hollow sphere example (thick version)
 //------------------------------------------------------------------------
 #define MORTARANALYTICALSOL 0
 
@@ -111,7 +112,7 @@ namespace MORTAR
 		// 3D pressurized sphere solution
   	// (see Bower, Applied Mechanics of Solids, 2009, p. 197)
 		//----------------------------------------------------------------------
-		else if (MORTARANALYTICALSOL==2)
+		else if (MORTARANALYTICALSOL==2 || MORTARANALYTICALSOL==3)
 		{
 			// model parameters
 			double a = 0.9;
@@ -119,6 +120,9 @@ namespace MORTAR
       double pi = 1.0;
       double nu = 0.3;
       double E = 1.0;
+
+      // change geometry for thick version
+      if (MORTARANALYTICALSOL==3) { a = 0.5; b = 2.0; }
 
 			// radial coordinate r = sqrt(x^2+y^2+z^2)
 			double r = sqrt(pos(0,0)*pos(0,0)+pos(1,0)*pos(1,0)+pos(2,0)*pos(2,0));
