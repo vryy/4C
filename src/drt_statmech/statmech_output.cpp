@@ -685,9 +685,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     gmshfileend << "SP(" << scientific;
     gmshfileend << center(0)<<","<<center(1)<<","<<center(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
     // gmsh output of detected network structure volume
-    int nline = 8;
+    int nline = 16;
     if(step>0)
-    	GmshNetworkStructVolume(nline, gmshfileend, 0.75);
+    	GmshNetworkStructVolume(nline, gmshfileend, 0.875);
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -706,6 +706,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
 {
+	double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
   //number of solid elements by which a round line is depicted
   const int nline = 8;
 
@@ -776,15 +777,15 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     {
       for (int dof=0; dof<ndim; dof++)
       {
-        if (fabs(coord(dof,i+1)-statmechparams_.get<double>("PeriodLength",0.0)-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
+        if (fabs(coord(dof,i+1)-periodlength-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
         {
           cut(dof, i) = 1;
-          unshift(dof, i + 1) -= statmechparams_.get<double>("PeriodLength",0.0);
+          unshift(dof, i + 1) -= periodlength;
         }
-        if (fabs(coord(dof, i+1)+statmechparams_.get<double>("PeriodLength",0.0) - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
+        if (fabs(coord(dof, i+1)+periodlength - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
         {
           cut(dof,i) = 2;
-          unshift(dof,i+1) += statmechparams_.get<double>("PeriodLength",0.0);
+          unshift(dof,i+1) += periodlength;
         }
       }
     }
@@ -816,8 +817,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           }
           else if (cut(dof, i) == 2)
           {
-            if (fabs((statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i)) / dir(dof)) < fabs(lambda0))
-              lambda0 = (statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i)) / dir(dof);
+            if (fabs((periodlength - coord(dof, i)) / dir(dof)) < fabs(lambda0))
+              lambda0 = (periodlength - coord(dof, i)) / dir(dof);
           }
         }
 
@@ -832,8 +833,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           }
           else if (cut(dof, i) == 1)
           {
-            if (fabs((statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i + 1)) / dir(dof)) < fabs(lambda1))
-              lambda1 = (statmechparams_.get<double> ("PeriodLength", 0.0) - coord(dof, i + 1)) / dir(dof);
+            if (fabs((periodlength - coord(dof, i + 1)) / dir(dof)) < fabs(lambda1))
+              lambda1 = (periodlength - coord(dof, i + 1)) / dir(dof);
           }
         }
         //define output coordinates for broken elements, first segment
@@ -1433,19 +1434,20 @@ void StatMechManager::GMSH_2_noded(const int& n,
 {
   //if this element is a line element capable of providing its radius get that radius
   double radius = 0;
-
-  const DRT::ElementType & eot = thisele->ElementType();
+  if(!ignoreeleid)
+  {
+		const DRT::ElementType & eot = thisele->ElementType();
 #ifdef D_BEAM3II
 #ifdef D_BEAM3
-  if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-    radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
-  else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-    radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-  else
-    dserror("thisele is not a line element providing its radius.");
+		if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
+		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
+		else
+			dserror("thisele is not a line element providing its radius.");
 #endif
 #endif
-
+  }
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
 
@@ -1679,12 +1681,20 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 									for(int l=0;l<3;l++)
 										edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
 
+									// shift the coordinates according to periodic boundary conditions
+									LINALG::SerialDenseMatrix edgeshift = edge;
+									for(int l=0; l<(int)edge.M(); l++)
+										for(int m=0; m<(int)edge.N(); m++)
+										{
+											if(edge(l,m)>periodlength)
+												edgeshift(l,m) -= periodlength;
+											else if(edge(l,m)<0.0)
+												edgeshift(l,m) += periodlength;
+										}
 									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-									// and the connecting lines between the prism bases -> rectangle
-									gmshfilecontent << "SL(" << scientific;
-									gmshfilecontent << edge(0,0) << "," << edge(1,0) << "," << edge(2,0) << ",";
-									gmshfilecontent << edge(0,1) << "," << edge(1,1) << "," << edge(2,1);
-									gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+									GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+
+
 
 									// now the other edges will be computed
 									for (int sector=0;sector<n-1;++sector)
@@ -1710,12 +1720,17 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 										// get second point on surface for node1 and node2
 										for (int l=0;l<3;++l)
 											edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+										edgeshift = edge;
+										for(int l=0; l<(int)edge.M(); l++)
+											for(int m=0; m<(int)edge.N(); m++)
+											{
+												if(edge(l,m)>periodlength)
+													edgeshift(l,m) -= periodlength;
+												else if(edge(l,m)<0.0)
+													edgeshift(l,m) += periodlength;
+											}
 
-										// put coordinates into filecontent-stream
-										gmshfilecontent << "SL(" << scientific;
-										gmshfilecontent << edge(0,0) << "," << edge(1,0) << "," << edge(2,0) << ",";
-										gmshfilecontent << edge(0,1) << "," << edge(1,1) << "," << edge(2,1);
-										gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+										GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
 									}
 								}
 			}
