@@ -54,7 +54,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2, class V2>
 void SysmatTwoPhaseFlow(
     const DRT::ELEMENTS::Combust3*      ele,           ///< the element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&      dofman,        ///< dofmanager of the current element
     const M1&                           evelnp,
     const M1&                           eveln,
@@ -182,9 +182,9 @@ void SysmatTwoPhaseFlow(
       {
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
-      
+
       // schott
-      // set measure of element in plus and minus domain   
+      // set measure of element in plus and minus domain
       if(cell->getDomainPlus() == true)        {ele_meas_plus  += fac;}
       else  {ele_meas_minus += fac;}
 
@@ -230,8 +230,8 @@ void SysmatTwoPhaseFlow(
       // the enrichment functions depend on the gauss point
       // therefore the comutation of the enrichment functions is called here
       // the gauss point is contained in funct!
-      
-      
+
+
 #if(0)
       // Original version of Ursula
       // here jump enrichments are called with level-set values

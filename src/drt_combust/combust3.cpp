@@ -320,7 +320,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     const bool                                                 instationary,
     const bool                                                 gradphi,
     const DRT::ELEMENTS::Combust3*                             ele,
-    const Teuchos::RCP<const COMBUST::InterfaceHandleCombust>& ih
+    const COMBUST::InterfaceHandleCombust*                     ih
     ) :
       instationary_(instationary),
       gradphi_(gradphi)

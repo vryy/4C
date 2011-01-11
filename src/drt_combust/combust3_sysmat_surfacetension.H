@@ -1705,7 +1705,7 @@ void RHS_SurfaceTension2DIntegrals(
       grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
       grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
       grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
-      
+
 //      grad_phi2(0) += funct_gp(i)*grad_ephi_smoothed(3,i); // ,xx
 //      grad_phi2(1) += funct_gp(i)*grad_ephi_smoothed(4,i); // ,yy
 //      grad_phi2(2) += funct_gp(i)*grad_ephi_smoothed(5,i); // ,zz
@@ -2113,7 +2113,7 @@ int NUMDOF,
 class M1, class M2, class M3, class V1, class V2>
 void SysmatBoundarySurfaceTension(
     const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,   ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const V1&                         eprenp,

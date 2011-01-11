@@ -85,7 +85,7 @@ private:
               const bool                                                 instationary,
               const bool                                                 gradphi,
               const DRT::ELEMENTS::Combust3*                             ele,
-              const Teuchos::RCP<const COMBUST::InterfaceHandleCombust>& ih
+              const COMBUST::InterfaceHandleCombust*                     ih
               );
 
           const bool instationary_;
@@ -156,7 +156,7 @@ private:
 
         virtual bool Touched_Minus() const { return touched_minus_; };
 
-        virtual Teuchos::RCP<COMBUST::InterfaceHandleCombust> InterfaceHandle() const { return ih_; };
+        virtual COMBUST::InterfaceHandleCombust* InterfaceHandle() const { return ih_; };
 
         //! Destructor
         virtual ~Combust3();
@@ -329,7 +329,7 @@ private:
         bool output_mode_;
 
         //! store information about the interface handle
-        Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih_;
+        COMBUST::InterfaceHandleCombust* ih_;
 
         //! boolean indicating whether element is intersected by the interface
         bool bisected_;

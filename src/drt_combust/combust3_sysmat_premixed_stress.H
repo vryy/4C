@@ -346,7 +346,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2, class V2, class V3>
 void SysmatDomainStress(
     const DRT::ELEMENTS::Combust3*      ele,          ///< element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
     const XFEM::ElementDofManager&      dofman,       ///< dofmanager of this element
     const M1&                           evelnp,       ///< nodal velocity n+1 values for this element
     const M1&                           eveln,        ///< nodal velocity n   values for this element
@@ -958,7 +958,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2, class M3, class V1, class V2, class V3>
 void SysmatBoundaryStress(
     const DRT::ELEMENTS::Combust3*    ele,                    ///< the element
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih, ///< interface information
+    const COMBUST::InterfaceHandleCombust*&  ih, ///< interface information
     const XFEM::ElementDofManager&    dofman,                 ///< dofmanager of this element
     const M1&                         evelnp,                 ///< element velocity field
     const V1&                         eprenp,                 ///< element pressure field
@@ -1906,7 +1906,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2, class M3, class V1, class V2, class V3>
 void SysmatBoundarySigma(
     const DRT::ELEMENTS::Combust3*    ele,                    ///< the element
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih, ///< interface information
+    const COMBUST::InterfaceHandleCombust*&  ih, ///< interface information
     const XFEM::ElementDofManager&    dofman,                 ///< dofmanager of this element
     const M1&                         evelnp,                 ///< element velocity field
     const V1&                         eprenp,                 ///< element pressure field
@@ -2646,7 +2646,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2, class V1, class V2, class V3>
 void SysmatBoundaryStressDoubleOneSided(
     const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,   ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*&  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
     const M1&                         evelnp,
     const V1&                         eprenp,

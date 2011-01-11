@@ -55,7 +55,7 @@ namespace COMBUST
   void callSysmat(
       const XFEM::AssemblyType                assembly_type,
       const DRT::ELEMENTS::Combust3*          ele,
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih,
+      const COMBUST::InterfaceHandleCombust*  ih,
       const XFEM::ElementDofManager&          eleDofManager,
       const DRT::ELEMENTS::Combust3::MyState& mystate,      ///< element state variables
       Epetra_SerialDenseMatrix&               estif,
@@ -349,7 +349,7 @@ namespace COMBUST
       const INPAR::COMBUST::NitscheError&                    NitscheErrorType,
       const XFEM::AssemblyType                               assembly_type,
       const DRT::ELEMENTS::Combust3*                         ele,
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&   ih,
+      const COMBUST::InterfaceHandleCombust*                 ih,
       const XFEM::ElementDofManager&                         eleDofManager,
       const DRT::ELEMENTS::Combust3::MyState&                mystate,   ///< element state variables
       Teuchos::RCP<const MAT::Material>                      material,

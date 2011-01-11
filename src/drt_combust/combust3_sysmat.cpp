@@ -401,7 +401,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void Sysmat(
     const DRT::ELEMENTS::Combust3*          ele,             ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*  ih, ///< connection to the interface handler
     const XFEM::ElementDofManager&          dofman,          ///< dofmanager of the current element
     const DRT::ELEMENTS::Combust3::MyState& mystate,         ///< element state variables
     Epetra_SerialDenseMatrix&               estif,           ///< element matrix to calculate
@@ -621,7 +621,7 @@ void Sysmat(
 void COMBUST::callSysmat(
     const XFEM::AssemblyType             assembly_type,
     const DRT::ELEMENTS::Combust3*       ele,
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,
+    const COMBUST::InterfaceHandleCombust* ih,
     const XFEM::ElementDofManager&       eleDofManager,
     const DRT::ELEMENTS::Combust3::MyState&  mystate,   ///< element state variables
     Epetra_SerialDenseMatrix&            estif,
@@ -738,7 +738,7 @@ void NitscheErrors(
     ParameterList&                         eleparams,
     const INPAR::COMBUST::NitscheError&  NitscheErrorType,
     const DRT::ELEMENTS::Combust3*         ele,            ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih,   ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*  ih,   ///< connection to the interface handler
     const XFEM::ElementDofManager&                       dofman,         ///< dofmanager of the current element
     const DRT::ELEMENTS::Combust3::MyState&              mystate, ///< element state variables
     Teuchos::RCP<const MAT::Material>                    material,       ///< fluid material
@@ -825,7 +825,7 @@ void COMBUST::callNitscheErrors(
     const INPAR::COMBUST::NitscheError& NitscheErrorType, ///<
     const XFEM::AssemblyType                    assembly_type,    ///<
     const DRT::ELEMENTS::Combust3*              ele,              ///<
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,     ///<
+    const COMBUST::InterfaceHandleCombust*      ih,     ///<
     const XFEM::ElementDofManager&              eleDofManager,    ///<
     const DRT::ELEMENTS::Combust3::MyState&     mystate,          ///< element state variables
     Teuchos::RCP<const MAT::Material>           material,          ///<

@@ -120,7 +120,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // something was left from the last nonlinear iteration.
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
-      ih_ = Teuchos::null;
+      ih_ = NULL;
       DLM_info_ = Teuchos::null;
     }
     break;
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
-      ih_ = Teuchos::null;
+      ih_ = NULL;
     }
     break;
     case store_xfem_info:
@@ -141,7 +141,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       output_mode_ = false;
 
       // store pointer to interface handle
-      ih_ = params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
+      ih_ = &*params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);
 
       //--------------------------------------------------
       // find out whether an element is intersected or not

@@ -55,7 +55,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class V2>
 void SysmatDomainNitsche(
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
     const M1&                      eveln,        ///< nodal velocity n   values for this element
@@ -282,7 +282,7 @@ void SysmatDomainNitsche(
           shp.dzdz(iparam) = derxy2(2,iparam);
         }
       }
-      // set measure of element in plus and minus domain   
+      // set measure of element in plus and minus domain
       if(cell->getDomainPlus() == true) {ele_meas_plus  += fac;}
       else  {ele_meas_minus += fac;}
       //------------------------------------------------------
@@ -1362,7 +1362,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2, class V1, class V2>
 void SysmatBoundaryNitsche(
     const DRT::ELEMENTS::Combust3*             ele,            ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,  ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*&  ih,  ///< connection to the interface handler
     const XFEM::ElementDofManager&             dofman,         ///< dofmanager of the current element
     const M1&                                  evelnp,         ///<
     const V1&                                  eprenp,         ///<
@@ -1480,7 +1480,7 @@ void SysmatBoundaryNitsche(
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
   //cout << "alpha_u: " << alphau << endl;
-    
+
   // Benedikt:
   // the input parameter alphap is used for the stabilization term for convection dominated flows
   // new convective stabilization parameter

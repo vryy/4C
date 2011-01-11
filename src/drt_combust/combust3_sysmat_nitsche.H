@@ -627,7 +627,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class V1, class M2, class V2>
 void SysmatDomainNitsche(
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
     const M1&                      eveln,        ///< nodal velocity n   values for this element
@@ -1071,7 +1071,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           class M1, class M2, class V1, class V2>
 void SysmatBoundaryNitsche(
     const DRT::ELEMENTS::Combust3*             ele,            ///< the element those matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>&  ih,  ///< connection to the interface handler
+    const COMBUST::InterfaceHandleCombust*&  ih,  ///< connection to the interface handler
     const XFEM::ElementDofManager&             dofman,         ///< dofmanager of the current element
     const M1&                                  evelnp,         ///<
     const V1&                                  eprenp,         ///<

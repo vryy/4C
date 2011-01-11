@@ -3517,30 +3517,50 @@ void COMBUST::FlameFront::buildPLC(
 
   if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
   {
-    GEO::CUT::LevelSetIntersection levelset;
-
     DRT::Element::DiscretizationType cell_distype = cell->Shape();
 
     // get vertex coordinates (local fluid element coordinates) from refinement cell
     const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
 
-    //int numnodes = DRT::UTILS::getNumberOfElementNodes( cell_distype );
+    int numnode = DRT::UTILS::getNumberOfElementNodes( cell_distype );
 
-    Epetra_SerialDenseMatrix xyz(3,vertexcoord.size());
+    //-----------------------------------------
+    // get global coordinates of cell vertices
+    //-----------------------------------------
+
+    LINALG::SerialDenseMatrix globalcellcoord(3,numnode);
+
+    for (int ivert=0; ivert<numnode; ivert++)
+    {
+      LINALG::Matrix<3,1> vertcoord;
+
+      std::copy(vertexcoord[ivert].begin(),
+                vertexcoord[ivert].end(),
+                vertcoord.A());
+
+      // transform vertex from local (element) coordinates to global (physical) coordinates
+      GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
+
+      std::copy(vertcoord.A(),
+                vertcoord.A()+3,
+                &globalcellcoord(0,ivert));
+    }
+
     std::vector<int> nids;
-    nids.reserve(vertexcoord.size());
-    for ( unsigned i=0; i<vertexcoord.size(); ++i )
+    nids.reserve(numnode);
+    for ( int i=0; i<numnode; ++i )
     {
       nids.push_back(i);
-      if (vertexcoord[i].size()!=3)
-        dserror("strange nodal coordinate");
-      std::copy(vertexcoord[i].begin(),vertexcoord[i].end(),&xyz(0,i));
     }
 
     // get G-function values at vertices from cell
     const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
-    levelset.AddElement( 1, nids, xyz, &gfuncvalues[0], cell_distype );
 
+    // GEO::CUT intersection call
+
+    GEO::CUT::LevelSetIntersection levelset;
+
+    levelset.AddElement( 1, nids, globalcellcoord, &gfuncvalues[0], cell_distype );
     levelset.Cut();
 
     GEO::CUT::ElementHandle * e = levelset.GetElement( 1 );

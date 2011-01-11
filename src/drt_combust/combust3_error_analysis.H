@@ -936,7 +936,7 @@ void Nitsche_BuildDomainIntegratedErrors(
     ParameterList&                 eleparams,       /// list of parameters with actions to be calculated
     const INPAR::COMBUST::NitscheError&  NitscheErrorType, /// which solution is the reference
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
@@ -948,7 +948,7 @@ void Nitsche_BuildDomainIntegratedErrors(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion Nitsche errors - domain");
 
-  //==================================================================================================  
+  //==================================================================================================
   // get actual values of norms^2 of domain errors,stored in eleparams, then update the values with error part of this element
   // at the end of this function we set the eleparams new
   double eleVelDomErr 			= eleparams.get<double>("L2 integrated velocity domain error");
@@ -1360,7 +1360,7 @@ void Nitsche_BuildDomainIntegratedErrors(
     } // end loop over Gauß points
   } // end loop over integration cells
 
-  //==================================================================================================  
+  //==================================================================================================
   //  cout << eleGradPresDomErr << endl;
 
   //==================================================================================================
@@ -1824,7 +1824,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
     ParameterList&                 eleparams,       /// list of parameters with actions to be calculated
     const INPAR::COMBUST::NitscheError&  NitscheErrorType, /// which solution is the reference
     const DRT::ELEMENTS::Combust3* ele,          ///< element whose matrix is calculated
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>  ih, ///< information about the interface
+    const COMBUST::InterfaceHandleCombust*  ih, ///< information about the interface
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const M1&                      evelnp,       ///< nodal velocity n+1 values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
@@ -1838,7 +1838,7 @@ void Nitsche_BuildBoundaryIntegratedErrors(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion Nitsche errors - boundary");
 
-  //==================================================================================================  
+  //==================================================================================================
   // get actual values of norms^2 of domain errors,stored in eleparams, then update the values with error part of this element
   // at the end of this function we set the eleparams new
   double eleViscInterfErr 		= eleparams.get<double>("H-1/2 integrated viscosity interface error");
