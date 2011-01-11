@@ -611,7 +611,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
                   for(int n=0; n<2; n++)
                     coordout(m,n)=coord(m,j+n);
 
-                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
+                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
 
               }
             }
@@ -673,7 +673,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   LINALG::Matrix<3,1> dummyshift;
   std::vector<int> dummyentries;
  	DDCorrShift(&center, &dummyshift, &dummyentries);
-  GmshOutputBox(0.75, &center, 0.125, &filename);
+  GmshOutputBox(0.75, &center, 0.05, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
@@ -841,7 +841,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         for(int j=0 ;j<coordout.M(); j++)
           coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
+          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
         else
           GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
@@ -852,7 +852,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
         }
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,false);
+          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
         else
           GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
 
@@ -861,17 +861,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
       {
         if (!kinked)
         {
-          /*if(element->Id()>basisnodes_ && eleid!=0)
-          {
-            double l = sqrt((coord(0,1)-coord(0,0))*(coord(0,1)-coord(0,0)) +
-                            (coord(1,1)-coord(1,0))*(coord(1,1)-coord(1,0)) +
-                            (coord(2,1)-coord(2,0))*(coord(2,1)-coord(2,0)));
-            if(l>1.05*(statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0)) ||
-              (l<0.95*(statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0))))
-              cout<<"Proc "<<discret_.Comm().MyPID()<<": GID="<<eleid<<", element->Id()="<<element->Id()<<"Nodes"<<element->NodeIds()[0]<<","<<element->NodeIds()[1]<<", l="<<l<<endl;
-          }*/
           if(!ignoreeleid)
-            GMSH_2_noded(nline,coord,element,gmshfilecontent,color,false);
+            GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
           else
             GMSH_2_noded(nline,coord,element,gmshfilecontent,color,true);
 
@@ -1616,10 +1607,10 @@ void StatMechManager::GMSH_2_noded(const int& n,
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-	/*double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// plot the test volume determined by DDCorrCurrentStructure()
 	int numpositions = (int)testvolumepos_.size();
-	cout<<"numpositions = "<<numpositions<<", characlength = "<<characlength_<<endl;
+
 	switch(numpositions)
 	{
 		// either cluster or homogeneous network
@@ -1628,7 +1619,6 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			//cluster
 			if(characlength_<periodlength/2.0)
 			{
-				cout<<"Cluster";
 				// draw three octagons/hexadecagon lying in the base planes
 				for(int i=0; i<3; i++)//spatial comp i
 					for(int j=0; j<3; j++)//spatial comp j
@@ -1638,8 +1628,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 								{
 									double radius = characlength_;
 									// some local variables
-									LINALG::Matrix<3,2> edge;
-									LINALG::Matrix<3,1> axis;
+									LINALG::SerialDenseMatrix edge(3,2,true);
 									LINALG::Matrix<3,1> radiusvec1;
 									LINALG::Matrix<3,1> radiusvec2;
 									LINALG::Matrix<3,1> auxvec;
@@ -1647,21 +1636,24 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 									LINALG::Matrix<3,3> R;
 
 									// compute three dimensional angle theta
+									// unit vector perpendicular to jk-plane
+									LINALG::Matrix<3,1> axis;
 									for (int l=0;l<3;++l)
 										if(l==k)
 											axis(l) = 1.0;
 										else
 											axis(l) = 0.0;
-									double norm_axis = axis.Norm2();
-									for (int l=0;l<3;++j)
+									for (int l=0;l<3;++l)
 										theta(l) = axis(l) * 2 * M_PI / n;
 
-									// Compute rotation matirx R from rotation angle theta
+									// Compute rotation matrix R from rotation angle theta
 									angletotriad(theta,R);
 
 									// compute radius vector for first surface node of first edges
+									auxvec.Clear();
 									for (int l=0;l<3;++l)
-										auxvec(l) = cog_(l) + norm_axis;
+										if(l==j)
+											auxvec(l) = 1.0;
 
 									// radiusvector for point on surface
 									radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
@@ -1726,14 +1718,12 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 										gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 									}
 								}
-				cout<<"...written!"<<endl;
 			}
 		}
 		break;
 		// bundle network
 		case 2:
 		{
-			cout<<"Bundle";
 			double radius = characlength_;
 			LINALG::Matrix<3,2> coord;
 			for(int i=0; i<(int)coord.M(); i++)
@@ -1859,13 +1849,11 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
 				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 			}
-			cout<<"...written"<<endl;
 		}
 		break;
 		// layer
 		default:
 		{
-			cout<<"Layer...";
 			// compute normal
 			// cross product n_1 x n_2, plane normal
 			LINALG::Matrix<3,1> normal;
@@ -1904,10 +1892,8 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
 			}
-			cout<<"...written"<<endl;
 		}
 	}
-	cout<<"Test Volume written to gmsh output file..."<<endl;*/
 	// clear the vector
 	testvolumepos_.clear();
 }//GmshNetworkStructVolume()
