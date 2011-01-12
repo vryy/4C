@@ -911,9 +911,9 @@ private:
   //! required only for the constant increment predictor
   RCP<Epetra_Vector>          velnm_;
 
-  //! scalar at time n+1
+  //! scalar at time n+alpha_F/n+1
   //! required only for Neumann boundary conditions
-  RCP<Epetra_Vector>          scanp_;
+  RCP<Epetra_Vector>          scaaf_;
 
   //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>          dispnp_   ;

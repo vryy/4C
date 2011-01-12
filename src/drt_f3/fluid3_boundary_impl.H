@@ -419,17 +419,11 @@ private:
 
   //! evaluate shape functions/derivatives, metric tensor and
   //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
-  void EvalShapeFuncAndIntFac(
-      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>&  intpoints,  ///< integration points (in)
-      const int                                         iquad,      ///< actual Gauss point (in)
-      const LINALG::Matrix<nsd_,bdrynen_>&                   xyze,       ///< global coordinates of the element nodes (in)
-      const std::vector<Epetra_SerialDenseVector>*      myknots,    ///< nurbs specific knotes (in)
-      const Epetra_SerialDenseVector*                   weights,    ///< nurbs specific weights (in)
-      LINALG::Matrix<bdrynsd_,1>&                       xsi,        ///< local coordinates of the gauss points (in)
-      LINALG::Matrix<bdrynen_,1>&                            funct,      ///< shape functions (in)
-      LINALG::Matrix<bdrynsd_,bdrynen_>&                     deriv,      ///< derivative of the shape functions (in)
-      double&                                           drs,      ///< infinitesimal area element
-      LINALG::Matrix<nsd_,1>*                           unitnormal  ///< normalized normal vector (out)
+  void EvalShapeFuncAtBouIntPoint(
+      const DRT::UTILS::IntPointsAndWeights<bdrynsd_>& intpoints,  ///< integration points (in)
+      const int                                        iquad,      ///< actual Gauss point (in)
+      const std::vector<Epetra_SerialDenseVector>*     myknots,    ///< nurbs specific knotes (in)
+      const Epetra_SerialDenseVector*                  weights
   );
 
   //! evaluate Nurbs specific knots and weights
@@ -442,8 +436,36 @@ private:
       double&                                     normalfac       ///< nurbs specific factor for normal
   );
 
+  //! get material parameters
+  void GetMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
+                         const LINALG::Matrix<bdrynen_,1>& escaaf,    ///< scalar at time n+alpha_f / n+1
+                         const double                      thermpressaf    ///< thermodynamic pressure at time n+alpha_f / n+1
+                         );
+
   //! pointer to parameter list
   DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
+
+  //! node coordinates for boundary element
+  LINALG::Matrix<nsd_,bdrynen_> xyze_;
+  //! coordinates of current integration point in reference coordinates
+  LINALG::Matrix<bdrynsd_,1> xsi_;
+  //! array for shape functions for boundary element
+  LINALG::Matrix<bdrynen_,1> funct_;
+  //! array for shape function derivatives for boundary element
+  LINALG::Matrix<bdrynsd_,bdrynen_> deriv_;
+  //! velocity vector at integration point
+  LINALG::Matrix<nsd_,1> unitnormal_;
+  //! velocity vector at integration point
+  LINALG::Matrix<nsd_,1> velint_;
+  //! infinitesimal area element drs
+  double drs_;
+  //! integration factor
+  double fac_;
+  //! physical viscosity
+  double visc_;
+  //! density at t_(n+alpha_F) or t_(n+1)
+  double densaf_;
+
   };  // end class fluid3boundaryImpl
 
 }

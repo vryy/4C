@@ -208,7 +208,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   }
 
   // scalar at time n+1 (required only for Neumann boundary conditions)
-  scanp_       = LINALG::CreateVector(*dofrowmap,true);
+  scaaf_       = LINALG::CreateVector(*dofrowmap,true);
 
   // grid displacements and velocities for the ale case
   if (alefluid_)
@@ -813,7 +813,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("Physical Type", physicaltype_);
 
   neumann_loads_->PutScalar(0.0);
-  discret_->SetState("scanp",scanp_);
+  discret_->SetState("scaaf",scaaf_);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
 
@@ -1285,7 +1285,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     discret_->ClearState();
     discret_->SetState("velaf",velaf_);
-    discret_->SetState("scaaf",scanp_);
+    discret_->SetState("scaaf",scaaf_);
     condparams.set("thsl",alphaF_*gamma_*dt_);
     condparams.set("rhs time factor",1.0);
     condparams.set("action","calc_Neumann_inflow");

@@ -881,7 +881,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     // evaluate Neumann conditions
     neumann_loads_->PutScalar(0.0);
-    discret_->SetState("scanp",scaaf_);
+    discret_->SetState("scaaf",scaaf_);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
@@ -1075,6 +1075,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // parameters for stabilization
       eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
+      // set thermodynamic pressures
       eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
       eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
@@ -1222,6 +1223,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           condparams.set("thsl",theta_*dta_);
           condparams.set("Linearisation",newton_);
           condparams.set("Physical Type",physicaltype_);
+
+          // set thermodynamic pressure
           condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
           // set vector values needed by elements
@@ -2305,6 +2308,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // parameters for turbulence model
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
+  // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
@@ -2373,6 +2377,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     condparams.set("thsl",theta_*dta_);
     condparams.set("Linearisation",newton_);
     condparams.set("Physical Type", physicaltype_);
+
+    // set thermodynamic pressure
     condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
 
     // set vector values needed by elements
@@ -2522,6 +2528,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // parameters for stabilization
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
+  // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
@@ -3151,6 +3158,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // parameters for stabilization
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
+  // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
@@ -3684,7 +3692,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
   vector<int> nodedofs;
 
   //--------------------------------------------------------------------------
-  // Filling the scanp-vector and scaam-vector at time n+alpha_F/n+1 and
+  // Filling the scaaf-vector and scaam-vector at time n+alpha_F/n+1 and
   // n+alpha_M/n, respectively, with scalar at pressure dofs
   // Additionally, filling the scaam-vector at time n+alpha_M/n with
   // velocity at time n at velocity dofs for OST/BDF2
@@ -3983,7 +3991,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       //eleparams.set("inc_density",density_);
 
       neumann_loads_->PutScalar(0.0);
-      discret_->SetState("scanp",scaaf_);
+      discret_->SetState("scaaf",scaaf_);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
       discret_->ClearState();
     }
@@ -4280,6 +4288,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // parameters for stabilization
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
+    // set thermodynamic pressures
     eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
     eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
     eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
