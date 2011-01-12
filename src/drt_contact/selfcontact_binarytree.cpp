@@ -1126,10 +1126,10 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
     // in this case the treenode has saved itself as adjacent edge
     if (adjEdges[0] == contractedEdge)
     {
-      // save the tree node as root and leave the loop
+      // save the tree node as root and continue the loop
       roots.push_back(newNode);
       (*dualGraph).erase(contractedEdge);
-      break;
+      continue;
     }
 
     // vector of all new edges
@@ -1321,7 +1321,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
 
   // complete the tree starting from its root (top-down)
   if ((int)roots.size() == 0) dserror("ERROR: No root treenode found!");
-  if (!(*dualGraph).empty())  dserror("ERROR: Disconnected self contact surface!");
+  if ((int)roots.size() > 1)  dserror("ERROR: Disconnected self contact surface (%i roots)!",(int)roots.size());
   root_=roots[0];
   root_->CompleteTree(0,enlarge_);
 
