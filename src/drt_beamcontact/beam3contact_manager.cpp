@@ -21,6 +21,9 @@ Maintainer: Alexander Popp, Christian Cyron
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
 #endif
+#ifdef D_BEAM3II
+#include "../drt_beam3ii/beam3ii.H"
+#endif
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -635,14 +638,26 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
 
     // compute eleradius from moment of inertia
     // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
-    double momentofinertia = 0;
+
+    double eleradius = 0;
+
+    const DRT::ElementType & eot = thisele->ElementType();
 
 #ifdef D_BEAM3
-    DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
-    momentofinertia = thisbeam->Iyy();
+    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+      {
+        DRT::ELEMENTS::Beam3* thisbeam = static_cast<DRT::ELEMENTS::Beam3*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+      {
+        DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<DRT::ELEMENTS::Beam3ii*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
+#endif  // #ifdef D_BEAM3II
 
-    const double eleradius = sqrt(sqrt(4 * momentofinertia / M_PI));
     
     // if current radius is larger than maximum radius -> update
     if (eleradius > maxeleradius) maxeleradius = eleradius;		 
@@ -1142,13 +1157,26 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   Epetra_SerialDenseVector theta(3);
   Epetra_SerialDenseMatrix R(3,3);
      	 
+
+  double eleradius = 0;
+
   // get radius of element
-  double radius = 0;
+  const DRT::ElementType & eot = thisele->ElementType();
 
 #ifdef D_BEAM3
-    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-    radius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
+#endif  // #ifdef D_BEAM3II
   
   // declaring variable for color of elements
   double color = 1.0; 	
@@ -1201,8 +1229,8 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   // get first point on surface for node1 and node2
   for (int j=0;j<3;++j)
   {
-  	prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * radius;
-  	prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * radius;
+  	prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+  	prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
   }
   
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
@@ -1211,8 +1239,8 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   // get second point on surface for node1 and node2
   for(int j=0;j<3;j++)
   {
-  	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-  	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+  	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+  	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
   }
   
   // now first prism is built -> put coordinates into filecontent-stream
@@ -1255,8 +1283,8 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
 		// get second point on surface for node1 and node2
 	  for (int j=0;j<3;++j)
 	  {
-	   	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-	   	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	   	prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+	   	prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
 	  }
 	  
 	  // put coordinates into filecontent-stream
@@ -1295,13 +1323,25 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   Epetra_SerialDenseMatrix R(3,3);
   Epetra_SerialDenseMatrix coord(3,2);
     
+  double eleradius = 0;
+
   // get radius of element
-  double radius = 0;
+  const DRT::ElementType & eot = thisele->ElementType();
 
 #ifdef D_BEAM3
-    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-    radius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
 #endif  // #ifdef D_BEAM3
+#ifdef D_BEAM3II
+    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+      {
+        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
+        eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+      }
+#endif  // #ifdef D_BEAM3II
 
   // declaring variable for color of elements
   double color = 1.0;   
@@ -1379,8 +1419,8 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 	  // get first point on surface for node1 and node2
 	  for (int j=0;j<3;++j)
 	  {
-	    prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * radius;
-	    prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * radius;
+	    prism(j,1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+	    prism(j,4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
 	  }
 	  
 	  // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
@@ -1389,8 +1429,8 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 	  // get second point on surface for node1 and node2
 	  for(int j=0;j<3;j++)
 	  {
-	    prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-	    prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	    prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+	    prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
 	  }
 		
 	  // now first prism is built -> put coordinates into filecontent-stream
@@ -1433,8 +1473,8 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 	    // get second point on surface for node1 and node2
 	    for (int j=0;j<3;++j)
 	    {
-	      prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * radius;
-	      prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * radius;
+	      prism(j,2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+	      prism(j,5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
 	    }
 	    
 	    // put coordinates into filecontent-stream
