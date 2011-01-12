@@ -223,6 +223,11 @@ public:
   virtual void Print(ostream& os) const;
 
   /*!
+  \brief Get current nodal triads as quaternions
+  */
+  vector<LINALG::Matrix<4,1> > Quaternion() { return Qnew_;};
+
+  /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */
   const double& Iyy() const { return Iyy_;};
@@ -385,7 +390,7 @@ private:
   vector<LINALG::Matrix<4,1> > Qconv_;
   //! nodal triads in quaternion form at the end of the preceeding iteration step
   vector<LINALG::Matrix<4,1> > Qold_;
-  //! nodal triads in quaternion form during the current iteration step
+  //! nodal triads in quaternion during the current iteration step
   vector<LINALG::Matrix<4,1> > Qnew_;
   //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
   vector<LINALG::Matrix<4,1> > Qconvmass_;
