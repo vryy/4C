@@ -96,11 +96,11 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
   IntegrationCell * ic;
 
+#if 0
   if ( ( ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
   {
     integrationcells_.insert( ic );
   }
-#if 0
   else if ( ( ic = Tet4IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
   {
     integrationcells_.insert( ic );
@@ -113,8 +113,8 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
   {
     integrationcells_.insert( ic );
   }
-#endif
   else
+#endif
   {
     Tet4IntegrationCell::CreateCells( mesh, element_, this, facets_, integrationcells_ );
   }

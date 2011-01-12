@@ -745,10 +745,12 @@ void GEO::CUT::Facet::NewTri3Cells( Mesh & mesh, const std::vector<Epetra_Serial
     {
       NewTri3Cell( mesh );
     }
+#if 0
     else if ( Equals( DRT::Element::quad4 ) )
     {
       NewQuad4Cell( mesh );
     }
+#endif
     else
     {
       for ( std::vector<Epetra_SerialDenseMatrix>::const_iterator i=xyz.begin();
