@@ -780,6 +780,7 @@ eps_(eps)
   }
 
   if (elelist.size()<=1) dserror("ERROR: Less than 2 elements for binary tree initialization!");
+  //cout << "Elelistsize: " << (int)elelist.size() << endl;
 
 
   // build local element list and create leaf nodes
@@ -1005,10 +1006,10 @@ eps_(eps)
   cout << "\n" <<leafsmap_.size() << " elements in leafmap\n";
   cout << dualgraph.size() << " edges in dual graph\n";
 
-  map<RCP<SelfDualEdge>,vector<RCP<SelfDualEdge> > > ::iterator iter3 = (*dualGraph)_.begin();
-  map<RCP<SelfDualEdge>,vector<RCP<SelfDualEdge> > > ::iterator iter3_end = (*dualGraph)_.end();
+  map<RCP<SelfDualEdge>,vector<RCP<SelfDualEdge> > > ::iterator iter3 = dualgraph.begin();
+  map<RCP<SelfDualEdge>,vector<RCP<SelfDualEdge> > > ::iterator iter3_end = dualgraph.end();
 
-  cout << (*dualGraph)_.max_size() << " maximal\n";
+  cout << dualgraph.max_size() << " maximal\n";
   int cnt = 0;
 
   while (iter3 != iter3_end)
@@ -1083,6 +1084,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
 {
   // temporary vector collecting root nodes
   vector<RCP<SelfBinaryTreeNode> > roots(0);
+  //cout << "Initial dual graph size: " << (*dualGraph).size() << endl;
 
   // the idea is to empty the dual graph step by step
   while (!(*dualGraph).empty())
@@ -1319,7 +1321,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
 
   // complete the tree starting from its root (top-down)
   if ((int)roots.size() == 0) dserror("ERROR: No root treenode found!");
-  if ((int)roots.size() > 1)  dserror("ERROR: Disconnected self contact surface!");
+  if (!(*dualGraph).empty())  dserror("ERROR: Disconnected self contact surface!");
   root_=roots[0];
   root_->CompleteTree(0,enlarge_);
 
