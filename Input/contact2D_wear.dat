@@ -82,7 +82,7 @@ STRATEGY             Lagrange
 SHAPEFCN             Dual
 FRICTION             Coulomb
 FRCOEFF              0.1
-WEAR                 Archad
+WEAR                 Archard
 WEARCOEFF            1e-6
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes

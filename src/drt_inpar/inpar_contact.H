@@ -72,8 +72,8 @@ namespace INPAR
     /// (this enum represents the input file parameter WEAR)
     enum WearType
     {
-      wear_none,    ///< no wear
-      wear_archad   ///< Archad wear law
+      wear_none,     ///< no wear
+      wear_archard   ///< Archard wear law
     };
 
     /// Type of employed solving strategy

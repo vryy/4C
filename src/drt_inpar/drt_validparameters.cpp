@@ -988,10 +988,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<INPAR::CONTACT::WearType>("WEAR","None","Type of wear law",
       tuple<std::string>("None","none",
-                         "Archad","archad"),
+                         "Archard","archard"),
       tuple<INPAR::CONTACT::WearType>(
                  INPAR::CONTACT::wear_none,INPAR::CONTACT::wear_none,
-                 INPAR::CONTACT::wear_archad,INPAR::CONTACT::wear_archad),
+                 INPAR::CONTACT::wear_archard,INPAR::CONTACT::wear_archard),
       &scontact);
 
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
