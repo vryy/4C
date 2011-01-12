@@ -764,7 +764,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
      * 0 close to boundary at PeriodLength);*/
     LINALG::SerialDenseMatrix cut;
     if (ignoreeleid)
-      cut = LINALG::SerialDenseMatrix(3, 1, true);
+      cut = LINALG::SerialDenseMatrix(3, (int)coord.N()-1, true);
     else
       cut = LINALG::SerialDenseMatrix(3, (int)element->NumNode()-1, true);
 
@@ -807,7 +807,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           dir(dof) /= ldir;
 
         //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
-        double lambda0 = dir.Norm2();
+        double lambda0 = 1e4;
         for (int dof = 0; dof < ndim; dof++)
         {
           if (cut(dof, i) == 1)
@@ -823,7 +823,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         }
 
         //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
-        double lambda1 = dir.Norm2();
+        double lambda1 = 1e4;
         for (int dof = 0; dof < ndim; dof++)
         {
           if (cut(dof, i) == 2)
@@ -1430,10 +1430,11 @@ void StatMechManager::GMSH_2_noded(const int& n,
                                   DRT::Element* thisele,
                                   std::stringstream& gmshfilecontent,
                                   const double color,
-                                  bool ignoreeleid)
+                                  bool ignoreeleid,
+                                  bool drawsphere)
 {
   //if this element is a line element capable of providing its radius get that radius
-  double radius = 0;
+  double radius = 0.0;
   if(!ignoreeleid)
   {
 		const DRT::ElementType & eot = thisele->ElementType();
@@ -1584,17 +1585,9 @@ void StatMechManager::GMSH_2_noded(const int& n,
     gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
                     << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
     gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-    /*/ crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
-    if(ignoreeleid)
-    {
-      double beadcolor = color;
-      gmshfilecontent << "SP(" << scientific;
-      gmshfilecontent << coord(0,1) << "," << coord(1,1) << ","<< coord(2,1);
-      gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
-    }*/
   }
   // crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
-  if(ignoreeleid)
+  if(ignoreeleid && drawsphere)
   {
     double beadcolor = color;
     gmshfilecontent << "SP(" << scientific;
@@ -1694,8 +1687,6 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
 									GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
 
-
-
 									// now the other edges will be computed
 									for (int sector=0;sector<n-1;++sector)
 									{
@@ -1707,11 +1698,9 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 										}
 
 										// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-										for (int l=0;l<3;++l)
-										{
-											radiusvec1(l) = radiusvec2(l);
-											radiusvec2(l) = 0.0;
-										}
+										radiusvec1 = radiusvec2;
+										radiusvec2.Clear();
+
 
 										// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
 										radiusvec2.Multiply(R,radiusvec1);
@@ -1776,16 +1765,16 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			for (int j=0;j<3;++j)
 			{
 				edges(j,0) = coord(j,0);
-				edges(j,1) = coord(j,0);
+				edges(j,1) = coord(j,1);
 				edges(j,2) = coord(j,1);
-				edges(j,3) = coord(j,1);
+				edges(j,3) = coord(j,0);
 			}
 
 			// get first point on surface for node1 and node2
 			for (int j=0;j<3;++j)
 			{
 				edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
-				edges(j,2) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+				edges(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
 			}
 
 			// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
@@ -1794,27 +1783,18 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			// get second point on surface for node1 and node2
 			for(int j=0;j<3;j++)
 			{
-				edges(j,1) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+				edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 				edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 			}
 			// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
 			// and the connecting lines between the prism bases -> rectangle
-			gmshfilecontent << "SL(" << scientific;
-			gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
-			gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1);
-			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-			gmshfilecontent << "SL(" << scientific;
-			gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2) << ",";
-			gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
-			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-			gmshfilecontent << "SL(" << scientific;
-			gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
-			gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2);
-			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-			gmshfilecontent << "SL(" << scientific;
-			gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1) << ",";
-			gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
-			gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+			for(int j=1; j<(int)edges.N()+1; j++)
+			{
+				gmshfilecontent << "SL(" << scientific;
+				gmshfilecontent << edges(0,(j-1)%(int)edges.N()) << "," << edges(1,(j-1)%(int)edges.N()) << "," << edges(2,(j-1)%(int)edges.N()) << ",";
+				gmshfilecontent << edges(0,j%(int)edges.N()) << "," << edges(1,j%(int)edges.N()) << "," << edges(2,j%(int)edges.N());
+				gmshfilecontent << ")" << "{" << scientific << 0.0 << ","<< 0.0 << "};" << endl;
+			}
 
 			// now the other edges will be computed
 			for (int sector=0;sector<n-1;++sector)
@@ -1822,18 +1802,15 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				// initialize for next edge
 				for (int j=0;j<3;++j)
 				{
-					edges(j,0)=edges(j,1);
-					edges(j,2)=edges(j,3);
-					edges(j,1)=coord(j,0);
-					edges(j,3)=coord(j,1);
+					edges(j,0)=edges(j,3);
+					edges(j,1)=edges(j,2);
+					edges(j,2)=coord(j,1);
+					edges(j,3)=coord(j,0);
 				}
 
 				// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-				for (int j=0;j<3;++j)
-				{
-					radiusvec1(j) = radiusvec2(j);
-					radiusvec2(j) = 0.0;
-				}
+				radiusvec1 = radiusvec2;
+				radiusvec2.Clear();
 
 				// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
 				radiusvec2.Multiply(R,radiusvec1);
@@ -1842,27 +1819,18 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				// get second point on surface for node1 and node2
 				for (int j=0;j<3;++j)
 				{
-					edges(j,1) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+					edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 					edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 				}
 
 				// put coordinates into filecontent-stream
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
-				gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2) << ",";
-				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << edges(0,0) << "," << edges(1,0) << "," << edges(2,0) << ",";
-				gmshfilecontent << edges(0,2) << "," << edges(1,2) << "," << edges(2,2);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << edges(0,1) << "," << edges(1,1) << "," << edges(2,1) << ",";
-				gmshfilecontent << edges(0,3) << "," << edges(1,3) << "," << edges(2,3);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				for(int j=1; j<(int)edges.N()+1; j++)
+				{
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent << edges(0,(j-1)%(int)edges.N()) << "," << edges(1,(j-1)%(int)edges.N()) << "," << edges(2,(j-1)%(int)edges.N()) << ",";
+					gmshfilecontent << edges(0,j%(int)edges.N()) << "," << edges(1,j%(int)edges.N()) << "," << edges(2,j%(int)edges.N());
+					gmshfilecontent << ")" << "{" << scientific << 0.75 << ","<< 0.75 << "};" << endl;
+				}
 			}
 		}
 		break;
