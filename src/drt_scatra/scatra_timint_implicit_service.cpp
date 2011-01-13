@@ -135,6 +135,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     BlockSystemMatrix()->Reset();
   else
     SystemMatrix()->Reset();
+  // reset the solver as well
+  solver_->Reset();
 
   return;
 }

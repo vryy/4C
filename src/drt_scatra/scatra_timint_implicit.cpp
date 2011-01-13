@@ -34,6 +34,7 @@ Maintainer: Georg Bauer
 #include "scatra_utils.H" // for splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_SerialDenseVector.h>
 
@@ -1648,11 +1649,19 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         // evaluate component k of spatial function
         double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
         phin_->ReplaceMyValues(1,&initialval,&doflid);
-        // initialize also the solution vector. These values are a pretty good guess for the
-        // solution after the first time step (much better than starting with a zero vector)
-        phinp_->ReplaceMyValues(1,&initialval,&doflid);
       }
     }
+
+    // for NURBS discretizations we have to solve a least squares problem instead!
+    DRT::NURBS::apply_nurbs_initial_condition(
+      *discret_  ,
+      *solver_   ,
+      startfuncno,
+      phin_     );
+
+    // initialize also the solution vector. These values are a pretty good guess for the
+    // solution after the first time step (much better than starting with a zero vector)
+    phinp_->Update(1.0,*phin_ ,0.0);
 
     // add random perturbation for initial field of turbulent flows
     if(init==INPAR::SCATRA::initfield_disturbed_field_by_function)

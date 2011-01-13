@@ -25,7 +25,6 @@ Maintainer: Peter Gamnitzer
 void DRT::NURBS::apply_nurbs_initial_condition(
   DRT::Discretization&        dis         ,
   LINALG::Solver&             solver      ,
-  const int                   ndim        ,
   const int                   startfuncno ,
   Teuchos::RCP<Epetra_Vector> initialvals )
 {
@@ -200,7 +199,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
         Epetra_SerialDenseMatrix  deriv(spacedim,iel);
         Epetra_SerialDenseVector  gp(spacedim);
         Epetra_SerialDenseVector  position(spacedim);
-        Epetra_SerialDenseVector  initialval(spacedim);
+        Epetra_SerialDenseVector  initialval(dofblock);
 
         // depending on the spatial dimension, we need a different
         // integration scheme
@@ -269,7 +268,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               }
             }
 
-            // The determinant ist computed using Sarrus's rule
+            // The determinant is computed using Sarrus's rule
             const double det = xjm(0,0)*xjm(1,1)-xjm(0,1)*xjm(1,0);
 
             // get real physical coordinates of integration point
@@ -290,7 +289,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               }
             }
 
-            for(int rr=0;rr<spacedim;++rr)
+            for(int rr=0;rr<dofblock;++rr)
             {
               initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
@@ -320,7 +319,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                   elemass(fvi+rr,fui+rr)+=diag;
                 }
               }
-              for(int rr=0;rr<spacedim;++rr)
+              for(int rr=0;rr<dofblock;++rr)
               {
                 elerhs(fvi+rr)+=fac*funct(vi)*initialval(rr);
               }
@@ -391,7 +390,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               }
             }
 
-            // The determinant ist computed using Sarrus's rule
+            // The determinant is computed using Sarrus's rule
             const double det =
               xjm(0,0)*xjm(1,1)*xjm(2,2)+xjm(2,0)*xjm(0,1)*xjm(1,2)+
               xjm(0,2)*(xjm(1,0)*xjm(2,1)-xjm(2,0)*xjm(1,1))-
@@ -416,7 +415,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
               }
             }
 
-            for(int rr=0;rr<spacedim;++rr)
+            for(int rr=0;rr<dofblock;++rr)
             {
               initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
             }
@@ -445,7 +444,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                   elemass(fvi+rr,fui+rr)+=diag;
                 }
               }
-              for(int rr=0;rr<spacedim;++rr)
+              for(int rr=0;rr<dofblock;++rr)
               {
                 elerhs(fvi+rr)+=fac*funct(vi)*initialval(rr);
               }
@@ -493,6 +492,9 @@ void DRT::NURBS::apply_nurbs_initial_condition(
                refactor                    ,
                reset                       );
 
+  // perform resets for solver and matrix
+  solver.Reset();
+  massmatrix->Reset();
 
   if(myrank==0)
   {

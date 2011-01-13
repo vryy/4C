@@ -1980,6 +1980,18 @@ void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
   // read previous averages
   statisticsmanager_->Restart(reader,step_);
 
+  // since ReadMesh can change the overall dof numbering due
+  // to a FillComplete() call performed internally, the underlying maps
+  // of state vectors can become illegal - especially in case of
+  // multiphysics problems & periodic boundary conditions!
+  // It is better to check consistency here:
+    if (not (discret_->DofRowMap())->SameAs(velnp_->Map()))
+      dserror("Global dof numbering in maps does not match");
+    if (not (discret_->DofRowMap())->SameAs(veln_->Map()))
+      dserror("Global dof numbering in maps does not match");
+    if (not (discret_->DofRowMap())->SameAs(accn_->Map()))
+      dserror("Global dof numbering in maps does not match");
+
   return;
 }
 
@@ -2172,7 +2184,6 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     DRT::NURBS::apply_nurbs_initial_condition(
       *discret_  ,
       solver_    ,
-      numdim_    ,
       startfuncno,
       velnp_     );
     veln_->Update(1.0,*velnp_ ,0.0);

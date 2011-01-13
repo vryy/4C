@@ -87,7 +87,6 @@ This is equivalent to the solution of the following linear system:
 
 \param dis         (i) the discretisation
 \param solver      (i) a solver object for the least-squares problem
-\param ndim        (i) problem dimension
 \param startfuncno (i) the number of the startfunction defining
                        the initial field (i.e. u_0(x))
 \param initialvals (o) the initial field on output (i.e. u_cp)
@@ -97,7 +96,6 @@ This is equivalent to the solution of the following linear system:
   void apply_nurbs_initial_condition(
     DRT::Discretization&        dis         ,
     LINALG::Solver&             solver      ,
-    const int                   ndim        ,
     const int                   startfuncno ,
     Teuchos::RCP<Epetra_Vector> initialvals );
 

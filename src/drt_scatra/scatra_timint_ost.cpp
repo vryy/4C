@@ -705,6 +705,8 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
     BlockSystemMatrix()->Reset();
   else
     SystemMatrix()->Reset();
+  // reset the solver as well
+  solver_->Reset();
 
   return;
 }
