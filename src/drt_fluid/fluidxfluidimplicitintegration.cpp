@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\FILE FLUIDXFLUIDIMPLICITINTEGRATION.CPP
+\file fluidxfluidimplicitintegration.cpp
 
 
-<PRE>
-MAINTAINER: SHADAN SHAHMIRI
-            SHAHMIRI@LNM.MW.TUM.DE
-            HTTP://WWW.LNM.MW.TUM.DE
+<pre>
+maintainer: shadan shahmiri
+            shahmiri@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
             089 - 289-15240
-</PRE>
+</pre>
 */
 /*----------------------------------------------------------------------*/
 #ifdef  CCADISCRET
@@ -47,6 +47,8 @@ MAINTAINER: SHADAN SHAHMIRI
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_xdiff3/xdiff3.H"
+
+
 FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Discretization> fluiddis,
                                                             RefCountPtr<DRT::Discretization> xfluiddis,
                                                             LINALG::Solver&                  solver,
@@ -469,7 +471,7 @@ void FLD::FluidXFluidImplicitTimeInt::TimeLoop(
   fluidxfluidboundarydis->SetState("ivelcolnm", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
   fluidxfluidboundarydis->SetState("iacccoln", LINALG::CreateVector(*fxfboundary_dofcolmap,true));
 
-  while (step_<stepmax_ and time_<maxtime_)
+  while (step_<stepmax_ or time_<maxtime_)
   {
     PrepareTimeStep();
     // -------------------------------------------------------------------
@@ -648,12 +650,10 @@ void FLD::FluidXFluidImplicitTimeInt::PrepareNonlinearSolve()
     eleparams.set("total time",time_);
 
     // set vector values needed by elements
-    fluiddis_->ClearState();
     fluiddis_->SetState("velnp",fluidstate_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     fluiddis_->EvaluateDirichlet(eleparams,fluidstate_.velnp_,null,null,null);
-    fluiddis_->ClearState();
 
     // set all parameters and states required for Neumann conditions
  //   eleparams.set("Physical Type",physicaltype_); // brauche ich das?!!
@@ -801,7 +801,6 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*fluidxfluidboundarydis->DofColMap(),true);
 
-  xfluidincvel_->PutScalar(0.0);
   fluidincvel_->PutScalar(0.0);
   xfluidresidual_->PutScalar(0.0);
   fluidresidual_->PutScalar(0.0);
@@ -1156,8 +1155,6 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     //          residual displacements are supposed to be zero at
     //          boundary conditions
     fluidxfluidincvel_->PutScalar(0.0);
-    xfluidincvel_->PutScalar(0.0);
-    fluidincvel_->PutScalar(0.0);
 
     // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat
     fluidxfluidsysmat_->Add(*fluidsysmat_,false,1.0,0.0);
@@ -1226,18 +1223,21 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
     fluidincvel_         = fluidxfluidsplitter_.ExtractFluidVector(fluidxfluidincvel_);
     oldinc->Update(1.0,*xfluidincvel_,0.0);
 
-    // Update interface velocity fxfivelnp_ , source (in): fluidstate_.velnp_
+    // Update the fluid material velocity along the interface (fxfivelnp_), source (in): fluidstate_.velnp_
     LINALG::Export(*fluidstate_.velnp_,*fxfivelnp_);
     LINALG::Export(*fluidincvel_,*fxfiincvel_);
     fluidxfluidboundarydis->SetState("ivelcolnp",fxfivelnp_);
   }
+
+  // export the fluid mesh displacement to FluidXFluidBoundaryDis displacement
+  fxfidispn_->Update(1.0,*fxfidispnp_,0.0);
+  LINALG::Export(*fluidstate_.dispnp_,*fxfidispnp_);
 
   //Gmsh Output
   OutputToGmsh(step_, time_);
   MovingFluidOutput();
   FluidXFluidBoundaryOutput(fluidxfluidboundarydis);
 
-  xfluidincvel_ = Teuchos::null;
   xfluidresidual_ = Teuchos::null;
   fluidresidual_ = Teuchos::null;
   w_ = Teuchos::null;
