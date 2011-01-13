@@ -1844,23 +1844,51 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			cout<<"Layer"<<endl;
 
 			// compute normal
-			// cross product n_1 x n_2, plane normal
+			// cross product v_1 x v_2, plane normal
 			LINALG::Matrix<3,1> normal;
 			LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
-			LINALG::Matrix<3,1> secdir = testvolumepos_[2];
+			LINALG::Matrix<3,1> secdir = testvolumepos_[1];
 			firstdir -= testvolumepos_[0];
-			secdir -= testvolumepos_[0];
+			secdir -= testvolumepos_[2];
 			normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
 			normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
 			normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
 			// upper and lower bound
+			std::vector<int> indices((int)testvolumepos_.size(),0);
+			switch((int)testvolumepos_.size())
+			{
+				//triangle
+				case 3:
+					for(int i=0; i<(int)indices.size(); i++)
+						indices[i] = i;
+				break;
+				// trapezoid
+				case 4:
+				{
+					indices[0] = 0;
+					indices[1] = 1;
+					indices[2] = 3;
+					indices[3] = 2;
+				}
+				break;
+				// hexagon
+				case 6:
+				{
+					indices[0] = 0;
+					indices[1] = 1;
+					indices[2] = 4;
+					indices[3] = 2;
+					indices[4] = 3;
+					indices[5] = 5;
+				}
+				break;
+				default: dserror("Incorrect number of intersection points!");
+			}
 			for(int i=1; i<(int)testvolumepos_.size()+1; i++)
 			{
-				int index0 = i;
-				int index1 = i-1;
-				// edge from "last" to "first" point
-				if(index0 == (int)testvolumepos_.size())
-					index0 = 0;
+				int index0 = indices[(i-1)%(int)indices.size()];
+				int index1 = indices[i%(int)indices.size()];
+
 				// upper edge
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
@@ -2556,7 +2584,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			// threshold fraction of crosslinkers
 			double pthresh = 0.9;
 			// tolerance
-			double tol = 0.02;
+			double lowertol = 0.05;
+			double uppertol = 0.01;
 
 			// calculate smallest possible test volumes that fulfill the requirement /numcrossele >= pthresh
 			for(int i=0; i<(int)volumes.size(); i++)
@@ -2591,7 +2620,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							exponent++;
 							niter[0]++;
 							// new radius
-							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
+							if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
 							{
 								// determine "growth direction"
 								double sign;
@@ -2635,7 +2664,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 						// iterate to obtain fitting normed direction
 						LINALG::Matrix<3,1> normj = normedvectors[startiterindex];
-						const int maxiterations = 15;
+						const int maxiterations = 25;
 						cout<<"\nVector iteration:"<<endl;
 						cout<<"Bundle: ";
 						DDCorrIterateVector(discol, &normj, maxiterations);
@@ -2703,7 +2732,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							exponent++;
 							niter[1]++;
 							// new radius
-							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
+							if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
 							{
 								// determine "growth direction"
 								double sign;
@@ -2757,10 +2786,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						layervectors.push_back(normedvectors[dir2]);
 
 						// iterate both vectors in order to obtain projections into the layer plane
-						const int maxiterations = 15;
-						cout<<"Layer0: ";
-						DDCorrIterateVector(discol, &layervectors[0], maxiterations);
+						const int maxiterations = 25;
 						cout<<"Layer1: ";
+						DDCorrIterateVector(discol, &layervectors[0], maxiterations);
+						cout<<"Layer2: ";
 						DDCorrIterateVector(discol, &layervectors[1], maxiterations);
 						layervecs.push_back(layervectors[0]);
 						layervecs.push_back(layervectors[1]);
@@ -2791,7 +2820,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							exponent++;
 							niter[2]++;
 
-							if((pr<pthresh-tol || pr>pthresh+tol) && exponent<=maxexponent)
+							if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
 							{
 								double sign;
 								if(pr<pthresh)
@@ -2894,15 +2923,15 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							case 4:
 							{
 								// edges
-								LINALG::Matrix<3,1> a = interseccoords[0];
-								a -= interseccoords[1];
-								LINALG::Matrix<3,1> c = interseccoords[2];
-								c -= interseccoords[3];
-								LINALG::Matrix<3,1> d = interseccoords[3];
+								LINALG::Matrix<3,1> a = interseccoords[1];
+								a -= interseccoords[0];
+								LINALG::Matrix<3,1> c = interseccoords[3];
+								c -= interseccoords[2];
+								LINALG::Matrix<3,1> d = interseccoords[2];
 								d -= interseccoords[0];
 								// diagonal
-								LINALG::Matrix<3,1> f = interseccoords[1];
-								f -= interseccoords[3];
+								LINALG::Matrix<3,1> f = interseccoords[2];
+								f -= interseccoords[1];
 								double al = a.Norm2();
 								double cl = c.Norm2();
 								double dl = d.Norm2();
@@ -2917,26 +2946,28 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							case 6:
 							{
 								double hexvolume = 0.0;
-								for(int j=0; j<6; j++)
-								{
-									// get edge of j-th triangle wihtin hexagon
-									LINALG::Matrix<3,1> c = interseccoords[j];
-									LINALG::Matrix<3,1> a;
-									LINALG::Matrix<3,1> b = interseccoords[j];
-									b -= *cog;
-									if(j==5)
-									{
-										c -= interseccoords[0];
-										a = interseccoords[0];
-										a -= interseccoords[5];
+								// indices mapping correct order of hexagon edges
+								std::vector<int> indices((int)interseccoords.size(),0);
+								indices[0] = 0;
+								indices[1] = 1;
+								indices[2] = 4;
+								indices[3] = 2;
+								indices[4] = 3;
+								indices[5] = 5;
 
-									}
-									else
-									{
-										c -= interseccoords[j+1];
-										a = interseccoords[j+1];
-										a -= *cog;
-									}
+								for(int j=1; j<(int)indices.size()+1; j++)
+								{
+									int index0 = indices[(j-1)%(int)indices.size()];
+									int index1 = indices[j%(int)indices.size()];
+									// get edge of j-th triangle within hexagon
+									LINALG::Matrix<3,1> a = interseccoords[index1];
+									a -= *cog;
+									LINALG::Matrix<3,1> b = interseccoords[index0];
+									b -= *cog;
+									LINALG::Matrix<3,1> c = interseccoords[index1];
+									c -= interseccoords[index0];
+
+
 									double al = a.Norm2();
 									double bl = b.Norm2();
 									double cl = c.Norm2();
@@ -3015,7 +3046,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   				testvolumepos_.push_back(interseccoords[i]);
   		}
   		break;
-  		// layer
+  		// homogeneous
   		case 3:
   		{
   			cout<<"\nNetwork structure: Homogeneous network"<<endl;
@@ -3037,7 +3068,7 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 	bool vectorconverged = false;
 	int iteration = 0;
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double tolangle = M_PI/36.0; // 5°
+	double tolangle = M_PI/90.0; // 2°
 
 	while(!vectorconverged)
 	{
