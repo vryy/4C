@@ -1,6 +1,8 @@
 #ifndef CUT_INTERSECTION_H
 #define CUT_INTERSECTION_H
 
+#include <iterator>
+
 #include "../linalg/linalg_gauss.H"
 
 #include "../drt_lib/drt_element.H"
@@ -299,6 +301,13 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
 
   xsi_ = 0;
 
+  const double tol = LINSOLVETOL; // / scale_;
+
+#ifdef DEBUG
+  std::vector<double> res;
+  res.push_back( tol );
+#endif
+
   for ( int iter = 0; iter < 20; ++iter )
   {
     // calculate system matrix
@@ -333,7 +342,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     // norm normal direction
     double cnorm = cross.Norm2();
     double fact1 = 1./cnorm;
-    double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
+    //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
     cross.Scale( fact1 );
 
     C = 0;
@@ -367,14 +376,14 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
 
     // product rule for normed cross product
 
-    B( 0, 0 ) *= fact1 + fact2 * A( 0, 2 );
-    B( 0, 1 ) *= fact1 + fact2 * A( 0, 2 );
+    B( 0, 0 ) *= fact1; //+ fact2 * A( 0, 2 );
+    B( 0, 1 ) *= fact1; //+ fact2 * A( 0, 2 );
 
-    B( 1, 0 ) *= fact1 + fact2 * A( 1, 2 );
-    B( 1, 1 ) *= fact1 + fact2 * A( 1, 2 );
+    B( 1, 0 ) *= fact1; //+ fact2 * A( 1, 2 );
+    B( 1, 1 ) *= fact1; //+ fact2 * A( 1, 2 );
 
-    B( 2, 0 ) *= fact1 + fact2 * A( 2, 2 );
-    B( 2, 1 ) *= fact1 + fact2 * A( 2, 2 );
+    B( 2, 0 ) *= fact1; //+ fact2 * A( 2, 2 );
+    B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
 
     A.Update( 1, B, 1 );
 
@@ -383,9 +392,14 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     double solres = xsi_.Norm2();
     double residual = b.Norm2();
 
+#ifdef DEBUG
+    res.push_back( residual );
+    res.push_back( solres );
+#endif
+
     if ( ( fabs( solres ) > std::numeric_limits<double>::min() and
-           fabs( residual / solres ) < LINSOLVETOL ) or
-         fabs( residual ) < LINSOLVETOL )
+           fabs( residual / solres ) < tol ) or
+         fabs( residual ) < tol )
     {
       return true;
     }
@@ -406,6 +420,10 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     if ( not SurfaceWithinLimits() )
       return false;
   }
+#ifdef DEBUG
+  std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
+  std::cout << "\n";
+#endif
   throw std::runtime_error( "Newton scheme did not converge" );
 }
 

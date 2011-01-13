@@ -150,7 +150,7 @@ bool Position2d<elementtype,numNodesElement>::Compute()
     // norm normal direction
     double cnorm = cross.Norm2();
     double fact1 = 1./cnorm;
-    double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
+    //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
     cross.Scale( fact1 );
 
     C = 0;
@@ -184,14 +184,14 @@ bool Position2d<elementtype,numNodesElement>::Compute()
 
     // product rule for normed cross product
 
-    B( 0, 0 ) *= fact1 + fact2 * A( 0, 2 );
-    B( 0, 1 ) *= fact1 + fact2 * A( 0, 2 );
+    B( 0, 0 ) *= fact1; //+ fact2 * A( 0, 2 );
+    B( 0, 1 ) *= fact1; //+ fact2 * A( 0, 2 );
 
-    B( 1, 0 ) *= fact1 + fact2 * A( 1, 2 );
-    B( 1, 1 ) *= fact1 + fact2 * A( 1, 2 );
+    B( 1, 0 ) *= fact1; //+ fact2 * A( 1, 2 );
+    B( 1, 1 ) *= fact1; //+ fact2 * A( 1, 2 );
 
-    B( 2, 0 ) *= fact1 + fact2 * A( 2, 2 );
-    B( 2, 1 ) *= fact1 + fact2 * A( 2, 2 );
+    B( 2, 0 ) *= fact1; //+ fact2 * A( 2, 2 );
+    B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
 
     A.Update( 1, B, 1 );
 
