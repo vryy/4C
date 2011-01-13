@@ -336,10 +336,10 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
   {
     Point & p = **i;
     p.Coordinates( & in.pointlist[pos*dim] );
-    for ( int j=0; j<dim; ++j )
-    {
-      in.pointlist[pos*dim+j] *= TETGENPOINTSCALE;
-    }
+//     for ( int j=0; j<dim; ++j )
+//     {
+//       in.pointlist[pos*dim+j] *= TETGENPOINTSCALE;
+//     }
     pos += 1;
   }
 
@@ -430,7 +430,7 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
         int pointidx = out.trifacelist[i*3+j] * 3;
         std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], &xyz( 0, j ) );
       }
-      xyz.Scale( 1./TETGENPOINTSCALE );
+//       xyz.Scale( 1./TETGENPOINTSCALE );
     }
   }
 
@@ -475,7 +475,7 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
       int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
       std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], &xyz( 0, j ) );
     }
-    xyz.Scale( 1./TETGENPOINTSCALE );
+//     xyz.Scale( 1./TETGENPOINTSCALE );
     integrationcells.insert( mesh.NewTet4Cell( position, xyz, cell ) );
   }
 
@@ -842,3 +842,23 @@ void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file )
   }
   file << "};\n";
 }
+
+// double GEO::CUT::Hex8IntegrationCell::Volume() const
+// {
+//   throw std::runtime_error( "" );
+// }
+
+// double GEO::CUT::Tet4IntegrationCell::Volume() const
+// {
+//   throw std::runtime_error( "" );
+// }
+
+// double GEO::CUT::Wedge6IntegrationCell::Volume() const
+// {
+//   throw std::runtime_error( "" );
+// }
+
+// double GEO::CUT::Pyramid5IntegrationCell::Volume() const
+// {
+//   throw std::runtime_error( "" );
+// }

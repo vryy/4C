@@ -32,6 +32,8 @@ public:
   void Coordinates( double * x )
   { point_->Coordinates( x ); }
 
+  Point::PointPosition Position() const { return point_->Position(); }
+
   void Print()
   {
     point_->Print();
@@ -53,6 +55,8 @@ public:
   int DofSetNumber( VolumeCell * cell );
 
   const std::vector<std::set<VolumeCell*> > & DofSets() const { return dofsets_; }
+
+  int NumDofSets( bool include_inner );
 
 private:
 

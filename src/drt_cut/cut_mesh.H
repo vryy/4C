@@ -133,6 +133,8 @@ public:
 
   void DumpGmshIntegrationcells( std::string name );
 
+  Node* GetNode( int nid ) const;
+
   Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
 
   Node* GetNode( const std::set<int> & nids, const double * xyz );

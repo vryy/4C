@@ -121,3 +121,41 @@ int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
   }
   return dofset;
 }
+
+int GEO::CUT::Node::NumDofSets( bool include_inner )
+{
+  if ( include_inner )
+  {
+    return DofSets().size();
+  }
+  else
+  {
+    int numdofsets = 0;
+    for ( std::vector<std::set<VolumeCell*> >::iterator i=dofsets_.begin();
+          i!=dofsets_.end();
+          ++i )
+    {
+      std::set<VolumeCell*> & cells = *i;
+      GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
+      for ( std::set<VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        VolumeCell * c = *i;
+        GEO::CUT::Point::PointPosition cp = c->Position();
+        if ( cp == GEO::CUT::Point::undecided )
+        {
+          throw std::runtime_error( "undecided volume cell position" );
+        }
+        if ( position!=GEO::CUT::Point::undecided and position!=cp )
+        {
+          throw std::runtime_error( "mixed volume cell set" );
+        }
+        position = cp;
+      }
+      if ( position==GEO::CUT::Point::outside )
+      {
+        numdofsets += 1;
+      }
+    }
+    return numdofsets;
+  }
+}

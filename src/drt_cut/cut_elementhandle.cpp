@@ -10,6 +10,13 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+
+void GEO::CUT::LinearElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )
+{
+  const std::set<VolumeCell*> & cs = element_->VolumeCells();
+  std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
+}
+
 bool GEO::CUT::QuadraticElementHandle::IsCut()
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
@@ -21,6 +28,16 @@ bool GEO::CUT::QuadraticElementHandle::IsCut()
     }
   }
   return false;
+}
+
+void GEO::CUT::QuadraticElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )
+{
+  for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    const std::set<VolumeCell*> & cs = e->VolumeCells();
+    std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
+  }
 }
 
 void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
@@ -420,4 +437,3 @@ void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
   }
   rst = pos.LocalCoordinates();
 }
-

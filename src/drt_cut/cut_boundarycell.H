@@ -29,6 +29,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  virtual double Area() const = 0;
+
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
   Facet * GetFacet() { return facet_; }
@@ -49,6 +51,7 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
+  virtual double Area() const;
 };
 
 class Quad4BoundaryCell : public BoundaryCell
@@ -62,6 +65,7 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 
+  virtual double Area() const;
 };
 
 }

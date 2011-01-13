@@ -282,22 +282,21 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
   for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
   {
     Side * side = *i;
-    Side * ls = dynamic_cast<Side*>( side );
-    if ( ls==NULL )
-    {
-      throw std::runtime_error( "linear element needs linear sides" );
-    }
 
     for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side * other = *i;
-      Side * ls_other = dynamic_cast<Side*>( other );
-      if ( ls_other==NULL )
-      {
-        throw std::runtime_error( "linear element needs linear side cuts" );
-      }
-      ls->GetCutPoints( this, *ls_other, cut_points );
+      side->GetCutPoints( this, *other, cut_points );
     }
+  }
+}
+
+void GEO::CUT::Element::GetAllPoints( std::set<Point*> & cut_points )
+{
+  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+    VolumeCell * cell = *i;
+    cell->GetAllPoints( cut_points );
   }
 }
 

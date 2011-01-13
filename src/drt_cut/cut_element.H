@@ -54,26 +54,28 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
-  virtual bool Cut( Mesh & mesh, Side & side );
+  bool Cut( Mesh & mesh, Side & side );
 
-  virtual void MakeFacets( Mesh & mesh );
+  void MakeFacets( Mesh & mesh );
 
-  virtual void MakeVolumeCells( Mesh & mesh );
+  void MakeVolumeCells( Mesh & mesh );
 
-  virtual void FindNodePositions();
+  void Delaunay( Mesh & mesh );
 
-  virtual bool IsCut();
+  void FindNodePositions();
+
+  bool IsCut();
 
 #ifdef QHULL
   virtual void FillTetgen( tetgenio & out )
   { throw std::runtime_error( "not supported" ); }
 #endif
 
-  virtual bool OnSide( const std::vector<Point*> & facet_points );
+  bool OnSide( const std::vector<Point*> & facet_points );
 
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+  void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
   const std::vector<Side*> & Sides() { return sides_; }
 
@@ -96,6 +98,8 @@ public:
   const std::vector<Node*> & Nodes() { return nodes_; }
 
   void GetCutPoints( std::set<Point*> & cut_points );
+
+  void GetAllPoints( std::set<Point*> & cut_points );
 
   const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
 

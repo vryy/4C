@@ -42,9 +42,11 @@ public:
 
   ElementHandle * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
-  SideHandle * GetSide( int eid );
+  Node * GetNode( int nid ) const;
 
-  ElementHandle * GetElement( int eid );
+  SideHandle * GetSide( int eid ) const;
+
+  ElementHandle * GetElement( int eid ) const;
 
   Mesh & LinearMesh() { return mesh_; }
 

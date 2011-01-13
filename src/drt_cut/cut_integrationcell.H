@@ -55,6 +55,8 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file ) = 0;
 
+  //virtual double Volume() const = 0;
+
   Point::PointPosition Position() const { return position_; }
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
@@ -85,6 +87,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
+  //virtual double Volume() const;
 };
 
 class Tet4IntegrationCell : public IntegrationCell
@@ -108,6 +111,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
+  //virtual double Volume() const;
 };
 
 class Wedge6IntegrationCell : public IntegrationCell
@@ -125,6 +129,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
+  //virtual double Volume() const;
 };
 
 class Pyramid5IntegrationCell : public IntegrationCell
@@ -142,6 +147,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
+  //virtual double Volume() const;
 };
 
 #if 0

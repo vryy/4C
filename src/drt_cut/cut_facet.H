@@ -67,6 +67,8 @@ public:
 
   void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
 
+  void GetAllPoints( std::set<Point*> & cut_points );
+
 #ifdef QHULL
   void GenerateTetgen( Mesh & mesh, Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
 #endif

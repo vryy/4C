@@ -21,6 +21,8 @@ public:
 
   virtual bool IsCut() = 0;
 
+  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells ) = 0;
+
   virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells ) = 0;
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
@@ -43,6 +45,8 @@ public:
   }
 
   virtual bool IsCut() { return element_->IsCut(); }
+
+  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells );
 
   virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
   {
@@ -68,6 +72,8 @@ class QuadraticElementHandle : public ElementHandle
 public:
 
   virtual bool IsCut();
+
+  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells );
 
   virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 

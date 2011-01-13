@@ -120,14 +120,20 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::CreateElement( int eid, const st
   }
 }
 
-GEO::CUT::SideHandle * GEO::CUT::MeshHandle::GetSide( int eid )
+
+GEO::CUT::Node * GEO::CUT::MeshHandle::GetNode( int nid ) const
 {
-  std::map<int, LinearSideHandle>::iterator i = linearsides_.find( eid );
+  return mesh_.GetNode( nid );
+}
+
+GEO::CUT::SideHandle * GEO::CUT::MeshHandle::GetSide( int eid ) const
+{
+  std::map<int, LinearSideHandle>::const_iterator i = linearsides_.find( eid );
   if ( i!=linearsides_.end() )
   {
-    return &i->second;
+    return const_cast<LinearSideHandle*>( &i->second );
   }
-  std::map<int, Teuchos::RCP<QuadraticSideHandle> >::iterator j = quadraticsides_.find( eid );
+  std::map<int, Teuchos::RCP<QuadraticSideHandle> >::const_iterator j = quadraticsides_.find( eid );
   if ( j!=quadraticsides_.end() )
   {
     return &*j->second;
@@ -135,18 +141,17 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::GetSide( int eid )
   return NULL;
 }
 
-GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::GetElement( int eid )
+GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::GetElement( int eid ) const
 {
-  std::map<int, LinearElementHandle>::iterator i = linearelements_.find( eid );
+  std::map<int, LinearElementHandle>::const_iterator i = linearelements_.find( eid );
   if ( i!=linearelements_.end() )
   {
-    return &i->second;
+    return const_cast<LinearElementHandle*>( &i->second );
   }
-  std::map<int, Teuchos::RCP<QuadraticElementHandle> >::iterator j = quadraticelements_.find( eid );
+  std::map<int, Teuchos::RCP<QuadraticElementHandle> >::const_iterator j = quadraticelements_.find( eid );
   if ( j!=quadraticelements_.end() )
   {
     return &*j->second;
   }
   return NULL;
 }
-

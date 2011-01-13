@@ -5,6 +5,8 @@
 #include <vector>
 #include <set>
 
+#include "cut_point.H"
+
 namespace GEO
 {
 namespace CUT
@@ -33,11 +35,17 @@ public:
 
   Element * ParentElement() { return element_; }
 
+  void GetAllPoints( std::set<Point*> & cut_points );
+
   void CreateIntegrationCells( Mesh & mesh );
 
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
   void ConnectNodalDOFSets();
+
+  const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
+
+  GEO::CUT::Point::PointPosition Position();
 
 private:
 

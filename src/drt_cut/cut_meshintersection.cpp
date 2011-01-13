@@ -110,12 +110,18 @@ void GEO::CUT::MeshIntersection::SelfCut()
   CutMesh().SelfCut();
 }
 
-GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid )
+
+GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
+{
+  return mesh_.GetNode( nid );
+}
+
+GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid ) const
 {
   return mesh_.GetElement( eid );
 }
 
-GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi ) const
 {
   SideHandle * cut_side = cut_mesh_[mi]->GetSide( sid );
   if ( cut_side!=NULL )

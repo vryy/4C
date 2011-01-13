@@ -92,6 +92,15 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
   }
 }
 
+void GEO::CUT::VolumeCell::GetAllPoints( std::set<Point*> & cut_points )
+{
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->GetAllPoints( cut_points );
+  }
+}
+
 void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
   IntegrationCell * ic;
@@ -137,4 +146,29 @@ void GEO::CUT::VolumeCell::ConnectNodalDOFSets()
     Node * n = *i;
     nodaldofset_.push_back( n->DofSetNumber( this ) );
   }
+}
+
+GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
+{
+  GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
+  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    GEO::CUT::Point::PointPosition fp = f->Position();
+    switch ( fp )
+    {
+    case GEO::CUT::Point::undecided:
+      throw std::runtime_error( "undecided facet position" );
+    case GEO::CUT::Point::oncutsurface:
+      break;
+    case GEO::CUT::Point::inside:
+    case GEO::CUT::Point::outside:
+      if ( position!=GEO::CUT::Point::undecided and position!=fp )
+      {
+        throw std::runtime_error( "mixed facet set" );
+      }
+      position = fp;
+    }
+  }
+  return position;
 }

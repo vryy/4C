@@ -55,7 +55,7 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
           throw std::runtime_error( "node ids not consecutive" );
         }
         LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
-        x.Scale( 1./TETGENPOINTSCALE );
+//         x.Scale( 1./TETGENPOINTSCALE );
         //Node* n =
         GetNode( nid, x.A() );
         nodeidmap[pointidx] = nid;
@@ -89,7 +89,7 @@ void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
           throw std::runtime_error( "node ids not consecutive" );
         }
         LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
-        x.Scale( 1./TETGENPOINTSCALE );
+//         x.Scale( 1./TETGENPOINTSCALE );
         //Node* n =
         GetNode( nid, x.A() );
         nodeidmap[pointidx] = nid;
@@ -134,10 +134,10 @@ void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
   {
     Node * n = &*i->second;
     n->Coordinates( &out.pointlist[count*dim] );
-    for ( int j=0; j<dim; ++j )
-    {
-      out.pointlist[count*dim+j] *= TETGENPOINTSCALE;
-    }
+//     for ( int j=0; j<dim; ++j )
+//     {
+//       out.pointlist[count*dim+j] *= TETGENPOINTSCALE;
+//     }
     out.pointmarkerlist[count] = n->point()->Position();
     nodeidmap[n->Id()] = count;
     count += 1;
@@ -274,6 +274,16 @@ GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad4( int sid, const std::vector<int> & 
 {
   const CellTopologyData * top_data = shards::getCellTopologyData< shards::Quadrilateral<4> >();
   return GetSide( sid, nids, top_data );
+}
+
+GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid ) const
+{
+  std::map<int, Teuchos::RCP<Node> >::const_iterator i = nodes_.find( nid );
+  if ( i != nodes_.end() )
+  {
+    return &*i->second;
+  }
+  return NULL;
 }
 
 GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv )

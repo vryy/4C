@@ -18,6 +18,8 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * 
     planar_known_( false ),
     position_( cutsurface ? Point::oncutsurface : Point::undecided )
 {
+  FindCornerPoints();
+
   if ( cutsurface )
   {
     for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
@@ -207,6 +209,16 @@ void GEO::CUT::Facet::GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & p
       std::copy( tri.begin(), tri.end(),
                  std::inserter( points, points.begin() ) );
     }
+  }
+}
+
+void GEO::CUT::Facet::GetAllPoints( std::set<Point*> & cut_points )
+{
+  std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
+  for ( std::set<std::vector<Point*> >::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  {
+    const std::vector<Point*> & h = *i;
+    std::copy( h.begin(), h.end(), std::inserter( cut_points, cut_points.begin() ) );
   }
 }
 
@@ -732,7 +744,7 @@ void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh )
   if ( bcells_.size()==0 )
   {
     Epetra_SerialDenseMatrix xyz( 3, 3 );
-    Coordinates( &xyz( 0, 0 ) );
+    CornerCoordinates( &xyz( 0, 0 ) );
     bcells_.insert( mesh.NewTri3Cell( xyz, this ) );
   }
 }
@@ -795,7 +807,9 @@ void GEO::CUT::Facet::FindCornerPoints()
     LINALG::Matrix<3,1> b2;
     LINALG::Matrix<3,1> b3;
 
-    for ( unsigned i=0; true; i = FindNextCornerPoint( points_, x1, x2, x3, b1, b2, b3, i ) )
+    for ( unsigned i = FindNextCornerPoint( points_, x1, x2, x3, b1, b2, b3, 0 );
+          true;
+          i = FindNextCornerPoint( points_, x1, x2, x3, b1, b2, b3, i ) )
     {
       Point * p = points_[i];
       if ( corner_points_.size()>0 and corner_points_.front()==p )

@@ -10,9 +10,9 @@
 // Tolerances that build on each other. We assume the numbers we compare with
 // these are about 1. These tolerances build on each other. The largest one
 // determines the exactness we can reach in out simulations.
-#define MINIMALTOL  1e-11
+#define MINIMALTOL  1e-10
 #define TOLERANCE   1e-12
-#define LINSOLVETOL 1e-13
+#define LINSOLVETOL 1e-14
 
 // Special tolerance to distinguish planar facets from curved ones.
 #define PLANARTOL   1e-6
@@ -21,6 +21,6 @@
 
 // Scale all points that go inside tetgen, so the tetgen internal tolerance
 // does not merge nodes.
-#define TETGENPOINTSCALE 1e5
+//#define TETGENPOINTSCALE 1e5
 
 #endif

@@ -47,9 +47,11 @@ public:
 
   void SelfCut();
 
-  ElementHandle * GetElement( int eid );
+  Node * GetNode( int nid ) const;
 
-  SideHandle * GetCutSide( int sid, int mi=0 );
+  ElementHandle * GetElement( int eid ) const;
+
+  SideHandle * GetCutSide( int sid, int mi=0 ) const;
 
   void Status();
 

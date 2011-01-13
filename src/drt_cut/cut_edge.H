@@ -109,13 +109,13 @@ public:
 
   const std::set<Side*> & Sides() { return sides_; }
 
-  virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
+  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
 
-  virtual void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
+  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
 
-  virtual void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts );
+  void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts );
 
-  virtual void AddPoint( Point* cut_point );
+  void AddPoint( Point* cut_point );
 
   void Coordinates( double * xyze )
   {
@@ -148,15 +148,15 @@ public:
     f << "\n\n";
   }
 
-  virtual void CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points );
+  void CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points );
 
-  virtual void CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points );
+  void CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points );
 
-  virtual void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
+  void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
-  virtual void CutPointsInside( Element * element, std::vector<Point*> & line );
+  void CutPointsInside( Element * element, std::vector<Point*> & line );
 
-  virtual bool IsCut( Side * side );
+  bool IsCut( Side * side );
 
   Node* BeginNode() { return nodes_.front(); }
 
