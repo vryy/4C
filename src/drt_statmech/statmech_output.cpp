@@ -1606,6 +1606,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 	// plot the test volume determined by DDCorrCurrentStructure()
 	int numpositions = (int)testvolumepos_.size();
 
+	cout<<"Visualizing test volume: ";
 	switch(numpositions)
 	{
 		// either cluster or homogeneous network
@@ -1614,6 +1615,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			//cluster
 			if(characlength_<periodlength/2.0)
 			{
+				cout<<"Cluster"<<endl;
 				// draw three octagons/hexadecagon lying in the base planes
 				for(int i=0; i<3; i++)//spatial comp i
 					for(int j=0; j<3; j++)//spatial comp j
@@ -1728,6 +1730,8 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 		// bundle network
 		case 2:
 		{
+			cout<<"Bundle"<<endl;
+
 			double radius = characlength_;
 			LINALG::Matrix<3,2> coord;
 			for(int i=0; i<(int)coord.M(); i++)
@@ -1793,7 +1797,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << edges(0,(j-1)%(int)edges.N()) << "," << edges(1,(j-1)%(int)edges.N()) << "," << edges(2,(j-1)%(int)edges.N()) << ",";
 				gmshfilecontent << edges(0,j%(int)edges.N()) << "," << edges(1,j%(int)edges.N()) << "," << edges(2,j%(int)edges.N());
-				gmshfilecontent << ")" << "{" << scientific << 0.0 << ","<< 0.0 << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;
 			}
 
 			// now the other edges will be computed
@@ -1829,7 +1833,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 					gmshfilecontent << "SL(" << scientific;
 					gmshfilecontent << edges(0,(j-1)%(int)edges.N()) << "," << edges(1,(j-1)%(int)edges.N()) << "," << edges(2,(j-1)%(int)edges.N()) << ",";
 					gmshfilecontent << edges(0,j%(int)edges.N()) << "," << edges(1,j%(int)edges.N()) << "," << edges(2,j%(int)edges.N());
-					gmshfilecontent << ")" << "{" << scientific << 0.75 << ","<< 0.75 << "};" << endl;
+					gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;
 				}
 			}
 		}
@@ -1837,6 +1841,8 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 		// layer
 		default:
 		{
+			cout<<"Layer"<<endl;
+
 			// compute normal
 			// cross product n_1 x n_2, plane normal
 			LINALG::Matrix<3,1> normal;
@@ -1859,21 +1865,21 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				// lower edge
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				// connections
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color << ","<< color << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 			}
 		}
 	}
@@ -2274,7 +2280,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	 * (5) radial density distribution
 	 */
 	if(!discret_.Comm().MyPID())
-		cout<<"\n\n============== Analysis of structural polymorphism =============="<<endl;
+		cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
 
 
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -2370,7 +2376,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fclose(fp);
   }
 	if(!discret_.Comm().MyPID())
-		cout<<"================================================================="<<endl;
+		cout<<"================================================================================="<<endl;
 }//StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*
@@ -2467,6 +2473,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 {
 	// number of crosslinker elements
 	int numcrossele = (int)crosslinkerentries->size();
+	std::vector<int> crosslinksinvolume(3,0);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
   // get column map displacements
@@ -2511,6 +2518,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		std::vector<double> crossfraction(3,0.0);
 		// number of iterations until crosslinker fraction lies within the given threshold fraction +/- tolerance
 		std::vector<int> niter(3,0);
+		// iterated vector (for cout-output)
+		LINALG::Matrix<3,1> cylvec;
+		std::vector<LINALG::Matrix<3,1> > layervecs;
 
 		// get the intersections of the axis of a cylinder with the (two) cube faces
 		std::vector<LINALG::Matrix<3,1> > intersections;
@@ -2530,20 +2540,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			}
 
 /// determine normed vectors as well as output filament element vectors
-			int startiterindex = 0;
 			std::ostringstream orientfilename;
 			orientfilename << "./FilamentOrientations_"<<std::setw(6) << setfill('0') << istep <<".dat";
 			FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
-
-			// select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
-			// enclosed angle with the cylder axis
-			double veclength = 0.0;
-			for(int i=0; i<(int)normedvectors.size(); i++)
-				if(normedvectors[i].Norm2() > veclength)
-				{
-					veclength = normedvectors[i].Norm2();
-					startiterindex = i;
-				}
 
 			// Scale normed vectors to unit length
 			cout<<"Normed vectors:"<<endl;
@@ -2604,13 +2603,14 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							}
 							else
 							{
-								crossfraction[0] = pr;
+								crosslinksinvolume[i] = rcount;
+								crossfraction[i] = pr;
 								leaveloop = true;
 							}
 						}
 						// store characteristic length and test sphere volume
-						characlength[0] = radius;
-						volumes[0] = 4/3 * M_PI * pow(radius, 3.0);
+						characlength[i] = radius;
+						volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
 					}
 					break;
 					// cylindrical volume
@@ -2622,10 +2622,25 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						double pr = 0.0;
 						int exponent = 1;
 
+						// select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
+						// enclosed angle with the cylder axis
+						int startiterindex = 0;
+						double veclength = 0.0;
+						for(int j=0; j<(int)normedvectors.size(); j++)
+							if(normedvectors[j].Norm2() > veclength)
+							{
+								veclength = normedvectors[j].Norm2();
+								startiterindex = j;
+							}
+
 						// iterate to obtain fitting normed direction
 						LINALG::Matrix<3,1> normj = normedvectors[startiterindex];
-						const int maxiterations = 10;
+						const int maxiterations = 15;
+						cout<<"\nVector iteration:"<<endl;
+						cout<<"Bundle: ";
 						DDCorrIterateVector(discol, &normj, maxiterations);
+						// for output
+						cylvec = normj;
 
 						// cube face boundaries of jk-surface of cubical volume
 						LINALG::Matrix<3,2> surfaceboundaries;
@@ -2700,12 +2715,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							}
 							else
 							{
-								crossfraction[1] = pr;
+								crosslinksinvolume[i] = rcount;
+								crossfraction[i] = pr;
 								leaveloop = true;
 							}
 						}
-						characlength[1] = radius;
-						volumes[1] = M_PI*radius*radius*cyllength;
+						characlength[i] = radius;
+						volumes[i] = M_PI*radius*radius*cyllength;
 					}
 					break;
 					// cuboid layer volume
@@ -2734,16 +2750,20 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										crossprodnorm = crossvec.Norm2();
 										dir1=j;
 										dir2=k;
-										layervectors.clear();
-										layervectors.push_back(normedvectors[dir1]);
-										layervectors.push_back(normedvectors[dir2]);
 									}
 								}
+						// store initial vectors to be iterated
+						layervectors.push_back(normedvectors[dir1]);
+						layervectors.push_back(normedvectors[dir2]);
 
 						// iterate both vectors in order to obtain projections into the layer plane
-						const int maxiterations = 10;
+						const int maxiterations = 15;
+						cout<<"Layer0: ";
 						DDCorrIterateVector(discol, &layervectors[0], maxiterations);
+						cout<<"Layer1: ";
 						DDCorrIterateVector(discol, &layervectors[1], maxiterations);
+						layervecs.push_back(layervectors[0]);
+						layervecs.push_back(layervectors[1]);
 
 						// cross product n_1 x n_2, plane normal
 						LINALG::Matrix<3,1> normal;
@@ -2782,7 +2802,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							}
 							else
 							{
-								crossfraction[2] = pr;
+								crosslinksinvolume[i] = rcount;
+								crossfraction[i] = pr;
 								leaveloop = true;
 							}
 						}
@@ -2866,7 +2887,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								double h = bl * sin(alpha);
 
 								// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
-								volumes[2] = cl*h*thickness;
+								volumes[i] = cl*h*thickness;
 							}
 							break;
 							// square/rectangle/trapezoid
@@ -2889,7 +2910,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
 								double h = dl * sin(alpha);
 
-								volumes[2] = (al+cl) * h * thickness;
+								volumes[i] = (al+cl) * h * thickness;
 							}
 							break;
 							// hexahedron
@@ -2924,11 +2945,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 									hexvolume += cl*h*thickness;
 								}
-								volumes[2] = hexvolume;
+								volumes[i] = hexvolume;
 							}
 							break;
 						}
-						characlength[2] = 2.0*thickness;
+						characlength[i] = 2.0*thickness;
 					}
 					break;
 				}
@@ -2949,9 +2970,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 		cout<<"\nVolumes: "<<endl;
 		for(int i=0; i<(int)volumes.size(); i++)
-			cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<"  niter: "<<niter[i]<<endl;
-
-
+			cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<" crosslinks: "<<crosslinksinvolume[i]<<"/"<<numcrossele<<"  niter: "<<niter[i]<<endl;
 
 /// cout and return network structure
   	// write to output files
@@ -2979,6 +2998,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		case 1:
   		{
   			cout<<"\nNetwork structure: Bundle"<<endl;
+  			cout<<"axis vector: "<<cylvec(0)<<" "<<cylvec(1)<<" "<<cylvec(2)<<endl;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)intersections.size(); i++)
   				testvolumepos_.push_back(intersections[i]);
@@ -2988,6 +3008,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		case 2:
   		{
   			cout<<"\nNetwork structure: Layer"<<endl;
+  			for(int i=0; i<(int)layervecs.size(); i++)
+  				cout<<"layer vector "<<i+1<<": "<<layervecs[i](0)<<" "<<layervecs[i](1)<<" "<<layervecs[i](2)<<endl;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)interseccoords.size(); i++)
   				testvolumepos_.push_back(interseccoords[i]);
@@ -3018,6 +3040,7 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 	double tolangle = M_PI/36.0; // 5°
 
 	while(!vectorconverged)
+	{
 		if(iteration<maxiterations)
 		{
 			LINALG::Matrix<3,1> vectorjp;
@@ -3064,7 +3087,10 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 			// check angle between old and n_j and n_(j+1)
 			double vecvecangle = acos(vectorj->Dot(vectorjp));
 			if(vecvecangle < tolangle)
+			{
+				cout<<"vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
 				vectorconverged = true;
+			}
 			*vectorj = vectorjp;
 		}
 		else
@@ -3072,6 +3098,8 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 			cout<<"...Vector did not converge after "<<maxiterations<<" iterations. Continuing..."<<endl;
 			vectorconverged = true;
 		}
+		iteration++;
+	}
 }//DDCorrIterateVector()
 /*------------------------------------------------------------------------------*                                                 |
  | density-density correlation function                  (private) mueller 12/10|
