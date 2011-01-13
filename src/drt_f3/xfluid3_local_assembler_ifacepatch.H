@@ -24,6 +24,8 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseVector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
+namespace XFLUID
+{
 
 const static std::size_t IerrorCheckValue = 77777777;
 
@@ -162,13 +164,13 @@ public:
             const V2&           trialshape
             ) const
     {
-      
+
       const std::size_t numdof = 3;
       const std::vector<int>& trialdof(dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>());
 
       const std::size_t numnodetest = emat.M()/numdof;
       const std::size_t numparamtrial = trialdof.size();
-      
+
       for (std::size_t ui=0; ui<numparamtrial; ++ui)
       {
         const std::size_t trialpos = trialdof[ui];
@@ -178,9 +180,9 @@ public:
           const std::size_t testpos = numdof*vi + IfaceFieldNum<testfield>::pos;
           emat(testpos, trialpos) += testshape(vi)*multiply;
         }
-      }  
+      }
     }
-    
+
     template <XFEM::PHYSICS::Field testfield,
                   XFEM::PHYSICS::Field trialfield,
                   class V1,
@@ -210,7 +212,7 @@ public:
         }
       }
     }
-    
+
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield,
               class V1,
@@ -255,7 +257,7 @@ public:
       else
         dserror(" Wrong position! ");
     }
-    
+
     template <XFEM::PHYSICS::Field testfield,
                   class V1>
     void Vector_rhsui(
@@ -263,7 +265,7 @@ public:
         const V1&           testshape,
         const double&       fac
         ) const
-    {                  
+    {
         const std::size_t numdof = 3;
 
         const std::size_t numnodetest = evec.Length()/numdof;
@@ -274,7 +276,7 @@ public:
         }
 
     }
-    
+
 private:
     // don't want = operator and cctor
     IFacePatchLocalAssembler operator = (const IFacePatchLocalAssembler& old);
@@ -283,6 +285,7 @@ private:
     const XFEM::ElementDofManager& dofman_;
 };
 
+}
 
 #endif
 #endif

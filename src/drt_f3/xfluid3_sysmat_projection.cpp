@@ -35,6 +35,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_function.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
+namespace XFLUID
+{
+
   using namespace XFEM::PHYSICS;
 
   //! size factor to allow fixed size arrays
@@ -684,7 +687,7 @@ void SysmatProject(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFLUID::callSysmatProjection(
+void callSysmatProjection(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         XFEM::InterfaceHandleXFSI*  ih,
@@ -763,6 +766,8 @@ void XFLUID::callSysmatProjection(
                 dserror("xfem_assembly Sysmat not templated yet");
         };
     }
+}
+
 }
 
 #endif

@@ -35,6 +35,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
+namespace XFLUID
+{
+
   using namespace XFEM::PHYSICS;
 
   //! size factor to allow fixed size arrays
@@ -1855,7 +1858,7 @@ void SysmatTauPressure(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFLUID::callSysmatTauPressure(
+void callSysmatTauPressure(
         ParameterList&                    params,
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
@@ -1945,6 +1948,8 @@ void XFLUID::callSysmatTauPressure(
                 dserror("xfem_assembly Sysmat not templated yet");
         };
     }
+}
+
 }
 
 #endif

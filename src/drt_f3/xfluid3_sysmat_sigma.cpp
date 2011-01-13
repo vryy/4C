@@ -36,6 +36,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_io/io_gmsh.H"
 
+namespace XFLUID
+{
+
   // Gmsh output on gausspoint
   //#define GmshOutput_velGP
   //#define GmshOutput_presGP
@@ -1834,7 +1837,7 @@ void SysmatSigma(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFLUID::callSysmatSigma(
+void callSysmatSigma(
         ParameterList&                    params,
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
@@ -1924,6 +1927,8 @@ void XFLUID::callSysmatSigma(
                 dserror("xfem_assembly Sysmat not templated yet");
         };
     }
+}
+
 }
 
 #endif

@@ -24,6 +24,8 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseVector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
+namespace XFLUID
+{
 
 const static std::size_t errorCheckValue = 77777777;
 
@@ -234,6 +236,7 @@ private:
     LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> eforce_;
 };
 
+}
 
 #endif
 

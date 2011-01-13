@@ -1376,7 +1376,7 @@ void integrateShapefunctionT(
 
   const int NUMDOF = 4;
 
-  LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
+  XFLUID::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
 
   // number of nodes for element
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
