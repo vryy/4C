@@ -152,7 +152,7 @@ namespace FSI
     
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
-    bool notsetup_;
+    bool notsetup_;  ///< indicates if Setup has not been called yet
     
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
     

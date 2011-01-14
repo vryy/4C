@@ -226,7 +226,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
       dserror("Strange things happen with ALE projection");
       break;
     }
-  notsetup_=false;
+    notsetup_=false;
   }
 }
 
@@ -1000,7 +1000,6 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
     slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, coupsfm_);
     
-//    cout<<*(coupsfm_.GetMortarTrafo())<<endl;
   }
   
   StructureField().Update();
@@ -1011,7 +1010,6 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
 void FSI::MortarMonolithicFluidSplit::Output()
 {
-//  FSI::MonolithicBase::Output();
   StructureField().Output();
   FluidField().    Output();
   
@@ -1033,7 +1031,6 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
 {
-//  FSI::MonolithicBase::ReadRestart(step);
   StructureField().ReadRestart(step);
   FluidField().ReadRestart(step);
   
@@ -1043,8 +1040,6 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   {
     IO::DiscretizationReader reader =
         IO::DiscretizationReader(FluidField().Discretization(),step);
-//    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
-//    iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
     reader.ReadVector(iprojdisp_, "slideALE");
     reader.ReadVector(iprojdispinc_, "slideALEincr");
     slideale_->ReadRestart(reader);
@@ -1055,7 +1050,6 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   SetTimeStep(FluidField().Time(),FluidField().Step());
   
   slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispn(), iprojdisp_, coupsfm_);
-//  cout<<*(coupsfm_.GetMortarTrafo())<<endl;
 }
 
 #endif
