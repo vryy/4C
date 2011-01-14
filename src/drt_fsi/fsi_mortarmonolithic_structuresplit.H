@@ -63,18 +63,16 @@ namespace FSI
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
-    //! @name Transfer helpers
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    //@}
+    /// read restart
+    virtual void ReadRestart(int step);
 
   protected:
 
     virtual void Update();
     
+    virtual void Output();
+
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(ParameterList& nlParams,
@@ -157,10 +155,12 @@ namespace FSI
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
     
+    bool notsetup_;  ///< indicates if Setup has not been called yet
+
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
     
     Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
-    Teuchos::RCP<Epetra_Vector> FTStemp_;       ///<fluid displacement on struct side at every time step begin
+    Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
     
   };
 }
