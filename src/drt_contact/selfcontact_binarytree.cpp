@@ -1086,7 +1086,9 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
   roots_.resize(0);
   //cout << "Initial dual graph size: " << (*dualGraph).size() << endl;
 
+  //**********************************************************************
   // the idea is to empty the dual graph step by step
+  //**********************************************************************
   while (!(*dualGraph).empty())
   {
     // get the edge with lowest costs (= the first edge in the dual graph as
@@ -1353,11 +1355,16 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
     (*dualGraph).erase(contractedEdge);
 
   } // while(!(*dualGraph).empty())
+  //**********************************************************************
 
   // complete the tree starting from its roots (top-down)
   if ((int)roots_.size() == 0) dserror("ERROR: No root treenode found!");
   for (int k=0;k<(int)roots_.size();++k)
     roots_[k]->CompleteTree(0,enlarge_);
+
+  // output to screen
+  if (Comm().MyPID()==0)
+    cout << "\nFound " << (int)roots_.size() << " root node(s) for binary tree." << endl;
 
   // in 3D we have to calculate adjacent treenodes
   if (dim_== 3)
@@ -1366,10 +1373,8 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(map <RCP<SelfDualEdge>,vect
     CalculateAdjacentTnodes();
   }
 
-  //**********************************************************************
-  // debug output
-  //**********************************************************************
   /*
+  // debug output
   if (Comm().MyPID()==0)
   {
 		// print roots
