@@ -1842,7 +1842,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 		default:
 		{
 			cout<<"Layer"<<endl;
-
+			double halfthick = characlength_/2.0;
 			// compute normal
 			// cross product v_1 x v_2, plane normal
 			LINALG::Matrix<3,1> normal;
@@ -1853,6 +1853,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
 			normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
 			normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
+			normal.Scale(1.0/normal.Norm2());
 			// upper and lower bound
 			std::vector<int> indices((int)testvolumepos_.size(),0);
 			switch((int)testvolumepos_.size())
@@ -1876,10 +1877,10 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				{
 					indices[0] = 0;
 					indices[1] = 1;
-					indices[2] = 4;
+					indices[2] = 5;
 					indices[3] = 2;
 					indices[4] = 3;
-					indices[5] = 5;
+					indices[5] = 4;
 				}
 				break;
 				default: dserror("Incorrect number of intersection points!");
@@ -1891,22 +1892,22 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 
 				// upper edge
 				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2);
+				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				// lower edge
 				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
+				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				// connections
 				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)+normal(0) << "," << testvolumepos_[index0](1)+normal(1) << "," << testvolumepos_[index0](2)+normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index0](0)-normal(0) << "," << testvolumepos_[index0](1)-normal(1) << "," << testvolumepos_[index0](2)-normal(2);
+				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index1](0)+normal(0) << "," << testvolumepos_[index1](1)+normal(1) << "," << testvolumepos_[index1](2)+normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)-normal(0) << "," << testvolumepos_[index1](1)-normal(1) << "," << testvolumepos_[index1](2)-normal(2);
+				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2) << ",";
+				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
 				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
 			}
 		}
@@ -2950,10 +2951,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								std::vector<int> indices((int)interseccoords.size(),0);
 								indices[0] = 0;
 								indices[1] = 1;
-								indices[2] = 4;
+								indices[2] = 5;
 								indices[3] = 2;
 								indices[4] = 3;
-								indices[5] = 5;
+								indices[5] = 4;
 
 								for(int j=1; j<(int)indices.size()+1; j++)
 								{
