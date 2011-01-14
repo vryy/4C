@@ -25,6 +25,7 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(Epetra_Comm& comm)
   : BlockMonolithic(comm),
     comm_(comm)
 {
+  notsetup_ = true;
   return;
 }
 
@@ -32,196 +33,200 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::SetupSystem()
 {
-
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-
-  aleproj_ = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
+  if (notsetup_)
+  {
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
   
-  SetDefaultParameters(fsidyn,NOXParameterList());
-
-  // we use non-matching meshes at the interface
-  // mortar with: structure = master, fluid = slave
-
-  // structure to fluid
-
-  coupsfm_.Setup(*StructureField().Discretization(),
-                 *FluidField().Discretization(),
-                 *AleField().Discretization(),
-                 comm_,false);
-  
-  // fluid to ale at the interface
-
-  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface().FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface().FSICondMap(),
-                                   "FSICoupling");
-
-  // we might have a free surface
-  if (FluidField().Interface().FSCondRelevant())
-  {
-    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
-                                      FluidField().Interface().FSCondMap(),
-                                     *AleField().Discretization(),
-                                      AleField().Interface().FSCondMap(),
-                                      "FREESURFCoupling");
-  }
-  
-  ADAPTER::Coupling& coupfa = FluidAleCoupling();
-
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
-
-  coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
-                       *fluidnodemap,
-                       *alenodemap);
-
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
-
-  // create combined map
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField().DofRowMap());
-#ifdef FLUIDSPLITAMG
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-#else
-  vecSpaces.push_back(FluidField()    .Interface().OtherMap());
-#endif
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
-
-  if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No inner fluid equations. Splitting not possible.");
-
-  SetDofRowMaps(vecSpaces);
-
-  /*----------------------------------------------------------------------*/
-  // Switch fluid to interface split block matrix
-  FluidField().UseBlockMatrix(true);
-
-  // build ale system matrix in splitted system
-  AleField().BuildSystemMatrix(false);
-
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
-
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
-  vector<double> apcomega;
-  {
-    int    word1;
-    double word2;
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
-      while (pciterstream >> word1)
-        pciter.push_back(word1);
-      while (pcomegastream >> word2)
-        pcomega.push_back(word2);
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
-      while (pciterstream >> word1)
-        spciter.push_back(word1);
-      while (pcomegastream >> word2)
-        spcomega.push_back(word2);
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
-      while (pciterstream >> word1)
-        fpciter.push_back(word1);
-      while (pcomegastream >> word2)
-        fpcomega.push_back(word2);
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
-      while (pciterstream >> word1)
-        apciter.push_back(word1);
-      while (pcomegastream >> word2)
-        apcomega.push_back(word2);
-    }
-  }
-
-  // enable debugging
-  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
-  {
-    pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
-  }
-
-  // create block system matrix
-  switch(linearsolverstrategy_)
-  {
-  case INPAR::FSI::FSIAMG:
-    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
-                                   Extractor(),
-                                   StructureField(),
-                                   FluidField(),
-                                   AleField(),
-                                   false,
-                                   Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                   pcomega,
-                                   pciter,
-                                   spcomega,
-                                   spciter,
-                                   fpcomega,
-                                   fpciter,
-                                   apcomega,
-                                   apciter,
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-    break;
-  case INPAR::FSI::PreconditionedKrylov:
-    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
-                                   pcdbg_,
-                                   Extractor(),
-                                   StructureField(),
-                                   FluidField(),
-                                   AleField(),
-                                   false,
-                                   Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
-                                   pcomega[0],
-                                   pciter[0],
-                                   spcomega[0],
-                                   spciter[0],
-                                   fpcomega[0],
-                                   fpciter[0],
-                                   apcomega[0],
-                                   apciter[0],
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-    break;
-  default:
-    dserror("Unsupported type of monolithic solver");
-    break;
-  }
-  
-  // set up sliding ale if necessary
-  switch(aleproj_)
-  {
-  case INPAR::FSI::ALEprojection_none:
-    break;
-  case INPAR::FSI::ALEprojection_curr:
-  case INPAR::FSI::ALEprojection_ref:
+    aleproj_ = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
     
-    // set up sliding ale utils
-    slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
-                                                  FluidField().Discretization(),
-                                                  coupsfm_,
-                                                  true));
+    SetDefaultParameters(fsidyn,NOXParameterList());
+  
+    // we use non-matching meshes at the interface
+    // mortar with: structure = master, fluid = slave
+  
+    // structure to fluid
+  
+    coupsfm_.Setup(*StructureField().Discretization(),
+                   *FluidField().Discretization(),
+                   *AleField().Discretization(),
+                   comm_,false);
     
-    iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+    // fluid to ale at the interface
+  
+    icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                     FluidField().Interface().FSICondMap(),
+                                    *AleField().Discretization(),
+                                     AleField().Interface().FSICondMap(),
+                                     "FSICoupling");
+  
+    // we might have a free surface
+    if (FluidField().Interface().FSCondRelevant())
+    {
+      fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                        FluidField().Interface().FSCondMap(),
+                                       *AleField().Discretization(),
+                                        AleField().Interface().FSCondMap(),
+                                        "FREESURFCoupling");
+    }
     
-    break;
-  default:
-    dserror("Strange things happen with ALE projection");
-    break;
+    ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  
+    // the fluid-ale coupling always matches
+    const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+    const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+  
+    coupfa.SetupCoupling(*FluidField().Discretization(),
+                         *AleField().Discretization(),
+                         *fluidnodemap,
+                         *alenodemap);
+  
+    FluidField().SetMeshMap(coupfa.MasterDofMap());
+  
+    // create combined map
+  
+    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+    vecSpaces.push_back(StructureField().DofRowMap());
+  #ifdef FLUIDSPLITAMG
+    vecSpaces.push_back(FluidField()    .DofRowMap());
+  #else
+    vecSpaces.push_back(FluidField()    .Interface().OtherMap());
+  #endif
+    vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  
+    if (vecSpaces[1]->NumGlobalElements()==0)
+      dserror("No inner fluid equations. Splitting not possible.");
+  
+    SetDofRowMaps(vecSpaces);
+  
+    /*----------------------------------------------------------------------*/
+    // Switch fluid to interface split block matrix
+    FluidField().UseBlockMatrix(true);
+  
+    // build ale system matrix in splitted system
+    AleField().BuildSystemMatrix(false);
+  
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface().OtherMap()));
+  
+    vector<int> pciter;
+    vector<double> pcomega;
+    vector<int> spciter;
+    vector<double> spcomega;
+    vector<int> fpciter;
+    vector<double> fpcomega;
+    vector<int> apciter;
+    vector<double> apcomega;
+    {
+      int    word1;
+      double word2;
+      {
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+        while (pciterstream >> word1)
+          pciter.push_back(word1);
+        while (pcomegastream >> word2)
+          pcomega.push_back(word2);
+      }
+      {
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
+        while (pciterstream >> word1)
+          spciter.push_back(word1);
+        while (pcomegastream >> word2)
+          spcomega.push_back(word2);
+      }
+      {
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
+        while (pciterstream >> word1)
+          fpciter.push_back(word1);
+        while (pcomegastream >> word2)
+          fpcomega.push_back(word2);
+      }
+      {
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
+        while (pciterstream >> word1)
+          apciter.push_back(word1);
+        while (pcomegastream >> word2)
+          apcomega.push_back(word2);
+      }
+    }
+  
+    // enable debugging
+    if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
+    {
+      pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
+    }
+  
+    // create block system matrix
+    switch(linearsolverstrategy_)
+    {
+    case INPAR::FSI::FSIAMG:
+      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
+                                     Extractor(),
+                                     StructureField(),
+                                     FluidField(),
+                                     AleField(),
+                                     false,
+                                     Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                     pcomega,
+                                     pciter,
+                                     spcomega,
+                                     spciter,
+                                     fpcomega,
+                                     fpciter,
+                                     apcomega,
+                                     apciter,
+                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
+      break;
+    case INPAR::FSI::PreconditionedKrylov:
+      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
+                                     pcdbg_,
+                                     Extractor(),
+                                     StructureField(),
+                                     FluidField(),
+                                     AleField(),
+                                     false,
+                                     Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                     pcomega[0],
+                                     pciter[0],
+                                     spcomega[0],
+                                     spciter[0],
+                                     fpcomega[0],
+                                     fpciter[0],
+                                     apcomega[0],
+                                     apciter[0],
+                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
+      break;
+    default:
+      dserror("Unsupported type of monolithic solver");
+      break;
+    }
+    
+    // set up sliding ale if necessary
+    switch(aleproj_)
+    {
+    case INPAR::FSI::ALEprojection_none:
+      break;
+    case INPAR::FSI::ALEprojection_curr:
+    case INPAR::FSI::ALEprojection_ref:
+      
+      // set up sliding ale utils
+      slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
+                                                    FluidField().Discretization(),
+                                                    coupsfm_,
+                                                    true));
+      
+      iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+      iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+      
+      break;
+    default:
+      dserror("Strange things happen with ALE projection");
+      break;
+    }
+  notsetup_=false;
   }
 }
 
@@ -979,27 +984,78 @@ void FSI::MortarMonolithicFluidSplit::Update()
   // update history variabels for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    Teuchos::RCP<Epetra_Vector> iprojdisp = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
         AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement());
 
     slideale_->Remeshing(StructureField(),
                         FluidField().Discretization(),
                         idispale,
-                        iprojdisp,
+                        iprojdisp_,
                         coupsfm_,
                         Comm(),
                         aleproj_);
   
-    iprojdispinc_->Update(1.0,*iprojdisp,-1.0,*idispale,0.0);
+    iprojdispinc_->Update(1.0,*iprojdisp_,-1.0,*idispale,0.0);
 
-    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp, coupsfm_);
+    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, coupsfm_);
+    
+//    cout<<*(coupsfm_.GetMortarTrafo())<<endl;
   }
   
   StructureField().Update();
   FluidField().Update();
   AleField().Update();
 
+}
+
+void FSI::MortarMonolithicFluidSplit::Output()
+{
+//  FSI::MonolithicBase::Output();
+  StructureField().Output();
+  FluidField().    Output();
+  
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+  {
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    if (uprestart != 0 && FluidField().Step() % uprestart == 0)
+    {
+      FluidField().DiscWriter().WriteVector("slideALE", iprojdisp_);
+      FluidField().DiscWriter().WriteVector("slideALEincr", iprojdispinc_);
+      slideale_->OutputRestart(FluidField().DiscWriter());
+    }
+  }
+
+  AleField().      Output();
+  FluidField().LiftDrag();
+}
+
+void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
+{
+//  FSI::MonolithicBase::ReadRestart(step);
+  StructureField().ReadRestart(step);
+  FluidField().ReadRestart(step);
+  
+  SetupSystem();
+  
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+  {
+    IO::DiscretizationReader reader =
+        IO::DiscretizationReader(FluidField().Discretization(),step);
+//    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+//    iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
+    reader.ReadVector(iprojdisp_, "slideALE");
+    reader.ReadVector(iprojdispinc_, "slideALEincr");
+    slideale_->ReadRestart(reader);
+  }
+  
+  AleField().ReadRestart(step);
+
+  SetTimeStep(FluidField().Time(),FluidField().Step());
+  
+  slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispn(), iprojdisp_, coupsfm_);
+//  cout<<*(coupsfm_.GetMortarTrafo())<<endl;
 }
 
 #endif

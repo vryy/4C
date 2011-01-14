@@ -33,6 +33,12 @@ namespace ALE
   class Ale;
 }
 
+namespace IO
+{
+  class DiscretizationReader;
+  class DiscretizationWriter;
+}
+
 namespace FSI
 {
   /// FSI::UTILS: Random stuff that might be helpful when dealing with FSI problems
@@ -131,6 +137,18 @@ namespace FSI
           Teuchos::RCP<Epetra_Vector> idispstruct, ///< displacement of structure
           Teuchos::RCP<Epetra_Vector> idispale,    ///< (proj.) displacement of ale
           ADAPTER::CouplingMortar& coupsf          ///< mortar adapter
+      );
+      
+      /// write history vectors for restart
+      void OutputRestart
+      (
+        IO::DiscretizationWriter& output
+      );
+
+      /// read history values for restart
+      void ReadRestart
+      (
+          IO::DiscretizationReader& reader
       );
 
     protected:

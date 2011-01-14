@@ -42,6 +42,8 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_ale/ale.H"
 
+#include "../drt_io/io_control.H"
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -1146,6 +1148,25 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     if (err == 1) dserror("error while replacing values");
 
   }
+}
+
+void FSI::UTILS::SlideAleUtils::OutputRestart
+(
+  IO::DiscretizationWriter& output
+)
+{
+  output.WriteVector("projhist", iprojhist_);
+  
+  return;
+}
+
+/// read history values for restart
+void FSI::UTILS::SlideAleUtils::ReadRestart
+(
+    IO::DiscretizationReader& reader
+)
+{
+  reader.ReadVector(iprojhist_, "projhist");
 }
 
 #endif
