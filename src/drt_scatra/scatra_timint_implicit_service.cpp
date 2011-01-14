@@ -1236,6 +1236,10 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
 {
+  //safety check
+  if (flux == Teuchos::null)
+    dserror("Null pointer for flux vector output. Output() called before Update() ??");
+
   // WORK-AROUND FOR NURBS DISCRETIZATIONS
   // using noderowmap is problematic. Thus, we do not add normal vectors
   // to the scalar result field (scalar information is enough anyway)
