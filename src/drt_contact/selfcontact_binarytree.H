@@ -736,6 +736,14 @@ public:
   void SearchSelfContact(RCP<SelfBinaryTreeNode> treenode);
   
   /*!
+  \brief Evaluate Binary search tree for contact search between separate roots
+         (this is more or less identical to two-body contact search)
+
+  */
+  void SearchRootContact(RCP<SelfBinaryTreeNode> treenode1,
+  		                   RCP<SelfBinaryTreeNode> treenode2);
+
+  /*!
   \brief Find contact of adjacent surfaces
 
   */ 
@@ -789,7 +797,7 @@ protected:
   double                                     eps_;            // epsilon for enlarging dops (of user)
   double                                     enlarge_;        // to enlarge dops
   
-  RCP<SelfBinaryTreeNode>                    root_;           // root treenode
+  vector<RCP<SelfBinaryTreeNode> >           roots_;          // root treenodes
   vector<vector<RCP<SelfBinaryTreeNode> > >  treenodes_;      // storage of all treenodes, sorted by layers
   map<int,vector<int> >                      contactpairs_;   // contacting elements (key: GID, argument: GIDs of partners)
   map<int,vector<RCP<SelfBinaryTreeNode> > > adjacencymatrix_;// map of adjacent elements, sorted by global id (only needed in 3D)
