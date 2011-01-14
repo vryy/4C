@@ -700,14 +700,15 @@ slideeleredmap_(null)
     if (!err)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
+
+  //build a redundant map of ids of all sliding elements
   for ( eit=istructslideles_.begin() ; eit != istructslideles_.end(); eit++ )
   {
-    slideeleidvector.push_back((*eit).first);
+    //build slideeleidvector with unique distribution. Otherwise, AllreduceEMap() will complain in DEBUG
+    if (structdis->Comm().MyPID()==(*eit).second->Owner())
+      slideeleidvector.push_back((*eit).first);
   }
-
-
   const Epetra_Map slideelemap (-1, slideeleidvector.size(), &slideeleidvector[0], 0, structdis->Comm());
-
   slideeleredmap_ = LINALG::AllreduceEMap(slideelemap);
 
   // declare fluid objects in interface
@@ -819,7 +820,6 @@ void FSI::UTILS::SlideAleUtils::Remeshing
   map<int, RCP<DRT::Element> > structreduelements;
   for (int eleind = 0; eleind<msfullelemap->NumMyElements(); eleind++)
   {
-    if (slideeleredmap_->LID(msfullelemap->GID(eleind))!=-1)
     {
       DRT::Element* tmpele = interfacedis.gElement(msfullelemap->GID(eleind));
       if (dim == 3)
