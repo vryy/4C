@@ -309,6 +309,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   samstart_  = turbparams->get<int>("SAMPLING_START");
   samstop_   = turbparams->get<int>("SAMPLING_STOP" );
   dumperiod_ = turbparams->get<int>("DUMPING_PERIOD");
+  if (dumperiod_ < 0) dserror("dumperiod_ is negative!");
 
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));

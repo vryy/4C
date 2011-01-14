@@ -1636,16 +1636,18 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // statistics section for normfluxintegral
       if (DoBoundaryFluxStatistics())
       {
+        // add current flux value to the sum!
         (*sumnormfluxintegral_)[condid] += parnormfluxintegral[0]; // only first scalar!
         int samstep = step_-samstart_+1;
 
-        if (dumperiod_ < 1)
-          dserror("dumperiod_ is zero or even negative!");
-        if (dumperiod_ > 1)
-          dserror("formula is wrong for dumperiod_ > 1");
+        // dump every dumperiod steps (i.e., write to screen)
+        bool dumpit(false);
+        if (dumperiod_==0)
+          {dumpit=true;}
+        else
+          {if(samstep%dumperiod_==0) dumpit=true;}
 
-        // dump every dumperiod steps
-        if (samstep%dumperiod_==0)
+        if(dumpit)
         {
           double meannormfluxintegral = (*sumnormfluxintegral_)[condid]/samstep;
           // dump statistical results
