@@ -268,6 +268,9 @@ protected:
 	//! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
 	void GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color);
 
+	//! \brief gmsh output for test volumes in presence of periodic boundary conditions
+	void GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color);
+
 
 	/*! \brief Handles Crosslinker diffusion
 	 *  \param dis             (in) latest displacement
