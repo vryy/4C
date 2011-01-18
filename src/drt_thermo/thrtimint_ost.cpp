@@ -90,7 +90,7 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv((*temp_)(0), fext_, tang_);
+  ApplyForceExternalConv((*temp_)(0), (*temp_)(0), fext_, tang_);
 
   // have a nice day
   return;
@@ -145,10 +145,11 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // if the boundary condition shall be dependent on the current temperature
   // solution T_n+1 --> linearisation must be uncommented
-//  ApplyForceExternalConv(tempn_, fextn_, tang_);
+  // --> use tempn_
 
-  // if the old temperature T_n is sufficient --> no linearisation needed!
-  ApplyForceExternalConv((*temp_)(0), fextn_, tang_);
+  // if the old temperature T_n  is sufficient --> no linearisation needed!
+  // --> use (*temp_)(0)
+  ApplyForceExternalConv((*temp_)(0), tempn_, fextn_, tang_);
 
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
@@ -158,8 +159,8 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
   // with R_{n+theta}     = ( T_{n+1} - T_n ) / dt
-  //      F_{int;n+theta} = theta * F_{int;n+1} - (1 - theta) * F_{int;n}
-  //      F_{ext;n+theta} = theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
+  //      F_{int;n+theta} = theta * F_{int;n+1} + (1 - theta) * F_{int;n}
+  //      F_{ext;n+theta} = - theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
   fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);
   // here the time derivative is introduced needed for fcap depending on T'!
   fres_->Scale(1.0/(*dt_)[0]);
@@ -397,7 +398,8 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
  |  evaluate the convective boundary condition               dano 12/10 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceExternalConv(
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector> fext,  //!< external force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
   )
@@ -407,7 +409,7 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(
   // set parameters
   p.set<double>("theta", theta_);
   // call the base function
-  TimInt::ApplyForceExternalConv(p,temp,fext,tang);
+  TimInt::ApplyForceExternalConv(p,tempn,temp,fext,tang);
   // finish
   return;
 }

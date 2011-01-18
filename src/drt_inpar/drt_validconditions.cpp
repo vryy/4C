@@ -2246,6 +2246,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > thermoconvectcomponents;
 
+  // decide here if approximation is sufficient
+  // --> Tempn (old temperature T_n)
+  // or if the exact solution is needed
+  // --> Tempnp (current temperature solution T_n+1) with linearisation
+  thermoconvectcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "temperature state","Tempnp",
+        Teuchos::tuple<std::string>("Tempnp","Tempn"),
+        Teuchos::tuple<std::string>("Tempnp","Tempn"))));
+
   // heat transfer coefficient
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("coeff")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));

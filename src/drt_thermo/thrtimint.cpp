@@ -152,7 +152,7 @@ THR::TimInt::TimInt(
 
 /*----------------------------------------------------------------------*
  |  equilibrate system at initial state                     bborn 08/09 |
- |  and identify consistent temperature rate                            |
+ |  and identify consistent temperature rate (only dynamic case)        |
  *----------------------------------------------------------------------*/
 void THR::TimInt::DetermineCapaConsistTempRate()
 {
@@ -167,6 +167,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // get external force
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext);
+  // ApplyForceExternalConv is applied in the derived classes!
 
   // initialise matrices
   tang_->Zero();
@@ -207,6 +208,8 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // calculate consistent initial temperature rates
   {
+    // rhs corresponds to residual on the rhs
+    // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
     Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
@@ -734,12 +737,14 @@ void THR::TimInt::ApplyForceExternal(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  evaluate convection boundary conditions at t_{n+1}       dano 12/10 |
+ |  evaluate convection boundary conditions at t_{n+1}       dano 01/11 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternalConv(
   Teuchos::ParameterList& p,
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+  const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
+  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
   RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
   )
@@ -754,7 +759,7 @@ void THR::TimInt::ApplyForceExternalConv(
 
   // set vector values needed by elements
   discret_->ClearState();
-  // SetState(0,...) in case of multiple dofsets (e.g. TSI)
+  discret_->SetState("old temperature", tempn);
   discret_->SetState("temperature", temp);
   // get load vector
   // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
@@ -765,7 +770,6 @@ void THR::TimInt::ApplyForceExternalConv(
   // go away
   return;
 }
-
 /*----------------------------------------------------------------------*
  |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
  *----------------------------------------------------------------------*/

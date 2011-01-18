@@ -242,11 +242,11 @@ namespace THR
       Teuchos::RCP<Epetra_Vector>& fext  //!< external force
       );
 
-
     //! Apply convective boundary conditions force
     void ApplyForceExternalConv(
       Teuchos::ParameterList& p,
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
+      const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
+      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
       Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
       Teuchos::RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
       );

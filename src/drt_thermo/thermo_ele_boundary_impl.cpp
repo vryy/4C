@@ -175,12 +175,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       //       element will contribute the right value on that proc
     }
   }
-  else if (action =="integrate_shape_functions")
+  else if (action == "integrate_shape_functions")
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
   }
+  // surface heat transfer boundary condition
   else if (action == "calc_thermo_fextconvection")
   {
     // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -190,38 +191,54 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     LINALG::Matrix<nen_,nen_> etang(elemat1_epetra.A(),true);  // view only!
     LINALG::Matrix<nen_,1> efext(elevec1_epetra.A(),true);  // view only!
 
+    // get current condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null)
+      dserror("Cannot access condition 'ThermoConvections'");
+
+    // access parameters of the condition
+    const std::string* tempstate = cond->Get<std::string>("temperature state");
+    double coeff = cond->GetDouble("coeff");
+    double surtemp = cond->GetDouble("surtemp");
+
     // disassemble temperature
     if (discretization.HasState("temperature"))
     {
       // get actual values of temperature from global location vector
       std::vector<double> mytempnp(lm.size());
       Teuchos::RCP<const Epetra_Vector> tempnp
-       = discretization.GetState("temperature");
+        = discretization.GetState("temperature");
       if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
 
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
       // build the element temperature
       LINALG::Matrix<nen_,1> etemp(&(mytempnp[0]),true);  // view only!
       etemp_.Update(etemp);  // copy
-
-      // get current condition
-      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-      if (cond == Teuchos::null)
-        dserror("Cannot access condition 'ThermoConvections'");
-
-      // access parameters of the condition
-      double coeff = cond->GetDouble("coeff");
-      double surtemp = cond->GetDouble("surtemp");
-
-      // and now check if there is a convection heat transfer boundary condition
-      EvaluateThermoConvection(
-        ele, // current boundary element
-        &etang, // element-matrix
-        &efext, // element-rhs
-        coeff,
-        surtemp
-        );
     } // discretization.HasState("temperature")
+
+    if (discretization.HasState("old temperature"))
+    {
+      // get actual values of temperature from global location vector
+      std::vector<double> mytempn(lm.size());
+      Teuchos::RCP<const Epetra_Vector> tempn
+        = discretization.GetState("old temperature");
+      if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
+
+      DRT::UTILS::ExtractMyValues(*tempn,mytempn,lm);
+      // build the element temperature
+      LINALG::Matrix<nen_,1> etemp(&(mytempn[0]),true);  // view only!
+      etemp_.Update(etemp);  // copy
+    } // discretization.HasState("old temperature")
+
+    // and now check if there is a convection heat transfer boundary condition
+    EvaluateThermoConvection(
+      ele, // current boundary element
+      &etang, // element-matrix
+      &efext, // element-rhs
+      coeff,
+      surtemp,
+      *tempstate
+      );
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -439,7 +456,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
   LINALG::Matrix<nen_,nen_>* etang,
   LINALG::Matrix<nen_,1>* efext,
   const double coeff,
-  const double surtemp
+  const double surtemp,
+  const std::string tempstate
   )
 {
   //----------------------------------------------------------------------
@@ -449,12 +467,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   if (intpoints.IP().nquad != nquad_)
     dserror("Trouble with number of Gauss points");
-
-  // TODO: if a time curve shall be considered
-//  // find out whether we will use a time curve
-//  bool usetime = true;
-//  const double time = params.get("total time",-1.0);
-//  if (time<0.0) usetime = false;
 
   // integration loop
   /* =========================================================================*/
@@ -498,15 +510,18 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
       efext->Multiply(coefffac_,funct_,Ntemp,1.0);
     }
 
-//    // if the boundary condition shall be dependent on the current temperature
-//    // solution T_n+1 --> linearisation must be uncommented
-//    // ---------------------matrix
-//    if (etang != NULL)
-//    {
-//      // ke = ke + (N^T . coeff . N) * detJ * w(gp)
-//      etang->MultiplyNT(coefffac_,funct_,funct_,1.0);
-//      etang->Scale(-1);
-//    }
+    // concentration-dependent Butler-Volmer law(s)
+    if (tempstate == "Tempnp")
+    {
+      // if the boundary condition shall be dependent on the current temperature
+      // solution T_n+1 --> linearisation must be considered
+      // ---------------------matrix
+      if (etang != NULL)
+      {
+        // ke = ke + (N^T . coeff . N) * detJ * w(gp)
+        etang->MultiplyNT(coefffac_,funct_,funct_,1.0);
+      }
+    }
 
    /* =======================================================================*/
   }/* ================================================== end of Loop over GP */
@@ -543,9 +558,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // set the integration factor
   fac_ = intpoints.IP().qwgt[iquad] * drs;
-
-//  // 21.12.10
-//  cout << "EvalShapeFuncAndIntFac fac_ " << fac_ << endl;
 
   // say goodbye
   return;

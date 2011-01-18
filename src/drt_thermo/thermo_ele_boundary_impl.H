@@ -228,7 +228,8 @@ namespace ELEMENTS
       LINALG::Matrix<nen_,1>* efext,  // view only!
                                      ///< heat flux to be applied
       const double coeff,  ///< heat transfer coefficient
-      const double surtemp  ///< surrounding temperature
+      const double surtemp,  ///< surrounding temperature
+      const std::string tempstate  ///< desired temperature state
       );
 
     //! actual values of temperatures
