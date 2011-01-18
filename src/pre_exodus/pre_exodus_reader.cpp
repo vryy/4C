@@ -38,7 +38,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
   int error;
   int CPU_word_size,IO_word_size;
   float exoversion;                   /* version of exodus */
-  CPU_word_size = sizeof(float);      /* float or double */
+  CPU_word_size = sizeof(double);     /* size of a double */
   IO_word_size = 0;                   /* use what is stored in file */
 
   //cout << "meshfilename: " << exofilename << endl;
@@ -63,9 +63,9 @@ EXODUS::Mesh::Mesh(const string exofilename)
 
   // get nodal coordinates
   {
-    vector<float> x(num_nodes);
-    vector<float> y(num_nodes);
-    vector<float> z(num_nodes);
+    vector<double> x(num_nodes);
+    vector<double> y(num_nodes);
+    vector<double> z(num_nodes);
     error = ex_get_coord(exoid_,&x[0],&y[0],&z[0]);
     if (error != 0) dserror("exo error returned");
 
@@ -160,7 +160,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
     /* Read NodeSet property names ***********************************************
      * They are assigned by ICEM and provide recognition */
     int num_props;
-    float fdum;
+    double fdum;
     char cdum; //dummy argument
     error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, &cdum);
     // allocate memory for NodeSet property names
@@ -844,14 +844,14 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   const char *newexofilechar = newexofilename.c_str();
 
   int CPU_word_size, IO_word_size, exoid, error;
-  CPU_word_size = sizeof(float); /* use float or double*/
+  CPU_word_size = sizeof(double); /* use double*/
   IO_word_size = 8; /* store variables as doubles */
 
   /* create EXODUS II file */
   exoid = ex_create (newexofilechar, /* filename path */
                      EX_CLOBBER,     /* create mode */
-                     &CPU_word_size, /* CPU float word size in bytes */
-                     &IO_word_size); /* I/O float word size in bytes */
+                     &CPU_word_size, /* CPU double word size in bytes */
+                     &IO_word_size); /* I/O double word size in bytes */
 
   int num_elem_blk = GetNumElementBlocks();
   int num_node_sets = GetNumNodeSets();
@@ -866,7 +866,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   int num_qa_rec;
   char* qa_record[MAX_STR_LENGTH][4]; // should be MAX_QA_REC][4], but this is nowhere defined!;
   char cdum; //dummy variable
-  float fdum;
+  double fdum;
   /* read QA records */
   ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, &cdum);/* write QA records */
   for (int i=0; i<num_qa_rec; i++)
@@ -887,9 +887,9 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   for (int i=0; i<num_dim_; i++) free(coord_names[i]);
 
   // Write nodal coordinates
-  vector<float> xc(num_nodes);
-  vector<float> yc(num_nodes);
-  vector<float> zc(num_nodes);
+  vector<double> xc(num_nodes);
+  vector<double> yc(num_nodes);
+  vector<double> zc(num_nodes);
   map<int,vector<double> >::const_iterator it;
   RCP<map<int,vector<double> > > nodes = GetNodes();
   for(it=nodes->begin(); it != nodes->end(); ++it){

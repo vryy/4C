@@ -426,7 +426,7 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
 void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << endl;
-  dat.precision(8);
+  dat.precision(16);
   RCP<map<int,vector<double> > > nodes = mymesh.GetNodes();
   map<int,vector<double> >::const_iterator i_node;
   for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
