@@ -1919,21 +1919,21 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 				LINALG::SerialDenseMatrix connection1(3,2);
 				for(int k=0; k<loweredge.M(); k++)
 				{
-					loweredge(k,0) = testvolumepos_[index0](k)-normal(k)*halfthick;
-					loweredge(k,1) = testvolumepos_[index1](k)-normal(k)*halfthick;
-					upperedge(k,0) = testvolumepos_[index0](k)+normal(k)*halfthick;
-					upperedge(k,1) = testvolumepos_[index1](k)+normal(k)*halfthick;
+					loweredge(k,0) = testvolumepos_[index0](k)-halfthick*normal(k);
+					loweredge(k,1) = testvolumepos_[index1](k)-halfthick*normal(k);
+					upperedge(k,0) = testvolumepos_[index0](k)+halfthick*normal(k);
+					upperedge(k,1) = testvolumepos_[index1](k)+halfthick*normal(k);
 					connection0(k,0) = loweredge(k,0);
 					connection0(k,1) = upperedge(k,0);
 					connection1(k,0) = loweredge(k,1);
-					connection1(k,0) = upperedge(k,1);
+					connection1(k,1) = upperedge(k,1);
 				}
 				// (long) edges
-				GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color);
-				GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color);
+				GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
+				GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
 				// connecting edges
-				GmshNetworkStructVolumePeriodic(connection0,2,gmshfilecontent,color);
-				GmshNetworkStructVolumePeriodic(connection1,2,gmshfilecontent,color);
+				GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
+				GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
 
 				// periodic boundary shift for connections
 
@@ -1977,14 +1977,14 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 	dir.Scale(1.0/dir.Norm2());
 	// divide given edge into intervals for periodic boundary shift and visualization
 
-	for(int k=1; k<numsections; k++)
+	for(int k=0; k<numsections; k++)
 	{
 		// k-th intersection point
 		LINALG::SerialDenseMatrix linepart(3,2);
 		for(int l=0; l<(int)linepart.M(); l++)
 		{
-			linepart(l,0) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)(k-1);
-			linepart(l,1) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)k;
+			linepart(l,0) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)k;
+			linepart(l,1) = coord(l,0)+(coord(l,1)-coord(l,0))/(double)numsections*(double)(k+1);
 		}
 
 		// determine how the line is broken
@@ -2722,22 +2722,20 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			FilamentOrientations(discol, &normedvectors, orientfilename, filorientoutput);
 
 			// select the vector best fitting the axis of the bundle cylinder: vector with the greatest length -> smallest
-			// enclosed angle with the cylder axis
+			// enclosed angle with the cylinder axis
 			int startiterindex = 0;
 			double veclength = 0.0;
-			for(int j=0; j<(int)normedvectors.size(); j++)
-				if(normedvectors[j].Norm2() > veclength)
-				{
-					veclength = normedvectors[j].Norm2();
-					startiterindex = j;
-				}
-
-			// Scale normed vectors to unit length
 			cout<<"Normed vectors:"<<endl;
 			for(int i=0; i<(int)normedvectors.size(); i++)
 			{
+				if(normedvectors[i].Norm2() > veclength)
+				{
+					veclength = normedvectors[i].Norm2();
+					startiterindex = i;
+				}
+				// Scale normed vectors to unit length
 				normedvectors[i].Scale(1/normedvectors[i].Norm2());
-				cout<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
+				cout<<i<<": "<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
 			}
 
 /// determine network structure
@@ -2819,6 +2817,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						const int maxiterations = 25;
 						cout<<"\nVector iteration:"<<endl;
 						cout<<"Bundle: ";
+						cout<<"n_0 = n["<<startiterindex<<"]"<<endl;
 						DDCorrIterateVector(discol, &normj, maxiterations);
 						// for output
 						cylvec = normj;
@@ -3228,7 +3227,7 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 	bool vectorconverged = false;
 	int iteration = 0;
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double tolangle = M_PI/90.0; // 2°
+	double tolangle = M_PI/180.0; // 1°
 
 	while(!vectorconverged)
 	{
@@ -3267,16 +3266,16 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 						dirvec(dof) = poscomponent1-poscomponent0;
 					}
 					// normed vector
-					dirvec.Scale(1/dirvec.Norm2());
+					dirvec.Scale(1.0/dirvec.Norm2());
 
-					if(acos(dirvec.Dot((*vectorj)))>M_PI/2.0)
+					if(acos(dirvec.Dot((*vectorj)))>(M_PI/2.0))
 						dirvec.Scale(-1.0);
 					vectorjp += dirvec;
 				}
 			}
 			vectorjp.Scale(1.0/vectorjp.Norm2());
 			// check angle between old and n_j and n_(j+1)
-			double vecvecangle = acos(vectorj->Dot(vectorjp));
+			double vecvecangle = acos(vectorjp.Dot((*vectorj)));
 			if(vecvecangle < tolangle)
 			{
 				cout<<"vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
@@ -3751,7 +3750,7 @@ void StatMechManager::FilamentOrientations(const Epetra_Vector& discol, std::vec
 					ei.Clear();
 					ei(i) = 1.0;
 
-					if(acos(vi.Dot(ei))>M_PI/2.0)
+					if(acos(vi.Dot(ei))>(M_PI/2.0))
 						vi.Scale(-1.0);
 					(*normedvectors)[i] += vi;
 				}
