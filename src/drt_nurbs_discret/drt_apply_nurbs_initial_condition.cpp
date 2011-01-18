@@ -49,7 +49,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   if(myrank==0)
   {
     printf("\n");
-    printf("Setting up least-squares Nurbs approximation of initial field\n");
+    printf("Setting up least-squares Nurbs approximation of initial field (discretization %s)\n", dis.Name().c_str());
   }
 
   // -------------------------------------------------------------------
