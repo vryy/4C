@@ -417,9 +417,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
-    // also get subgrid-scale velocity field if required
+    // get data required for subgrid-scale velocity: acceleration and pressure
     if (sgvel_)
     {
+      // check for matching flags
+      if (not mat_gp_ or not tau_gp_) dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
+
       const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field",null);
       LINALG::Matrix<nsd_+1,nen_> eaccprenp;
       DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
@@ -1507,9 +1510,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // velocity divergence required for conservative form
         if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
+        // ensure that subgrid-scale velocity and subgrid-scale convective part
+        // are zero if not computed below
+        sgvelint_.Clear();
+        sgconv_.Clear();
+
         //--------------------------------------------------------------------
-        // calculation of subgrid diffusivity and stabilization parameter(s)
-        // at integration point
+        // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
+        // velocity and stabilization parameter(s) at integration point
         //--------------------------------------------------------------------
         if (tau_gp_)
         {
@@ -1522,33 +1530,24 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // at integration point
           if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
 
-          // generating copy of diffusivity for use in CalTau routine
-          double diffus = diffus_[k];
+          // calculation of subgrid-scale velocity at integration point if required
+          if (sgvel_)
+          {
+            // calculation of stabilization parameter related to fluid momentum
+            // equation at integration point
+            CalTau(ele,visc_,dt,timefac,whichtau,vol,k,0.0,false);
+
+            if (scatratype != INPAR::SCATRA::scatratype_levelset)
+                 CalcSubgrVelocity(ele,time,dt,timefac,k);
+            else CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
+            //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
+
+            // calculation of subgrid-scale convective part
+            sgconv_.MultiplyTN(derxy_,sgvelint_);
+          }
 
           // calculation of stabilization parameter at integration point
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
-        }
-
-        // subgrid-scale velocity
-        if (sgvel_)
-        {
-          // calculate subgrid-scale velocity
-          if (scatratype != INPAR::SCATRA::scatratype_levelset)
-          {
-            CalcSubgrVelocity(ele,time,dt,timefac,k);
-          }
-          else
-          {
-            CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
-            //CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k,ele->Id(),iquad,intpoints, iquad);
-          }
-          // calculate subgrid-scale convective part
-          sgconv_.MultiplyTN(derxy_,sgvelint_);
-        }
-        else
-        {
-          sgvelint_.Clear();
-          sgconv_.Clear();
+          CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
         }
 
         // get history data (or acceleration)
@@ -4233,11 +4232,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
 
         for (int k = 0;k<numscal_;++k) // loop of each transported scalar
         {
-          // generating copy of diffusivity for use in CalTau routine
-          double diffus = diffus_[k];
-
           // calculation of stabilization parameter at element center
-          CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
+          CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
         }
       }
   }
@@ -4277,14 +4273,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       // velocity divergence required for conservative form
       if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
 
-      if (tau_gp_)
-      {
-        // generating copy of diffusivity for use in CalTau routine
-        double diffus = diffus_[k];
-
-        // calculation of stabilization parameter at integration point
-        CalTau(ele,diffus,dt,timefac,whichtau,vol,k,0.0,false);
-      }
+      // calculation of stabilization parameter at integration point
+      if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
 
       const double fac_tau = fac*tau_[k];
 
