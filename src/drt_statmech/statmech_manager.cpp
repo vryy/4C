@@ -316,13 +316,16 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
 	if (Teuchos::getIntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
 	{
+		//cout<<"\nbefore: t = "<<time_<<": "<<crosslinkerpositions_->MyLength()<<" crosslinkers"<<endl;
 		// Set a certain percentag of double-bonded crosslinkers free
 		if(time_==statmechparams_.get<double>("STARTTIMEACT",0.0))
 		{
-			ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
-	    discret_.CheckFilledGlobally();
-	    discret_.FillComplete(true, false, false);
+			cout<<"\nremoving "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers..."<<endl;
+			//ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
+	    //discret_.CheckFilledGlobally();
+	    //discret_.FillComplete(true, false, false);
 		}
+		//cout<<"after: t = "<<time_<<": "<<crosslinkerpositions_->MyLength()<<" crosslinkers\n"<<endl;
 		// crosslink molecule diffusion
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
     CrosslinkerDiffusion(disrow, 0.0, standarddev, dt);
@@ -1477,7 +1480,7 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 	int ncrosslink = statmechparams_.get<int>("N_crosslink",0);
 	// check for the correctness of the given input value
 	if(numtoreduce>ncrosslink)
-		dserror("REDUCENUMCROSSLINKSBY is greater than N_crosslink. Please check your input file!");
+		dserror("REDUCECROSSLINKSBY is greater than N_crosslink. Please check your input file!");
 
 	// fraction of crosslinkers to be deleted
 	double pdel = (double)numtoreduce/(double)ncrosslink;
