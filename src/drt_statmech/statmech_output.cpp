@@ -2049,7 +2049,7 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 			LINALG::SerialDenseMatrix coordout=linepart;
 			for(int l=0 ;l<coordout.M(); l++)
 				coordout(l,1) = linepart(l,0) + lambda0*dir(l);
-			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true,false);
+			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
 
 			//define output coordinates for broken elements, second segment
 			for(int l=0; l<coordout.M(); l++)
@@ -2057,7 +2057,7 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 				coordout(l,0) = linepart(l,1);
 				coordout(l,1) = linepart(l,1)+lambda1*dir(l);
 			}
-			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true,false);
+			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
 		}
 		else // output for continuous elements
 			GMSH_2_noded(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
