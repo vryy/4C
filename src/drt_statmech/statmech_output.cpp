@@ -1803,7 +1803,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 					curredge(k,1) = edges(k, jhigh);
 				}
 
-				GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color);
+				GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
 				/*gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
 				gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
@@ -1849,7 +1849,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 						curredge(k,1) = edges(k,jhigh);
 					}
 
-					GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color);
+					GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
 					/*gmshfilecontent << "SL(" << scientific;
 					gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
 					gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
@@ -1937,25 +1937,25 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 
 				// periodic boundary shift for connections
 
-				/*/ upper edge
+				// upper edge
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
 				// lower edge
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
 				// connections
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;
+				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
 				gmshfilecontent << "SL(" << scientific;
 				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2) << ",";
 				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.5 << ","<< color-0.5 << "};" << endl;*/
+				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
 			}
 		}
 	}

@@ -181,6 +181,9 @@ protected:
   void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
+  /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
+   *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/
+  void ReduceNumOfCrosslinkersBy(const int numtoreduce);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
    *  \param currentpositions 		(in) column map node positions
@@ -265,10 +268,19 @@ protected:
 	//! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
 	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color, bool ignoreeleid=false, bool drawsphere=true);
 
-	//! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
+	/*! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
+	 *  \param n               (in) number of edges for approximation of the cluster sphere or the bundle cylinder
+	 *  \param gmshfilecontent (in) where output is written to
+	 *  \param color           (in) output color
+	 */
 	void GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color);
 
-	//! \brief gmsh output for test volumes in presence of periodic boundary conditions
+	/*! \brief gmsh output for test volumes in presence of periodic boundary conditions
+	 *  \param coord          (in) coordinates of the end points of the given line
+	 *  \param numsections    (in) number of sections by which the given line is divided
+	 *  \param gmshfilcontent (in) where output is written to
+	 *  \param color          (in) output color
+	 */
 	void GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color);
 
 

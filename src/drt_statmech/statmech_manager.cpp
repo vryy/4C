@@ -316,6 +316,13 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
 	if (Teuchos::getIntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
 	{
+		// Set a certain percentag of double-bonded crosslinkers free
+		if(time_==statmechparams_.get<double>("STARTTIMEACT",0.0))
+		{
+			ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
+	    discret_.CheckFilledGlobally();
+	    discret_.FillComplete(true, false, false);
+		}
 		// crosslink molecule diffusion
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
     CrosslinkerDiffusion(disrow, 0.0, standarddev, dt);
@@ -1460,6 +1467,192 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 		}
 
 } //StatMechManager::SearchAndDeleteCrosslinkers()
+
+/*----------------------------------------------------------------------*
+ | (private) Reduce currently existing crosslinker elements by a certain|
+ | percentage.                                              mueller 1/11|
+ *----------------------------------------------------------------------*/
+void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
+{
+	int ncrosslink = statmechparams_.get<int>("N_crosslink",0);
+	// check for the correctness of the given input value
+	if(numtoreduce>ncrosslink)
+		dserror("REDUCENUMCROSSLINKSBY is greater than N_crosslink. Please check your input file!");
+
+	// fraction of crosslinkers to be deleted
+	double pdel = (double)numtoreduce/(double)ncrosslink;
+
+	// std::vectors for transfer of data to new maps and vectors
+	std::vector<std::vector<double> > crosslinkerpositions;
+	std::vector<std::vector<double> > crosslinkerbond;
+	std::vector<std::vector<double> > visualizepositions;
+	std::vector<int> crosslinkonsamefilament;
+	std::vector<int> searchforneighbours;
+	std::vector<int> numbond;
+
+	// go through currently existing crosslinkers. Determine which to delete and take actions according to bonding status.
+	// Let all processors do this (redundance)
+	for(int i=0; i<numbond_->MyLength(); i++)
+	{
+		// probability check as condition for deletion
+		if(uniformclosedgen_.random()<pdel)
+		{
+			// actions for crosslink molecules and crosslinker elements to be deleted
+			switch((int)(*numbond_)[i])
+			{
+				case 1:
+				{
+					// get the node gid
+					int nodegid = 0;
+					for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+						if((*crosslinkerbond_)[j][i]>-0.9)
+							nodegid = (int)(*crosslinkerbond_)[j][i];
+					// adjust number of crosslinkers per node for the given node GID
+					(*numcrossnodes_)[discret_.NodeColMap()->LID(nodegid)] -= 1.0;
+				}
+				break;
+				// for all double-bonded crosslink molecules
+				case 2:
+				{
+					// only consider really existing crosslinker elements, i.e skip passive crosslink molecules (no element there)
+					if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9)
+					{
+						// calculate Crosslinker element ID
+						int nodeGID[2] = {	(int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]};
+						int GID1 = max(nodeGID[0], nodeGID[1]);
+						int GID2 = min(nodeGID[0], nodeGID[1]);
+						int crosslinkerGID = (GID1 + 1)*basisnodes_ + GID2;
+
+						// adjust number of crosslinkers per node for the given node GIDs
+						(*numcrossnodes_)[discret_.NodeColMap()->LID(GID1)] -= 1.0;
+						(*numcrossnodes_)[discret_.NodeColMap()->LID(GID2)] -= 1.0;
+
+						if (discret_.HaveGlobalElement(crosslinkerGID))
+						{
+							//save the element by packing before elimination to make it restorable in case that needed
+							deletedelements_.resize(deletedelements_.size() + 1);
+							discret_.gElement(crosslinkerGID)->Pack(deletedelements_[deletedelements_.size()-1]);
+							discret_.DeleteElement(crosslinkerGID);
+						}
+					}
+				}
+				break;
+			}
+		}
+		else //preparations for new crosslinker maps and vectors
+		{
+			// add the crosslinkers which are kept, to temporary vectors
+			std::vector<double> crosspos;
+			std::vector<double> visualpos;
+			std::vector<double> crossbond;
+			for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
+			{
+				crosspos.push_back((*crosslinkerpositions_)[j][i]);
+				visualpos.push_back((*visualizepositions_)[j][i]);
+			}
+			for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+				crossbond.push_back((*crosslinkerbond_)[j][i]);
+
+			crosslinkerpositions.push_back(crosspos);
+			visualizepositions.push_back(visualpos);
+			crosslinkerbond.push_back(crossbond);
+			crosslinkonsamefilament.push_back((int)(*crosslinkonsamefilament_)[i]);
+			searchforneighbours.push_back((int)(*searchforneighbours_)[i]);
+			numbond.push_back((int)(*numbond_)[i]);
+		}
+	}
+
+	// set up of new crosslinker vectors and maps
+	// create crosslinker maps
+	std::vector<int> newgids;
+	for (int i=0; i<(int)crosslinkerpositions.size(); i++)
+		newgids.push_back(i);
+	// crosslinker column and row maps
+	crosslinkermap_ = rcp(new Epetra_Map(-1, (int)newgids.size(), &newgids[0], 0, discret_.Comm()));
+	transfermap_    = rcp(new Epetra_Map((int)newgids.size(), 0, discret_.Comm()));
+	//vectors
+	crosslinkerpositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
+	visualizepositions_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
+	crosslinkerbond_ = rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
+	crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
+	searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
+	numbond_ = rcp(new Epetra_Vector(*crosslinkermap_, true));
+	//copy information from the temporary vectors to the adjusted crosslinker vectors
+	for(int i=0; i<crosslinkerpositions_->MyLength(); i++)
+	{
+		for(int j=0; j<crosslinkerpositions_->NumVectors(); j++)
+		{
+			(*crosslinkerpositions_)[j][i] = crosslinkerpositions[i][j];
+			(*visualizepositions_)[j][i] = visualizepositions[i][j];
+		}
+		for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+			(*crosslinkerbond_)[j][i] = crosslinkerbond[i][j];
+
+		(*crosslinkonsamefilament_)[i] = crosslinkonsamefilament[i];
+		(*searchforneighbours_)[i] = searchforneighbours[i];
+		(*numbond_)[i] = numbond[i];
+	}
+
+	// new start indices for each processor
+	// number of overall independent combinations (central boundary box + 26 surrounding mirrored boxes)
+	int newsize = crosslinkerpositions_->MyLength();
+	int numcombinations = (newsize*newsize-newsize)/2;
+	// combinations on each processor
+	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+	// remainder of above division (will be distributed equally among processors)
+	int remainder = numcombinations%combinationsperproc;
+
+	// get starting index tuples for later use
+	startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
+
+	for(int mypid=0; mypid<discret_.Comm().NumProc()-1; mypid++)
+	{
+		std::vector<int> start(2,0);
+		bool continueloop = false;
+		bool quitloop = false;
+		int counter = 0;
+		int appendix = 0;
+		if(mypid==discret_.Comm().NumProc()-1)
+			appendix = remainder;
+
+		// loop over crosslinker pairs
+		for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+		{
+			for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
+			{
+				if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
+					continueloop = true;
+				if(j>i && continueloop)
+				{
+					if(counter<combinationsperproc+appendix)
+						counter++;
+					else
+					{
+						// new start index j
+						if(j==crosslinkermap_->NumMyElements()-1)
+							start[1] = 0;
+						else
+							start[1] = j;
+						quitloop = true;
+						break;
+					}
+				}
+			}
+			if(quitloop)
+			{
+				// new start index i
+				if(start[1]==0)
+					start[0] = i+1;
+				else
+					start[0] = i;
+				// new start tuple
+				(*startindex_)[2*(mypid+1)] = (double)(start[0]);
+				(*startindex_)[2*(mypid+1)+1] = (double)(start[1]);
+				break;
+			}
+		}
+	}
+}//ReduceNumberOfCrosslinkersBy()
 
 
 /*----------------------------------------------------------------------*
