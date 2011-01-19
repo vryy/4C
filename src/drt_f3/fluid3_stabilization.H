@@ -107,6 +107,7 @@ namespace UTILS
     }
     else
     {
+      cout << "/!\\ set x-velocity for streamlength computation" << endl;
       velino.Clear();
       velino(0) = 1.0;
     }
@@ -123,6 +124,58 @@ namespace UTILS
     // remark: "const double val = velinoder.Norm1();" ;
     double val = 0.0;
     for (int iparam = 0; iparam < numparamvelx; ++iparam)
+      val += fabs(velinoder(iparam));
+
+    if (val == 0.0) dserror("infinite stream length detected!");
+    const double strle = 2.0/val;
+
+    return strle;
+  }
+
+  //! calculate characteristic element size for stabilization
+  // to be used for XFEM problems with normal enrichment strategy
+  template <class V>
+  double Streamlength(
+      const V&                   shp,
+      const LINALG::Matrix<3,1>& gpvelnp,  /// velocity at Gaussian point
+      const double               vel_norm, /// velocity norm
+      const int                  numparamvel
+  )
+  {
+#ifdef DEBUG
+  if (numparamvel!=8) dserror("This will only work for hex8 elements");
+#endif
+    // normed velocity at Gauss point
+    LINALG::Matrix<3,1> velino(true);
+    if (vel_norm >= 1e-6)
+    {
+      velino.Update(1.0/vel_norm,gpvelnp);
+    }
+    else
+    {
+      cout << "/!\\ set x-velocity for streamlength computation" << endl;
+      velino.Clear();
+      velino(0) = 1.0;
+    }
+
+    // get streamlength
+    //const double val = sum(abs(velino(j)*derxy(j,i)));
+    // remark: extend vector from 8 to 16 to bring in normal shape functions correctly
+    LINALG::SerialDenseVector velinoder(numparamvel+8,true);
+    for (int iparam = 0; iparam < numparamvel; ++iparam)
+    {
+      velinoder(iparam) += velino(0)*shp.velx.dx.s(iparam);
+      velinoder(iparam) += velino(1)*shp.vely.dy.s(iparam);
+      velinoder(iparam) += velino(2)*shp.velz.dz.s(iparam);
+
+      // store values belonging to normal shape functions
+      velinoder(iparam+8) += velino(0)*shp.velx.dx.n(iparam);
+      velinoder(iparam+8) += velino(1)*shp.vely.dy.n(iparam);
+      velinoder(iparam+8) += velino(2)*shp.velz.dz.n(iparam);
+    }
+    // remark: "const double val = velinoder.Norm1();" ;
+    double val = 0.0;
+    for (int iparam = 0; iparam < numparamvel+8; ++iparam)
       val += fabs(velinoder(iparam));
 
     if (val == 0.0) dserror("infinite stream length detected!");
@@ -193,6 +246,7 @@ namespace UTILS
       const M2&                     xyze     ///< element nodal position array
   )
   {
+    dserror("think carefully if you really want to use this!");
     const double vol = VolumeViaNumIntegration<DISTYPE>(xyze);
 
     const double phys_volumeratio = (1.0 - XFEM::DomainCoverageRatio(*xfemele,ih));
