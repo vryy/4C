@@ -1085,8 +1085,7 @@ void SysmatBoundaryNitsche(
     const double                               flamespeed,     ///<
     const double                               nitschevel,     ///<
     const double                               nitschepres,    ///<
-    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff   ///<
+    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox ///<
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
@@ -1133,6 +1132,11 @@ void SysmatBoundaryNitsche(
   //cout << "plus density: " << dens_plus << endl;
   // compute dynamic viscosity \mu
   const double visc_plus = kinvisc_plus * dens_plus;
+
+  // TODO: is the surface tension coefficient needed here
+  double surftenscoeff = 0.0;
+  // set surface tension
+  COMBUST::GetMaterialParams(material, surftenscoeff);
 
   // index minus = unburnt material
   const int matid_minus = 4;

@@ -1379,7 +1379,6 @@ void SysmatBoundaryNitsche(
     const double                               ele_meas_plus,  ///< measure of element in plus domain
     const double                               ele_meas_minus, ///< measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff,  ///<
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
@@ -1429,6 +1428,13 @@ void SysmatBoundaryNitsche(
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
   COMBUST::GetMaterialParams(material, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
+
+  //-----------------------------------------------------------------------------------
+  // get surface tension coefficient for all boundary integration cells of this element
+  //-----------------------------------------------------------------------------------
+  double surftenscoeff = 0.0;
+  // set surface tension
+  COMBUST::GetMaterialParams(material, surftenscoeff);
 
   //-----------------------------
   // prepare interface conditions

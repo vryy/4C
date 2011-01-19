@@ -267,19 +267,24 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
+      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
+      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = params.get<INPAR::COMBUST::SmoothGradPhi>("smoothgradphi");
+
       // instationary formulation
       const bool instationary = true;
       // smoothed gradient of phi required (surface tension application)
-      const bool gradphi = true;
+      double gradphi = true;
+      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
+      {
+        gradphi = false;
+      }
 
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-
-      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
 
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
@@ -307,8 +312,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
-      // surface tension coefficient
-      const double surftenscoeff = params.get<double>("surftenscoeff");
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
@@ -327,7 +330,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -350,7 +353,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
         // condensation
@@ -368,7 +371,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
     }
@@ -380,19 +383,23 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
+      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
+
       // stationary formulation
       const bool instationary = false;
       // smoothed gradient of phi required (surface tension application)
-      const bool gradphi = true;
+      double gradphi = true;
+      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow)
+      {
+        gradphi = false;
+      }
 
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-
-      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
 
       const double flamespeed = params.get<double>("flamespeed");
       const double nitschevel = params.get<double>("nitschevel");
@@ -401,8 +408,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
-      // surface tension coefficient
-      const double surftenscoeff = params.get<double>("surftenscoeff");
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
@@ -441,7 +446,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
       // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
@@ -467,7 +472,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
         // condensation
@@ -484,7 +489,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif
 

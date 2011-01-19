@@ -394,6 +394,69 @@ void COMBUST::GetMaterialParams(
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | get surface tension coefficient                                               rasthofer  12/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::GetMaterialParams(
+    Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
+    double&    surfacetensioncoeff       // surface tension coefficient
+)
+{
+  //----------------------
+  // get the material type
+  //----------------------
+#ifdef DEBUG
+  // check if we really got a list of materials
+  dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+  // get material list for this element
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+  // set default id in list of materials
+  int matid = -1;
+  matid = matlist->MatID(0);
+
+//  // check on which side of the interface the cell is located
+//  if(indomplus) // cell belongs to burnt domain
+//  {
+//    matid = matlist->MatID(0); // burnt material (first material in material list)
+//  }
+//  else // cell belongs to unburnt domain
+//  {
+//    matid = matlist->MatID(1); // unburnt material (second material in material list)
+//  }
+  // get material from list of materials
+  Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+  INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+
+  // choose from different materials
+  switch(mattype)
+  {
+  //--------------------------------------------------------
+  // Newtonian fluid for incompressible flow (standard case)
+  //--------------------------------------------------------
+  case INPAR::MAT::m_fluid:
+  {
+    const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+    // get the dynamic viscosity \nu
+    surfacetensioncoeff = mat->Gamma();
+//    // get the density \rho^{n+1}
+//    dens = mat->Density();
+    break;
+  }
+  //------------------------------------------------
+  // different types of materials (to be added here)
+  //------------------------------------------------
+  default:
+    dserror("material type not supported");
+  }
+
+  // security check
+  if (surfacetensioncoeff < 0)
+    dserror("material parameters could not be determined");
+  return;
+}
+
+
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
@@ -421,7 +484,6 @@ void Sysmat(
     const double                            nitschevel,      ///<
     const double                            nitschepres,     ///<
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                            surftenscoeff,   ///<
     const bool                              connected_interface,
     const INPAR::COMBUST::VelocityJumpType  veljumptype,
     const INPAR::COMBUST::FluxJumpType      fluxjumptype,
@@ -493,7 +555,7 @@ void Sysmat(
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
     }
 #endif
@@ -554,7 +616,7 @@ void Sysmat(
           ele, ih, dofman, evelnp, eprenp, ephi,egradphi, etensor,
           material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
     }
   }
@@ -581,7 +643,7 @@ void Sysmat(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi,
           material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, surftenscoeff, connected_interface, veljumptype,
+          surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
     }
   }
@@ -641,7 +703,6 @@ void COMBUST::callSysmat(
     const double                         nitschevel,
     const double                         nitschepres,
     const INPAR::COMBUST::SurfaceTensionApprox  surftensapprox,
-    const double                           surftenscoeff,
     const bool                             connected_interface,
     const INPAR::COMBUST::VelocityJumpType veljumptype,
     const INPAR::COMBUST::FluxJumpType     fluxjumptype,
@@ -655,32 +716,32 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::hex27:
 //      Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
@@ -694,32 +755,32 @@ void COMBUST::callSysmat(
       Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox, surftenscoeff,
+          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
 //      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::hex27:
 //      Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,surftenscoeff);
+//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");

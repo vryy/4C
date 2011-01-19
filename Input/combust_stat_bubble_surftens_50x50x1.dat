@@ -36,13 +36,13 @@ ITEMAX                          1
 MAXTIME                         1000.0
 NUMSTEP                         15
 RESTARTEVRY                     20
-TIMEINT                         Stationary // One_Step_Theta // Stationary
+TIMEINT                         Stationary
 TIMESTEP                        50.0
 UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
-COMBUSTTYPE                     Two_Phase_Flow_Jumps // Two_Phase_Flow
+COMBUSTTYPE                     Two_Phase_Flow_Jumps
 VELOCITY_JUMP_TYPE              vel_jump_none // vel_jump_const // vel_jump_premixed_combustion
-NITSCHE_ERROR                   nitsche_error_static_bubble_nxnx1
+//NITSCHE_ERROR                   nitsche_error_static_bubble_nxnx1
 FLUX_JUMP_TYPE                  flux_jump_surface_tension
                                 // flux_jump_none
                                 // flux_jump_const
@@ -54,10 +54,9 @@ NITSCHE_PRESSURE                0
 SURFTENSAPPROX                  surface_tension_approx_laplacebeltrami_smoothed
                                 // surface_tension_approx_none 
                                 // surface_tension_approx_divgrad
-                                // surface_tension_approx_fixed_curvature
-                                // surface_tension_approx_laplacebeltrami
-                                // surface_tension_approx_laplacebeltrami_smoothed
-SURFTENSCOEFF                   0.07
+                                // surface_tension_approx_fixed_curvature 
+                                // surface_tension_approx_laplacebeltrami 
+                                // surface_tension_approx_laplacebeltrami_smoothed 
 CONNECTED_INTERFACE             No
 SMOOTHGRADPHI                   smooth_grad_phi_leastsquares_2Dz //grad_phi_meanvalue
                                 // grad_phi_none
@@ -74,7 +73,7 @@ REINITINTERVAL                  100
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     zero_field // field_by_function
 STARTFUNCNO      -1
-TIMEINTEGR       Stationary // One_Step_Theta // Stationary
+TIMEINTEGR       Stationary 
 STARTINGALGO     One_Step_Theta
 NONLINITER       Newton // fixed_point_like
 ITEMAX           20 // 20
@@ -126,7 +125,7 @@ MAXTIME                         20.0
 NUMSTEP                         20
 RESTARTEVRY                     20
 THETA                           1.0
-TIMEINTEGR                      Stationary // One_Step_Theta // Stationary
+TIMEINTEGR                      Stationary 
 TIMESTEP                        50.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -145,7 +144,7 @@ CONVTOL                         1e-5
 ITEMAX                          20
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-EXPLPREDICT                     no //sonst Probleme
+EXPLPREDICT                     no 
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Bazilevs //Franca_Valentin
@@ -162,16 +161,15 @@ SOLVER         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra  DIFFUSIVITY 0.000000001 // 1*10E-9
-MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 // plus/burnt side (right)
-MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 // minus/unburnt side (left)
+MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus/burnt side (right)
+MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus/unburnt side (left)
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
-//CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.0 c1 1.0 c2 1.0  // sin curve with zero derivatives
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1 // inflow profile velocity
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0 //(1-y*y)*5
+------------------------------------------------------------FUNCT1 
+FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0 
 ------------------------------------------------------------FUNCT2 // initial G-function field
 //FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))-0.4
 FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.01)*(x-0.01)+(y-0.01)*(y-0.01))-0.4	// circle stationary
@@ -195,7 +193,6 @@ DLINE  0
 DSURF  0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   0
-//E 1 - 1 1 1 0 0 0  -10.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 0
 --------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
@@ -211,41 +208,27 @@ DSURF  0
 ------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 4
-// inflow lines
-E 1 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// outflow lines
-E 2 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+DPOINT 2
 // inflow points
-E 3 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 1 1 1 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // outflow points
-E 4 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 1 1 1 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  5
-// line inflow top
-E 1 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// line inflow front
-E 2 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// line inflow bottom
-E 3 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// line inflow back
-E 4 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// edges side walls
-E 5 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+DLINE  0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // surface top
-E 1 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface bottom
-E 2 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface inflow
 E 3 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface outflow
-E 4 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface front
-E 5 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 5 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface back
-E 6 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 6 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   0
 --------------------------------DESIGN POINT ALE DIRICH CONDITIONS

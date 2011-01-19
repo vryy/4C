@@ -529,7 +529,8 @@ void XFEM::DofDistributionSwitcher::extrapolateOldTimeStepValues(
 
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
-    RCP<Epetra_Vector>&    vector
+    RCP<Epetra_Vector>&    vector,
+    const bool             quasi_static_enr
 ) const
 {
   // create new vector with new number of dofs
@@ -571,10 +572,14 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
         //cout << newdofkey.toString() << " -> init to old value" << endl;
         (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
 
-        //TODO: talk to Ursula
-        //std::cout << "-------------Warning: enriched dofs reset to zero------------" << std::endl;
-        //if (newdofkey.getFieldEnr().getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-        //    (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
+        if (quasi_static_enr == true)
+        {
+          //std::cout << "-------------Warning: enriched dofs reset to zero------------" << std::endl;
+          if (newdofkey.getFieldEnr().getEnrichment().Type() != XFEM::Enrichment::typeStandard)
+            (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
+//        if (newdofkey.getFieldEnr().getEnrichment().Type() == XFEM::Enrichment::typeKink)
+//            (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
+        }
       }
       else // if dofkey has not been existed before, check for other dofs on the dofkeys node
       {

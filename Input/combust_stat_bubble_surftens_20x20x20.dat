@@ -57,7 +57,6 @@ SURFTENSAPPROX	                surface_tension_approx_divgrad
                                 // surface_tension_approx_fixed_curvature
                                 // surface_tension_approx_laplacebeltrami
                                 // surface_tension_approx_laplacebeltrami_smoothed
-SURFTENSCOEFF                   0.07
 PHI_MODIFY_TOL                  1e-16
 CONNECTED_INTERFACE             Yes
 SMOOTHGRADPHI                   smooth_grad_phi_leastsquares_3D //grad_phi_meanvalue
@@ -225,8 +224,8 @@ PARTITION      Cut_Elements
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra  DIFFUSIVITY 0.000000001 // 1*10E-9
-MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 // plus/burnt side (right)
-MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 // minus/unburnt side (left)
+MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus/burnt side (right)
+MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus/unburnt side (left)
 //MAT       3 MAT_fluid   VISCOSITY 0.001002 DENSITY 1000.0 // plus/burnt side (water)
 //MAT       4 MAT_fluid   VISCOSITY 17.1 DENSITY 1.204// minus/unburnt side (air)
 -------------------------------------------------------LOAD CURVES

@@ -111,6 +111,11 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
    * - determine initial enrichment (DofManager wird bereits mit dem Element d.h. Diskretisierung angelegt)
    * - ...
    *----------------------------------------------------------------------------------------------*/
+  // TODO: @Florian: Geht das bei dir auch für stationäre Beispiele
+  if (Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+  {
+    ScaTraField().Output();
+  }
   // construct initial flame front
   flamefront_ = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
@@ -122,7 +127,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   interfacehandleNP_->UpdateInterfaceHandle();
   interfacehandleN_->UpdateInterfaceHandle();
 
-//  std::cout << "No initialization of LevelSet" << std::endl;
+  //std::cout << "No initialization of LevelSet" << std::endl;
   if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
   {
     stepreinit_ = true;
@@ -190,7 +195,7 @@ void COMBUST::Algorithm::TimeLoop()
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
-     // TODO @Ursula do G-function field first
+//      // do G-function field first
 //      std::cout << "/!\\ warning === fluid field is solved before G-function field" << std::endl;
 //      DoFluidField();
 
@@ -208,13 +213,8 @@ void COMBUST::Algorithm::TimeLoop()
 
     } // Fluid-G-function-Interaction loop
 
-    // write output to screen and files
-    Output();
-    //Remark (important for restart): the time level of phi (n+1, n or n-1) used to reconstruct the interface
-    //                                conforming to the restart state of the fluid depends on the order
-    //                                of Output() and UpdateTimeStep()
-
     // TODO sollte direkt nach DoGfuncField() gerufen werden
+    //      muss auf jeden Fall vor UpdateTimeStep() gerufen werden
     if (stepreinit_)
     {
       // compute current volume of minus domain
@@ -233,6 +233,12 @@ void COMBUST::Algorithm::TimeLoop()
 
     // update all field solvers
     UpdateTimeStep();
+    //Remark (important for restart): the time level of phi (n+1, n or n-1) used to reconstruct the interface
+    //                                conforming to the restart state of the fluid depends on the order
+    //                                of Output() and UpdateTimeStep()
+
+    // write output to screen and files
+    Output();
 
     if (!stepreinit_)
     {
@@ -1498,6 +1504,7 @@ void COMBUST::Algorithm::RestartNew(int step)
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
+    // Phinp is identical with Phin
     gmshfilecontent << "View \" " << "Phinp \" {" << endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
@@ -1505,6 +1512,7 @@ void COMBUST::Algorithm::RestartNew(int step)
   }
   {
     // add 'View' to Gmsh postprocessing file
+    // Phin is identical with Phinp
     gmshfilecontent << "View \" " << "Phin \" {" << endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
@@ -1531,16 +1539,16 @@ void COMBUST::Algorithm::RestartNew(int step)
   //-------------------------------------------------------------
   Teuchos::RCP<COMBUST::FlameFront> flamefrontOld = rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
 
-  // export phi n-1 vector from scatra dof row map to fluid node column map
-  const Teuchos::RCP<Epetra_Vector> phinprow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
-  if (phinprow->MyLength() != ScaTraField().Phinp()->MyLength())
+  // export phi n vector from scatra dof row map to fluid node column map
+  const Teuchos::RCP<Epetra_Vector> phinrow = rcp(new Epetra_Vector(*fluiddis->NodeRowMap()));
+  if (phinrow->MyLength() != ScaTraField().Phin()->MyLength())
     dserror("vectors phinrow and phin must have the same length");
-  *phinprow = *ScaTraField().Phinp();
-  const Teuchos::RCP<Epetra_Vector> phinpcol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
-  LINALG::Export(*phinprow,*phinpcol);
+  *phinrow = *ScaTraField().Phin();
+  const Teuchos::RCP<Epetra_Vector> phincol = rcp(new Epetra_Vector(*fluiddis->NodeColMap()));
+  LINALG::Export(*phinrow,*phincol);
 
   // reconstruct old flame front
-  flamefrontOld->ProcessFlameFront(combustdyn_,phinpcol);
+  flamefrontOld->ProcessFlameFront(combustdyn_,phincol);
 
   // build interfacehandle using old flame front
   // TODO @Martin Test + Kommentar
@@ -1552,13 +1560,13 @@ void COMBUST::Algorithm::RestartNew(int step)
   //interfacehandleOld->UpdateInterfaceHandle();
   //FluidField().ImportInterface(interfacehandleOld);
 
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldNP =
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOld =
       rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
-  Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleOldN =
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> dummy =
         rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
-  interfacehandleOldNP->UpdateInterfaceHandle();
-  interfacehandleOldN->UpdateInterfaceHandle();
-  FluidField().ImportInterface(interfacehandleOldNP,interfacehandleOldN);
+  interfacehandleOld->UpdateInterfaceHandle();
+  dummy->UpdateInterfaceHandle(); // dummy because second function argument required
+  FluidField().ImportInterface(interfacehandleOld,dummy);
 
   // restart of fluid field
   FluidField().ReadRestart(step);
@@ -1566,18 +1574,18 @@ void COMBUST::Algorithm::RestartNew(int step)
   //-------------------
   // write fluid output
   //-------------------
-  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-  interfacehandleNP_->UpdateInterfaceHandle();
-  interfacehandleN_->UpdateInterfaceHandle();
-  // show flame front to fluid time integration scheme
-  FluidField().ImportFlameFront(flamefront_);
-  FluidField().Output();
-  // delete fluid's memory of flame front; it should never have seen it in the first place!
-  FluidField().ImportFlameFront(Teuchos::null);
+//  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+//  interfacehandleNP_->UpdateInterfaceHandle();
+//  interfacehandleN_->UpdateInterfaceHandle();
+//  // show flame front to fluid time integration scheme
+//  FluidField().ImportFlameFront(flamefrontOld);
+//  FluidField().Output();
+//  // delete fluid's memory of flame front; it should never have seen it in the first place!
+//  FluidField().ImportFlameFront(Teuchos::null);
 
   SetTimeStep(FluidField().Time(),step);
 
-  UpdateTimeStep();
+//  UpdateTimeStep();
 
   return;
 }

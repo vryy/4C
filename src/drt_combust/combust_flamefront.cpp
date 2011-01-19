@@ -86,7 +86,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
   // modify phi vectors nearly zero
-  ModifyPhiVector(combustdyn, ReinitModifyPhi);
+//  ModifyPhiVector(combustdyn, ReinitModifyPhi);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
@@ -172,17 +172,14 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // generate flame front (interface) geometry
     CaptureFlameFront(rootcell);
 
-    // TODO @Ursula: check if this is really necessary
-    /* - Rechnungen mit Verfeinerungen (z.B. xfemintegration_hexahedra) benötigen möglicherweise im Laufe
-     *   der Rechnung immer mehr Speicher (das hat zumindest die 3D-Blase mit xfemintegration_hexahedra gezeigt)
-     * - möglicherweise ist es daher notwendig alle Verfeinerungszellen wieder zulöschen
-     * - das muss aber noch genauer betrachtet werden
-     */
+    // should not be necessary
+#if 0
     // delete all refinement cells of root cell
     if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
     {
       rootcell->Clear();
     }
+#endif
   }
 
   //TEST
@@ -306,7 +303,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 {
   std::cout << "\n---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
 
-if(ReinitModifyPhi==true)
+if (ReinitModifyPhi==true)
 {
   // Benedikt:
   // this case shall circumvent the tetgen-problem only!
@@ -1837,7 +1834,16 @@ void COMBUST::FlameFront::FindFlameFront(
       //       phis[5]=1;
       //       phis[6]=3.0;
       //       phis[7]=-3.0;
-      //        cell->SetGfuncValues(phis);
+      //
+//             phis[0]=-8.642922e-03;
+//             phis[1]=-8.622150e-03;
+//             phis[2]=1.790659e-02;
+//             phis[3]=1.647029e-02;
+//             phis[4]=9.449617e-03;
+//             phis[5]=8.525568e-03;
+//             phis[6]=-7.705337e-04;
+//             phis[7]=2.363820e-04;
+//              cell->SetGfuncValues(phis);
 
       //TEST Einheitswürfel mit verschiedenen Schnitten (Hex20)
 //      vector<double> phis (20);
@@ -3321,15 +3327,18 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
         std::vector<double> point2 (3);
         if(k<3)
         {
-          std::vector<double> point2 = pointlist[segmentpoints[k+1]];
+          point2 = pointlist[segmentpoints[k+1]];
         }
         else
         {
-          std::vector<double> point2 = pointlist[segmentpoints[0]];
+          point2 = pointlist[segmentpoints[0]];
         }
         distance = sqrt((point1[0]-point2[0])*(point1[0]-point2[0])+(point1[1]-point2[1])*(point1[1]-point2[1])+(point1[2]-point2[2])*(point1[2]-point2[2]));
         if (distance>maxdist)
+        {
+          maxdist = distance;
           maxdistcounter = k;
+        }
       }
 
       //build segment
@@ -3726,7 +3735,7 @@ void COMBUST::FlameFront::buildPLC(
 
 #endif
   // Gmsh output for flame front
-  //FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
+  // FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
 }
 
 

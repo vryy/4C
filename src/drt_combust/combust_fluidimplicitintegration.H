@@ -384,12 +384,11 @@ protected:
   // parameters for two-phase flow problems
   // type of surface tension approximation
   INPAR::COMBUST::SurfaceTensionApprox surftensapprox_;
-  // surface tension coefficient
-  const double surftenscoeff_;
   const bool connected_interface_;
 
   // smoothed normal vectors for boudary integration
   const bool smoothed_boundary_integration_;
+  INPAR::COMBUST::SmoothGradPhi smoothgradphi_;
 
   //! @name time stepping variables
   int     step_;    ///< timestep

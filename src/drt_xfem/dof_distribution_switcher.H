@@ -69,7 +69,8 @@ namespace XFEM
 
     //! switch from old to new dof distribution for jump/kink enrichment problems
     void mapVectorToNewDofDistributionCombust(
-        Teuchos::RCP<Epetra_Vector>&     vector
+        Teuchos::RCP<Epetra_Vector>&     vector,
+        const bool                       quasi_static_enr
     ) const;
 
     void extractDofKeysForInitialization(

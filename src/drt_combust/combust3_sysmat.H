@@ -75,7 +75,6 @@ namespace COMBUST
       const double                            nitschevel,
       const double                            nitschepres,
       const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,
-      const double                            surftenscoeff,
       const bool                              connected_interface,
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
       const INPAR::COMBUST::FluxJumpType      fluxjumptype,
@@ -97,6 +96,12 @@ namespace COMBUST
       double&    dynvisc_plus, // dynamic viscosity in "plus domain"
       double&    dens_minus,   // density in "minus domain"
       double&    dynvisc_minus // dynamic viscosity in "minus domain"
+  );
+
+  /// surface tension coefficient
+  void GetMaterialParams(
+        Teuchos::RCP<const MAT::Material> material, // pointer to material (list)
+        double&                           surfacetensioncoeff // surface tension coefficient
   );
 
   /*!

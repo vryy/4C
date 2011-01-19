@@ -357,8 +357,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         }
 
         // normalize final gradient
-        normal_Phi.Scale(1.0/normal_Phi.Norm2());
-
+        normal_Phi.Scale(-1.0/normal_Phi.Norm2());
 
         //--------------------------------------------------------------------------------------------
         // 3. get normal_gamma: <n_gamma,line > = 0, <n_gamma,normal_Phi> = 0, orientation!!!
@@ -378,9 +377,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         // surface tension term boundary of interface  |  < v > , surftens*n_gamma >      |
         //----------------------------------------     |                                 |
 
-        assembler.template Vector<Velx>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(0));
-        assembler.template Vector<Vely>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(1));
-        assembler.template Vector<Velz>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(2));
+        assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
+        assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
+        assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
 
 
       } // ==================================== end loop gaussian points ==========================
@@ -747,9 +746,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         //--------------------------------------------------------------------------------------------
         static LINALG::Matrix<nsd,1> normal_gamma;
         normal_gamma.Clear();
-        normal_gamma(0) = normal_Phi(2)*line(1) - normal_Phi(1)*line(2);
-        normal_gamma(1) = normal_Phi(0)*line(2) - normal_Phi(2)*line(0);
-        normal_gamma(2) = normal_Phi(1)*line(0) - normal_Phi(0)*line(1);
+        normal_gamma(0) = normal_Phi(1)*line(2) - normal_Phi(2)*line(1);
+        normal_gamma(1) = normal_Phi(2)*line(0) - normal_Phi(0)*line(2);
+        normal_gamma(2) = normal_Phi(0)*line(1) - normal_Phi(1)*line(0);
 
         normal_gamma.Scale(1.0/normal_gamma.Norm2());
 
@@ -758,9 +757,9 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         // surface tension term boundary of interface  |  < v > , surftens*n_gamma >     |
         //----------------------------------------     |                                 |
 
-        assembler.template Vector<Velx>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(0));
-        assembler.template Vector<Vely>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(1));
-        assembler.template Vector<Velz>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(2));
+        assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(0));
+        assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(1));
+        assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac_gamma*surftenscoeff*normal_gamma(2));
 
 
       } // ==================================== end loop gaussian points ==========================
@@ -772,6 +771,121 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
   } //=========================== end loop over lines==================================
   return;
 }
+
+
+/*!
+  Calculate curvature for surface tension problems
+ */
+template <DRT::Element::DiscretizationType DISTYPE,
+class M1, class M2, class M3>
+void CalcCurvature(
+    M1&                                        posXiDomain, // position of gaussian point for evaluating of surface tension terms
+//    const DRT::ELEMENTS::Combust3*             ele,           ///< the element those matrix is calculated
+    M2&                                        xyze,          ///< xyz coordinates of element ele
+    const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
+//    M4&                                        normal,
+    double&                                    curvature   ///<
+)
+{
+  // number space dimensions for 3d combustion element
+  const size_t nsd = 3;
+
+  // number of nodes of element
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  //==========================reconstruct normal_phi = grad(phi) / |grad(phi)| ===========
+
+    static LINALG::Matrix<nsd,1> grad_phi;
+    grad_phi.Clear();
+
+    // get shape functions at gaussian point
+    static LINALG::Matrix<numnode,1> funct_gp;
+    funct_gp.Clear();
+    DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+    // TODO: already defined above
+    static LINALG::Matrix<nsd,numnode> deriv_gp;
+    deriv_gp.Clear();
+    DRT::UTILS::shape_function_3D_deriv1(deriv_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+    static LINALG::Matrix<nsd,nsd> xjm_gp;
+    xjm_gp.Clear();
+    xjm_gp.MultiplyNT(deriv_gp,xyze);
+
+    static LINALG::Matrix<nsd,nsd> xji_gp;
+    xji_gp.Clear();
+    xji_gp.Invert(xjm_gp);
+
+    // derivatives in xyz-direction
+    static LINALG::Matrix<nsd,numnode> deriv_gp_xyz;
+    deriv_gp_xyz.Clear();
+    deriv_gp_xyz.Multiply(xji_gp,deriv_gp);
+
+
+    // get second derivatives of phi
+    static LINALG::Matrix<9,1> grad_phi2;
+    grad_phi2.Clear();
+
+    // loop over nodes
+    for(size_t i = 0; i< numnode; i++)
+    {
+      LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
+//      LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
+      nodal_grad_xyz_tmp.Clear();
+//      nodal_grad_xi_tmp.Clear();
+
+      // transform xyz-gradient
+      // 1. transformt nodal xyz-gradient (nodal_grad_xyz_tmp) to nodal xi-gradient => nodal_grad_xi_tmp
+      // 2. interpolate xi-gradient at Gaussian point          => nodal_grad_xi
+      // 3. transform xi-gradient at Gaussian point to xyz-gradient
+      // 4. normalize final gradient
+
+      // 1. transform nodal xyz-gradient to nodal xi-gradient
+      // get smoothed xyz-gradient at node i
+      nodal_grad_xyz_tmp(0) =  grad_ephi_smoothed(0,i);
+      nodal_grad_xyz_tmp(1) =  grad_ephi_smoothed(1,i);
+      nodal_grad_xyz_tmp(2) =  grad_ephi_smoothed(2,i);
+
+      grad_phi(0) += nodal_grad_xyz_tmp(0) *funct_gp(i);
+      grad_phi(1) += nodal_grad_xyz_tmp(1) *funct_gp(i);
+      grad_phi(2) += nodal_grad_xyz_tmp(2) *funct_gp(i);
+
+      grad_phi2(0) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(0); // ,xx
+      grad_phi2(1) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(1); // ,yy
+      grad_phi2(2) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(2); // ,zz
+      grad_phi2(3) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(0); // ,xy
+      grad_phi2(4) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(0); // ,xz
+      grad_phi2(5) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(1); // ,yz
+      grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
+      grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
+      grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
+    }
+
+	    // 3. transform xi-gradient at Gaussian point to xyz-gradient
+	    //      normal_Phi.Multiply(xji_gp,grad_xi);
+
+	    // 4. normalize final gradient
+	    //normal_Phi.Scale(1.0/normal_Phi.Norm2());
+
+	//cout << grad_phi2 << endl << endl;
+    //=========================================== calculate curvature =========================
+    //double curvature = 0.0;
+
+    double grad_phi_norm = grad_phi.Norm2();
+
+
+    curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
+                                             + grad_phi(1)*grad_phi(1)*grad_phi2(1)
+                                             + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
+                  -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
+                                             + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
+                                             + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
+                  +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
+
+  return;
+
+}
+
 
 ///*!
 // Calculate surface tension 1D-boundary integrals for a line segment of a 2D-boundary integration cell
@@ -1487,7 +1601,6 @@ void RHS_SurfaceTension2DIntegrals(
     //-----------------------------------------------------------     |                                           |
     // surface tension (Laplace-Beltrami surface tension) term      - |  < nabla_BEL v > ° nabla_BEL id_gamma     |
     //-----------------------------------------------------------     |                                           |
-
     assembler.template Vector<Velx>(shp_mean_inv.dx, - timefacfac*surftenscoeff*(1.0 - normal(0)*normal(0)));
     assembler.template Vector<Velx>(shp_mean_inv.dy, - timefacfac*surftenscoeff*(    - normal(1)*normal(0)));
     assembler.template Vector<Velx>(shp_mean_inv.dz, - timefacfac*surftenscoeff*(    - normal(2)*normal(0)));
@@ -1542,7 +1655,7 @@ void RHS_SurfaceTension2DIntegrals(
 
     // normalize final gradient
     if (normal_Phi.Norm2() == 0.0 ) dserror("normal norm is zero !!! ");
-    normal_Phi.Scale(1.0/normal_Phi.Norm2());
+    normal_Phi.Scale(-1.0/normal_Phi.Norm2());
 
     // new variant of implementation
     LINALG::Matrix<nsd,nsd> Proj;
@@ -1581,6 +1694,7 @@ void RHS_SurfaceTension2DIntegrals(
     assembler.template Vector<Velz>(shp_mean_inv.dy, - timefacfac * surftenscoeff*Proj_combine(1,2));
     assembler.template Vector<Velz>(shp_mean_inv.dz, - timefacfac * surftenscoeff*Proj_combine(2,2));
 
+
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_fixed_curvature)
   {
@@ -1588,10 +1702,14 @@ void RHS_SurfaceTension2DIntegrals(
     //----------------------------------------   |                                 |
     // surface tension (constant jump) term      |  < v > , surftens*Curv*n >      |
     //----------------------------------------   |                                 |
-    double rad_1 = 0.3;
-    double rad_2 = 0.3;
-    double curvature = 1.0/rad_1 + 1.0/rad_2;
+    double rad_1 = 0.4;
+    double rad_2 = 0.4;
 
+    // 2D
+    rad_2 = 0.0; // not needed; in fact, rad_2 is infinity
+    double curvature = 1.0/rad_1;
+    // 3D
+    //double curvature = 1.0/rad_1 + 1.0/rad_2;
 
     assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
     assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
@@ -1605,155 +1723,9 @@ void RHS_SurfaceTension2DIntegrals(
     // surface tension (constant jump) term      - |  < v > , surftens*Curv*n >      |
     //----------------------------------------     |                                 |
 
-    //==========================reconstruct normal_phi = grad(phi) / |grad(phi)| ===========
-
-    static LINALG::Matrix<nsd,1> normal_Phi;
-    normal_Phi.Clear();
-
-    // get shape functions at gaussian point
-    static LINALG::Matrix<numnode,1> funct_gp;
-    funct_gp.Clear();
-    DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-    // TODO: already defined above
-    static LINALG::Matrix<nsd,numnode> deriv_gp;
-    deriv_gp.Clear();
-    DRT::UTILS::shape_function_3D_deriv1(deriv_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-
-    static LINALG::Matrix<nsd,nsd> xjm_gp;
-    xjm_gp.Clear();
-    xjm_gp.MultiplyNT(deriv_gp,xyze);
-
-    static LINALG::Matrix<nsd,nsd> xji_gp;
-    xji_gp.Clear();
-    xji_gp.Invert(xjm_gp);
-
-    // derivatives in xyz-direction
-    static LINALG::Matrix<nsd,numnode> deriv_gp_xyz;
-    deriv_gp_xyz.Clear();
-    deriv_gp_xyz.Multiply(xji_gp,deriv_gp);
-
-
-//    LINALG::Matrix<nsd,1> grad_xi;
-//    grad_xi.Clear();
-
-    // get second derivatives of phi
-    static LINALG::Matrix<9,1> grad_phi2;
-    grad_phi2.Clear();
-
-    // loop over nodes
-    for(size_t i = 0; i< numnode; i++)
-    {
-#if(1)
-      LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
-//      LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
-      nodal_grad_xyz_tmp.Clear();
-//      nodal_grad_xi_tmp.Clear();
-
-      // transform xyz-gradient
-      // 1. transformt nodal xyz-gradient (nodal_grad_xyz_tmp) to nodal xi-gradient => nodal_grad_xi_tmp
-      // 2. interpolate xi-gradient at Gaussian point          => nodal_grad_xi
-      // 3. transform xi-gradient at Gaussian point to xyz-gradient
-      // 4. normalize final gradient
-
-      // 1. transform nodal xyz-gradient to nodal xi-gradient
-      // get smoothed xyz-gradient at node i
-      nodal_grad_xyz_tmp(0) =  grad_ephi_smoothed(0,i);
-      nodal_grad_xyz_tmp(1) =  grad_ephi_smoothed(1,i);
-      nodal_grad_xyz_tmp(2) =  grad_ephi_smoothed(2,i);
-
-      normal_Phi(0) += nodal_grad_xyz_tmp(0) *funct_gp(i);
-      normal_Phi(1) += nodal_grad_xyz_tmp(1) *funct_gp(i);
-      normal_Phi(2) += nodal_grad_xyz_tmp(2) *funct_gp(i);
-
-//      // transform to xi-coordinates
-//      // jacobi at node
-//
-//      // get Xi-coordinates of current node in current element
-//      static LINALG::Matrix<nsd,1> node_Xicoordinates;
-//      node_Xicoordinates.Clear();
-//      node_Xicoordinates = DRT::UTILS::getNodeCoordinates(i, DISTYPE);
-//
-//
-//      // get derivatives of shapefunctions at node
-//      static LINALG::Matrix<nsd,numnode> deriv_node;
-//      deriv_node.Clear();
-//      DRT::UTILS::shape_function_3D_deriv1(deriv_node,node_Xicoordinates(0),node_Xicoordinates(1),node_Xicoordinates(2),DISTYPE);
-//
-//      // get jacobian at node
-//
-//      // get transposed of the jacobian matrix d x / d \xi
-//      // xjm(i,j) = deriv(i,k)*xyze(j,k)
-//      static LINALG::Matrix<nsd,nsd> xjm_node;
-//      xjm_node.Clear();
-//      xjm_node.MultiplyNT(deriv_node,xyze);
-//
-//      nodal_grad_xi_tmp.Multiply(xjm_node,nodal_grad_xyz_tmp);
-
-//      // funct_gp = shape functions at Gaussian point
-//
-//      grad_xi(0) += nodal_grad_xi_tmp(0)*funct_gp(i);
-//      grad_xi(1) += nodal_grad_xi_tmp(1)*funct_gp(i);
-//      grad_xi(2) += nodal_grad_xi_tmp(2)*funct_gp(i);
-
-      grad_phi2(0) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(0); // ,xx
-      grad_phi2(1) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(1); // ,yy
-      grad_phi2(2) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(2); // ,zz
-      grad_phi2(3) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(0); // ,xy
-      grad_phi2(4) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(0); // ,xz
-      grad_phi2(5) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(1); // ,yz
-      grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
-      grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
-      grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
-
-//      grad_phi2(0) += funct_gp(i)*grad_ephi_smoothed(3,i); // ,xx
-//      grad_phi2(1) += funct_gp(i)*grad_ephi_smoothed(4,i); // ,yy
-//      grad_phi2(2) += funct_gp(i)*grad_ephi_smoothed(5,i); // ,zz
-//      grad_phi2(3) += funct_gp(i)*grad_ephi_smoothed(6,i); // ,xy
-//      grad_phi2(4) += funct_gp(i)*grad_ephi_smoothed(7,i); // ,xz
-//      grad_phi2(5) += funct_gp(i)*grad_ephi_smoothed(8,i); // ,yz
-//      grad_phi2(6) += funct_gp(i)*grad_ephi_smoothed(6,i); // ,yx
-//      grad_phi2(7) += funct_gp(i)*grad_ephi_smoothed(7,i); // ,zx
-//      grad_phi2(8) += funct_gp(i)*grad_ephi_smoothed(8,i); // ,zy
-
-#else // trafo with xi-grad stored grad_ephi_smoothed
-      LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
-      nodal_grad_xi_tmp.Clear();
-
-      // get smoothed xi-gradient at node i
-      nodal_grad_xi_tmp(0) =  grad_ephi_smoothed(0,i);
-      nodal_grad_xi_tmp(1) =  grad_ephi_smoothed(1,i);
-      nodal_grad_xi_tmp(2) =  grad_ephi_smoothed(2,i);
-
-      //        	cout << "nodal_grad_xi_tmp:\n: " << nodal_grad_xi_tmp << endl;
-
-      grad_xi(0) += nodal_grad_xi_tmp(0)*funct_gp(i);
-      grad_xi(1) += nodal_grad_xi_tmp(1)*funct_gp(i);
-      grad_xi(2) += nodal_grad_xi_tmp(2)*funct_gp(i);
-
-#endif
-
-    }
-
-    // 3. transform xi-gradient at Gaussian point to xyz-gradient
-    //      normal_Phi.Multiply(xji_gp,grad_xi);
-
-    // 4. normalize final gradient
-    //normal_Phi.Scale(1.0/normal_Phi.Norm2());
-
-//cout << grad_phi2 << endl << endl;
-    //=========================================== calculate curvature =========================
-    double curvature = 0.0;
-
-    double grad_phi_norm = normal_Phi.Norm2();
-
-    curvature = -1.0/pow(grad_phi_norm,3)*(  normal_Phi(0)*normal_Phi(0)*grad_phi2(0)
-                                           + normal_Phi(1)*normal_Phi(1)*grad_phi2(1)
-                                           + normal_Phi(2)*normal_Phi(2)*grad_phi2(2)  )
-                -1.0/pow(grad_phi_norm,3)*(  normal_Phi(0)*normal_Phi(1)*( grad_phi2(3) + grad_phi2(6) )
-                                           + normal_Phi(0)*normal_Phi(2)*( grad_phi2(4) + grad_phi2(7) )
-                                           + normal_Phi(1)*normal_Phi(2)*( grad_phi2(5) + grad_phi2(8)) )
-                +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
+    double curvature=0.0;
+    // compute curvature at gausspoint
+    COMBUST::CalcCurvature<DISTYPE>(posXiDomain,xyze,grad_ephi_smoothed,curvature);
 
     assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
     assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
@@ -1931,13 +1903,12 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     // schott Sep 2, 2010
     // call smoothed normals for an accurate evaluation of boundary integration terms
-    if(smoothed_boundary_integration == false)
+    if (smoothed_boundary_integration == false)
     {
       // TODO: implement also normals based on nabla(phi)/|nabla(phi)| (interpolated), necessary for surface tension //Benedikt 04/26/2010
       // here normal points from Omega^+ to Omega^-
       GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
-      // but we need a normal vector pointing from Omega^- to Omega^+ -> Scale(-1.0) => n = n^- = -n^+
-      normal.Scale(-1.0);
+
     }
     else // smoothed_boundary_integration == true
     {
@@ -1960,7 +1931,9 @@ void SysmatBoundarySurfaceTensionIntCell(
 
       // 4. normalize final gradient
       if (normal.Norm2() == 0.0 ) dserror("normal norm is zero !!! ");
-      normal.Scale(1.0/normal.Norm2());
+//      normal.Scale(1.0/normal.Norm2());
+      normal.Scale(-1.0/normal.Norm2());
+
     }
 
     static LINALG::Matrix<nsd,1> jump_tension;
@@ -2068,15 +2041,32 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     static XFEM::ApproxFunc<2,shpVecSize> shp_mean_inv;
 
+#if 1
     // fill approximation functions
     for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
     {
       shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus_vel(iparam) + kappa_plus * enrfunct_minus_vel(iparam);
+      //std::cout << "jump   " << shp_mean_inv.d0(iparam) << std::endl;
 
       shp_mean_inv.dx(iparam) = kappa_minus * enrderxy_plus_vel(0,iparam) + kappa_plus * enrderxy_minus_vel(0,iparam);
       shp_mean_inv.dy(iparam) = kappa_minus * enrderxy_plus_vel(1,iparam) + kappa_plus * enrderxy_minus_vel(1,iparam);
       shp_mean_inv.dz(iparam) = kappa_minus * enrderxy_plus_vel(2,iparam) + kappa_plus * enrderxy_minus_vel(2,iparam);
+      //std::cout << "jump   " << shp_mean_inv.dx(iparam) << std::endl;
     }
+#else // new reduced version for kink enrichments
+    // fill approximation functions
+    for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+    {
+      shp_mean_inv.d0(iparam) = enrfunct_plus_vel(iparam);
+      //std::cout << "kink   " << shp_mean_inv.d0(iparam) << std::endl;
+
+      shp_mean_inv.dx(iparam) = enrderxy_plus_vel(0,iparam);
+      shp_mean_inv.dy(iparam) = enrderxy_plus_vel(1,iparam);
+      shp_mean_inv.dz(iparam) = enrderxy_plus_vel(2,iparam);
+      //std::cout << "kink   " << shp_mean_inv.dx(iparam) << std::endl;
+    }
+
+#endif
 
     if(fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
     {
@@ -2093,9 +2083,10 @@ void SysmatBoundarySurfaceTensionIntCell(
       // surface tension (constant jump) term      - |  < v > , J_t >      |
       //----------------------------------------     |                     |
 
-      assembler.template Vector<Velx>(shp_mean_inv.d0, - timefacfac*jump_tension(0,0) );
-      assembler.template Vector<Vely>(shp_mean_inv.d0, - timefacfac*jump_tension(1,0) );
-      assembler.template Vector<Velz>(shp_mean_inv.d0, - timefacfac*jump_tension(2,0) );
+      assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*jump_tension(0,0) );
+      assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*jump_tension(1,0) );
+      assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*jump_tension(2,0) );
+
     }
 
   }// loop Gaussian points
@@ -2131,7 +2122,6 @@ void SysmatBoundarySurfaceTension(
     const double                      ele_meas_plus,    /// measure of element in plus domain
     const double                      ele_meas_minus,    /// measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-    const double                               surftenscoeff,   ///<
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
@@ -2165,12 +2155,14 @@ void SysmatBoundarySurfaceTension(
   // check if we really got a list of materials
   dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
 #endif
-
+  double surftenscoeff = 0.0;
+  // set surface tension
+  COMBUST::GetMaterialParams(material, surftenscoeff);
 
   //=====================================================================================================
   // get weights for average operators { () } = kappa_plus * ()_plus + kappa_minus * ()_minus
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
-
+  // this is only necessary for discontinuous velocity enrichement functions
   double ele_meas = ele_meas_plus + ele_meas_minus;
   if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   double kappa_plus  = ele_meas_plus/ele_meas;
@@ -2196,8 +2188,6 @@ void SysmatBoundarySurfaceTension(
 
   // jump in normal tension with value jt
   if(fluxjumptype == INPAR::COMBUST::flux_jump_const) jt = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
-
-
 
   //------------------------------------------------------------------------------------------------
   // loop over boundary integration cells

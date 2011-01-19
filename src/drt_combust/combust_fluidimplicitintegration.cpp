@@ -77,9 +77,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
   surftensapprox_(Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
-  surftenscoeff_(params_.sublist("COMBUSTION FLUID").get<double>("SURFTENSCOEFF")),
   connected_interface_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
   smoothed_boundary_integration_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
+  smoothgradphi_(Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -571,13 +571,20 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     cout0_ << " Initialize system vectors..." << endl;
     // accelerations at time n and n-1
 
-    dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_);
-    dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_);
+    // this is only preliminary
+    // use quasi-static enrichment strategy for kink enrichments
+    // as soon as we have solved the XFEM-time-integration problem this my be removed
+    bool quasi_static_enr = false;
+    if (combusttype_==INPAR::COMBUST::combusttype_twophaseflow or combusttype_==INPAR::COMBUST::combusttype_twophaseflow_surf)
+       quasi_static_enr = true;
+
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_, quasi_static_enr);
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_, quasi_static_enr);
 
     // velocities and pressures at time n+1, n and n-1
-    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_); // use old velocity as start value
-    dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_);
-    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_);
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_, quasi_static_enr); // use old velocity as start value
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_, quasi_static_enr);
+    dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_, quasi_static_enr);
 
     // here the interface is known for the first time and so
     // all initial values can be set including enrichment values
@@ -586,56 +593,63 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       SetEnrichmentField(dofmanager,newdofrowmap);
     }
 
-    if (step_ > 1)
+    bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
+    bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
+
+    if (start_val_semilagrange== true or start_val_semilagrange==true)
     {
-      const size_t oldsize = oldColStateVectors.size();
-      vector<RCP<Epetra_Vector> > newRowStateVectors;
-      newRowStateVectors.push_back(state_.accnp_);
-      newRowStateVectors.push_back(state_.accn_);
-      newRowStateVectors.push_back(state_.velnp_);
-      newRowStateVectors.push_back(state_.veln_);
-      const size_t newsize = newRowStateVectors.size();
-      if (oldsize != newsize)
-        dserror("stateVector sizes are different! Fix this!");
 
-      bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
-      bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
-
-      if(start_val_semilagrange == true)
+      if (step_ > 1)
       {
-        XFEM::Startvalues startval(
-            discret_,
-            olddofmanager,
-            dofmanager,
-            oldColStateVectors,
-            newRowStateVectors,
-            veln,
-            flamefront_,
-            olddofcolmap,
-            oldNodalDofColDistrib,
-            newdofrowmap,
-            state_.nodalDofDistributionMap_);
+        const size_t oldsize = oldColStateVectors.size();
+        vector<RCP<Epetra_Vector> > newRowStateVectors;
+        newRowStateVectors.push_back(state_.accnp_);
+        newRowStateVectors.push_back(state_.accn_);
+        newRowStateVectors.push_back(state_.velnp_);
+        newRowStateVectors.push_back(state_.veln_);
+        const size_t newsize = newRowStateVectors.size();
+        if (oldsize != newsize)
+          dserror("stateVector sizes are different! Fix this!");
 
-        startval.semiLagrangeBackTracking(dta_);
-      }
+//      bool start_val_semilagrange = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE");
+//      bool start_val_enrichment   = Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT");
 
-      if(start_val_enrichment == true)
-      {
-        XFEM::Enrichmentvalues enrval(
-            discret_,
-            olddofmanager,
-            dofmanager,
-            oldColStateVectors,
-            newRowStateVectors,
-            flamefront_,
-            interfacehandleN,
-            interfacehandleNP,
-            olddofcolmap,
-            oldNodalDofColDistrib,
-            newdofrowmap,
-            state_.nodalDofDistributionMap_);
+        if(start_val_semilagrange == true)
+        {
+          XFEM::Startvalues startval(
+              discret_,
+              olddofmanager,
+              dofmanager,
+              oldColStateVectors,
+              newRowStateVectors,
+              veln,
+              flamefront_,
+              olddofcolmap,
+              oldNodalDofColDistrib,
+              newdofrowmap,
+              state_.nodalDofDistributionMap_);
+
+          startval.semiLagrangeBackTracking(dta_);
+        }
+
+        if(start_val_enrichment == true)
+        {
+          XFEM::Enrichmentvalues enrval(
+              discret_,
+              olddofmanager,
+              dofmanager,
+              oldColStateVectors,
+              newRowStateVectors,
+              flamefront_,
+              interfacehandleN,
+              interfacehandleNP,
+              olddofcolmap,
+              oldNodalDofColDistrib,
+              newdofrowmap,
+              state_.nodalDofDistributionMap_);
+        }
+        OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
       }
-      OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
     }
 
   } // end area for dofswitcher and startvalues
@@ -895,11 +909,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // parameters for two-phase flow problems with surface tension
       eleparams.set("surftensapprox",surftensapprox_);
-      eleparams.set("surftenscoeff",surftenscoeff_);
       eleparams.set("connected_interface",connected_interface_);
       
       // smoothed normal vectors for boundary integration
       eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
+      eleparams.set("smoothgradphi",smoothgradphi_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
@@ -1474,7 +1488,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
 
   const bool write_visualization_data = step_%upres_ == 0;
-  const bool write_restart_data       = uprestart_ != 0 and step_%uprestart_ == 0;
+  const bool write_restart_data       = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
 
   //-------------------------------------------- output of solution
 
@@ -1518,8 +1532,9 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->WriteElementData();
   }
 
+
   // write restart
-  if (write_restart_data)
+  if (false)//(write_restart_data)
   {
    std::cout << "Write restart" << std::endl;
     //std::cout << state_.velnp_->GlobalLength() << std::endl;
@@ -1535,7 +1550,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   }
 
 //  if (discret_->Comm().NumProc() == 1)
-  if (step_ % 1 == 0 or step_== 1) //write every 5th time step only
+//  if (step_ % 10 == 0 or step_== 1) //write every 5th time step only
   {
     OutputToGmsh("solution_field_pressure","solution_field_velocity",step_, time_);
   }
@@ -1681,7 +1696,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 500, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 3, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -2108,7 +2123,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 500, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 3, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -2651,14 +2666,21 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const Teuchos::RCP<XFEM::DofManager> dofmanager,
     const Epetra_Map newdofrowmap)
 {
+//  cout0_ << "==============================================================================================\n";
+//  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
+//  cout0_ << "==============================================================================================\n";
+//
+//  // get G-function value vector on fluid NodeColMap
+//  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
+#ifdef FLAME_VORTEX
   cout0_ << "==============================================================================================\n";
   cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
   cout0_ << "==============================================================================================\n";
 
   // get G-function value vector on fluid NodeColMap
   const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-  
-#ifdef FLAME_VORTEX
+
   // initial field modification for flame_vortex_interaction
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
   {
@@ -2688,9 +2710,18 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
+
+  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
 #endif
   
 #ifdef COLLAPSE_FLAME
+  cout0_ << "==============================================================================================\n";
+  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
+  cout0_ << "==============================================================================================\n";
+
+  // get G-function value vector on fluid NodeColMap
+  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
   // initial field modification for collapse_flame
   const int nsd = 3;
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
@@ -2788,9 +2819,18 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
+
+  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
 #endif
 
 #ifdef COMBUST_TWO_FLAME_FRONTS
+  cout0_ << "==============================================================================================\n";
+  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
+  cout0_ << "==============================================================================================\n";
+
+  // get G-function value vector on fluid NodeColMap
+  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
   // initial field modification for 2-flames example
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
   {
@@ -2879,8 +2919,10 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
-#endif
+
   OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+#endif
+//  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
   
   
 }
