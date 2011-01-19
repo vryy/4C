@@ -364,14 +364,17 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     case INPAR::SCATRA::stabtype_no_stabilization:
       whichtau = INPAR::SCATRA::tau_zero;
       break;
+    case INPAR::SCATRA::stabtype_SUPG:
+      diffreastafac_ = 0.0;
+      break;
     case INPAR::SCATRA::stabtype_GLS:
       diffreastafac_ = 1.0;
       break;
     case INPAR::SCATRA::stabtype_USFEM:
       diffreastafac_ = -1.0;
-    break;
-    default:
       break;
+    default:
+      dserror("Unknown type of stabilization type");
     }
 
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
