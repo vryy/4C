@@ -139,13 +139,13 @@ void FLD::UTILS::computeStabilizationParams(
                    +-                                       -+
       tau_C: Bazilevs et al., derived from the fine scale complement Shur
             operator of the pressure equation
-                                      1.0
+                                        1.0
                       tau  = -----------------
                          C            /     \
                               tau  * | g * g |
                                  M    \-   -/
      */
-    /*            +-           -+   +-           -+   +-           -+
+    /*              +-           -+   +-           -+   +-           -+
                     |             |   |             |   |             |
                     |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
               G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
@@ -153,14 +153,14 @@ void FLD::UTILS::computeStabilizationParams(
                     |    i     j  |   |    i     j  |   |    i     j  |
                     +-           -+   +-           -+   +-           -+
      */
-    /*            +----
+    /*              +----
                      \
             G : G =   +   G   * G
             -   -    /     ij    ij
             -   -   +----
                      i,j
      */
-    /*                      +----
+    /*                        +----
              n+1       n+1     \     n+1          n+1
             u     * G u     =   +   u    * G   * u
                     -          /     i     -ij    j
@@ -186,7 +186,7 @@ void FLD::UTILS::computeStabilizationParams(
     //  brought 144.0 from Austin...)
     const double CI = 12.0/mk;
 
-    /*                                                         1.0
+    /*                                                       1.0
                +-                                       -+ - ---
                |                                         |   2.0
                | 4.0    n+1       n+1          2         |
@@ -195,7 +195,7 @@ void FLD::UTILS::computeStabilizationParams(
                | dt            -                   -   - |
                +-                                       -+
      */
-    /*           +-     -+   +-     -+   +-     -+
+    /*             +-     -+   +-     -+   +-     -+
                    |       |   |       |   |       |
                    |  dr   |   |  ds   |   |  dt   |
               g  = |  ---  | + |  ---  | + |  ---  |
@@ -203,7 +203,7 @@ void FLD::UTILS::computeStabilizationParams(
                    |    i  |   |    i  |   |    i  |
                    +-     -+   +-     -+   +-     -+
      */
-    /*           +----
+    /*             +----
                     \
            g * g =   +   g * g
            -   -    /     i   i
@@ -219,7 +219,7 @@ void FLD::UTILS::computeStabilizationParams(
     }
 
     /*
-                              1.0
+                             1.0
                 tau  = -----------------
                    C            /     \
                         tau  * | g * g |
