@@ -814,8 +814,8 @@ void FSI::LungMonolithic::Output()
   StructureField().Output();
 
   // additional output of volume constraint related forces
-  ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
-  structfield.OutputForces(AddStructRHS_);
+//   ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
+//   structfield.OutputForces(AddStructRHS_);
 
   // Write history vectors in case of restart
   // This is done using the structure DiscretizationWriter, hence it
@@ -835,8 +835,8 @@ void FSI::LungMonolithic::Output()
   FluidField().Output();
 
   // additional output of volume constraint related forces
-  ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
-  fluidfield.OutputForces(AddFluidRHS_);
+//   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
+//   fluidfield.OutputForces(AddFluidRHS_);
 
   AleField().Output();
 

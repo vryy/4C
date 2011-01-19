@@ -103,6 +103,7 @@ private:
   class MicroMaterialGP;
 
   /*----------------------------------------------------------------------*/
+  /// class for handling of micro-macro transitions
   class MicroMaterial : public Material
   {
   public:

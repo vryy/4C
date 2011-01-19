@@ -3,6 +3,7 @@
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
 #include <Epetra_Time.h>
+#include <EpetraExt_MatrixMatrix.h>
 
 extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
@@ -562,12 +563,20 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiM
   overallfsimap_ = LINALG::MultiMapExtractor::MergeMaps(fsimaps);
   fsiextractor_ = LINALG::MultiMapExtractor(*overallfsimap_, fsimaps);
 
-  // stuff needed for SIMPLE preconditioner -> this needs to be read
-  // in from the input file one day!
+  StructSchur_ = Teuchos::rcp(new LungSchurComplement());
+  FluidSchur_ = Teuchos::rcp(new LungSchurComplement());
+
+  // stuff needed for SIMPLE preconditioner
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
   prec_ = Teuchos::getIntegralValue<INPAR::FSI::PrecConstr>(fsidyn.sublist("CONSTRAINT"),"PRECONDITIONER");
+
+  RCP<Teuchos::ParameterList> constrsolvparams = rcp(new Teuchos::ParameterList);
+  constrsolvparams->set("solver","umfpack");
+  constraintsolver_ = rcp(new LINALG::Solver(constrsolvparams,
+                                             maps.Map(0)->Comm(),
+                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
 }
 
 
@@ -914,22 +923,16 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
 
     // S = - B^ * D^{-1} * B^T
 
-    Teuchos::RCP<LINALG::SparseMatrix> temps = LINALG::Multiply(ConStructOp, false, invDiag.Matrix(0,0), false);
-    Teuchos::RCP<LINALG::SparseMatrix> interconA = LINALG::Multiply(*temps, false, StructConOp, false, false);
+    Teuchos::RCP<LINALG::SparseMatrix> interconA = StructSchur_->CalculateSchur(Matrix(3,0),invDiag.Matrix(0,0),Matrix(0,3));
+    Teuchos::RCP<LINALG::SparseMatrix> temp = FluidSchur_->CalculateSchur(Matrix(3,1),invDiag.Matrix(1,1),Matrix(1,3));
 
-    temps = LINALG::Multiply(ConFluidOp, false, invDiag.Matrix(1,1), false);
-    Teuchos::RCP<LINALG::SparseMatrix> tempss = LINALG::Multiply(*temps, false, FluidConOp, false);
-    interconA->Add(*tempss, false, 1.0, 1.0);
+    interconA->Add(*temp,false,1.0,1.0);
+
     interconA->Complete(StructConOp.DomainMap(),ConStructOp.RangeMap());
     interconA->Scale(-1.0);
 
-    RCP<Teuchos::ParameterList> constrsolvparams = rcp(new Teuchos::ParameterList);
-    constrsolvparams->set("solver","umfpack");
-    RCP<Epetra_Vector> interconsol = rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    RCP<LINALG::Solver> ConstraintSolver = rcp(new LINALG::Solver(constrsolvparams,
-                                                                  interconA->Comm(),
-                                                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
-    ConstraintSolver->Solve(interconA->EpetraOperator(),interconsol,cx,true,true);
+    Teuchos::RCP<Epetra_Vector> interconsol = rcp(new Epetra_Vector(ConStructOp.RangeMap()));
+    constraintsolver_->Solve(interconA->EpetraOperator(),interconsol,cx,true,true);
 
     // -------------------------------------------------------------------
     // update of all dofs
@@ -960,6 +963,56 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
   RangeExtractor().InsertVector(*ay,2,y);
   RangeExtractor().InsertVector(*cy,3,y);
 }
+
+
+
+Teuchos::RCP<LINALG::SparseMatrix> FSI::LungSchurComplement::CalculateSchur(const LINALG::SparseMatrix& A,
+                                                                            const LINALG::SparseMatrix& B,
+                                                                            const LINALG::SparseMatrix& C)
+{
+  // make sure FillComplete was called on the matrices
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
+  if (!C.Filled()) dserror("C has to be FillComplete");
+
+  if (temp_ == Teuchos::null)
+  {
+    const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+    temp_ = Teuchos::rcp(new LINALG::SparseMatrix(A.RangeMap(),npr,false,true));
+  }
+  int err = EpetraExt::MatrixMatrix::Multiply(*A.EpetraMatrix(),false,*B.EpetraMatrix(),false,*(temp_->EpetraMatrix()),true);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
+
+  if (res_ == Teuchos::null)
+  {
+    const int npr = max(temp_->MaxNumEntries(),C.MaxNumEntries());
+    res_ = Teuchos::rcp(new LINALG::SparseMatrix(temp_->RangeMap(),npr,false,true));
+  }
+  err = EpetraExt::MatrixMatrix::Multiply(*temp_->EpetraMatrix(),false,*C.EpetraMatrix(),false,*(res_->EpetraMatrix()),true);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
+
+  return res_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+// void FSI::LungOverlappingBlockMatrix::MyMatrixMatrixMultiply(const LINALG::SparseMatrix& A,
+//                                                              const LINALG::SparseMatrix& B,
+//                                                              Teuchos::RCP<LINALG::SparseMatrix> result) const
+// {
+//   // make sure FillComplete was called on the matrices
+//   if (!A.Filled()) dserror("A has to be FillComplete");
+//   if (!B.Filled()) dserror("B has to be FillComplete");
+
+//   if (result == Teuchos::null)
+//   {
+//     const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+//     result = Teuchos::rcp(new LINALG::SparseMatrix(A.RangeMap(),npr,false,true));
+//   }
+//   int err = EpetraExt::MatrixMatrix::Multiply(*A.EpetraMatrix(),false,*B.EpetraMatrix(),false,*(result->EpetraMatrix()),true);
+//   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
+// }
 
 
 /*----------------------------------------------------------------------*
@@ -1413,6 +1466,5 @@ const char* FSI::ConstrOverlappingBlockMatrix::Label() const
 {
   return "FSI::ConstrOverlappingBlockMatrix";
 }
-
 
 #endif

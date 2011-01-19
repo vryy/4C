@@ -189,9 +189,9 @@ LINALG::SparseMatrix::SparseMatrix(
     dserror("Row map is not unique");
 
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,map,1,true));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,map,1,false));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,map,map,1,true));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,map,map,1,false));
   else
     dserror("matrix type is not correct");
 

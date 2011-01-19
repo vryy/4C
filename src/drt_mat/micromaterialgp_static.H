@@ -28,7 +28,7 @@ using namespace IO;
 namespace MAT
 {
 
-/// one Gauss point of the great micro material
+/// one Gauss point of the micro material
 class MicroMaterialGP
 {
 public:

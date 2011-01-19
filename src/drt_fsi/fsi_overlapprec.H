@@ -24,6 +24,7 @@ namespace UTILS
 }
 }
 
+
 namespace FSI
 {
 
@@ -171,6 +172,27 @@ namespace FSI
 
   };
 
+  /// this helper class is needed to save the graph of a temporary matrix and the
+  /// Schur complement -> the method "CalculateSchur" needs to be called
+  /// always with the same three matrices!
+  class LungSchurComplement
+  {
+  public:
+
+    /// construction
+    LungSchurComplement(){};
+
+    /// determination of the Schur complement
+    Teuchos::RCP<LINALG::SparseMatrix> CalculateSchur(const LINALG::SparseMatrix& A,
+                                                      const LINALG::SparseMatrix& B,
+                                                      const LINALG::SparseMatrix& C);
+
+  private:
+
+    Teuchos::RCP<LINALG::SparseMatrix> temp_;
+    Teuchos::RCP<LINALG::SparseMatrix> res_;
+  };
+
 
   /// special version of block matrix that includes the FSI block
   /// preconditioner as well as a SIMPLE preconditioner for handling
@@ -212,15 +234,12 @@ namespace FSI
     /// symmetric Gauss-Seidel block preconditioner
     virtual void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
-//     Teuchos::RCP<LINALG::SparseMatrix> interconA_;
-//     Teuchos::RCP<Epetra_Vector> interconsol_;
-//     Teuchos::RCP<Epetra_Vector> interconrhs_;
-//     Teuchos::RCP<Epetra_LinearProblem> linprob_
-//     Teuchos::RCP<Amesos_Umfpack> constraintsolver_;
+    Teuchos::RCP<LungSchurComplement> StructSchur_;
+    Teuchos::RCP<LungSchurComplement> FluidSchur_;
 
+    Teuchos::RCP<LINALG::Solver> constraintsolver_;
     Teuchos::RCP<Epetra_Map> overallfsimap_;
     LINALG::MultiMapExtractor fsiextractor_;
-//     Teuchos::RCP<LINALG::BlockSparseMatrixBase> invDiag_;
 
     double alpha_;    /// "relaxation" parameter in SIMPLE approximation of matrix
     int simpleiter_;  /// number of iterations in SIMPLE preconditioner
@@ -284,7 +303,6 @@ namespace FSI
     int simpleiter_;  /// number of iterations in SIMPLE preconditioner
     INPAR::FSI::PrecConstr prec_; /// preconditioner for constraint system
   };
-
 }
 
 #endif
