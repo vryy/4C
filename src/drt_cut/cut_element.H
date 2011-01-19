@@ -60,7 +60,7 @@ public:
 
   void MakeVolumeCells( Mesh & mesh );
 
-  void Delaunay( Mesh & mesh );
+  void Delaunay( Mesh & mesh, std::vector<std::vector<Point*> > & tets );
 
   void FindNodePositions();
 

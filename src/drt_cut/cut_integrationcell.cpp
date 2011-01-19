@@ -4,6 +4,9 @@
 #include "cut_facet.H"
 #include "cut_mesh.H"
 #include "cut_tetgen.H"
+#include "cut_boundarycell.H"
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #if 0
 GEO::CUT::Hex8MainIntegrationCell::Hex8MainIntegrationCell( ConcreteElement<DRT::Element::hex8> * e )
@@ -187,15 +190,7 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
       }
     }
 
-    if ( distance_counter==-4 or
-         distance_counter==4 )
-    {
-      for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
-      {
-        Facet * f = *i;
-        f->NewQuad4Cell( mesh );
-      }
-    }
+    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
 
     if ( distance_counter==-4 )
     {
@@ -208,10 +203,35 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
       rpoints[5] = points[6];
       rpoints[6] = points[5];
       rpoints[7] = points[4];
+
+      for ( int i=0; i<6; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewHex8Cell( VolumePosition( facets ), rpoints, cell );
     }
     else if ( distance_counter==4 )
     {
+      for ( int i=0; i<6; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewHex8Cell( VolumePosition( facets ), points, cell );
     }
     else
@@ -269,11 +289,11 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
       }
     }
 
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
-    {
-      Facet * f = *i;
-      f->NewTri3Cell( mesh );
-    }
+//     for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//     {
+//       Facet * f = *i;
+//       f->NewTri3Cell( mesh );
+//     }
 
     LINALG::Matrix<3,3> bot_xyze;
     LINALG::Matrix<3,1> top_xyze;
@@ -284,12 +304,27 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
+    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
+
     if ( bot_distance.Distance() > 0 )
     {
       std::vector<Point*> points;
       points.reserve( 4 );
       std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
       points.push_back( top_point );
+
+      for ( int i=0; i<4; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
     }
     else if ( bot_distance.Distance() < 0 )
@@ -298,6 +333,19 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
       points.reserve( 4 );
       std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
       points.push_back( top_point );
+
+      for ( int i=0; i<4; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
     }
     else
@@ -308,12 +356,21 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
   return NULL;
 }
 
+GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh & mesh,
+                                                                           VolumeCell * cell,
+                                                                           Point::PointPosition position,
+                                                                           const std::vector<Point*> & tet )
+{
+  return mesh.NewTet4Cell( position, tet, cell );
+}
+
 void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
                                                  Element * element,
                                                  VolumeCell * cell,
                                                  const std::set<Facet*> & facets,
                                                  std::set<IntegrationCell*> & integrationcells )
 {
+#if 0
 #ifdef QHULL
   const int dim = 3;
   tetgenio in;
@@ -480,6 +537,7 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
   }
 
 #endif
+#endif
 }
 
 GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
@@ -617,20 +675,22 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
       }
     }
 
-    if ( distance_counter==-3 or
-         distance_counter==3 )
-    {
-      for ( std::vector<Facet*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
-      {
-        Facet * f = *i;
-        f->NewTri3Cell( mesh );
-      }
-      for ( std::vector<Facet*>::const_iterator i=quads.begin(); i!=quads.end(); ++i )
-      {
-        Facet * f = *i;
-        f->NewQuad4Cell( mesh );
-      }
-    }
+//     if ( distance_counter==-3 or
+//          distance_counter==3 )
+//     {
+//       for ( std::vector<Facet*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+//       {
+//         Facet * f = *i;
+//         f->NewTri3Cell( mesh );
+//       }
+//       for ( std::vector<Facet*>::const_iterator i=quads.begin(); i!=quads.end(); ++i )
+//       {
+//         Facet * f = *i;
+//         f->NewQuad4Cell( mesh );
+//       }
+//     }
+
+    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
 
     if ( distance_counter==-3 )
     {
@@ -641,10 +701,53 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
       rpoints[3] = points[5];
       rpoints[4] = points[4];
       rpoints[5] = points[3];
+
+      for ( int i=0; i<2; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+      for ( int i=0; i<3; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewWedge6Cell( VolumePosition( facets ), rpoints, cell );
     }
     else if ( distance_counter==3 )
     {
+      for ( int i=0; i<2; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+      for ( int i=0; i<3; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewWedge6Cell( VolumePosition( facets ), points, cell );
     }
     else
@@ -715,16 +818,16 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
       }
     }
 
-    for ( std::vector<Facet*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
-    {
-      Facet * f = *i;
-      f->NewTri3Cell( mesh );
-    }
-    for ( std::vector<Facet*>::const_iterator i=quads.begin(); i!=quads.end(); ++i )
-    {
-      Facet * f = *i;
-      f->NewQuad4Cell( mesh );
-    }
+//     for ( std::vector<Facet*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+//     {
+//       Facet * f = *i;
+//       f->NewTri3Cell( mesh );
+//     }
+//     for ( std::vector<Facet*>::const_iterator i=quads.begin(); i!=quads.end(); ++i )
+//     {
+//       Facet * f = *i;
+//       f->NewQuad4Cell( mesh );
+//     }
 
     LINALG::Matrix<3,3> bot_xyze;
     LINALG::Matrix<3,1> top_xyze;
@@ -735,12 +838,36 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
+    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
+
     if ( bot_distance.Distance() > 0 )
     {
       std::vector<Point*> points;
       points.reserve( 5 );
       std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
       points.push_back( top_point );
+
+      for ( int i=0; i<4; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+      for ( int i=0; i<1; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );
     }
     else if ( bot_distance.Distance() < 0 )
@@ -749,6 +876,28 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
       points.reserve( 5 );
       std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
       points.push_back( top_point );
+
+      for ( int i=0; i<4; ++i )
+      {
+        std::vector<Point*> side( 3 );
+        for ( int j=0; j<3; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
+        }
+        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+      for ( int i=0; i<1; ++i )
+      {
+        std::vector<Point*> side( 4 );
+        for ( int j=0; j<4; ++j )
+        {
+          side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
+        }
+        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+      }
+
+      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
+
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );
     }
     else

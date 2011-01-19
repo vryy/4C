@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <map>
 
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -14,10 +15,15 @@ namespace GEO
 namespace CUT
 {
   class Facet;
+  class VolumeCell;
+  class Mesh;
+  class Point;
 
 class BoundaryCell
 {
 public:
+
+  static void CreateCells( Mesh & mesh, VolumeCell * cell, const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
     : xyz_( xyz ),
@@ -49,6 +55,9 @@ public:
   {
   }
 
+  static void CollectCoordinates( const std::vector<Point*> & side,
+                                  std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
   virtual double Area() const;
@@ -62,6 +71,9 @@ public:
     : BoundaryCell( xyz, facet )
   {
   }
+
+  static void CollectCoordinates( const std::vector<Point*> & side,
+                                  std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 

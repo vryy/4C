@@ -99,6 +99,8 @@ public:
     facets_.insert( facet );
   }
 
+  Edge * CommonEdge( Point * other );
+
   Line * CommonLine( Point * other );
 
   Line * CutLine( Side * side, bool unique=true );
@@ -130,7 +132,7 @@ public:
            << x_[2] << ")";
   }
 
-  void Plot( std::ofstream & f )
+  void Plot( std::ostream & f )
   {
     f << x_[0] << " "
       << x_[1] << " "
@@ -148,6 +150,8 @@ public:
   Node * CutNode();
 
   void Intersection( std::set<Side*> & sides );
+
+  void Intersection( std::set<Facet*> & facets );
 
   const std::set<Element*> & Elements() const { return cut_elements_; }
 

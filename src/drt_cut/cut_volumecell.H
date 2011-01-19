@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <iostream>
 
 #include "cut_point.H"
 
@@ -14,6 +15,7 @@ namespace CUT
   class Point;
   class Facet;
   class Element;
+  class BoundaryCell;
   class IntegrationCell;
   class Mesh;
 
@@ -41,11 +43,29 @@ public:
 
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
+  void SetIntegrationCells( Mesh & mesh,
+                            const std::vector<std::vector<std::vector<Point*> >::iterator> & tets,
+                            const std::map<std::vector<std::vector<Point*> >::iterator, std::vector<std::vector<Point*> > > & cut_sides );
+
+  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+
   void ConnectNodalDOFSets();
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
   GEO::CUT::Point::PointPosition Position();
+
+  void Print( std::ostream & stream );
+
+  bool OwnsFacet( Facet * f );
+
+  bool OwnsTet( const std::vector<Point*> & tet );
+
+  void NewTri3Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x );
+
+  void NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz );
+
+  void NewQuad4Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x );
 
 private:
 
@@ -53,7 +73,11 @@ private:
 
   std::set<Facet*> facets_;
 
+  std::vector<Point*> points_;
+
   std::set<IntegrationCell*> integrationcells_;
+
+  std::set<BoundaryCell*> bcells_;
 
   std::vector<int> nodaldofset_;
 };

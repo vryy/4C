@@ -1,5 +1,6 @@
 
 #include "cut_volumecell.H"
+#include "cut_boundarycell.H"
 #include "cut_integrationcell.H"
 #include "cut_facet.H"
 
@@ -38,20 +39,23 @@ Offene Fragen:
     Facet * f = *i;
     f->Register( this );
   }
+
+  std::set<Point*> cut_points;
+  GetAllPoints( cut_points );
 }
 
-bool GEO::CUT::VolumeCell::Contains( Point * p )
-{
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    if ( f->Contains( p ) )
-    {
-      return true;
-    }
-  }
-  return false;
-}
+// bool GEO::CUT::VolumeCell::Contains( Point * p )
+// {
+//   for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+//   {
+//     Facet * f = *i;
+//     if ( f->Contains( p ) )
+//     {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
 
 void GEO::CUT::VolumeCell::Neighbors( Point * p,
                                       const std::set<VolumeCell*> & cells,
@@ -94,18 +98,27 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
 
 void GEO::CUT::VolumeCell::GetAllPoints( std::set<Point*> & cut_points )
 {
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  if ( points_.size()==0 )
   {
-    Facet * f = *i;
-    f->GetAllPoints( cut_points );
+    for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      Facet * f = *i;
+      f->GetAllPoints( cut_points );
+    }
+    points_.reserve( cut_points.size() );
+    std::copy( cut_points.begin(), cut_points.end(), std::back_inserter( points_ ) );
+  }
+  else
+  {
+    std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
   }
 }
 
 void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
+#if 0
   IntegrationCell * ic;
 
-#if 0
   if ( ( ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
   {
     integrationcells_.insert( ic );
@@ -132,6 +145,67 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
 {
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
+}
+
+void GEO::CUT::VolumeCell::SetIntegrationCells( Mesh & mesh,
+                                                const std::vector<std::vector<std::vector<Point*> >::iterator> & tets,
+                                                const std::map<std::vector<std::vector<Point*> >::iterator, std::vector<std::vector<Point*> > > & cut_sides )
+{
+  IntegrationCell * ic;
+
+#if 0
+  if ( ( ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+  {
+    integrationcells_.insert( ic );
+  }
+  else if ( ( ic = Tet4IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+  {
+    integrationcells_.insert( ic );
+  }
+  else if ( ( ic = Wedge6IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+  {
+    integrationcells_.insert( ic );
+  }
+  else if ( ( ic = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+  {
+    integrationcells_.insert( ic );
+  }
+  else
+#endif
+  {
+    Point::PointPosition position = Position();
+
+    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
+
+    for ( std::vector<std::vector<std::vector<Point*> >::iterator>::const_iterator i=tets.begin();
+          i!=tets.end();
+          ++i )
+    {
+      std::vector<std::vector<Point*> >::iterator it = *i;
+      std::vector<Point*> & t = *it;
+
+      ic = Tet4IntegrationCell::CreateCell( mesh, this, position, t );
+      integrationcells_.insert( ic );
+
+      std::map<std::vector<std::vector<Point*> >::iterator, std::vector<std::vector<Point*> > >::const_iterator j=cut_sides.find( it );
+      if ( j!=cut_sides.end() )
+      {
+        const std::vector<std::vector<Point*> > & sides = j->second;
+        for ( std::vector<std::vector<Point*> >::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+        {
+          const std::vector<Point*> & side = *i;
+          Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        }
+      }
+    }
+
+    BoundaryCell::CreateCells( mesh, this, sides_xyz );
+  }
+}
+
+void GEO::CUT::VolumeCell::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+{
+  std::copy( bcells_.begin(), bcells_.end(), std::inserter( bcells, bcells.begin() ) );
 }
 
 void GEO::CUT::VolumeCell::ConnectNodalDOFSets()
@@ -171,4 +245,92 @@ GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
     }
   }
   return position;
+}
+
+void GEO::CUT::VolumeCell::Print( std::ostream & stream )
+{
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->Print( stream );
+  }
+}
+
+bool GEO::CUT::VolumeCell::OwnsFacet( Facet * f )
+{
+  return std::find( facets_.begin(), facets_.end(), f )!=facets_.end();
+}
+
+bool GEO::CUT::VolumeCell::OwnsTet( const std::vector<Point*> & tet )
+{
+  for ( std::vector<Point*>::const_iterator j=tet.begin(); j!=tet.end(); ++j )
+  {
+    Point * p = *j;
+    if ( not Contains( p ) )
+    {
+      return false;
+    }
+  }
+
+  // So we know all the nodes. But am I concave? Otherwise this tet might be
+  // just outside of me.
+
+#if 0
+  for ( int i=0; i<4; ++i )
+  {
+    std::vector<Point*> side( tet );
+    side.erase( side.begin() + i );
+
+    bool all_oncutsurface = true;
+    for ( std::vector<Point*>::iterator i=side.begin(); i!=side.end(); ++i )
+    {
+      Point * p = *i;
+      if ( p->Position() != Point::oncutsurface )
+      {
+        all_oncutsurface = false;
+        break;
+      }
+    }
+
+    if ( all_oncutsurface )
+      continue;
+
+    bool found = false;
+    for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( f->Contains( side ) )
+      {
+        found = true;
+        break;
+      }
+    }
+    if ( not found )
+    {
+      return false;
+    }
+  }
+#endif
+
+  return true;
+}
+
+bool GEO::CUT::VolumeCell::Contains( Point * p )
+{
+  return std::binary_search( points_.begin(), points_.end(), p );
+}
+
+void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x )
+{
+  f->NewTri3Cell( mesh, this, x, bcells_ );
+}
+
+void GEO::CUT::VolumeCell::NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz )
+{
+  f->NewTri3Cells( mesh, this, xyz, bcells_ );
+}
+
+void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x )
+{
+  f->NewQuad4Cell( mesh, this, x, bcells_ );
 }

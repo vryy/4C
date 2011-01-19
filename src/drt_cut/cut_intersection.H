@@ -185,12 +185,20 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
   LINALG::Matrix<1,numNodesLine> lineDeriv1;
 
   LINALG::Matrix<3,3> A;
+  LINALG::Matrix<3,3> B;
   LINALG::Matrix<3,1> b;
   LINALG::Matrix<3,1> dx;
 
   // calculate rhs
 
   xsi_ = 0;
+
+  const double tol = LINSOLVETOL; // / scale_;
+
+#ifdef DEBUG
+  std::vector<double> res;
+  res.push_back( tol );
+#endif
 
   DRT::UTILS::shape_function_2D(surfaceFunct, xsi_(0), xsi_(1), sidetype);
   DRT::UTILS::shape_function_1D(lineFunct, xsi_(2), edgetype);
@@ -231,11 +239,13 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
         A(isd,2) -= xyze_lineElement_(isd,inode) * lineDeriv1(0,inode);
       }
 
+    B.Update( 1, A, 0 );
+
     // solve
 
     dx = 0;
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
-    if ( fabs( det ) < LINSOLVETOL )
+    if ( fabs( det ) < tol )
     {
       return false;
     }
@@ -266,12 +276,25 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     // test
 
     double residual = b.Norm2();
+    double incr = dx.Norm2();
 
-    if ( fabs( residual ) < LINSOLVETOL )
+#ifdef DEBUG
+    res.push_back( residual );
+    res.push_back( incr );
+#endif
+
+    if ( residual < tol and incr < tol )
     {
       return true;
     }
   }
+// #ifdef DEBUG
+//   std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
+//   std::cout << "\n";
+//   std::cout << xsi_;
+//   std::cout << xyze_surfaceElement_;
+//   std::cout << xyze_lineElement_;
+// #endif
   return false;
 }
 

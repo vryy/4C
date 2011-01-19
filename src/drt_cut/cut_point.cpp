@@ -64,6 +64,27 @@ void GEO::CUT::Point::AddEdge( Edge* cut_edge )
              std::inserter( cut_sides_, cut_sides_.begin() ) );
 }
 
+GEO::CUT::Edge * GEO::CUT::Point::CommonEdge( Point * other )
+{
+  Edge * found = NULL;
+  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  {
+    Edge * e = *i;
+    if ( other->IsCut( e ) )
+    {
+      if ( found==NULL )
+      {
+        found = e;
+      }
+      else
+      {
+        throw std::runtime_error( "not unique" );
+      }
+    }
+  }
+  return found;
+}
+
 // std::vector<GEO::CUT::Edge*> GEO::CUT::Point::CutEdges( Point * other )
 // {
 //   std::vector<Edge*> matches;
@@ -198,6 +219,15 @@ void GEO::CUT::Point::Intersection( std::set<Side*> & sides )
                          sides.begin(), sides.end(),
                          std::inserter( intersection, intersection.begin() ) );
   std::swap( sides, intersection );
+}
+
+void GEO::CUT::Point::Intersection( std::set<Facet*> & facets )
+{
+  std::set<Facet*> intersection;
+  std::set_intersection( facets_.begin(), facets_.end(),
+                         facets.begin(), facets.end(),
+                         std::inserter( intersection, intersection.begin() ) );
+  std::swap( facets, intersection );
 }
 
 bool GEO::CUT::Point::NodalPoint( const std::vector<Node*> & nodes ) const

@@ -12,7 +12,7 @@
 // determines the exactness we can reach in out simulations.
 #define MINIMALTOL  1e-10
 #define TOLERANCE   1e-12
-#define LINSOLVETOL 1e-14
+#define LINSOLVETOL 1e-13
 
 // Special tolerance to distinguish planar facets from curved ones.
 #define PLANARTOL   1e-6

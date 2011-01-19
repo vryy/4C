@@ -627,6 +627,30 @@ GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1,
 
 GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface )
 {
+  if ( points.size()==0 )
+    throw std::runtime_error( "empty facet" );
+
+  std::vector<Point*>::const_iterator i=points.begin();
+  std::set<Facet*> facets = ( *i )->Facets();
+  for ( ++i; i!=points.end(); ++i )
+  {
+    Point * p = *i;
+    p->Intersection( facets );
+    if ( facets.size()==0 )
+    {
+      break;
+    }
+  }
+
+  for ( std::set<Facet*>::iterator j=facets.begin(); j!=facets.end(); ++j )
+  {
+    Facet * f = *j;
+    if ( f->Equals( points ) )
+    {
+      return f;
+    }
+  }
+
   Facet* f = new Facet( *this, points, side, cutsurface );
   facets_.push_back( Teuchos::rcp( f ) );
 #if 0
@@ -651,14 +675,14 @@ GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & fa
   return c;
 }
 
-GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
+GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet )
 {
   Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, facet );
   boundarycells_.push_back( Teuchos::rcp( bc ) );
   return bc;
 }
 
-GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
+GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet )
 {
   Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, facet );
   boundarycells_.push_back( Teuchos::rcp( bc ) );
@@ -974,13 +998,37 @@ void GEO::CUT::Mesh::FindNodalDOFSets()
 
 void GEO::CUT::Mesh::CreateIntegrationCells()
 {
-  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
-        i!=cells_.end();
+  // get nodal positions from elements
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
         ++i )
   {
-    VolumeCell * cell = &**i;
-    cell->CreateIntegrationCells( *this );
+    Element & e = *i->second;
+    std::vector<std::vector<Point*> > tets;
+    e.Delaunay( *this, tets );
   }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+    std::vector<std::vector<Point*> > tets;
+    e.Delaunay( *this, tets );
+  }
+
+//   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+//         i!=cells_.end();
+//         ++i )
+//   {
+//     VolumeCell * cell = &**i;
+
+//     std::ofstream file( "volumecell.plot" );
+//     file.precision( 16 );
+//     cell->Print( file );
+//     file.close();
+
+//     cell->CreateIntegrationCells( *this );
+//   }
 }
 
 void GEO::CUT::Mesh::Status()

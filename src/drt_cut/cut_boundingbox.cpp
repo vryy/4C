@@ -74,6 +74,8 @@ void GEO::CUT::BoundingBox::AddPoint( const double * x )
 
 bool GEO::CUT::BoundingBox::Within( double norm, const BoundingBox & b ) const
 {
+  if ( empty_ )
+    return true;
   return ( InBetween( norm, minx(), maxx(), b.minx(), b.maxx() ) and
            InBetween( norm, miny(), maxy(), b.miny(), b.maxy() ) and
            InBetween( norm, minz(), maxz(), b.minz(), b.maxz() ) );
@@ -81,6 +83,8 @@ bool GEO::CUT::BoundingBox::Within( double norm, const BoundingBox & b ) const
 
 bool GEO::CUT::BoundingBox::Within( double norm, const double * x ) const
 {
+  if ( empty_ )
+    return true;
   return ( InBetween( norm, minx(), maxx(), x[0], x[0] ) and
            InBetween( norm, miny(), maxy(), x[1], x[1] ) and
            InBetween( norm, minz(), maxz(), x[2], x[2] ) );

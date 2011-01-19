@@ -101,6 +101,8 @@ public:
 
   static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
 
+  static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & tet );
+
   static void CreateCells( Mesh & mesh,
                            Element * element,
                            VolumeCell * cell,

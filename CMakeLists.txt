@@ -1218,6 +1218,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
+  src/drt_cut/cut_element_delaunay.cpp
   src/drt_cut/cut_elementhandle.cpp
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_integrationcell.cpp
@@ -1226,8 +1227,8 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_line.cpp
   src/drt_cut/cut_linesegment.cpp
   src/drt_cut/cut_mesh.cpp
-  src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_meshhandle.cpp
+  src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_node.cpp
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointcycle.cpp
@@ -1573,7 +1574,7 @@ include(CTest)
 if (QHULL)
   add_executable(cut_test ${OBJS_CUT_TEST})
   #target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
-  target_link_libraries(cut_test drt_lib_cut ${TETGEN_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
+  target_link_libraries(cut_test drt_lib_cut ${TETGEN_LIBRARIES} ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   #add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 endif (QHULL)
 

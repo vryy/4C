@@ -55,6 +55,8 @@ public:
     std::cout << "\n";
   }
 
+  void Print( std::ostream & stream );
+
   int SideId();
 
   int PositionSideId();
@@ -124,6 +126,8 @@ public:
 
   bool Contains( Point * p );
 
+  bool Contains( const std::vector<Point*> & side );
+
   bool Touches( Facet * f );
 
   //bool PositiveDistance( Facet * f );
@@ -138,11 +142,11 @@ public:
 
   const std::vector<Point*> & Points() const { return points_; }
 
-  void NewTri3Cell( Mesh & mesh );
+  void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells );
 
-  void NewTri3Cells( Mesh & mesh, const std::vector<Epetra_SerialDenseMatrix> & xyz );
+  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );
 
-  void NewQuad4Cell( Mesh & mesh );
+  void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells );
 
   void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
@@ -203,7 +207,7 @@ private:
 
   Point::PointPosition position_;
 
-  std::set<BoundaryCell*> bcells_;
+  //std::map<VolumeCell*, std::set<BoundaryCell*> > bcells_;
 
   std::set<VolumeCell*> cells_;
 };
