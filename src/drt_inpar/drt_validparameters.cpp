@@ -1238,8 +1238,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF_end",0.0,"crosslinker off-rate at the end",&statmech);
   //Reading double parameter for crosslinker off-rate at the end
   DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
-  //upon reaching a number of N_crosslink crosslinkers the first time, statmechmanager switches from K_ON_start and K_OFF_start to K_ON_end and K_OFF_end
+  //number of overall crosslink molecules in the boundary volume
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
+  //number by which the number of crosslinkers is reduced.
+  IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
   //Maximal number of crosslinkers a node can establish to other nodes
   IntParameter("N_CROSSMAX",1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
   //Reading double parameter for crosslinker protein mean length
