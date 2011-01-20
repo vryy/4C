@@ -70,13 +70,19 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   map<int,int> ns_dl2Eid; // node set line E id
   map<int,int> ns_ds2Eid; // node set surf E id
   map<int,int> ns_dv2Eid; // node set vol E id
-
+/*
+  if(allconds.find_first_of("**") != string::npos)
+    dserror("String '**' detected. More * than one not allowed due to usage as a marker.");
+*/
   found = allconds.find_first_of(marker);
   while (found != string::npos){
     int startpos=found;
     found = allconds.find(marker,found+1);  //step forward to find next match
     // get actual condition
     string actcond = allconds.substr(startpos,found-startpos);
+
+    // ensure substring has minimum length!
+    if (actcond.size()<3) dserror("Substring is too short");
 
     // find out what mesh_entity type we have
     string mesh_entity = actcond.substr(0,3);
@@ -216,7 +222,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
       condefs.push_back(cdef);
     }
     else
-      dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
+      dserror("Cannot identify marker '%s'. Use *el (element block), *ns (nodeset) or *ss (sideset)",mesh_entity.c_str());
 
   }
 
