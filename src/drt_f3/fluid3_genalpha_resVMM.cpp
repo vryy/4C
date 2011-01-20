@@ -12727,7 +12727,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
                           +--------------> Re2
                               1
       */
-      const double xi_tau_c = DMIN(re2,1.0);
+      const double xi_tau_c = DMIN(re_convect,1.0);
       tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
 
     }
