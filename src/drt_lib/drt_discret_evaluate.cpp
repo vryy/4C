@@ -408,6 +408,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
   dof 4        velz standard    ->    vector component 2
   dof 5        velz enriched    ->    vector component 2
   dof 6        pres standard    ->    vector component 3
+  dof 7        pres enriched    ->    vector component 3
 
 - A general solution would affect BACI in a very extensive way (drt_discret.H, drt_discret_evaluate.cpp)
 
@@ -860,7 +861,7 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
            (*dbcgids).insert(gid);
       }  // loop over nodal DOFs
     }
-    else //ExtendedFEM
+    else if(numdf==8) //ExtendedFEM
     {
       for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
       {
@@ -910,7 +911,7 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         }
 
         // overwrite Dirichlet values for XFEM dofs
-        dsassert((*onoff)[truncj]!=0,"there is no Dirichlet condition assigned to this dof!");
+        dsassert((*onoff)[truncj]!=0,"there should be a Dirichlet condition assigned to this dof!");
         if (j%2!=0) // if XFEM dof
         {
           //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
@@ -1043,6 +1044,171 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         if (dbcgids != Teuchos::null)
           (*dbcgids).insert(gid);
       }  // loop over nodal DOFs
+    }
+    else if(numdf==6)
+    {
+      for (unsigned j=0; j<numdf; ++j)
+      {
+        int xfemj = j;
+        if(j==0) xfemj = 0;
+        if(j==1) xfemj = 1;
+        if(j==2) xfemj = 2;
+        if(j==3) xfemj = 2;
+        if(j==4) xfemj = 3;
+        if(j==5) xfemj = 3;
+
+        //-------------------------
+        // ich bin ein Standard dof
+        //-------------------------
+        if(j!=3 && j!=5)
+        {
+          //---------------------------
+          // ich bin kein Dirichlet dof
+          //---------------------------
+          if ((*onoff)[xfemj]==0)// if Dirichlet value is turned off in input file (0)
+          {
+            const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+            if (toggle!=Teuchos::null)
+              (*toggle)[lid] = 0.0;
+            // get rid of entry in DBC map - if it exists
+            if (dbcgids != Teuchos::null)
+              (*dbcgids).erase(dofs[j]);
+            continue; // for loop over dofs is advanced by 1 (++j)
+          }
+          //--------------------------
+          // ich bin ein Dirichlet dof
+          //--------------------------
+          const int gid = dofs[j];
+          vector<double> value(deg+1,(*val)[xfemj]);
+
+          // factor given by time curve
+          std::vector<double> curvefac(deg+1, 1.0);
+          int curvenum = -1;
+          if (curve) curvenum = (*curve)[xfemj];
+          if (curvenum>=0 && usetime)
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+          else
+            for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+
+          // factor given by spatial function
+          double functfac = 1.0;
+          int funct_num = -1;
+          if (funct) funct_num = (*funct)[xfemj];
+          {
+            if (funct_num>0)
+              functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+                  actnode->X(),
+                  time,
+                  &dis);
+          }
+          // apply factors to Dirichlet value
+          for (unsigned i=0; i<deg+1; ++i)
+          {
+            value[i] *= functfac * curvefac[i];
+          }
+          // assign value
+          const int lid = (*systemvectoraux).Map().LID(gid);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+          if (systemvector != Teuchos::null)
+            (*systemvector)[lid] = value[0];
+          if (systemvectord != Teuchos::null)
+            (*systemvectord)[lid] = value[1];
+          if (systemvectordd != Teuchos::null)
+            (*systemvectordd)[lid] = value[2];
+          // set toggle vector
+          if (toggle != Teuchos::null)
+            (*toggle)[lid] = 1.0;
+          // amend vector of DOF-IDs which are Dirichlet BCs
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).insert(gid);
+        }
+        //-----------------------------------
+        // ich bin der angereicherte veln dof
+        //-----------------------------------
+        else if(j==3 && (*onoff)[0]!=0 && (*onoff)[1]!=0 && (*onoff)[2]!=0 )
+        {
+cout << "angereicherter veln freiheitsgrad wird gesetzt" << endl;
+            //--------------------------
+            // ich bin ein Dirichlet dof
+            //--------------------------
+            const int gid = dofs[j];
+            vector<double> value(deg+1,(*val)[xfemj]);
+
+//cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (veln) is set to 0.0 for node " << actnode->Id() << endl;
+            // apply factors to Dirichlet value
+            for (unsigned i=0; i<deg+1; ++i)
+            {
+              value[i] = 0.0;
+            }
+            // assign value
+            const int lid = (*systemvectoraux).Map().LID(gid);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+            if (systemvector != Teuchos::null)
+              (*systemvector)[lid] = value[0];
+            if (systemvectord != Teuchos::null)
+              (*systemvectord)[lid] = value[1];
+            if (systemvectordd != Teuchos::null)
+              (*systemvectordd)[lid] = value[2];
+            // set toggle vector
+            if (toggle != Teuchos::null)
+              (*toggle)[lid] = 1.0;
+            // amend vector of DOF-IDs which are Dirichlet BCs
+            if (dbcgids != Teuchos::null)
+              (*dbcgids).insert(gid);
+        }
+        //-----------------------------------
+        // ich bin der angereicherte pres dof
+        //-----------------------------------
+        else if( j==5 && (*onoff)[4]!=0 )
+        {
+cout << "angereicherter druck freiheitsgrad wird gesetzt" << endl;
+            //--------------------------
+            // ich bin ein Dirichlet dof
+            //--------------------------
+            const int gid = dofs[j];
+            vector<double> value(deg+1,(*val)[xfemj]);
+
+//cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (pres) is set to 0.0 for node " << actnode->Id() << endl;
+            // apply factors to Dirichlet value
+            for (unsigned i=0; i<deg+1; ++i)
+            {
+              value[i] = 0.0;
+            }
+            // assign value
+            const int lid = (*systemvectoraux).Map().LID(gid);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+            if (systemvector != Teuchos::null)
+              (*systemvector)[lid] = value[0];
+            if (systemvectord != Teuchos::null)
+              (*systemvectord)[lid] = value[1];
+            if (systemvectordd != Teuchos::null)
+              (*systemvectordd)[lid] = value[2];
+            // set toggle vector
+            if (toggle != Teuchos::null)
+              (*toggle)[lid] = 1.0;
+            // amend vector of DOF-IDs which are Dirichlet BCs
+            if (dbcgids != Teuchos::null)
+              (*dbcgids).insert(gid);
+        }
+        else
+        {
+//cout << "/!\\ warning === no Dirichlet value set for normal velocity dof of node " << actnode->Id() << endl;
+          const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(dofs[j]);
+//cout << "free dof " << j << endl;
+          continue;
+        }
+      }  // loop over nodal DOFs
+    }
+    else
+    {
+      dserror("So viele dofs gibts doch gar nicht an einem Knoten!");
     }
   }  // loop over nodes
   return;
