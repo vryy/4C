@@ -377,7 +377,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
     SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
 
 
-		// Set a certain percentag of double-bonded crosslinkers free
+		/*/ Set a certain percentag of double-bonded crosslinkers free
 		if(time_==statmechparams_.get<double>("STARTTIMEACT",0.0))
 		{
 			if(!discret_.Comm().MyPID())
@@ -392,7 +392,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 				cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<endl;
 				cout<<"===========================================================\n"<<endl;
 			}
-		}
+		}*/
 
 		/*settling administrative stuff in order to make the discretization ready for the next time step:
 		 * done in SearchAndeDeleteCrosslinkers():
@@ -2520,7 +2520,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	double dt = params.get<double>("delta time", 0.01);
 	double starttime = statmechparams_.get<double>("STARTTIMEACT",-1.0);
 	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
-	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4))
+	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber == -1)
 		return;
 	if (time<0.0)
 		usetime = false;

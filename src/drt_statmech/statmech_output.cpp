@@ -1602,114 +1602,84 @@ void StatMechManager::GMSH_2_noded(const int& n,
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	// plot the test volume determined by DDCorrCurrentStructure()
-	int numpositions = (int)testvolumepos_.size();
-
-	cout<<"Visualizing test volume: ";
-	switch(numpositions)
+	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 	{
-		// either cluster or homogeneous network
-		case 0:
+		double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+		// plot the test volume determined by DDCorrCurrentStructure()
+		int numpositions = (int)testvolumepos_.size();
+
+		cout<<"Visualizing test volume: ";
+		switch(numpositions)
 		{
-			//cluster
-			if(characlength_<periodlength/2.0)
+			// either cluster or homogeneous network
+			case 0:
 			{
-				cout<<"Cluster"<<endl;
-				// draw three octagons/hexadecagon lying in the base planes
-				for(int i=0; i<3; i++)//spatial comp i
-					for(int j=0; j<3; j++)//spatial comp j
-						if(j<i)
-							for(int k=0; k<3; k++)//spatial comp k perp. to the others
-								if(k!=i && k!=j)
-								{
-									double radius = characlength_;
-									// some local variables
-									LINALG::SerialDenseMatrix edge(3,2,true);
-									LINALG::Matrix<3,1> radiusvec1;
-									LINALG::Matrix<3,1> radiusvec2;
-									LINALG::Matrix<3,1> auxvec;
-									LINALG::Matrix<3,1> theta;
-									LINALG::Matrix<3,3> R;
-
-									// compute three dimensional angle theta
-									// unit vector perpendicular to jk-plane
-									LINALG::Matrix<3,1> axis;
-									for (int l=0;l<3;++l)
-										if(l==k)
-											axis(l) = 1.0;
-										else
-											axis(l) = 0.0;
-									for (int l=0;l<3;++l)
-										theta(l) = axis(l) * 2 * M_PI / n;
-
-									// Compute rotation matrix R from rotation angle theta
-									angletotriad(theta,R);
-
-									// compute radius vector for first surface node of first edges
-									auxvec.Clear();
-									for (int l=0;l<3;++l)
-										if(l==j)
-											auxvec(l) = 1.0;
-
-									// radiusvector for point on surface
-									radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
-									radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
-									radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
-
-									// initialize all edge points to nodes
-									for (int l=0;l<3;++l)
+				//cluster
+				if(characlength_<periodlength/2.0)
+				{
+					cout<<"Cluster"<<endl;
+					// draw three octagons/hexadecagon lying in the base planes
+					for(int i=0; i<3; i++)//spatial comp i
+						for(int j=0; j<3; j++)//spatial comp j
+							if(j<i)
+								for(int k=0; k<3; k++)//spatial comp k perp. to the others
+									if(k!=i && k!=j)
 									{
-										edge(l,0) = cog_(l);
-										edge(l,1) = cog_(l);
-									}
+										double radius = characlength_;
+										// some local variables
+										LINALG::SerialDenseMatrix edge(3,2,true);
+										LINALG::Matrix<3,1> radiusvec1;
+										LINALG::Matrix<3,1> radiusvec2;
+										LINALG::Matrix<3,1> auxvec;
+										LINALG::Matrix<3,1> theta;
+										LINALG::Matrix<3,3> R;
 
-									// get first point on surface for node1 and node2
-									for (int l=0;l<3;++l)
-										edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
+										// compute three dimensional angle theta
+										// unit vector perpendicular to jk-plane
+										LINALG::Matrix<3,1> axis;
+										for (int l=0;l<3;++l)
+											if(l==k)
+												axis(l) = 1.0;
+											else
+												axis(l) = 0.0;
+										for (int l=0;l<3;++l)
+											theta(l) = axis(l) * 2 * M_PI / n;
 
+										// Compute rotation matrix R from rotation angle theta
+										angletotriad(theta,R);
 
-									// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-									radiusvec2.Multiply(R,radiusvec1);
+										// compute radius vector for first surface node of first edges
+										auxvec.Clear();
+										for (int l=0;l<3;++l)
+											if(l==j)
+												auxvec(l) = 1.0;
 
-									// get second point on surface for node1 and node2
-									for(int l=0;l<3;l++)
-										edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+										// radiusvector for point on surface
+										radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+										radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+										radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
 
-									// shift the coordinates according to periodic boundary conditions
-									LINALG::SerialDenseMatrix edgeshift = edge;
-									for(int l=0; l<(int)edge.M(); l++)
-										for(int m=0; m<(int)edge.N(); m++)
-										{
-											if(edge(l,m)>periodlength)
-												edgeshift(l,m) -= periodlength;
-											else if(edge(l,m)<0.0)
-												edgeshift(l,m) += periodlength;
-										}
-									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-									GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
-
-									// now the other edges will be computed
-									for (int sector=0;sector<n-1;++sector)
-									{
-										// initialize for next edge
+										// initialize all edge points to nodes
 										for (int l=0;l<3;++l)
 										{
-											edge(l,0)=edge(l,1);
-											edge(l,1)=cog_(l);
+											edge(l,0) = cog_(l);
+											edge(l,1) = cog_(l);
 										}
 
-										// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-										radiusvec1 = radiusvec2;
-										radiusvec2.Clear();
+										// get first point on surface for node1 and node2
+										for (int l=0;l<3;++l)
+											edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
+
 
 										// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
 										radiusvec2.Multiply(R,radiusvec1);
 
 										// get second point on surface for node1 and node2
-										for (int l=0;l<3;++l)
+										for(int l=0;l<3;l++)
 											edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
-										edgeshift = edge;
+
+										// shift the coordinates according to periodic boundary conditions
+										LINALG::SerialDenseMatrix edgeshift = edge;
 										for(int l=0; l<(int)edge.M(); l++)
 											for(int m=0; m<(int)edge.N(); m++)
 											{
@@ -1718,135 +1688,121 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 												else if(edge(l,m)<0.0)
 													edgeshift(l,m) += periodlength;
 											}
-
+										// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
 										GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+
+										// now the other edges will be computed
+										for (int sector=0;sector<n-1;++sector)
+										{
+											// initialize for next edge
+											for (int l=0;l<3;++l)
+											{
+												edge(l,0)=edge(l,1);
+												edge(l,1)=cog_(l);
+											}
+
+											// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+											radiusvec1 = radiusvec2;
+											radiusvec2.Clear();
+
+											// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+											radiusvec2.Multiply(R,radiusvec1);
+
+											// get second point on surface for node1 and node2
+											for (int l=0;l<3;++l)
+												edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
+											edgeshift = edge;
+											for(int l=0; l<(int)edge.M(); l++)
+												for(int m=0; m<(int)edge.N(); m++)
+												{
+													if(edge(l,m)>periodlength)
+														edgeshift(l,m) -= periodlength;
+													else if(edge(l,m)<0.0)
+														edgeshift(l,m) += periodlength;
+												}
+
+											GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+										}
 									}
-								}
-			}
-		}
-		break;
-		// bundle network
-		case 2:
-		{
-			cout<<"Bundle"<<endl;
-
-			double radius = characlength_;
-			LINALG::Matrix<3,2> coord;
-			for(int i=0; i<(int)coord.M(); i++)
-				for(int j=0; j<(int)coord.N(); j++)
-				coord(i,j) = testvolumepos_[j](i);
-
-			// some local variables
-			LINALG::Matrix<3,4> edges;
-			LINALG::Matrix<3,1> axis;
-			LINALG::Matrix<3,1> radiusvec1;
-			LINALG::Matrix<3,1> radiusvec2;
-			LINALG::Matrix<3,1> auxvec;
-			LINALG::Matrix<3,1> theta;
-			LINALG::Matrix<3,3> R;
-
-			// compute three dimensional angle theta
-			for (int j=0;j<3;++j)
-				axis(j) = coord(j,1) - coord(j,0);
-			double norm_axis = axis.Norm2();
-			for (int j=0;j<3;++j)
-				theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
-
-			// Compute rotation matrix R from rotation angle theta
-			angletotriad(theta,R);
-
-			// compute radius vector for first surface node of first edges
-			for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
-
-			// radiusvector for point on surface
-			radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
-			radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
-			radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
-
-			// initialize all edge points to nodes
-			for (int j=0;j<3;++j)
-			{
-				edges(j,0) = coord(j,0);
-				edges(j,1) = coord(j,1);
-				edges(j,2) = coord(j,1);
-				edges(j,3) = coord(j,0);
-			}
-
-			// get first point on surface for node1 and node2
-			for (int j=0;j<3;++j)
-			{
-				edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
-				edges(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
-			}
-
-			// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-			radiusvec2.Multiply(R,radiusvec1);
-
-			// get second point on surface for node1 and node2
-			for(int j=0;j<3;j++)
-			{
-				edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-				edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
-			}
-			// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-			// and the connecting lines between the prism bases -> rectangle
-			for(int j=1; j<(int)edges.N()+1; j++)
-			{
-				int jlow = (j-1)%(int)edges.N();
-				int jhigh= j%(int)edges.N();
-				int numsections = 10;
-				// original (unshifted) edges
-				LINALG::SerialDenseMatrix curredge(3,2);
-				for(int k=0; k<curredge.M(); k++)
-				{
-					curredge(k,0) = edges(k, jlow);
-					curredge(k,1) = edges(k, jhigh);
 				}
-
-				GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
-				/*gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
-				gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
-				gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
 			}
-
-			// now the other edges will be computed
-			for (int sector=0;sector<n-1;++sector)
+			break;
+			// bundle network
+			case 2:
 			{
-				// initialize for next edge
+				cout<<"Bundle"<<endl;
+
+				double radius = characlength_;
+				LINALG::Matrix<3,2> coord;
+				for(int i=0; i<(int)coord.M(); i++)
+					for(int j=0; j<(int)coord.N(); j++)
+					coord(i,j) = testvolumepos_[j](i);
+
+				// some local variables
+				LINALG::Matrix<3,4> edges;
+				LINALG::Matrix<3,1> axis;
+				LINALG::Matrix<3,1> radiusvec1;
+				LINALG::Matrix<3,1> radiusvec2;
+				LINALG::Matrix<3,1> auxvec;
+				LINALG::Matrix<3,1> theta;
+				LINALG::Matrix<3,3> R;
+
+				// compute three dimensional angle theta
+				for (int j=0;j<3;++j)
+					axis(j) = coord(j,1) - coord(j,0);
+				double norm_axis = axis.Norm2();
+				for (int j=0;j<3;++j)
+					theta(j) = axis(j) / norm_axis * 2 * M_PI / n;
+
+				// Compute rotation matrix R from rotation angle theta
+				angletotriad(theta,R);
+
+				// compute radius vector for first surface node of first edges
+				for (int j=0;j<3;++j) auxvec(j) = coord(j,0) + norm_axis;
+
+				// radiusvector for point on surface
+				radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+				radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+				radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+
+				// initialize all edge points to nodes
 				for (int j=0;j<3;++j)
 				{
-					edges(j,0)=edges(j,3);
-					edges(j,1)=edges(j,2);
-					edges(j,2)=coord(j,1);
-					edges(j,3)=coord(j,0);
+					edges(j,0) = coord(j,0);
+					edges(j,1) = coord(j,1);
+					edges(j,2) = coord(j,1);
+					edges(j,3) = coord(j,0);
 				}
 
-				// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-				radiusvec1 = radiusvec2;
-				radiusvec2.Clear();
+				// get first point on surface for node1 and node2
+				for (int j=0;j<3;++j)
+				{
+					edges(j,0) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+					edges(j,1) += radiusvec1(j) / radiusvec1.Norm2() * radius;
+				}
 
 				// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
 				radiusvec2.Multiply(R,radiusvec1);
 
 				// get second point on surface for node1 and node2
-				for (int j=0;j<3;++j)
+				for(int j=0;j<3;j++)
 				{
 					edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 					edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
 				}
-
-				// put coordinates into filecontent-stream
+				// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+				// and the connecting lines between the prism bases -> rectangle
 				for(int j=1; j<(int)edges.N()+1; j++)
 				{
 					int jlow = (j-1)%(int)edges.N();
 					int jhigh= j%(int)edges.N();
 					int numsections = 10;
+					// original (unshifted) edges
 					LINALG::SerialDenseMatrix curredge(3,2);
 					for(int k=0; k<curredge.M(); k++)
 					{
-						curredge(k,0) = edges(k,jlow);
-						curredge(k,1) = edges(k,jhigh);
+						curredge(k,0) = edges(k, jlow);
+						curredge(k,1) = edges(k, jhigh);
 					}
 
 					GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
@@ -1855,112 +1811,159 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 					gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
 					gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
 				}
+
+				// now the other edges will be computed
+				for (int sector=0;sector<n-1;++sector)
+				{
+					// initialize for next edge
+					for (int j=0;j<3;++j)
+					{
+						edges(j,0)=edges(j,3);
+						edges(j,1)=edges(j,2);
+						edges(j,2)=coord(j,1);
+						edges(j,3)=coord(j,0);
+					}
+
+					// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+					radiusvec1 = radiusvec2;
+					radiusvec2.Clear();
+
+					// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+					radiusvec2.Multiply(R,radiusvec1);
+
+					// get second point on surface for node1 and node2
+					for (int j=0;j<3;++j)
+					{
+						edges(j,2) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+						edges(j,3) += radiusvec2(j) / radiusvec2.Norm2() * radius;
+					}
+
+					// put coordinates into filecontent-stream
+					for(int j=1; j<(int)edges.N()+1; j++)
+					{
+						int jlow = (j-1)%(int)edges.N();
+						int jhigh= j%(int)edges.N();
+						int numsections = 10;
+						LINALG::SerialDenseMatrix curredge(3,2);
+						for(int k=0; k<curredge.M(); k++)
+						{
+							curredge(k,0) = edges(k,jlow);
+							curredge(k,1) = edges(k,jhigh);
+						}
+
+						GmshNetworkStructVolumePeriodic(curredge, numsections, gmshfilecontent,color-0.5);
+						/*gmshfilecontent << "SL(" << scientific;
+						gmshfilecontent << edges(0,ilow) << "," << edges(1,ilow) << "," << edges(2,ilow) << ",";
+						gmshfilecontent << edges(0,ihigh) << "," << edges(1,ihigh) << "," << edges(2,ihigh);
+						gmshfilecontent << ")" << "{" << scientific << color-0.125 << ","<< color-0.125 << "};" << endl;*/
+					}
+				}
+			}
+			break;
+			// layer
+			default:
+			{
+				cout<<"Layer"<<endl;
+				double halfthick = characlength_/2.0;
+				// compute normal
+				// cross product v_1 x v_2, plane normal
+				LINALG::Matrix<3,1> normal;
+				LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
+				LINALG::Matrix<3,1> secdir = testvolumepos_[1];
+				firstdir -= testvolumepos_[0];
+				secdir -= testvolumepos_[2];
+				normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
+				normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
+				normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
+				normal.Scale(1.0/normal.Norm2());
+				// upper and lower bound
+				//(have to find a more elegant way than this but for now it works)
+				std::vector<int> indices((int)testvolumepos_.size(),0);
+				switch((int)testvolumepos_.size())
+				{
+					//triangle
+					case 3:
+						for(int i=0; i<(int)indices.size(); i++)
+							indices[i] = i;
+					break;
+					// trapezoid
+					case 4:
+					{
+						indices[0] = 0;
+						indices[1] = 1;
+						indices[2] = 3;
+						indices[3] = 2;
+					}
+					break;
+					// hexagon
+					case 6:
+					{
+						indices[0] = 0;
+						indices[1] = 1;
+						indices[2] = 5;
+						indices[3] = 2;
+						indices[4] = 3;
+						indices[5] = 4;
+					}
+					break;
+					default: dserror("Incorrect number of intersection points!");
+				}
+
+				for(int i=1; i<(int)testvolumepos_.size()+1; i++)
+				{
+					int index0 = indices[(i-1)%(int)indices.size()];
+					int index1 = indices[i%(int)indices.size()];
+					int numsections = 10;
+
+					LINALG::SerialDenseMatrix loweredge(3,2);
+					LINALG::SerialDenseMatrix upperedge(3,2);
+					LINALG::SerialDenseMatrix connection0(3,2);
+					LINALG::SerialDenseMatrix connection1(3,2);
+					for(int k=0; k<loweredge.M(); k++)
+					{
+						loweredge(k,0) = testvolumepos_[index0](k)-halfthick*normal(k);
+						loweredge(k,1) = testvolumepos_[index1](k)-halfthick*normal(k);
+						upperedge(k,0) = testvolumepos_[index0](k)+halfthick*normal(k);
+						upperedge(k,1) = testvolumepos_[index1](k)+halfthick*normal(k);
+						connection0(k,0) = loweredge(k,0);
+						connection0(k,1) = upperedge(k,0);
+						connection1(k,0) = loweredge(k,1);
+						connection1(k,1) = upperedge(k,1);
+					}
+					// (long) edges
+					GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
+					GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
+					// connecting edges
+					GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
+					GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
+
+					// periodic boundary shift for connections
+
+					// upper edge
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
+					gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2);
+					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+					// lower edge
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2) << ",";
+					gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
+					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+					// connections
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
+					gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2);
+					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+					gmshfilecontent << "SL(" << scientific;
+					gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2) << ",";
+					gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
+					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+				}
 			}
 		}
-		break;
-		// layer
-		default:
-		{
-			cout<<"Layer"<<endl;
-			double halfthick = characlength_/2.0;
-			// compute normal
-			// cross product v_1 x v_2, plane normal
-			LINALG::Matrix<3,1> normal;
-			LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
-			LINALG::Matrix<3,1> secdir = testvolumepos_[1];
-			firstdir -= testvolumepos_[0];
-			secdir -= testvolumepos_[2];
-			normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
-			normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
-			normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
-			normal.Scale(1.0/normal.Norm2());
-			// upper and lower bound
-			//(have to find a more elegant way than this but for now it works)
-			std::vector<int> indices((int)testvolumepos_.size(),0);
-			switch((int)testvolumepos_.size())
-			{
-				//triangle
-				case 3:
-					for(int i=0; i<(int)indices.size(); i++)
-						indices[i] = i;
-				break;
-				// trapezoid
-				case 4:
-				{
-					indices[0] = 0;
-					indices[1] = 1;
-					indices[2] = 3;
-					indices[3] = 2;
-				}
-				break;
-				// hexagon
-				case 6:
-				{
-					indices[0] = 0;
-					indices[1] = 1;
-					indices[2] = 5;
-					indices[3] = 2;
-					indices[4] = 3;
-					indices[5] = 4;
-				}
-				break;
-				default: dserror("Incorrect number of intersection points!");
-			}
-
-			for(int i=1; i<(int)testvolumepos_.size()+1; i++)
-			{
-				int index0 = indices[(i-1)%(int)indices.size()];
-				int index1 = indices[i%(int)indices.size()];
-				int numsections = 10;
-
-				LINALG::SerialDenseMatrix loweredge(3,2);
-				LINALG::SerialDenseMatrix upperedge(3,2);
-				LINALG::SerialDenseMatrix connection0(3,2);
-				LINALG::SerialDenseMatrix connection1(3,2);
-				for(int k=0; k<loweredge.M(); k++)
-				{
-					loweredge(k,0) = testvolumepos_[index0](k)-halfthick*normal(k);
-					loweredge(k,1) = testvolumepos_[index1](k)-halfthick*normal(k);
-					upperedge(k,0) = testvolumepos_[index0](k)+halfthick*normal(k);
-					upperedge(k,1) = testvolumepos_[index1](k)+halfthick*normal(k);
-					connection0(k,0) = loweredge(k,0);
-					connection0(k,1) = upperedge(k,0);
-					connection1(k,0) = loweredge(k,1);
-					connection1(k,1) = upperedge(k,1);
-				}
-				// (long) edges
-				GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
-				GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
-				// connecting edges
-				GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
-				GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
-
-				// periodic boundary shift for connections
-
-				// upper edge
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-				// lower edge
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-				// connections
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-				gmshfilecontent << "SL(" << scientific;
-				gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2) << ",";
-				gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-				gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-			}
-		}
+		// clear the vector
+		testvolumepos_.clear();
 	}
-	// clear the vector
-	testvolumepos_.clear();
 }//GmshNetworkStructVolume()
 
 /*----------------------------------------------------------------------*
