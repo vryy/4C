@@ -2907,7 +2907,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       
-      // check whether aux. plane coupling or not
+      // check whether auxiliary plane coupling or not and call integrator
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
@@ -2938,12 +2938,13 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
-      // check whether aux. plane coupling or not
+      // check whether auxiliary plane coupling or not and call integrator
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
             Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
-        dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
+        integrator.IntegrateDerivCell3DQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],lmtype,dseg,mseg,gseg);
       
       // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -2971,12 +2972,13 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
-      // check whether aux. plane coupling or not
+      // check whether auxiliary plane coupling or not and call integrator
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
             Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
-        dserror("ERROR: Only aux. plane version implemented for 3D quadratic mortar");
+        integrator.IntegrateDerivCell3DQuad(SlaveElement(),MasterElement(),sintref,mintref,
+            Cells()[i],lmtype,dseg,mseg,gseg);
       
       // assembly of intcell contributions to D and M
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
@@ -3011,10 +3013,6 @@ sintele_(sintele),
 mintele_(mintele),
 lmtype_(lmtype)
 {
-  // 3D quadratic coupling only for aux. plane case
-  if (!CouplingInAuxPlane())
-    dserror("ERROR: Coupling3dQuad only for auxiliary plane case!");
-
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
     dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
@@ -3037,10 +3035,6 @@ sintele_(sintele),
 mintele_(mintele),
 lmtype_(lmtype)
 {
-  // 3D quadratic coupling only for aux. plane case
-  if (!CouplingInAuxPlane())
-    dserror("ERROR: Coupling3dQuad only for auxiliary plane case!");
-  
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
     dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");

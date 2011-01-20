@@ -1817,9 +1817,6 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
     // ************************************************** quadratic 3D ***
     if (sele.IsQuad3d() || mele.IsQuad3d())
     {
-      // only for auxiliary plane 3D version
-      if (!auxplane) dserror("ERROR: Quadratic 3D coupling only for AuxPlane case!");
-
       // build linear integration elements from quadratic MortarElements
       vector<RCP<MORTAR::IntElement> > sauxelements(0);
       vector<RCP<MORTAR::IntElement> > mauxelements(0);

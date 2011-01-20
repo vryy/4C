@@ -978,6 +978,295 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate and linearize a 2D slave / master cell (3D)     popp 01/11|
+ |  This method integrates the cell M matrix (and possibly D matrix)    |
+ |  and stores it in mseg and dseg respectively.                        |
+ |  This is the QUADRATIC coupling version!!!                           |
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
+     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+     RCP<MORTAR::IntCell> cell,
+     INPAR::MORTAR::LagMultQuad3D& lmtype,
+     RCP<Epetra_SerialDenseMatrix> dseg,
+     RCP<Epetra_SerialDenseMatrix> mseg,
+     RCP<Epetra_SerialDenseVector> gseg)
+{
+
+  // explicitely defined shapefunction type needed
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+    dserror("ERROR: IntegrateDerivCell3DQuad called without specific shape function defined!");
+
+  /*cout << endl;
+  cout << "Slave type: " << sele.Shape() << endl;
+  cout << "SlaveElement Nodes:";
+  for (int k=0;k<sele.NumNode();++k) cout << " " << sele.NodeIds()[k];
+  cout << "\nMaster type: " << mele.Shape() << endl;
+  cout << "MasterElement Nodes:";
+  for (int k=0;k<mele.NumNode();++k) cout << " " << mele.NodeIds()[k];
+  cout << endl;
+  cout << "SlaveSub type: " << sintele.Shape() << endl;
+  cout << "SlaveSubElement Nodes:";
+  for (int k=0;k<sintele.NumNode();++k) cout << " " << sintele.NodeIds()[k];
+  cout << "\nMasterSub type: " << mintele.Shape() << endl;
+  cout << "MasterSubElement Nodes:";
+  for (int k=0;k<mintele.NumNode();++k) cout << " " << mintele.NodeIds()[k];  */
+
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+
+  // discretization type of master IntElement
+  DRT::Element::DiscretizationType mdt = mintele.Shape();
+
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: IntegrateDerivCell3DQuad called on a wrong type of MortarElement pair!");
+  if (cell==null)
+    dserror("ERROR: IntegrateDerivCell3DQuad called without integration cell");
+
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = Dim();
+  int nintrow = sintele.NumNode();
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(ncol);
+  LINALG::SerialDenseMatrix mderiv(ncol,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmintval(nintrow);
+  LINALG::SerialDenseMatrix lmintderiv(nintrow,2,true);
+
+  // get slave element nodes themselves
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
+
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+
+  // decide whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  bool dualquad3d = false;
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) && (lmtype == INPAR::MORTAR::lagmult_quad_quad)
+    && (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  {
+  	dualquad3d = true;
+  }
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+
+    // note that the third component of sxi is necessary!
+    // (although it will always be 0.0 of course)
+    double tempsxi[3] = {0.0, 0.0, 0.0};
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
+
+    // get Gauss point in slave integration element coordinates
+    cell->LocalToGlobal(eta,tempsxi,0);
+    sxi[0] = tempsxi[0];
+    sxi[1] = tempsxi[1];
+
+    // project Gauss point onto master integration element
+		MORTAR::MortarProjector projector(3);
+		projector.ProjectGaussPoint3D(sintele,sxi,mintele,mxi,projalpha);
+
+    // check GP projection (MASTER)
+    double tol = 0.01;
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        cout << "\n***Warning: IntegrateDerivCell3DQuad: Master Gauss point projection outside!";
+        cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+        cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+        cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+      }
+    }
+
+    // map Gauss point back to slave element (affine map)
+    // map Gauss point back to master element (affine map)
+    double psxi[2] = {0.0, 0.0};
+    double pmxi[2] = {0.0, 0.0};
+    sintele.MapToParent(sxi,psxi);
+    mintele.MapToParent(mxi,pmxi);
+
+    //cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
+    //cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
+    //cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
+    //cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
+
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    if (bound)
+      sele.EvaluateShapeLagMultLin(shapefcn_,psxi,lmval,lmderiv,nrow);
+    else
+    {
+      sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
+      sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
+    }
+
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape(psxi,sval,sderiv,nrow,dualquad3d);
+    mele.EvaluateShape(pmxi,mval,mderiv,ncol);
+
+    // evaluate the two Jacobians (int. cell and slave element)
+    double jaccell = cell->Jacobian(eta);
+    double jacslave = sintele.Jacobian(sxi);
+    double jac = jaccell * jacslave;
+
+    // compute cell D/M matrix *******************************************
+    // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
+    if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+        (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
+    {
+      // compute all mseg and dseg matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // integrate mseg
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[lindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
+
+					// multiply the two shape functions
+					double prod = lmval[jindex]*sval[kindex];
+
+					// isolate the dseg entries to be filled and
+					// add current Gauss point's contribution to dseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+						(*dseg)(j,k) += prod*jac*wgt;
+				}
+      }
+    }
+
+    // CASE 3: Standard LM shape functions and piecewise linear interpolation
+    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+             lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
+    {
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nintrow*ndof; ++j)
+      {
+        // integrate mseg
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+
+          // multiply the two shape functions
+          double prod = lmintval[jindex]*mval[lindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+
+        // integrate dseg
+				for (int k=0; k<nrow*ndof; ++k)
+				{
+					int jindex = (int)(j/ndof);
+					int kindex = (int)(k/ndof);
+
+					// multiply the two shape functions
+					double prod = lmintval[jindex]*sval[kindex];
+
+					// isolate the dseg entries to be filled and
+					// add current Gauss point's contribution to dseg
+					if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+						(*dseg)(j,k) += prod*jac*wgt;
+				}
+      }
+    }
+
+    // CASE 4: Dual LM shape functions and quadratic interpolation
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+    		     (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
+    {
+      // compute all mseg (and dseg) matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // for dual shape functions we can make use
+        // of the row summing lemma: D_jj = Sum(l) M_jl
+        // hence, they can be combined into one single loop
+
+        // integrate mseg and dseg
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[lindex];
+
+          // isolate the mseg/dseg entries to be filled and
+          // add current Gauss point's contribution to mseg/dseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+          {
+            (*mseg)(j,l) += prod*jac*wgt;
+            (*dseg)(j,j) += prod*jac*wgt;
+          }
+        }
+      }
+    }
+
+    // INVALID CASES
+    else
+    {
+      dserror("ERROR: Invalid integration case for 3D quadratic mortar!");
+    }
+    // compute cell D/M matrix *******************************************
+  }
+  //**********************************************************************
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
  |  This method integrates the cell M matrix (and possibly D matrix)    |
  |  and stores it in mseg and dseg respectively.                        |
