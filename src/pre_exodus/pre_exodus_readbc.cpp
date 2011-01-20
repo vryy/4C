@@ -70,10 +70,10 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   map<int,int> ns_dl2Eid; // node set line E id
   map<int,int> ns_ds2Eid; // node set surf E id
   map<int,int> ns_dv2Eid; // node set vol E id
-/*
+
   if(allconds.find_first_of("**") != string::npos)
     dserror("String '**' detected. More * than one not allowed due to usage as a marker.");
-*/
+
   found = allconds.find_first_of(marker);
   while (found != string::npos){
     int startpos=found;
