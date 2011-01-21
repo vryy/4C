@@ -79,7 +79,7 @@ void MORTAR::MortarElementType::ComputeNullSpace( DRT::Discretization & dis, std
  *----------------------------------------------------------------------*/
 MORTAR::MortarEleDataContainer::MortarEleDataContainer()
 {
-	// initialize area
+  // initialize area
   Area()=0.0;
 
   return;
@@ -94,7 +94,7 @@ void MORTAR::MortarEleDataContainer::Pack(vector<char>& data) const
   // add area_
   DRT::ParObject::AddtoPack(data,area_);
   // add searchelements_
-	DRT::ParObject::AddtoPack(data,&searchelements_,(int)searchelements_.size());
+  DRT::ParObject::AddtoPack(data,&searchelements_,(int)searchelements_.size());
 
   return;
 }
@@ -106,9 +106,9 @@ void MORTAR::MortarEleDataContainer::Pack(vector<char>& data) const
 void MORTAR::MortarEleDataContainer::Unpack(vector<char>::size_type& position, const vector<char>& data)
 {
   // area_
-	DRT::ParObject::ExtractfromPack(position,data,area_);
+  DRT::ParObject::ExtractfromPack(position,data,area_);
   // searchelements_
-	DRT::ParObject::ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
+  DRT::ParObject::ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
 
   return;
 }
@@ -249,9 +249,9 @@ void MORTAR::MortarElement::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
 {
-	 const MORTAR::MortarNode* mnode = dynamic_cast<const MORTAR::MortarNode*>(&node);
-	 if (!mnode) dserror("Node is not a MortarNode");
-	 return mnode->NumDof();
+   const MORTAR::MortarNode* mnode = dynamic_cast<const MORTAR::MortarNode*>(&node);
+   if (!mnode) dserror("Node is not a MortarNode");
+   return mnode->NumDof();
 }
 
 /*----------------------------------------------------------------------*
@@ -1111,8 +1111,8 @@ double MORTAR::MortarElement::MaxEdgeSize(bool isinit)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::InitializeDataContainer()
 {
-	// only initialize if not yet done
-	if (modata_==Teuchos::null)
+  // only initialize if not yet done
+  if (modata_==Teuchos::null)
     modata_=rcp(new MORTAR::MortarEleDataContainer());
 
   return;
@@ -1123,7 +1123,7 @@ void MORTAR::MortarElement::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ResetDataContainer()
 {
-	// reset to null
+  // reset to null
   modata_  = Teuchos::null;
 
   return;

@@ -507,13 +507,13 @@ void CONTACT::FriNode::AddDeltaWearValue(double& val)
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::InitializeDataContainer()
 {
-	// only initialize if not yet done
-	if (modata_==Teuchos::null && codata_==Teuchos::null && fridata_==Teuchos::null)
-	{
-		modata_=rcp(new MORTAR::MortarNodeDataContainer());
-		codata_ =rcp(new CONTACT::CoNodeDataContainer());
-		fridata_=rcp(new CONTACT::FriNodeDataContainer());
-	}
+  // only initialize if not yet done
+  if (modata_==Teuchos::null && codata_==Teuchos::null && fridata_==Teuchos::null)
+  {
+    modata_=rcp(new MORTAR::MortarNodeDataContainer());
+    codata_ =rcp(new CONTACT::CoNodeDataContainer());
+    fridata_=rcp(new CONTACT::FriNodeDataContainer());
+  }
 
   return;
 }
@@ -523,7 +523,7 @@ void CONTACT::FriNode::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::ResetDataContainer()
 {
-	// reset to null
+  // reset to null
   fridata_ = Teuchos::null;
   codata_  = Teuchos::null;
   modata_  = Teuchos::null;

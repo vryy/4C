@@ -188,11 +188,11 @@ StruGenAlpha(params,dis,solver,output)
  *----------------------------------------------------------------------*/
 void CONTACT::CmtStruGenAlpha::PrepareStepContact()
 {
-	// dynamic parallel redistribution (contact only, not for meshtying)
-	cmtmanager_->GetStrategy().RedistributeContact(dis_);
+  // dynamic parallel redistribution (contact only, not for meshtying)
+  cmtmanager_->GetStrategy().RedistributeContact(dis_);
 
- 	// evaluate reference state for first step (frictional contact only)
-	int step = params_.get<int>("step" ,0);
+   // evaluate reference state for first step (frictional contact only)
+  int step = params_.get<int>("step" ,0);
   cmtmanager_->GetStrategy().EvaluateReferenceState(step,disn_);
 }
 
@@ -1298,6 +1298,10 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
+  // store residual and displacement norms to detect zig-zagging
+  //vector<double> rnorms(0);
+  //vector<double> dnorms(0);
+
   //=================================================== equilibrium loop
   int numiter=0;
   double fresmnorm = 1.0e6;
@@ -1315,7 +1319,7 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) &&  numiter<maxiter)
   {
 #ifdef CONTACTTIME
-  	discret_.Comm().Barrier();
+    discret_.Comm().Barrier();
     const double t_start0 = Teuchos::Time::wallTime();
     const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
@@ -1323,13 +1327,13 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     if (locsysmanager_ != null) locsysmanager_->RotateGlobalToLocal(SystemMatrix(),fresm_);
 
     //-----------------------------------check symmetry of system matrix
-  	//RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_);
-  	//RCP<LINALG::SparseMatrix> test = rcp(new LINALG::SparseMatrix(kteffmatrix->RowMap(),81,true,false,kteffmatrix->GetMatrixtype()));
-    //test->Add(*kteffmatrix, false, 1.0, 1.0);
-    //test->Add(*kteffmatrix, true, -1.0, 1.0);
-    //test->Complete();
-    //double cnorm = test->NormInf();
-    //cout << "\n***\nKTEFFInfNorm: " << cnorm << "\n***\n" << endl;
+//    RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_);
+//    RCP<LINALG::SparseMatrix> test = rcp(new LINALG::SparseMatrix(kteffmatrix->RowMap(),81,true,false,kteffmatrix->GetMatrixtype()));
+//    test->Add(*kteffmatrix, false, 1.0, 1.0);
+//    test->Add(*kteffmatrix, true, -1.0, 1.0);
+//    test->Complete();
+//    double cnorm = test->NormInf();
+//    cout << "\n***\nKTEFFInfNorm: " << cnorm << "\n***\n" << endl;
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -1359,6 +1363,41 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
 
     //--------------------------------------- recover disi and Lag. Mult.
     cmtmanager_->GetStrategy().Recover(disi_);
+
+    //------------------------------------- check for Newton zig-zagging
+//    int stepnum = numiter+1;
+//    int searchdepth = 5;
+//    bool zigzag = false;
+//
+//    // this only makes sense if there have already been at least three
+//    // real Newton steps completed (i.e. without counting the predictor)
+//    if (stepnum > 3)
+//    {
+//      double curr_rnorm = rnorms[numiter-1];
+//      double curr_dnorm = dnorms[numiter-1];
+//
+//      // check number of possible search steps and restrict search depth
+//      int possdepth = numiter-1;
+//      if (possdepth < searchdepth) searchdepth = possdepth;
+//
+//      // check backwards 'searchdepth' steps
+//      for (int k=1;k<=searchdepth;++k)
+//      {
+//        double compare_rnorm = rnorms[numiter-1-k];
+//        double compare_dnorm = dnorms[numiter-1-k];
+//
+//        // normalize for comparison
+//        if ( abs(1-compare_rnorm/curr_rnorm) < 1.0e-6 && abs(1-compare_dnorm/curr_dnorm) < 1.0e-4)
+//        {
+//          if (!myrank_) cout << "\nZIG-ZAGGING of Newton detected -> scaling disi!!!\n" << endl;
+//          zigzag = true;
+//          break;
+//        }
+//      }
+//    }
+//
+//    // scale displacement increment if zig-zagging
+//    if (zigzag) disi_->Scale(1.2);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1588,6 +1627,10 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     const double t_end0 = Teuchos::Time::wallTime()-t_start0;
     if (!myrank_) cout << "*** Step(overall):\t" << t_end0 << " seconds\n";
 #endif // #ifdef CONTACTTIME
+
+    // store norms to detect zig-zagging
+    //rnorms.push_back(fresmnorm);
+    //dnorms.push_back(disinorm);
 
     // a short message
     if (!myrank_ and (printscreen or printerr))
@@ -3105,11 +3148,11 @@ void CONTACT::CmtStruGenAlpha::OutputErrorNorms()
   // get out of here if no output wanted
   if (MORTARANALYTICALSOL==0) return;
 
-	// initialize variables
-	RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-	norms->Scale(0.0);
+  // initialize variables
+  RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  norms->Scale(0.0);
 
-	// call discretization to evaluate error norms
+  // call discretization to evaluate error norms
   ParameterList p;
   p.set("action", "calc_struct_errornorms");
   discret_.ClearState();
@@ -3191,7 +3234,7 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
     if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
     {
 #ifdef CONTACTTIME
-    	discret_.Comm().Barrier();
+      discret_.Comm().Barrier();
       const double t_start = Teuchos::Time::wallTime();
 #endif // #ifdef CONTACTTIME
 
@@ -3330,8 +3373,8 @@ void CONTACT::CmtStruGenAlpha::Integrate()
   // time step loop
   for (int i=step; i<nstep; ++i)
   {
-  	// prepare contact for new time step
-  	PrepareStepContact();
+    // prepare contact for new time step
+    PrepareStepContact();
 
     // predictor step
     if (pred=="constant")        ConstantPredictor();

@@ -311,20 +311,20 @@ discret_(discret)
   if(Comm().MyPID()==0) cout << "done!" << endl;
   //**********************************************************************
 
-	//**********************************************************************
+  //**********************************************************************
   // parallel redistribution of all interfaces
   GetStrategy().RedistributeMeshtying();
   //**********************************************************************
 
   // create binary search tree
   for (int i=0; i<(int)interfaces.size();++i)
-  	interfaces[i]->CreateSearchTree();
+    interfaces[i]->CreateSearchTree();
 
   // print parameter list to screen
   if (Comm().MyPID()==0)
   {
-  	cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-  	cout << GetStrategy().Params() << endl;
+    cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
+    cout << GetStrategy().Params() << endl;
   }
 
   return;
@@ -376,7 +376,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic)
-  	dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
+    dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
   
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
                                                    input.get<int>("MIN_ELEPROC") <  0)
@@ -389,7 +389,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true &&
-  		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   // *********************************************************************
@@ -464,8 +464,8 @@ void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
   RCP<Epetra_Vector> fcmasterexp = rcp(new Epetra_Vector(*problem));
   GetStrategy().DMatrix()->Multiply(true, *traction, *fcslave);
   GetStrategy().MMatrix()->Multiply(true, *traction, *fcmaster);
-	LINALG::Export(*fcslave, *fcslaveexp);
-	LINALG::Export(*fcmaster, *fcmasterexp);
+  LINALG::Export(*fcslave, *fcslaveexp);
+  LINALG::Export(*fcmaster, *fcmasterexp);
 
   // write to output
   output.WriteVector("interfacetraction",tractionexp);

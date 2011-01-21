@@ -197,11 +197,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   if (globalcontact>=1)
   {
-  	IsInContact() = true;
-  	WasInContact() = true;
+    IsInContact() = true;
+    WasInContact() = true;
   }
   else
-  	IsInContact() = false;
+    IsInContact() = false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
     cout << "ACTIVE SET HAS CHANGED..." << endl;
@@ -255,11 +255,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
-  	// modify lindmatrix_ and dmatrix_
-  	RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
-  	RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-  	lindmatrix_ = temp1;
- 	  dmatrix_    = temp2;
+    // modify lindmatrix_ and dmatrix_
+    RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
+    RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    lindmatrix_ = temp1;
+     dmatrix_    = temp2;
   }
 
 #ifdef CONTACTFDPENALTYTRAC
@@ -297,8 +297,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // transform if necessary
   if (ParRedist())
   {
-		lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-		linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
+    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
   }
 
   // add to kteff
@@ -318,8 +318,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
   // transform if necessary
   if (ParRedist())
   {
-		dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-		mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+    dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+    mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
   }
 
   // add to kteff
@@ -455,8 +455,8 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(RCP<LINALG::SparseOperator>& kt
   // transform if necessary
   if (ParRedist())
   {
-		dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-		mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+    dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
+    mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -645,9 +645,9 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
 {
   // store current LM into Uzawa LM
-	// (note that this is also done after the last Uzawa step of one
-	// time step and thus also gives the guess for the initial
-	// Lagrange multiplier lambda_0 of the next time step)
+  // (note that this is also done after the last Uzawa step of one
+  // time step and thus also gives the guess for the initial
+  // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = rcp(new Epetra_Vector(*z_));
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 

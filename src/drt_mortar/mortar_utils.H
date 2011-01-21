@@ -91,7 +91,7 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-  		                                             RCP<Epetra_Map> newrowmap);
+                                                   RCP<Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (only GIDs)
@@ -104,7 +104,7 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-  		                                             RCP<Epetra_Map> newdomainmap);
+                                                   RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (only GIDs)
@@ -117,8 +117,8 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(RCP<LINALG::SparseMatrix> inmat,
-  		                                                RCP<Epetra_Map> newrowmap,
-  		                                                RCP<Epetra_Map> newdomainmap);
+                                                      RCP<Epetra_Map> newrowmap,
+                                                      RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row map of a matrix (parallel distribution)
@@ -128,7 +128,7 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                         RCP<Epetra_Map> newrowmap);
+                                               RCP<Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (parallel distribution)
@@ -139,7 +139,7 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixColTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                         RCP<Epetra_Map> newdomainmap);
+                                               RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (parallel distribution)
@@ -150,8 +150,8 @@ namespace MORTAR
 
   */
   RCP<LINALG::SparseMatrix> MatrixRowColTransform(RCP<LINALG::SparseMatrix> inmat,
-  		                                            RCP<Epetra_Map> newrowmap,
-  		                                            RCP<Epetra_Map> newdomainmap);
+                                                  RCP<Epetra_Map> newrowmap,
+                                                  RCP<Epetra_Map> newdomainmap);
 
   /*!
   \brief Parallel redistribution of a sparse matrix

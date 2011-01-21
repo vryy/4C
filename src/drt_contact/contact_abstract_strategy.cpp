@@ -98,25 +98,25 @@ wear_(false)
   if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
     dserror("ERROR: Self contact only implemented for frictionless contact!");
 
-	// call setup method with flag redistributed=FALSE, init=TRUE
-	Setup(false,true);
+  // call setup method with flag redistributed=FALSE, init=TRUE
+  Setup(false,true);
 
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
   // redistribution of slave and master sides)
   if (ParRedist())
   {
-		pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-		pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
-		pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
-		pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+    pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+    pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+    pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+    pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
   }
   
   // intialize storage fields for parallel redistribution
   tunbalance_.clear();
   eunbalance_.clear();
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -133,66 +133,66 @@ ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
 {
-	// get out of here if parallel redistribution is switched off
-	// or if this is a single processor (serial) job
-	if (!ParRedist() || Comm().NumProc()==1) return;
+  // get out of here if parallel redistribution is switched off
+  // or if this is a single processor (serial) job
+  if (!ParRedist() || Comm().NumProc()==1) return;
 
-	// decide whether redistribution should be applied or not
-	double taverage = 0.0;
-	double eaverage = 0;
+  // decide whether redistribution should be applied or not
+  double taverage = 0.0;
+  double eaverage = 0;
   bool doredist = false;
   double max_balance = Params().get<double>("MAX_BALANCE");
 
   //**********************************************************************
-	// (1) static redistribution: ONLY at time t=0 or after restart
-	// (both cases can be identified via empty unbalance vectors)
+  // (1) static redistribution: ONLY at time t=0 or after restart
+  // (both cases can be identified via empty unbalance vectors)
   //**********************************************************************
   if (WhichParRedist()==INPAR::MORTAR::parredist_static)
   {
-  	// this is the first time step (t=0) or restart
-  	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
-  	{
-  		// do redistribution
-  		doredist = true;
-  	}
+    // this is the first time step (t=0) or restart
+    if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
+    {
+      // do redistribution
+      doredist = true;
+    }
 
-  	// this is a regular time step (neither t=0 nor restart)
-  	else
-  	{
-  		// compute average balance factors of last time step
-  	  for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
+    // this is a regular time step (neither t=0 nor restart)
+    else
+    {
+      // compute average balance factors of last time step
+      for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
       taverage/=(int)tunbalance_.size();
-  	  for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
+      for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
       eaverage/=(int)eunbalance_.size();
 
       // delete balance factors of last time step
       tunbalance_.resize(0);
       eunbalance_.resize(0);
 
-  		// no redistribution
-  		doredist = false;
-  	}
+      // no redistribution
+      doredist = false;
+    }
   }
 
   //**********************************************************************
-	// (2) dynamic redistribution: whenever system is out of balance
+  // (2) dynamic redistribution: whenever system is out of balance
   //**********************************************************************
   else if (WhichParRedist()==INPAR::MORTAR::parredist_dynamic)
   {
-  	// this is the first time step (t=0) or restart
-  	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
-  	{
-  		// do redistribution
-  		doredist = true;
-  	}
+    // this is the first time step (t=0) or restart
+    if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0)
+    {
+      // do redistribution
+      doredist = true;
+    }
 
-  	// this is a regular time step (neither t=0 nor restart)
-  	else
-  	{
-  		// compute average balance factors of last time step
-  	  for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
+    // this is a regular time step (neither t=0 nor restart)
+    else
+    {
+      // compute average balance factors of last time step
+      for (int k=0;k<(int)tunbalance_.size();++k) taverage += tunbalance_[k];
       taverage/=(int)tunbalance_.size();
-  	  for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
+      for (int k=0;k<(int)eunbalance_.size();++k) eaverage += eunbalance_[k];
       eaverage/=(int)eunbalance_.size();
       
       // delete balance factors of last time step
@@ -200,7 +200,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
       eunbalance_.resize(0);
 
       // decide on redistribution
-			// -> (we allow a maximum value of the balance measure in the
+      // -> (we allow a maximum value of the balance measure in the
       // system as defined in the input parameter MAX_BALANCE, i.e.
       // the maximum local processor workload and the minimum local
       // processor workload for mortar evaluation of all interfaces
@@ -209,72 +209,72 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(RCP<Epetra_Vector> dis)
       // steps of the last time step there has been an unbalance in
       // element distribution, i.e. if eaverage >= 0.5)
       if (taverage >= max_balance || eaverage >= 0.5)
-      	doredist = true;
-  	}
+        doredist = true;
+    }
   }
 
-	// print balance information to screen
-	if (Comm().MyPID()==0)
-	{
+  // print balance information to screen
+  if (Comm().MyPID()==0)
+  {
     cout << "**********************************************************" << endl;
-		if (taverage>0)
-	  {
-			printf("Parallel balance (time): %e (limit %e) \n",taverage,max_balance);
-			printf("Parallel balance (eles): %e (limit %e) \n",eaverage,0.5);
-		}
-		else
-			printf("Parallel balance: t=0/restart \n");
-		cout << "**********************************************************" << endl;
-	}
+    if (taverage>0)
+    {
+      printf("Parallel balance (time): %e (limit %e) \n",taverage,max_balance);
+      printf("Parallel balance (eles): %e (limit %e) \n",eaverage,0.5);
+    }
+    else
+      printf("Parallel balance: t=0/restart \n");
+    cout << "**********************************************************" << endl;
+  }
 
-	// get out of here if simulation is still in balance
-	if (!doredist) return;
+  // get out of here if simulation is still in balance
+  if (!doredist) return;
 
-	// time measurement
-	Comm().Barrier();
-	const double t_start = Teuchos::Time::wallTime();
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
 
-	// set old and current displacement state
-	// (needed for search within redistribution)
-	SetState("displacement",dis);
-	SetState("olddisplacement",dis);
+  // set old and current displacement state
+  // (needed for search within redistribution)
+  SetState("displacement",dis);
+  SetState("olddisplacement",dis);
 
-	// global flag for redistribution
-	bool anyinterfacedone = false;
+  // global flag for redistribution
+  bool anyinterfacedone = false;
 
-	// parallel redistribution of all interfaces
-	for (int i=0; i<(int)interface_.size();++i)
-	{
-		// redistribute optimally among procs
-		bool done = interface_[i]->Redistribute(i+1);
+  // parallel redistribution of all interfaces
+  for (int i=0; i<(int)interface_.size();++i)
+  {
+    // redistribute optimally among procs
+    bool done = interface_[i]->Redistribute(i+1);
 
-		// if redistribution has really been performed
-		// (the previous method might have found that there
-		// are no "close" slave elements and thud redistribution
-		// might not be necessary ->indicated by boolean)
-		if (done)
-		{
-			// call fill complete again
-			interface_[i]->FillComplete(maxdof_);
+    // if redistribution has really been performed
+    // (the previous method might have found that there
+    // are no "close" slave elements and thud redistribution
+    // might not be necessary ->indicated by boolean)
+    if (done)
+    {
+      // call fill complete again
+      interface_[i]->FillComplete(maxdof_);
 
-			// print new parallel distribution
-			interface_[i]->PrintParallelDistribution(i+1);
+      // print new parallel distribution
+      interface_[i]->PrintParallelDistribution(i+1);
 
-			// re-create binary search tree
-			interface_[i]->CreateSearchTree();
+      // re-create binary search tree
+      interface_[i]->CreateSearchTree();
 
-			// set global flag to TRUE
-			anyinterfacedone = true;
-		}
-	}
+      // set global flag to TRUE
+      anyinterfacedone = true;
+    }
+  }
 
-	// re-setup strategy with redistributed=TRUE, init=FALSE
-	if (anyinterfacedone) Setup(true,false);
+  // re-setup strategy with redistributed=TRUE, init=FALSE
+  if (anyinterfacedone) Setup(true,false);
 
-	// time measurement
-	Comm().Barrier();
-	double t_end = Teuchos::Time::wallTime()-t_start;
-	if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << endl;
+  // time measurement
+  Comm().Barrier();
+  double t_end = Teuchos::Time::wallTime()-t_start;
+  if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << endl;
 
   return;
 }
@@ -289,39 +289,39 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // ------------------------------------------------------------------------
 
   // make sure to remove all existing maps first
-	// (do NOT remove map of non-interface dofs after redistribution)
-	gsdofrowmap_  = Teuchos::null;
-	gmdofrowmap_  = Teuchos::null;
-	gsmdofrowmap_ = Teuchos::null;
-	glmdofrowmap_ = Teuchos::null;
-	gdisprowmap_  = Teuchos::null;
-	gsnoderowmap_ = Teuchos::null;
-	gactivenodes_ = Teuchos::null;
-	gactivedofs_  = Teuchos::null;
-	gactiven_     = Teuchos::null;
-	gactivet_     = Teuchos::null;
-	if (!redistributed) gndofrowmap_= Teuchos::null;
+  // (do NOT remove map of non-interface dofs after redistribution)
+  gsdofrowmap_  = Teuchos::null;
+  gmdofrowmap_  = Teuchos::null;
+  gsmdofrowmap_ = Teuchos::null;
+  glmdofrowmap_ = Teuchos::null;
+  gdisprowmap_  = Teuchos::null;
+  gsnoderowmap_ = Teuchos::null;
+  gactivenodes_ = Teuchos::null;
+  gactivedofs_  = Teuchos::null;
+  gactiven_     = Teuchos::null;
+  gactivet_     = Teuchos::null;
+  if (!redistributed) gndofrowmap_= Teuchos::null;
 
   if (friction_)
   {
-  	gslipnodes_ = Teuchos::null;
-  	gslipdofs_  = Teuchos::null;
-  	gslipt_     = Teuchos::null;
+    gslipnodes_ = Teuchos::null;
+    gslipdofs_  = Teuchos::null;
+    gslipt_     = Teuchos::null;
   }
 
-	// make numbering of LM dofs consecutive and unique across N interfaces
-	int offset_if = 0;
+  // make numbering of LM dofs consecutive and unique across N interfaces
+  int offset_if = 0;
 
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-  	// build Lagrange multiplier dof map
-		interface_[i]->UpdateLagMultSets(offset_if);
+    // build Lagrange multiplier dof map
+    interface_[i]->UpdateLagMultSets(offset_if);
 
-		// merge interface Lagrange multiplier dof maps to global LM dof map
-		glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
-		offset_if = glmdofrowmap_->NumGlobalElements();
-		if (offset_if < 0) offset_if = 0;
+    // merge interface Lagrange multiplier dof maps to global LM dof map
+    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+    offset_if = glmdofrowmap_->NumGlobalElements();
+    if (offset_if < 0) offset_if = 0;
         
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
@@ -373,18 +373,18 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // initialize vectors and matrices
   if (!redistributed)
   {
-		// setup Lagrange multiplier vectors
-		z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-		zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-		zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    // setup Lagrange multiplier vectors
+    z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 
-		// setup global Mortar matrices Dold and Mold
-		dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-		dold_->Zero();
-		dold_->Complete();
-		mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-		mold_->Zero();
-		mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+    // setup global Mortar matrices Dold and Mold
+    dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+    dold_->Zero();
+    dold_->Complete();
+    mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+    mold_->Zero();
+    mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
   }
 
   // In the redistribution case, first check if the vectors and
@@ -393,52 +393,52 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // Moreover, store redistributed quantities into nodes!!!
   else
   {
-  	// setup Lagrange multiplier vectors
-  	if (z_ == Teuchos::null)
-  		z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  	else
-  	{
-  		RCP<Epetra_Vector> newz = rcp(new Epetra_Vector(*gsdofrowmap_));
-  		LINALG::Export(*z_,*newz);
-  		z_ = newz;
-  	}
+    // setup Lagrange multiplier vectors
+    if (z_ == Teuchos::null)
+      z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    else
+    {
+      RCP<Epetra_Vector> newz = rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*z_,*newz);
+      z_ = newz;
+    }
 
-  	if (zold_ == Teuchos::null)
-  		zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  	else
-  	{
-  		RCP<Epetra_Vector> newzold = rcp(new Epetra_Vector(*gsdofrowmap_));
-  		LINALG::Export(*zold_,*newzold);
-  		zold_ = newzold;
-  	}
+    if (zold_ == Teuchos::null)
+      zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    else
+    {
+      RCP<Epetra_Vector> newzold = rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*zold_,*newzold);
+      zold_ = newzold;
+    }
 
-  	if (zuzawa_ == Teuchos::null)
-  		zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
-  	else
-  	{
-			RCP<Epetra_Vector> newzuzawa = rcp(new Epetra_Vector(*gsdofrowmap_));
-			LINALG::Export(*zuzawa_,*newzuzawa);
-			zuzawa_ = newzuzawa;
-  	}
+    if (zuzawa_ == Teuchos::null)
+      zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+    else
+    {
+      RCP<Epetra_Vector> newzuzawa = rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*zuzawa_,*newzuzawa);
+      zuzawa_ = newzuzawa;
+    }
 
-		// setup global Mortar matrices Dold and Mold
-  	if (dold_ == Teuchos::null)
-  	{
-			dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-			dold_->Zero();
-			dold_->Complete();
-  	}
-  	else
+    // setup global Mortar matrices Dold and Mold
+    if (dold_ == Teuchos::null)
+    {
+      dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      dold_->Zero();
+      dold_->Complete();
+    }
+    else
       dold_ = MORTAR::MatrixRowColTransform(dold_,gsdofrowmap_,gsdofrowmap_);
 
-  	if (mold_ == Teuchos::null)
-  	{
-			mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
-			mold_->Zero();
-			mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-  	}
-  	else
-  		mold_ = MORTAR::MatrixRowColTransform(mold_,gsdofrowmap_,gmdofrowmap_);
+    if (mold_ == Teuchos::null)
+    {
+      mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      mold_->Zero();
+      mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
+    }
+    else
+      mold_ = MORTAR::MatrixRowColTransform(mold_,gsdofrowmap_,gmdofrowmap_);
   }
 
   // output contact stress vectors
@@ -449,44 +449,44 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   if (wear_) wearoutput_ = rcp(new Epetra_Vector(*gsdofrowmap_));
      
   //----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// These matrices need to be applied to the slave displacements
-	// in the cases of dual LM interpolation for tet10/hex20 meshes
-	// in 3D. Here, the displacement basis functions have been modified
-	// in order to assure positivity of the D matrix entries and at
-	// the same time biorthogonality. Thus, to scale back the modified
-	// discrete displacements \hat{d} to the nodal discrete displacements
-	// {d}, we have to apply the transformation matrix T and vice versa
-	// with the transformation matrix T^(-1).
-	//----------------------------------------------------------------------
-	INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-	if (shapefcn == INPAR::MORTAR::shape_dual)
-		for (int i=0; i<(int)interface_.size(); ++i)
-			dualquadslave3d_ += interface_[i]->Quadslave3d();
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // These matrices need to be applied to the slave displacements
+  // in the cases of dual LM interpolation for tet10/hex20 meshes
+  // in 3D. Here, the displacement basis functions have been modified
+  // in order to assure positivity of the D matrix entries and at
+  // the same time biorthogonality. Thus, to scale back the modified
+  // discrete displacements \hat{d} to the nodal discrete displacements
+  // {d}, we have to apply the transformation matrix T and vice versa
+  // with the transformation matrix T^(-1).
+  //----------------------------------------------------------------------
+  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_dual)
+    for (int i=0; i<(int)interface_.size(); ++i)
+      dualquadslave3d_ += interface_[i]->Quadslave3d();
 
-	//----------------------------------------------------------------------
-	// IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
-	//----------------------------------------------------------------------
-	if (Dualquadslave3d())
-	{
-		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  //----------------------------------------------------------------------
+  // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+    trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
 
-		// set of already processed nodes
-		// (in order to avoid double-assembly for N interfaces)
-		set<int> donebefore;
+    // set of already processed nodes
+    // (in order to avoid double-assembly for N interfaces)
+    set<int> donebefore;
 
-		// for all interfaces
-		for (int i=0; i<(int)interface_.size(); ++i)
-			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+    // for all interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+      interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
 
-		// FillComplete() transformation matrices
-		trafo_->Complete();
-		invtrafo_->Complete();
-	}
+    // FillComplete() transformation matrices
+    trafo_->Complete();
+    invtrafo_->Complete();
+  }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -515,22 +515,22 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
   gmdofrowmap_   = rcp(new Epetra_Map(0,0,Comm()));
   glmdofrowmap_  = rcp(new Epetra_Map(0,0,Comm()));
 
-	// make numbering of LM dofs consecutive and unique across N interfaces
-	int offset_if = 0;
+  // make numbering of LM dofs consecutive and unique across N interfaces
+  int offset_if = 0;
 
   // setup global slave / master Epetra_Maps
   // (this is done by looping over all interfaces and merging)
   for (int i=0;i<(int)interface_.size();++i)
   {
-  	// build Lagrange multiplier dof map
-		interface_[i]->UpdateLagMultSets(offset_if);
+    // build Lagrange multiplier dof map
+    interface_[i]->UpdateLagMultSets(offset_if);
 
-		// merge interface Lagrange multiplier dof maps to global LM dof map
-		glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
-		offset_if = glmdofrowmap_->NumGlobalElements();
-		if (offset_if < 0) offset_if = 0;
+    // merge interface Lagrange multiplier dof maps to global LM dof map
+    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+    offset_if = glmdofrowmap_->NumGlobalElements();
+    if (offset_if < 0) offset_if = 0;
 
-		// merge interface master, slave maps to global master, slave map
+    // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
@@ -544,8 +544,8 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::InitEvalInterface()
 {
-	// time measurement (on each processor)
-	const double t_start = Teuchos::Time::wallTime();
+  // time measurement (on each processor)
+  const double t_start = Teuchos::Time::wallTime();
 
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -560,17 +560,17 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
-	// get out of here if parallel redistribution is switched off
-	// or if this is a single processor (serial) job
-	if (!ParRedist() || Comm().NumProc()==1) return;
+  // get out of here if parallel redistribution is switched off
+  // or if this is a single processor (serial) job
+  if (!ParRedist() || Comm().NumProc()==1) return;
 
-	// collect information about participation in coupling evaluation
-	// and in parallel distribution of the individual interfaces
-	vector<int> numloadele((int)interface_.size());
-	vector<int> numcrowele((int)interface_.size());
+  // collect information about participation in coupling evaluation
+  // and in parallel distribution of the individual interfaces
+  vector<int> numloadele((int)interface_.size());
+  vector<int> numcrowele((int)interface_.size());
   for (int i=0; i<(int)interface_.size(); ++i)
-  	interface_[i]->CollectDistributionData(numloadele[i],numcrowele[i]);
-	
+    interface_[i]->CollectDistributionData(numloadele[i],numcrowele[i]);
+  
   // time measurement (on each processor)
   double t_end_for_minall = Teuchos::Time::wallTime()-t_start;
   double t_end_for_maxall = t_end_for_minall;
@@ -580,82 +580,82 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   // i.e. restrict to procs that actually have to do some work
   int gnumloadele = 0;
   for (int i=0; i<(int)numloadele.size(); ++i)
-  	gnumloadele += numloadele[i];
+    gnumloadele += numloadele[i];
   
   // for non-loaded procs, set time measurement to values 0.0 / 1.0e12,
   // which do not affect the maximum and minimum identification
   if (gnumloadele==0)
   {
-  	t_end_for_minall =  1.0e12;
-  	t_end_for_maxall =  0.0;
+    t_end_for_minall =  1.0e12;
+    t_end_for_maxall =  0.0;
   }
   
   // store time indicator for parallel redistribution
   // (indicator is the maximum local processor time
   // divided by the minimum local processor time)
-	double maxall = 0.0;
-	double minall = 0.0;
-	Comm().MaxAll(&t_end_for_maxall,&maxall,1);
-	Comm().MinAll(&t_end_for_minall,&minall,1);
-	
-	// check for plausibility before storing
-	if (maxall==0.0 && minall==1.0e12) tunbalance_.push_back(1.0);
-	else                               tunbalance_.push_back(maxall/minall);
-	
-	// obtain info whether there is an unbalance in element distribution
-	bool eleunbalance = false;
-	for (int i=0; i<(int)interface_.size(); ++i)
-	{
-		// find out how many close slave elements in total
-		int totrowele = 0;
-		Comm().SumAll(&numcrowele[i],&totrowele,1);
-		
-		// find out how many procs have work on this interface
-		int lhascrowele = 0;
-		int ghascrowele = 0;
-		if (numcrowele[i]>0) lhascrowele=1;
-		Comm().SumAll(&lhascrowele,&ghascrowele,1);
+  double maxall = 0.0;
+  double minall = 0.0;
+  Comm().MaxAll(&t_end_for_maxall,&maxall,1);
+  Comm().MinAll(&t_end_for_minall,&minall,1);
+  
+  // check for plausibility before storing
+  if (maxall==0.0 && minall==1.0e12) tunbalance_.push_back(1.0);
+  else                               tunbalance_.push_back(maxall/minall);
+  
+  // obtain info whether there is an unbalance in element distribution
+  bool eleunbalance = false;
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // find out how many close slave elements in total
+    int totrowele = 0;
+    Comm().SumAll(&numcrowele[i],&totrowele,1);
+    
+    // find out how many procs have work on this interface
+    int lhascrowele = 0;
+    int ghascrowele = 0;
+    if (numcrowele[i]>0) lhascrowele=1;
+    Comm().SumAll(&lhascrowele,&ghascrowele,1);
 
-		// minimum number of elements per proc
-		int minele = Params().get<int>("MIN_ELEPROC");
-		int numproc = Comm().NumProc();
-		
-		//--------------------------------------------------------------------
-		// check if there is an element unbalance
-		//--------------------------------------------------------------------
-		// CASE 0: if minimum number of elements per proc is zero, but
-		// further procs are still available and more than numproc elements
-		if ( (minele == 0) && (totrowele > numproc) && (ghascrowele < numproc) )
-			eleunbalance = true;
-		
-		// CASE 1: in total too few close slave elements but more than one
-		// proc is active (otherwise, i.e. if interface small, we have no choice)
-		if ( (minele > 0) && (totrowele < ghascrowele * minele) && (ghascrowele > 1) )
-			eleunbalance = true;
-		
-		// CASE 2: in total too many close slave elements, but further procs
-		// are still available for redsitribution
-		if ( (minele > 0) && (totrowele >= (ghascrowele+1)*minele) && (ghascrowele < numproc) )
-			eleunbalance = true;
-	}
-	
-	// obtain global info on element unbalance
+    // minimum number of elements per proc
+    int minele = Params().get<int>("MIN_ELEPROC");
+    int numproc = Comm().NumProc();
+    
+    //--------------------------------------------------------------------
+    // check if there is an element unbalance
+    //--------------------------------------------------------------------
+    // CASE 0: if minimum number of elements per proc is zero, but
+    // further procs are still available and more than numproc elements
+    if ( (minele == 0) && (totrowele > numproc) && (ghascrowele < numproc) )
+      eleunbalance = true;
+    
+    // CASE 1: in total too few close slave elements but more than one
+    // proc is active (otherwise, i.e. if interface small, we have no choice)
+    if ( (minele > 0) && (totrowele < ghascrowele * minele) && (ghascrowele > 1) )
+      eleunbalance = true;
+    
+    // CASE 2: in total too many close slave elements, but further procs
+    // are still available for redsitribution
+    if ( (minele > 0) && (totrowele >= (ghascrowele+1)*minele) && (ghascrowele < numproc) )
+      eleunbalance = true;
+  }
+  
+  // obtain global info on element unbalance
   int geleunbalance = 0;
   int leleunbalance = (int)(eleunbalance);
   Comm().SumAll(&leleunbalance,&geleunbalance,1);
   if (geleunbalance>0) eunbalance_.push_back(1);
   else                 eunbalance_.push_back(0);
-	
-  // debugging output
-	//cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " << numcrowele[0]
-	//     << "\t MIN: " << minall << "\t MAX: " << maxall
-	//     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
-	//     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
-	//     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
   
-	//**********************************************************************
-	
-	return;
+  // debugging output
+  //cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " << numcrowele[0]
+  //     << "\t MIN: " << minall << "\t MAX: " << maxall
+  //     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
+  //     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
+  //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
+  
+  //**********************************************************************
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -772,7 +772,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
 {
 #ifndef CONTACTFORCEREFCONFIG 
   
-	// only do something for frictional case
+  // only do something for frictional case
   if (!friction_) return;
   
   // only before the first time step
@@ -819,17 +819,17 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
   InitEvalMortar();
   
   //----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// Concretely, we apply the following transformations:
-	// D         ---->   D * T^(-1)
-	//----------------------------------------------------------------------
-	if (Dualquadslave3d())
-	{
-		// modify dmatrix_
-		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-		dmatrix_ = temp;
-	}
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  // D         ---->   D * T^(-1)
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+    // modify dmatrix_
+    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    dmatrix_ = temp;
+  }
 
   // dump mortar Matrix D
   // this is always the matrix from the reference configuration,
@@ -867,7 +867,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 {
-	// only for fricional contact
+  // only for fricional contact
   if (!friction_) return;
   
   // transformation of slave displacement dofs
@@ -887,7 +887,7 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   // ATTENTION: for EvaluateRelMov() we need the vector xsmod in
   // fully overlapping layout. Thus, export here. First, allreduce
   // slave dof row map to obtain fully overlapping slave dof map.
-	RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+  RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
   RCP<Epetra_Vector> xsmodfull = rcp(new Epetra_Vector(*fullsdofs));
   LINALG::Export(*xsmod,*xsmodfull);
   xsmod = xsmodfull;
@@ -1374,13 +1374,13 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // update flag for global contact status of last time step
   if (gactivenodes_->NumGlobalElements())
   {
-  	WasInContact()=true;
-  	WasInContactLastTimeStep()=true;
+    WasInContact()=true;
+    WasInContactLastTimeStep()=true;
   }
   else
   {
-  	WasInContact()=false;
-  	WasInContactLastTimeStep()=false;
+    WasInContact()=false;
+    WasInContactLastTimeStep()=false;
   }
 
   //----------------------------------------friction: store history values
@@ -1468,17 +1468,17 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   InitEvalMortar();
 
   //----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// Concretely, we apply the following transformations:
-	// D         ---->   D * T^(-1)
-	//----------------------------------------------------------------------
-	if (Dualquadslave3d())
-	{
-		// modify dmatrix_
-		RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-		dmatrix_ = temp;
-	}
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // Concretely, we apply the following transformations:
+  // D         ---->   D * T^(-1)
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+    // modify dmatrix_
+    RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    dmatrix_ = temp;
+  }
 
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
@@ -1591,9 +1591,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // update flags for global contact status
   if (gactivenodes_->NumGlobalElements())
   {
-  	IsInContact()=true;
-  	WasInContact()=true;
-  	WasInContactLastTimeStep()=true;
+    IsInContact()=true;
+    WasInContact()=true;
+    WasInContactLastTimeStep()=true;
   }
   
   // evaluate relative movement (jump)
@@ -1871,8 +1871,8 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (!output && Comm().MyPID()==0)
     {
-    	double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
-    	double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
+      double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
+      double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
       printf("Slave Contact Force:   % e  % e  % e \tNorm: % e\n",ggfcs[0],ggfcs[1],ggfcs[2], snorm);
       printf("Master Contact Force:  % e  % e  % e \tNorm: % e\n",ggfcm[0],ggfcm[1],ggfcm[2], mnorm);
       printf("Slave Contact Moment:  % e  % e  % e\n",ggmcs[0],ggmcs[1],ggmcs[2]);
@@ -1906,11 +1906,11 @@ void CONTACT::CoAbstractStrategy::ForceRefConfig()
   RCP<Epetra_Vector> zcurr  = rcp(new Epetra_Vector(*z_));
 
   // solve with default solver
-	LINALG::Solver solver(Comm());
-	solver.Solve(dref->EpetraOperator(),zref,forcecurr,true);
+  LINALG::Solver solver(Comm());
+  solver.Solve(dref->EpetraOperator(),zref,forcecurr,true);
 
   // store reference LM into global vector and nodes
-	z_ = zref;
+  z_ = zref;
   StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
   
   // print message
@@ -1954,16 +1954,16 @@ void CONTACT::CoAbstractStrategy::Print(ostream& os) const
 void CONTACT::CoAbstractStrategy::PrintActiveSet()
 {
   // output message
-	Comm().Barrier();
+  Comm().Barrier();
   if (Comm().MyPID()==0)
   {
     printf("\nActive contact set--------------------------------------------------------------\n");
-	  fflush(stdout);
+    fflush(stdout);
   }
 
-	//**********************************************************************
-	// detailed active set output
-	//**********************************************************************
+  //**********************************************************************
+  // detailed active set output
+  //**********************************************************************
 
 #ifdef CONTACTASOUTPUT
   // create storage for local and global data
@@ -1971,12 +1971,12 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   vector<double> llmn, glmn;
   vector<double> lgap, ggap;
 
-	// introduce integer variable status
-	// (0=inactive, 1=active, 2=slip, 3=stick)
-	// (this is necessary as all data will be written by proc 0, but
-	// the knowledge of the above status ONLY exists on the owner
-	// processor of the respective node. Thus this information must
-	// also be communicated to proc 0 in addition to the actual data!)
+  // introduce integer variable status
+  // (0=inactive, 1=active, 2=slip, 3=stick)
+  // (this is necessary as all data will be written by proc 0, but
+  // the knowledge of the above status ONLY exists on the owner
+  // processor of the respective node. Thus this information must
+  // also be communicated to proc 0 in addition to the actual data!)
   vector<int>    lsta, gsta;
 
   // some more storage for local and global friction data
@@ -1986,264 +1986,264 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   vector<double> lwear, gwear;
 
   // loop over all interfaces
-	for (int i=0; i<(int)interface_.size(); ++i)
-	{
-		//if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
-		// loop over all slave row nodes on the current interface
-		for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-		{
-			// gid of current node
-			int gid = interface_[i]->SlaveRowNodes()->GID(j);
-			DRT::Node* node = interface_[i]->Discret().gNode(gid);
-			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      // gid of current node
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-			//--------------------------------------------------------------------
-			// FRICTIONLESS CASE
-			//--------------------------------------------------------------------
-			if (!friction_)
-			{
-				// cast to CoNode
-				CoNode* cnode = static_cast<CoNode*>(node);
+      //--------------------------------------------------------------------
+      // FRICTIONLESS CASE
+      //--------------------------------------------------------------------
+      if (!friction_)
+      {
+        // cast to CoNode
+        CoNode* cnode = static_cast<CoNode*>(node);
 
-				// compute weighted gap
-				double wgap = (*g_)[g_->Map().LID(gid)];
+        // compute weighted gap
+        double wgap = (*g_)[g_->Map().LID(gid)];
 
-				// compute normal part of Lagrange multiplier
-				double nz = 0.0;
-				for (int k=0;k<3;++k)
-					nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
+        // compute normal part of Lagrange multiplier
+        double nz = 0.0;
+        for (int k=0;k<3;++k)
+          nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
 
-				// store node id
-				lnid.push_back(gid);
+        // store node id
+        lnid.push_back(gid);
 
-				// store relevant data
-				llmn.push_back(nz);
-				lgap.push_back(wgap);
+        // store relevant data
+        llmn.push_back(nz);
+        lgap.push_back(wgap);
 
-				// store status (0=inactive, 1=active, 2=slip, 3=stick)
-				if (cnode->Active()) lsta.push_back(1);
-				else                 lsta.push_back(0);
-			}
+        // store status (0=inactive, 1=active, 2=slip, 3=stick)
+        if (cnode->Active()) lsta.push_back(1);
+        else                 lsta.push_back(0);
+      }
 
-			//--------------------------------------------------------------------
-			// FRICTIONAL CASE
-			//--------------------------------------------------------------------
-			else
-			{
-				// cast to CoNode and FriNode
-				CoNode* cnode = static_cast<CoNode*>(node);
-				FriNode* frinode = static_cast<FriNode*>(cnode);
+      //--------------------------------------------------------------------
+      // FRICTIONAL CASE
+      //--------------------------------------------------------------------
+      else
+      {
+        // cast to CoNode and FriNode
+        CoNode* cnode = static_cast<CoNode*>(node);
+        FriNode* frinode = static_cast<FriNode*>(cnode);
 
-				// compute weighted gap
-				double wgap = (*g_)[g_->Map().LID(gid)];
+        // compute weighted gap
+        double wgap = (*g_)[g_->Map().LID(gid)];
 
-				// compute normal part of Lagrange multiplier
-				double nz = 0.0;
-				for (int k=0;k<3;++k)
-					nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
+        // compute normal part of Lagrange multiplier
+        double nz = 0.0;
+        for (int k=0;k<3;++k)
+          nz += frinode->MoData().n()[k] * frinode->MoData().lm()[k];
 
-				// compute tangential parts of Lagrange multiplier and jumps and wear
-				double txiz = 0.0;
-				double tetaz = 0.0;
-				double jumptxi = 0.0;
-				double jumpteta = 0.0;
-				double wear = 0.0;
-				
-				for (int k=0;k<Dim();++k)
-				{
-					txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
-					tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
-					jumptxi += frinode->CoData().txi()[k] * frinode->FriData().jump()[k];
-					jumpteta += frinode->CoData().teta()[k] * frinode->FriData().jump()[k];
-				}
+        // compute tangential parts of Lagrange multiplier and jumps and wear
+        double txiz = 0.0;
+        double tetaz = 0.0;
+        double jumptxi = 0.0;
+        double jumpteta = 0.0;
+        double wear = 0.0;
+        
+        for (int k=0;k<Dim();++k)
+        {
+          txiz += frinode->CoData().txi()[k] * frinode->MoData().lm()[k];
+          tetaz += frinode->CoData().teta()[k] * frinode->MoData().lm()[k];
+          jumptxi += frinode->CoData().txi()[k] * frinode->FriData().jump()[k];
+          jumpteta += frinode->CoData().teta()[k] * frinode->FriData().jump()[k];
+        }
 
-				// total tangential component
-				double tz = sqrt(txiz*txiz+tetaz*tetaz);
+        // total tangential component
+        double tz = sqrt(txiz*txiz+tetaz*tetaz);
 
-				// check for dimensions
-				if (Dim()==2 && abs(jumpteta)>0.0001)
-					dserror("Error: Jumpteta should be zero for 2D");
-				
-				// compute weighted wear
-				if (wear_) wear = frinode->FriData().Wear();
+        // check for dimensions
+        if (Dim()==2 && abs(jumpteta)>0.0001)
+          dserror("Error: Jumpteta should be zero for 2D");
+        
+        // compute weighted wear
+        if (wear_) wear = frinode->FriData().Wear();
 
-				// store node id
-				lnid.push_back(gid);
+        // store node id
+        lnid.push_back(gid);
 
-				// store relevant data
-				llmn.push_back(nz);
-				lgap.push_back(wgap);
-				llmt.push_back(tz);
-				ljtx.push_back(jumptxi);
-				ljte.push_back(jumpteta);
-				lwear.push_back(wear);
+        // store relevant data
+        llmn.push_back(nz);
+        lgap.push_back(wgap);
+        llmt.push_back(tz);
+        ljtx.push_back(jumptxi);
+        ljte.push_back(jumpteta);
+        lwear.push_back(wear);
 
-				// store status (0=inactive, 1=active, 2=slip, 3=stick)
-				if (cnode->Active())
-			  {
-					if (frinode->FriData().Slip()) lsta.push_back(2);
-					else                           lsta.push_back(3);
-				}
-				else
-			  {
-					lsta.push_back(0);
-				}
-			}
-		}
-	}
+        // store status (0=inactive, 1=active, 2=slip, 3=stick)
+        if (cnode->Active())
+        {
+          if (frinode->FriData().Slip()) lsta.push_back(2);
+          else                           lsta.push_back(3);
+        }
+        else
+        {
+          lsta.push_back(0);
+        }
+      }
+    }
+  }
 
-	// we want to gather data from on all procs
-	vector<int> allproc(Comm().NumProc());
-	for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+  // we want to gather data from on all procs
+  vector<int> allproc(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
 
-	// communicate all data to proc 0
-	LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
-	LINALG::Gather<double>(llmn,glmn,(int)allproc.size(),&allproc[0],Comm());
-	LINALG::Gather<double>(lgap,ggap,(int)allproc.size(),&allproc[0],Comm());
-	LINALG::Gather<int>(lsta,gsta,(int)allproc.size(),&allproc[0],Comm());
+  // communicate all data to proc 0
+  LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(llmn,glmn,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(lgap,ggap,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<int>(lsta,gsta,(int)allproc.size(),&allproc[0],Comm());
 
-	// communicate some more data to proc 0 for friction
-	if (friction_)
-	{
-		LINALG::Gather<double>(llmt,glmt,(int)allproc.size(),&allproc[0],Comm());
-		LINALG::Gather<double>(ljtx,gjtx,(int)allproc.size(),&allproc[0],Comm());
-		LINALG::Gather<double>(ljte,gjte,(int)allproc.size(),&allproc[0],Comm());
+  // communicate some more data to proc 0 for friction
+  if (friction_)
+  {
+    LINALG::Gather<double>(llmt,glmt,(int)allproc.size(),&allproc[0],Comm());
+    LINALG::Gather<double>(ljtx,gjtx,(int)allproc.size(),&allproc[0],Comm());
+    LINALG::Gather<double>(ljte,gjte,(int)allproc.size(),&allproc[0],Comm());
     LINALG::Gather<double>(lwear,gwear,(int)allproc.size(),&allproc[0],Comm());
  }
 
-	// output is solely done by proc 0
-	if (Comm().MyPID()==0)
-	{
-		//--------------------------------------------------------------------
-		// FRICTIONLESS CASE
-		//--------------------------------------------------------------------
-		if (!friction_)
-		{
-			// loop over all nodes
-			for (int k=0;k<(int)gnid.size();++k)
-			{
-				// print nodes of inactive set *************************************
-				if (gsta[k]==0)
-				{
-					printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
-					fflush(stdout);
-				}
+  // output is solely done by proc 0
+  if (Comm().MyPID()==0)
+  {
+    //--------------------------------------------------------------------
+    // FRICTIONLESS CASE
+    //--------------------------------------------------------------------
+    if (!friction_)
+    {
+      // loop over all nodes
+      for (int k=0;k<(int)gnid.size();++k)
+      {
+        // print nodes of inactive set *************************************
+        if (gsta[k]==0)
+        {
+          printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+          fflush(stdout);
+        }
 
-				// print nodes of active set ***************************************
-				else if (gsta[k]==1)
-				{
-					printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
-					fflush(stdout);
-				}
+        // print nodes of active set ***************************************
+        else if (gsta[k]==1)
+        {
+          printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+          fflush(stdout);
+        }
 
-				// invalid status **************************************************
-				else dserror("ERROR: Invalid node status %i for frictionless case",gsta[k]);
-			}
-		}
+        // invalid status **************************************************
+        else dserror("ERROR: Invalid node status %i for frictionless case",gsta[k]);
+      }
+    }
 
-		//--------------------------------------------------------------------
-		// FRICTIONAL CASE
-		//--------------------------------------------------------------------
-		else
-		{
-			// loop over all nodes
-			for (int k=0;k<(int)gnid.size();++k)
-			{
-				// print nodes of slip set **************************************
-				if (gsta[k]==2)
-				{
-					printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
-					fflush(stdout);
-				}
+    //--------------------------------------------------------------------
+    // FRICTIONAL CASE
+    //--------------------------------------------------------------------
+    else
+    {
+      // loop over all nodes
+      for (int k=0;k<(int)gnid.size();++k)
+      {
+        // print nodes of slip set **************************************
+        if (gsta[k]==2)
+        {
+          printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
+          fflush(stdout);
+        }
 
-				// print nodes of stick set *************************************
-				else if (gsta[k]==3)
-				{
-					printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
-					fflush(stdout);
-				}
+        // print nodes of stick set *************************************
+        else if (gsta[k]==3)
+        {
+          printf("STICK: %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
+          fflush(stdout);
+        }
 
-				// print nodes of inactive set *************************************
-				else if (gsta[k]==0)
-				{
-					// do nothing
-				}
+        // print nodes of inactive set *************************************
+        else if (gsta[k]==0)
+        {
+          // do nothing
+        }
 
-				// invalid status **************************************************
-		    else dserror("ERROR: Invalid node status %i for frictional case",gsta[k]);
-			}
-		}
-	}
+        // invalid status **************************************************
+        else dserror("ERROR: Invalid node status %i for frictional case",gsta[k]);
+      }
+    }
+  }
 
 #else
-	//**********************************************************************
+  //**********************************************************************
   // reduced active set output
-	//**********************************************************************
+  //**********************************************************************
 
-	// counters
-	int activenodes = 0;
-	int gactivenodes = 0;
-	int inactivenodes = 0;
-	int ginactivenodes = 0;
-	int slipnodes = 0;
-	int gslipnodes = 0;
+  // counters
+  int activenodes = 0;
+  int gactivenodes = 0;
+  int inactivenodes = 0;
+  int ginactivenodes = 0;
+  int slipnodes = 0;
+  int gslipnodes = 0;
 
-	// loop over all interfaces
-	for (int i=0; i<(int)interface_.size(); ++i)
-	{
-		//if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    //if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
 
-		// loop over all slave nodes on the current interface
-		for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-		{
-			int gid = interface_[i]->SlaveRowNodes()->GID(j);
-			DRT::Node* node = interface_[i]->Discret().gNode(gid);
-			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-			// increase active counters
-			CoNode* cnode = static_cast<CoNode*>(node);
-			if (cnode->Active()) activenodes   += 1;
-			else                 inactivenodes += 1;
+      // increase active counters
+      CoNode* cnode = static_cast<CoNode*>(node);
+      if (cnode->Active()) activenodes   += 1;
+      else                 inactivenodes += 1;
 
-			// increase friction counters
-			if (friction_)
-			{
-				FriNode* frinode = static_cast<FriNode*>(cnode);
-				if (cnode->Active() && frinode->FriData().Slip()) slipnodes += 1;
-			}
-		}
-	}
+      // increase friction counters
+      if (friction_)
+      {
+        FriNode* frinode = static_cast<FriNode*>(cnode);
+        if (cnode->Active() && frinode->FriData().Slip()) slipnodes += 1;
+      }
+    }
+  }
 
-	// sum among all processors
-	Comm().SumAll(&activenodes,&gactivenodes,1);
-	Comm().SumAll(&inactivenodes,&ginactivenodes,1);
-	Comm().SumAll(&slipnodes,&gslipnodes,1);
+  // sum among all processors
+  Comm().SumAll(&activenodes,&gactivenodes,1);
+  Comm().SumAll(&inactivenodes,&ginactivenodes,1);
+  Comm().SumAll(&slipnodes,&gslipnodes,1);
 
-	// print active set information
-	if (Comm().MyPID()==0)
-	{
-		if (friction_)
-		{
-			cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << endl;
-			cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << endl;
-			cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
-		}
-		else
-		{
-			cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << endl;
-			cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
-		}
-	}
+  // print active set information
+  if (Comm().MyPID()==0)
+  {
+    if (friction_)
+    {
+      cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << endl;
+      cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << endl;
+      cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+    }
+    else
+    {
+      cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << endl;
+      cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+    }
+  }
 #endif // #ifdef CONTACTASOUTPUT
 
   // output line
   Comm().Barrier();
-	if (Comm().MyPID()==0)
-	{
-		printf("--------------------------------------------------------------------------------\n\n");
-		fflush(stdout);
-	}
+  if (Comm().MyPID()==0)
+  {
+    printf("--------------------------------------------------------------------------------\n\n");
+    fflush(stdout);
+  }
 
   return;
 }

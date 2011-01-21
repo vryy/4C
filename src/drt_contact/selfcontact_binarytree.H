@@ -741,7 +741,7 @@ public:
 
   */
   void SearchRootContact(RCP<SelfBinaryTreeNode> treenode1,
-  		                   RCP<SelfBinaryTreeNode> treenode2);
+                         RCP<SelfBinaryTreeNode> treenode2);
 
   /*!
   \brief Find contact of adjacent surfaces

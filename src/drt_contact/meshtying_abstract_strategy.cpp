@@ -75,13 +75,13 @@ dualquadslave3d_(false)
   // redistribution of slave and master sides)
   if (ParRedist())
   {
-		pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
-		pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
-		pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
-		pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
+    pglmdofrowmap_ = rcp(new Epetra_Map(*glmdofrowmap_));
+    pgsdofrowmap_  = rcp(new Epetra_Map(*gsdofrowmap_));
+    pgmdofrowmap_  = rcp(new Epetra_Map(*gmdofrowmap_));
+    pgsmdofrowmap_ = rcp(new Epetra_Map(*gsmdofrowmap_));
   }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -98,60 +98,60 @@ ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
-	// initialize time measurement
-	vector<double> times((int)interface_.size());
+  // initialize time measurement
+  vector<double> times((int)interface_.size());
 
-	// do some more stuff with interfaces
-	for (int i=0; i<(int)interface_.size();++i)
-	{
-		// print parallel distribution
-		interface_[i]->PrintParallelDistribution(i+1);
+  // do some more stuff with interfaces
+  for (int i=0; i<(int)interface_.size();++i)
+  {
+    // print parallel distribution
+    interface_[i]->PrintParallelDistribution(i+1);
 
-		//---------------------------------------
-		// PARALLEL REDISTRIBUTION OF INTERFACES
-		//---------------------------------------
-		// get out of here if parallel redistribution is switched off
-		// or if this is a single processor (serial) job
-		if (ParRedist() && Comm().NumProc()>1)
-		{
-			// time measurement
-			Comm().Barrier();
-			const double t_start = Teuchos::Time::wallTime();
+    //---------------------------------------
+    // PARALLEL REDISTRIBUTION OF INTERFACES
+    //---------------------------------------
+    // get out of here if parallel redistribution is switched off
+    // or if this is a single processor (serial) job
+    if (ParRedist() && Comm().NumProc()>1)
+    {
+      // time measurement
+      Comm().Barrier();
+      const double t_start = Teuchos::Time::wallTime();
 
-			// redistribute optimally among all procs
-			interface_[i]->Redistribute();
+      // redistribute optimally among all procs
+      interface_[i]->Redistribute();
 
-			// call fill complete again
-			interface_[i]->FillComplete(maxdof_);
+      // call fill complete again
+      interface_[i]->FillComplete(maxdof_);
 
-			// print parallel distribution again
-			interface_[i]->PrintParallelDistribution(i+1);
+      // print parallel distribution again
+      interface_[i]->PrintParallelDistribution(i+1);
 
-			// time measurement
-			Comm().Barrier();
-			times[i] = Teuchos::Time::wallTime()-t_start;
-		}
-		//---------------------------------------
-	}
+      // time measurement
+      Comm().Barrier();
+      times[i] = Teuchos::Time::wallTime()-t_start;
+    }
+    //---------------------------------------
+  }
 
-	// re-setup strategy object
-	// get out of here if parallel redistribution is switched off
-	// or if this is a single processor (serial) job
-	if (ParRedist() && Comm().NumProc()>1)
-	{
-		// time measurement
-		Comm().Barrier();
-		const double t_start = Teuchos::Time::wallTime();
+  // re-setup strategy object
+  // get out of here if parallel redistribution is switched off
+  // or if this is a single processor (serial) job
+  if (ParRedist() && Comm().NumProc()>1)
+  {
+    // time measurement
+    Comm().Barrier();
+    const double t_start = Teuchos::Time::wallTime();
 
-		// re-setup strategy with flag redistributed=TRUE
-		Setup(true);
+    // re-setup strategy with flag redistributed=TRUE
+    Setup(true);
 
-		// time measurement
-		Comm().Barrier();
-		double t_sum = Teuchos::Time::wallTime()-t_start;
-		for (int i=0; i<(int)interface_.size();++i) t_sum += times[i];
-		if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
-	}
+    // time measurement
+    Comm().Barrier();
+    double t_sum = Teuchos::Time::wallTime()-t_start;
+    for (int i=0; i<(int)interface_.size();++i) t_sum += times[i];
+    if (Comm().MyPID()==0) cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
+  }
 
   return;
 }
@@ -165,25 +165,25 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // setup global accessible Epetra_Maps
   // ------------------------------------------------------------------------                     
 
-	// make sure to remove all existing maps first
-	// (do NOT remove map of non-interface dofs after redistribution)
-	gsdofrowmap_  = Teuchos::null;
-	gmdofrowmap_  = Teuchos::null;
-	gsmdofrowmap_ = Teuchos::null;
-	glmdofrowmap_ = Teuchos::null;
-	gdisprowmap_  = Teuchos::null;
-	gsnoderowmap_ = Teuchos::null;
-	gmnoderowmap_ = Teuchos::null;
-	if (!redistributed) gndofrowmap_  = Teuchos::null;
+  // make sure to remove all existing maps first
+  // (do NOT remove map of non-interface dofs after redistribution)
+  gsdofrowmap_  = Teuchos::null;
+  gmdofrowmap_  = Teuchos::null;
+  gsmdofrowmap_ = Teuchos::null;
+  glmdofrowmap_ = Teuchos::null;
+  gdisprowmap_  = Teuchos::null;
+  gsnoderowmap_ = Teuchos::null;
+  gmnoderowmap_ = Teuchos::null;
+  if (!redistributed) gndofrowmap_  = Teuchos::null;
 
-	// make numbering of LM dofs consecutive and unique across N interfaces
-	int offset_if = 0;
+  // make numbering of LM dofs consecutive and unique across N interfaces
+  int offset_if = 0;
 
   // merge interface maps to global maps
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-  	// build Lagrange multiplier dof map
-  	interface_[i]->UpdateLagMultSets(offset_if);
+    // build Lagrange multiplier dof map
+    interface_[i]->UpdateLagMultSets(offset_if);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
     glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
@@ -221,44 +221,44 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
 
   //----------------------------------------------------------------------
-	// CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-	//----------------------------------------------------------------------
-	// These matrices need to be applied to the slave displacements
-	// in the cases of dual LM interpolation for tet10/hex20 meshes
-	// in 3D. Here, the displacement basis functions have been modified
-	// in order to assure positivity of the D matrix entries and at
-	// the same time biorthogonality. Thus, to scale back the modified
-	// discrete displacements \hat{d} to the nodal discrete displacements
-	// {d}, we have to apply the transformation matrix T and vice versa
-	// with the transformation matrix T^(-1).
-	//----------------------------------------------------------------------
-	INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-	if (shapefcn == INPAR::MORTAR::shape_dual)
-		for (int i=0; i<(int)interface_.size(); ++i)
-			dualquadslave3d_ += interface_[i]->Quadslave3d();
+  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+  //----------------------------------------------------------------------
+  // These matrices need to be applied to the slave displacements
+  // in the cases of dual LM interpolation for tet10/hex20 meshes
+  // in 3D. Here, the displacement basis functions have been modified
+  // in order to assure positivity of the D matrix entries and at
+  // the same time biorthogonality. Thus, to scale back the modified
+  // discrete displacements \hat{d} to the nodal discrete displacements
+  // {d}, we have to apply the transformation matrix T and vice versa
+  // with the transformation matrix T^(-1).
+  //----------------------------------------------------------------------
+  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_dual)
+    for (int i=0; i<(int)interface_.size(); ++i)
+      dualquadslave3d_ += interface_[i]->Quadslave3d();
 
-	//----------------------------------------------------------------------
-	// COMPUTE TRAFO MATRIX AND ITS INVERSE
-	//----------------------------------------------------------------------
-	if (Dualquadslave3d())
-	{
-		trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-		invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  //----------------------------------------------------------------------
+  // COMPUTE TRAFO MATRIX AND ITS INVERSE
+  //----------------------------------------------------------------------
+  if (Dualquadslave3d())
+  {
+    trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+    invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
 
-		// set of already processed nodes
-		// (in order to avoid double-assembly for N interfaces)
-		set<int> donebefore;
+    // set of already processed nodes
+    // (in order to avoid double-assembly for N interfaces)
+    set<int> donebefore;
 
-		// for all interfaces
-		for (int i=0; i<(int)interface_.size(); ++i)
-			interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
+    // for all interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+      interface_[i]->AssembleTrafo(*trafo_,*invtrafo_,donebefore);
 
-		// FillComplete() transformation matrices
-		trafo_->Complete();
-		invtrafo_->Complete();
-	}
+    // FillComplete() transformation matrices
+    trafo_->Complete();
+    invtrafo_->Complete();
+  }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -296,8 +296,8 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   }
   
   //********************************************************************
-	// restrict mortar treatment to actual meshtying zone
-	//********************************************************************
+  // restrict mortar treatment to actual meshtying zone
+  //********************************************************************
   RestrictMeshtyingZone();
 
   //********************************************************************
@@ -321,12 +321,12 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
   AssembleCoords("slave",true,xs);
   AssembleCoords("master",true,xm);
-	RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
-	dmatrix_->Multiply(false,*xs,*Dxs);
-	RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
-	mmatrix_->Multiply(false,*xm,*Mxm);
-	g_->Update(1.0,*Dxs,1.0);
-	g_->Update(-1.0,*Mxm,1.0);
+  RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  dmatrix_->Multiply(false,*xs,*Dxs);
+  RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+  mmatrix_->Multiply(false,*xm,*Mxm);
+  g_->Update(1.0,*Dxs,1.0);
+  g_->Update(-1.0,*Mxm,1.0);
   
   return;
 }
@@ -336,9 +336,9 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 {
-	// Step 1: detect tied slave nodes on all interfaces
-	int localfounduntied = 0;
-	int globalfounduntied = 0;
+  // Step 1: detect tied slave nodes on all interfaces
+  int localfounduntied = 0;
+  int globalfounduntied = 0;
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->DetectTiedSlaveNodes(localfounduntied);
   Comm().SumAll(&localfounduntied,&globalfounduntied,1);
@@ -367,29 +367,29 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // parallel redistribution) -> introduce restriction!
   if (ParRedist())
   {
-  	// allreduce restricted slave dof row map in new distribution
-  	RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+    // allreduce restricted slave dof row map in new distribution
+    RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
 
-		// map data to be filled
-		vector<int> data;
+    // map data to be filled
+    vector<int> data;
 
-		// loop over all entries of allreduced map
-		for (int k=0;k<fullsdofs->NumMyElements();++k)
-		{
-			// get global ID of current dof
-			int dofgid = fullsdofs->GID(k);
+    // loop over all entries of allreduced map
+    for (int k=0;k<fullsdofs->NumMyElements();++k)
+    {
+      // get global ID of current dof
+      int dofgid = fullsdofs->GID(k);
 
-			// check is this GID is stored on this processor in the
-			// slave dof row map based on the old distribution and
-			// add to data vector if so
-			if (pgsdofrowmap_->MyGID(dofgid)) data.push_back(dofgid);
-		}
+      // check is this GID is stored on this processor in the
+      // slave dof row map based on the old distribution and
+      // add to data vector if so
+      if (pgsdofrowmap_->MyGID(dofgid)) data.push_back(dofgid);
+    }
 
-		// re-setup old slave dof row map (with restriction now)
-		pgsdofrowmap_ = rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
+    // re-setup old slave dof row map (with restriction now)
+    pgsdofrowmap_ = rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
   }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -419,27 +419,27 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
   // to the distribution in the underlying problem discretization. This
-	// is NOT necessarily the case, as we might have redistributed the
-	// interface among all processors. Thus, we loop over the fully over-
-	// lapping slave column map here to keep all processors around. Then,
-	// the first modification (MortarNode) is always performed, but the
-	// second modification (DRT::Node) is only performed if the respective
-	// node in contained in the problem node column map.
+  // is NOT necessarily the case, as we might have redistributed the
+  // interface among all processors. Thus, we loop over the fully over-
+  // lapping slave column map here to keep all processors around. Then,
+  // the first modification (MortarNode) is always performed, but the
+  // second modification (DRT::Node) is only performed if the respective
+  // node in contained in the problem node column map.
   //**************************************************************
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // export Xslavemod to fully overlapping column map for current interface
-  	RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
-  	RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
+    RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
+    RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
     Epetra_Vector Xslavemodcol(*fullsdofs,false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
     
     // loop over all slave nodes on the current interface
     for (int j=0; j<fullsnodes->NumMyElements(); ++j)
     {
-    	// get global ID of current node
+      // get global ID of current node
       int gid = fullsnodes->GID(j);
       
       // be careful to modify BOTH mtnode in interface discret ...
@@ -451,9 +451,9 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       MORTAR::MortarNode* mtnode = NULL;
       if (isininterfacecolmap)
       {
-      	node = interface_[i]->Discret().gNode(gid);
-      	if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      	mtnode = static_cast<MORTAR::MortarNode*>(node);
+        node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        mtnode = static_cast<MORTAR::MortarNode*>(node);
       }
       
       // ... AND standard node in underlying problem discret
@@ -464,8 +464,8 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       DRT::Node* pnode = NULL;
       if (isinproblemcolmap)
       {
-	      pnode = ProblemDiscret().gNode(gid);
-	      if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
+        pnode = ProblemDiscret().gNode(gid);
+        if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
       }
       
       // new nodal position and problem dimension
@@ -479,43 +479,43 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       // first sort out procs that do not know of mtnode
       if (isininterfacecolmap)
       {
-				// owner processor of this node will do computation
-				if (Comm().MyPID()==mtnode->Owner())
-				{
-					// get corresponding entries from Xslavemod
-					int numdof = mtnode->NumDof();
-					if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+        // owner processor of this node will do computation
+        if (Comm().MyPID()==mtnode->Owner())
+        {
+          // get corresponding entries from Xslavemod
+          int numdof = mtnode->NumDof();
+          if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
 
-					// find DOFs of current node in Xslavemod and extract this node's position
-					vector<int> locindex(numdof);
+          // find DOFs of current node in Xslavemod and extract this node's position
+          vector<int> locindex(numdof);
 
-					for (int dof=0;dof<numdof;++dof)
-					{
-						locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
-						if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
-						Xnew[dof] = Xslavemodcol[locindex[dof]];
-					}
+          for (int dof=0;dof<numdof;++dof)
+          {
+            locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
+            if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
+            Xnew[dof] = Xslavemodcol[locindex[dof]];
+          }
 
-					// check is mesh distortion is still OK
-					// (throw a dserror if length of relocation is larger than 80%
-					// of an adjacent element edge -> see Puso, IJNME, 2004)
-					double limit = 0.8;
-					double relocation = 0.0;
-					if (dim==2)
-					{
-						relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-														 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
-					}
-					else if (dim==3)
-					{
-						relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-														 +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
-														 +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
-					}
-					else dserror("ERROR: Problem dimension must be either 2 or 3!");
-					bool isok = mtnode->CheckMeshDistortion(relocation,limit);
-					if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
-				}
+          // check is mesh distortion is still OK
+          // (throw a dserror if length of relocation is larger than 80%
+          // of an adjacent element edge -> see Puso, IJNME, 2004)
+          double limit = 0.8;
+          double relocation = 0.0;
+          if (dim==2)
+          {
+            relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+                             +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
+          }
+          else if (dim==3)
+          {
+            relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+                             +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
+                             +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
+          }
+          else dserror("ERROR: Problem dimension must be either 2 or 3!");
+          bool isok = mtnode->CheckMeshDistortion(relocation,limit);
+          if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
+        }
       }
 
       // communicate new position Xnew to all procs
@@ -524,24 +524,24 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
       Comm().SumAll(&Xnew[0],&Xnewglobal[0],3);
 
       // const_cast to force modifed X() into mtnode
-			// const_cast to force modifed xspatial() into mtnode
-			// const_cast to force modifed X() into pnode
-			// (remark: this is REALLY BAD coding)
-			for (int k=0;k<dim;++k)
-			{
-				// modification in interface discretization
-				if (isininterfacecolmap)
-				{
-				  const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
-				  const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
-				}
+      // const_cast to force modifed xspatial() into mtnode
+      // const_cast to force modifed X() into pnode
+      // (remark: this is REALLY BAD coding)
+      for (int k=0;k<dim;++k)
+      {
+        // modification in interface discretization
+        if (isininterfacecolmap)
+        {
+          const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
+          const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
+        }
 
-				// modification in problem discretization
-				if (isinproblemcolmap)
-				{
-					const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
-				}
-			}
+        // modification in problem discretization
+        if (isinproblemcolmap)
+        {
+          const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
+        }
+      }
     }
   }
  
@@ -556,12 +556,12 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(RCP<Epetra_Vector> Xslavemo
   RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
   AssembleCoords("slave",true,xs);
   AssembleCoords("master",true,xm);
-	RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
-	dmatrix_->Multiply(false,*xs,*Dxs);
-	RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
-	mmatrix_->Multiply(false,*xm,*Mxm);
-	g_->Update(1.0,*Dxs,1.0);
-	g_->Update(-1.0,*Mxm,1.0);
+  RCP<Epetra_Vector> Dxs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  dmatrix_->Multiply(false,*xs,*Dxs);
+  RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
+  mmatrix_->Multiply(false,*xm,*Mxm);
+  g_->Update(1.0,*Dxs,1.0);
+  g_->Update(-1.0,*Mxm,1.0);
 
   //**********************************************************************
   // (3) re-initialize finite elements
@@ -1017,10 +1017,10 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (!output && Comm().MyPID()==0)
     {
-    	double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
-			double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
-			printf("Slave Contact Force:   % e  % e  % e \tNorm: % e\n",ggfcs[0],ggfcs[1],ggfcs[2], snorm);
-			printf("Master Contact Force:  % e  % e  % e \tNorm: % e\n",ggfcm[0],ggfcm[1],ggfcm[2], mnorm);
+      double snorm = sqrt(ggfcs[0]*ggfcs[0]+ggfcs[1]*ggfcs[1]+ggfcs[2]*ggfcs[2]);
+      double mnorm = sqrt(ggfcm[0]*ggfcm[0]+ggfcm[1]*ggfcm[1]+ggfcm[2]*ggfcm[2]);
+      printf("Slave Contact Force:   % e  % e  % e \tNorm: % e\n",ggfcs[0],ggfcs[1],ggfcs[2], snorm);
+      printf("Master Contact Force:  % e  % e  % e \tNorm: % e\n",ggfcm[0],ggfcm[1],ggfcm[2], mnorm);
       printf("Slave Meshtying Moment:  % e  % e  % e\n",ggmcs[0],ggmcs[1],ggmcs[2]);
       //printf("Slave Meshtying Moment:  % e  % e  % e\n",ggmcsnew[0],ggmcsnew[1],ggmcsnew[2]);
       printf("Master Meshtying Moment: % e  % e  % e\n",ggmcm[0],ggmcm[1],ggmcm[2]);
@@ -1058,13 +1058,13 @@ void CONTACT::MtAbstractStrategy::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::PrintActiveSet()
 {
-	//**********************************************************************
-	// only do this if corresponding output option is chosen
-	//**********************************************************************
+  //**********************************************************************
+  // only do this if corresponding output option is chosen
+  //**********************************************************************
 #ifdef MESHTYINGASOUTPUT
 
   // output message
-	Comm().Barrier();
+  Comm().Barrier();
   if (Comm().MyPID()==0)
   {
     printf("\nMeshtying Interface--------------------------------------------------------------\n");
@@ -1104,7 +1104,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
     }
   }
 
-	// we want to gather data from on all procs
+  // we want to gather data from on all procs
   vector<int> allproc(Comm().NumProc());
   for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
 
@@ -1114,25 +1114,25 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   LINALG::Gather<double>(llmy,glmy,(int)allproc.size(),&allproc[0],Comm());
   LINALG::Gather<double>(llmz,glmz,(int)allproc.size(),&allproc[0],Comm());
 
-	// output is solely done by proc 0
-	if (Comm().MyPID()==0)
-	{
-		// loop over all nodes
-		for (int k=0;k<(int)gnid.size();++k)
-		{
-			// print nodes of active set *************************************
-			printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
-		}
-		fflush(stdout);
-	}
+  // output is solely done by proc 0
+  if (Comm().MyPID()==0)
+  {
+    // loop over all nodes
+    for (int k=0;k<(int)gnid.size();++k)
+    {
+      // print nodes of active set *************************************
+      printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
+    }
+    fflush(stdout);
+  }
 
   // output line
-	Comm().Barrier();
-	if (Comm().MyPID()==0)
-	{
-		printf("--------------------------------------------------------------------------------\n\n");
-		fflush(stdout);
-	}
+  Comm().Barrier();
+  if (Comm().MyPID()==0)
+  {
+    printf("--------------------------------------------------------------------------------\n\n");
+    fflush(stdout);
+  }
 
 #endif // #ifdef MESHTYINGASOUTPUT
 
@@ -1153,59 +1153,59 @@ void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::AssembleCoords(const string& sidename, bool ref,
-		                                             RCP<Epetra_Vector> vec)
+                                                 RCP<Epetra_Vector> vec)
 {
-	// NOTE:
-	// An alternative way of doing this would be to loop over
-	// all interfaces and to assemble the coordinates there.
-	// In thast case, one would have to be very careful with
-	// edge nodes / crosspoints, which must not be assembled
-	// twice. The solution would be to overwrite the corresp.
-	// entries in the Epetra_Vector instead of using Assemble().
+  // NOTE:
+  // An alternative way of doing this would be to loop over
+  // all interfaces and to assemble the coordinates there.
+  // In thast case, one would have to be very careful with
+  // edge nodes / crosspoints, which must not be assembled
+  // twice. The solution would be to overwrite the corresp.
+  // entries in the Epetra_Vector instead of using Assemble().
 
-	// decide which side (slave or master)
-	RCP<Epetra_Map> sidemap = Teuchos::null;
-	if (sidename=="slave")       sidemap = gsnoderowmap_;
-	else if (sidename=="master") sidemap = gmnoderowmap_;
-	else                         dserror("ERROR: Unknown sidename");
+  // decide which side (slave or master)
+  RCP<Epetra_Map> sidemap = Teuchos::null;
+  if (sidename=="slave")       sidemap = gsnoderowmap_;
+  else if (sidename=="master") sidemap = gmnoderowmap_;
+  else                         dserror("ERROR: Unknown sidename");
 
-	// loop over all row nodes of this side (at the global level)
-	for (int j=0; j<sidemap->NumMyElements(); ++j)
-	{
-		int gid = sidemap->GID(j);
+  // loop over all row nodes of this side (at the global level)
+  for (int j=0; j<sidemap->NumMyElements(); ++j)
+  {
+    int gid = sidemap->GID(j);
 
-		// find this node in interface discretizations
-		bool found = false;
-		DRT::Node* node = NULL;
-		for (int k=0;k<(int)interface_.size();++k)
-		{
-			found = interface_[k]->Discret().HaveGlobalNode(gid);
-			if (found)
-			{
-				node = interface_[k]->Discret().gNode(gid);
-				break;
-			}
-		}
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    // find this node in interface discretizations
+    bool found = false;
+    DRT::Node* node = NULL;
+    for (int k=0;k<(int)interface_.size();++k)
+    {
+      found = interface_[k]->Discret().HaveGlobalNode(gid);
+      if (found)
+      {
+        node = interface_[k]->Discret().gNode(gid);
+        break;
+      }
+    }
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
-		// prepare assembly
-		Epetra_SerialDenseVector val(Dim());
-		vector<int> lm(Dim());
-		vector<int> lmowner(Dim());
+    // prepare assembly
+    Epetra_SerialDenseVector val(Dim());
+    vector<int> lm(Dim());
+    vector<int> lmowner(Dim());
 
-		for (int k=0;k<Dim();++k)
-		{
-			// reference (true) or current (false) configuration
-			if (ref) val[k] = mtnode->X()[k];
-			else     val[k] = mtnode->xspatial()[k];
-			lm[k] = mtnode->Dofs()[k];
-			lmowner[k] = mtnode->Owner();
-		}
+    for (int k=0;k<Dim();++k)
+    {
+      // reference (true) or current (false) configuration
+      if (ref) val[k] = mtnode->X()[k];
+      else     val[k] = mtnode->xspatial()[k];
+      lm[k] = mtnode->Dofs()[k];
+      lmowner[k] = mtnode->Owner();
+    }
 
-		// do assembly
-		LINALG::Assemble(*vec,val,lm,lmowner);
-	}
+    // do assembly
+    LINALG::Assemble(*vec,val,lm,lmowner);
+  }
 
   return;
 }

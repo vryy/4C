@@ -372,10 +372,10 @@ public:
 
   Constructs an instance of this class.<br>
 
-  \param discret (in): 		The interface discretization
-  \param selements (in): 	All slave elements (column map)
-  \param melements (in): 	All master elements (fully overlapping map)
-  \param dim (in): 				The problem dimension
+  \param discret (in):     The interface discretization
+  \param selements (in):   All slave elements (column map)
+  \param melements (in):   All master elements (fully overlapping map)
+  \param dim (in):         The problem dimension
 
   */
   BinaryTree(DRT::Discretization& discret,
@@ -395,17 +395,17 @@ public:
   /*!
   \brief Print full tree
 
-	*/
-	void PrintTree(RCP<BinaryTreeNode> treenode);
-	
-	/*!
-	\brief Print full tree out of map of treenodes
-	
-	*/
-	void PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > > & treenodesmap);
+  */
+  void PrintTree(RCP<BinaryTreeNode> treenode);
+  
+  /*!
+  \brief Print full tree out of map of treenodes
+  
+  */
+  void PrintTreeOfMap(vector<vector<RCP<BinaryTreeNode> > > & treenodesmap);
 
   //@}
-	
+  
   //! @name Access methods
 
   /*!
@@ -567,22 +567,22 @@ protected:
   BinaryTree operator = (const BinaryTree& old);
   BinaryTree(const BinaryTree& old);
 
-  DRT::Discretization&     						   idiscret_;       // mortar interface discretization
-  RCP<Epetra_Map>           					   selements_;      // all slave elements on surface (column map)
-  RCP<Epetra_Map>           					   melements_;      // all master elements on surface (full map)
-  vector<vector<RCP<BinaryTreeNode> > >  streenodesmap_;	// map of all slave treenodes, sorted by layers
-  vector<vector<RCP<BinaryTreeNode> > >  mtreenodesmap_;	// map of all master treenodes, sorted by layers
-  vector<vector<RCP<BinaryTreeNode> > >  couplingmap_;		// map of all treenodes, that possibly couple, st/mt
-  vector<vector<RCP<BinaryTreeNode> > >  sleafsmap_;			// map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
-  vector<vector<RCP<BinaryTreeNode> > >  mleafsmap_;			// map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
-  RCP<BinaryTreeNode>       					   sroot_;          // slave root treenode
-  RCP<BinaryTreeNode>       					   mroot_;          // master root treenode
-  double															   minlengthele_;		// minimum of length of fe-elements
-  const int                 					   dim_;            // problem dimension (2D or 3D)
-  double 															   eps_;						// epsilon for enlarging dops (of user)
-  double															   enlarge_;				// to enlarge dops
-  Epetra_SerialDenseMatrix  					   dopnormals_;     // defining vertices of DOP
-  int                       					   kdop_;           // sets k for DOP (8 for 2D, 18 for 3D)
+  DRT::Discretization&                    idiscret_;       // mortar interface discretization
+  RCP<Epetra_Map>                        selements_;      // all slave elements on surface (column map)
+  RCP<Epetra_Map>                        melements_;      // all master elements on surface (full map)
+  vector<vector<RCP<BinaryTreeNode> > >  streenodesmap_;  // map of all slave treenodes, sorted by layers
+  vector<vector<RCP<BinaryTreeNode> > >  mtreenodesmap_;  // map of all master treenodes, sorted by layers
+  vector<vector<RCP<BinaryTreeNode> > >  couplingmap_;    // map of all treenodes, that possibly couple, st/mt
+  vector<vector<RCP<BinaryTreeNode> > >  sleafsmap_;      // map of all slave leaf treenodes, [0]=leftchild,[1]=rightchild
+  vector<vector<RCP<BinaryTreeNode> > >  mleafsmap_;      // map of all master leaf treenodes, [0]=leftchild,[1]=rightlchild
+  RCP<BinaryTreeNode>                    sroot_;          // slave root treenode
+  RCP<BinaryTreeNode>                    mroot_;          // master root treenode
+  double                                 minlengthele_;    // minimum of length of fe-elements
+  const int                              dim_;            // problem dimension (2D or 3D)
+  double                                  eps_;            // epsilon for enlarging dops (of user)
+  double                                 enlarge_;        // to enlarge dops
+  Epetra_SerialDenseMatrix               dopnormals_;     // defining vertices of DOP
+  int                                    kdop_;           // sets k for DOP (8 for 2D, 18 for 3D)
 
 }; // class BinaryTree
 }  // namespace MORTAR

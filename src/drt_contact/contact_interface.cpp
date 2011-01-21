@@ -78,9 +78,9 @@ friction_(false)
   // check for redundant slave storage
   // (needed for self contact but not wanted for general contact)
   if (selfcontact_ && !redundant)
-  	dserror("ERROR: We need redundant interface storage for self contact");
+    dserror("ERROR: We need redundant interface storage for self contact");
   if (!selfcontact_ && redundant)
-  	dserror("ERROR: We do not want redundant interface storage for contact");
+    dserror("ERROR: We do not want redundant interface storage for contact");
 
   return;
 }
@@ -111,8 +111,8 @@ void CONTACT::CoInterface::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
 {
-	idiscret_->AddNode(cnode);
-	return;
+  idiscret_->AddNode(cnode);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -120,12 +120,12 @@ void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
 {
-	// check for quadratic 3d slave elements to be modified
+  // check for quadratic 3d slave elements to be modified
   if (cele->IsSlave() && (cele->Shape()==DRT::Element::quad8 || cele->Shape()==DRT::Element::tri6))
-  	quadslave3d_=true;
+    quadslave3d_=true;
 
-	idiscret_->AddElement(cele);
-	return;
+  idiscret_->AddElement(cele);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -133,29 +133,29 @@ void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::Redistribute(int index)
 {
-	// we need PARALLEL and PARMETIS defined for this
+  // we need PARALLEL and PARMETIS defined for this
 #if !defined(PARALLEL) || !defined(PARMETIS)
-	dserror("ERROR: Redistribution of mortar interface needs PARMETIS");
+  dserror("ERROR: Redistribution of mortar interface needs PARMETIS");
 #endif
 
-	// make sure we are supposed to be here
-	if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
-		dserror("ERROR: You are not supposed to be here...");
-	
-	// some local variables
+  // make sure we are supposed to be here
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
+    dserror("ERROR: You are not supposed to be here...");
+  
+  // some local variables
   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-	const int myrank  = comm->MyPID();
-	const int numproc = comm->NumProc();
-	Epetra_Time time(*comm);
-	set<int>::const_iterator iter;
+  const int myrank  = comm->MyPID();
+  const int numproc = comm->NumProc();
+  Epetra_Time time(*comm);
+  set<int>::const_iterator iter;
 
-	// vector containing all proc ids
+  // vector containing all proc ids
   vector<int> allproc(numproc);
   for (int i=0; i<numproc; ++i) allproc[i] = i;
 
-	//**********************************************************************
-	// (1) SLAVE splitting in close / non-close parts
-	//**********************************************************************
+  //**********************************************************************
+  // (1) SLAVE splitting in close / non-close parts
+  //**********************************************************************
   // perform contact search (still with non-optimal distribution)
   Initialize();
   if (SearchAlg()==INPAR::MORTAR::search_bfele)           EvaluateSearchBruteForce(SearchParam());
@@ -170,7 +170,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // loop over all row elements to gather the local information
   for (int i=0; i<SlaveRowElements()->NumMyElements(); ++i)
   {
-  	// get element
+    // get element
     int gid = SlaveRowElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
@@ -180,13 +180,13 @@ bool CONTACT::CoInterface::Redistribute(int index)
     int close = cele->MoData().NumSearchElements();
     if (close > 0)
     {
-    	closeele.push_back(gid);
-    	for (int k=0;k<cele->NumNode();++k) localcns.push_back(cele->NodeIds()[k]);
+      closeele.push_back(gid);
+      for (int k=0;k<cele->NumNode();++k) localcns.push_back(cele->NodeIds()[k]);
     }
     else
     {
-    	noncloseele.push_back(gid);
-    	for (int k=0;k<cele->NumNode();++k) localfns.push_back(cele->NodeIds()[k]);
+      noncloseele.push_back(gid);
+      for (int k=0;k<cele->NumNode();++k) localfns.push_back(cele->NodeIds()[k]);
     }
   }
 
@@ -194,10 +194,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // (use standard slave column map)
   for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-  	int gid = SlaveColElements()->GID(i);
-		DRT::Element* ele = Discret().gElement(gid);
-		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    int gid = SlaveColElements()->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -212,163 +212,163 @@ bool CONTACT::CoInterface::Redistribute(int index)
     dserror("ERROR: Redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
-	// (2) SPECIAL CASES and output to screen
-	//**********************************************************************
+  // (2) SPECIAL CASES and output to screen
+  //**********************************************************************
   // print element overview
   if (!myrank)
   {
-  	int cl = scroweles->NumGlobalElements();
-  	int ncl = sncroweles->NumGlobalElements();
- 		int ma = mroweles->NumGlobalElements();
-  	cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
+    int cl = scroweles->NumGlobalElements();
+    int ncl = sncroweles->NumGlobalElements();
+     int ma = mroweles->NumGlobalElements();
+    cout << "Element overview: " << cl << " / " << ncl << " / " << ma << "  (close-S / non-close-S / M)";
   }
 
-	// print old parallel distribution
-	PrintParallelDistribution(index);
+  // print old parallel distribution
+  PrintParallelDistribution(index);
 
   // use simple base class method if there are ONLY close elements
   // (return value TRUE, because redistribution performed)
   if (scroweles->NumGlobalElements()==0 || sncroweles->NumGlobalElements()==0)
   {
-  	MORTAR::MortarInterface::Redistribute();
-  	return true;
+    MORTAR::MortarInterface::Redistribute();
+    return true;
   }
 
   //**********************************************************************
-	// (3a) PREPARATIONS decide how many procs are used
-	//**********************************************************************
-	// first we assume that all procs will be used
-	int scproc = numproc;
-	int sncproc = numproc;
-	int mproc = numproc;
-	
-	// minimum number of elements per proc
-	int minele = IParams().get<int>("MIN_ELEPROC");
-	
-	// calculate real number of procs to be used
-	if (minele > 0)
-	{
-		scproc  = static_cast<int>((scroweles->NumGlobalElements()) / minele);
-		sncproc = static_cast<int>((sncroweles->NumGlobalElements()) / minele);
-		mproc   = static_cast<int>((mroweles->NumGlobalElements()) / minele);
-		if (scroweles->NumGlobalElements() < 2*minele)  scproc = 1;
-		if (sncroweles->NumGlobalElements() < 2*minele) sncproc = 1;
-		if (mroweles->NumGlobalElements() < 2*minele)   mproc = 1;
-		if (scproc > numproc)  scproc = numproc;
-		if (sncproc > numproc) sncproc = numproc;
-		if (mproc > numproc)   mproc = numproc;
-	}
+  // (3a) PREPARATIONS decide how many procs are used
+  //**********************************************************************
+  // first we assume that all procs will be used
+  int scproc = numproc;
+  int sncproc = numproc;
+  int mproc = numproc;
+  
+  // minimum number of elements per proc
+  int minele = IParams().get<int>("MIN_ELEPROC");
+  
+  // calculate real number of procs to be used
+  if (minele > 0)
+  {
+    scproc  = static_cast<int>((scroweles->NumGlobalElements()) / minele);
+    sncproc = static_cast<int>((sncroweles->NumGlobalElements()) / minele);
+    mproc   = static_cast<int>((mroweles->NumGlobalElements()) / minele);
+    if (scroweles->NumGlobalElements() < 2*minele)  scproc = 1;
+    if (sncroweles->NumGlobalElements() < 2*minele) sncproc = 1;
+    if (mroweles->NumGlobalElements() < 2*minele)   mproc = 1;
+    if (scproc > numproc)  scproc = numproc;
+    if (sncproc > numproc) sncproc = numproc;
+    if (mproc > numproc)   mproc = numproc;
+  }
 
   // print message
-	if (!myrank)
-	{
-	  cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
-	  cout << "\nRedistributing interface using 3-PARMETIS.......";
-	}
+  if (!myrank)
+  {
+    cout << "\nProcs used for redistribution: " << scproc << " / " << sncproc << " / " << mproc << " (close-S / non-close-S / M)";
+    cout << "\nRedistributing interface using 3-PARMETIS.......";
+  }
 
   //**********************************************************************
-	// (3b) PREPARATIONS build initial node graph
-	//**********************************************************************
-	// create graph object
-	Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*SlaveRowNodes(),108,false));
+  // (3b) PREPARATIONS build initial node graph
+  //**********************************************************************
+  // create graph object
+  Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*SlaveRowNodes(),108,false));
 
-	// loop over all row nodes to fill graph
-	for (int k=0;k<SlaveRowNodes()->NumMyElements();++k)
-	{
-		int gid = SlaveRowNodes()->GID(k);
-		DRT::Node* node = Discret().gNode(gid);
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+  // loop over all row nodes to fill graph
+  for (int k=0;k<SlaveRowNodes()->NumMyElements();++k)
+  {
+    int gid = SlaveRowNodes()->GID(k);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 
-		// find adjacent elements first
-		for (int k=0;k<node->NumElement();++k)
-		{
-			// store adjacent nodes
-			DRT::Element* ele = node->Elements()[k];
-			int numnode = ele->NumNode();
-			vector<int> nodeids(numnode);
-			for (int n=0;n<numnode;++n) nodeids[n] = ele->NodeIds()[n];
+    // find adjacent elements first
+    for (int k=0;k<node->NumElement();++k)
+    {
+      // store adjacent nodes
+      DRT::Element* ele = node->Elements()[k];
+      int numnode = ele->NumNode();
+      vector<int> nodeids(numnode);
+      for (int n=0;n<numnode;++n) nodeids[n] = ele->NodeIds()[n];
 
-			int err = graph->InsertGlobalIndices(gid,numnode,&nodeids[0]);
-			if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
-			if (err==1) dserror("graph->InsertGlobalIndices returned %d",err);
-		}
-	}
+      int err = graph->InsertGlobalIndices(gid,numnode,&nodeids[0]);
+      if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+      if (err==1) dserror("graph->InsertGlobalIndices returned %d",err);
+    }
+  }
 
-	// fill graph and optimize storage
-	graph->FillComplete();
-	graph->OptimizeStorage();
+  // fill graph and optimize storage
+  graph->FillComplete();
+  graph->OptimizeStorage();
 
-	//**********************************************************************
-	// (4) CLOSE SLAVE redistribution
-	//**********************************************************************
-	RCP<Epetra_Map> scrownodes = Teuchos::null;
-	RCP<Epetra_Map> sccolnodes = Teuchos::null;
+  //**********************************************************************
+  // (4) CLOSE SLAVE redistribution
+  //**********************************************************************
+  RCP<Epetra_Map> scrownodes = Teuchos::null;
+  RCP<Epetra_Map> sccolnodes = Teuchos::null;
 
-	// build redundant vector of all close slave node ids on all procs
-	// (there must not be any double entries in the node lists, thus
-	// transform to sets and then back to vectors)
-	vector<int> globalcns;
-	set<int> setglobalcns;
-	vector<int> scnids;
-	LINALG::Gather<int>(localcns,globalcns,numproc,&allproc[0],Comm());
-	for (int i=0;i<(int)globalcns.size();++i) setglobalcns.insert(globalcns[i]);
-	for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter) scnids.push_back(*iter);
+  // build redundant vector of all close slave node ids on all procs
+  // (there must not be any double entries in the node lists, thus
+  // transform to sets and then back to vectors)
+  vector<int> globalcns;
+  set<int> setglobalcns;
+  vector<int> scnids;
+  LINALG::Gather<int>(localcns,globalcns,numproc,&allproc[0],Comm());
+  for (int i=0;i<(int)globalcns.size();++i) setglobalcns.insert(globalcns[i]);
+  for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter) scnids.push_back(*iter);
 
-	//**********************************************************************
-	// call PARMETIS (again with #ifdef to be on the safe side)
+  //**********************************************************************
+  // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
 #endif
-	//**********************************************************************
+  //**********************************************************************
 
-	//**********************************************************************
-	// (5) NON-CLOSE SLAVE redistribution
-	//**********************************************************************
-	RCP<Epetra_Map> sncrownodes = Teuchos::null;
-	RCP<Epetra_Map> snccolnodes = Teuchos::null;
+  //**********************************************************************
+  // (5) NON-CLOSE SLAVE redistribution
+  //**********************************************************************
+  RCP<Epetra_Map> sncrownodes = Teuchos::null;
+  RCP<Epetra_Map> snccolnodes = Teuchos::null;
 
-	// build redundant vector of all non-close slave node ids on all procs
-	// (there must not be any double entries in the node lists, thus
-	// transform to sets and then back to vectors)
-	vector<int> globalfns;
-	set<int> setglobalfns;
-	vector<int> sncnids;
-	LINALG::Gather<int>(localfns,globalfns,numproc,&allproc[0],Comm());
-	for (int i=0;i<(int)globalfns.size();++i) setglobalfns.insert(globalfns[i]);
-	for (iter=setglobalfns.begin();iter!=setglobalfns.end();++iter) sncnids.push_back(*iter);
+  // build redundant vector of all non-close slave node ids on all procs
+  // (there must not be any double entries in the node lists, thus
+  // transform to sets and then back to vectors)
+  vector<int> globalfns;
+  set<int> setglobalfns;
+  vector<int> sncnids;
+  LINALG::Gather<int>(localfns,globalfns,numproc,&allproc[0],Comm());
+  for (int i=0;i<(int)globalfns.size();++i) setglobalfns.insert(globalfns[i]);
+  for (iter=setglobalfns.begin();iter!=setglobalfns.end();++iter) sncnids.push_back(*iter);
 
-	//**********************************************************************
-	// call PARMETIS (again with #ifdef to be on the safe side)
+  //**********************************************************************
+  // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
 #endif
-	//**********************************************************************
+  //**********************************************************************
 
-	//**********************************************************************
-	// (6) MASTER redistribution
-	//**********************************************************************
-	RCP<Epetra_Map> mrownodes = Teuchos::null;
-	RCP<Epetra_Map> mcolnodes = Teuchos::null;
+  //**********************************************************************
+  // (6) MASTER redistribution
+  //**********************************************************************
+  RCP<Epetra_Map> mrownodes = Teuchos::null;
+  RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-	// build redundant vector of all master node ids on all procs
-	// (do not include crosspoints / boundary nodes if there are any)
-	vector<int> mnids;
-	vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
-	for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
-		mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
-	LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
+  // build redundant vector of all master node ids on all procs
+  // (do not include crosspoints / boundary nodes if there are any)
+  vector<int> mnids;
+  vector<int> mnidslocal(MasterRowNodesNoBound()->NumMyElements());
+  for (int i=0; i<MasterRowNodesNoBound()->NumMyElements(); ++i)
+    mnidslocal[i] = MasterRowNodesNoBound()->GID(i);
+  LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
 
-	//**********************************************************************
-	// call PARMETIS (again with #ifdef to be on the safe side)
+  //**********************************************************************
+  // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-	DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
 #endif
-	//**********************************************************************
+  //**********************************************************************
 
-	//**********************************************************************
-	// (7) Merge global interface node row and column map
-	//**********************************************************************
-	// merge slave node row map from close and non-close parts
+  //**********************************************************************
+  // (7) Merge global interface node row and column map
+  //**********************************************************************
+  // merge slave node row map from close and non-close parts
   RCP<Epetra_Map> srownodes = Teuchos::null;
 
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
@@ -383,94 +383,94 @@ bool CONTACT::CoInterface::Redistribute(int index)
     set<int> intersec;
     for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter)
     {
-    	set<int>::const_iterator found = setglobalfns.find(*iter);
-    	if (found!=setglobalfns.end()) intersec.insert(*found);
+      set<int>::const_iterator found = setglobalfns.find(*iter);
+      if (found!=setglobalfns.end()) intersec.insert(*found);
     }
 
     // build slave node row map
-  	vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
-  	int count = scrownodes->NumMyElements();
+    vector<int> mygids(scrownodes->NumMyElements() + sncrownodes->NumMyElements());
+    int count = scrownodes->NumMyElements();
 
-  	// first get GIDs of input scrownodes
-		for (int i=0;i<count;++i) mygids[i] = scrownodes->GID(i);
+    // first get GIDs of input scrownodes
+    for (int i=0;i<count;++i) mygids[i] = scrownodes->GID(i);
 
-		// then add GIDs of input sncrownodes (only new ones)
-		for (int i=0;i<sncrownodes->NumMyElements();++i)
-		{
-			// check for intersection gid
-			// don't do anything for intersection gids (scrownodes dominates!!!)
-			set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
-			if (found!=intersec.end()) continue;
+    // then add GIDs of input sncrownodes (only new ones)
+    for (int i=0;i<sncrownodes->NumMyElements();++i)
+    {
+      // check for intersection gid
+      // don't do anything for intersection gids (scrownodes dominates!!!)
+      set<int>::const_iterator found = intersec.find(sncrownodes->GID(i));
+      if (found!=intersec.end()) continue;
 
-			// check for overlap
-			if (scrownodes->MyGID(sncrownodes->GID(i)))
-				dserror("LINALG::MergeMap: Result map is overlapping");
+      // check for overlap
+      if (scrownodes->MyGID(sncrownodes->GID(i)))
+        dserror("LINALG::MergeMap: Result map is overlapping");
 
-			// add new GIDs to mygids
-			mygids[count]=sncrownodes->GID(i);
-			++count;
-		}
-		mygids.resize(count);
-		sort(mygids.begin(),mygids.end());
-		srownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,scrownodes->Comm()));
+      // add new GIDs to mygids
+      mygids[count]=sncrownodes->GID(i);
+      ++count;
+    }
+    mygids.resize(count);
+    sort(mygids.begin(),mygids.end());
+    srownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,scrownodes->Comm()));
   }
 
-	// merge interface node row map from slave and master parts
-	RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
+  // merge interface node row map from slave and master parts
+  RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes,mrownodes,false);
 
-	// IMPORTANT NOTE:
-	// While merging from the two different slave parts of the discretization
-	// (close slave, non-close slave) is feasible for the node row map,
-	// this is not possible for the node column map. Some necessary
-	// information on ghosting at the transition between close and non-close
-	// slave region would always be missed! Thus, we reconstruct a
-	// suitable slave node column map "by hand" here. This is quite simply
-	// done by exporting the initial node graph to the new distribution
-	// and by then asking for its column map.
+  // IMPORTANT NOTE:
+  // While merging from the two different slave parts of the discretization
+  // (close slave, non-close slave) is feasible for the node row map,
+  // this is not possible for the node column map. Some necessary
+  // information on ghosting at the transition between close and non-close
+  // slave region would always be missed! Thus, we reconstruct a
+  // suitable slave node column map "by hand" here. This is quite simply
+  // done by exporting the initial node graph to the new distribution
+  // and by then asking for its column map.
 
-	 // create the output graph (with new slave node row map) and export to it
-	 RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(Copy,*srownodes,108,false));
-	 Epetra_Export exporter(graph->RowMap(),*srownodes);
-	 int err = outgraph->Export(*graph,exporter,Add);
-	 if (err<0) dserror("Graph export returned err=%d",err);
+   // create the output graph (with new slave node row map) and export to it
+   RCP<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(Copy,*srownodes,108,false));
+   Epetra_Export exporter(graph->RowMap(),*srownodes);
+   int err = outgraph->Export(*graph,exporter,Add);
+   if (err<0) dserror("Graph export returned err=%d",err);
 
-	// trash old graph
-	graph=null;
+  // trash old graph
+  graph=null;
 
-	// call fill complete and optimize storage
-	outgraph->FillComplete();
-	outgraph->OptimizeStorage();
+  // call fill complete and optimize storage
+  outgraph->FillComplete();
+  outgraph->OptimizeStorage();
 
-	// get column map from the graph -> build slave node column map
-	// (do stupid conversion from Epetra_BlockMap to Epetra_Map)
-	const Epetra_BlockMap& bcol = outgraph->ColMap();
-	RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),bcol.NumMyElements(),bcol.MyGlobalElements(),0,Comm()));
+  // get column map from the graph -> build slave node column map
+  // (do stupid conversion from Epetra_BlockMap to Epetra_Map)
+  const Epetra_BlockMap& bcol = outgraph->ColMap();
+  RCP<Epetra_Map> scolnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),bcol.NumMyElements(),bcol.MyGlobalElements(),0,Comm()));
 
-	// trash new graph
-	outgraph=null;
-	
-	// merge interface node column map from slave and master parts
-	RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
+  // trash new graph
+  outgraph=null;
+  
+  // merge interface node column map from slave and master parts
+  RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes,mcolnodes,false);
 
-	//**********************************************************************
-	// (8) Get partitioning information into discretization
-	//**********************************************************************
-	// build reasonable element maps from the already valid and final node maps
-	// (note that nothing is actually redistributed in here)
-	RCP<Epetra_Map> roweles  = Teuchos::null;
-	RCP<Epetra_Map> coleles  = Teuchos::null;
-	Discret().BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+  //**********************************************************************
+  // (8) Get partitioning information into discretization
+  //**********************************************************************
+  // build reasonable element maps from the already valid and final node maps
+  // (note that nothing is actually redistributed in here)
+  RCP<Epetra_Map> roweles  = Teuchos::null;
+  RCP<Epetra_Map> coleles  = Teuchos::null;
+  Discret().BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
 
-	// export nodes and elements to the row map
-	Discret().ExportRowNodes(*rownodes);
-	Discret().ExportRowElements(*roweles);
+  // export nodes and elements to the row map
+  Discret().ExportRowNodes(*rownodes);
+  Discret().ExportRowElements(*roweles);
 
-	// export nodes and elements to the column map (create ghosting)
-	Discret().ExportColumnNodes(*colnodes);
-	Discret().ExportColumnElements(*coleles);
+  // export nodes and elements to the column map (create ghosting)
+  Discret().ExportColumnNodes(*colnodes);
+  Discret().ExportColumnElements(*coleles);
 
-	// print message
-	if (!myrank) cout << "done!" << endl;
+  // print message
+  if (!myrank) cout << "done!" << endl;
 
   return true;
 }
@@ -483,7 +483,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
   // loop over proc's column slave elements of the interface
   for (int i=0; i<selecolmap_->NumMyElements();++i)
   {
-  	int gid1 = selecolmap_->GID(i);
+    int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CoElement* selement = static_cast<CoElement*>(ele1);
@@ -500,7 +500,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
     if (add && selement->Owner()==Comm().MyPID()) crowele += 1;
   }
   
-  return;	
+  return;  
 }
 
 /*----------------------------------------------------------------------*
@@ -685,10 +685,10 @@ void CONTACT::CoInterface::Initialize()
   // (use standard slave column map)
   for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-  	int gid = SlaveColElements()->GID(i);
-		DRT::Element* ele = Discret().gElement(gid);
-		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    int gid = SlaveColElements()->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -701,32 +701,32 @@ void CONTACT::CoInterface::Initialize()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::SetElementAreas()
 {
-	//**********************************************************************
-	// In general, it is sufficient to compute element areas only for
-	// all elements in the standard slave column map. However, self contact
-	// is an exception here and we need the element areas of all elements
-	// (slave and master) in the fully overlapping column map there. At the
-	// same time we initialize the element data containers for self contact.
-	//**********************************************************************
+  //**********************************************************************
+  // In general, it is sufficient to compute element areas only for
+  // all elements in the standard slave column map. However, self contact
+  // is an exception here and we need the element areas of all elements
+  // (slave and master) in the fully overlapping column map there. At the
+  // same time we initialize the element data containers for self contact.
+  //**********************************************************************
 
-	if (SelfContact())
-	{
-		// loop over all elements to set current element length / area
-		// (use fully overlapping column map)
-		for (int i=0;i<idiscret_->NumMyColElements();++i)
-		{
-			MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
-			element->InitializeDataContainer();
-			element->MoData().Area()=element->ComputeArea();
-		}
-	}
-	else
-	{
-		// refer call back to base class version
-		MORTAR::MortarInterface::SetElementAreas();
-	}
+  if (SelfContact())
+  {
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      element->InitializeDataContainer();
+      element->MoData().Area()=element->ComputeArea();
+    }
+  }
+  else
+  {
+    // refer call back to base class version
+    MORTAR::MortarInterface::SetElementAreas();
+  }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -734,30 +734,30 @@ void CONTACT::CoInterface::SetElementAreas()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::ExportNodalNormals()
 {
-	// create empty data objects
-	map<int,RCP<Epetra_SerialDenseMatrix> > triad;
+  // create empty data objects
+  map<int,RCP<Epetra_SerialDenseMatrix> > triad;
 
-	map<int,vector<int> > n_x_key;
-	map<int,vector<int> > n_y_key;
-	map<int,vector<int> > n_z_key;
-	map<int,vector<int> > txi_x_key;
-	map<int,vector<int> > txi_y_key;
-	map<int,vector<int> > txi_z_key;
-	map<int,vector<int> > teta_x_key;
-	map<int,vector<int> > teta_y_key;
-	map<int,vector<int> > teta_z_key;
+  map<int,vector<int> > n_x_key;
+  map<int,vector<int> > n_y_key;
+  map<int,vector<int> > n_z_key;
+  map<int,vector<int> > txi_x_key;
+  map<int,vector<int> > txi_y_key;
+  map<int,vector<int> > txi_z_key;
+  map<int,vector<int> > teta_x_key;
+  map<int,vector<int> > teta_y_key;
+  map<int,vector<int> > teta_z_key;
 
-	map<int,vector<double> > n_x_val;
-	map<int,vector<double> > n_y_val;
-	map<int,vector<double> > n_z_val;
-	map<int,vector<double> > txi_x_val;
-	map<int,vector<double> > txi_y_val;
-	map<int,vector<double> > txi_z_val;
-	map<int,vector<double> > teta_x_val;
-	map<int,vector<double> > teta_y_val;
-	map<int,vector<double> > teta_z_val;
+  map<int,vector<double> > n_x_val;
+  map<int,vector<double> > n_y_val;
+  map<int,vector<double> > n_z_val;
+  map<int,vector<double> > txi_x_val;
+  map<int,vector<double> > txi_y_val;
+  map<int,vector<double> > txi_z_val;
+  map<int,vector<double> > teta_x_val;
+  map<int,vector<double> > teta_y_val;
+  map<int,vector<double> > teta_z_val;
 
-	map<int,double>::iterator iter;
+  map<int,double>::iterator iter;
 
   // build info on row map
   for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
@@ -773,11 +773,11 @@ void CONTACT::CoInterface::ExportNodalNormals()
     (*loc)(1,0) = cnode->MoData().n()[1];
     (*loc)(2,0) = cnode->MoData().n()[2];
     (*loc)(0,1) = cnode->CoData().txi()[0];
-		(*loc)(1,1) = cnode->CoData().txi()[1];
-		(*loc)(2,1) = cnode->CoData().txi()[2];
-		(*loc)(0,2) = cnode->CoData().teta()[0];
-		(*loc)(1,2) = cnode->CoData().teta()[1];
-		(*loc)(2,2) = cnode->CoData().teta()[2];
+    (*loc)(1,1) = cnode->CoData().txi()[1];
+    (*loc)(2,1) = cnode->CoData().txi()[2];
+    (*loc)(0,2) = cnode->CoData().teta()[0];
+    (*loc)(1,2) = cnode->CoData().teta()[1];
+    (*loc)(2,2) = cnode->CoData().teta()[2];
 
     triad[gid] = loc;
 
@@ -788,50 +788,50 @@ void CONTACT::CoInterface::ExportNodalNormals()
 
     for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
     {
-    	n_x_key[gid].push_back(iter->first);
-    	n_x_val[gid].push_back(iter->second);
+      n_x_key[gid].push_back(iter->first);
+      n_x_val[gid].push_back(iter->second);
     }
     for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
     {
-    	n_y_key[gid].push_back(iter->first);
-    	n_y_val[gid].push_back(iter->second);
+      n_y_key[gid].push_back(iter->first);
+      n_y_val[gid].push_back(iter->second);
     }
     for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
     {
-    	n_z_key[gid].push_back(iter->first);
-    	n_z_val[gid].push_back(iter->second);
+      n_z_key[gid].push_back(iter->first);
+      n_z_val[gid].push_back(iter->second);
     }
 
     for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
     {
-    	txi_x_key[gid].push_back(iter->first);
-    	txi_x_val[gid].push_back(iter->second);
+      txi_x_key[gid].push_back(iter->first);
+      txi_x_val[gid].push_back(iter->second);
     }
     for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
     {
-    	txi_y_key[gid].push_back(iter->first);
-    	txi_y_val[gid].push_back(iter->second);
+      txi_y_key[gid].push_back(iter->first);
+      txi_y_val[gid].push_back(iter->second);
     }
     for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
     {
-    	txi_z_key[gid].push_back(iter->first);
-    	txi_z_val[gid].push_back(iter->second);
+      txi_z_key[gid].push_back(iter->first);
+      txi_z_val[gid].push_back(iter->second);
     }
 
     for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
     {
-    	teta_x_key[gid].push_back(iter->first);
-    	teta_x_val[gid].push_back(iter->second);
+      teta_x_key[gid].push_back(iter->first);
+      teta_x_val[gid].push_back(iter->second);
     }
     for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
     {
-    	teta_y_key[gid].push_back(iter->first);
-    	teta_y_val[gid].push_back(iter->second);
+      teta_y_key[gid].push_back(iter->first);
+      teta_y_val[gid].push_back(iter->second);
     }
     for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
     {
-    	teta_z_key[gid].push_back(iter->first);
-    	teta_z_val[gid].push_back(iter->second);
+      teta_z_key[gid].push_back(iter->first);
+      teta_z_val[gid].push_back(iter->second);
     }
   }
 
@@ -863,9 +863,9 @@ void CONTACT::CoInterface::ExportNodalNormals()
   // extract info on column map
   for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
   {
-  	// only do something for ghosted nodes
-  	int gid = snodecolmapbound_->GID(i);
-  	if (snoderowmapbound_->MyGID(gid)) continue;
+    // only do something for ghosted nodes
+    int gid = snodecolmapbound_->GID(i);
+    if (snoderowmapbound_->MyGID(gid)) continue;
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
@@ -877,16 +877,16 @@ void CONTACT::CoInterface::ExportNodalNormals()
     cnode->MoData().n()[1]    = (*loc)(1,0);
     cnode->MoData().n()[2]    = (*loc)(2,0);
     cnode->CoData().txi()[0]  = (*loc)(0,1);
-		cnode->CoData().txi()[1]  = (*loc)(1,1);
-		cnode->CoData().txi()[2]  = (*loc)(2,1);
-		cnode->CoData().teta()[0] = (*loc)(0,2);
-		cnode->CoData().teta()[1] = (*loc)(1,2);
-		cnode->CoData().teta()[2] = (*loc)(2,2);
+    cnode->CoData().txi()[1]  = (*loc)(1,1);
+    cnode->CoData().txi()[2]  = (*loc)(2,1);
+    cnode->CoData().teta()[0] = (*loc)(0,2);
+    cnode->CoData().teta()[1] = (*loc)(1,2);
+    cnode->CoData().teta()[2] = (*loc)(2,2);
 
-		// extract derivative info
-		vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
-		vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
-		vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+    // extract derivative info
+    vector<map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+    vector<map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+    vector<map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
 
     for (int k=0;k<(int)(derivn.size());++k)
       derivn[k].clear();
@@ -898,26 +898,26 @@ void CONTACT::CoInterface::ExportNodalNormals()
       derivteta[k].clear();
     derivteta.resize(3);
 
-		for (int k=0;k<(int)(n_x_key[gid].size());++k)
-			(cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
-		for (int k=0;k<(int)(n_y_key[gid].size());++k)
-			(cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
-		for (int k=0;k<(int)(n_z_key[gid].size());++k)
-			(cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+    for (int k=0;k<(int)(n_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+    for (int k=0;k<(int)(n_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+    for (int k=0;k<(int)(n_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
 
-		for (int k=0;k<(int)(txi_x_key[gid].size());++k)
-			(cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
-		for (int k=0;k<(int)(txi_y_key[gid].size());++k)
-			(cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
-		for (int k=0;k<(int)(txi_z_key[gid].size());++k)
-			(cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+    for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+    for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+    for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
 
-		for (int k=0;k<(int)(teta_x_key[gid].size());++k)
-			(cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
-		for (int k=0;k<(int)(teta_y_key[gid].size());++k)
-			(cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
-		for (int k=0;k<(int)(teta_z_key[gid].size());++k)
-			(cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+    for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+    for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+    for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+      (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
   }
 
   // free memory
@@ -946,47 +946,47 @@ void CONTACT::CoInterface::ExportNodalNormals()
   // print nodal normals
   /*for (int p=0;p<Comm().NumProc();++p)
   {
-  	// one proc after the other
-  	if (p==Comm().MyPID())
-  	{
-  		cout << "\n*****\nPROC " << p << "\n*****" << endl;
-  		for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
-			{
-				int gid = snodecolmapbound_->GID(i);
-				DRT::Node* node = idiscret_->gNode(gid);
-				if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-				CoNode* cnode = static_cast<CoNode*>(node);
+    // one proc after the other
+    if (p==Comm().MyPID())
+    {
+      cout << "\n*****\nPROC " << p << "\n*****" << endl;
+      for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+      {
+        int gid = snodecolmapbound_->GID(i);
+        DRT::Node* node = idiscret_->gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CoNode* cnode = static_cast<CoNode*>(node);
 
-				// print normal and tangents at each slave node
-				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
-						 << " Normal: " << cnode->MoData().n()[0]
-				     << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
-				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
-						 << " TXi: " << cnode->CoData().txi()[0]
-						 << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << endl;
-				cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
-						 << " TEta: " << cnode->CoData().teta()[0]
-						 << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << endl;
+        // print normal and tangents at each slave node
+        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+             << " Normal: " << cnode->MoData().n()[0]
+             << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
+        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+             << " TXi: " << cnode->CoData().txi()[0]
+             << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << endl;
+        cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
+             << " TEta: " << cnode->CoData().teta()[0]
+             << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << endl;
 
-				// print linearizations at each slave node
-				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
-				for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
-					cout << "\n" << iter->first << "\t" << iter->second;
-				cout << endl;
-				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
-				for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
-					cout << "\n" << iter->first << "\t" << iter->second;
-				cout << endl;
-				cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
-				for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
-					cout << "\n" << iter->first << "\t" << iter->second;
-				cout << endl;
-			}
-  		cout << endl << endl;
-  	}
+        // print linearizations at each slave node
+        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
+        for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
+          cout << "\n" << iter->first << "\t" << iter->second;
+        cout << endl;
+        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
+        for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
+          cout << "\n" << iter->first << "\t" << iter->second;
+        cout << endl;
+        cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
+        for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
+          cout << "\n" << iter->first << "\t" << iter->second;
+        cout << endl;
+      }
+      cout << endl << endl;
+    }
 
-  	// barrier
-  	Comm().Barrier();
+    // barrier
+    Comm().Barrier();
   }*/
 
   return;
@@ -1009,7 +1009,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   // -> In this case we only have to call SearchContactCombined(), which
   //    does both bottom-up update and search. Then the dynamics master/slave
   //    assignment routine UpdateMasterSlaveSets() is called and the new
-	//    slave nodes' data containers are initialized.
+  //    slave nodes' data containers are initialized.
   //
   // *********************************************************************
   if (SelfContact())
@@ -1093,8 +1093,8 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 {
-	//**********************************************************************
-	dserror("ERROR: IntegrateSlave method is outdated!");
+  //**********************************************************************
+  dserror("ERROR: IntegrateSlave method is outdated!");
   //**********************************************************************
 
   // create a CONTACT integrator instance with correct NumGP and Dim
@@ -3044,7 +3044,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CoNode* csnode = static_cast<CoNode*>(snode);
 
       // Mortar matrix D derivatives
-    	map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
  
       // inner product D_{jk,c} * z_j for index j
@@ -3091,7 +3091,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       CoNode* cmnode = static_cast<CoNode*>(mnode);
       
       // Mortar matrix M derivatives
-    	map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
  
       // inner product M_{jl,c} * z_j for index j
@@ -3270,7 +3270,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     vector<map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
     vector<map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
 
-   for (int j=0;j<Dim()-1;++j)
+    for (int j=0;j<Dim()-1;++j)
       if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
         dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
 
@@ -3312,8 +3312,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       jumpteta += teta[dim]*jump[dim];
     }
 
-     // check for dimensions
-     if(Dim()==2 and (jumpteta != 0.0))
+    // check for dimensions
+    if(Dim()==2 and (jumpteta != 0.0))
       dserror ("ERROR: AssembleLinStick: jumpteta must be zero in 2D");
 
     // Entries on right hand side
@@ -5234,24 +5234,24 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::BuildActiveSet(bool init)
 {
-	// define local variables
-	vector<int> mynodegids(0);
-	vector<int> mydofgids(0);
-	vector<int> myslipnodegids(0);
-	vector<int> myslipdofgids(0);
+  // define local variables
+  vector<int> mynodegids(0);
+  vector<int> mydofgids(0);
+  vector<int> myslipnodegids(0);
+  vector<int> myslipdofgids(0);
 
-	// loop over all slave nodes
-	for (int i=0;i<snoderowmap_->NumMyElements();++i)
-	{
-		int gid = snoderowmap_->GID(i);
-		DRT::Node* node = idiscret_->gNode(gid);
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		CoNode* cnode = static_cast<CoNode*>(node);
-		const int numdof = cnode->NumDof();
+  // loop over all slave nodes
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+    const int numdof = cnode->NumDof();
 
     // *******************************************************************
     // INITIALIZATION OF THE ACTIVE SET (t=0)
-		// *******************************************************************
+    // *******************************************************************
     // This is given by the CoNode member variable IsInitActive(), which
     // has been introduced via the contact conditions in the input file.
     // Thus, if no design line has been chosen to be active at t=0,
@@ -5260,66 +5260,66 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
     // the corresponding CoNodes are put into an initial active set!
     // This yields a very flexible solution for contact initialization.
     // *******************************************************************
-		if (init)
-		{
-			// check if node is initially active
-			if (cnode->IsInitActive())
-			{
-				cnode->Active()=true;
-				mynodegids.push_back(cnode->Id());
+    if (init)
+    {
+      // check if node is initially active
+      if (cnode->IsInitActive())
+      {
+        cnode->Active()=true;
+        mynodegids.push_back(cnode->Id());
 
-				for (int j=0;j<numdof;++j)
-					mydofgids.push_back(cnode->Dofs()[j]);
-			}
+        for (int j=0;j<numdof;++j)
+          mydofgids.push_back(cnode->Dofs()[j]);
+      }
 
-			// check if frictional node is initially in slip state
-			if (friction_)
-			{
-				// do nothing: we always assume STICK at t=0
-			}
-		}
+      // check if frictional node is initially in slip state
+      if (friction_)
+      {
+        // do nothing: we always assume STICK at t=0
+      }
+    }
 
-		// *******************************************************************
-		// RE-BUILDING OF THE ACTIVE SET
-		// *******************************************************************
-		else
-		{
-			// check if node is active
-			if (cnode->Active())
-			{
-				mynodegids.push_back(cnode->Id());
+    // *******************************************************************
+    // RE-BUILDING OF THE ACTIVE SET
+    // *******************************************************************
+    else
+    {
+      // check if node is active
+      if (cnode->Active())
+      {
+        mynodegids.push_back(cnode->Id());
 
-				for (int j=0;j<numdof;++j)
-					mydofgids.push_back(cnode->Dofs()[j]);
-			}
+        for (int j=0;j<numdof;++j)
+          mydofgids.push_back(cnode->Dofs()[j]);
+      }
 
-			// check if frictional node is in slip state
-			if (friction_)
-			{
-				if (static_cast<FriNode*>(cnode)->FriData().Slip())
-				{
-					myslipnodegids.push_back(cnode->Id());
+      // check if frictional node is in slip state
+      if (friction_)
+      {
+        if (static_cast<FriNode*>(cnode)->FriData().Slip())
+        {
+          myslipnodegids.push_back(cnode->Id());
 
-					for (int j=0;j<numdof;++j)
-						myslipdofgids.push_back(cnode->Dofs()[j]);
-				}
-			}
-		}
-	}
+          for (int j=0;j<numdof;++j)
+            myslipdofgids.push_back(cnode->Dofs()[j]);
+        }
+      }
+    }
+  }
 
-	// create active node map and active dof map
-	activenodes_ = rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
-	activedofs_  = rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
+  // create active node map and active dof map
+  activenodes_ = rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
+  activedofs_  = rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
-	if (friction_)
-	{
-		// create slip node map and slip dof map
-		slipnodes_ = rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
-		slipdofs_  = rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
-	}
+  if (friction_)
+  {
+    // create slip node map and slip dof map
+    slipnodes_ = rcp(new Epetra_Map(-1,(int)myslipnodegids.size(),&myslipnodegids[0],0,Comm()));
+    slipdofs_  = rcp(new Epetra_Map(-1,(int)myslipdofgids.size(),&myslipdofgids[0],0,Comm()));
+  }
 
-	// split active dofs and slip dofs
-	SplitActiveDofs();
+  // split active dofs and slip dofs
+  SplitActiveDofs();
 
   return true;
 }

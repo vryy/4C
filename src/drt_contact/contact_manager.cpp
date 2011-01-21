@@ -373,40 +373,40 @@ discret_(discret)
   if(Comm().MyPID()==0) cout << "done!" << endl;
 
   //**********************************************************************
-	// create the solver strategy object
-	// and pass all necessary data to it
-	if(Comm().MyPID()==0)
-	{
-		cout << "Building contact strategy object............";
-		fflush(stdout);
-	}
-	INPAR::CONTACT::SolvingStrategy stype =
-			Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
-	if (stype == INPAR::CONTACT::solution_lagmult)
-		strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
-	else if (stype == INPAR::CONTACT::solution_penalty)
-		strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
-	else if (stype == INPAR::CONTACT::solution_auglag)
-		strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
-	else
-		dserror("Unrecognized strategy");
-	if(Comm().MyPID()==0) cout << "done!" << endl;
-	//**********************************************************************
+  // create the solver strategy object
+  // and pass all necessary data to it
+  if(Comm().MyPID()==0)
+  {
+    cout << "Building contact strategy object............";
+    fflush(stdout);
+  }
+  INPAR::CONTACT::SolvingStrategy stype =
+      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
+  if (stype == INPAR::CONTACT::solution_lagmult)
+    strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+  else if (stype == INPAR::CONTACT::solution_penalty)
+    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+  else if (stype == INPAR::CONTACT::solution_auglag)
+    strategy_ = rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+  else
+    dserror("Unrecognized strategy");
+  if(Comm().MyPID()==0) cout << "done!" << endl;
+  //**********************************************************************
 
-	// print initial parallel redistribution
-	for (int i=0; i<(int)interfaces.size();++i)
-		interfaces[i]->PrintParallelDistribution(i+1);
+  // print initial parallel redistribution
+  for (int i=0; i<(int)interfaces.size();++i)
+    interfaces[i]->PrintParallelDistribution(i+1);
 
-	// create binary search tree
-	for (int i=0; i<(int)interfaces.size();++i)
-		interfaces[i]->CreateSearchTree();
+  // create binary search tree
+  for (int i=0; i<(int)interfaces.size();++i)
+    interfaces[i]->CreateSearchTree();
 
-	// print parameter list to screen
-	if (Comm().MyPID()==0)
-	{
-		cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-		cout << GetStrategy().Params() << endl;
-	}
+  // print parameter list to screen
+  if (Comm().MyPID()==0)
+  {
+    cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
+    cout << GetStrategy().Params() << endl;
+  }
 
   return;
 }
@@ -501,12 +501,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   for (int k=0;k<(int)coco.size();++k)
   {
-  	const string* side = coco[k]->Get<string>("Side");
-  	if (*side == "Selfcontact") self = true;
+    const string* side = coco[k]->Get<string>("Side");
+    if (*side == "Selfcontact") self = true;
   }
 
   if (self == true &&
-  		Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
   
   // *********************************************************************
@@ -537,7 +537,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("ERROR: Wear coefficient only necessary in the context of wear.");
   
   if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
-  		Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
+      Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
     dserror("ERROR: Wear models only applicable to frictional contact.");
 
   if (Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none &&

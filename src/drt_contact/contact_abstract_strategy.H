@@ -136,16 +136,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     }
 
     /*!
-		\brief Return mortar matrix D
+    \brief Return mortar matrix D
 
-		*/
-		RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
-		
-		/*!
-		\brief Return mortar matrix M
+    */
+    RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
+    
+    /*!
+    \brief Return mortar matrix M
 
-		*/
-		RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
+    */
+    RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
 
     /*!
     \brief Return jump vector (t_n+1)
@@ -232,25 +232,25 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
 
-	  /*!
-	  \brief Return parallel redistribution status (yes or no)
+    /*!
+    \brief Return parallel redistribution status (yes or no)
 
-	  */
-	  bool ParRedist()
-	  {
-	  	INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+    */
+    bool ParRedist()
+    {
+      INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
       if (partype!=INPAR::MORTAR::parredist_none) return true;
       else return false;
-	  }
+    }
 
-	  /*!
-	  \brief Return specific parallel redistribution status
+    /*!
+    \brief Return specific parallel redistribution status
 
-	  */
+    */
     INPAR::MORTAR::ParRedist WhichParRedist()
     {
-    	return Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
-	  }
+      return Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+    }
     
     /*!
     \brief Return matrix A
@@ -309,9 +309,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
       const double t_end2 = Teuchos::Time::wallTime()-t_start2;
       if (Comm().MyPID()==0)
       {
-      	cout << "    -->Interfac:\t" << t_end2 << " seconds";
-      	if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0) cout << "\n";
-      	else cout << " (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
+        cout << "    -->Interfac:\t" << t_end2 << " seconds";
+        if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0) cout << "\n";
+        else cout << " (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
       }
 
       Comm().Barrier();
@@ -362,21 +362,21 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
 #else
       // mortar initialization and evaluation
-			SetState("displacement",dis);
-			InitEvalInterface();
-			InitEvalMortar();
+      SetState("displacement",dis);
+      InitEvalInterface();
+      InitEvalMortar();
 
-			// evaluate relative movement for friction
-			if (predictor) EvaluateRelMovPredict();
-			else           EvaluateRelMov();
+      // evaluate relative movement for friction
+      if (predictor) EvaluateRelMovPredict();
+      else           EvaluateRelMov();
 
-			// update active set
-			if (!predictor) UpdateActiveSetSemiSmooth();
+      // update active set
+      if (!predictor) UpdateActiveSetSemiSmooth();
 
-			// apply contact forces and stiffness
-			Initialize();
-			Evaluate(kt,f,dis);
-			InterfaceForces();
+      // apply contact forces and stiffness
+      Initialize();
+      Evaluate(kt,f,dis);
+      InterfaceForces();
 #endif // #ifdef CONTACTTIME
       return;
     }

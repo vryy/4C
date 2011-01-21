@@ -377,8 +377,8 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()
 {
-	// only initialize if not yet done
-	if (modata_==Teuchos::null)
+  // only initialize if not yet done
+  if (modata_==Teuchos::null)
     modata_=rcp(new MORTAR::MortarNodeDataContainer());
 
   return;
@@ -389,7 +389,7 @@ void MORTAR::MortarNode::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::ResetDataContainer()
 {
-	// reset to null
+  // reset to null
   modata_  = Teuchos::null;
 
   return;

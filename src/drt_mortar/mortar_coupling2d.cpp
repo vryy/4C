@@ -87,7 +87,7 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 const Epetra_Comm& MORTAR::Coupling2d::Comm() const
 {
-	return idiscret_.Comm();
+  return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*

@@ -47,7 +47,7 @@ using namespace Teuchos;
 // forward declarations
 namespace DRT
 {
-	class Discretization;
+  class Discretization;
 }
 
 namespace CONTACT

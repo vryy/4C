@@ -198,69 +198,69 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
-	// 2D modified quadratic shape functions (tri6)
-	// (used in combination with quadr dual LM field in 3D quadratic mortar)
-	// *********************************************************************
-	case MortarElement::quad2D_modified:
-	{
-		const double r=xi[0];
-		const double s=xi[1];
-		const double t1 = 1.0-r-s;
-		const double t2 = r;
-		const double t3 = s;
+  // 2D modified quadratic shape functions (tri6)
+  // (used in combination with quadr dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::quad2D_modified:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double t1 = 1.0-r-s;
+    const double t2 = r;
+    const double t3 = s;
 
-		LINALG::SerialDenseVector valtmp(NumNode(),1);
-		LINALG::SerialDenseMatrix derivtmp(NumNode(),2);
+    LINALG::SerialDenseVector valtmp(NumNode(),1);
+    LINALG::SerialDenseMatrix derivtmp(NumNode(),2);
 
-		valtmp[0] = t1*(2.0*t1-1.0);
-		valtmp[1] = t2*(2.0*t2-1.0);
-		valtmp[2] = t3*(2.0*t3-1.0);
-		valtmp[3] = 4.0*t2*t1;
-		valtmp[4] = 4.0*t2*t3;
-		valtmp[5] = 4.0*t3*t1;
+    valtmp[0] = t1*(2.0*t1-1.0);
+    valtmp[1] = t2*(2.0*t2-1.0);
+    valtmp[2] = t3*(2.0*t3-1.0);
+    valtmp[3] = 4.0*t2*t1;
+    valtmp[4] = 4.0*t2*t3;
+    valtmp[5] = 4.0*t3*t1;
 
-		derivtmp(0,0)= -3.0+4.0*(r+s);
-		derivtmp(0,1)= -3.0+4.0*(r+s);
-		derivtmp(1,0)= 4.0*r-1.0;
-		derivtmp(1,1)= 0.0;
-		derivtmp(2,0)= 0.0;
-		derivtmp(2,1)= 4.0*s-1.0;
-		derivtmp(3,0)= 4.0*(1.0-2.0*r-s);
-		derivtmp(3,1)=-4.0*r;
-		derivtmp(4,0)= 4.0*s;
-		derivtmp(4,1)= 4.0*r;
-		derivtmp(5,0)=-4.0*s;
-		derivtmp(5,1)= 4.0*(1.0-r-2.0*s);
+    derivtmp(0,0)= -3.0+4.0*(r+s);
+    derivtmp(0,1)= -3.0+4.0*(r+s);
+    derivtmp(1,0)= 4.0*r-1.0;
+    derivtmp(1,1)= 0.0;
+    derivtmp(2,0)= 0.0;
+    derivtmp(2,1)= 4.0*s-1.0;
+    derivtmp(3,0)= 4.0*(1.0-2.0*r-s);
+    derivtmp(3,1)=-4.0*r;
+    derivtmp(4,0)= 4.0*s;
+    derivtmp(4,1)= 4.0*r;
+    derivtmp(5,0)=-4.0*s;
+    derivtmp(5,1)= 4.0*(1.0-r-2.0*s);
 
-		// define constant modification factor 1/5
-		// (NOTE: lower factors, e.g. 1/12 would be sufficient here
-		// as well, but in order to be globally continuous for mixed
-		// meshes with tet10/hex20 elements, we always choose 1/5.)
-		double fac = 1.0/5.0;
+    // define constant modification factor 1/5
+    // (NOTE: lower factors, e.g. 1/12 would be sufficient here
+    // as well, but in order to be globally continuous for mixed
+    // meshes with tet10/hex20 elements, we always choose 1/5.)
+    double fac = 1.0/5.0;
 
-		// apply constant modification at vertex nodes and PoU
-		val[0] = valtmp[0]+(valtmp[3]+valtmp[5])*fac;
-		val[1] = valtmp[1]+(valtmp[3]+valtmp[4])*fac;
-		val[2] = valtmp[2]+(valtmp[4]+valtmp[5])*fac;
-		val[3] = valtmp[3]*(1.0-2.0*fac);
-		val[4] = valtmp[4]*(1.0-2.0*fac);
-		val[5] = valtmp[5]*(1.0-2.0*fac);
+    // apply constant modification at vertex nodes and PoU
+    val[0] = valtmp[0]+(valtmp[3]+valtmp[5])*fac;
+    val[1] = valtmp[1]+(valtmp[3]+valtmp[4])*fac;
+    val[2] = valtmp[2]+(valtmp[4]+valtmp[5])*fac;
+    val[3] = valtmp[3]*(1.0-2.0*fac);
+    val[4] = valtmp[4]*(1.0-2.0*fac);
+    val[5] = valtmp[5]*(1.0-2.0*fac);
 
-		deriv(0,0)= derivtmp(0,0)+(derivtmp(3,0)+derivtmp(5,0))*fac;
-		deriv(0,1)= derivtmp(0,1)+(derivtmp(3,1)+derivtmp(5,1))*fac;
-		deriv(1,0)= derivtmp(1,0)+(derivtmp(3,0)+derivtmp(4,0))*fac;
-		deriv(1,1)= derivtmp(1,1)+(derivtmp(3,1)+derivtmp(4,1))*fac;
-		deriv(2,0)= derivtmp(2,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
-		deriv(2,1)= derivtmp(2,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
-		deriv(3,0)= derivtmp(3,0)*(1.0-2.0*fac);
-		deriv(3,1)= derivtmp(3,1)*(1.0-2.0*fac);
-		deriv(4,0)= derivtmp(4,0)*(1.0-2.0*fac);
-		deriv(4,1)= derivtmp(4,1)*(1.0-2.0*fac);
-		deriv(5,0)= derivtmp(5,0)*(1.0-2.0*fac);
-		deriv(5,1)= derivtmp(5,1)*(1.0-2.0*fac);
+    deriv(0,0)= derivtmp(0,0)+(derivtmp(3,0)+derivtmp(5,0))*fac;
+    deriv(0,1)= derivtmp(0,1)+(derivtmp(3,1)+derivtmp(5,1))*fac;
+    deriv(1,0)= derivtmp(1,0)+(derivtmp(3,0)+derivtmp(4,0))*fac;
+    deriv(1,1)= derivtmp(1,1)+(derivtmp(3,1)+derivtmp(4,1))*fac;
+    deriv(2,0)= derivtmp(2,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
+    deriv(2,1)= derivtmp(2,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
+    deriv(3,0)= derivtmp(3,0)*(1.0-2.0*fac);
+    deriv(3,1)= derivtmp(3,1)*(1.0-2.0*fac);
+    deriv(4,0)= derivtmp(4,0)*(1.0-2.0*fac);
+    deriv(4,1)= derivtmp(4,1)*(1.0-2.0*fac);
+    deriv(5,0)= derivtmp(5,0)*(1.0-2.0*fac);
+    deriv(5,1)= derivtmp(5,1)*(1.0-2.0*fac);
 
-		break;
-	}
+    break;
+  }
   // *********************************************************************
   // 2D linear part of standard quadratic shape functions (tri6)
   // (used for linear interpolation of std LM field in 3D quadratic mortar)
@@ -337,91 +337,91 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
-	// 2D modified serendipity shape functions (quad8)
-	// (used in combination with quadr dual LM field in 3D quadratic mortar)
-	// *********************************************************************
-	case MortarElement::serendipity2D_modified:
-	{
-		const double r=xi[0];
-		const double s=xi[1];
-		const double rp=1.0+r;
-		const double rm=1.0-r;
-		const double sp=1.0+s;
-		const double sm=1.0-s;
-		const double r2=1.0-r*r;
-		const double s2=1.0-s*s;
+  // 2D modified serendipity shape functions (quad8)
+  // (used in combination with quadr dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::serendipity2D_modified:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
 
-		// values for centernodes are straight forward
-		//      0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
-		//                             0 for xi=0    and eta= 1
-		//                             1 for xi=0    and eta=-1    )
-		// use shape functions on centernodes to zero out the corner node
-		// shape functions on the centernodes
-		// (0.5 is the value of the linear shape function in the centernode)
-		//
-		//  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
+    // values for centernodes are straight forward
+    //      0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
+    //                             0 for xi=0    and eta= 1
+    //                             1 for xi=0    and eta=-1    )
+    // use shape functions on centernodes to zero out the corner node
+    // shape functions on the centernodes
+    // (0.5 is the value of the linear shape function in the centernode)
+    //
+    //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
 
-		LINALG::SerialDenseVector valtmp(NumNode(),1);
-		LINALG::SerialDenseMatrix derivtmp(NumNode(),2);
+    LINALG::SerialDenseVector valtmp(NumNode(),1);
+    LINALG::SerialDenseMatrix derivtmp(NumNode(),2);
 
-		valtmp[0]=0.25*(rm*sm-(r2*sm+s2*rm));
-		valtmp[1]=0.25*(rp*sm-(r2*sm+s2*rp));
-		valtmp[2]=0.25*(rp*sp-(s2*rp+r2*sp));
-		valtmp[3]=0.25*(rm*sp-(r2*sp+s2*rm));
-		valtmp[4]=0.5*r2*sm;
-		valtmp[5]=0.5*s2*rp;
-		valtmp[6]=0.5*r2*sp;
-		valtmp[7]=0.5*s2*rm;
+    valtmp[0]=0.25*(rm*sm-(r2*sm+s2*rm));
+    valtmp[1]=0.25*(rp*sm-(r2*sm+s2*rp));
+    valtmp[2]=0.25*(rp*sp-(s2*rp+r2*sp));
+    valtmp[3]=0.25*(rm*sp-(r2*sp+s2*rm));
+    valtmp[4]=0.5*r2*sm;
+    valtmp[5]=0.5*s2*rp;
+    valtmp[6]=0.5*r2*sp;
+    valtmp[7]=0.5*s2*rm;
 
-		derivtmp(0,0)= 0.25*sm*(2*r+s);
-		derivtmp(0,1)= 0.25*rm*(r+2*s);
-		derivtmp(1,0)= 0.25*sm*(2*r-s);
-		derivtmp(1,1)= 0.25*rp*(2*s-r);
-		derivtmp(2,0)= 0.25*sp*(2*r+s);
-		derivtmp(2,1)= 0.25*rp*(r+2*s);
-		derivtmp(3,0)= 0.25*sp*(2*r-s);
-		derivtmp(3,1)= 0.25*rm*(2*s-r);
-		derivtmp(4,0)=-sm*r;
-		derivtmp(4,1)=-0.5*rm*rp;
-		derivtmp(5,0)= 0.5*sm*sp;
-		derivtmp(5,1)=-rp*s;
-		derivtmp(6,0)=-sp*r;
-		derivtmp(6,1)= 0.5*rm*rp;
-		derivtmp(7,0)=-0.5*sm*sp;
-		derivtmp(7,1)=-rm*s;
+    derivtmp(0,0)= 0.25*sm*(2*r+s);
+    derivtmp(0,1)= 0.25*rm*(r+2*s);
+    derivtmp(1,0)= 0.25*sm*(2*r-s);
+    derivtmp(1,1)= 0.25*rp*(2*s-r);
+    derivtmp(2,0)= 0.25*sp*(2*r+s);
+    derivtmp(2,1)= 0.25*rp*(r+2*s);
+    derivtmp(3,0)= 0.25*sp*(2*r-s);
+    derivtmp(3,1)= 0.25*rm*(2*s-r);
+    derivtmp(4,0)=-sm*r;
+    derivtmp(4,1)=-0.5*rm*rp;
+    derivtmp(5,0)= 0.5*sm*sp;
+    derivtmp(5,1)=-rp*s;
+    derivtmp(6,0)=-sp*r;
+    derivtmp(6,1)= 0.5*rm*rp;
+    derivtmp(7,0)=-0.5*sm*sp;
+    derivtmp(7,1)=-rm*s;
 
-		// define constant modification factor 1/5
-		double fac = 1.0/5.0;
+    // define constant modification factor 1/5
+    double fac = 1.0/5.0;
 
-		// apply constant modification at vertex nodes and PoU
-		val[0]=valtmp[0]+(valtmp[4]+valtmp[7])*fac;
-		val[1]=valtmp[1]+(valtmp[4]+valtmp[5])*fac;
-		val[2]=valtmp[2]+(valtmp[5]+valtmp[6])*fac;
-		val[3]=valtmp[3]+(valtmp[6]+valtmp[7])*fac;
-		val[4]=valtmp[4]*(1.0-2.0*fac);
-		val[5]=valtmp[5]*(1.0-2.0*fac);
-		val[6]=valtmp[6]*(1.0-2.0*fac);
-		val[7]=valtmp[7]*(1.0-2.0*fac);
+    // apply constant modification at vertex nodes and PoU
+    val[0]=valtmp[0]+(valtmp[4]+valtmp[7])*fac;
+    val[1]=valtmp[1]+(valtmp[4]+valtmp[5])*fac;
+    val[2]=valtmp[2]+(valtmp[5]+valtmp[6])*fac;
+    val[3]=valtmp[3]+(valtmp[6]+valtmp[7])*fac;
+    val[4]=valtmp[4]*(1.0-2.0*fac);
+    val[5]=valtmp[5]*(1.0-2.0*fac);
+    val[6]=valtmp[6]*(1.0-2.0*fac);
+    val[7]=valtmp[7]*(1.0-2.0*fac);
 
-		deriv(0,0)=derivtmp(0,0)+(derivtmp(4,0)+derivtmp(7,0))*fac;
-		deriv(0,1)=derivtmp(0,1)+(derivtmp(4,1)+derivtmp(7,1))*fac;
-		deriv(1,0)=derivtmp(1,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
-		deriv(1,1)=derivtmp(1,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
-		deriv(2,0)=derivtmp(2,0)+(derivtmp(5,0)+derivtmp(6,0))*fac;
-		deriv(2,1)=derivtmp(2,1)+(derivtmp(5,1)+derivtmp(6,1))*fac;
-		deriv(3,0)=derivtmp(3,0)+(derivtmp(6,0)+derivtmp(7,0))*fac;
-		deriv(3,1)=derivtmp(3,1)+(derivtmp(6,1)+derivtmp(7,1))*fac;
-		deriv(4,0)=derivtmp(4,0)*(1.0-2.0*fac);
-		deriv(4,1)=derivtmp(4,1)*(1.0-2.0*fac);
-		deriv(5,0)=derivtmp(5,0)*(1.0-2.0*fac);
-		deriv(5,1)=derivtmp(5,1)*(1.0-2.0*fac);
-		deriv(6,0)=derivtmp(6,0)*(1.0-2.0*fac);
-		deriv(6,1)=derivtmp(6,1)*(1.0-2.0*fac);
-		deriv(7,0)=derivtmp(7,0)*(1.0-2.0*fac);
-		deriv(7,1)=derivtmp(7,1)*(1.0-2.0*fac);
+    deriv(0,0)=derivtmp(0,0)+(derivtmp(4,0)+derivtmp(7,0))*fac;
+    deriv(0,1)=derivtmp(0,1)+(derivtmp(4,1)+derivtmp(7,1))*fac;
+    deriv(1,0)=derivtmp(1,0)+(derivtmp(4,0)+derivtmp(5,0))*fac;
+    deriv(1,1)=derivtmp(1,1)+(derivtmp(4,1)+derivtmp(5,1))*fac;
+    deriv(2,0)=derivtmp(2,0)+(derivtmp(5,0)+derivtmp(6,0))*fac;
+    deriv(2,1)=derivtmp(2,1)+(derivtmp(5,1)+derivtmp(6,1))*fac;
+    deriv(3,0)=derivtmp(3,0)+(derivtmp(6,0)+derivtmp(7,0))*fac;
+    deriv(3,1)=derivtmp(3,1)+(derivtmp(6,1)+derivtmp(7,1))*fac;
+    deriv(4,0)=derivtmp(4,0)*(1.0-2.0*fac);
+    deriv(4,1)=derivtmp(4,1)*(1.0-2.0*fac);
+    deriv(5,0)=derivtmp(5,0)*(1.0-2.0*fac);
+    deriv(5,1)=derivtmp(5,1)*(1.0-2.0*fac);
+    deriv(6,0)=derivtmp(6,0)*(1.0-2.0*fac);
+    deriv(6,1)=derivtmp(6,1)*(1.0-2.0*fac);
+    deriv(7,0)=derivtmp(7,0)*(1.0-2.0*fac);
+    deriv(7,1)=derivtmp(7,1)*(1.0-2.0*fac);
 
-		break;
-	}
+    break;
+  }
   // *********************************************************************
   // 2D bilinear part of serendipity quadratic shape functions (quad8)
   // (used for linear interpolation of std LM field in 3D quadratic mortar)
@@ -653,51 +653,51 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   case MortarElement::quaddual2D:
   case MortarElement::serendipitydual2D:
   {
-		// establish fundamental data
-		double detg = 0.0;
-		int nnodes = NumNode();
+    // establish fundamental data
+    double detg = 0.0;
+    int nnodes = NumNode();
 
-		// empty shape function vals + derivs
-		LINALG::SerialDenseVector valquad(nnodes);
-		LINALG::SerialDenseMatrix derivquad(nnodes,2);
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
 
-		// compute entries to bi-ortho matrices me/de with Gauss quadrature
-		MORTAR::ElementIntegrator integrator(Shape());
-		LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-		LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(Shape());
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
-		for (int i=0;i<integrator.nGP();++i)
-		{
-			double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-			EvaluateShape(gpc, valquad, derivquad, nnodes, true);
-			detg = Jacobian(gpc);
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      EvaluateShape(gpc, valquad, derivquad, nnodes, true);
+      detg = Jacobian(gpc);
 
-			for (int j=0;j<nnodes;++j)
-				for (int k=0;k<nnodes;++k)
-				{
-					me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
-					de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
-				}
-		}
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+    }
 
-		// invert bi-ortho matrix me
-		LINALG::SymmetricInverse(me,nnodes);
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
 
-		// get solution matrix with dual parameters
-		LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-		ae.Multiply('N','N',1.0,de,me,0.0);
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
 
-		// evaluate dual shape functions at loc. coord. xi
-		EvaluateShape(xi, valquad, derivquad, nnodes, true);
-		val.Zero(); deriv.Zero();
+    // evaluate dual shape functions at loc. coord. xi
+    EvaluateShape(xi, valquad, derivquad, nnodes, true);
+    val.Zero(); deriv.Zero();
 
-		for (int i=0;i<nnodes;++i)
-			for (int j=0;j<nnodes;++j)
-			{
-				val[i]+=ae(i,j)*valquad[j];
-				deriv(i,0)+=ae(i,j)*derivquad(j,0);
-				deriv(i,1)+=ae(i,j)*derivquad(j,1);
-			}
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        val[i]+=ae(i,j)*valquad[j];
+        deriv(i,0)+=ae(i,j)*derivquad(j,0);
+        deriv(i,1)+=ae(i,j)*derivquad(j,1);
+      }
 
     break;
   }
@@ -1153,7 +1153,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
         // dual Lagrange multipliers
         if (dual)
         {
-        	dserror("ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
+          dserror("ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
           if (Shape()==tri6)       ShapeFunctions(MortarElement::quaddual2D_only_lin,xi,val,deriv);
           else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D_only_lin,xi,val,deriv);
           else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D_only_lin,xi,val,deriv);
@@ -1360,174 +1360,174 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     break;
   }
   // *********************************************************************
-	// 2D dual quadratic shape functions (tri6)
-	// 2D dual serendipity shape functions (quad8)
-	// (used for interpolation of Lagrange multiplier field)
-	// (linearization necessary due to adaption for distorted elements !!!)
+  // 2D dual quadratic shape functions (tri6)
+  // 2D dual serendipity shape functions (quad8)
+  // (used for interpolation of Lagrange multiplier field)
+  // (linearization necessary due to adaption for distorted elements !!!)
   // (including modification of displacement shape functions)
-	// *********************************************************************
-	case MORTAR::MortarElement::quaddual2D:
-	case MORTAR::MortarElement::serendipitydual2D:
-	{
-		// establish fundamental data
-		double detg = 0.0;
-		int nnodes = NumNode();
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		GetNodalCoords(coord);
+  // *********************************************************************
+  case MORTAR::MortarElement::quaddual2D:
+  case MORTAR::MortarElement::serendipitydual2D:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    int nnodes = NumNode();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    GetNodalCoords(coord);
 
-		// prepare computation with Gauss quadrature
-		MORTAR::ElementIntegrator integrator(Shape());
-		LINALG::SerialDenseVector val(nnodes);
-		LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-		LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-		LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+    // prepare computation with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(Shape());
+    LINALG::SerialDenseVector val(nnodes);
+    LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
-		// two-dim arrays of maps for linearization of me/de
-		vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
-		vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    // two-dim arrays of maps for linearization of me/de
+    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
+    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
 
-		// build me, de, derivme, derivde
-		for (int i=0;i<integrator.nGP();++i)
-		{
-			double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-			EvaluateShape(gpc, val, deriv, nnodes, true);
-			detg = Jacobian(gpc);
+    // build me, de, derivme, derivde
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      EvaluateShape(gpc, val, deriv, nnodes, true);
+      detg = Jacobian(gpc);
 
-			// directional derivative of Jacobian
-			map<int,double> testmap;
-			typedef map<int,double>::const_iterator CI;
-			DerivJacobian(gpc,testmap);
+      // directional derivative of Jacobian
+      map<int,double> testmap;
+      typedef map<int,double>::const_iterator CI;
+      DerivJacobian(gpc,testmap);
 
-			// loop over all entries of me/de
-			for (int j=0;j<nnodes;++j)
-				for (int k=0;k<nnodes;++k)
-				{
-					double facme = integrator.Weight(i)*val[j]*val[k];
-					double facde = (j==k)*integrator.Weight(i)*val[j];
+      // loop over all entries of me/de
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          double facme = integrator.Weight(i)*val[j]*val[k];
+          double facde = (j==k)*integrator.Weight(i)*val[j];
 
-					me(j,k)+=facme*detg;
-					de(j,k)+=facde*detg;
+          me(j,k)+=facme*detg;
+          de(j,k)+=facde*detg;
 
-					// loop over all directional derivatives
-					for (CI p=testmap.begin();p!=testmap.end();++p)
-					{
-						derivme[j][k][p->first] += facme*(p->second);
-						derivde[j][k][p->first] += facde*(p->second);
-					}
-				}
-		}
+          // loop over all directional derivatives
+          for (CI p=testmap.begin();p!=testmap.end();++p)
+          {
+            derivme[j][k][p->first] += facme*(p->second);
+            derivde[j][k][p->first] += facde*(p->second);
+          }
+        }
+    }
 
-		// invert bi-ortho matrix me
-		LINALG::SymmetricInverse(me,nnodes);
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
 
-		// get solution matrix ae with dual parameters
-		LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-		ae.Multiply('N','N',1.0,de,me,0.0);
+    // get solution matrix ae with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
 
-		// build linearization of ae and store in derivdual
-		// (this is done according to a quite complex formula, which
-		// we get from the linearization of the biorthogonality condition:
-		// Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-		typedef map<int,double>::const_iterator CI;
+    // build linearization of ae and store in derivdual
+    // (this is done according to a quite complex formula, which
+    // we get from the linearization of the biorthogonality condition:
+    // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+    typedef map<int,double>::const_iterator CI;
 
-		// loop over all entries of ae (index i,j)
-		for (int i=0;i<nnodes;++i)
-		{
-			for (int j=0;j<nnodes;++j)
-			{
-				// compute Lin(Ae) according to formula above
-				for (int l=0;l<nnodes;++l) // loop over sum l
-				{
-					// part1: Lin(De)*Inv(Me)
-					for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
-						derivdual[i][j][p->first] += me(l,j)*(p->second);
+    // loop over all entries of ae (index i,j)
+    for (int i=0;i<nnodes;++i)
+    {
+      for (int j=0;j<nnodes;++j)
+      {
+        // compute Lin(Ae) according to formula above
+        for (int l=0;l<nnodes;++l) // loop over sum l
+        {
+          // part1: Lin(De)*Inv(Me)
+          for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+            derivdual[i][j][p->first] += me(l,j)*(p->second);
 
-					// part2: Ae*Lin(Me)*Inv(Me)
-					for (int k=0;k<nnodes;++k) // loop over sum k
-					{
-						for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
-							derivdual[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
-					}
-				}
-			}
-		}
+          // part2: Ae*Lin(Me)*Inv(Me)
+          for (int k=0;k<nnodes;++k) // loop over sum k
+          {
+            for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+              derivdual[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
+          }
+        }
+      }
+    }
 
-		// cout linearization of Ae
-		//cout << "Analytical A-derivative of Element: " << Id() << endl;
-		//for (int i=0;i<nnodes;++i)
-		//  for (int j=0;j<nnodes;++j)
-		//    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-		//      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    // cout linearization of Ae
+    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //for (int i=0;i<nnodes;++i)
+    //  for (int j=0;j<nnodes;++j)
+    //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
+    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
     /*
 #ifdef DEBUG
-		// *******************************************************************
-		// FINITE DIFFERENCE check of Lin(Ae)
-		// *******************************************************************
+    // *******************************************************************
+    // FINITE DIFFERENCE check of Lin(Ae)
+    // *******************************************************************
 
-		cout << "FD Check for A-derivative of Element: " << Id() << endl;
-		Epetra_SerialDenseMatrix aeref(ae);
-		double delta = 1e-8;
-		int thedim=3;
+    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    Epetra_SerialDenseMatrix aeref(ae);
+    double delta = 1e-8;
+    int thedim=3;
 
-		for (int dim=0;dim<thedim;++dim)
-		{
-			for (int node=0;node<nnodes;++node)
-			{
-				// apply FD
-				DRT::Node** mynodes = Nodes();
-				MortarNode* mycnode = static_cast<MortarNode*> (mynodes[node]);
-				mycnode->xspatial()[dim] += delta;
+    for (int dim=0;dim<thedim;++dim)
+    {
+      for (int node=0;node<nnodes;++node)
+      {
+        // apply FD
+        DRT::Node** mynodes = Nodes();
+        MortarNode* mycnode = static_cast<MortarNode*> (mynodes[node]);
+        mycnode->xspatial()[dim] += delta;
 
-				LINALG::SerialDenseVector val1(nnodes);
-				LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
-				LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
-				LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+        LINALG::SerialDenseVector val1(nnodes);
+        LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+        LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+        LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
 
-				// build me, de
-				for (int i=0;i<integrator.nGP();++i)
-				{
-					double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
-					EvaluateShape(gpc1, val1, deriv1, nnodes, true);
-					detg = Jacobian(gpc1);
+        // build me, de
+        for (int i=0;i<integrator.nGP();++i)
+        {
+          double gpc1[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+          EvaluateShape(gpc1, val1, deriv1, nnodes, true);
+          detg = Jacobian(gpc1);
 
-					for (int j=0;j<nnodes;++j)
-						for (int k=0;k<nnodes;++k)
-						{
-							double facme1 = integrator.Weight(i)*val1[j]*val1[k];
-							double facde1 = (j==k)*integrator.Weight(i)*val1[j];
+          for (int j=0;j<nnodes;++j)
+            for (int k=0;k<nnodes;++k)
+            {
+              double facme1 = integrator.Weight(i)*val1[j]*val1[k];
+              double facde1 = (j==k)*integrator.Weight(i)*val1[j];
 
-							me1(j,k)+=facme1*detg;
-							de1(j,k)+=facde1*detg;
-						}
-				}
+              me1(j,k)+=facme1*detg;
+              de1(j,k)+=facde1*detg;
+            }
+        }
 
-				// invert bi-ortho matrix me
-				LINALG::SymmetricInverse(me1,nnodes);
+        // invert bi-ortho matrix me
+        LINALG::SymmetricInverse(me1,nnodes);
 
-				// get solution matrix ae with dual parameters
-				LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
-				ae1.Multiply('N','N',1.0,de1,me1,0.0);
-				int col= mycnode->Dofs()[dim];
+        // get solution matrix ae with dual parameters
+        LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+        ae1.Multiply('N','N',1.0,de1,me1,0.0);
+        int col= mycnode->Dofs()[dim];
 
-				cout << "A-Derivative: " << col << endl;
+        cout << "A-Derivative: " << col << endl;
 
-				// FD solution
-				for (int i=0;i<nnodes;++i)
-					for (int j=0;j<nnodes;++j)
-					{
-						double val = (ae1(i,j)-aeref(i,j))/delta;
-						cout << "A" << i << j << " " << val << endl;
-					}
+        // FD solution
+        for (int i=0;i<nnodes;++i)
+          for (int j=0;j<nnodes;++j)
+          {
+            double val = (ae1(i,j)-aeref(i,j))/delta;
+            cout << "A" << i << j << " " << val << endl;
+          }
 
-				// undo FD
-				mycnode->xspatial()[dim] -= delta;
-			}
-		}
-		// *******************************************************************
+        // undo FD
+        mycnode->xspatial()[dim] -= delta;
+      }
+    }
+    // *******************************************************************
 #endif // #ifdef DEBUG
     */
-		break;
-	}
+    break;
+  }
   // *********************************************************************
   // 1D modified dual shape functions (linear)
   // (used for interpolation of Lagrange mult. field near boundaries)

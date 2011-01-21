@@ -295,12 +295,12 @@ void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::InitializeDataContainer()
 {
-	// only initialize if not yet done
-	if (modata_==Teuchos::null && codata_==Teuchos::null)
-	{
+  // only initialize if not yet done
+  if (modata_==Teuchos::null && codata_==Teuchos::null)
+  {
     codata_=rcp(new CONTACT::CoNodeDataContainer());
     modata_=rcp(new MORTAR::MortarNodeDataContainer());
-	}
+  }
 
   return;
 }
@@ -310,7 +310,7 @@ void CONTACT::CoNode::InitializeDataContainer()
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::ResetDataContainer()
 {
-	// reset to null
+  // reset to null
   codata_  = Teuchos::null;
   modata_  = Teuchos::null;
 

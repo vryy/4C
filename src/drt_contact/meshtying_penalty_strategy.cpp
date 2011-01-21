@@ -93,9 +93,9 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
-		// modify dmatrix_
-		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-		dmatrix_    = temp1;
+    // modify dmatrix_
+    RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    dmatrix_    = temp1;
   }
 
   // build mortar matrix products
@@ -108,10 +108,10 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   // of the global problem (stored in the "p"-version of dof maps)
   if (ParRedist())
   {
-		mtm_ = MORTAR::MatrixRowTransform(mtm_,pgmdofrowmap_);
-		mtd_ = MORTAR::MatrixRowTransform(mtd_,pgmdofrowmap_);
-		dtm_ = MORTAR::MatrixRowTransform(dtm_,pgsdofrowmap_);
-		dtd_ = MORTAR::MatrixRowTransform(dtd_,pgsdofrowmap_);
+    mtm_ = MORTAR::MatrixRowTransform(mtm_,pgmdofrowmap_);
+    mtd_ = MORTAR::MatrixRowTransform(mtd_,pgmdofrowmap_);
+    dtm_ = MORTAR::MatrixRowTransform(dtm_,pgsdofrowmap_);
+    dtd_ = MORTAR::MatrixRowTransform(dtd_,pgsdofrowmap_);
   }
 
   // time measurement
@@ -235,8 +235,8 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>& 
   RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
   RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
   AssembleCoords("master",false,xm);
-	mmatrix_->Multiply(false,*xm,*Mxm);
-	g_->Update(1.0,*Mxm,1.0);
+  mmatrix_->Multiply(false,*xm,*Mxm);
+  g_->Update(1.0,*Mxm,1.0);
 
 #endif // #ifdef MESHTYINGUCONSTR
   
@@ -399,9 +399,9 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
 void CONTACT::MtPenaltyStrategy::UpdateAugmentedLagrange()
 {
   // store current LM into Uzawa LM
-	// (note that this is also done after the last Uzawa step of one
-	// time step and thus also gives the guess for the initial
-	// Lagrange multiplier lambda_0 of the next time step)
+  // (note that this is also done after the last Uzawa step of one
+  // time step and thus also gives the guess for the initial
+  // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = rcp(new Epetra_Vector(*z_));
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   

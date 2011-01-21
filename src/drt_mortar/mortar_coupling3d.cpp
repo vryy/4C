@@ -87,7 +87,7 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 const Epetra_Comm& MORTAR::Coupling3d::Comm() const
 {
-	return idiscret_.Comm();
+  return idiscret_.Comm();
 }
 
 /*----------------------------------------------------------------------*
@@ -2924,8 +2924,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
       // check for dual shape functions and linear LM interpolation
-			if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
-				dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+      if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
+        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
 
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
@@ -2956,9 +2956,9 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
-    	// check for dual shape functions
-			if (shapefcn_ == INPAR::MORTAR::shape_dual)
-				dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+      // check for dual shape functions
+      if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
 
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();

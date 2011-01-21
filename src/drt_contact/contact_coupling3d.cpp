@@ -238,14 +238,14 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-    	// check for dual shape functions and linear LM interpolation
-			if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
-				dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
+      // check for dual shape functions and linear LM interpolation
+      if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
+        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
-			// check for standard shape functions and quadratic LM interpolation
-			if (shapefcn_ == INPAR::MORTAR::shape_standard && lmtype==INPAR::MORTAR::lagmult_quad_quad
-					&& (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
-				dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
+      // check for standard shape functions and quadratic LM interpolation
+      if (shapefcn_ == INPAR::MORTAR::shape_standard && lmtype==INPAR::MORTAR::lagmult_quad_quad
+          && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
+        dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
 
       // prepare integration and linearization of M, g (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
@@ -276,9 +276,9 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
-    	// check for dual shape functions
-			if (shapefcn_ == INPAR::MORTAR::shape_dual)
-				dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
+      // check for dual shape functions
+      if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // prepare integration and linearization of M, g (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();

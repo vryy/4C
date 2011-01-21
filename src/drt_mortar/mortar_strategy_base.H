@@ -105,9 +105,9 @@ class StrategyBase
     \param problemrowmap (in): Global problem dof row map
     \param params (in): List of meshtying/contact parameters
     \param dim (in): Global problem dimension
-		\param comm (in): A communicator object
-		\param alphaf (in): Midpoint for Gen-alpha time integration
-		\param maxdof (in): Highest dof number in global problem
+    \param comm (in): A communicator object
+    \param alphaf (in): Midpoint for Gen-alpha time integration
+    \param maxdof (in): Highest dof number in global problem
 
     */
     StrategyBase(RCP<Epetra_Map> problemrowmap,

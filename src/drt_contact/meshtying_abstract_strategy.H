@@ -135,16 +135,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     }  
     
     /*!
-	  \brief Return mortar matrix D
+    \brief Return mortar matrix D
 
-	  */
-	  RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
-	  
-	  /*!
-	  \brief Return mortar matrix M
+    */
+    RCP<LINALG::SparseMatrix> DMatrix() { return dmatrix_; }
+    
+    /*!
+    \brief Return mortar matrix M
 
-	  */
-	  RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
+    */
+    RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
 
     /*!
     \brief Get dual quadratic 3d slave element flag
@@ -155,16 +155,16 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     virtual const bool& Dualquadslave3d() { return dualquadslave3d_; };
 
-	  /*!
-	  \brief Return parallel redistribution status (yes or no)
+    /*!
+    \brief Return parallel redistribution status (yes or no)
 
-	  */
-	  bool ParRedist()
-	  {
-	  	INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+    */
+    bool ParRedist()
+    {
+      INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
       if (partype!=INPAR::MORTAR::parredist_none) return true;
       else return false;
-	  }
+    }
 
     /*!
     \brief Assemble global coordinate vector
@@ -260,20 +260,20 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual void MortarCoupling(const RCP<Epetra_Vector> dis);
 
     /*!
-		\brief Restrict slave boundary to actual meshtying zone
+    \brief Restrict slave boundary to actual meshtying zone
 
-		Only do this ONCE for meshtying upon initialization!
-		This method first detects for each interface the actually tied part
-		of the slave surface (i.e. the nodes that carry a D/M contribution).
-		Then all slave maps on interface level and on global level are
-		re-initialized and re-setup according to the the above defined
-		actual slave meshtying zone. This is necessary for problems in which
-		the slave surface does not fully project onto the master surface
-		and thus the actual meshtying zone cannot be defined within the
-		input file. Thus, it is computed here.
+    Only do this ONCE for meshtying upon initialization!
+    This method first detects for each interface the actually tied part
+    of the slave surface (i.e. the nodes that carry a D/M contribution).
+    Then all slave maps on interface level and on global level are
+    re-initialized and re-setup according to the the above defined
+    actual slave meshtying zone. This is necessary for problems in which
+    the slave surface does not fully project onto the master surface
+    and thus the actual meshtying zone cannot be defined within the
+    input file. Thus, it is computed here.
 
-		*/
-		virtual void RestrictMeshtyingZone();
+    */
+    virtual void RestrictMeshtyingZone();
 
     /*!
     \brief Do mesh intialization for rotational invariance

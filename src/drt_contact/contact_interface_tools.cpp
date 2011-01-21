@@ -942,10 +942,10 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckNormalDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1231,10 +1231,10 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckMortarDDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1521,10 +1521,10 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckMortarMDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1811,10 +1811,10 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckGapDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -2141,10 +2141,10 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckTangLMDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -2237,10 +2237,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // (use standard slave column map)
     for (int i=0;i<SlaveColElements()->NumMyElements();++i)
     {
-    	int gid = SlaveColElements()->GID(i);
-  		DRT::Element* ele = Discret().gElement(gid);
-  		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-  		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      int gid = SlaveColElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -2439,10 +2439,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // (use standard slave column map)
     for (int i=0;i<SlaveColElements()->NumMyElements();++i)
     {
-    	int gid = SlaveColElements()->GID(i);
-  		DRT::Element* ele = Discret().gElement(gid);
-  		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-  		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+      int gid = SlaveColElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
     }
@@ -2640,10 +2640,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
   // (use standard slave column map)
   for (int i=0;i<SlaveColElements()->NumMyElements();++i)
   {
-  	int gid = SlaveColElements()->GID(i);
-		DRT::Element* ele = Discret().gElement(gid);
-		if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-		MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    int gid = SlaveColElements()->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -2710,10 +2710,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckStickDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -3223,10 +3223,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckSlipDeriv()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -3856,10 +3856,10 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -4150,10 +4150,10 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 {
-	// FD checks only for serial case
-	RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-	RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-	if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  // FD checks only for serial case
+  RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
 
   // get out of here if not participating in interface
   if (!lComm()) return;

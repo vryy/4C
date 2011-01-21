@@ -58,8 +58,8 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(DRT::Discretization& discret, RC
                                                 int dim, RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
 MtAbstractStrategy(discret, problemrowmap, params, interface, dim, comm, alphaf, maxdof)
 {
-	// empty constructor body
-	return;
+  // empty constructor body
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -74,9 +74,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
     fflush(stdout);
   }
 
-	// time measurement
-	Comm().Barrier();
-	const double t_start = Teuchos::Time::wallTime();
+  // time measurement
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
        
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
@@ -119,13 +119,13 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
-		// modify dmatrix_, invd_ and mhatmatrix_
-		RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-		RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
-		RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
-		dmatrix_    = temp1;
-		invd_       = temp2;
-		mhatmatrix_ = temp3;
+    // modify dmatrix_, invd_ and mhatmatrix_
+    RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
+    RCP<LINALG::SparseMatrix> temp3 = LINALG::MLMultiply(*trafo_,false,*mhatmatrix_,false,false,false,true);
+    dmatrix_    = temp1;
+    invd_       = temp2;
+    mhatmatrix_ = temp3;
   }
 
   /**********************************************************************/
@@ -143,38 +143,38 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   if (systype==INPAR::CONTACT::system_condensed)
   {
 #ifdef MESHTYINGTWOCON
-  	setup = false;
+    setup = false;
 #endif // #ifdef MESHTYINGTWOCON
   }
 
   // build constraint matrix only if necessary
   if (setup)
   {
-		// first setup
-		RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-		constrmt->Add(*dmatrix_,true,1.0,1.0);
-		constrmt->Add(*mmatrix_,true,-1.0,1.0);
-		constrmt->Complete(*gsdofrowmap_,*gdisprowmap_);
+    // first setup
+    RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
+    constrmt->Add(*dmatrix_,true,1.0,1.0);
+    constrmt->Add(*mmatrix_,true,-1.0,1.0);
+    constrmt->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-		// transform constraint matrix
-		if (systype==INPAR::CONTACT::system_condensed)
-		{
-			// transform parallel row / column distribution
-		  // (only necessary in the parallel redistribution case)
-			if (ParRedist()) conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,problemrowmap_,pgsdofrowmap_);
-			else             conmatrix_ = constrmt;
-		}
-		else
-		{
-			// transform parallel row distribution
-		  // (only necessary in the parallel redistribution case)
-			RCP<LINALG::SparseMatrix> temp;
-			if (ParRedist()) temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
-			else             temp = constrmt;
+    // transform constraint matrix
+    if (systype==INPAR::CONTACT::system_condensed)
+    {
+      // transform parallel row / column distribution
+      // (only necessary in the parallel redistribution case)
+      if (ParRedist()) conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,problemrowmap_,pgsdofrowmap_);
+      else             conmatrix_ = constrmt;
+    }
+    else
+    {
+      // transform parallel row distribution
+      // (only necessary in the parallel redistribution case)
+      RCP<LINALG::SparseMatrix> temp;
+      if (ParRedist()) temp = MORTAR::MatrixRowTransform(constrmt,problemrowmap_);
+      else             temp = constrmt;
 
-			// always transform column GIDs of constraint matrix
-			conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
-		}
+      // always transform column GIDs of constraint matrix
+      conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
+    }
   }
 
   // time measurement
@@ -305,16 +305,16 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
     if (ParRedist())
     {
-    	// split and transform to redistributed maps
-			LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-			ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-			ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
-			knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+      // split and transform to redistributed maps
+      LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+      ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+      ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+      knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
     }
     else
     {
-    	// only split, no need to transform
-    	LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+      // only split, no need to transform
+      LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
     }
 
     // further splits into slave part + master part
@@ -396,8 +396,8 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
     RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
     AssembleCoords("master",false,xm);
-  	mmatrix_->Multiply(false,*xm,*Mxm);
-  	g_->Update(1.0,*Mxm,1.0);
+    mmatrix_->Multiply(false,*xm,*Mxm);
+    g_->Update(1.0,*Mxm,1.0);
 
   #endif // #ifdef MESHTYINGUCONSTR
     
@@ -484,9 +484,9 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     if (ParRedist())
     {
- 		 kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
- 		 kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
- 		 onesdiag = MORTAR::MatrixRowTransform(onesdiag,pgsdofrowmap_);
+      kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+      kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+      onesdiag = MORTAR::MatrixRowTransform(onesdiag,pgsdofrowmap_);
     }
 
     /**********************************************************************/
@@ -560,16 +560,16 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
     if (ParRedist())
     {
-    	// split and transform to redistributed maps
-			LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-			ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-			ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
-			knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
+      // split and transform to redistributed maps
+      LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+      ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
+      ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
+      knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
     }
     else
     {
-    	// only split, no need to transform
-    	LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+      // only split, no need to transform
+      LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
     }
 
     // further splits into slave part + master part
@@ -660,9 +660,9 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     if (ParRedist())
     {
-			kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-			kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-			kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
+      kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
+      kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
+      kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
     }
 
     /**********************************************************************/
@@ -752,8 +752,8 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
     RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
     RCP<Epetra_Vector> Mxm = rcp(new Epetra_Vector(*gsdofrowmap_));
     AssembleCoords("master",false,xm);
-  	mmatrix_->Multiply(false,*xm,*Mxm);
-  	g_->Update(1.0,*Mxm,1.0);
+    mmatrix_->Multiply(false,*xm,*Mxm);
+    g_->Update(1.0,*Mxm,1.0);
 
     RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*problemrowmap_));
     LINALG::Export(*g_,*gexp);
@@ -1021,22 +1021,22 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     /**********************************************************************/
     
     // approximate update
-		//invd_->Multiply(false,*fs_,*z_);
+    //invd_->Multiply(false,*fs_,*z_);
 
-		// full update
-		z_->Update(1.0,*fs_,0.0);
-		RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
-		kss_->Multiply(false,*disis,*mod);
-		z_->Update(-1.0,*mod,1.0);
-		ksm_->Multiply(false,*disim,*mod);
-		z_->Update(-1.0,*mod,1.0);
-		ksn_->Multiply(false,*disin,*mod);
-		z_->Update(-1.0,*mod,1.0);
-		dmatrix_->Multiply(true,*zold_,*mod);
-		z_->Update(-alphaf_,*mod,1.0);
-		RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
-		invd_->Multiply(true,*zcopy,*z_);
-		z_->Scale(1/(1-alphaf_));
+    // full update
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
+    kss_->Multiply(false,*disis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*disim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*disin,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    dmatrix_->Multiply(true,*zold_,*mod);
+    z_->Update(-alphaf_,*mod,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invd_->Multiply(true,*zcopy,*z_);
+    z_->Scale(1/(1-alphaf_));
   }
   
   //**********************************************************************
