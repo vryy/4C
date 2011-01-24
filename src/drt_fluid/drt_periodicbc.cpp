@@ -997,6 +997,12 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       thiscond.push_back(*cond);
     }
 
+    int myerase=0;
+    int numerase=0; 
+
+    int mycerase=0;
+    int numcerase=0; 
+
     for (unsigned numcond=0;numcond<thiscond.size();++numcond)
     {
 
@@ -1017,16 +1023,36 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
           {
             // erase the coupled nodes from the map --- they are redundant
             allcoupledrownodes_->erase(*idtodel);
+
+	    DRT::Node*  actnode = discret_->gNode(*idtodel);
+	    
+	    // check for row nodesactnodes ??????????????????
+	    if(actnode->Owner()!=discret_->Comm().MyPID())
+	      {
+		continue;
+	      }
+
+
+	    ++mycerase;
+
             std::set<int>::iterator curr=nodeset.find(*idtodel);
 
             if(curr!=nodeset.end())
             {
               // erase id from vector
               nodeset.erase(curr);
+	      ++myerase;
             }
           }
         }
       }
+    }
+
+    discret_->Comm().SumAll(&myerase,&numerase,1);
+    discret_->Comm().SumAll(&mycerase,&numcerase,1);
+    if(discret_->Comm().MyPID()==0)  
+    {  
+      cout << "Erased " << numerase << " from nodeset and " << numcerase << " from the map of all coupled rownodes\n";
     }
 
     nodesonthisproc.clear();
@@ -1035,6 +1061,9 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     {
       nodesonthisproc.push_back(*rr);
     }
+
+    int mynumappend=0;
+    int numappend=0;
 
     // append slavenodes to this list of nodes on this proc
     {
@@ -1047,9 +1076,72 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
           int slaveid  = *iter;
 
           nodesonthisproc.push_back(slaveid);
+	  ++mynumappend;
         }
       }
     }
+
+    discret_->Comm().SumAll(&mynumappend,&numappend,1); 
+    if(discret_->Comm().MyPID()==0)   
+      {   
+	cout << "Appended " << numappend << " slavenodeids to the list of the nodes on the single procs\n"; 
+      } 
+ 
+
+
+    {
+      int mymax=0;
+      int max=0;
+      int mymin=1000;
+      int min=0;
+
+      int myallcouplednodes=allcoupledrownodes_->size();
+      int allcouplednodes=0;
+
+      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin(); 
+          curr != allcoupledrownodes_->end(); 
+          ++curr ) 
+	{ 
+	  if((int)curr->second.size()>mymax)
+	    {
+	      mymax=curr->second.size();
+	    }
+	  if((int)curr->second.size()<mymin)
+	    {
+	      mymin=curr->second.size();
+	    }
+
+	}
+
+      discret_->Comm().SumAll(&myallcouplednodes,&allcouplednodes,1); 
+      discret_->Comm().MaxAll(&mymax,&max,1);
+      discret_->Comm().MinAll(&mymin,&min,1);
+       
+      if(discret_->Comm().MyPID()==0) 
+	{ 
+ 	  cout << allcouplednodes << " masternodes coupled to up to at least " << min << " and up to "<< max << " slavenodes\n";  
+	} 
+    }
+
+
+    {
+      int myn=(int)nodesonthisproc.size();
+      int gn=0;
+
+      discret_->Comm().SumAll(&myn,&gn,1);
+
+      if(discret_->Comm().MyPID()==0)
+      {
+
+	cout << "nodes in redistributed map " << gn << "\n";
+        cout << "nodes in discretisation " << discret_->NumGlobalNodes() << "\n"; 
+      } 
+
+      if(gn!=discret_->NumGlobalNodes())
+      {
+	dserror("Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor will crash.\n");
+      }
+    } 
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
