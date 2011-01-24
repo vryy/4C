@@ -37,13 +37,13 @@ LINALG::SIMPLER_BlockPreconditioner::SIMPLER_BlockPreconditioner(RCP<Epetra_Oper
   // preconditioner when we do the subblock solvers
   if (predictSolver_list_.isSublist("SIMPLER")) predictSolver_list_.remove("SIMPLER");
 
-  // check for contact or meshtying,
+  // check for contact, meshtying or constraints
   // (no special functionality yet, only checking)
-  const int myrank = A->Comm().MyPID();
-  bool mt = schurSolver_list_.get<bool>("MESHTYING",false);
-  if (!myrank && mt) cout << "\n**********\nMESHTYING SIMPLER\n**********\n\n";
-  bool co = schurSolver_list_.get<bool>("CONTACT",false);
-  if (!myrank && co) cout << "\n**********\nCONTACT SIMPLER\n**********\n\n";
+//  const int myrank = A->Comm().MyPID();
+//  bool mt = schurSolver_list_.get<bool>("MESHTYING",false);
+//  if (!myrank && mt) cout << "\n**********\nMESHTYING SIMPLER\n**********\n\n";
+//  bool co = schurSolver_list_.get<bool>("CONTACT",false);
+//  if (!myrank && co) cout << "\n**********\nCONTACT SIMPLER\n**********\n\n";
 //  bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
 //  if (!myrank && cstr) cout << "\n**********\nCONSTRAINT SIMPLER\n**********\n\n";
 
