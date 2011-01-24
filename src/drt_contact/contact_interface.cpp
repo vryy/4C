@@ -681,16 +681,38 @@ void CONTACT::CoInterface::Initialize()
     }
   }
 
-  // loop over all elements to reset candidates / search lists
-  // (use standard slave column map)
-  for (int i=0;i<SlaveColElements()->NumMyElements();++i)
+  //**********************************************************************
+  // In general, it is sufficient to reset search candidates only for
+  // all elements in the standard slave column map. However, self contact
+  // is an exception here and we need to reset the search candidates of
+  // all slave elements in the fully overlapping column map there. This
+  // is due to the fact that self contact search is NOT parallelized.
+  //**********************************************************************
+  if (SelfContact())
   {
-    int gid = SlaveColElements()->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
-    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    // loop over all elements to reset candidates / search lists
+    // (use fully overlapping column map of S+M elements)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      DRT::Element* ele = idiscret_->lColElement(i);
+      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
-    mele->MoData().SearchElements().resize(0);
+      mele->MoData().SearchElements().resize(0);
+    }
+  }
+  else
+  {
+    // loop over all elements to reset candidates / search lists
+    // (use standard slave column map)
+    for (int i=0;i<SlaveColElements()->NumMyElements();++i)
+    {
+      int gid = SlaveColElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+      MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+      mele->MoData().SearchElements().resize(0);
+    }
   }
 
   return;
@@ -707,8 +729,8 @@ void CONTACT::CoInterface::SetElementAreas()
   // is an exception here and we need the element areas of all elements
   // (slave and master) in the fully overlapping column map there. At the
   // same time we initialize the element data containers for self contact.
+  // This is due to the fact that self contact search is NOT parallelized.
   //**********************************************************************
-
   if (SelfContact())
   {
     // loop over all elements to set current element length / area
