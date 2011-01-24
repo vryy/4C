@@ -436,6 +436,144 @@ private:
       double&                                     normalfac       ///< nurbs specific factor for normal
   );
 
+  //-----------------------------------------------------------------
+  //  evaluate the residual of Spaldings law of the wall
+  //                                           (private) gammi 11/09
+  //-----------------------------------------------------------------
+  double SpaldingResidual(
+    const double y     ,
+    const double visc  ,
+    const double utau  ,
+    const double normu
+    )
+    {
+      // get dimensionless velocity
+      const double up = normu/utau;
+      
+      const double chi=0.4;
+      const double B  =5.5;
+
+      //      +
+      // get y , a dimensionless boundary layer thickness
+      const double yp = y*utau/visc;
+      
+      /*
+      // Evaluate Spaldings law of the wall
+      //                                /                                                  \
+      //                               |                           /     +\ 2    /     +\ 3 |
+      //                               |       +                  | chi*u  |    | chi*u  |  |
+      //  +     / +\     +    -chi*B   |  chi*u               +    \      /      \      /   |
+      // y = f | u  | = u  + e       * | e       - 1.0 - chi*u  - ----------- - ----------- |
+      //        \  /                   |                              2.0           6.0     |
+      //                               |                                                    |
+      //                                \                                                  /
+      */
+      return(yp-(up+exp(-chi*B)*(exp(chi*up)-1.0-chi*up*(1+chi*up/2.0*(1.0+chi*up/3.0)))));
+    }
+
+  //-----------------------------------------------------------------
+  //     evaluate the residual of Spaldings law of the wall
+  //                                           (private) gammi 11/09
+  //-----------------------------------------------------------------
+  double JacobianSpaldingResidual_utau(
+    const double y     ,
+    const double visc  ,
+    const double utau  ,
+    const double normu )
+    {
+      // get dimensionless velocity
+      const double up = normu/utau;
+      
+      const double chi=0.4;
+      const double B  =5.5;
+
+      //                    +
+      // get derivative of y , a dimensionless boundary layer thickness
+      const double dyplus_dutau=y/visc;
+
+      //                                   +
+      // get derivative of function f wrt u
+      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
+
+      //                    +
+      // get derivative of u  wrt u_tau
+      const double duplus_dutau=-normu/(utau*utau);
+      
+      return(dyplus_dutau-df_duplus*duplus_dutau);
+    }
+
+  //-----------------------------------------------------------------
+  //     evaluate the residual of Spaldings law of the wall
+  //                                           (private) gammi 11/09
+  //-----------------------------------------------------------------
+  double JacobianSpaldingResidual_u(
+    const double y     ,
+    const double visc  ,
+    const double utau  ,
+    const double normu )
+    {
+      // get dimensionless velocity
+      const double up = normu/utau;
+
+      const double chi=0.4;
+      const double B  =5.5;
+
+      //                    +
+      // get derivative of y , a dimensionless boundary layer thickness
+      const double dyplus_du=0.0;
+
+      //                                   +
+      // get derivative of function f wrt u
+      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
+
+      //                    +
+      // get derivative of u  wrt u
+      const double duplus_du=1.0/utau;
+      
+      return(dyplus_du-df_duplus*duplus_du);
+    }
+
+
+
+  //-----------------------------------------------------------------
+  //     evaluate the residual of Spaldings law of the wall
+  //                                           (private) gammi 11/09
+  //-----------------------------------------------------------------
+  double JacobianSpaldingResidual_uplus(
+    const double y     ,
+    const double visc  ,
+    const double utau  ,
+    const double normu )
+    {
+      // get dimensionless velocity
+      const double up = normu/utau;
+
+      const double chi=0.4;
+      const double B  =5.5;
+
+      //                    +
+      // get derivative of y , a dimensionless boundary layer thickness
+      const double dyplus_duplus=0.0;
+      /*
+      // Spaldings law of the wall
+      //                     /                                                  \
+      //                    |                           /     +\ 2    /     +\ 3 |
+      //                    |       +                  | chi*u  |    | chi*u  |  |
+      //  +   +    -chi*B   |  chi*u               +    \      /      \      /   |
+      // y - u  - e       * | e       - 1.0 - chi*u  - ----------- - ----------- | = 0
+      //                    |                              2.0           6.0     |
+      //                    |                                                    |
+      //                     \                                                  /
+      */
+
+      //                                   +
+      // get derivative of function f wrt u
+      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
+      
+      return(dyplus_duplus-df_duplus);
+    }
+
+
   //! get material parameters
   void GetMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
                          const LINALG::Matrix<bdrynen_,1>& escaaf,    ///< scalar at time n+alpha_f / n+1
