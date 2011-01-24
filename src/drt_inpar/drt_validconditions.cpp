@@ -663,6 +663,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // and optional spatial functions
   mixhybDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
 
+  // characteristic velocity
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new RealConditionComponent("u_C")));
+
+  // the penalty parameter could be computed dynamically (using Spaldings
+  // law of the wall) or using a fixed value (1)
+  mixhybDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Definition of penalty parameter","constant",
+        Teuchos::tuple<std::string>("constant","Spalding"),
+        Teuchos::tuple<std::string>("constant","Spalding"))));
+
+  // scaling factor for penalty parameter tauB
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new RealConditionComponent("hB_divided_by")));
+
+  // if Spaldings law is used, this defines the way how the traction at y is computed from utau
+  mixhybDirichletcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "utau_computation","at_wall",
+        Teuchos::tuple<std::string>("at_wall","viscous_tangent"),
+        Teuchos::tuple<std::string>("at_wall","viscous_tangent"))));
+
 
   Teuchos::RCP<ConditionDefinition> linemixhybDirichlet
     =
