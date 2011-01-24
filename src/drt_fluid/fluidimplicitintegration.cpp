@@ -1165,7 +1165,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         }
         //---------------------------end of surface tension update
 
-
         //----------------------------------------------------------------------
         // apply mixed/hybrid Dirichlet boundary conditions
         //----------------------------------------------------------------------
@@ -1173,18 +1172,26 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           ParameterList mhdbcparams;
 
           // set action for elements
-          mhdbcparams.set("action"         ,"MixedHybridDirichlet");
-          mhdbcparams.set("lhs time factor",theta_*dta_           );
-          mhdbcparams.set("total time"     ,time_                 );
-
-          // not yet available for af-gen-alpha -> check in element routine
-          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-            mhdbcparams.set("using generalized-alpha time integration",true);
-          else
-            mhdbcparams.set("using generalized-alpha time integration",false);
+          mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+          mhdbcparams.set("total time",time_                 );
 
           // set the only required state vectors
-          discret_->SetState("u and p (trial)",velnp_);
+
+          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+          {
+            // careful: true is connected to the implicit treatment of p here
+            mhdbcparams.set("using p^{n+1} generalized-alpha time integration",false);
+
+            mhdbcparams.set("timefac",(gamma_/alphaM_)*dta_);
+            discret_->SetState("u and p (trial)",velaf_);
+            discret_->SetState("velaf",velaf_);
+          }
+          else
+          {
+            mhdbcparams.set("using p^{n+1} generalized-alpha time integration",false);
+            mhdbcparams.set("timefac"   ,theta_*dta_           );
+            discret_->SetState("u and p (trial)",velnp_);
+          }
 
           // evaluate all mixed hybrid Dirichlet boundary conditions
           discret_->EvaluateConditionUsingParentData
@@ -1210,9 +1217,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         }
 
-
-
+        //----------------------------------------------------------------------
         // account for potential Neumann inflow terms
+        //----------------------------------------------------------------------
         if (neumanninflow_)
         {
           // create parameter list
