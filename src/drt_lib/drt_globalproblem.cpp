@@ -719,14 +719,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     {
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("xfluid"    ,reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
-    if ( xfluiddis!=Teuchos::null )
+    if (xfluiddis!=Teuchos::null)
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 #ifdef D_ARTNET
@@ -748,7 +748,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    if ( xfluiddis!=Teuchos::null )
+    if (xfluiddis!=Teuchos::null)
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 #ifdef D_ARTNET
@@ -851,7 +851,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
-    if ( xfluiddis!=Teuchos::null )
+    if (xfluiddis!=Teuchos::null)
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
 
 #ifdef D_ARTNET
@@ -907,15 +907,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     else
     {
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
     AddDis(genprob.numff, fluiddis);
+    if (xfluiddis!=Teuchos::null)
+      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
+
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUID");
+    fluidelementtypes.insert("FLUID2");
+    fluidelementtypes.insert("FLUID3");
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    if (xfluiddis!=Teuchos::null)
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
