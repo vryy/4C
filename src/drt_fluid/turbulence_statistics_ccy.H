@@ -79,7 +79,8 @@ public:
   TurbulenceStatisticsCcy(RefCountPtr<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
                           RefCountPtr<Epetra_Vector>       dispnp             ,
-                          ParameterList&                   params             );
+                          ParameterList&                   params             ,
+                          const bool                       withscatra);
 
   /*!
   \brief Destructor
@@ -94,7 +95,8 @@ public:
   \brief Compute the in-shell mean values of first and second order
   moments for velocities, pressure .
   */
-  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp);
+  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+      Teuchos::RefCountPtr<Epetra_Vector> scanp);
 
 
   /*!
@@ -238,6 +240,19 @@ private:
   RefCountPtr<vector<double> >     pointsumuw_;
   //! sum over vw (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumvw_;
+
+  // for additional scalar transport
+
+  //! flag for mass transport statistics
+  const bool                       withscatra_;
+
+  //! pointer to mean scalar field
+  RefCountPtr<Epetra_Vector>       meanscanp_;
+
+  //! sum over c (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumc_;
+  //! sum over c^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumcc_;
 
 };
 

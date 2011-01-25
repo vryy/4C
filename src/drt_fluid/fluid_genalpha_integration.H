@@ -708,6 +708,9 @@ public:
     return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
   }
 
+  void SetScalarField(
+     RCP<const Epetra_Vector> scalarnp,
+     Teuchos::RCP<DRT::Discretization> scatradis);
 
 protected:
 

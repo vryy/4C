@@ -1925,6 +1925,11 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         // offset should be equal to dim for pressure case!
         coldofset.insert(lm[inode*(dim+1)+dim]+(offset-dim));
       }
+      else if(name == "averaged_scalar_field")
+      {
+        // offset should be equal to dim for pressure case!
+        coldofset.insert(lm[inode*(dim+1)+dim]+offset);
+      }
       else if(name == "phi")
       {
         DRT::Node* n = nurbsdis->lRowNode(inode);
@@ -2085,6 +2090,16 @@ void EnsightWriter::WriteDofResultStepForNurbs(
       {
         // offset should be equal to dim for pressure case!
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset-dim)];
+      }
+    }
+    else if(name == "averaged_scalar_field")
+    {
+      my_data.resize(numnp);
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        // offset should be equal to dim for pressure case!
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset)];
       }
     }
     else if(name == "phi")

@@ -519,4 +519,16 @@ void ADAPTER::FluidGenAlpha::SetInitialFlowField(const INPAR::FLUID::InitialFiel
    return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::SetTimeLomaFields(
+    RCP<const Epetra_Vector> scalarnp,
+    const double             thermpressnp,
+    RCP<const Epetra_Vector> scatraresidual,
+    Teuchos::RCP<DRT::Discretization> scatradis)
+{
+    fluid_.SetScalarField(scalarnp,scatradis);
+    return;
+};
+
 #endif  // #ifdef CCADISCRET

@@ -54,7 +54,8 @@ public:
     RCP<DRT::Discretization> discret        ,
     string                   homdir         ,
     double &                 density        ,
-    LINALG::MapExtractor&    velpressplitter
+    LINALG::MapExtractor&    velpressplitter,
+    const bool               withscatra
     );
 
   /*!
@@ -73,7 +74,8 @@ public:
 
   */
   void AddToCurrentTimeAverage(const double             dt ,
-                               const RCP<Epetra_Vector> vec);
+                               const RCP<Epetra_Vector> vec,
+                               const RCP<Epetra_Vector> scavec = Teuchos::null);
 
   /*!
   \brief Perform a averaging of the current, already time averaged
@@ -154,6 +156,13 @@ private:
   int                          curr_n_         ;
   //! time covered by current average
   double                       curr_avg_time_  ;
+
+  //! flag for additional averaging of scalar field
+  const bool                   withscatra_     ;
+  //! previous scalar field averages, done in time and space
+  RCP<Epetra_Vector>           prev_avg_sca_   ;
+  //! current scalar field averages, done in time and space
+  RCP<Epetra_Vector>           curr_avg_sca_   ;
 
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {

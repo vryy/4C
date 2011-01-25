@@ -3170,5 +3170,52 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::InvDirich
   return invtoggle;
 }
 
+/*----------------------------------------------------------------------*
+ | set scalar field at end of time step                       gjb 01/11 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidGenAlphaIntegration::SetScalarField(
+   RCP<const Epetra_Vector> scalarnp,
+   Teuchos::RCP<DRT::Discretization> scatradis)
+{
+  // initializations
+  int err(0);
+  double value(0.0);
+  vector<int> nodedofs;
+
+  //--------------------------------------------------------------------------
+  // Filling the scaaf-vector with scalar at time n+1 at pressure dofs
+  //--------------------------------------------------------------------------
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(lscatranode);
+    const int globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    const int localscatradofid = scalarnp->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    // get the processor's local fluid node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    // get the global ids of degrees of freedom associated with this node
+    nodedofs = discret_->Dof(lnode);
+    // get global and processor's local pressure dof id (using the map!)
+    const int globaldofid = nodedofs[numdim_];
+    const int localdofid = scaaf_->Map().LID(globaldofid);
+    if (localdofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    value = (*scalarnp)[localscatradofid];
+    err = scaaf_->ReplaceMyValue(localdofid,0,value);
+    if (err != 0) dserror("error while inserting value into scaaf_");
+  }
+
+  return;
+
+} // FluidGenAlphaIntegration::SetScalarField
+
 
 #endif

@@ -41,6 +41,7 @@ namespace FLD
     myvelnp_    (fluid.velnp_    ),
     myveln_     (fluid.veln_     ),
     myvelaf_    (fluid.velaf_    ),
+    myscanp_    (fluid.scaaf_    ),
     mydispnp_   (fluid.dispnp_   ),
     mydispn_    (fluid.dispn_    ),
     mygridveln_ (fluid.gridveln_ ),
@@ -152,6 +153,7 @@ namespace FLD
     else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
     {
       flow_=rotating_circular_cylinder_nurbs;
+      const bool withscatra = false;
 
       // do the time integration independent setup
       Setup();
@@ -161,7 +163,24 @@ namespace FLD
       statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
                                                       alefluid_           ,
                                                       mydispnp_           ,
-                                                      params_             ));
+                                                      params_             ,
+                                                      withscatra));
+    }
+    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
+    {
+      flow_=rotating_circular_cylinder_nurbs_scatra;
+      const bool withscatra = true;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+                                                      alefluid_           ,
+                                                      mydispnp_           ,
+                                                      params_             ,
+                                                      withscatra));
     }
     else
     {
@@ -171,19 +190,32 @@ namespace FLD
       Setup();
     }
 
-    // allocate one instance of the flow indepedent averaging procedure
-    // providiing colerful output for paraview
+    // allocate one instance of the flow independent averaging procedure
+    // providing colorful output for paraview
     {
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
-      statistics_general_mean_
+      if(flow_==rotating_circular_cylinder_nurbs_scatra)
+      {
+        // additional averaging of scalar field
+        statistics_general_mean_
         =rcp(new TurbulenceStatisticsGeneralMean(
-               discret_,
-               homdir,
-               density_,
-               fluid.VelPresSplitter()));
+            discret_,
+            homdir,
+            density_,
+            fluid.VelPresSplitter(),true));
+      }
+      else
+      {
+        statistics_general_mean_
+        =rcp(new TurbulenceStatisticsGeneralMean(
+            discret_,
+            homdir,
+            density_,
+            fluid.VelPresSplitter(),false));
+      }
     }
     return;
 
@@ -340,7 +372,9 @@ namespace FLD
                discret_,
                homdir,
                density_,
-               fluid.VelPresSplitter()));
+               fluid.VelPresSplitter(),
+               false // scatra support not yet activated.
+               ));
     }
 
     return;
@@ -591,7 +625,16 @@ namespace FLD
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
-        statistics_ccy_->DoTimeSample(myvelnp_);
+        statistics_ccy_->DoTimeSample(myvelnp_,Teuchos::null);
+        break;
+      }
+      case rotating_circular_cylinder_nurbs_scatra:
+      {
+
+        if(statistics_ccy_==null)
+          dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
+
+        statistics_ccy_->DoTimeSample(myvelnp_,myscanp_);
         break;
       }
       default:
@@ -661,7 +704,10 @@ namespace FLD
       }
 
       // add vector to general mean value computation
-      statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_);
+      if(flow_==rotating_circular_cylinder_nurbs_scatra)
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_);
+      else
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_);
 
     } // end step in sampling period
 
@@ -780,6 +826,7 @@ namespace FLD
         break;
       }
       case rotating_circular_cylinder_nurbs:
+      case rotating_circular_cylinder_nurbs_scatra:
       {
 
         if(statistics_ccy_==null)

@@ -25,14 +25,16 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   RCP<DRT::Discretization> discret        ,
   string                   homdir         ,
   double &                 density        ,
-  LINALG::MapExtractor&    velpressplitter
+  LINALG::MapExtractor&    velpressplitter,
+  const bool               withscatra
   )
   :
   discret_(discret),
   density_(density),
-  velpressplitter_(velpressplitter)
+  velpressplitter_(velpressplitter),
+  withscatra_(withscatra)
 {
-  // get directions to do spacial averaging
+  // get directions to do spatial averaging
   homdir_.clear();
 
   if(homdir=="xy")
@@ -87,7 +89,8 @@ FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
   const double             dt ,
-  const RCP<Epetra_Vector> vec)
+  const RCP<Epetra_Vector> vec,
+  const RCP<Epetra_Vector> scavec)
 {
   // remember time included in this average
   const double old_time = curr_avg_time_;
@@ -108,6 +111,14 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
   const double incfac =       dt/curr_avg_time_;
 
   curr_avg_->Update(incfac,*vec,oldfac);
+
+  if(withscatra_)
+  {
+    if ( curr_avg_sca_ != Teuchos::null)
+      curr_avg_sca_->Update(incfac,*scavec,oldfac);
+    else
+      dserror("curr_avg_sca_ is Teuchos::null");
+  }
 
   // increase number of steps included in this sample
   ++curr_n_;
@@ -941,6 +952,11 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
 
   prev_avg_->Update(incfac,*curr_avg_,oldfac);
 
+  if(withscatra_)
+  {
+    prev_avg_sca_->Update(incfac,*curr_avg_sca_,oldfac);
+  }
+
   // increase number of steps included in this sample
   prev_n_+=curr_n_;
 
@@ -964,6 +980,8 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(
   prev_avg_time_ = input.ReadDouble("sampling_time"      );
 
   input.ReadVector(prev_avg_,"averaged_velnp");
+  if(withscatra_)
+    input.ReadVector(prev_avg_sca_,"averaged_scanp");
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics
@@ -999,6 +1017,8 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
   output.WriteDouble("sampling_time"      , prev_avg_time_);
 
   output.WriteVector("averaged_velnp",prev_avg_);
+  if(withscatra_)
+    output.WriteVector("averaged_scanp",prev_avg_sca_);
 
   // output real pressure
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(prev_avg_);
@@ -1020,6 +1040,11 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 
   curr_avg_     = Teuchos::null;
   curr_avg_     = LINALG::CreateVector(*dofrowmap,true);
+  if(withscatra_)
+  {
+    curr_avg_sca_     = Teuchos::null;
+    curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   curr_n_       = 0;
   curr_avg_time_= 0.0;
@@ -1048,6 +1073,14 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 
   prev_n_       = 0;
   prev_avg_time_= 0.0;
+
+  if(withscatra_)
+  {
+    curr_avg_sca_     = Teuchos::null;
+    curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+    prev_avg_sca_     = Teuchos::null;
+    prev_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
