@@ -3340,9 +3340,18 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
-        veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
+
+    // for isogeometric problems we have more effort...
+    DRT::NURBS::apply_nurbs_initial_condition(
+      *discret_  ,
+      solver_    ,
+      startfuncno,
+      velnp_     );
+
+    // initialize veln_ as well.
+    veln_->Update(1.0,*velnp_ ,0.0);
 
     // add random perturbation of certain percentage to function
     if (initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
