@@ -70,7 +70,7 @@ ADAPTCONV_BETTER 0.1
 SIMPLER          No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE         inconsistent
-DEFINITION_TAU   Bazilevs
+DEFINITION_TAU   Taylor_Hughes_Zarins_Whiting_Jansen
 TDS              quasistatic
 TRANSIENT        no_transient
 PSPG             yes_pspg

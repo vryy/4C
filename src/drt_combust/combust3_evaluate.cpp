@@ -297,8 +297,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-            tautype == INPAR::FLUID::tautype_bazilevs))
+      if (not(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+                         INPAR::FLUID::tau_shakib_hughes_codina or
+                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt));
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
@@ -418,8 +426,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (!(tautype == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-            tautype == INPAR::FLUID::tautype_bazilevs))
+      if (not(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+                         INPAR::FLUID::tau_shakib_hughes_codina or
+                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt));
         dserror("unknown type of stabilization parameter definition");
 
       // time integration factors

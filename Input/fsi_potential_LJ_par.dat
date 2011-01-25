@@ -114,7 +114,7 @@ UPRES                           1
 ----------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
-DEFINITION_TAU                  Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based

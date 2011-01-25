@@ -107,7 +107,7 @@ TIMESTEP         50.0
 NEUMANNINFLOW    no
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
-DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall
 TDS                   quasistatic
 TRANSIENT             no_transient
 PSPG                  yes_pspg

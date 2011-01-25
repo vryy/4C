@@ -88,12 +88,16 @@ namespace INPAR
 
     enum TauType
     {
-      tautype_franca_barrenechea_valentin_wall,         // combustion & Fluid3
-      tautype_franca_barrenechea_valentin_wall_wo_dt,   // Fluid3
-      tautype_bazilevs,                                 // combustion & Fluid3
-      tautype_bazilevs_wo_dt,                           // Fluid3
-      tautype_franca_barrenechea_valentin_codina,       // Fluid3
-      tautype_oberai,                                   // Fluid3
+      tau_taylor_hughes_zarins,
+      tau_taylor_hughes_zarins_wo_dt,
+      tau_taylor_hughes_zarins_whiting_jansen,
+      tau_taylor_hughes_zarins_whiting_jansen_wo_dt,
+      tau_taylor_hughes_zarins_scaled,
+      tau_taylor_hughes_zarins_scaled_wo_dt,
+      tau_franca_barrenechea_valentin_frey_wall,
+      tau_franca_barrenechea_valentin_frey_wall_wo_dt,
+      tau_shakib_hughes_codina,
+      tau_shakib_hughes_codina_wo_dt,
       tau_not_defined
     };
 

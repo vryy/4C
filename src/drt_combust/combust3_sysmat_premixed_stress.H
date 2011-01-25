@@ -805,7 +805,7 @@ void SysmatDomainStress(
       double tau_stab_C  = 0.0;
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
           instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
-          INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+          INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       //------------------------------------------------------------------------

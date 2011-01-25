@@ -174,30 +174,31 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
 
   whichtau_ =  Teuchos::getIntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
   // check if tau can be handled
-  if (not(whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-      INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt or
-      INPAR::FLUID::tautype_bazilevs or
-      INPAR::FLUID::tautype_bazilevs_wo_dt or
-      INPAR::FLUID::tautype_franca_barrenechea_valentin_codina or
-      INPAR::FLUID::tautype_oberai))
+  if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
+                       INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+                       INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+                       INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+                       INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+                       INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+                       INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+                       INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+                       INPAR::FLUID::tau_shakib_hughes_codina or
+                       INPAR::FLUID::tau_shakib_hughes_codina_wo_dt))
     dserror("Definition of Tau cannot be handled by the element");
 
-  //stationary tau definition is switched on automatically
-  if (is_stationary_ == true)
+  // set correct stationary definition of stabilization parameter automatically
+  if (is_stationary_)
   {
-    if (whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall or
-       whichtau_ == INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt)
-    {
-      whichtau_ = INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt;
-    }
-    else if (whichtau_ == INPAR::FLUID::tautype_bazilevs or
-        whichtau_ == INPAR::FLUID::tautype_bazilevs_wo_dt)
-    {
-      whichtau_ = INPAR::FLUID::tautype_bazilevs_wo_dt;
-    }
-    else
-      dserror("Actual tau definition (%i) is not compatible with the stationary option",
-          whichtau_);
+    if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
+      whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
+      whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
   }
 
   // overrule higher_order_ele if input-parameter is set

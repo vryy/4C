@@ -477,7 +477,7 @@ void SysmatDomainProjection(
             double tau_stab_Mp = 0.0;
             double tau_stab_C  = 0.0;
             FLD::UTILS::computeStabilizationParams(u2_proj, xji,
-                false, 1.0, 1.0, vel_norm, strle, hk, mk, 1.0, 0.0, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+                false, 1.0, 1.0, vel_norm, strle, hk, mk, 1.0, 0.0, INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
                 tau_stab_M, tau_stab_Mp, tau_stab_C);
 
 

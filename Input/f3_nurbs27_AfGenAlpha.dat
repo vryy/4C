@@ -65,8 +65,8 @@ ADAPTCONV                       no
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state_predictor
 ------------------------------------FLUID DYNAMIC/STABILIZATION
-DEFINITION_TAU          Bazilevs
-EVALUATION_TAU        integration_point 
+DEFINITION_TAU        Taylor_Hughes_Zarins_Whiting_Jansen
+EVALUATION_TAU        integration_point
 TDS                   quasistatic
 TRANSIENT             no_transient
 SUPG                  yes_supg

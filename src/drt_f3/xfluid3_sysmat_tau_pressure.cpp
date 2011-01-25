@@ -1229,7 +1229,7 @@ void SysmatDomainTauPressure(
             double tau_stab_C  = 0.0;
             FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
                 instationary, dynvisc, dens, vel_norm, strle, hk, mk, FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta),
-                dt, INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
+                dt, INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
                 tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
             /*------------------------- evaluate rhs vector at integration point ---*/

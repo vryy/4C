@@ -1992,43 +1992,43 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // the options "tau_not_defined" are only available in Peter's Genalpha code
   // (there, which_tau is set via the string, not via INPAR::FLUID::TauType)
   setStringToIntegralParameter<INPAR::FLUID::TauType>("DEFINITION_TAU",
-                               "Barrenechea_Franca_Valentin_Wall",
-                               "Definition of tau_M,C",
+                               "Franca_Barrenechea_Valentin_Frey_Wall",
+                               "Definition of tau_M and Tau_C",
                                tuple<std::string>(
-                                 "Barrenechea_Franca_Valentin_Wall",
-                                 "Barrenechea_Franca_Valentin_Wall_wo_dt",
-                                 "BFVW_gradient_based_hk",
+                                 "Taylor_Hughes_Zarins",
+                                 "Taylor_Hughes_Zarins_wo_dt",
+                                 "Taylor_Hughes_Zarins_Whiting_Jansen",
+                                 "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt",
+                                 "Taylor_Hughes_Zarins_scaled",
+                                 "Taylor_Hughes_Zarins_scaled_wo_dt",
+                                 "Franca_Barrenechea_Valentin_Frey_Wall",
+                                 "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt",
+                                 "Shakib_Hughes_Codina",
+                                 "Shakib_Hughes_Codina_wo_dt",
+                                 //"BFVW_gradient_based_hk",
                                  "Smoothed_FBVW",
                                  "FBVW_without_dt",
-                                 "Franca_Barrenechea_Valentin_Codina",
                                  "Bazilevs",
                                  "Bazilevs_wo_dt",
-                                 "Codina",
-                                 "Oberai"),
+                                 "Codina"),
                                tuple<INPAR::FLUID::TauType>(
-                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
-                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_wall_wo_dt,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt,
+                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
+                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt,
+                                   INPAR::FLUID::tau_shakib_hughes_codina,
+                                   INPAR::FLUID::tau_shakib_hughes_codina_wo_dt,
+                                   //INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined,
-                                   INPAR::FLUID::tautype_franca_barrenechea_valentin_codina,
-                                   INPAR::FLUID::tautype_bazilevs,
-                                   INPAR::FLUID::tautype_bazilevs_wo_dt,
                                    INPAR::FLUID::tau_not_defined,
-                                   INPAR::FLUID::tautype_oberai),
+                                   INPAR::FLUID::tau_not_defined),
                                &fdyn_stab);
-
-#if 0
-  setStringToIntegralParameter<INPAR::FLUID::TauType>("TAUTYPE","Franca_Barrenechea_Valentin_Wall",
-                               "Type of definition of stabilization parameter",
-                               tuple<std::string>(
-                                 "Franca_Barrenechea_Valentin_Wall",
-                                 "Bazilevs"),
-                               tuple<INPAR::FLUID::TauType>(
-                                 INPAR::FLUID::tautype_franca_barrenechea_valentin_wall,
-                                 INPAR::FLUID::tautype_bazilevs),
-                               &fdyn_stab);
-#endif
 
   // this parameter selects the location where tau is evaluated
   setStringToIntegralParameter<int>("EVALUATION_TAU",

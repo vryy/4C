@@ -307,34 +307,8 @@ namespace ELEMENTS
                                 double&                             Cs          ///< parameter CS in fixed Smagorinsky
                                 );
 
-    /*!
-      \brief calculate stabilization parameter
-
-      Options for tau:
-
-      o Franca-Barrenechea-Valentin-Wall:
-           tauMp: Barrenechea, Valentin
-           tauMu: Franca, Valentin
-           tauC : Wall
-
-      o Bazilevs: bazilevs
-           tauM : Bazilevs, Whiting
-           tauC : Bazilevs
-
-      o Codina: codina
-           tauMp: Barrenechea, Valentin
-           tauMu: Franca, Valentin
-           tauC : Codina
-
-      o Codina: Oberei
-           tauMp:
-           tauMu:
-           tauC :
-    */
-    void CalcStabParameter(
-        const double                            timefac,  ///< time factor
-        const double                            vol       ///< volume
-        );
+    //! calculate stabilization parameter
+    void CalcStabParameter(const double  vol);  ///< volume
 
     //! calculate div(epsilon(u))
     void CalcDivEps(

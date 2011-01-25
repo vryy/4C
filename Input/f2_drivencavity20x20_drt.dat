@@ -72,7 +72,7 @@ SIMPLER      yes
 ------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based  // no_stabilization residual_based inconsistent
 TDS                   quasistatic     // quasistatic time_dependent
-DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall // Barrenechea_Franca_Valentin_Wall Bazilevs Codina
+DEFINITION_TAU        Franca_Barrenechea_Valentin_Frey_Wall
 TRANSIENT             no_transient    // no_transient yes_transient
 SUPG                  yes_supg        // no_supg yes_supg
 PSPG                  yes_pspg        // no_pspg yes_pspg

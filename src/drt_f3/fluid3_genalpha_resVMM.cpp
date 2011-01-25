@@ -266,7 +266,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   {
     const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-    if(taudef == "Barrenechea_Franca_Valentin_Wall")
+    if(taudef == "Franca_Barrenechea_Valentin_Frey_Wall")
     {
       whichtau = INPAR::FLUID::franca_barrenechea_valentin_wall;
     }
@@ -10540,7 +10540,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   {
     const string taudef = stablist.get<string>("DEFINITION_TAU");
 
-    if(taudef == "Barrenechea_Franca_Valentin_Wall")
+    if(taudef == "Franca_Barrenechea_Valentin_Frey_Wall")
     {
       whichtau = INPAR::FLUID::franca_barrenechea_valentin_wall;
     }

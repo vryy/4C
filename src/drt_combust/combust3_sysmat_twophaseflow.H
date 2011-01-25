@@ -524,8 +524,8 @@ void SysmatTwoPhaseFlow(
       // compute stabilization parameters
       // remark: 'dynvisc' stands for the dynamic viscosity here
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt, INPAR::FLUID::tautype_bazilevs,
-          tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_wall
+          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt, INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen,
+          tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_frey_wall
 
       // modify stabilization
       // TODO: does this have to be modified with respect to the density, as it was before?
