@@ -2108,6 +2108,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "square_cylinder",
       "square_cylinder_nurbs",
       "rotating_circular_cylinder_nurbs",
+      "rotating_circular_cylinder_nurbs_scatra",
       "loma_channel_flow_of_height_2",
       "loma_lid_driven_cavity",
       "loma_backward_facing_step"),
@@ -2119,10 +2120,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
       "For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
+      "For this flow with mass transport, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
       "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
       "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>(
