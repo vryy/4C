@@ -743,6 +743,7 @@ void THR::TimInt::ApplyForceExternal(
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternalConv(
   Teuchos::ParameterList& p,
+  const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
@@ -755,12 +756,12 @@ void THR::TimInt::ApplyForceExternalConv(
   // type of calling time integrator
   p.set("time integrator", MethodName());
   // other parameters needed by the elements
-//  p.set("total time", time);
+  p.set("total time", time);
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("old temperature", tempn);
-  discret_->SetState("temperature", temp);
+  discret_->SetState("old temperature", tempn);  // (*temp_)(0)
+  discret_->SetState("temperature", temp);  // tempn_
   // get load vector
   // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");

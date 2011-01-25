@@ -87,10 +87,10 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
 
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
-
+  
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv((*temp_)(0), (*temp_)(0), fext_, tang_);
+  ApplyForceExternalConv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
 
   // have a nice day
   return;
@@ -131,12 +131,6 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // build new external forces
   fextn_->PutScalar(0.0);
 
-  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
-
-  // initialise internal forces
-  fintn_->PutScalar(0.0);
-  fcapn_->PutScalar(0.0);
-
   // initialise tangent matrix to zero
   tang_->Zero();
 
@@ -149,7 +143,13 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // if the old temperature T_n  is sufficient --> no linearisation needed!
   // --> use (*temp_)(0)
-  ApplyForceExternalConv((*temp_)(0), tempn_, fextn_, tang_);
+  ApplyForceExternalConv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
+
+  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
+
+  // initialise internal forces
+  fintn_->PutScalar(0.0);
+  fcapn_->PutScalar(0.0);
 
   // ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
@@ -398,6 +398,7 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
  |  evaluate the convective boundary condition               dano 12/10 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceExternalConv(
+  const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector> fext,  //!< external force
@@ -409,7 +410,7 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(
   // set parameters
   p.set<double>("theta", theta_);
   // call the base function
-  TimInt::ApplyForceExternalConv(p,tempn,temp,fext,tang);
+  TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
 }

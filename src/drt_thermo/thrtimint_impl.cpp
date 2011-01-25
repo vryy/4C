@@ -264,6 +264,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
 
   // make negative residual
+  // K . DT = -fres = -(fint - fext)
   fres_->Scale(-1.0);
 
   // apply Dirichlet BCs to system of equations

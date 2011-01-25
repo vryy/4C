@@ -63,12 +63,13 @@ THR::TimIntStatics::TimIntStatics(
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   //! external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
-  //! set initial external force vector
-  ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  ApplyForceExternalConv((*temp_)(0), (*temp_)(0), fext_, tang_);
+  ApplyForceExternalConv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
+
+  //! set initial external force vector
+  ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
 
   //! have a nice day
   return;
@@ -81,6 +82,7 @@ THR::TimIntStatics::TimIntStatics(
 void THR::TimIntStatics::PredictConstTempConsistRate()
 {
   //! constant predictor : temperature in domain
+  // T_n+1,p = T_n
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
 
   //! new end-point temperature rates, these stay zero in static calculation
@@ -98,24 +100,20 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 {
   //! build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
-
-  //! initialize internal forces
-  fintn_->PutScalar(0.0);
-
+  
   //! initialize tangent matrix to zero
   tang_->Zero();
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
+  // Warning: do not use convection boundary condition with T_n and statics
+  // --> always use T_n+1 for statics!
+  ApplyForceExternalConv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
-  // if the boundary condition shall be dependent on the current temperature
-  // solution T_n+1 --> linearisation must be uncommented
-  // --> use tempn_
+  ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
-  // if the old temperature T_n  is sufficient --> no linearisation needed!
-  // --> use (*temp_)(0)
-  ApplyForceExternalConv((*temp_)(0), tempn_, fextn_, tang_);
+  //! initialize internal forces
+  fintn_->PutScalar(0.0);
 
   //! ordinary internal force and tangent
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
@@ -311,6 +309,7 @@ void THR::TimIntStatics::ApplyForceInternal(
  |  evaluate the convective boundary condition               dano 01/11 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ApplyForceExternalConv(
+  const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector> fext,  //!< external force
@@ -322,7 +321,7 @@ void THR::TimIntStatics::ApplyForceExternalConv(
   // set parameters
   // ...
   // call the base function
-  TimInt::ApplyForceExternalConv(p,tempn,temp,fext,tang);
+  TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
 }

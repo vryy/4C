@@ -121,6 +121,7 @@ namespace THR
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
     void ApplyForceExternalConv(
+      const double time,  //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
       Teuchos::RCP<Epetra_Vector> fext,  //!< internal force
