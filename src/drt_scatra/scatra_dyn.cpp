@@ -118,8 +118,14 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       else
         dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+      // we need a non-const list in order to be able to add sublists below!
+      Teuchos::ParameterList prbdyn(scatradyn);
+      // support for turbulent flow statistics
+      const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
+      prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
       // create an one-way coupling algorithm instance
-      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,scatradyn));
+      Teuchos::RCP<SCATRA::PassiveScaTraAlgorithm> algo = Teuchos::rcp(new SCATRA::PassiveScaTraAlgorithm(comm,prbdyn));
 
       if (restart)
       {

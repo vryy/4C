@@ -132,6 +132,12 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+    // we need a non-const list in order to be able to add sublists below!
+    Teuchos::ParameterList prbdyn(scatradyn);
+    // support for turbulent flow statistics
+    const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
+    prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
     RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
@@ -161,7 +167,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 
       // create an ELCH::MovingBoundaryAlgorithm instance
       Teuchos::RCP<ELCH::MovingBoundaryAlgorithm> elch
-      = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,elchcontrol));
+        = Teuchos::rcp(new ELCH::MovingBoundaryAlgorithm(comm,prbdyn));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);
@@ -181,7 +187,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     else
     {
       // create an ELCH::Algorithm instance
-      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,elchcontrol));
+      Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm,prbdyn));
 
       // read the restart information, set vectors and variables
       if (restart) elch->ReadRestart(restart);

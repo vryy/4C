@@ -20,7 +20,9 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::PassiveScaTraAlgorithm::PassiveScaTraAlgorithm(Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
-:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
+   samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
+   samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
  // no stuff to add here at the moment
   return;
@@ -163,6 +165,18 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
+
+  if ((Step()>=samstart_) and (Step()<=samstop_))
+  {
+  // if statistics for one-way coupled problems is performed, provide
+  // the field for the first scalar!
+  FluidField().SetTimeLomaFields(
+      ScaTraField().Phinp(),
+      0.0,
+      Teuchos::null,
+      ScaTraField().Discretization());
+  }
+
   FluidField().StatisticsAndOutput();
   ScaTraField().Output();
 

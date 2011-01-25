@@ -117,6 +117,12 @@ namespace ELCH
     /// initial fluid density
     const double density0_;
 
+    /// start step for sampling of statistical data
+    const int samstart_;
+
+    /// end step for sampling of statistical data
+    const int samstop_;
+
   };
 
 } // namespace ELCH

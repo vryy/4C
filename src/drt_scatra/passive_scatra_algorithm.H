@@ -64,6 +64,12 @@ namespace SCATRA{
 
   private:
 
+    /// start step for sampling of statistical data
+    const int samstart_;
+
+    /// end step for sampling of statistical data
+    const int samstop_;
+
   };
 
 } // namespace SCATRA

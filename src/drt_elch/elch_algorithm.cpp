@@ -36,7 +36,9 @@ ELCH::Algorithm::Algorithm(
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
    conpotincnp_ (rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
-   density0_ (GetInitialFluidDensity())
+   density0_ (GetInitialFluidDensity()),
+   samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
+   samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
   return;
 }
@@ -364,6 +366,18 @@ void ELCH::Algorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the discretizations, which in turn defines the dof number ordering of the
   // discretizations.
+
+  if ((Step()>=samstart_) and (Step()<=samstop_))
+  {
+  // if statistics for one-way coupled problems is performed, provide
+  // the field for the first scalar!
+  FluidField().SetTimeLomaFields(
+      ScaTraField().Phinp(),
+      0.0,
+      Teuchos::null,
+      ScaTraField().Discretization());
+  }
+
   FluidField().StatisticsAndOutput();
   ScaTraField().Output();
 
