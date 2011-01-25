@@ -1,4 +1,4 @@
-/*!---------------------------------------------------------------------- 
+/*!----------------------------------------------------------------------
 \file fluid3_boundary_impl.cpp
 \brief
 
@@ -787,34 +787,22 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
-  // check whether we have a generalized-alpha time-integration scheme
-  const bool is_genalpha = params.get<bool>("using generalized-alpha time integration");
-
   // get timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
   // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-  const double timefac = params.get<double>("thsl",-1.0);
-  if (timefac < 0.0) dserror("No thsl supplied");
+  // Peter: generalized-alpha: timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  const double timefac = f3Parameter_->timefac_;
 
   // get timefactor for right-hand side
   // One-step-Theta:            timefacrhs = theta*dt
   // BDF2:                      timefacrhs = 2/3 * dt
-  // af-generalized-alpha:      timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  // af-generalized-alpha:      timefacrhs = (1/alpha_M) * gamma * dt
   // Peter's generalized-alpha: timefacrhs = 1.0
-  double timefacrhs;
-  if (is_genalpha)
-  {
-     timefacrhs = params.get<double>("rhs time factor",-1.0);
-     if (timefacrhs < 0.0) dserror("incorrect time factor for right-hand side!");
-  }
-  else timefacrhs = timefac;
+  double timefacrhs = f3Parameter_->timefacrhs_;
 
   // set flag for type of linearization to default value (fixed-point-like)
-  bool is_newton = false;
-  // reset flag for Newton linearization
-  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
-    is_newton = true;
+  bool is_newton = f3Parameter_->is_newton_;
 
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1304,9 +1292,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
   // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
 
-  // get time integration parameters
-  const double timefac = params.get<double>("thsl",-1.0);
-  if (timefac < 0.0) dserror("No thsl supplied");
+  // get timefactor for left-hand side
+  // One-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  // Peter: generalized-alpha: timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  const double timefac = f3Parameter_->timefac_;
 
   // isotropic and isothermal surface tension coefficient
   double SFgamma = 0.0;
@@ -2479,7 +2470,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   const int myid = (*((*hixhybdbc_cond).Nodes()))[0];
 
   // find out whether we will use a time curve
-  const double time = params.get<double>("total time");
+  const double time = f3Parameter_->time_;
 
   // initialise scaling for distance to wall (Spalding)
   double hB_divided_by=1.0;
@@ -2499,7 +2490,7 @@ template <DRT::Element::DiscretizationType bndydistype,
     spalding=true;
 
     // get actual scaling
-    hB_divided_by=(*hixhybdbc_cond).GetDouble("hB_divided_by"); 
+    hB_divided_by=(*hixhybdbc_cond).GetDouble("hB_divided_by");
   }
   else if(*deftauB=="constant")
   {
@@ -2834,7 +2825,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
          PART 2.1: Include Spaldings law
     <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  
+
   double normtraction=0.0;
   {
     if(nsd==3)
@@ -2848,7 +2839,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       // allocate vector/matrix for shape functions and derivatives
       LINALG::Matrix<siel   ,1>     funct(true);
       LINALG::Matrix<bndynsd,siel>  deriv(true);
-      
+
       // allocate vector for parents shape functions and matrix for derivatives
       LINALG::Matrix<piel,1>        pfunct(true);
       LINALG::Matrix<nsd ,piel>     pderiv(true);
@@ -2864,10 +2855,10 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       //--------------------------------------------------
       // Gaussian integration points
-      const DRT::UTILS::IntPointsAndWeights<bndynsd> 
+      const DRT::UTILS::IntPointsAndWeights<bndynsd>
         intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bndydistype>::rule);
 
-      const DRT::UTILS::IntPointsAndWeights<nsd> 
+      const DRT::UTILS::IntPointsAndWeights<nsd>
         pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
       // coordinates of current integration point in reference coordinates
@@ -2885,7 +2876,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
         {
           const double* gpcoord = (intpoints.IP().qxg)[iquad];
-      
+
           for (int idim=0;idim<bndynsd ;idim++)
           {
             gps(iquad,idim) = gpcoord[idim];
@@ -2929,7 +2920,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           xsi(idim) = gpcoord[idim];
         }
-      
+
         DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
         DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
 
@@ -2946,7 +2937,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
         LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
-      
+
         DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
         // compute integration factor
@@ -2962,10 +2953,10 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           functionfac(i)= 1.0;
         }
-        
+
         // determine coordinates of current Gauss point
         LINALG::Matrix<3,1> coordgp(true);
-        
+
         for (int A=0;A<siel;++A)
         {
           for(int j=0;j<nsd;++j)
@@ -2973,9 +2964,9 @@ template <DRT::Element::DiscretizationType bndydistype,
             coordgp(j)+=xyze(j,A)*funct(A);
           }
         }
-        
+
         int functnum = -1;
-        
+
         for(int dim=0;dim<nsd;++dim)
         {
           // factor given by spatial function
@@ -2993,18 +2984,18 @@ template <DRT::Element::DiscretizationType bndydistype,
             }
           }
         }
-        
+
         LINALG::Matrix<nsd,1> delta_vel(true);
-      
+
         for(int rr=0;rr<nsd;++rr)
         {
           delta_vel(rr)=velint(rr)-u_dirich(rr)*functionfac(rr);
         }
 
-    
+
         //--------------------------------------------------
         // adjoint consistency term, tangential stress part (normalised)
-        
+
         /*
                      /                        \
                     |  h       /         \   h |
@@ -3018,7 +3009,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_  )-=fac*pfunct(A)*unitnormal(0)*delta_vel(0);
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+1)-=fac*pfunct(A)*unitnormal(1)*delta_vel(1);
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+2)-=fac*pfunct(A)*unitnormal(2)*delta_vel(2);
-        
+
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+3)-=fac*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+4)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(0)+unitnormal(0)*delta_vel(2));
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+5)-=fac*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
@@ -3031,7 +3022,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_  )+=fac*pfunct(A)*unitnormal(0)*unitnormal(0)*u_o_n;
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+1)+=fac*pfunct(A)*unitnormal(1)*unitnormal(1)*u_o_n;
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+2)+=fac*pfunct(A)*unitnormal(2)*unitnormal(2)*u_o_n;
-        
+
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+3)+=fac*pfunct(A)*2*unitnormal(0)*unitnormal(1)*u_o_n;
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+4)+=fac*pfunct(A)*2*unitnormal(0)*unitnormal(2)*u_o_n;
           vec_r_o_n_u_minus_g_SPALDING(A*numstressdof_+5)+=fac*pfunct(A)*2*unitnormal(1)*unitnormal(2)*u_o_n;
@@ -3052,7 +3043,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       // compute the norm of the tangential stresses
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
-        
+
         // traction and stress at gausspoint
         LINALG::Matrix<numstressdof_,1> GP_stress(true);
         LINALG::Matrix<nsd ,1>          traction(true);
@@ -3063,7 +3054,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           xsi(idim) = gpcoord[idim];
         }
-      
+
         DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
         DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
 
@@ -3080,7 +3071,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
         LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
-      
+
         DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
 
         // compute integration factor
@@ -3107,7 +3098,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         normtraction+=fac*(traction(0)*traction(0)+traction(1)*traction(1)+traction(2)*traction(2));
         area        +=fac;
       }
-      
+
       normtraction/=area;
       normtraction=sqrt(normtraction);
     }
@@ -3332,13 +3323,13 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
 
       LINALG::Matrix<nsd,1> delta_vel(true);
-      
+
       for(int rr=0;rr<nsd;++rr)
       {
         delta_vel(rr)=velint(rr)-u_dirich(rr)*functionfac(rr);
       }
 
-  
+
       /*
                               /              \
                              |  h       h     |
@@ -3403,7 +3394,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
         // Spaldings law to compute u_tau
         {
-          // 
+          //
           const double y=h/hB_divided_by;
 
 
@@ -3412,7 +3403,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
           // compute friction velocity u_tau
           double utau=visc_/y;
-        
+
           double res=SpaldingResidual(y    ,
                                       visc_,
                                       utau ,
@@ -3431,9 +3422,9 @@ template <DRT::Element::DiscretizationType bndydistype,
             {
               dserror("(Nearly) singular Jacobian of Spaldings equation");
             }
-          
+
             double inc = res/SpaldingJ;
-          
+
             // do Newton step
             utau-=inc;
 
@@ -3442,7 +3433,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                                  visc_,
                                  utau ,
                                  normu);
-          
+
             if(count>500)
             {
               printf("WARNING: no convergence in 500 steps in Newton iteration\n");
@@ -3455,9 +3446,9 @@ template <DRT::Element::DiscretizationType bndydistype,
           if(spalding)
           {
             const double dres_duplus=JacobianSpaldingResidual_uplus(y,visc_,utau,normu);
-            
+
             const double visc_dudy=-utau*utau/dres_duplus;
-	    
+
 	    if(fabs(normtraction)>0.001*visc_/y)
 	    {
 	      // based on viscous stresses
@@ -3497,18 +3488,18 @@ template <DRT::Element::DiscretizationType bndydistype,
           {
             mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
-          
+
             mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
           }
         }
-      
+
 
         for(int A=0;A<piel;++A)
         {
           vec_r_o_n_u_minus_g(A*numstressdof_  )-=invert*fac*C1*pfunct(A)*unitnormal(0)*delta_vel(0);
           vec_r_o_n_u_minus_g(A*numstressdof_+1)-=invert*fac*C1*pfunct(A)*unitnormal(1)*delta_vel(1);
-          
+
           vec_r_o_n_u_minus_g(A*numstressdof_+2)-=invert*fac*C1*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
         }
       }
@@ -3522,13 +3513,13 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
-          
+
             mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
-          
+
             mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
-          
+
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
           }
@@ -3539,7 +3530,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*C1*pfunct(A)*unitnormal(0)*delta_vel(0);
           vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*C1*pfunct(A)*unitnormal(1)*delta_vel(1);
           vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*C1*pfunct(A)*unitnormal(2)*delta_vel(2);
-        
+
           vec_r_o_n_u_minus_g(A*numstressdof_+3)-=fac*C1*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
           vec_r_o_n_u_minus_g(A*numstressdof_+4)-=fac*C1*pfunct(A)*(unitnormal(2)*delta_vel(0)+unitnormal(0)*delta_vel(2));
           vec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*C1*pfunct(A)*(unitnormal(2)*delta_vel(1)+unitnormal(1)*delta_vel(2));
@@ -3569,7 +3560,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*C2*pfunct(A)*unitnormal(0)*unitnormal(0)*u_o_n;
           vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*C2*pfunct(A)*unitnormal(1)*unitnormal(1)*u_o_n;
-        
+
           vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*u_o_n;
         }
       }
@@ -3590,7 +3581,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(2);
-          
+
             mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(2);
@@ -3598,7 +3589,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(2);
-          
+
             mat_r_o_n_u(A*numstressdof_+5,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(0);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(1);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(2);
@@ -3612,7 +3603,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*C2*pfunct(A)*unitnormal(0)*unitnormal(0)*u_o_n;
           vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*C2*pfunct(A)*unitnormal(1)*unitnormal(1)*u_o_n;
           vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*u_o_n;
-        
+
           vec_r_o_n_u_minus_g(A*numstressdof_+3)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*u_o_n;
           vec_r_o_n_u_minus_g(A*numstressdof_+4)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*u_o_n;
           vec_r_o_n_u_minus_g(A*numstressdof_+5)-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*u_o_n;

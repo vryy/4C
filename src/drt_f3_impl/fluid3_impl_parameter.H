@@ -29,7 +29,7 @@ namespace DRT
 namespace ELEMENTS
 {
 
-/// Evaluation of general parameters
+/// Evaluation of general parameters (constant over time)
 class Fluid3ImplParameter
 {
 public:
@@ -38,9 +38,15 @@ public:
   static Fluid3ImplParameter* Instance();
 
   //! general fluid parameter are set
-  void SetParameter(Teuchos::ParameterList& params    //> parameter list
+  void SetGeneralFluidParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
+  //! time parameter are set
+  void SetTimeParameter(Teuchos::ParameterList& params    //> parameter list
+      );
+
+  //! Flag SetGeneralParameter was called
+  bool set_general_fluid_parameter_;
   /// Flags to switch on/off the different fluid formulations
   //! flag to (de)activate generalized-alpha time-integration scheme
   bool is_genalpha_;
@@ -82,6 +88,8 @@ public:
   bool tau_gp_;
 
   /// parameters for the time integration
+  //! time algorithm
+  INPAR::FLUID::TimeIntegrationScheme timealgo_;
   //! actual time to evaluate the body BC
   double time_;
   //! time-step length
@@ -100,6 +108,9 @@ public:
   double alphaM_;
   //! generalised-alpha parameter, alphaF_*gamma_*dt_
   double afgdt_;
+  //! generalised-alpha parameter, gamma_/alphaM_*dt_
+  //! time integration factor for the left hand side (boundary elements)
+  double timefacrhs_;
 
   /// constant parameters for the turbulence formulation
   //! smagorinsky constant

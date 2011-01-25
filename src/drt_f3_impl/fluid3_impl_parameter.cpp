@@ -17,10 +17,12 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include <string>
+#include <iostream>
 
 #include "fluid3_impl_parameter.H"
 #include "../drt_lib/drt_dserror.H"
 
+using namespace std;
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
@@ -43,6 +45,7 @@ DRT::ELEMENTS::Fluid3ImplParameter* DRT::ELEMENTS::Fluid3ImplParameter::Instance
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   :
+  set_general_fluid_parameter_(false),
   is_genalpha_(false),
   is_conservative_(false),
   is_stationary_(false),
@@ -62,7 +65,16 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   turb_mod_action_(INPAR::FLUID::no_model),
   mat_gp_(false),     // standard evaluation of the material at the element center
   tau_gp_(false),     // standard evaluation of tau at the element center
+  time_(-1.0),
+  dt_(0.0),
   timefac_(0.0),
+  theta_(0.0),
+  omtheta_(0.0),
+  gamma_(0.0),
+  alphaF_(0.0),
+  alphaM_(0.0),
+  afgdt_(0.0),
+  timefacrhs_(0.0),
   Cs_(0.0),
   l_tau_(0.0)
 {
@@ -72,17 +84,39 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::Fluid3ImplParameter::SetGeneralFluidParameter( Teuchos::ParameterList& params )
 {
+  // routine SetGeneralFluidParameter was called once
+  set_general_fluid_parameter_ = true;
+
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
 //----------------------------------------------------------------------
 
-  // set flag, if it is a stationary fluid system
-  is_stationary_ = params.get<bool>("is stationary");
+  // set flag, time integration scheme
+  timealgo_ = params.get<INPAR::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme");
 
-  // check whether we have a generalized-alpha time-integration scheme
-  is_genalpha_ = params.get<bool>("using generalized-alpha time integration");
+  // set time integration scheme-specific element parameters
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
+  {
+    is_genalpha_ = false;
+    is_stationary_ = true;
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    is_genalpha_ = true;
+    is_stationary_ = false;
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_gen_alpha)
+  {
+    is_genalpha_ = true;
+    is_stationary_ = false;
+  }
+  else
+  {
+    is_genalpha_ = false;
+    is_stationary_ = false;
+  }
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //std::string newtonstr   = params.get<std::string>("Linearisation");
@@ -100,58 +134,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
   if (((physicaltype_ != INPAR::FLUID::boussinesq) and (physicaltype_ != INPAR::FLUID::incompressible))
       and (is_stationary_ == true))
     dserror("physical type is not supported in stationary FLUID implementation.");
-
-//----------------------------------------------------------------------
-// get control parameters for time integration
-//----------------------------------------------------------------------
-
-  // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
-  time_ = params.get<double>("total time",-1.0);
-
-  // set global variable timefac to zero
-  timefac_ = 0.0;
-
-  if (not is_stationary_)
-  {
-    // get time-step length and time-integration parameters
-    dt_      = params.get<double>("dt");
-    theta_   = params.get<double>("theta",-1.0);
-    omtheta_ = params.get<double>("omtheta",-1.0);
-
-    // compute timefactor for left-hand side:
-    // one-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-    // (For BDF2 and generalized-alpha, theta was already computed
-    //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
-    timefac_ = theta_*dt_;
-
-    // compute generalized-alpha-related values and set them appropriately
-    // otherwise
-    if (is_genalpha_)
-    {
-      gamma_  = params.get<double>("gamma");
-      alphaF_ = params.get<double>("alphaF");
-      alphaM_ = params.get<double>("alphaM");
-    }
-    else
-    {
-      gamma_  = theta_;
-      alphaF_ = 1.0;
-      alphaM_ = 1.0;
-    }
-
-    // if not generalized-alpha: afgdt = theta * dt_ = timefac_
-    afgdt_=alphaF_*gamma_*dt_;
-  }
-  else
-  {
-    // set timefactor for stationary case to 1.0
-    timefac_ = 1.0;
-  }
-
-  if (timefac_ < 0.0 or time_ < 0.0)
-    dserror("Negative time-integration parameter or time-step length supplied");
 
 // ---------------------------------------------------------------------
 // get control parameters for stabilization and higher-order elements
@@ -291,4 +273,74 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetParameter( Teuchos::ParameterList& p
       dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
     }
   } // end if(Classical LES)
+}
+
+void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterList& params )
+{
+  if(set_general_fluid_parameter_!= true)
+    dserror("General fluid parameter are not set yet!!");
+
+  //----------------------------------------------------------------------
+  // get control parameters for time integration
+  //----------------------------------------------------------------------
+
+  // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
+  time_ = params.get<double>("total time",-1.0);
+
+  // set global variable timefac to zero
+  timefac_ = 0.0;
+
+  if (not is_stationary_)
+  {
+    // get time-step length and time-integration parameters
+    dt_      = params.get<double>("dt");
+    theta_   = params.get<double>("theta",-1.0);
+    omtheta_ = params.get<double>("omtheta",-1.0);
+
+    // compute timefactor for left-hand side:
+    // one-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
+    // (For BDF2 and generalized-alpha, theta was already computed
+    //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
+    timefac_ = theta_*dt_;
+
+    // compute generalized-alpha-related values and set them appropriately
+    // otherwise
+    if (is_genalpha_)
+    {
+      gamma_  = params.get<double>("gamma");
+      alphaF_ = params.get<double>("alphaF");
+      alphaM_ = params.get<double>("alphaM");
+    }
+    else
+    {
+      gamma_  = theta_;
+      alphaF_ = 1.0;
+      alphaM_ = 1.0;
+    }
+
+    // if not generalized-alpha: afgdt = theta * dt_ = timefac_
+    afgdt_=alphaF_*gamma_*dt_;
+
+    if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+    {
+      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
+      timefacrhs_ =gamma_/alphaM_*dt_;
+    }
+    else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
+    {
+      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
+      timefacrhs_ = 1.0;
+    }
+  }
+  else // is_stationary == true
+  {
+    // set timefactor for stationary case to 1.0
+    timefac_ = 1.0;
+  }
+
+  if (timefac_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or timefacrhs_ < 0.0
+      or afgdt_ < 0.0)
+    dserror("Negative time-integration parameter or time-step length supplied");
 }

@@ -658,7 +658,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
     // get fine-scale velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv) 
+    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
          fsvderxy_.MultiplyNT(fsevelaf,derxy_);
     else fsvderxy_.Clear();
 
@@ -2252,7 +2252,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
                             +----
                               i,j
     */
-
+    //TODO: Boussinesq
     // definition of constants as described above
     double c1 = 4.0;
     if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or

@@ -21,6 +21,8 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+//#define BLOCKMATRIX
+//#define Output_MeshTying
 
 #undef WRITEOUTSTATISTICS
 
@@ -218,20 +220,79 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // nodes with 4 dofs each. (27*4=108)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-
-  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
+#ifdef BLOCKMATRIX
+  if(params_.get<int>("Mesh Tying"))
   {
-    // initialize standard (stabilized) system matrix
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+    // slave dof rowmap
+    gsdofrowmap_ = meshtying_.SlaveDofRowMap();
+
+    // master dof rowmap
+    gmdofrowmap_ = meshtying_.MasterDofRowMap();
+
+    // merge dofrowmap for slave and master discretization
+    gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
+
+    // dofrowmap for discretisation without slave and master dofrowmap
+    RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
+
+    // generate map for blockmatrix
+    std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
+    fluidmaps.push_back(gndofrowmap_);
+    fluidmaps.push_back(gmdofrowmap_);
+    fluidmaps.push_back(gsdofrowmap_);
+
+    Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(fluidmaps);
+
+    const std::vector<Teuchos::RCP<const Epetra_Map> > maps = fluidmaps;
+    LINALG::MultiMapExtractor blockrowdofmap;
+    blockrowdofmap.Setup(*fullmap,maps);
+
+    // allocate block matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat;
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(blockrowdofmap,blockrowdofmap,81,false,false));
+
+    sysmat_=mat;
+  }
+  else
+#else
+  if(params_.get<int>("Mesh Tying"))
+  {
+    // slave dof rowmap
+    gsdofrowmap_ = meshtying_.SlaveDofRowMap();
+
+    // master dof rowmap
+    gmdofrowmap_ = meshtying_.MasterDofRowMap();
+
+    // merge dofrowmap for slave and master discretization
+    gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
+
+    // dofrowmap for discretisation without slave and master dofrowmap
+    RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
   }
   else
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-    blocksysmat->SetNumdim(numdim_);
-    sysmat_ = blocksysmat;
+    gsdofrowmap_ = Teuchos::null;
+    gmdofrowmap_ = Teuchos::null;
+    gsmdofrowmap_ = Teuchos::null;
+    gndofrowmap_ = Teuchos::null;
   }
-
+#endif
+  {
+    if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
+    {
+      // initialize standard (stabilized) system matrix
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+    }
+    else
+    {
+      Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
+        Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+      blocksysmat->SetNumdim(numdim_);
+      sysmat_ = blocksysmat;
+    }
+  }
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
   // in this case, we need a basis vector for the nullspace/kernel
@@ -603,6 +664,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                                               impedancebc_,
                                                                dta_) );
 
+  // ---------------------------------------------------------------------
+  // set general fluid parameter defined before
+  // ---------------------------------------------------------------------
+  SetGeneralFluidParameter();
+
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -865,7 +931,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     discret_->ClearState();
 
-    // set all parameters and states required for Neumann conditions
+    // set thermodynamic pressure
     eleparams.set("Physical Type",physicaltype_);
     eleparams.set("thermodynamic pressure",thermpressaf_);
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
@@ -885,6 +951,10 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
+
+  // -------------------------------------------------------------------
+  //  Compute accelerations and set time parameter
+  // -------------------------------------------------------------------
 
   // -------------------------------------------------------------------
   //  For af-generalized-alpha time-integration scheme:
@@ -937,6 +1007,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // ----------------------------------------------------------------
     GenAlphaIntermediateValues();
   }
+
+  SetTimeParameter();
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -1060,17 +1132,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         }
       }
 
-      // set general element parameters
-      eleparams.set("dt",dta_);
-      eleparams.set("theta",theta_);
-      eleparams.set("omtheta",omtheta_);
-      eleparams.set("form of convective term",convform_);
-      eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("Linearisation",newton_);
-      eleparams.set("Physical Type", physicaltype_);
-
-      // parameters for stabilization
-      eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+      // Set action type
+      eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // parameters for stabilization
       eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
@@ -1095,32 +1158,14 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // set scheme-specific element parameters and vector values
       if (timealgo_==INPAR::FLUID::timeint_stationary)
       {
-        eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-        eleparams.set("using generalized-alpha time integration",false);
-        eleparams.set("total time",time_);
-        eleparams.set("is stationary", true);
-
         discret_->SetState("velaf",velnp_);
       }
       else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
       {
-        eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-        eleparams.set("using generalized-alpha time integration",true);
-        eleparams.set("total time",time_-(1-alphaF_)*dta_);
-        eleparams.set("is stationary", false);
-        eleparams.set("alphaF",alphaF_);
-        eleparams.set("alphaM",alphaM_);
-        eleparams.set("gamma",gamma_);
-
         discret_->SetState("velaf",velaf_);
       }
       else
       {
-        eleparams.set("action","calc_fluid_systemmat_and_residual");
-        eleparams.set("using generalized-alpha time integration",false);
-        eleparams.set("total time",time_);
-        eleparams.set("is stationary", false);
-
         discret_->SetState("velaf",velnp_);
       }
 
@@ -1156,7 +1201,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           // set action for elements
           eleparams.set("action","calc_surface_tension");
-          eleparams.set("thsl",theta_*dta_);
 
           discret_->ClearState();
           discret_->SetState("dispnp", dispnp_);
@@ -1173,7 +1217,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           // set action for elements
           mhdbcparams.set("action"    ,"MixedHybridDirichlet");
-          mhdbcparams.set("total time",time_                 );
 
           // set the only required state vectors
 
@@ -1227,9 +1270,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           // action for elements
           condparams.set("action","calc_Neumann_inflow");
-          condparams.set("thsl",theta_*dta_);
-          condparams.set("Linearisation",newton_);
-          condparams.set("Physical Type",physicaltype_);
 
           // set thermodynamic pressure
           condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -1239,13 +1279,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->SetState("scaaf",scaaf_);
           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
           {
-            condparams.set("using generalized-alpha time integration",true);
-            condparams.set("rhs time factor",(gamma_/alphaM_)*dta_);
             discret_->SetState("velaf",velaf_);
           }
           else
           {
-            condparams.set("using generalized-alpha time integration",false);
             discret_->SetState("velaf",velnp_);
           }
 
@@ -1313,11 +1350,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     //double dtsysmatsplit_=0.0;
     if(params_.get<int>("Mesh Tying"))
     {
-      // get cpu time
-      //const double tcpu=Teuchos::Time::wallTime();
+#ifdef BLOCKMATRIX
+      MeshTyingMatrixCondenstation_BlockMatrix();
+#else
       MeshTyingMatrixCondenstation();
-      // end time measurement for element
-      //dtsysmatsplit_=Teuchos::Time::wallTime()-tcpu;
+#endif
     }
 
     // blank residual DOFs which are on Dirichlet BC
@@ -1626,6 +1663,20 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 #endif
 
+#ifdef Output_MeshTying
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+    Teuchos::RCP<LINALG::SparseMatrix> Test = sysmat->Merge();
+    LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*Test->EpetraMatrix(),true);
+
+    LINALG::PrintMatrixInMatlabFormat("sysmat_SplitMatrix",*sysmat->EpetraMatrix(),true);
+
+    LINALG::PrintBlockMatrixInMatlabFormat("sysmat",*sysmat);
+
+    LINALG::PrintVectorInMatlabFormat("residual",*residual_);
+
+    dserror("Stop Meshtying");
+#endif
+
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
       solver_.ResetTolerance();
 
@@ -1635,11 +1686,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
     if(params_.get<int>("Mesh Tying"))
     {
-      // get cpu time
-      //const double tcpu=Teuchos::Time::wallTime();
       GetSlaveVelocity();
-      // end time measurement for element
-     //dtressplit_=Teuchos::Time::wallTime()-tcpu;
     }
 
     // -------------------------------------------------------------------
@@ -2300,17 +2347,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
   }
 
-  // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",omtheta_);
-  eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  // set action type
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
 
   // parameters for turbulence model
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
@@ -2335,32 +2373,14 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_stationary)
   {
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-    eleparams.set("is stationary", true);
-
     discret_->SetState("velaf",velnp_);
   }
   else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
-    eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",true);
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("is stationary", false);
-    eleparams.set("alphaF",alphaF_);
-    eleparams.set("alphaM",alphaM_);
-    eleparams.set("gamma",gamma_);
-
     discret_->SetState("velaf",velaf_);
   }
   else
   {
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-    eleparams.set("is stationary", false);
-
     discret_->SetState("velaf",velnp_);
   }
 
@@ -2381,9 +2401,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
     // action for elements
     condparams.set("action","calc_Neumann_inflow");
-    condparams.set("thsl",theta_*dta_);
-    condparams.set("Linearisation",newton_);
-    condparams.set("Physical Type", physicaltype_);
 
     // set thermodynamic pressure
     condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -2393,13 +2410,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     discret_->SetState("scaaf",scaaf_);
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
-      condparams.set("using generalized-alpha time integration",true);
-      condparams.set("rhs time factor",(gamma_/alphaM_)*dta_);
       discret_->SetState("velaf",velaf_);
     }
     else
     {
-      condparams.set("using generalized-alpha time integration",false);
       discret_->SetState("velaf",velnp_);
     }
 
@@ -2520,18 +2534,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // create the parameters for the discretization
   ParameterList eleparams;
 
-  // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",omtheta_);
-  eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-
   // parameters for stabilization
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
@@ -2556,22 +2558,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",true);
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("is stationary", false);
-    eleparams.set("alphaF",alphaF_);
-    eleparams.set("alphaM",alphaM_);
-    eleparams.set("gamma",gamma_);
-
     discret_->SetState("velaf",velaf_);
   }
   else
   {
     eleparams.set("action","calc_fluid_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-    eleparams.set("is stationary", false);
-
     discret_->SetState("velaf",velnp_);
   }
 
@@ -2592,7 +2583,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
     // set action for elements
     eleparams.set("action","calc_surface_tension");
-    eleparams.set("thsl",theta_*dta_);
 
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
@@ -3949,9 +3939,9 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
    //                         out to screen
    // -------------------------------------------------------------------
    if (myrank_==0)
-    {
-      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-    }
+   {
+    printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+   }
 
     // -------------------------------------------------------------------
     //         evaluate Dirichlet and Neumann boundary conditions
@@ -4011,6 +4001,8 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
       discret_->ClearState();
     }
+
+    SetTimeParameter();
 
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
@@ -4288,18 +4280,8 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
       }
     }
 
+    // general fluid and time parameter are set in PrepareTimeStep()
     ParameterList eleparams;
-
-    // set general element parameters
-    eleparams.set("dt",dta_);
-    eleparams.set("theta",theta_);
-    eleparams.set("omtheta",omtheta_);
-    eleparams.set("Linearisation",newton_);
-    eleparams.set("form of convective term",convform_);
-    eleparams.set("Physical Type", physicaltype_);
-
-    // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
 
     // parameters for stabilization
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
@@ -4318,26 +4300,14 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("dispnp", griddisp);
     discret_->SetState("gridv", zeros_);
 
+    eleparams.set("action","calc_fluid_systemmat_and_residual");
     // set scheme-specific element parameters and vector values
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     {
-      eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-      eleparams.set("using generalized-alpha time integration",true);
-      eleparams.set("total time",time_-(1-alphaF_)*dta_);
-      eleparams.set("is stationary", false);
-      eleparams.set("alphaF",alphaF_);
-      eleparams.set("alphaM",alphaM_);
-      eleparams.set("gamma",gamma_);
-
       discret_->SetState("velaf",velaf_);
     }
     else
     {
-      eleparams.set("action","calc_fluid_systemmat_and_residual");
-      eleparams.set("using generalized-alpha time integration",false);
-      eleparams.set("total time",time_);
-      eleparams.set("is stationary", false);
-
       discret_->SetState("velaf", velnp_);
     }
 
@@ -4550,34 +4520,85 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   return wss;
 }
 
+// -------------------------------------------------------------------
+// set general fluid parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidImplicitTimeInt::SetGeneralFluidParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_general_fluid_parameter");
+
+  // set general element parameters
+  eleparams.set("form of convective term",convform_);
+  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("Linearisation",newton_);
+  eleparams.set("Physical Type", physicaltype_);
+
+  // parameter for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameter for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  //set time integration scheme
+  eleparams.set("TimeIntegrationScheme", timealgo_);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+
+// -------------------------------------------------------------------
+// set general time parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidImplicitTimeInt::SetTimeParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_time_parameter");
+
+  // set general element parameters
+  eleparams.set("dt",dta_);
+  eleparams.set("theta",theta_);
+  eleparams.set("omtheta",omtheta_);
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
+  {
+    eleparams.set("total time",time_);
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
+  }
+  else
+  {
+    eleparams.set("total time",time_);
+  }
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
 void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
 {
-  /*double time_split=0.0;
-  double time_multiply=0.0;
-  double time_fill=0.0;*/
-
-  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
   RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-
   RCP<Epetra_Vector> residual = residual_;
-
-  // slave dof rowmap
-  RCP<Epetra_Map> gsdofrowmap = meshtying_.SlaveDofRowMap();
-
-  // master dof rowmap
-  RCP<Epetra_Map> gmdofrowmap = meshtying_.MasterDofRowMap();
-
-  // merge dofrowmap for slave and master discretization
-  RCP<Epetra_Map> gsmdofrowmap = LINALG::MergeMap(*meshtying_.MasterDofRowMap(),*meshtying_.SlaveDofRowMap(),false);
-
-  // dofrowmap for discretisation without slave and master dofrowmap
-  RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *meshtying_.SlaveDofRowMap());
-  gndofrowmap = LINALG::SplitMap(*gndofrowmap, *meshtying_.MasterDofRowMap());
-
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   /**********************************************************************/
   /* Split kteff into 3x3 block matrix                                  */
   /**********************************************************************/
+
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*dofrowmap,500,true,false,sysmat->GetMatrixtype()));
 
   // we want to split k into 3 groups s,m,n = 9 blocks
   RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
@@ -4592,67 +4613,62 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   RCP<LINALG::SparseMatrix> tempmtx2;
   RCP<LINALG::SparseMatrix> tempmtx3;
 
+  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
+
   // we want to split f into 3 groups s.m,n
   RCP<Epetra_Vector> fs, fm, fn;
 
   // temporarily we need the group sm
   RCP<Epetra_Vector> fsm;
 
-  /*{
-    // get cpu time
-    const double tcpu=Teuchos::Time::wallTime();*/
+/*{
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();*/
 
   // split into interface and domain dof's
-  LINALG::SplitMatrix2x2(sysmat,gsmdofrowmap,gndofrowmap,gsmdofrowmap,gndofrowmap,ksmsm,ksmn,knsm,knn);
+  LINALG::SplitMatrix2x2(sysmat,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
 
   // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap,gmdofrowmap,gsdofrowmap,gmdofrowmap,kss,ksm,kms,kmm);
+  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
+
   // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap,gmdofrowmap,gndofrowmap,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(knsm,gndofrowmap,tempmap,gsdofrowmap,gmdofrowmap,kns,knm,tempmtx1,tempmtx2);
+  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
 
 #ifdef Output_MeshTying
   cout << "sysmat: " << endl << *sysmat << endl;
-  cout << "Teil nn " << endl << *knn << endl;
-  cout << "Teil mm: " << endl << *kmm << endl;
-  cout << "Teil ss: " << endl << *kss << endl;
 
-  cout << "Teil sm: " << endl << *ksm << endl;
+  cout << "Teil nn " << endl << *knn << endl;
+  cout << "Teil nm: " << endl << *knm << endl;
+  cout << "Teil ns: " << endl << *kns << endl;
+
+  cout << "Teil mn: " << endl << *kmn << endl;
+  cout << "Teil mm: " << endl << *kmm << endl;
   cout << "Teil ms: " << endl << *kms << endl;
 
-  cout << "Teil ns: " << endl << *kns << endl;
-  cout << "Teil nm: " << endl << *knm << endl;
-
   cout << "Teil sn: " << endl << *ksn << endl;
-  cout << "Teil mn: " << endl << *kmn << endl;
+  cout << "Teil sm: " << endl << *ksm << endl;
+  cout << "Teil ss: " << endl << *kss << endl;
 #endif
 
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
   /**********************************************************************/
 
-  // we want to split f into 3 groups s.m,n
-  //RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  //RCP<Epetra_Vector> fsm;
-
   // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap,fsm,gndofrowmap,fn);
+  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
 
   // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap));
+  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap,*fsm,gsdofrowmap,fs,gmdofrowmap,fm);
-/*
-  // end time measurement for element
-   time_split=Teuchos::Time::wallTime()-tcpu;
+  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
-   cout << "splitting sysmat = " << time_split << endl;
-  }*/
+/*  // end time measurement for element
+  cout << endl << "splitting = " << Teuchos::Time::wallTime()-tcpu << endl;
+}*/
 
 #ifdef Output_MeshTying
   cout << "residual " << endl << *residual << endl << endl;
@@ -4665,31 +4681,29 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   /* Build the final K and f blocks                                     */
   /**********************************************************************/
 
-  RCP<LINALG::SparseMatrix> knm_mod = rcp(new LINALG::SparseMatrix(*gndofrowmap,100));
-  RCP<LINALG::SparseMatrix> kms_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
-  RCP<LINALG::SparseMatrix> kmn_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
-  RCP<LINALG::SparseMatrix> kmm_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
-  RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap,true));
+  RCP<LINALG::SparseMatrix> knm_mod = rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
+  RCP<LINALG::SparseMatrix> kms_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  RCP<LINALG::SparseMatrix> kmn_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  RCP<LINALG::SparseMatrix> kmm_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_,true));
+  RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap_));
   RCP<LINALG::SparseMatrix> onesdiag;
 
-/*
-  {
-    // get cpu time
-    const double tcpu=Teuchos::Time::wallTime();*/
+/*{
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();*/
 
   RCP<LINALG::SparseMatrix> P = meshtying_.GetMortarTrafo();
 
   // knn: nothing to do
 
   // knm: add kns*mbar
-  //RCP<LINALG::SparseMatrix> knm_mod = rcp(new LINALG::SparseMatrix(*gndofrowmap,100));
   knm_mod->Add(*knm,false,1.0,1.0);
   RCP<LINALG::SparseMatrix> knm_add = LINALG::MLMultiply(*kns,false,*P,false,false,false,true);
   knm_mod->Add(*knm_add,false,1.0,1.0);
   knm_mod->Complete(knm->DomainMap(),knm->RowMap());
 
   // kms: add T(mbar)*kss
-  //RCP<LINALG::SparseMatrix> kms_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
   // kms is zero -> fill with zero
   kms_mod->Add(*kms,false,1.0,1.0);
   RCP<LINALG::SparseMatrix> kms_add = LINALG::MLMultiply(*P,true,*kss,false,false,false,true);
@@ -4697,14 +4711,12 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   kms_mod->Complete(kms->DomainMap(),kms->RowMap());
 
   // kmn: add T(mbar)*ksn
-  //RCP<LINALG::SparseMatrix> kmn_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
   kmn_mod->Add(*kmn,false,1.0,1.0);
   RCP<LINALG::SparseMatrix> kmn_add = LINALG::MLMultiply(*P,true,*ksn,false,false,false,true);
   kmn_mod->Add(*kmn_add,false,1.0,1.0);
   kmn_mod->Complete(kmn->DomainMap(),kmn->RowMap());
 
   // kmm: add T(mbar)*ksm + kmsmod*mbar
-  //RCP<LINALG::SparseMatrix> kmm_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap,100));
   kmm_mod->Add(*kmm,false,1.0,1.0);
   // ksm is zero -> fill with zero
   RCP<LINALG::SparseMatrix> kmm_add = LINALG::MLMultiply(*P,true,*ksm,false,false,false,true);
@@ -4717,34 +4729,18 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   // fs: nothing to do
 
   // fm: add T(mbar)*fs
-  //RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap,true));
   P->Multiply(true,*fs,*fm_mod);
   fm_mod->Update(1.0,*fm,1.0);
 
   // build identity matrix for slave dofs
-  RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap));
   ones->PutScalar(1.0);
   //RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
   onesdiag = rcp(new LINALG::SparseMatrix(*ones));
   onesdiag->Complete();
-/*
-  // end time measurement for element
-   time_multiply=Teuchos::Time::wallTime()-tcpu;
-
-   cout << "multiply sysmat = " << time_multiply << endl;
-}*/
 
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including meshtying)            */
   /**********************************************************************/
-
-  // npr: number of entries per row
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*dofrowmap,500,true,false,sysmat->GetMatrixtype()));
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
-/*
-  {
-    // get cpu time
-    const double tcpu=Teuchos::Time::wallTime();*/
 
   // add n submatrices to kteffnew
   kteffnew->Add(*knn,false,1.0,1.0);
@@ -4769,11 +4765,58 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   RCP<Epetra_Vector> fm_modexp = rcp(new Epetra_Vector(*dofrowmap));
   LINALG::Export(*fm_mod,*fm_modexp);
   feffnew->Update(1.0,*fm_modexp,1.0);
-/*
-  // end time measurement for element
-   time_fill=Teuchos::Time::wallTime()-tcpu;
 
-   cout << "fill sysmat = " << time_fill << endl;
+#if 0
+    // we want to split k into 3 groups s,m,n = 9 blocks
+    RCP<LINALG::SparseMatrix> ss, sm, sn, ms, mm, mn, ns, nm, nn;
+
+    // temporarily we need the blocks ksmsm, ksmn, knsm
+    // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+    RCP<LINALG::SparseMatrix> smsm, smn, nsm;
+
+    // some temporary RCPs
+    RCP<Epetra_Map> map;
+    RCP<LINALG::SparseMatrix> mtx1;
+    RCP<LINALG::SparseMatrix> mtx2;
+    RCP<LINALG::SparseMatrix> mtx3;
+
+
+    /*{
+      // get cpu time
+      const double tcpu=Teuchos::Time::wallTime();*/
+
+    // split into interface and domain dof's
+    LINALG::SplitMatrix2x2(kteffnew,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,smsm,smn,nsm,nn);
+
+    // further splits into slave part + master part
+    LINALG::SplitMatrix2x2(smsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,ss,sm,ms,mm);
+    // tempmap and tempmtx1 are dummy matrixes
+    LINALG::SplitMatrix2x2(smn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,map,sn,mtx1,mn,mtx2);
+    // tempmap and tempmtx1 are dummy matrixes
+    LINALG::SplitMatrix2x2(nsm,gndofrowmap_,map,gsdofrowmap_,gmdofrowmap_,ns,nm,mtx1,mtx2);
+
+    //#ifdef Output_MeshTying
+    //cout << "sysmat: " << endl << *sysmat << endl;
+
+    cout << "Teil nn " << endl << *nn << endl;
+    cout << "Teil nm: " << endl << *nm << endl;
+    cout << "Teil ns: " << endl << *ns << endl;
+
+    cout << "Teil mn: " << endl << *mn << endl;
+    cout << "Teil mm: " << endl << *mm << endl;
+    cout << "Teil ms: " << endl << *ms << endl;
+
+    cout << "Teil sn: " << endl << *sn << endl;
+    cout << "Teil sm: " << endl << *sm << endl;
+    cout << "Teil ss: " << endl << *ss << endl;
+
+    cout << "vector: " << endl << *feffnew << endl;
+
+#endif
+
+
+/*  // end time measurement for element
+   cout << "condenstation = " << Teuchos::Time::wallTime()-tcpu << endl << endl;
 }*/
 
 #ifdef Output_MeshTying
@@ -4793,18 +4836,8 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
 
 void FLD::FluidImplicitTimeInt::GetSlaveVelocity()
 {
-  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
   RCP<Epetra_Vector> incvel = incvel_;
-
-  // slave dof rowmap
-  RCP<Epetra_Map> gsdofrowmap = meshtying_.SlaveDofRowMap();
-  // master dof rowmap
-  RCP<Epetra_Map> gmdofrowmap = meshtying_.MasterDofRowMap();
-  // merge dofrowmap for slave and master discretization
-  RCP<Epetra_Map> gsmdofrowmap = LINALG::MergeMap(*meshtying_.MasterDofRowMap(),*meshtying_.SlaveDofRowMap(),false);
-  // dofrowmap for discretisation without slave and master dofrowmap
-  RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *meshtying_.SlaveDofRowMap());
-  gndofrowmap = LINALG::SplitMap(*gndofrowmap, *meshtying_.MasterDofRowMap());
+  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
 
   /**********************************************************************/
   /* Split feff into 3 subvectors                                       */
@@ -4817,14 +4850,14 @@ void FLD::FluidImplicitTimeInt::GetSlaveVelocity()
   RCP<Epetra_Vector> fsm;
 
   // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*incvel,gsmdofrowmap,fsm,gndofrowmap,fn);
+  LINALG::SplitVector(*dofrowmap,*incvel,gsmdofrowmap_,fsm,gndofrowmap_,fn);
 
   // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap));
+  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap,*fsm,gsdofrowmap,fs,gmdofrowmap,fm);
+  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
 
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including meshtying)            */
@@ -4835,7 +4868,7 @@ void FLD::FluidImplicitTimeInt::GetSlaveVelocity()
   RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
 
   // fs: add T(mbar)*fs
-  RCP<Epetra_Vector> fs_mod = rcp(new Epetra_Vector(*gsdofrowmap,true));
+  RCP<Epetra_Vector> fs_mod = rcp(new Epetra_Vector(*gsdofrowmap_,true));
   P->Multiply(false,*fm,*fs_mod);
 
 #ifdef Output_MeshTying
@@ -4864,7 +4897,157 @@ void FLD::FluidImplicitTimeInt::GetSlaveVelocity()
 
   incvel_ = feffnew;
 
-  dserror("Implementation mesh tying ends here");
+  return;
+};
+
+void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation_BlockMatrix()
+{
+  //*************************************************
+  //  split residual into three parts
+  //*************************************************
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+  RCP<Epetra_Vector> residual = residual_;
+  const Epetra_Map* dofrowmap =  discret_->DofRowMap();;
+
+  // we want to split f into 3 groups s.m,n
+  RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  RCP<Epetra_Vector> fsm;
+
+  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
+  RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_,true));
+
+/*{
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();*/
+
+  // do the vector splitting smn -> sm+n
+  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
+
+  // we want to split fsm into 2 groups s,m
+  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // do the vector splitting sm -> s+m
+  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+
+/*  // end time measurement for element
+  cout << endl << "spliting = " << Teuchos::Time::wallTime()-tcpu << endl;
+}*/
+//*************************************************
+//  split residual into three parts
+//*************************************************
+/*{
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();*/
+
+  // get transformation matrix
+  RCP<LINALG::SparseMatrix> P = meshtying_.GetMortarTrafo();
+
+  // compute modification for block knm
+  RCP<LINALG::SparseMatrix> knm_mod = MLMultiply(sysmat->Matrix(0,2),false,*P,false,false,false,true);
+
+  // compute modification for block kmn
+  RCP<LINALG::SparseMatrix> kmn_mod = MLMultiply(*P,true,sysmat->Matrix(2,0),false,false,false,true);
+
+  // compute modification for block kmm
+  RCP<LINALG::SparseMatrix> kss_mod = MLMultiply(*P,true,sysmat->Matrix(2,2),false,false,false,true);
+  RCP<LINALG::SparseMatrix> kmm_mod = MLMultiply(*kss_mod,false,*P,false,false,false,true);
+
+  // build identity matrix for slave dofs
+  RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(sysmat->Matrix(2,2).RowMap()));
+  ones->PutScalar(1.0);
+  RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
+  onesdiag->Complete();
+
+  // Add transformation matrix to nm
+  sysmat->Matrix(0,1).UnComplete();
+  sysmat->Matrix(0,1).Add(*knm_mod,false,1.0,1.0);
+
+  // Add transformation matrix to mn
+  sysmat->Matrix(1,0).UnComplete();
+  sysmat->Matrix(1,0).Add(*kmn_mod,false,1.0,1.0);
+  // Add transformation matrix to mm
+  sysmat->Matrix(1,1).UnComplete();
+  sysmat->Matrix(1,1).Add(*kmm_mod,false,1.0,1.0);
+
+  // Fill ns with zero's
+  sysmat->Matrix(0,2).UnComplete();
+  sysmat->Matrix(0,2).Zero();
+
+  // Fill ms with zero's
+  sysmat->Matrix(1,2).UnComplete();
+  sysmat->Matrix(1,2).Zero();
+
+  // Fill sn with zero's
+  sysmat->Matrix(2,0).UnComplete();
+  sysmat->Matrix(2,0).Zero();
+
+  // Fill sm with zero's
+  sysmat->Matrix(2,1).UnComplete();
+  sysmat->Matrix(2,1).Zero();
+
+  // Fill ss with unit matrix
+  sysmat->Matrix(2,2).UnComplete();
+  sysmat->Matrix(2,2).Zero();
+  sysmat->Matrix(2,2).Add(*onesdiag,false,1.0,1.0);
+
+  sysmat->Complete();
+
+  //*************************************************
+  //  condensation operation for the residual
+  //*************************************************
+
+  // fm: add T(mbar)*fs
+  P->Multiply(true,*fs,*fm_mod);
+  fm_mod->Update(1.0,*fm,1.0);
+
+  // add fn subvector to feffnew
+  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*dofrowmap));
+  LINALG::Export(*fn,*fnexp);
+  feffnew->Update(1.0,*fnexp,1.0);
+
+  // add fm subvector to feffnew
+  RCP<Epetra_Vector> fm_modexp = rcp(new Epetra_Vector(*dofrowmap));
+  LINALG::Export(*fm_mod,*fm_modexp);
+  feffnew->Update(1.0,*fm_modexp,1.0);
+
+/*  // end time measurement for element
+  cout << "condensation = " << Teuchos::Time::wallTime()-tcpu << endl << endl;
+}*/
+
+  residual_ = feffnew;
+
+#if 0
+  LINALG::SparseMatrix sysmat00 = sysmat->Matrix(0,0);
+  LINALG::SparseMatrix sysmat01 = sysmat->Matrix(0,1);
+  LINALG::SparseMatrix sysmat02 = sysmat->Matrix(0,2);
+
+  LINALG::SparseMatrix sysmat10 = sysmat->Matrix(1,0);
+  LINALG::SparseMatrix sysmat11 = sysmat->Matrix(1,1);
+  LINALG::SparseMatrix sysmat12 = sysmat->Matrix(1,2);
+
+  LINALG::SparseMatrix sysmat20 = sysmat->Matrix(2,0);
+  LINALG::SparseMatrix sysmat21 = sysmat->Matrix(2,1);
+  LINALG::SparseMatrix sysmat22 = sysmat->Matrix(2,2);
+
+  cout << "test00" << *(sysmat00.EpetraMatrix()) << endl;
+  cout << "test01" << *(sysmat01.EpetraMatrix()) << endl;
+  cout << "test02" << *(sysmat02.EpetraMatrix()) << endl;
+
+  cout << "test10" << *(sysmat10.EpetraMatrix()) << endl;
+  cout << "test11" << *(sysmat11.EpetraMatrix()) << endl;
+  cout << "test12" << *(sysmat12.EpetraMatrix()) << endl;
+
+  cout << "test20" << *(sysmat20.EpetraMatrix()) << endl;
+  cout << "test21" << *(sysmat21.EpetraMatrix()) << endl;
+  cout << "test22" << *(sysmat22.EpetraMatrix()) << endl;
+
+  cout << "vector: " << endl << *feffnew << endl;
+
+#endif
 
   return;
 };

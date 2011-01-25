@@ -398,7 +398,7 @@ public:
 
   //@}
 
-  //! @name methods for turbulence models (dynamic Smagorinsky)
+  //! @name matrix condensation (split matrix)
   /*!
 
   \brief mesh tying: matrix condensation
@@ -409,13 +409,19 @@ public:
 
   //@}
 
-  //! @name methods for turbulence models (dynamic Smagorinsky)
+  //! @name matrix condensation (blockmatrix)
   /*!
 
   \brief mesh tying: matrix condensation
-
   */
 
+  void MeshTyingMatrixCondenstation_BlockMatrix();
+
+  //@}
+  //! @name update slave velocity
+  /*!
+  \brief update slave velocity
+  */
   void GetSlaveVelocity();
 
 protected:
@@ -682,7 +688,45 @@ protected:
   /// coupling of fluid-fluid at an internal interface
   ADAPTER::CouplingMortar               meshtying_;
 
+  // slave dof rowmap
+  RCP<Epetra_Map> gndofrowmap_;
+
+  // slave & master dof rowmap
+  RCP<Epetra_Map> gsmdofrowmap_;
+
+  // slave dof rowmap
+  RCP<Epetra_Map> gsdofrowmap_;
+
+  // master dof rowmap
+  RCP<Epetra_Map> gmdofrowmap_;
+
+
   //@}
+
+private:
+
+
+  //@}
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetGeneralFluidParameter();
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over a time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetTimeParameter();
 
 }; // class FluidImplicitTimeInt
 

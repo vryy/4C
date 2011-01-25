@@ -66,10 +66,6 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_fluid_stationary_systemmat_and_residual")
-    act = Fluid3::calc_fluid_stationary_systemmat_and_residual;
-  else if (action == "calc_fluid_afgenalpha_systemmat_and_residual")
-    act = Fluid3::calc_fluid_afgenalpha_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -96,6 +92,10 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::integrate_shape;
   else if (action == "calc_fluid_elementvolume")
     act = Fluid3::calc_fluid_elementvolume;
+  else if (action == "set_general_fluid_parameter")
+    act = Fluid3::set_general_fluid_parameter;
+  else if (action == "set_time_parameter")
+    act = Fluid3::set_time_parameter;
   else
   dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
@@ -114,12 +114,16 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
 {
   const string action = p.get<string>("action","none");
 
-  DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
-  if(action == "calc_fluid_systemmat_and_residual"or
-      action == "calc_fluid_afgenalpha_systemmat_and_residual" or
-      action == "calc_fluid_stationary_systemmat_and_residual")
+  if (action == "set_general_fluid_parameter")
   {
-    f3Parameter->SetParameter(p);
+    DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+    f3Parameter->SetGeneralFluidParameter(p);
+  }
+
+  if (action == "set_time_parameter")
+  {
+    DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+    f3Parameter->SetTimeParameter(p);
   }
 
   return;
@@ -157,8 +161,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       //-----------------------------------------------------------------------
       //-----------------------------------------------------------------------
       case calc_fluid_systemmat_and_residual:
-      case calc_fluid_afgenalpha_systemmat_and_residual:
-      case calc_fluid_stationary_systemmat_and_residual:
       {
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->Evaluate(
                this,
@@ -624,6 +626,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // the results are assembled into the element vector
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->IntegrateShapeFunction(this, discretization, lm, elevec1);
       }
+      case set_general_fluid_parameter:
+        break;
+      case set_time_parameter:
+        break;
       default:
         dserror("Unknown type of action for Fluid3");
   } // end of switch(act)

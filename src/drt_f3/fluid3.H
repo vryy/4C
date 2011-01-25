@@ -459,8 +459,6 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
-    calc_fluid_stationary_systemmat_and_residual,
-    calc_fluid_afgenalpha_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
@@ -473,7 +471,9 @@ private:
     get_gas_constant,
     integrate_shape,
     calc_node_normal,
-    calc_fluid_elementvolume
+    calc_fluid_elementvolume,
+    set_general_fluid_parameter,
+    set_time_parameter
   };
 
   //! discretization type

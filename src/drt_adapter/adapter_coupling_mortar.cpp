@@ -513,14 +513,13 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
 
   // check for overlap of slave and Dirichlet boundaries
   // (this is not allowed in order to avoid over-constraint)
-  //TODO: overlaping slave and Dirichlet condition
-  /*
+
   bool overlap = false;
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
   RCP<LINALG::MapExtractor> dbcmaps = rcp(new LINALG::MapExtractor());
-  RCP<Epetra_Vector > temp = LINALG::CreateVector(*(slavedis.DofRowMap()), true);
-  slavedis.EvaluateDirichlet(p,temp,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps);
+  RCP<Epetra_Vector > temp = LINALG::CreateVector(*(dis.DofRowMap()), true);
+  dis.EvaluateDirichlet(p,temp,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps);
 
   // loop over all slave row nodes of the interface
   for (int j=0;j<interface_->SlaveRowNodes()->NumMyElements();++j)
@@ -548,10 +547,9 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // print warning message to screen
   if (overlap && comm.MyPID()==0)
   {
-    cout << RED << "\nWARNING: Slave boundary and Dirichlet boundary conditions overlap!" << endl;
-    cout << "This leads to over-constraint, so you might encounter some problems!" << END_COLOR << endl;
+    dserror( "Slave boundary and Dirichlet boundary conditions overlap!\n"
+        "This leads to over-constraint");
   }
-  */
 
   return;
 }
