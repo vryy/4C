@@ -507,7 +507,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     //
     ///////////////////////////////////////////////////////////////////////////
     // Material Constants c1 and beta
-    double c1;
+    double c1(0.0);
     double nu = NUE(); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
     if (time > 0.0) {
