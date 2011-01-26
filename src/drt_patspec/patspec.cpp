@@ -258,10 +258,11 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   //cout << filename << endl;
   if (filename=="name.txt") 
   {
-    cout << "No centerline file provided" << endl;
+    if (!dis.Comm().MyPID())
+      cout << "No centerline file provided" << endl;
     // set element-wise mean distance to zero
     RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis.ElementRowMap()),true);
-     RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
     LINALG::Export(*locradele,*tmp);
     locradele = tmp;
 

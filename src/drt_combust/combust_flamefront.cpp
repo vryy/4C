@@ -32,6 +32,7 @@ Maintainer: Florian Henke
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_geometry/position_array.H"
+#include "../drt_geometry/intersection_service_templates.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
