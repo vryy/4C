@@ -529,7 +529,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
     LINALG::Matrix<1,1> Tsurf(true);
     for (int i=0; i<1; ++i)
     {
-    // TODO: check values again 25.01.11
       Tsurf(i) = (surtemp);
     }
 
