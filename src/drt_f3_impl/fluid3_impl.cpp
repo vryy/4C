@@ -2172,6 +2172,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   double Gnormu = 0.0;
   double Gvisc  = 0.0;
 
+  double strle    = 0.0;
   double hk       = 0.0;
   double vel_norm = 0.0;
   double re12     = 0.0;
@@ -2297,13 +2298,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   break;
 
   case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
-  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
-  case INPAR::FLUID::tau_shakib_hughes_codina:
-  case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
   {
     /*
 
-    literature on franca_barrenechea_valentin:
+    literature:
     1) L.P. Franca, F. Valentin, On an improved unusual stabilized
        finite element method for the advective-reactive-diffusive
        equation, Comput. Methods Appl. Mech. Engrg. 190 (2000) 1785-1800.
@@ -2323,8 +2321,66 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
                           +--------------> re1,re2
                               1
 
+    */
+    // get velocity norm
+    vel_norm = velint_.Norm2();
 
-    literature on shakib_codina:
+    // calculate characteristic element length
+    CalcCharEleLength(vol,vel_norm,strle,hk);
+
+    // various parameter computations for case with dt:
+    // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
+    const double re01 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(strle));
+    const double re11 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(hk));
+
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
+                 re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+
+    // respective "switching" parameters
+    const double xi01 = DMAX(re01,1.0);
+    const double xi11 = DMAX(re11,1.0);
+    const double xi02 = DMAX(re02,1.0);
+    const double xi12 = DMAX(re12,1.0);
+
+    tau_(0) = f3Parameter_->timefac_*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi02);
+    tau_(1) = f3Parameter_->timefac_*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi12);
+  }
+  break;
+
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+  {
+    /*
+
+     stabilization parameter as above without inclusion of dt-part
+
+    */
+    // get velocity norm
+    vel_norm = velint_.Norm2();
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,vel_norm,strle,hk);
+
+    // various parameter computations for case without dt:
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
+                 re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+
+    // respective "switching" parameters
+    const double xi02 = DMAX(re02,1.0);
+    const double xi12 = DMAX(re12,1.0);
+
+    tau_(0) = (DSQR(strle)*mk)/(4.0*visceff_*xi02);
+    tau_(1) = (DSQR(hk)*mk)/(4.0*visceff_*xi12);
+  }
+  break;
+
+  case INPAR::FLUID::tau_shakib_hughes_codina:
+  case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  {
+    /*
+
+    literature:
     1) F. Shakib, Finite element analysis of the compressible Euler and
        Navier-Stokes equations, PhD thesis, Division of Applied Mechanics,
        Stanford University, Stanford, CA, USA, 1989.
@@ -2348,103 +2404,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
        (condition for constants as defined here: c_2 <= sqrt(c_3)).
 
     */
-
-    // cast dimension to a double varibale -> pow()
-    const double dim = double (nsd_);
-
     // get velocity norm
     vel_norm = velint_.Norm2();
 
-    //---------------------------------------------------------------------
-    // various definitions for characteristic element length for tau_Mu
-    //---------------------------------------------------------------------
-    // a) streamlength due to Tezduyar et al. (1992) -> default
-    // normed velocity vector
-    if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
-    else
-    {
-      velino_.Clear();
-      velino_(0,0) = 1.0;
-    }
+    // calculate characteristic element length
+    CalcCharEleLength(vol,vel_norm,strle,hk);
 
-    LINALG::Matrix<nen_,1> tmp;
-    tmp.MultiplyTN(derxy_, velino_);
-    const double val = tmp.Norm1();
-    const double strle = 2.0/val;
+    // definition of constants as described above
+    double c1 = 4.0;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
+      c1 = 0.0;
+    const double c2 = 4.0;
+    c3 = 4.0/(mk*mk);
+    // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    // b) volume-equivalent diameter (warning: 3-D formula!)
-    //const double strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-    // c) cubic/square root of element volume/area
-    //const double strle = pow(vol,1/dim);
-
-    //---------------------------------------------------------------------
-    // various definitions for characteristic element length for tau_Mp
-    //---------------------------------------------------------------------
-    // a) volume-equivalent diameter -> default for 3-D computations
-    if (nsd_==3) hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-    // b) square root of element area -> default for 2-D computations,
-    // may also alternatively be used for 3-D computations
-    else if (nsd_==2) hk = pow(vol,1/dim);
-    // check for potential 1-D computations
-    else dserror("element length calculation not implemented for 1-D computation!");
-
-    //---------------------------------------------------------------------
-    // computation of tau_Mu and tau_Mp due to various definitions
-    //---------------------------------------------------------------------
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina or
-        f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
-    {
-      // definition of constants as described above
-      double c1 = 4.0;
-      if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
-        c1 = 0.0;
-      const double c2 = 4.0;
-      c3 = 4.0/(mk*mk);
-      // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
-
-      tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
-                        + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
-                        + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
-      tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
-                        + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
-                        + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
-    }
-    else if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt)
-    {
-      // various parameter computations for case without dt:
-      // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-      const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
-                   re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-
-      // respective "switching" parameters
-      const double xi02 = DMAX(re02,1.0);
-      const double xi12 = DMAX(re12,1.0);
-
-      tau_(0) = (DSQR(strle)*mk)/(4.0*visceff_*xi02);
-      tau_(1) = (DSQR(hk)*mk)/(4.0*visceff_*xi12);
-    }
-    else
-    {
-      // various parameter computations for case with dt:
-      // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      const double re01 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(strle));
-      const double re11 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(hk));
-
-      // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-      const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
-                   re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-
-      // respective "switching" parameters
-      const double xi01 = DMAX(re01,1.0);
-      const double xi11 = DMAX(re11,1.0);
-      const double xi02 = DMAX(re02,1.0);
-      const double xi12 = DMAX(re12,1.0);
-
-      tau_(0) = f3Parameter_->timefac_*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi02);
-      tau_(1) = f3Parameter_->timefac_*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi12);
-    }
+    tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
+                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
+    tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
+                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
   }
   break;
 
@@ -2605,6 +2584,59 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
 
   default: dserror("unknown definition for tau_C\n %i  ", f3Parameter_->whichtau_);
   }  // end switch (f3Parameter_->whichtau_)
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculation of characteristic element length               vg 01/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::CalcCharEleLength(
+    const double  vol,
+    const double  vel_norm,
+    double&       strle,
+    double&       hk
+    )
+{
+  // cast dimension to a double varibale -> pow()
+  const double dim = double (nsd_);
+
+  //---------------------------------------------------------------------
+  // various definitions for characteristic element length for tau_Mu
+  //---------------------------------------------------------------------
+  // a) streamlength due to Tezduyar et al. (1992) -> default
+  // normed velocity vector
+  if (vel_norm>=1e-6) velino_.Update(1.0/vel_norm,velint_);
+  else
+  {
+    velino_.Clear();
+    velino_(0,0) = 1.0;
+  }
+
+  LINALG::Matrix<nen_,1> tmp;
+  tmp.MultiplyTN(derxy_,velino_);
+  const double val = tmp.Norm1();
+  strle = 2.0/val;
+
+  // b) volume-equivalent diameter (warning: 3-D formula!)
+  //strle = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+  // c) cubic/square root of element volume/area
+  //strle = pow(vol,1/dim);
+
+  //---------------------------------------------------------------------
+  // various definitions for characteristic element length for tau_Mp
+  //---------------------------------------------------------------------
+  // a) volume-equivalent diameter -> default for 3-D computations
+  if (nsd_==3) hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+  // b) square root of element area -> default for 2-D computations,
+  // may also alternatively be used for 3-D computations
+  else if (nsd_==2) hk = pow(vol,1/dim);
+  // check for potential 1-D computations
+  else dserror("element length calculation not implemented for 1-D computation!");
 
   return;
 }

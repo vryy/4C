@@ -310,6 +310,13 @@ namespace ELEMENTS
     //! calculate stabilization parameter
     void CalcStabParameter(const double  vol);  ///< volume
 
+    //! calculate characteristic element length
+    void CalcCharEleLength(const double  vol,       ///< volume
+                           const double  vel_norm,  ///< norm of velocity vector
+                           double&       strle,     ///< streamlength (for tau_Mu)
+                           double&       hk);       ///< length for tau_Mp
+
+
     //! calculate div(epsilon(u))
     void CalcDivEps(
         const LINALG::Matrix<nsd_,nen_>&        evelaf   ///< velocity at time n+alpha_f / n+1
