@@ -297,16 +297,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (not(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-                         INPAR::FLUID::tau_shakib_hughes_codina or
-                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt));
+      if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+            tautype == INPAR::FLUID::tau_shakib_hughes_codina or
+            tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt))
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
@@ -426,16 +426,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
-      if (not(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-                         INPAR::FLUID::tau_shakib_hughes_codina or
-                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt));
+      if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+            tautype == INPAR::FLUID::tau_shakib_hughes_codina or
+            tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt))
         dserror("unknown type of stabilization parameter definition");
 
       // time integration factors
@@ -483,6 +483,22 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_uncondensed_, NumNode(), NodeIds());
+
+//        if (assembly_type == XFEM::standard_assembly) cout << "element " << this->Id() << " standard assembly " << endl;
+//        if (assembly_type == XFEM::xfem_assembly) cout << "element " << this->Id() << " xfem assembly " << endl;
+
+//        const int numnodes = this->NumNode();
+//        const int* nodeidptrs = this->NodeIds();
+//        for (int inode = 0; inode<numnodes; ++inode)
+//        {
+//          const int nodeid = nodeidptrs[inode];
+//          cout << "num dof per node " << eleDofManager_->NumDofPerNode(nodeid) << endl;
+//        }
+//        cout << "num dof per field velx " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velx)->second << endl;
+//        cout << "num dof per field vely " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Vely)->second << endl;
+//        cout << "num dof per field velz " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velz)->second << endl;
+//        cout << "num dof per field veln " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Veln)->second << endl;
+//        cout << "num dof per field pres " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Pres)->second << endl;
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,

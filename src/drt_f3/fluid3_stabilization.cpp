@@ -155,8 +155,6 @@ void FLD::UTILS::computeStabilizationParams(
   }
   break;
 
-  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
-  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
   case INPAR::FLUID::tau_shakib_hughes_codina:
   case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
   {
@@ -205,22 +203,19 @@ void FLD::UTILS::computeStabilizationParams(
        Codina (2002) proposed present version without dt and explicit
        definition of constants.
 
-    */
+     */
 
     //---------------------------------------------------------------------
     // computation of tau_Mu and tau_Mp due to various definitions
     //---------------------------------------------------------------------
-    if (tautype == INPAR::FLUID::tau_shakib_hughes_codina or
-        tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
-    {
-      // definition of constants as described above
-      double c1 = 4.0;
-      if ((tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt) or
-           not instationary)
-        c1 = 0.0;
-      const double c2 = 4.0;
-      c3 = 4.0/(mk*mk);
-      // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
+    // definition of constants as described above
+    double c1 = 4.0;
+    if ((tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt) or
+        not instationary)
+      c1 = 0.0;
+    const double c2 = 4.0;
+    c3 = 4.0/(mk*mk);
+    // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
       tau_stab_Mu = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
                             + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(strle)
@@ -228,42 +223,34 @@ void FLD::UTILS::computeStabilizationParams(
       tau_stab_Mp = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
                             + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(hk)
                             + c3*DSQR(dynvisc)/(DSQR(hk)*DSQR(hk))));
-    }
-    else if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt)
+  }
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+  {
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
+                 re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
+
+    // respective "switching" parameters
+    const double xi02 = DMAX(re02,1.0);
+    const double xi12 = DMAX(re12,1.0);
+
+    if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+        not instationary)
     {
-      // various parameter computations for case without dt:
-      // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-      const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
-                   re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
-
-      // respective "switching" parameters
-      const double xi02 = DMAX(re02,1.0);
-      const double xi12 = DMAX(re12,1.0);
-
       tau_stab_Mu = (DSQR(strle)*mk)/(4.0*dynvisc*xi02);
       tau_stab_Mp = (DSQR(hk)*mk)/(4.0*dynvisc*xi12);
     }
     else
     {
-      // It might need to be checked that input parameter was correctly set,
-      // that is, the present flow compuation is not a stationary one. This
-      // should, however, be done outside of the element loop already, as
-      // done in fluid3_impl_parameter.cpp.
-
       // various parameter computations for case with dt:
       // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
       const double re01 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(strle));
       const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
 
-      // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-      const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
-                   re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
-
       // respective "switching" parameters
       const double xi01 = DMAX(re01,1.0);
       const double xi11 = DMAX(re11,1.0);
-      const double xi02 = DMAX(re02,1.0);
-      const double xi12 = DMAX(re12,1.0);
 
       tau_stab_Mu = timefac*DSQR(strle)/(DSQR(strle)*dens*xi01+(4.0*timefac*dynvisc/mk)*xi02);
       tau_stab_Mp = timefac*DSQR(hk)/(DSQR(hk)*dens*xi11+(4.0*timefac*dynvisc/mk)*xi12);
