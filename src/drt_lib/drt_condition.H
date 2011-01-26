@@ -203,7 +203,8 @@ public:
     PatientSpecificData,
     VolumetricSurfaceFlowCond,
     VolumetricFlowBorderNodes,
-    ThermoConvections
+    ThermoConvections,
+    ScaTraFluxCalc
   };
 
   /*!

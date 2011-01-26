@@ -1800,6 +1800,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfelec);
 
   /*--------------------------------------------------------------------*/
+  // Boundary flux evaluation condition for scalar transport
+
+  Teuchos::RCP<ConditionDefinition> linebndryfluxeval =
+    Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC LINE CONDITIONS",
+                                         "ScaTraFluxCalc",
+                                         "Scalar Transport Boundary Flux Calculation",
+                                         DRT::Condition::ScaTraFluxCalc,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfbndryfluxeval =
+    Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC SURF CONDITIONS",
+                                         "ScaTraFluxCalc",
+                                         "Scalar Transport Boundary Flux Calculation",
+                                         DRT::Condition::ScaTraFluxCalc,
+                                         true,
+                                         DRT::Condition::Surface));
+  condlist.push_back(linebndryfluxeval);
+  condlist.push_back(surfbndryfluxeval);
+
+  /*--------------------------------------------------------------------*/
   // flow rate through line
 
   std::vector<Teuchos::RCP<ConditionComponent> > lineflowratecomponents;

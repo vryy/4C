@@ -280,7 +280,7 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
-  condnames.push_back("FluxCalculation");
+  condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i=0; i < condnames.size(); i++)
   {
     discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);

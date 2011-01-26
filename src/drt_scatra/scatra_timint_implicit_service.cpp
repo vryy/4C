@@ -550,7 +550,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
-  condnames.push_back("FluxCalculation");
+  condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i=0; i < condnames.size(); i++)
   {
     discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
@@ -1314,7 +1314,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   {
     // calculate normal flux vector field only for these boundary conditions:
     vector<std::string> condnames;
-    condnames.push_back("FluxCalculation");
+    condnames.push_back("ScaTraFluxCalc");
     condnames.push_back("ElectrodeKinetics");
     condnames.push_back("LineNeumann");
     condnames.push_back("SurfaceNeumann");
