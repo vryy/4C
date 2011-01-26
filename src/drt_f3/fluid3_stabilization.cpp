@@ -45,7 +45,6 @@ void FLD::UTILS::computeStabilizationParams(
   double Gnormu = 0.0;
   double Gvisc  = 0.0;
 
-  double hk_sqr = 0.0;
   double re12   = 0.0;
   double c3     = 0.0;
 
@@ -223,18 +222,12 @@ void FLD::UTILS::computeStabilizationParams(
       c3 = 4.0/(mk*mk);
       // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-      // squared values
-      const double dens_sqr  = dens*dens;
-      const double dt_sqr    = dt*dt;
-      const double vel_sqr   = vel_norm*vel_norm;
-      const double visc_sqr  = dynvisc*dynvisc;
-      const double strle_sqr = strle*strle;
-      hk_sqr    = hk*hk;
-
-      tau_stab_Mu = 1.0/(sqrt(c1*dens_sqr/dt_sqr + c2*dens_sqr*vel_sqr/strle_sqr
-                       + c3*visc_sqr/strle_sqr));
-      tau_stab_Mp = 1.0/(sqrt(c1*dens_sqr/dt_sqr + c2*dens_sqr*vel_sqr/hk_sqr
-                       + c3*visc_sqr/hk_sqr));
+      tau_stab_Mu = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
+                            + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(strle)
+                            + c3*DSQR(dynvisc)/(DSQR(strle)*DSQR(strle))));
+      tau_stab_Mp = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
+                            + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(hk)
+                            + c3*DSQR(dynvisc)/(DSQR(hk)*DSQR(hk))));
     }
     else if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt)
     {
@@ -428,7 +421,7 @@ void FLD::UTILS::computeStabilizationParams(
 
     */
 
-    tau_stab_C = hk_sqr/(sqrt(c3)*tau_stab_Mp);
+    tau_stab_C = DSQR(hk)/(sqrt(c3)*tau_stab_Mp);
   }
   break;
 

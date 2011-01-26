@@ -2173,7 +2173,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   double Gvisc  = 0.0;
 
   double hk       = 0.0;
-  double hk_sqr   = 0.0;
   double vel_norm = 0.0;
   double re12     = 0.0;
   double c3       = 0.0;
@@ -2252,6 +2251,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
                             +----
                               i,j
     */
+
     //TODO: Boussinesq
     // definition of constants as described above
     double c1 = 4.0;
@@ -2404,18 +2404,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
       c3 = 4.0/(mk*mk);
       // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-      // squared values
-      const double dens_sqr  = densaf_*densaf_;
-      const double dt_sqr    = f3Parameter_->dt_*f3Parameter_->dt_;
-      const double vel_sqr   = vel_norm*vel_norm;
-      const double visc_sqr  = visceff_*visceff_;
-      const double strle_sqr = strle*strle;
-                      hk_sqr = hk*hk;
-
-      tau_(0) = 1.0/(sqrt(c1*dens_sqr/dt_sqr + c2*dens_sqr*vel_sqr/strle_sqr
-                    + c3*visc_sqr/strle_sqr));
-      tau_(1) = 1.0/(sqrt(c1*dens_sqr/dt_sqr + c2*dens_sqr*vel_sqr/hk_sqr
-                    + c3*visc_sqr/hk_sqr));
+      tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+                        + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
+                        + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
+      tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+                        + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
+                        + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
     }
     else if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt)
     {
@@ -2605,7 +2599,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
 
     */
 
-    tau_(2) = hk_sqr/(sqrt(c3)*tau_(1));
+    tau_(2) = DSQR(hk)/(sqrt(c3)*tau_(1));
   }
   break;
 
