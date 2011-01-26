@@ -133,7 +133,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
     // we need a non-const list in order to be able to add sublists below!
-    Teuchos::ParameterList prbdyn(scatradyn);
+    Teuchos::ParameterList prbdyn(elchcontrol);
     // support for turbulent flow statistics
     const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());
     prbdyn.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
