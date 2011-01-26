@@ -236,6 +236,7 @@ void DRT::ELEMENTS::RedAirway::VisNames(map<string,int>& names)
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
 
+#if 0
   // see whether we have additional data for visualization in our container
   ostringstream temp;
   temp << 1;
@@ -247,6 +248,7 @@ void DRT::ELEMENTS::RedAirway::VisNames(map<string,int>& names)
   // out flow of volumetric flow profile
   name = "flow_out";
   names.insert(pair<string,int>(name,1));
+#endif
 
   return;
 }
@@ -260,6 +262,7 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   if(DRT::Element::VisData(name,data))
     return true;
 
+#if 0
   if ( (name == "flow_in") )
   {
     if ((int)data.size()!=1) dserror("size mismatch");
@@ -278,6 +281,7 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   {
     return false;
   }
+#endif
 }
 
 /*----------------------------------------------------------------------*

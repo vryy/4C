@@ -131,6 +131,13 @@ public:
   void Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
 
   /*!
+  \brief nonlinear solver of airways
+
+  */
+  void NonLin_Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+
+
+  /*!
     \brief build linear system matrix and rhs
 
 
@@ -269,6 +276,23 @@ protected:
   RCP<Epetra_Vector>          pnp_;
   RCP<Epetra_Vector>          pn_;
   RCP<Epetra_Vector>          pnm_;
+  RCP<Epetra_Vector>          p_nonlin_;
+  //@}
+
+  //! @name inlet volumetric flow rates at time n+1, n and n-1
+  RCP<Epetra_Vector>          qin_np_;
+  RCP<Epetra_Vector>          qin_n_;
+  RCP<Epetra_Vector>          qin_nm_;
+
+  RCP<Epetra_Vector>          qi_nl_np_;
+  //@}
+
+  //! @name outlet volumetric flow rates at time n+1, n and n-1
+  RCP<Epetra_Vector>          qout_np_;
+  RCP<Epetra_Vector>          qout_n_;
+  RCP<Epetra_Vector>          qout_nm_;
+
+  RCP<Epetra_Vector>          qo_nl_np_;
   //@}
 
   //! @name node Id vector
@@ -292,6 +316,12 @@ protected:
   //!
   bool coupledTo3D_;
   //@}
+
+  //! @name Nonlinear solution parameters 
+  int     maxiter_; 
+  double  non_lin_tol_;
+  //@}
+
 
 }; // class RedAirwayImplicitTimeInt
 

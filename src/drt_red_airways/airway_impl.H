@@ -139,11 +139,13 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     void Sysmat(RedAirway*                               ele,
-                Epetra_SerialDenseVector&                eqnp,
-                Epetra_SerialDenseVector&                eareanp,
+                Epetra_SerialDenseVector&                epnp,
+                Epetra_SerialDenseVector&                epn,
+                Epetra_SerialDenseVector&                epnm,
                 Epetra_SerialDenseMatrix&                estif,
                 Epetra_SerialDenseVector&                eforce,
                 Teuchos::RCP<const MAT::Material>        material,
+                ParameterList &                          params,
                 double                                   time,
                 double                                   dt);
 

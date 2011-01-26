@@ -797,5 +797,7 @@ This is the enumeration of all types of different integration schemes
 *-----------------------------------------------------------------------*/
 typedef enum _RED_AIRWAYS_DYNTYPE
 {
-  typ_crank_nicolson=0
+  typ_crank_nicolson,
+  linear,
+  nonlinear
 } _RED_AIRWAYS_DYNTYPE;

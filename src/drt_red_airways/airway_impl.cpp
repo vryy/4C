@@ -54,7 +54,7 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
 
 
 /*----------------------------------------------------------------------*
- | constructor (public)                                    ismail 01/10 |
+  | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AirwayImpl<distype>::AirwayImpl()
@@ -78,6 +78,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   RefCountPtr<MAT::Material> mat)
 {
+  //  const int   myrank  = discretization.Comm().MyPID();
   
   //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
@@ -111,34 +112,48 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // ---------------------------------------------------------------------
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pnm");
+  RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
+  RefCountPtr<const Epetra_Vector> pnm   = discretization.GetState("pnm");
 
-  if (pnp==null || pn==null )
-    dserror("Cannot get state vectors 'pnp' or 'pnm'");
+  RefCountPtr<Epetra_Vector> qin_n   = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
+  RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
+
+  if (pnp==null || pn==null || pnm==null )
+    dserror("Cannot get state vectors 'pnp', 'pn', an/or 'pnm''");
 
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
-  // create objects for element arrays
-  Epetra_SerialDenseVector epnp(elemVecdim);
-  for (int i=0;i<elemVecdim;++i)
-  {
-    // split area and volumetric flow rate, insert into element arrays
-    epnp(i)    = mypnp[i];
-  }
-
   // extract local values from the global vectors
   vector<double> mypn(lm.size());
   DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
 
+  // extract local values from the global vectors
+  vector<double> mypnm(lm.size());
+  DRT::UTILS::ExtractMyValues(*pnm,mypnm,lm);
+
   // create objects for element arrays
-  Epetra_SerialDenseVector epn(elemVecdim);
+  Epetra_SerialDenseVector epnp(elemVecdim);
+  Epetra_SerialDenseVector epn (elemVecdim);
+  Epetra_SerialDenseVector epnm(elemVecdim);
   for (int i=0;i<elemVecdim;++i)
   {
     // split area and volumetric flow rate, insert into element arrays
+    epnp(i)   = mypnp[i];
     epn(i)    = mypn[i];
+    epnm(i)    = mypnm[i];
   }
+
+
+  // get the volumetric flow rate from the previous time step
+  ParameterList elem_params;
+  elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
+  elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
+  elem_params.set<double>("qin_n"  ,(*qin_n  )[ele->LID()]);
+  elem_params.set<double>("qin_np" ,(*qin_np )[ele->LID()]);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -146,9 +161,11 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Sysmat(ele,
          epnp,
          epn,
+         epnm,
          elemat1_epetra,
          elevec1_epetra,
          mat,
+         elem_params,
          time,
          dt);
 
@@ -241,12 +258,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   RedAirway*                               ele,
   Epetra_SerialDenseVector&                epnp,
   Epetra_SerialDenseVector&                epn,
+  Epetra_SerialDenseVector&                epnm,
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
+  ParameterList &                          params,
   double                                   time,
   double                                   dt)
 {
+
 
   double dens = 0.0;
   double visc = 0.0;
@@ -287,7 +307,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   rhs.Scale(0.0);
   sysmat.Scale(0.0);
 
-
+#if 0
+  if (ele->Owner() != myrank)
+  {
+    return;
+  }
+#endif
   // check here, if we really have an airway !!
 
   // Calculate the length of airway element
@@ -296,7 +321,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
           + pow(xyze(1,0) - xyze(1,1),2)
           + pow(xyze(2,0) - xyze(2,1),2));
 
-  double q_out = 0.0;
+  double q_out    = params.get<double>("qout_n");
+  double qout_np  = params.get<double>("qout_np");
+
+  double q_in    = params.get<double>("qin_n");
+  //  double qin_np  = params.get<double>("qin_np");
+
 
   if(ele->type() == "PoiseuilleResistive")
   {
@@ -307,14 +337,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //------------------------------------------------------------
     //               Calculate the System Matrix
     //------------------------------------------------------------
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
+
     sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
 
     rhs(0) = 0.0;
     rhs(1) = 0.0;
-
-    q_out = (epnp(0)-epnp(1))/R;
 
   }
   else if(ele->type() == "InductoResistive")
@@ -330,7 +360,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     ele->getParams("WallThickness",tw);
 
     // find Resistance 
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
 
     // find Capacitance C
     const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
@@ -343,17 +374,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     sysmat(1,0) =  1.0/R           ; sysmat(1,1) = -1.0/R ;
 
     // get element information from the previous time step
-    double qcn;
-    ele->getVars("capacitor_flow",qcn);
+    double qcn = q_in - q_out;
+    //  ele->getVars("capacitor_flow",qcn);
 
     //------------------------------------------------------------
     //               Calculate the right hand side
     //------------------------------------------------------------
-    rhs(0) = -epnp(0)*2.0*C/dt - qcn;
+    rhs(0) = -epn(0)*2.0*C/dt - qcn;
     rhs(1) = 0.0;
 
     // calculate out flow at the current time step
-    q_out = (epnp(0)-epnp(1))/R;
+    //    q_out = (epnp(0)-epnp(1))/R;
     
   }
   else if(ele->type() == "RLC")
@@ -365,7 +396,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     ele->getParams("WallThickness",tw);
 
     // find Resistance 
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
 
     // find Capacitance C
     const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
@@ -390,19 +422,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
     // get element information from the previous time step
     double qcn, qln;
-    ele->getVars("capacitor_flow",qcn);
-    ele->getVars("inductor_flow",qln);
-    qln =  (epnp(2)-epnp(1))/R;
+    //  ele->getVars("capacitor_flow",qcn);
+    //  ele->getVars("inductor_flow",qln);
+    qcn = q_in - q_out;
+    qln =  (epn(2)-epn(1))/R;
 
     //------------------------------------------------------------
     //               Calculate the right hand side
     //------------------------------------------------------------
-    rhs(0) = -qcn - epnp(0)*2.0*C/dt + qln + dt/(2.0*I)*(epnp(0)-epnp(2));
+    rhs(0) = -qcn - epn(0)*2.0*C/dt + qln + dt/(2.0*I)*(epn(0)-epn(2));
     rhs(1) = 0.0;
-    rhs(2) = -qln - dt/(2.0*I)*(epnp(0)-epnp(2));
+    rhs(2) = -qln - dt/(2.0*I)*(epn(0)-epn(2));
 
     // calculate out flow at the current time step
-    q_out = (epnp(2)-epnp(1))/R;
+    //    q_out = (epnp(2)-epnp(1))/R;
   }
   else if(ele->type() == "SUKI")
   {
@@ -422,9 +455,65 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   for(int i = 0; i<ele->NumNode(); i++)
   {
 
+    //------------------------------------------------------------------
+    // Evaluate the number of acini on the end of an outlet.
+    // This is hard coded for now, but will be fixed later
+    //
+    // For now Schroters model is assumed to be Vmodel = 1mm^3
+    // Thus we should be given the total-acini-volume/total-t-bronchi-area
+    // to calculate the number of Schroters acini at each outlet
+    //------------------------------------------------------------------
+
     DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedLungAcinusCond");
     if(condition)
     {
+      double Area  = 0.0;
+      ele->getParams("Area",Area);
+
+      //----------------------------------------------------------------
+      // Read in the material information
+      //----------------------------------------------------------------
+      const double VolPerArea = condition->GetDouble("VolumePerArea");
+      const double VolAcinus  = condition->GetDouble("Acinus_Volume");
+      const double E1 = condition->GetDouble("Stiffness1") / VolAcinus;
+      const double E2 = condition->GetDouble("Stiffness2") / VolAcinus;
+      const double B  = condition->GetDouble("Viscosity")  / VolAcinus;
+      const double NumOfAcini = double(floor(VolPerArea*Area/VolAcinus));
+      if (NumOfAcini < 1.0)
+      {
+        dserror("Acinus condition at node (%d) has zero acini",ele->Nodes()[i]->Id());
+      }
+      
+      // -------------------------------------------------------------
+      // Read in the pleural pressure
+      // -------------------------------------------------------------
+      const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+      const  vector<double>* vals   = condition->Get<vector<double> >("val");
+      
+      double Pp_nm = 0.0;
+      double Pp_n  = 0.0;
+      double Pp_np = 0.0;
+      double qn    = q_out;
+      
+      double pnm = epnm(i);
+      double pn  = epn(i);
+      
+      // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
+      if((*curve)[0]>=0)
+      {
+        Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - dt);
+        Pp_nm *= (*vals)[0];
+        Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pp_n  *= (*vals)[0];
+        Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time + dt);
+        Pp_np *= (*vals)[0];
+        
+        // Evaluate the pleural contribution
+        pn  -= Pp_n;
+        pnm -= Pp_nm;
+        //        cout<<"pns : "<<pn<<pnm<<p
+      }
+      
       if (i==0)
       {
         dserror("SMTHG IS WRONG with Node (%d) in elem(%d)",ele->Nodes()[i]->Id(),ele->Id());
@@ -437,69 +526,52 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double K = condition->GetDouble("Stiffness1");
         
         sysmat(i,i) += pow(-1.0,i)*(2.0/(K*dt));
-        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epnp(i));
+        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epn(i));
+      }
+      else if (MatType == "KelvinVoigt")
+      {
+        const double R  = B;
+        const double Kp_np = 2.0/(E1*dt) + 1.0/R;
+        const double Kp_n  = 2.0/(E1*dt) - 1.0/R;
+
+        //        cout<<"KS: "<<Kp_np<<"  "<<Kp_n<<"  "<<R<<endl;
+        sysmat(i,i) += pow(-1.0,i)*(Kp_np*NumOfAcini);
+        //        cout<<"SYSmat: "<<pow(-1.0,i)*(Kp_np*NumOfAcini)<<endl;
+        rhs(i)      += pow(-1.0,i)*(q_out + pn*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np);
+        //        cout<<"rhs: "<<pow(-1.0,i)*(q_out + epn(i)*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np)<<endl;
       }
       else if (MatType == "ViscoElastic_2dof")
       {
-        const double E1 = condition->GetDouble("Stiffness1");
-        const double E2 = condition->GetDouble("Stiffness2");
-        const double B  = condition->GetDouble("Viscosity");
 
 #if 0
         const double K = E1*E2/2.0 + (E2*B+B*E1)/dt;
         const double Kp= E2/dt + B/pow(dt,2);
         double Qeq_n, Qeq_nm;
-        double pnm = epn(i);
+        double pnm = epnm(i);
 
         Qeq_nm = -(pnm*B/pow(dt,2))/K;
-        Qeq_n  = (E2*epnp(i)/dt +2.0*B*epnp(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B+B*E1)*q_out/dt)/K;
+        Qeq_n  = (E2*epn(i)/dt +2.0*B*epn(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B+B*E1)*q_out/dt)/K;
         
         sysmat(i,i) += pow(-1.0,i)*(Kp/K);
         rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
 #endif
-        const double C1 = E1;
-        const double C2 = E2;
         const double R  = B;
-        const double K = (C1+C2)/(C1*dt) + R/(C1*dt*dt);
-        const double Kp= R/dt + C2;
+        const double Kp_np =  (E1+E2)/dt + R/(dt*dt);
+        const double Kp_n  = -(E1+E2)/dt - 2.0*R/(dt*dt);
+        const double Kp_nm =  (R/(dt*dt));
+        const double Kq_np =  (E1*E2 + R*E1/dt);
+        const double Kq_n  =  (-R*E1/dt);
+
         double Qeq_n, Qeq_nm;
-        double pnm = epn(i);
-        double pn  = epnp(i);
 
-
-        // -------------------------------------------------------------
-        // Read in the pleural pressure
-        // -------------------------------------------------------------
-        const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
-        const  vector<double>* vals   = condition->Get<vector<double> >("val");
-    
-        double Pp_nm = 0.0;
-        double Pp_n  = 0.0;
-        double Pp_np = 0.0;
-
-        // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
-        if((*curve)[0]>=0)
-        {
-          Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - dt);
-          Pp_nm *= (*vals)[0];
-          Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
-          Pp_n  *= (*vals)[0];
-          Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time + dt);
-          Pp_np *= (*vals)[0];
-
-          // Evaluate the pleural contribution
-          pn  -= Pp_n;
-          pnm -= Pp_nm;
-        }
-        
-        Qeq_nm = -pnm*R/(dt*dt*C1);
-        Qeq_n  = pn * ((C1+C2)/(dt*C1) + 2.0*R/(dt*dt*C1)) - R/dt*q_out;
+        Qeq_nm = (-Kp_nm* pnm *NumOfAcini)/Kq_np;
+        Qeq_n  = (-Kp_n * pn  *NumOfAcini + Kq_n*qn)/Kq_np;
         
         // -------------------------------------------------------------
         // Evaluate sysmat and rhs
         // -------------------------------------------------------------
-        sysmat(i,i) += pow(-1.0,i)*(K/Kp);
-        rhs(i)      += pow(-1.0,i)*((Qeq_n + Qeq_nm)/Kp + K/Kp*Pp_np);
+        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm + Kp_np/Kq_np*Pp_np*NumOfAcini);
       }
       else
       {
@@ -719,7 +791,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           //          double val; 
           
           //          gid =  lm[i];
-          cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<endl;
+          //          cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<endl;
           rhs(i) += -BCin + rhs(i);
 
           //          rhs->ReplaceGlobalValues(1,&val,&gid);
@@ -791,8 +863,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
 
-          const double* X = ele->Nodes()[i]->X();
-          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
+          // const double* X = ele->Nodes()[i]->X();
+          // printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
         #endif
 
@@ -838,9 +910,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   vector<int>&                 lm,
   RefCountPtr<MAT::Material>   material)
 {
+  //  const int   myrank  = discretization.Comm().MyPID();
+
   //  const int numnode = iel;
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
+  RefCountPtr<Epetra_Vector> qin_n  = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
+  RefCountPtr<Epetra_Vector> qout_n = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+
 
   // get time-step size
   const double dt = params.get<double>("time step size");
@@ -872,6 +951,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
   const int numnode = lm.size();
+
   // create objects for element arrays
   //  LINALG::Matrix<numnode,1> epnp;
   Epetra_SerialDenseVector epnp(numnode);
@@ -905,18 +985,54 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   //--------------------------------------------------------------
   //               Calculate flowrates
   //--------------------------------------------------------------
-  double qin = 0.0;
-  double qout= 0.0;
+  double qin = (*qin_n )[ele->LID()];
+  double qout= (*qout_n)[ele->LID()];
+  double Qin_np  = (*qin_np )[ele->LID()];
+  double Qout_np = (*qout_np)[ele->LID()];
   if(ele->type() == "PoiseuilleResistive")
   {
     // get element information
     double A;
     ele->getParams("Area",A);
 
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    if(params.get<string> ("solver type") == "Nonlinear")
+    {
+      const int maxitr= 10;
+      for (int itr =0; itr<=maxitr; itr++)
+      {
+        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+        const double R = K1 + K2*fabs(Qout_np);
+        
+        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
+        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
+        qin = -f/df_dq + Qout_np;
+        //      qin = (epnp(0)-epnp(1))/R;
+        
+        if (fabs(Qin_np - qin) <= fabs(1e-6*qin))
+        {
+          Qin_np = Qout_np = qout= qin;
+          break;
+        }
+        if (itr == maxitr)
+        {
+          cout<<"Warning didn't converge: "<< fabs(Qin_np - qin) <<" Q = "<<qout<<endl;
+        }
+        Qin_np = Qout_np = qout= qin;
+      }     
+    }
+    if(params.get<string> ("solver type") == "Linear")
+    {
+      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+      const double R = K1 + K2*fabs(Qout_np);
 
-    qin = (epnp(0)-epnp(1))/R;
-    qout= qin;
+      qin = (epnp(0)-epnp(1))/R;
+      Qin_np = Qout_np = qout= qin;
+    }
+
   }
   else if(ele->type() == "InductoResistive")
   {
@@ -936,15 +1052,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     ele->getParams("WallThickness",tw);
 
     // find Resistance 
-    const double R    = 8.0*PI*visc*dens*L/(pow(A,2));
+    //    const double R    = 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
  
     // find Capacitance C
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
 
     // get element information from the previous time step
-    double qcn;
-    ele->getVars("capacitor_flow",qcn);
+    double qcn =  qin - qout;
+    //    ele->getVars("capacitor_flow",qcn);
 
     RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
     //    RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
@@ -973,8 +1089,45 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
 
 
-    qout = (epnp(0)-epnp(1))/R;
-    qin  = qout + qcnp_val;
+    if(params.get<string> ("solver type") == "Nonlinear")
+    {
+      const int maxitr= 10;
+      for (int itr =0; itr<=maxitr; itr++)
+      {
+        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+        const double R = K1 + K2*fabs(Qout_np);
+        
+        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
+        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
+        qout = -f/df_dq + Qout_np;
+        //      qin = (epnp(0)-epnp(1))/R;
+      
+        if (fabs(Qout_np - qout) <= fabs(1e-6*qout))
+        {
+          Qout_np = qout;
+          break;
+        }
+        if (itr == maxitr)
+        {
+          cout<<"Warning didn't converge: "<< fabs(Qout_np - qout) <<" Q = "<<qout<<endl;
+        }
+        Qout_np = qout;
+      }     
+    }
+    if(params.get<string> ("solver type") == "Linear")
+    {
+      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+      const double R = K1 + K2*fabs(Qout_np);
+
+      qout = (epnp(0)-epnp(1))/R;
+      Qout_np = qout;
+    }
+
+   Qin_np = qin  = qout + qcnp_val;
     
   }
   else if(ele->type() == "RLC")
@@ -986,7 +1139,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     ele->getParams("WallThickness",tw);
 
     // find Resistance 
-    const double R    = 8.0*PI*visc*dens*L/(pow(A,2));
+    const double R    = 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
  
     // find Capacitance C
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
@@ -996,7 +1149,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     // get element information from the previous time step
     double qcn,qln;
-    ele->getVars("capacitor_flow",qcn);
+    qcn = qin - qout;
+    //    ele->getVars("capacitor_flow",qcn);
     
 
     // get pressure values at n+1
@@ -1022,22 +1176,58 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     double qlnp = 0.0;
     qln  = ( epn(2) -  epn(1))/R;
     qlnp = (epnp(2) - epnp(1))/R;//((epnp(0) - epnp(2))+(epn(0) - epn(2)))*dt/(2.0*I) + qln;
-    ele->setVars("inductor_flow",qlnp);    
 
     // -----------------------------------------------------------
     // calculate capacitance flow at time step n+1
     // -----------------------------------------------------------
     double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
-    ele->setVars("capacitor_flow",qcnp_val);
-    ele->setVars("inductor_flow",qcnp_val);
+
     //    int    gid = ele->LID();
     //    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
     //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
 
+    if(params.get<string> ("solver type") == "Nonlinear")
+    {
+      const int maxitr= 10;
+      for (int itr =0; itr<=maxitr; itr++)
+      {
+        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+        const double R = K1 + K2*fabs(Qout_np);
+        
+        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
+        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
+        qout = -f/df_dq + Qout_np;
 
+  
+        if (fabs(Qout_np - qout) <= fabs(1e-6*qout))
+        {
+          Qout_np = qout;
+          break;
+        }
+        if (itr == maxitr)
+        {
+          cout<<"Warning didn't converge: "<< fabs(Qout_np - qout) <<" Q = "<<qout<<endl;
+        }
+        Qout_np = qout;
+      }     
+    }
+    if(params.get<string> ("solver type") == "Linear")
+    {
+      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
+      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
+      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
+      const double R = K1 + K2*fabs(Qout_np);
+
+      qout = (epnp(0)-epnp(1))/R;
+      Qout_np = qout;
+    }
+
+    Qin_np = qin  = qout + qcnp_val;
+   
     qout = qlnp;
     qin  = qout + qcnp_val;
-    
   }
   else if(ele->type() == "SUKI")
   {
@@ -1049,10 +1239,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     exit(1);
   }
 
-  ele->setVars("flow_in",qin);
-  ele->setVars("flow_out",qout);
+  //  ele->setVars("flow_in",qin);
+  //  ele->setVars("flow_out",qout);
+  int gid = ele->Id();
 
-}
+  qin_np  -> ReplaceGlobalValues(1,&qin,&gid);
+  qout_np -> ReplaceGlobalValues(1,&qout,&gid);
+
+
+}//CalcFlowRates
 
 
 /*----------------------------------------------------------------------*

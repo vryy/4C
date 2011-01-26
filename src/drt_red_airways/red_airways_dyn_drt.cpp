@@ -136,6 +136,14 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // solution output
   airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
 
+  // ----------------------------------------------- solver parameters
+  // solver type
+  airwaystimeparams.set                  ("solver type"             ,rawdyn.get<string>("SOLVERTYPE"));
+  // tolerance
+  airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
+  // maximum number of iterations
+  airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
+
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time
   // integration (call the constructor);
