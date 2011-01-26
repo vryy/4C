@@ -1336,7 +1336,7 @@ void SysmatBoundarySigma(
       const DRT::Element::DiscretizationType distype = cell->Shape();
 
       // gaussian points
-      DRT::UTILS::GaussRule2D intrule;
+      DRT::UTILS::GaussRule2D intrule = DRT::UTILS::intrule2D_undefined;
       switch ( distype )
       {
       case DRT::Element::tri3:
