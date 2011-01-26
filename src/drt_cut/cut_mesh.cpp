@@ -998,37 +998,13 @@ void GEO::CUT::Mesh::FindNodalDOFSets()
 
 void GEO::CUT::Mesh::CreateIntegrationCells()
 {
-  // get nodal positions from elements
-  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
         ++i )
   {
-    Element & e = *i->second;
-    std::vector<std::vector<Point*> > tets;
-    e.Delaunay( *this, tets );
+    VolumeCell * cell = &**i;
+    cell->CreateIntegrationCells( *this );
   }
-  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
-        i!=shadow_elements_.end();
-        ++i )
-  {
-    Element & e = **i;
-    std::vector<std::vector<Point*> > tets;
-    e.Delaunay( *this, tets );
-  }
-
-//   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
-//         i!=cells_.end();
-//         ++i )
-//   {
-//     VolumeCell * cell = &**i;
-
-//     std::ofstream file( "volumecell.plot" );
-//     file.precision( 16 );
-//     cell->Print( file );
-//     file.close();
-
-//     cell->CreateIntegrationCells( *this );
-//   }
 }
 
 void GEO::CUT::Mesh::Status()

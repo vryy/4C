@@ -5,6 +5,7 @@
 #include "cut_mesh.H"
 #include "cut_tetgen.H"
 #include "cut_boundarycell.H"
+#include "cut_volumecell.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -370,7 +371,6 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
                                                  const std::set<Facet*> & facets,
                                                  std::set<IntegrationCell*> & integrationcells )
 {
-#if 0
 #ifdef QHULL
   const int dim = 3;
   tetgenio in;
@@ -512,7 +512,7 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
     {
       Facet * f = j->second;
       std::vector<Epetra_SerialDenseMatrix> & xyz = i->second;
-      f->NewTri3Cells( mesh, xyz );
+      cell->NewTri3Cells( mesh, f, xyz );
     }
     else
     {
@@ -536,7 +536,6 @@ void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
     integrationcells.insert( mesh.NewTet4Cell( position, xyz, cell ) );
   }
 
-#endif
 #endif
 }
 
