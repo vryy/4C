@@ -2534,8 +2534,8 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // create the parameters for the discretization
   ParameterList eleparams;
 
-  // parameters for stabilization
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+  // set action type
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
 
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -2556,15 +2556,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-  {
-    eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
     discret_->SetState("velaf",velaf_);
-  }
   else
-  {
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
     discret_->SetState("velaf",velnp_);
-  }
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
@@ -3140,17 +3134,8 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // create the parameters for the discretization
   ParameterList eleparams;
 
-  // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",omtheta_);
-  eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity","No");
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+  // set action type
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
 
   // parameters for stabilization
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
@@ -3174,35 +3159,11 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_stationary)
-  {
-    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-    eleparams.set("is stationary", true);
-
     discret_->SetState("velaf",velnp_);
-  }
   else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-  {
-    eleparams.set("action","calc_fluid_afgenalpha_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",true);
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("is stationary", false);
-    eleparams.set("alphaF",alphaF_);
-    eleparams.set("alphaM",alphaM_);
-    eleparams.set("gamma",gamma_);
-
     discret_->SetState("velaf",velaf_);
-  }
   else
-  {
-    eleparams.set("action","calc_fluid_systemmat_and_residual");
-    eleparams.set("using generalized-alpha time integration",false);
-    eleparams.set("total time",time_);
-    eleparams.set("is stationary", false);
-
     discret_->SetState("velaf",velnp_);
-  }
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
@@ -4303,13 +4264,9 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     // set scheme-specific element parameters and vector values
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    {
       discret_->SetState("velaf",velaf_);
-    }
     else
-    {
       discret_->SetState("velaf", velnp_);
-    }
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_,null,null);
