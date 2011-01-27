@@ -278,7 +278,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     {
       whichtau = INPAR::FLUID::codina;
     }
-    else if(taudef == "FBVW_without_dt")
+    else if(taudef == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt")
     {
       whichtau = INPAR::FLUID::fbvw_wo_dt;
     }

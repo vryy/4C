@@ -98,6 +98,8 @@ namespace INPAR
       tau_franca_barrenechea_valentin_frey_wall_wo_dt,
       tau_shakib_hughes_codina,
       tau_shakib_hughes_codina_wo_dt,
+      tau_codina,
+      tau_codina_wo_dt,
       tau_not_defined
     };
 

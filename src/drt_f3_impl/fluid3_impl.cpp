@@ -2187,6 +2187,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   // B) combined definition according to Franca and Valentin (2000) as
   //    well as Barrenechea and Valentin (2002)
   //    -> differentiating tau_Mu and tau_Mp for this definition
+  // C) definition according to Shakib (1989) / Shakib and Hughes (1991)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
+  // D) definition according to Codina (1998)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
   //---------------------------------------------------------------------
   // get element-type constant for tau
   const double mk = DRT::ELEMENTS::MK<distype>();
@@ -2427,6 +2431,45 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   }
   break;
 
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
+  {
+    /*
+
+      literature:
+         R. Codina, Comparison of some finite element methods for solving
+         the diffusion-convection-reaction equation, Comput. Methods
+         Appl. Mech. Engrg. 156 (1998) 185-210.
+
+         constants:
+         c_1 = 1.0 (for version with dt), 0.0 (for version without dt),
+         c_2 = 2.0,
+         c_3 = 4.0/m_k (12.0 for linear, 48.0 for quadratic elements)
+
+         Codina (1998) proposed present version without dt.
+
+    */
+    // get velocity norm
+    vel_norm = velint_.Norm2();
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,vel_norm,strle,hk);
+
+    // definition of constants as described above
+    double c1 = 1.0;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_codina_wo_dt) c1 = 0.0;
+    const double c2 = 2.0;
+    c3 = 4.0/mk;
+
+    tau_(0) = 1.0/(sqrt(c1*densaf_/f3Parameter_->dt_
+                      + c2*densaf_*vel_norm/strle
+                      + c3*visceff_/DSQR(strle)));
+    tau_(1) = 1.0/(sqrt(c1*densaf_/f3Parameter_->dt_
+                      + c2*densaf_*vel_norm/hk
+                      + c3*visceff_/DSQR(hk)));
+  }
+  break;
+
   default: dserror("unknown definition for tau_M\n %i  ", f3Parameter_->whichtau_);
   }  // end switch (f3Parameter_->whichtau_)
 
@@ -2566,6 +2609,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
 
   case INPAR::FLUID::tau_shakib_hughes_codina:
   case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
   {
     /*
 

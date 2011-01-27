@@ -57,6 +57,10 @@ void FLD::UTILS::computeStabilizationParams(
   // B) combined definition according to Franca and Valentin (2000) as
   //    well as Barrenechea and Valentin (2002)
   //    -> differentiating tau_Mu and tau_Mp for this definition
+  // C) definition according to Shakib (1989) / Shakib and Hughes (1991)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
+  // D) definition according to Codina (1998)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
   //---------------------------------------------------------------------
   // computation depending on which parameter definition is used
   switch (tautype)
@@ -155,6 +159,40 @@ void FLD::UTILS::computeStabilizationParams(
   }
   break;
 
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+  {
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
+                 re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
+
+    // respective "switching" parameters
+    const double xi02 = DMAX(re02,1.0);
+    const double xi12 = DMAX(re12,1.0);
+
+    if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+        not instationary)
+    {
+      tau_stab_Mu = (DSQR(strle)*mk)/(4.0*dynvisc*xi02);
+      tau_stab_Mp = (DSQR(hk)*mk)/(4.0*dynvisc*xi12);
+    }
+    else
+    {
+      // various parameter computations for case with dt:
+      // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
+      const double re01 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(strle));
+      const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
+
+      // respective "switching" parameters
+      const double xi01 = DMAX(re01,1.0);
+      const double xi11 = DMAX(re11,1.0);
+
+      tau_stab_Mu = timefac*DSQR(strle)/(DSQR(strle)*dens*xi01+(4.0*timefac*dynvisc/mk)*xi02);
+      tau_stab_Mp = timefac*DSQR(hk)/(DSQR(hk)*dens*xi11+(4.0*timefac*dynvisc/mk)*xi12);
+    }
+  }
+  break;
+
   case INPAR::FLUID::tau_shakib_hughes_codina:
   case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
   {
@@ -203,11 +241,8 @@ void FLD::UTILS::computeStabilizationParams(
        Codina (2002) proposed present version without dt and explicit
        definition of constants.
 
-     */
+    */
 
-    //---------------------------------------------------------------------
-    // computation of tau_Mu and tau_Mp due to various definitions
-    //---------------------------------------------------------------------
     // definition of constants as described above
     double c1 = 4.0;
     if ((tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt) or
@@ -217,46 +252,48 @@ void FLD::UTILS::computeStabilizationParams(
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-      tau_stab_Mu = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
-                            + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(strle)
-                            + c3*DSQR(dynvisc)/(DSQR(strle)*DSQR(strle))));
-      tau_stab_Mp = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
-                            + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(hk)
-                            + c3*DSQR(dynvisc)/(DSQR(hk)*DSQR(hk))));
+    tau_stab_Mu = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
+                          + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(strle)
+                          + c3*DSQR(dynvisc)/(DSQR(strle)*DSQR(strle))));
+    tau_stab_Mp = 1.0/(sqrt(c1*DSQR(dens)/DSQR(dt)
+                          + c2*DSQR(dens)*DSQR(vel_norm)/DSQR(hk)
+                          + c3*DSQR(dynvisc)/(DSQR(hk)*DSQR(hk))));
   }
-  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
-  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
   {
-    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-    const double re02 = mk * dens * vel_norm * strle / (2.0 * dynvisc);
-                 re12 = mk * dens * vel_norm * hk / (2.0 * dynvisc);
+    /*
 
-    // respective "switching" parameters
-    const double xi02 = DMAX(re02,1.0);
-    const double xi12 = DMAX(re12,1.0);
+      literature:
+         R. Codina, Comparison of some finite element methods for solving
+         the diffusion-convection-reaction equation, Comput. Methods
+         Appl. Mech. Engrg. 156 (1998) 185-210.
 
-    if (tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+         constants:
+         c_1 = 1.0 (for version with dt), 0.0 (for version without dt),
+         c_2 = 2.0,
+         c_3 = 4.0/m_k (12.0 for linear, 48.0 for quadratic elements)
+
+         Codina (1998) proposed present version without dt.
+
+    */
+
+    // definition of constants as described above
+    double c1 = 1.0;
+    if ((tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt) or
         not instationary)
-    {
-      tau_stab_Mu = (DSQR(strle)*mk)/(4.0*dynvisc*xi02);
-      tau_stab_Mp = (DSQR(hk)*mk)/(4.0*dynvisc*xi12);
-    }
-    else
-    {
-      // various parameter computations for case with dt:
-      // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-      const double re01 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(strle));
-      const double re11 = 4.0 * timefac * dynvisc / (mk * dens * DSQR(hk));
+      c1 = 0.0;
+    const double c2 = 2.0;
+    c3 = 4.0/mk;
 
-      // respective "switching" parameters
-      const double xi01 = DMAX(re01,1.0);
-      const double xi11 = DMAX(re11,1.0);
-
-      tau_stab_Mu = timefac*DSQR(strle)/(DSQR(strle)*dens*xi01+(4.0*timefac*dynvisc/mk)*xi02);
-      tau_stab_Mp = timefac*DSQR(hk)/(DSQR(hk)*dens*xi11+(4.0*timefac*dynvisc/mk)*xi12);
-    }
+    tau_stab_Mu = 1.0/(sqrt(c1*dens/dt
+                          + c2*dens*vel_norm/strle
+                          + c3*dynvisc/DSQR(strle)));
+    tau_stab_Mp = 1.0/(sqrt(c1*dens/dt
+                          + c2*dens*vel_norm/hk
+                          + c3*dynvisc/DSQR(hk)));
   }
-  break;
 
   default: dserror("unknown definition for tau_M\n %i  ", tautype);
   }  // end switch (tautype)
@@ -396,6 +433,8 @@ void FLD::UTILS::computeStabilizationParams(
 
   case INPAR::FLUID::tau_shakib_hughes_codina:
   case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
   {
     /*
 

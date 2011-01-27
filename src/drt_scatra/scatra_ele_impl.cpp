@@ -2812,7 +2812,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       const double c2 = 2.0;
       const double c3 = 4.0/mk;
 
-      tau_[k] = 1.0/(c1*sigma_tot + c2*vel_norm/h + c3*diffus/(h*h));
+      tau_[k] = 1.0/(c1*densnp_[k]*sigma_tot
+                   + c2*densnp_[k]*vel_norm/h
+                   + c3*diffus/(h*h));
     }
     break;
     case INPAR::SCATRA::tau_exact_1d:
