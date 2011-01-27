@@ -27,26 +27,28 @@ namespace FLD
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(FluidGenAlphaIntegration& fluid)
     :
-    dt_         (fluid.dt_       ),
-    alphaM_     (fluid.alphaM_   ),
-    alphaF_     (fluid.alphaF_   ),
-    gamma_      (fluid.gamma_    ),
-    density_    (fluid.density_  ),
-    discret_    (fluid.discret_  ),
-    params_     (fluid.params_   ),
-    alefluid_   (fluid.alefluid_ ),
-    myaccnp_    (fluid.accnp_    ),
-    myaccn_     (fluid.accn_     ),
-    myaccam_    (fluid.accam_    ),
-    myvelnp_    (fluid.velnp_    ),
-    myveln_     (fluid.veln_     ),
-    myvelaf_    (fluid.velaf_    ),
-    myscanp_    (fluid.scaaf_    ),
-    mydispnp_   (fluid.dispnp_   ),
-    mydispn_    (fluid.dispn_    ),
-    mygridveln_ (fluid.gridveln_ ),
-    mygridvelaf_(fluid.gridvelaf_),
-    myforce_    (fluid.force_    )
+    dt_              (fluid.dt_       ),
+    alphaM_          (fluid.alphaM_   ),
+    alphaF_          (fluid.alphaF_   ),
+    gamma_           (fluid.gamma_    ),
+    density_         (fluid.density_  ),
+    discret_         (fluid.discret_  ),
+    params_          (fluid.params_   ),
+    alefluid_        (fluid.alefluid_ ),
+    myaccnp_         (fluid.accnp_    ),
+    myaccn_          (fluid.accn_     ),
+    myaccam_         (fluid.accam_    ),
+    myvelnp_         (fluid.velnp_    ),
+    myveln_          (fluid.veln_     ),
+    myvelaf_         (fluid.velaf_    ),
+    mydispnp_        (fluid.dispnp_   ),
+    mydispn_         (fluid.dispn_    ),
+    mygridveln_      (fluid.gridveln_ ),
+    mygridvelaf_     (fluid.gridvelaf_),
+    myforce_         (fluid.force_    ),
+    myfilteredvel_   (null            ),
+    myfilteredreystr_(null            ),
+    myfsvelaf_       (null            )
   {
     // get density
 
@@ -70,6 +72,7 @@ namespace FLD
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
+                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -86,6 +89,7 @@ namespace FLD
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
+                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -228,32 +232,32 @@ namespace FLD
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(FluidImplicitTimeInt& fluid)
     :
-    dt_         (fluid.dta_         ),
-    alphaM_     (0.0                ),
-    alphaF_     (0.0                ),
-    gamma_      (0.0                ),
-    density_    (fluid.density_     ),
-    discret_    (fluid.discret_     ),
-    params_     (fluid.params_      ),
-    alefluid_   (fluid.alefluid_    ),
-    myaccnp_    (fluid.accnp_       ),
-    myaccn_     (fluid.accn_        ),
-    myaccam_    (fluid.accam_      ),
-    myvelnp_    (fluid.velnp_       ),
-    myveln_     (fluid.veln_        ),
-    myvelaf_    (fluid.velaf_       ),
-    myscanp_    (fluid.scaaf_       ),
-    mydispnp_   (fluid.dispnp_      ),
-    mydispn_    (fluid.dispn_       ),
-    mygridveln_ (fluid.gridv_       ),
-    mygridvelaf_(null               ),
-    myforce_    (fluid.trueresidual_)
+    dt_              (fluid.dta_           ),
+    alphaM_          (0.0                  ),
+    alphaF_          (0.0                  ),
+    gamma_           (0.0                  ),
+    density_         (fluid.density_       ),
+    discret_         (fluid.discret_       ),
+    params_          (fluid.params_        ),
+    alefluid_        (fluid.alefluid_      ),
+    myaccnp_         (fluid.accnp_         ),
+    myaccn_          (fluid.accn_          ),
+    myaccam_         (fluid.accam_         ),
+    myvelnp_         (fluid.velnp_         ),
+    myveln_          (fluid.veln_          ),
+    myvelaf_         (fluid.velaf_         ),
+    myscanp_         (fluid.scaaf_         ),
+    mydispnp_        (fluid.dispnp_        ),
+    mydispn_         (fluid.dispn_         ),
+    mygridveln_      (fluid.gridv_         ),
+    mygridvelaf_     (null                 ),
+    myforce_         (fluid.trueresidual_  ),
+    myfilteredvel_   (fluid.filteredvel_   ),
+    myfilteredreystr_(fluid.filteredreystr_),
+    myfsvelaf_       (fluid.fsvelaf_       )
   {
-    // get density
 
-    // no subgrid dissipation computation is available for the
-    // one-steo-theta implementation
-    subgrid_dissipation_=false;
+    subgrid_dissipation_=true;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -271,6 +275,7 @@ namespace FLD
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
+                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -287,6 +292,7 @@ namespace FLD
                                                           mydispnp_           ,
                                                           params_             ,
                                                           smagorinsky_        ,
+                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -430,6 +436,32 @@ namespace FLD
       }
     }
 
+    // check if we want to compute averages of scale similarity
+    // quantities (tau_SFS)
+        scalesimilarity_=false;
+        if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+            ==
+            "CLASSICAL_LES")
+        {
+          if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+             ==
+             "Scale_Similarity"
+             ||
+             params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+             ==
+             "Mixed_Scale_Similarity_Eddy_Viscosity_Model"
+            )
+          {
+            if(discret_->Comm().MyPID()==0)
+            {
+              cout << "                             Initialising output for scale similarity type models\n\n\n";
+              fflush(stdout);
+            }
+
+            scalesimilarity_=true;
+          }
+        }
+
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
     {
@@ -515,6 +547,39 @@ namespace FLD
         // add computed dynamic Smagorinsky quantities
         // (effective viscosity etc. used during the computation)
         if(smagorinsky_) statistics_channel_->AddDynamicSmagorinskyQuantities();
+        break;
+      }
+      default:
+      {
+        // there are no values to be stored in these cases
+        break;
+      }
+    }
+  }
+
+    return;
+  }
+
+  /*----------------------------------------------------------------------
+
+    Store values computed during the element call
+
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::StoreNodalValues(
+       int                        step,
+       const RCP<Epetra_Vector>   stress12)
+  {
+    // sampling takes place only in the sampling period
+    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
+    {
+      switch(flow_)
+      {
+      case channel_flow_of_height_2:
+      case loma_channel_flow_of_height_2:
+      {
+        // add computed dynamic Smagorinsky quantities
+        // (effective viscosity etc. used during the computation)
+        if(scalesimilarity_) statistics_channel_->AddSubfilterStresses(stress12);
         break;
       }
       default:
@@ -669,18 +734,51 @@ namespace FLD
 
           // set vector values needed by elements
           map<string,RCP<Epetra_Vector> > statevecs;
+          map<string,RCP<Epetra_MultiVector> > statetenss;
 
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
-          statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc     (n+alpha_M,trial)",myaccam_));
-
-          if (alefluid_)
+          if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_gen_alpha)
           {
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp"    , mydispnp_   ));
-            statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridvelaf" , mygridvelaf_));
-          }
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
+            statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc     (n+alpha_M,trial)",myaccam_));
 
-          statistics_channel_->EvaluateResiduals(statevecs,time);
+            if (alefluid_)
+            {
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("dispnp"    , mydispnp_   ));
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("gridvelaf" , mygridvelaf_));
+            }
+
+            statistics_channel_->EvaluateResiduals(statevecs,time);
+          }
+          else
+          {
+            if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_afgenalpha)
+            {
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelaf_));
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccam_));
+            }
+            else if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_one_step_theta)
+            {
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelnp_));
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccnp_));
+            }
+            else
+              dserror("Time integartion scheme not supported!");
+
+            if (params_.get<string>("fs subgrid viscosity")!= "No")
+            {
+              statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvel",myfsvelaf_));
+              if (myfsvelaf_==null)
+                dserror ("Didn't got fsvel!");
+            }
+            if (scalesimilarity_)
+            {
+              statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
+              statetenss.insert(pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
+            }
+
+            statistics_channel_->EvaluateResidualsFluidImplInt(statevecs,statetenss,time);
+          }
 
           break;
         }

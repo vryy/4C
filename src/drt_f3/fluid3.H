@@ -465,6 +465,7 @@ private:
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_loma_statistics,
+    calc_dissipation,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_density,
@@ -641,6 +642,7 @@ private:
    */
   template<int iel>
   void f3_apply_box_filter(
+    bool                      dyn_smagorinsky,
     vector<double>&           myvel,
     double*                   vel_hat,
     double*                   reystr_hat,

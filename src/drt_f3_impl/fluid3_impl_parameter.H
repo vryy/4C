@@ -119,6 +119,8 @@ public:
   double Cs_;
   //! channel length to normalize the normal wall distance
   double l_tau_;
+  //! scale similarity constant
+  double Cl_;
 
 private:
 

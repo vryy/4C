@@ -244,6 +244,14 @@ public:
   Teuchos::RCP<Epetra_Vector> CalcWallShearStresses();
 
   /*!
+  \brief calculate subfilter stresses
+
+  */
+  Teuchos::RCP<Epetra_Vector> CalcSFS(
+  const int   i,
+  const int   j);
+
+  /*!
    * \brief calculate fluid volume (2d case: calculate fluid "surface")
    */
   double CalcFluidVolume();
@@ -396,6 +404,8 @@ public:
   */
   void ApplyFilterForDynamicComputationOfCs();
 
+  void ApplyFilterForClassicalLES();
+
   //@}
 
   //! @name matrix condensation (split matrix)
@@ -466,6 +476,7 @@ protected:
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;
+  bool                          scale_similarity_;
   //@}
 
   /// number of spatial dimensions
@@ -616,6 +627,12 @@ protected:
 
   /// only necessary for AVM3: fine-scale solution vector
   RCP<Epetra_Vector>    fsvelaf_;
+
+  /// only necessary for Scale Similarity Model: filtered velocity
+  RCP<Epetra_MultiVector>    filteredvel_;
+
+  /// only necessary for Scale Similarity Model: filtered reynolds stress
+  RCP<Epetra_MultiVector>    filteredreystr_;
 
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;

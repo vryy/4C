@@ -107,6 +107,7 @@ public:
                           RefCountPtr<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
                           bool                             smagorinsky        ,
+                          bool                             scalesimilarity    ,
                           bool                             subgrid_dissipation);
 
   /*!
@@ -196,6 +197,13 @@ public:
 
   void AddDynamicSmagorinskyQuantities();
 
+  /*!
+    \brief Add computed subfilter stresses of scale
+           similarity model
+  */
+
+  void AddSubfilterStresses(const RCP<Epetra_Vector>   stress12);
+
 
   /*!
     \brief do averaging of residuals, dissipation rates etc
@@ -205,6 +213,9 @@ public:
   void EvaluateResiduals(map<string,RCP<Epetra_Vector> > statevecs,
                          double                          time     );
 
+  void EvaluateResidualsFluidImplInt(map<string,RCP<Epetra_Vector> >      statevecs,
+                                     map<string,RCP<Epetra_MultiVector> > statetenss,
+                                     double                               time     );
 
   //@}
 
@@ -312,6 +323,9 @@ private:
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
   bool                             smagorinsky_;
+
+  //! toggle evaluation of scale similarity quantities
+  bool                                 scalesimilarity_;
 
   //! toggle whether to evaluate residuals, taus, dissipation rates etc
   bool                             subgrid_dissipation_;
@@ -471,6 +485,16 @@ private:
   RefCountPtr<vector<double> >     incrsumvisceff_;
 
   //!--------------------------------------------------
+  //!  averaged quantities from scale similarity model
+  //!--------------------------------------------------
+
+  //! sum over subfilter stress 12 --- used only for scale similarity model
+  RefCountPtr<vector<double> >     sumstress12_;
+  //! increment of sumstress12 over in one timestep
+  RefCountPtr<vector<double> >     incrsumstress12_;
+
+
+  //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
 
@@ -535,6 +559,14 @@ private:
   RefCountPtr<vector<double> >     sum_eps_vstab_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
   RefCountPtr<vector<double> >     sum_eps_eddyvisc_;
+  //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
+  RefCountPtr<vector<double> >     sum_eps_avm3_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model
+  RefCountPtr<vector<double> >     sum_eps_scsim_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
+  RefCountPtr<vector<double> >     sum_eps_scsimfs_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
+  RefCountPtr<vector<double> >     sum_eps_scsimbs_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
   RefCountPtr<vector<double> >     sum_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term

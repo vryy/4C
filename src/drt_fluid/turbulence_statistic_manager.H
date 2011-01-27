@@ -77,6 +77,15 @@ public:
   void StoreElementValues(int step);
 
   /*!
+  \brief Store values computed during the element call
+
+  (including subfilter stresses for a scale
+  similarity model)
+
+  */
+  void StoreNodalValues(int step, const RCP<Epetra_Vector>   stress12);
+
+  /*!
   \brief Include current quantities in the time
   averaging procedure
 
@@ -165,6 +174,10 @@ private:
 
   RCP<Epetra_Vector>                   myforce_    ;
 
+  RCP<Epetra_MultiVector>              myfilteredvel_;
+  RCP<Epetra_MultiVector>              myfilteredreystr_;
+  RCP<Epetra_Vector>                   myfsvelaf_    ;
+
 
   //! specifies the special flow
   enum SpecialFlow
@@ -183,6 +196,9 @@ private:
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
   bool                                 smagorinsky_;
+
+  //! toggle evaluation of scale similarity quantities
+  bool                                 scalesimilarity_;
 
   //! toggle evaluation of subgrid quantities, dissipation rates etc
   //! this is only possible for the genalpha implementation since

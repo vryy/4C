@@ -95,6 +95,14 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("radii", "radii", nodebased, 1);
   EnsightWriter::WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
+  //additional output for turbulent flows (subfilter/-gridstress)
+  EnsightWriter::WriteResult("sfs11", "sfs11", nodebased, 1);
+  EnsightWriter::WriteResult("sfs12", "sfs12", nodebased, 1);
+  EnsightWriter::WriteResult("sfs13", "sfs13", nodebased, 1);
+  EnsightWriter::WriteResult("sfs22", "sfs22", nodebased, 1);
+  EnsightWriter::WriteResult("sfs23", "sfs23", nodebased, 1);
+  EnsightWriter::WriteResult("sfs33", "sfs33", nodebased, 1);
+
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 

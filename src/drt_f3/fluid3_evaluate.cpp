@@ -72,6 +72,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_update_for_subscales;
   else if (action == "time average for subscales and residual")
     act = Fluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
+  else if (action == "calc_dissipation")
+    act = Fluid3::calc_dissipation;
   else if (action == "calc_fluid_beltrami_error")
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
@@ -369,6 +371,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       {
         if (nsd == 3)
         {
+          const bool dyn_smagorinsky = params.get<bool>("LESmodel");
+
           // --------------------------------------------------
           // extract velocities from the global distributed vectors
 
@@ -398,7 +402,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
           case DRT::Element::hex8:
           {
-            this->f3_apply_box_filter<8>(myvel,
+            this->f3_apply_box_filter<8>(dyn_smagorinsky,
+                                         myvel,
                                          elevec1.Values(),
                                          elemat1.A(),
                                          elemat2.A(),
@@ -407,7 +412,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
           case DRT::Element::tet4:
           {
-            this->f3_apply_box_filter<4>(myvel,
+            this->f3_apply_box_filter<4>(dyn_smagorinsky,
+                                         myvel,
                                          elevec1.Values(),
                                          elemat1.A(),
                                          elemat2.A(),
@@ -545,6 +551,23 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
         }
         else dserror("%i D elements does not support any averaging for subscales and residuals", nsd);
+      }
+      break;
+      case calc_dissipation:
+      {
+        if (nsd == 3)
+        {
+          if (this->Owner() == discretization.Comm().MyPID())
+          {
+            return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->CalcDissipation(
+              this,
+              params,
+              discretization,
+              lm,
+              mat);
+          }
+        }
+        else dserror("%i D elements does not support calculation of dissipation", nsd);
       }
       break;
       case get_density:
@@ -1933,6 +1956,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_loma_means(
 //----------------------------------------------------------------------
 template<int iel>
 void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
+    bool                      dyn_smagorinsky,
     vector<double>&           myvel,
     double*                   bvel_hat,
     double*                   breystr_hat,
@@ -1970,6 +1994,12 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   LINALG::Matrix<NSD,NSD>  xjm  ;
   LINALG::Matrix<NSD,NSD>  xji  ;
   LINALG::Matrix<NSD,iel>  deriv;
+  LINALG::Matrix<NSD,iel>  derxy;
+
+  LINALG::Matrix<NSD,1> velint;
+  LINALG::Matrix<NSD,NSD> vderxy;
+  LINALG::Matrix<NSD,NSD> epsilon;
+  double rateofstrain = 0.0;
 
   // get node coordinates of element
   LINALG::Matrix<NSD,iel> xyze;
@@ -2011,69 +2041,73 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
   DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
-  // get Jacobian matrix and determinant
-  for (int nn=0;nn<NSD;++nn)
-  {
-    for (int rr=0;rr<NSD;++rr)
+    // get Jacobian matrix and determinant
+    for (int nn=0;nn<NSD;++nn)
     {
-      xjm(nn,rr)=deriv(nn,0)*xyze(rr,0);
-      for (int mm=1;mm<iel;++mm)
+      for (int rr=0;rr<NSD;++rr)
       {
-        xjm(nn,rr)+=deriv(nn,mm)*xyze(rr,mm);
+        xjm(nn,rr)=deriv(nn,0)*xyze(rr,0);
+        for (int mm=1;mm<iel;++mm)
+        {
+          xjm(nn,rr)+=deriv(nn,mm)*xyze(rr,mm);
+        }
       }
     }
-  }
 
-  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                       xjm(0,1)*xjm(1,0)*xjm(2,2);
 
-  //
-  //             compute global first derivates
-  //
-  LINALG::Matrix<NSD,iel> derxy;
-  /*
-    Use the Jacobian and the known derivatives in element coordinate
-    directions on the right hand side to compute the derivatives in
-    global coordinate directions
+    //
+    //             compute global first derivates
+    //
+    //LINALG::Matrix<NSD,iel> derxy;
 
-          +-                 -+     +-    -+      +-    -+
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dr    dr    dr   |     |  dx  |      |  dr  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
-          |  ds    ds    ds   |     |  dy  |      |  ds  |
-          |                   |     |      |      |      |
-          |  dx    dy    dz   |     | dN_k |      | dN_k |
-          |  --    --    --   |     | ---- |      | ---- |
-          |  dt    dt    dt   |     |  dz  |      |  dt  |
-          +-                 -+     +-    -+      +-    -+
-
-  */
-  xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
-  xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
-  xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
-  xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
-  xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
-  xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
-  xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
-  xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
-  xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
-
-  // compute global derivates
-  for (int nn=0;nn<NSD;++nn)
+  if (dyn_smagorinsky)
   {
-    for (int rr=0;rr<iel;++rr)
+    /*
+      Use the Jacobian and the known derivatives in element coordinate
+      directions on the right hand side to compute the derivatives in
+      global coordinate directions
+
+            +-                 -+     +-    -+      +-    -+
+            |  dx    dy    dz   |     | dN_k |      | dN_k |
+            |  --    --    --   |     | ---- |      | ---- |
+            |  dr    dr    dr   |     |  dx  |      |  dr  |
+            |                   |     |      |      |      |
+            |  dx    dy    dz   |     | dN_k |      | dN_k |
+            |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+            |  ds    ds    ds   |     |  dy  |      |  ds  |
+            |                   |     |      |      |      |
+            |  dx    dy    dz   |     | dN_k |      | dN_k |
+            |  --    --    --   |     | ---- |      | ---- |
+            |  dt    dt    dt   |     |  dz  |      |  dt  |
+            +-                 -+     +-    -+      +-    -+
+
+    */
+    xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
+    xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
+    xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
+    xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
+    xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
+    xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
+    xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
+    xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
+    xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
+
+    // compute global derivates
+    for (int nn=0;nn<NSD;++nn)
     {
-      derxy(nn,rr)=deriv(0,rr)*xji(nn,0);
-      for (int mm=1;mm<NSD;++mm)
+      for (int rr=0;rr<iel;++rr)
       {
-        derxy(nn,rr)+=deriv(mm,rr)*xji(nn,mm);
+        derxy(nn,rr)=deriv(0,rr)*xji(nn,0);
+        for (int mm=1;mm<NSD;++mm)
+        {
+          derxy(nn,rr)+=deriv(mm,rr)*xji(nn,mm);
+        }
       }
     }
   }
@@ -2087,7 +2121,7 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   //                   +-----
   //                   node j
   //
-  LINALG::Matrix<NSD,1> velint;
+  //LINALG::Matrix<NSD,1> velint;
   for (int rr=0;rr<NSD;++rr)
   {
     velint(rr)=funct(0)*evel(rr,0);
@@ -2097,72 +2131,75 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     }
   }
 
-  // get velocity (n+alpha_F/1,i) derivatives at integration point
-  //
-  //       n+af/1      +-----  dN (x)
-  //   dvel      (x)    \        k         n+af/1
-  //   ------------- =   +     ------ * vel
-  //        dx          /        dx        k
-  //          j        +-----      j
-  //                   node k
-  //
-  // j : direction of derivative x/y/z
-  //
-  LINALG::Matrix<NSD,NSD> vderxy;
-  for (int nn=0;nn<NSD;++nn)
+  if (dyn_smagorinsky)
   {
-    for (int rr=0;rr<NSD;++rr)
+    // get velocity (n+alpha_F/1,i) derivatives at integration point
+    //
+    //       n+af/1      +-----  dN (x)
+    //   dvel      (x)    \        k         n+af/1
+    //   ------------- =   +     ------ * vel
+    //        dx          /        dx        k
+    //          j        +-----      j
+    //                   node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    // LINALG::Matrix<NSD,NSD> vderxy;
+    for (int nn=0;nn<NSD;++nn)
     {
-      vderxy(nn,rr)=derxy(rr,0)*evel(nn,0);
-      for (int mm=1;mm<iel;++mm)
+      for (int rr=0;rr<NSD;++rr)
       {
-        vderxy(nn,rr)+=derxy(rr,mm)*evel(nn,mm);
+        vderxy(nn,rr)=derxy(rr,0)*evel(nn,0);
+        for (int mm=1;mm<iel;++mm)
+        {
+          vderxy(nn,rr)+=derxy(rr,mm)*evel(nn,mm);
+        }
       }
     }
-  }
 
-  /*
-                            +-     n+af/1          n+af/1    -+
-          / h \       1.0   |  dvel_i    (x)   dvel_j    (x)  |
-     eps | u   |    = --- * |  ------------- + -------------  |
-          \   / ij    2.0   |       dx              dx        |
-                            +-        j               i      -+
-  */
-  LINALG::Matrix<NSD,NSD> epsilon;
+    /*
+                              +-     n+af/1          n+af/1    -+
+            / h \       1.0   |  dvel_i    (x)   dvel_j    (x)  |
+       eps | u   |    = --- * |  ------------- + -------------  |
+            \   / ij    2.0   |       dx              dx        |
+                              +-        j               i      -+
+    */
+    //LINALG::Matrix<NSD,NSD> epsilon;
 
-  for (int nn=0;nn<NSD;++nn)
-  {
-    for (int rr=0;rr<NSD;++rr)
+    for (int nn=0;nn<NSD;++nn)
     {
-      epsilon(nn,rr)=0.5*(vderxy(nn,rr)+vderxy(rr,nn));
+      for (int rr=0;rr<NSD;++rr)
+      {
+        epsilon(nn,rr)=0.5*(vderxy(nn,rr)+vderxy(rr,nn));
+      }
     }
-  }
 
-  //
-  // modeled part of subgrid scale stresses
-  //
-  /*    +-                                 -+ 1
-        |          / h \           / h \    | -         / h \
-        | 2 * eps | u   |   * eps | u   |   | 2  * eps | u   |
-        |          \   / kl        \   / kl |           \   / ij
-        +-                                 -+
+    //
+    // modeled part of subgrid scale stresses
+    //
+    /*    +-                                 -+ 1
+          |          / h \           / h \    | -         / h \
+          | 2 * eps | u   |   * eps | u   |   | 2  * eps | u   |
+          |          \   / kl        \   / kl |           \   / ij
+          +-                                 -+
 
-        |                                   |
-        +-----------------------------------+
-             'resolved' rate of strain
-  */
+          |                                   |
+          +-----------------------------------+
+               'resolved' rate of strain
+    */
 
-  double rateofstrain = 0;
+    //double rateofstrain = 0;
 
-  for(int rr=0;rr<NSD;rr++)
-  {
-    for(int mm=0;mm<NSD;mm++)
+    for(int rr=0;rr<NSD;rr++)
     {
-      rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+      for(int mm=0;mm<NSD;mm++)
+      {
+        rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+      }
     }
+    rateofstrain *= 2.0;
+    rateofstrain = sqrt(rateofstrain);
   }
-  rateofstrain *= 2.0;
-  rateofstrain = sqrt(rateofstrain);
 
 
   //--------------------------------------------------
@@ -2185,19 +2222,23 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
     }
   }
 
-  // add contribution to integral over the modeled part of subgrid
-  // scale stresses
-  double rateofstrain_volume=rateofstrain*volume;
-  for (int rr=0;rr<NSD;++rr)
+  if (dyn_smagorinsky)
   {
-    for (int nn=0;nn<NSD;++nn)
+    // add contribution to integral over the modeled part of subgrid
+    // scale stresses
+    double rateofstrain_volume=rateofstrain*volume;
+    for (int rr=0;rr<NSD;++rr)
     {
-      modeled_stress_grid_scale_hat(rr,nn) += rateofstrain_volume * epsilon(rr,nn);
+      for (int nn=0;nn<NSD;++nn)
+      {
+        modeled_stress_grid_scale_hat(rr,nn) += rateofstrain_volume * epsilon(rr,nn);
+      }
     }
   }
 
   return;
 } // DRT::ELEMENTS::Fluid3::f3_apply_box_filter
+
 
 //----------------------------------------------------------------------
 // Calculate the quantities LijMij and MijMij, to compare the influence
@@ -2288,23 +2329,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   // shape functions and derivs at element center
   DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
   DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-
-  // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-      case DRT::Element::tet4:
-      case DRT::Element::hex8:
-        mk = 0.333333333333333333333;
-        break;
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::tet10:
-        mk = 0.083333333333333333333;
-        break;
-      default:
-        dserror("type unknown!\n");
-  }
 
   LINALG::Matrix<3,3> xjm;
   // get Jacobian matrix and its determinant

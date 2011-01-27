@@ -276,9 +276,20 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
       // it is stored in Cs_ after its calculation in CalcSubgrVisc
       Cs_ = 0.0;
     }
+    else if (physical_turbulence_model == "Scale_Similarity")
+    {
+      turb_mod_action_ = INPAR::FLUID::scale_similarity;
+      Cl_ = turbmodelparams.get<double>("C_SCALE_SIMILARITY");
+    }
+    else if (physical_turbulence_model == "Mixed_Scale_Similarity_Eddy_Viscosity_Model")
+    {
+      turb_mod_action_ = INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model;
+      Cl_ = turbmodelparams.get<double>("C_SCALE_SIMILARITY");
+      Cs_ = turbmodelparams.get<double>("C_SMAGORINSKY");
+    }
     else
     {
-      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) and Scale Similarity (also combined with Smagorinsky) are available");
     }
   } // end if(Classical LES)
 }

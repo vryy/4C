@@ -68,6 +68,12 @@ namespace ELEMENTS
         vector<int>&              lm            ,
         Epetra_SerialDenseVector& elevec1       ) = 0;
 
+    virtual int CalcDissipation(Fluid3*                    ele,
+                                ParameterList&             params,
+                                DRT::Discretization&       discretization,
+                                vector<int>&               lm,
+                                RefCountPtr<MAT::Material> mat) = 0;
+
     /// Internal implementation class for fluid element
     static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
 

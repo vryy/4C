@@ -23,6 +23,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   RefCountPtr<Epetra_Vector>       dispnp             ,
   ParameterList&                   params             ,
   bool                             smagorinsky        ,
+  bool                             scalesimilarity    ,
   bool                             subgrid_dissipation
   )
   :
@@ -31,6 +32,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   dispnp_             (dispnp             ),
   params_             (params             ),
   smagorinsky_        (smagorinsky        ),
+  scalesimilarity_    (scalesimilarity    ),
   subgrid_dissipation_(subgrid_dissipation)
 {
   //----------------------------------------------------------------------
@@ -724,6 +726,21 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   }
 
   //----------------------------------------------------------------------
+  // arrays for averaging of subfilter stresses
+  //
+
+  // check if we want to compute averages of subfilter stresses
+  if (scalesimilarity_)
+  {
+    // means for subfilter stress
+    sumstress12_  =  rcp(new vector<double> );
+    sumstress12_->resize(nodeplanes_->size(),0.0);
+
+    incrsumstress12_  =  rcp(new vector<double> );
+    incrsumstress12_->resize(nodeplanes_->size(),0.0);
+  }
+
+  //----------------------------------------------------------------------
   // arrays for averaging of residual, subscales etc.
 
   // prepare time averaging for subscales and residual
@@ -777,6 +794,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     RefCountPtr<vector<double> > local_incr_eps_eddyvisc = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incr_eps_visc     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RefCountPtr<vector<double> > local_incr_eps_conv     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_scsim    = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_scsimfs  = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_scsimbs  = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RefCountPtr<vector<double> > local_incr_eps_avm3     = rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
     RefCountPtr<vector<double> > local_incrcrossstress   = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
     RefCountPtr<vector<double> > local_incrreystress     = rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
@@ -816,6 +837,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsim"   ,local_incr_eps_scsim   );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsimfs" ,local_incr_eps_scsimfs );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsimbs" ,local_incr_eps_scsimbs );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
 
     eleparams_.set<RefCountPtr<vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
     eleparams_.set<RefCountPtr<vector<double> > >("incrreystress"    ,local_incrreystress    );
@@ -889,6 +914,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sum_eps_visc_->resize(nodeplanes_->size()-1,0.0);
     sum_eps_conv_=  rcp(new vector<double> );
     sum_eps_conv_->resize(nodeplanes_->size()-1,0.0);
+    sum_eps_scsim_=  rcp(new vector<double> );
+    sum_eps_scsim_->resize(nodeplanes_->size()-1,0.0);
+    sum_eps_scsimfs_=  rcp(new vector<double> );
+    sum_eps_scsimfs_->resize(nodeplanes_->size()-1,0.0);
+    sum_eps_scsimbs_=  rcp(new vector<double> );
+    sum_eps_scsimbs_->resize(nodeplanes_->size()-1,0.0);
+    sum_eps_avm3_=  rcp(new vector<double> );
+    sum_eps_avm3_->resize(nodeplanes_->size()-1,0.0);
 
     sum_crossstress_=  rcp(new vector<double> );
     sum_crossstress_->resize(6*(nodeplanes_->size()-1),0.0);
@@ -903,6 +936,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
+  Teuchos::RefCountPtr<std::ofstream> log_SSM;
   Teuchos::RefCountPtr<std::ofstream> log_res;
 
   if (discret_->Comm().MyPID()==0)
@@ -935,6 +969,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
         (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+      }
+
+      // additional output for scale similarity model
+      if (scalesimilarity_)
+      {
+        std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_ssm.append(".SSM_statistics");
+
+        log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),ios::out));
+        (*log_SSM) << "# Statistics for turbulent incompressible channel flow (subfilter stresses)\n\n";
       }
 
       // output of residuals and subscale quantities
@@ -1096,6 +1140,18 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       (*sumCs_         )[rr]+=(*incrsumCs_         )[rr];
       (*sumCs_delta_sq_)[rr]+=(*incrsumCs_delta_sq_)[rr];
       (*sumvisceff_    )[rr]+=(*incrsumvisceff_    )[rr];
+    }
+  }
+
+  //----------------------------------------------------------------------
+  // add increment of last iteration to the sum of stress12 values
+  // (statistics for scale similarity model)
+
+  if (scalesimilarity_)
+  {
+    for (unsigned rr=0;rr<(*incrsumstress12_).size();++rr)
+    {
+      (*sumstress12_         )[rr]+=(*incrsumstress12_         )[rr];
     }
   }
 
@@ -1909,6 +1965,68 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
 
 /*----------------------------------------------------------------------*
 
+            Add computed subfilter stresses of scale
+                        similarity model
+
+  ----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>   stress12)
+{
+  RefCountPtr<vector<double> > global_incr_stress12_sum;
+  RefCountPtr<vector<double> > local_stress12_sum;
+  global_incr_stress12_sum = rcp(new vector<double> (nodeplanes_->size(),0.0));
+  local_stress12_sum = rcp(new vector<double> (nodeplanes_->size(),0.0));
+
+  for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
+  {
+    // get the node
+    DRT::Node* node = discret_->lRowNode(nid);
+    // get coordinate in node plane direction
+    double nodecoord = node->X()[dim_];
+
+    // get tau12 of this node
+    double tau12 = (*stress12)[nid];
+
+    //determine the node layer
+    int  nlayer;
+    bool found = false;
+    for (nlayer=0;nlayer<(int)(*nodeplanes_).size();)
+    {
+      if(nodecoord<((*nodeplanes_)[nlayer]+2e-9) && nodecoord >((*nodeplanes_)[nlayer]-2e-9))
+        //(nodecoord == (*nodeplanes_)[nlayer])
+        //(nodecoord<(*nodeplanes_)[nlayer+1])
+      {
+        found = true;
+        break;
+      }
+      nlayer++;
+    }
+    if (found ==false)
+    {
+      dserror("could not determine element layer");
+    }
+
+    // add tau12 up
+    (*local_stress12_sum)[nlayer] += tau12;
+
+  }
+
+  // now add all the stuff from the different processors
+  discret_->Comm().SumAll(&((*local_stress12_sum               )[0]),
+                          &((*global_incr_stress12_sum         )[0]),
+                          local_stress12_sum->size());
+
+    // Replace increment to compute average of tau12
+    for (unsigned rr=0;rr<global_incr_stress12_sum->size();++rr)
+    {
+      (*incrsumstress12_         )[rr] =(*global_incr_stress12_sum         )[rr];
+    }
+
+  return;
+} // FLD::TurbulenceStatisticsCha::AddSubfilterStresses
+
+
+/*----------------------------------------------------------------------*
+
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
@@ -2415,6 +2533,204 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
 
 
+void FLD::TurbulenceStatisticsCha::EvaluateResidualsFluidImplInt(
+  map<string,RCP<Epetra_Vector> >      statevecs,
+  map<string,RCP<Epetra_MultiVector> > statetenss,
+  double                               time
+  )
+{
+
+#if 1
+  if(subgrid_dissipation_)
+  {
+    //--------------------------------------------------------------------
+    // set parameter list (time integration)
+
+    // action for elements
+    eleparams_.set("action","calc_dissipation");
+
+    // other parameters that might be needed by the elements
+//    {
+//      ParameterList& timelist = eleparams_.sublist("time integration parameters");
+//
+//      timelist.set("alpha_M",params_.get<double>("alpha_M"       ));
+//      timelist.set("alpha_F",params_.get<double>("alpha_F"       ));
+//      timelist.set("gamma"  ,params_.get<double>("gamma"         ));
+//      timelist.set("dt"     ,params_.get<double>("time step size"));
+//      timelist.set("time"   ,time                                 );
+//    }
+
+    // parameters for stabilisation
+    {
+      eleparams_.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+    }
+
+    // parameters for a turbulence model
+    {
+      eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+      if ((params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL")=="Scale_Similarity"))
+      {
+        for(map<string,RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
+        {
+//        std::cout << "set filtered velocity" << std::endl;
+//        std::cout << state->first << std::endl;
+        eleparams_.set(state->first,state->second);
+        }
+      }
+    }
+
+    // parameters for usage of conservative/convective form
+    eleparams_.set("CONVFORM",params_.get<string>("form of convective term"));
+
+    // set state vectors for element call
+    for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
+                                                  state!=statevecs.end()  ;
+                                                  ++state                 )
+    {
+      discret_->SetState(state->first,state->second);
+    }
+
+    // call loop over elements to compute means
+    discret_->Evaluate(eleparams_,null,null,null,null,null);
+
+    discret_->ClearState();
+
+    // ------------------------------------------------
+    // get results from element call via parameter list
+    RefCountPtr<vector<double> > local_vol               =eleparams_.get<RefCountPtr<vector<double> > >("incrvol"         );
+
+    RefCountPtr<vector<double> > local_incr_eps_visc     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
+    RefCountPtr<vector<double> > local_incr_eps_eddyvisc = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_eddyvisc");
+    RefCountPtr<vector<double> > local_incr_eps_avm3     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_avm3"    );
+    RefCountPtr<vector<double> > local_incr_eps_scsim    = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_scsim"   );
+    RefCountPtr<vector<double> > local_incr_eps_scsimfs  = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_scsimfs" );
+    RefCountPtr<vector<double> > local_incr_eps_scsimbs  = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_scsimbs" );
+    RefCountPtr<vector<double> > local_incr_eps_supg     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_supg"    );
+    RefCountPtr<vector<double> > local_incr_eps_cstab    = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_cstab"   );
+    RefCountPtr<vector<double> > local_incr_eps_pspg     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_pspg"    );
+
+//    int presize    = local_incrresC       ->size();
+//    int velsize    = local_incrres        ->size();
+//    int stresssize = local_incrcrossstress->size();
+    int scalarsize    = local_vol->size();
+    //int vectorsize    = local_
+
+    //--------------------------------------------------
+    // vectors to sum over all procs
+
+    // volume of element layers
+    RefCountPtr<vector<double> > global_vol;
+    global_vol           =  rcp(new vector<double> (scalarsize,0.0));
+
+    // (in plane) averaged values of dissipation by viscous forces
+    RefCountPtr<vector<double> > global_incr_eps_visc;
+    global_incr_eps_visc  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by turbulent viscous forces (Smagorinsky)
+    RefCountPtr<vector<double> > global_incr_eps_eddyvisc;
+    global_incr_eps_eddyvisc  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by turbulent viscous forces (AVM3)
+    RefCountPtr<vector<double> > global_incr_eps_avm3;
+    global_incr_eps_avm3  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by scale similarity model
+    RefCountPtr<vector<double> > global_incr_eps_scsim;
+    global_incr_eps_scsim  = rcp(new vector<double> (scalarsize,0.0));
+    RefCountPtr<vector<double> > global_incr_eps_scsimfs;
+    global_incr_eps_scsimfs  = rcp(new vector<double> (scalarsize,0.0));
+    RefCountPtr<vector<double> > global_incr_eps_scsimbs;
+    global_incr_eps_scsimbs  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by supg-stabilization
+    RefCountPtr<vector<double> > global_incr_eps_supg;
+    global_incr_eps_supg  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by continuity-stabilization
+    RefCountPtr<vector<double> > global_incr_eps_cstab;
+    global_incr_eps_cstab  = rcp(new vector<double> (scalarsize,0.0));
+    // (in plane) averaged values of dissipation by pspg-stabilization
+    RefCountPtr<vector<double> > global_incr_eps_pspg;
+    global_incr_eps_pspg  = rcp(new vector<double> (scalarsize,0.0));
+
+    //--------------------------------------------------
+    // global sums
+
+    // compute global sum, volume
+    discret_->Comm().SumAll(&((*local_vol )[0]),
+                            &((*global_vol)[0]),
+                            scalarsize);
+
+    discret_->Comm().SumAll(&((*local_incr_eps_visc  )[0]),
+                            &((*global_incr_eps_visc )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_eddyvisc  )[0]),
+                            &((*global_incr_eps_eddyvisc )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_avm3  )[0]),
+                            &((*global_incr_eps_avm3 )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_scsim  )[0]),
+                            &((*global_incr_eps_scsim )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_scsimfs  )[0]),
+                            &((*global_incr_eps_scsimfs )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_scsimbs  )[0]),
+                            &((*global_incr_eps_scsimbs )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_supg  )[0]),
+                            &((*global_incr_eps_supg )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_cstab  )[0]),
+                            &((*global_incr_eps_cstab )[0]),
+                            scalarsize);
+    discret_->Comm().SumAll(&((*local_incr_eps_pspg  )[0]),
+                            &((*global_incr_eps_pspg )[0]),
+                            scalarsize);
+
+
+    for (int rr=0;rr<scalarsize;++rr)
+    {
+      (*sum_eps_visc_    )[rr]+=(*global_incr_eps_visc    )[rr];
+      (*sum_eps_eddyvisc_    )[rr]+=(*global_incr_eps_eddyvisc    )[rr];
+      (*sum_eps_avm3_    )[rr]+=(*global_incr_eps_avm3    )[rr];
+      (*sum_eps_scsim_    )[rr]+=(*global_incr_eps_scsim    )[rr];
+      (*sum_eps_scsimfs_    )[rr]+=(*global_incr_eps_scsimfs    )[rr];
+      (*sum_eps_scsimbs_    )[rr]+=(*global_incr_eps_scsimbs    )[rr];
+      (*sum_eps_supg_    )[rr]+=(*global_incr_eps_supg    )[rr];
+      (*sum_eps_cstab_    )[rr]+=(*global_incr_eps_cstab    )[rr];
+      (*sum_eps_pspg_    )[rr]+=(*global_incr_eps_pspg    )[rr];
+    }
+
+
+    // reset working arrays
+    local_vol               = rcp(new vector<double> (scalarsize,0.0));
+
+    local_incr_eps_visc     = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_eddyvisc = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_avm3     = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_scsim    = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_scsimfs  = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_scsimbs  = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_supg     = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_cstab    = rcp(new vector<double> (scalarsize,0.0));
+    local_incr_eps_pspg     = rcp(new vector<double> (scalarsize,0.0));
+
+
+    eleparams_.set<RefCountPtr<vector<double> > >("incrvol"          ,local_vol              );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsim"   ,local_incr_eps_scsim   );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsimfs" ,local_incr_eps_scsimfs );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_scsimbs" ,local_incr_eps_scsimbs );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
+    eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
+  }
+#endif
+
+  return;
+} // FLD::TurbulenceStatisticsCha::EvaluateResiduals
+
+
+
 /*----------------------------------------------------------------------*
 
        Compute a time average of the mean values over all steps
@@ -2625,6 +2941,39 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       log_Cs->flush();
     } // end smagorinsky_
 
+    // ------------------------------------------------------------------
+    // additional output for scale similarity model
+    if (scalesimilarity_)
+    {
+      // get the outfile
+      Teuchos::RefCountPtr<std::ofstream> log_SSM;
+
+      std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_ssm.append(".SSM_statistics");
+
+      log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),ios::app));
+
+      (*log_SSM) << "\n\n\n";
+      (*log_SSM) << "# Statistics record " << countrecord_;
+      (*log_SSM) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+      (*log_SSM) << "#     y      ";
+      (*log_SSM) << "  tauSFS 12  ";
+      (*log_SSM) << &endl;
+      (*log_SSM) << scientific;
+      for (unsigned rr=0;rr<sumstress12_->size();++rr)
+      {
+        // we associate the value with the midpoint of the element layer
+        (*log_SSM) << setw(11) << setprecision(4) << (*nodeplanes_)[rr] << "  " ;
+
+        // the values to be visualised
+        (*log_SSM) << setw(11) << setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &endl;
+      }
+      log_SSM->flush();
+    } // end scalesimilarity_
+
+#if 1
     if(subgrid_dissipation_)
     {
       Teuchos::RefCountPtr<std::ofstream> log_res;
@@ -2639,154 +2988,191 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log_res) << "# Statistics record " << countrecord_;
       (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
       (*log_res) << " (dt " << params_.get<double>("time step size") <<")\n";
-      (*log_res) << "#       y    ";
-      (*log_res) << "    res_x   ";
-      (*log_res) << "      res_y  ";
-      (*log_res) << "      res_z  ";
-      (*log_res) << "     sacc_x  ";
-      (*log_res) << "     sacc_y  ";
-      (*log_res) << "     sacc_z  ";
-      (*log_res) << "     svel_x  ";
-      (*log_res) << "     svel_y  ";
-      (*log_res) << "     svel_z  ";
 
-      (*log_res) << "   res_sq_x  ";
-      (*log_res) << "   res_sq_y  ";
-      (*log_res) << "   res_sq_z  ";
-      (*log_res) << "   sacc_sq_x ";
-      (*log_res) << "   sacc_sq_y ";
-      (*log_res) << "   sacc_sq_z ";
-      (*log_res) << "   svel_sq_x ";
-      (*log_res) << "   svel_sq_y ";
-      (*log_res) << "   svel_sq_z ";
-
-      (*log_res) << " tauinvsvel_x";
-      (*log_res) << " tauinvsvel_y";
-      (*log_res) << " tauinvsvel_z";
-
-      (*log_res) << "    ||res||  ";
-      (*log_res) << "   ||sacc||  ";
-      (*log_res) << "   ||svel||  ";
-
-      (*log_res) << "      resC   ";
-      (*log_res) << "    spresnp  ";
-
-      (*log_res) << "    resC_sq  ";
-      (*log_res) << "  spresnp_sq ";
-
-      (*log_res) << "    tauM     ";
-      (*log_res) << "    tauC     ";
-
-      (*log_res) << "  eps_sacc   ";
-      (*log_res) << "  eps_pspg   ";
-      (*log_res) << "  eps_supg   ";
-      (*log_res) << "  eps_cross  ";
-      (*log_res) << "   eps_rey   ";
-      (*log_res) << "  eps_cstab  ";
-      (*log_res) << "  eps_vstab  ";
-      (*log_res) << " eps_eddyvisc";
-      (*log_res) << "   eps_visc  ";
-      (*log_res) << "   eps_conv  ";
-      (*log_res) << "     hk      ";
-      (*log_res) << "   strle     ";
-      (*log_res) << "   gradle    ";
-      (*log_res) << " h_bazilevs  ";
-      (*log_res) << "     Dy      ";
-      (*log_res) << " tau_cross_11";
-      (*log_res) << " tau_cross_22";
-      (*log_res) << " tau_cross_33";
-      (*log_res) << " tau_cross_12";
-      (*log_res) << " tau_cross_23";
-      (*log_res) << " tau_cross_31";
-      (*log_res) << " tau_rey_11  ";
-      (*log_res) << " tau_rey_22  ";
-      (*log_res) << " tau_rey_33  ";
-      (*log_res) << " tau_rey_12  ";
-      (*log_res) << " tau_rey_23  ";
-      (*log_res) << " tau_rey_31  ";
-     (*log_res) << "\n";
-
-      (*log_res) << scientific;
-      for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+      if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_gen_alpha)
       {
-        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res) << "#       y    ";
+        (*log_res) << "    res_x   ";
+        (*log_res) << "      res_y  ";
+        (*log_res) << "      res_z  ";
+        (*log_res) << "     sacc_x  ";
+        (*log_res) << "     sacc_y  ";
+        (*log_res) << "     sacc_z  ";
+        (*log_res) << "     svel_x  ";
+        (*log_res) << "     svel_y  ";
+        (*log_res) << "     svel_z  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "   res_sq_x  ";
+        (*log_res) << "   res_sq_y  ";
+        (*log_res) << "   res_sq_z  ";
+        (*log_res) << "   sacc_sq_x ";
+        (*log_res) << "   sacc_sq_y ";
+        (*log_res) << "   sacc_sq_z ";
+        (*log_res) << "   svel_sq_x ";
+        (*log_res) << "   svel_sq_y ";
+        (*log_res) << "   svel_sq_z ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << " tauinvsvel_x";
+        (*log_res) << " tauinvsvel_y";
+        (*log_res) << " tauinvsvel_z";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "    ||res||  ";
+        (*log_res) << "   ||sacc||  ";
+        (*log_res) << "   ||svel||  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "      resC   ";
+        (*log_res) << "    spresnp  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "    resC_sq  ";
+        (*log_res) << "  spresnp_sq ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "    tauM     ";
+        (*log_res) << "    tauC     ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res) << "  eps_sacc   ";
+        (*log_res) << "  eps_pspg   ";
+        (*log_res) << "  eps_supg   ";
+        (*log_res) << "  eps_cross  ";
+        (*log_res) << "   eps_rey   ";
+        (*log_res) << "  eps_cstab  ";
+        (*log_res) << "  eps_vstab  ";
+        (*log_res) << " eps_eddyvisc";
+        (*log_res) << "   eps_visc  ";
+        (*log_res) << "   eps_conv  ";
+        (*log_res) << "     hk      ";
+        (*log_res) << "   strle     ";
+        (*log_res) << "   gradle    ";
+        (*log_res) << " h_bazilevs  ";
+        (*log_res) << "     Dy      ";
+        (*log_res) << " tau_cross_11";
+        (*log_res) << " tau_cross_22";
+        (*log_res) << " tau_cross_33";
+        (*log_res) << " tau_cross_12";
+        (*log_res) << " tau_cross_23";
+        (*log_res) << " tau_cross_31";
+        (*log_res) << " tau_rey_11  ";
+        (*log_res) << " tau_rey_22  ";
+        (*log_res) << " tau_rey_33  ";
+        (*log_res) << " tau_rey_12  ";
+        (*log_res) << " tau_rey_23  ";
+        (*log_res) << " tau_rey_31  ";
+        (*log_res) << "\n";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssacc_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res) << scientific;
+        for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+        {
+          (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_     )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_sacc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_vstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_  )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << &endl;
+          (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumabssacc_      )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_sacc_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_vstab_   )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+
+
+          (*log_res)  << &endl;
+        }
+      }
+      else
+      {
+        (*log_res) << "#       y    ";
+        (*log_res) << "   eps_visc  ";
+        (*log_res) << "   eps_smag  ";
+        (*log_res) << "   eps_avm3  ";
+        (*log_res) << "  eps_scsim  ";
+        (*log_res) << " eps_scsimfs ";
+        (*log_res) << " eps_scsimbs ";
+        (*log_res) << "   eps_supg  ";
+        (*log_res) << "  eps_cstab  ";
+        (*log_res) << "   eps_pspg  ";
+        (*log_res) << "\n";
+
+        (*log_res) << scientific;
+        for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+        {
+          (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_scsim_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_scsimfs_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_scsimbs_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_    )[rr]/(numele_*numsamp_) << "  ";
+          (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+
+          (*log_res)  << &endl;
+        }
       }
       log_res->flush();
     } // end subgrid_dissipation_
+#endif
   } // end myrank 0
 
 
@@ -3187,7 +3573,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   meanvelnp_->PutScalar(0.0);
   if (physicaltype_ == INPAR::FLUID::loma) meanscanp_->PutScalar(0.0);
 
-  // reset smapling for dynamic Smagorinsky model
+  // reset sampling for dynamic Smagorinsky model
   if (smagorinsky_)
   {
     for (unsigned rr=0;rr<sumCs_->size();++rr)
@@ -3198,6 +3584,16 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumvisceff_)    [rr]=0;
     }
   } // end smagorinsky_
+
+  // reset sampling for scale similarity model
+  if (scalesimilarity_)
+  {
+    for (unsigned rr=0;rr<sumstress12_->size();++rr)
+    {
+      // reset value
+      (*sumstress12_)         [rr]=0;
+    }
+  } // end scalesimilarity_
 
   // reset residuals and subscale averages
   if(subgrid_dissipation_)
@@ -3262,6 +3658,10 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sum_eps_eddyvisc_)[rr]=0.0;
       (*sum_eps_visc_    )[rr]=0.0;
       (*sum_eps_conv_    )[rr]=0.0;
+      (*sum_eps_scsim_   )[rr]=0.0;
+      (*sum_eps_scsimfs_ )[rr]=0.0;
+      (*sum_eps_scsimbs_ )[rr]=0.0;
+      (*sum_eps_avm3_    )[rr]=0.0;
 
       (*sumresC_         )[rr]=0.0;
       (*sumspressnp_     )[rr]=0.0;

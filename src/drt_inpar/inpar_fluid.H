@@ -138,13 +138,15 @@ namespace INPAR
       initfield_bochev_test
     };
 
-    //! physical turbulence models recognized by fluid3_genalpha implementation
+    //! physical turbulence models
     enum TurbModelAction
     {
       no_model,
       smagorinsky,
       smagorinsky_with_van_Driest_damping,
-      dynamic_smagorinsky
+      dynamic_smagorinsky,
+      scale_similarity,
+      mixed_scale_similarity_eddy_viscosity_model
     };
 
     //! options for fine-scale subgrid viscosity

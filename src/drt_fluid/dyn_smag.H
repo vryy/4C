@@ -98,6 +98,11 @@ public:
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
+  void ApplyFilter(
+    Teuchos::RCP<Epetra_Vector>             solution    ,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    );
+
 
   /*!
   \brief Output of averaged velocity vector for paraview IO
@@ -131,6 +136,98 @@ public:
       return;
     }
 
+
+  void FilteredVelComp(
+    Teuchos::RCP<Epetra_Vector> outvec,
+    const int                   i,
+    const int                   j
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
+      {
+        // get the node
+        DRT::Node* node = discret_->lRowNode(nid);
+        int id = node->Id();
+
+        double vali=(*((*filtered_vel_)(i-1)))[nid];
+        double valj=(*((*filtered_vel_)(j-1)))[nid];
+        double val = vali*valj;
+
+        (outvec)->ReplaceGlobalValues(1,&val,&id);
+      }
+      return;
+    }
+
+  /*!
+  \brief Output of averaged reynoldsstress vector for paraview IO (one component)
+
+  \param outvec  (in/out) vector in dofrowmap-format to use for
+                          output of averaged solution
+  \param i       which component?
+  \param j       which component?
+
+
+  */
+  void FilteredReyStrComp(
+    Teuchos::RCP<Epetra_Vector> outvec,
+    const int                   i,
+    const int                   j
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      int ij = 3*(i-1)+(j-1);
+      for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
+      {
+        // get the node
+        DRT::Node* node = discret_->lRowNode(nid);
+        int id = node->Id();
+
+        double val = (*((*filtered_reynoldsstress_) (ij)))[nid];
+
+        (outvec)->ReplaceGlobalValues(1,&val,&id);
+      }
+      return;
+    }
+
+
+  void GetFilteredVelocity(
+    Teuchos::RCP<Epetra_MultiVector> velocity
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid=0;nid<discret_->NumMyColNodes();++nid)
+      {
+        for (int i =0;i<3;++i)
+        {
+          double val = (*((*col_filtered_vel_)(i)))[nid];
+          ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+        }
+      }
+      return;
+    }
+
+
+  void GetFilteredReynoldsStress(
+    Teuchos::RCP<Epetra_MultiVector> reystre
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid=0;nid<discret_->NumMyColNodes();++nid)
+      {
+        for (int i =0;i<3;++i)
+        {
+          for (int j =0;j<3;++j)
+          {
+             const int ij = 3*i+j;
+             double val = (*((*col_filtered_reynoldsstress_) (ij)))[nid];
+             ((*reystre) (ij))->ReplaceMyValues(1,&val,&nid);
+          }
+        }
+      }
+      return;
+    }
+
 private:
   /*!
   \brief perform box filtering in five steps
@@ -157,6 +254,11 @@ private:
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
+  void ApplyBoxFilter(
+    Teuchos::RCP<Epetra_Vector>             velocity    ,
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    );
+
   /*!
   \brief Compute Cs using the filtered quantities.
   This is an element call!
@@ -179,6 +281,7 @@ private:
   //! @name control parameters
   bool                         channel_flow_;
   bool                         apply_dynamic_smagorinsky_;
+  bool                         apply_scale_similarity_;
   //@}
 
 

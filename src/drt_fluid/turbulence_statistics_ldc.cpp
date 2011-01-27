@@ -60,6 +60,15 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   togglew_ = LINALG::CreateVector(*dofrowmap,true);
   togglep_ = LINALG::CreateVector(*dofrowmap,true);
 
+  //ICH
+  // bounds for extension of cavity in x3-direction
+  x1min_ = +10e+19;
+  x1max_ = -10e+19;
+  // bounds for extension of cavity in x3-direction
+  x2min_ = +10e+19;
+  x2max_ = -10e+19;
+  //ENDE
+
   // bounds for extension of cavity in x3-direction
   x3min_ = +10e+19;
   x3max_ = -10e+19;
@@ -85,6 +94,24 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     x2avcoords.insert(node->X()[1]);
     x3avcoords.insert(node->X()[2]);
 
+    //ICH
+    if (x1min_>node->X()[2])
+    {
+      x1min_=node->X()[2];
+    }
+    if (x1max_<node->X()[2])
+    {
+      x1max_=node->X()[2];
+    }
+    if (x2min_>node->X()[2])
+    {
+      x2min_=node->X()[2];
+    }
+    if (x2max_<node->X()[2])
+    {
+      x2max_=node->X()[2];
+    }
+    //ENDE
     if (x3min_>node->X()[2])
     {
       x3min_=node->X()[2];
@@ -95,14 +122,32 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     }
   }
 
-  // communicate x3mins and x3maxs
-  double min;
-  discret_->Comm().MinAll(&x3min_,&min,1);
-  x3min_=min;
+  //ICH
+  // communicate x1mins and x1maxs
+  double min1;
+  discret_->Comm().MinAll(&x1min_,&min1,1);
+  x1min_=min1;
 
-  double max;
-  discret_->Comm().MaxAll(&x3max_,&max,1);
-  x3max_=max;
+  double max1;
+  discret_->Comm().MaxAll(&x1max_,&max1,1);
+  x1max_=max1;
+  // communicate x2mins and x2maxs
+  double min2;
+  discret_->Comm().MinAll(&x2min_,&min2,1);
+  x2min_=min2;
+
+  double max2;
+  discret_->Comm().MaxAll(&x2max_,&max2,1);
+  x2max_=max2;
+  //ENDE
+  // communicate x3mins and x3maxs
+  double min3;
+  discret_->Comm().MinAll(&x3min_,&min3,1);
+  x3min_=min3;
+
+  double max3;
+  discret_->Comm().MaxAll(&x3max_,&max3,1);
+  x3max_=max3;
 
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates in x1-, x2- and x3-
@@ -564,10 +609,20 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
+//      if ((node->X()[0]<(*x1line+2e-9) && node->X()[0]>(*x1line-2e-9)) &&
+////          (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)) &&
+//          (node->X()[1]<(0.0+2e-9) && node->X()[1]>(0.0-2e-9)) &&
+////          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+////           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9)
+//          (node->X()[2]< (0.0 +2e-9) &&
+//           node->X()[2]> (0.0 -2e-9))
+//           )
+      //ICH
       if ((node->X()[0]<(*x1line+2e-9) && node->X()[0]>(*x1line-2e-9)) &&
-          (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+          (node->X()[1]<((x2max_+x2min_)/2.0)+2e-9 &&
+           node->X()[1]>((x2max_+x2min_)/2.0)-2e-9) &&
+          (node->X()[2]<((x3max_+x3min_)/2.0)+2e-9 &&
+           node->X()[2]>((x3max_+x3min_)/2.0)-2e-9))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -653,10 +708,20 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x2-direction
-      if ((node->X()[1]<(*x2line+2e-9) && node->X()[1]>(*x2line-2e-9)) &&
-          (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+//      if ((node->X()[1]<(*x2line+2e-9) && node->X()[1]>(*x2line-2e-9)) &&
+////          (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
+////          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+////           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9)
+//           (node->X()[0]<(0.0+2e-9) && node->X()[0]>(0.0-2e-9)) &&
+//           (node->X()[2]<(0.0+2e-9) &&
+//            node->X()[2]>(0.0-2e-9))
+//           )
+      //ICH
+     if ((node->X()[1]<(*x2line+2e-9) && node->X()[1]>(*x2line-2e-9)) &&
+         (node->X()[0]<((x1max_+x1min_)/2.0)+2e-9 &&
+          node->X()[0]>((x1max_+x1min_)/2.0)-2e-9) &&
+         (node->X()[2]<((x3max_+x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_+x3min_)/2.0)-2e-9))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -742,9 +807,17 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x3-direction
+//      if ((node->X()[2]<(*x3line+2e-9) && node->X()[2]>(*x3line-2e-9)) &&
+////          (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
+////          (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)))
+//          (node->X()[0]<(0.0+2e-9) && node->X()[0]>(0.0-2e-9)) &&
+//          (node->X()[1]<(0.0+2e-9) && node->X()[1]>(0.0-2e-9)))
+      //ICH
       if ((node->X()[2]<(*x3line+2e-9) && node->X()[2]>(*x3line-2e-9)) &&
-          (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
-          (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)))
+          (node->X()[0]<((x1max_+x1min_)/2.0)+2e-9 &&
+           node->X()[0]>((x1max_+x1min_)/2.0)-2e-9) &&
+          (node->X()[1]<((x2max_+x2min_)/2.0)+2e-9 &&
+           node->X()[1]>((x2max_+x2min_)/2.0)-2e-9))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1193,6 +1266,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "\n";
     }
 
+    (*log) << "\n\n\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "         urms          vrms          wrms";
@@ -1230,6 +1304,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "\n";
     }
 
+    (*log) << "\n\n\n";
     (*log) << "#     x3";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "         urms          vrms          wrms";

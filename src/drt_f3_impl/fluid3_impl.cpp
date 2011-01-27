@@ -40,6 +40,8 @@ Maintainer: Ulrich Kuettler
 #ifdef DEBUG
 #endif
 
+#define TAU_SUBGRID_IN_RES_MOM
+
 
 //----------------------------------------------------------------------*
 //
@@ -151,6 +153,12 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     velint_(true),
     fsvelint_(true),
     sgvelint_(true),
+    velinthat_ (true),
+    velhatderxy_ (true),
+    reystressinthat_ (true),
+    reystresshatdiv_ (true),
+    velhativelhatjdiv_ (true),
+    velhatdiv_(0.0),
     convvelint_(true),
     accint_(true),
     gradp_(true),
@@ -364,6 +372,40 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
+  //----------------------------------------------------------------------
+  // get filtered veolcities and reynoldsstresses
+  // for scale similarity model
+  //----------------------------------------------------------------------
+  LINALG::Matrix<nsd_,nen_> evel_hat(true);
+  LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat(true);
+
+  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+      or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+
+  {
+    RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("Filtered velocity");
+    RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
+
+    for (int nn=0;nn<nen_;++nn)
+    {
+      int lid = (ele->Nodes()[nn])->LID();
+
+      for (int dimi=0;dimi<3;++dimi)
+      {
+        evel_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[lid];
+
+        for (int dimj=0;dimj<3;++dimj)
+        {
+          int index=3*dimi+dimj;
+
+          ereynoldsstress_hat(index,nn) = (*((*filtered_reystre)(index)))[lid];
+
+        }
+      }
+    }
+//    std::cout << evel_hat << std::endl;
+  }
+
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
   //----------------------------------------------------------------
@@ -396,6 +438,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     edispnp,
     egridv,
     fsevelaf,
+    evel_hat,
+    ereynoldsstress_hat,
     mat,
     ele->IsAle(),
     ele->Owner()==discretization.Comm().MyPID(),
@@ -432,6 +476,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const LINALG::Matrix<nsd_,nen_> & edispnp,
   const LINALG::Matrix<nsd_,nen_> & egridv,
   const LINALG::Matrix<nsd_,nen_> & fsevelaf,
+  const LINALG::Matrix<nsd_,nen_> & evel_hat,
+  const LINALG::Matrix<nsd_*nsd_,nen_> & ereynoldsstress_hat,
   Teuchos::RCP<MAT::Material>               mat,
   bool                                      isale,
   bool                                      isowned,
@@ -481,6 +527,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          evelaf,
          eveln,
          fsevelaf,
+         evel_hat,
+         ereynoldsstress_hat,
          epreaf,
          eaccam,
          escaaf,
@@ -543,6 +591,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   const LINALG::Matrix<nsd_,nen_>&              evelaf,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              fsevelaf,
+  const LINALG::Matrix<nsd_,nen_>&              evel_hat,
+  const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1>&                 epreaf,
   const LINALG::Matrix<nsd_,nen_>&              eaccam,
   const LINALG::Matrix<nen_,1>&                 escaaf,
@@ -613,7 +663,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   {
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
-    if (f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model)
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
     {
       CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
 
@@ -695,12 +745,89 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // compute convective operator
     conv_c_.MultiplyTN(derxy_,convvelint_);
 
-
     // compute velocity divergence from previous iteration
     vdiv_ = 0.0;
     for (int idim = 0; idim <nsd_; ++idim)
     {
       vdiv_ += vderxy_(idim, idim);
+    }
+
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+        or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+    {
+        velinthat_.Clear();
+        velhatderxy_.Clear();
+
+        // get filtered velocity at integration point
+        velinthat_.Multiply(evel_hat,funct_);
+        // get filtered velocity derivatives at integration point
+        velhatderxy_.MultiplyNT(evel_hat,derxy_);
+  //      if (eid==13){
+  //      std::cout << velinthat_ << std::endl;
+  //      std::cout << velhatderxy_ << std::endl;
+  //      }
+
+        reystressinthat_.Clear();
+        // get filtered reynoldsstress at integration point
+        for (int dimi=0;dimi<nsd_;dimi++)
+        {
+          for (int dimj=0;dimj<nsd_;dimj++)
+          {
+            for (int inode=0;inode<nen_;inode++)
+            {
+              reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
+            }
+          }
+        }
+  //      if (eid == 13) std::cout << reystressinthat_ << std::endl;
+
+        // filtered velocity divergence from previous iteration
+        velhatdiv_ = 0.0;
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          velhatdiv_ += velhatderxy_(idim, idim);
+        }
+  //      if (eid == 13) std::cout << "velhatdiv... " << velhatdiv_ << std::endl;
+
+        LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
+        //LINALG::Matrix<nsd_,1> velhativelhatjdiv_;
+        velhativelhatjdiv_.Clear();
+        for (int nn=0;nn<nsd_;++nn)
+        {
+          for (int rr=0;rr<nsd_;++rr)
+          {
+            int index = 3*nn+rr;
+            for (int mm=0;mm<nen_;++mm)
+            {
+              velhativelhatjdiv_(nn,0) += derxy_(rr,mm)*evel_hat(nn,mm)*evel_hat(rr,mm);
+              evelhativelhatj(index,mm) = evel_hat(nn,mm)*evel_hat(rr,mm);
+            }
+          }
+        }
+//        if (eid == 13) std::cout << "velhatij... " << evelhativelhatj << std::endl;
+//        if (eid == 13) std::cout << "evelhat... " << evel_hat << std::endl;
+
+        // get divergence of filtered reynoldsstress at integration point
+        reystresshatdiv_.Clear();
+        for (int nn=0;nn<nsd_;++nn)
+        {
+          for (int rr=0;rr<nsd_;++rr)
+          {
+              int index = 3*nn+rr;
+              for (int mm=0;mm<nen_;++mm)
+              {
+                reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
+              }
+          }
+        }
+    }
+    else
+    {
+      velinthat_.Clear();
+      velhatderxy_.Clear();
+      reystressinthat_.Clear();
+      reystresshatdiv_.Clear();
+      velhativelhatjdiv_.Clear();
     }
 
     //----------------------------------------------------------------------
@@ -716,7 +843,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
-      if (f3Parameter_->turb_mod_action_ != INPAR::FLUID::no_model)
+      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
       {
         CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
 
@@ -737,6 +864,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     const double timefacfac = f3Parameter_->timefac_ * fac_;
     double rhsfac           = timefacfac;
     double rhsresfac        = fac_;
+    // modify integration factors for right-hand side such that they
+    // are identical in case of generalized-alpha time integration:
+    if (f3Parameter_->is_genalpha_)
+    {
+      rhsfac   /= f3Parameter_->alphaF_;
+      rhsresfac = rhsfac;
+    }
+    else
+    {
+      // modify residual integration factor for right-hand side in instat. case:
+      if (not f3Parameter_->is_stationary_)
+      {
+        rhsresfac *= f3Parameter_->dt_;
+      }
+    }
 
     //----------------------------------------------------------------------
     // computation of various residuals and residual-based values such as
@@ -747,9 +889,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // for right-hand side
     // -> different for generalized-alpha and other time-integration schemes
     GetResidualMomentumEq(eaccam,
-                          f3Parameter_->timefac_,
-                          rhsfac,
-                          rhsresfac);
+                          f3Parameter_->timefac_);
+//                          rhsfac,
+//                          rhsresfac
+//                          );
 
     // compute subgrid-scale velocity for time-dependent subgrid-scale
     // closure, and for quasi-static subgrid-scale closure if cross- and
@@ -952,6 +1095,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
       FineScaleSubGridViscosityTerm(velforce,
                                     fssgviscfac);
+    }
+
+    // 15) subgrid-stress term
+    //     (contribution only to right-hand-side vector)
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+        or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+    {
+      SubGridStressTerm(//eid,
+                        velforce,
+                        rhsfac,
+                        f3Parameter_->Cl_);
     }
 
     // linearization wrt mesh motion
@@ -2781,9 +2935,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcDivEps(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
     const LINALG::Matrix<nsd_,nen_>&              eaccam,
-    const double &                                timefac,
-    double &                                      rhsfac,
-    double &                                      rhsresfac)
+    const double &                                timefac
+//    double &                                      rhsfac,
+//    double &                                      rhsresfac
+    )
 {
   if (f3Parameter_->is_genalpha_)
   {
@@ -2801,12 +2956,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
     {
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
                        -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr);
+#ifdef TAU_SUBGRID_IN_RES_MOM
+      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+          or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+      {
+#if 0
+        momres_old_(rr) += f3Parameter_->Cl_* (reystresshatdiv_(rr,0)
+                             - (velinthat_(0,0) * velhatderxy_(rr,0)
+                               +velinthat_(1,0) * velhatderxy_(rr,1)
+                               +velinthat_(2,0) * velhatderxy_(rr,2)
+                               +velinthat_(nn,0) * velhatdiv_));
+#endif
+        momres_old_(rr) += f3Parameter_->Cl_* (reystresshatdiv_(rr,0) - velhativelhatjdiv_(rr,0));
+      }
+#endif
     }
 
-    // modify integration factors for right-hand side such that they
-    // are identical in case of generalized-alpha time integration:
-    rhsfac   /= f3Parameter_->alphaF_;
-    rhsresfac = rhsfac;
+//    // modify integration factors for right-hand side such that they
+//    // are identical in case of generalized-alpha time integration:
+//    rhsfac   /= f3Parameter_->alphaF_;
+//    rhsresfac = rhsfac;
   }
   else
   {
@@ -2828,10 +2997,24 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
         momres_old_(rr) = densaf_*velint_(rr)/f3Parameter_->dt_
                          +f3Parameter_->theta_*(densaf_*conv_old_(rr)+gradp_(rr)
                          -2*visceff_*visc_old_(rr))-rhsmom_(rr);
-      }
+#ifdef TAU_SUBGRID_IN_RES_MOM
+        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+           or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+        {
+#if 0
+          momres_old_(rr) += f3Parameter_->Cl_*(reystresshatdiv_(rr,0)
+                             - (velinthat_(0,0) * velhatderxy_(rr,0)
+                               +velinthat_(1,0) * velhatderxy_(rr,1)
+                               +velinthat_(2,0) * velhatderxy_(rr,2)
+                               +velinthat_(nn,0) * velhatdiv_));
+#endif
+          momres_old_(rr) += f3Parameter_->Cl_* (reystresshatdiv_(rr,0) - velhativelhatjdiv_(rr,0));
+        }
+#endif
+     }
 
-      // modify residual integration factor for right-hand side in instat. case:
-      rhsresfac *= f3Parameter_->dt_;
+//      // modify residual integration factor for right-hand side in instat. case:
+//      rhsresfac *= f3Parameter_->dt_;
     }
     else
     {
@@ -4939,6 +5122,79 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FineScaleSubGridViscosityTerm(
 }
 
 template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTerm(
+//    const int &                             eid,
+    LINALG::Matrix<nsd_,nen_> &             velforce,
+    const double &                          rhsfac,
+    const double &                          Cl)
+{
+//  LINALG::Matrix<nsd_,nen_> velforceold (true);
+//  LINALG::Matrix<nsd_,nen_> velforcenew (true);
+  if (nsd_ == 3)
+  {
+#if 1 // without partial integration of subfilter-stress term
+    for (int vi=0; vi<nen_; ++vi)
+    {
+          /* subgrid-stress term on right hand side */
+          /*
+                        /                                \
+                       |             ^     ^   ^          |
+                       | nabla o ( (u*u) - u * u ) ,  v   |
+                       |                                  |
+                        \                                /
+          */
+       for (int nn=0; nn<nsd_; nn++)
+       {
+#if 0
+         // convective form: div u_hat = 0 assumed
+         velforceold(nn, vi) -= Cl * rhsfac * densaf_ * funct_(vi)
+                             * (reystresshatdiv_(nn,0)
+                             - (velinthat_(0,0) * velhatderxy_(nn,0)
+                               +velinthat_(1,0) * velhatderxy_(nn,1)
+                               +velinthat_(2,0) * velhatderxy_(nn,2)
+                               + velinthat_(nn,0) * velhatdiv_));
+//         if (f3Parameter_->is_conservative_)
+//         {
+//           velforceold(nn, vi) += Cl * rhsfac * densaf_ * funct_(vi) * velinthat_(nn,0) * velhatdiv_;
+//         }
+#endif
+
+         velforce(nn, vi) -= Cl * rhsfac * densaf_ * funct_(vi)
+                             * (reystresshatdiv_(nn,0) - velhativelhatjdiv_(nn,0));
+       }
+    }
+
+#else // with partial integration of subfilter-stress term, boundary integral is assumed included in the Neumann BC
+    for (int vi=0; vi<nen_; ++vi)
+    {
+              /* subgrid-stress term on right hand side */
+              /*
+                            /                             \
+                           |     ^     ^   ^               |
+                           | ( (u*u) - u * u ) ,  eps(v)   |
+                           |                               |
+                            \                             /
+              */
+      for (int nn=0; nn<nsd_; nn++)
+      {
+        velforcenew(nn,vi) += Cl * rhsfac * densaf_
+                         * (derxy_(0, vi)* (reystressinthat_(nn,0) - velinthat_(nn,0) * velinthat_(0,0))
+                         +  derxy_(1, vi)* (reystressinthat_(nn,1) - velinthat_(nn,0) * velinthat_(1,0))
+                         +  derxy_(2, vi)* (reystressinthat_(nn,2) - velinthat_(nn,0) * velinthat_(2,0)));
+//        if (eid == 13) std::cout << "rhs part int  " << velforcenew(nn, vi) << std::endl;
+      }
+    }
+#endif
+  }
+  else
+    dserror("Scale similarity model for 3D-problems only!");
+//  if (eid == 13) std::cout << "rhs  " << velforceold << std::endl;
+//  if (eid == 13) std::cout << "rhs part int  " << velforcenew << std::endl;
+
+  return;
+}
+
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_2D(
     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
     const LINALG::Matrix<nsd_,nen_>&              evelaf,
@@ -5553,6 +5809,489 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_3D(
   }
 
   return;
+}
+
+/*--------------------------------------------------------------------------------
+ * additional output for turbulent channel flow                    rasthofer 12/10
+ * -> dissipation
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
+  Fluid3*                    ele,
+  ParameterList&             params,
+  DRT::Discretization&       discretization,
+  vector<int>&               lm,
+  RefCountPtr<MAT::Material> mat)
+{
+  // create matrix objects for nodal values
+  // and extract velocities, pressure and accelerations
+  // from the global distributed vectors
+  LINALG::Matrix<nen_,1> epre;
+  LINALG::Matrix<nsd_,nen_> evel;
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, &epre,"vel");
+  LINALG::Matrix<nsd_,nen_> eacc;
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eacc, NULL,"acc");
+  LINALG::Matrix<nsd_,nen_> fsevel(true);
+  if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &fsevel, NULL,"fsvel");
+  }
+  LINALG::Matrix<nsd_,nen_> evel_hat;
+  LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat;
+  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+  {
+    RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("filtered vel");
+    RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("filtered reystr");
+    for (int nn=0;nn<nen_;++nn)
+    {
+      int lid = (ele->Nodes()[nn])->LID();
+
+      for (int dimi=0;dimi<3;++dimi)
+      {
+        evel_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[lid];
+        for (int dimj=0;dimj<3;++dimj)
+        {
+          int index=3*dimi+dimj;
+          ereynoldsstress_hat(index,nn) = (*((*filtered_reystre)(index)))[lid];
+        }
+      }
+    }
+  }
+
+
+  // the coordinates of the element layers in the channel
+  RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_",Teuchos::null);
+  if(planecoords==Teuchos::null)
+    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+
+  //this will be the y-coordinate of a point in the element interior
+  double center = 0;
+  // get node coordinates of element
+  for(int inode=0;inode<nen_;inode++)
+  {
+    xyze_(0,inode)=ele->Nodes()[inode]->X()[0];
+    xyze_(1,inode)=ele->Nodes()[inode]->X()[1];
+    xyze_(2,inode)=ele->Nodes()[inode]->X()[2];
+
+    center+=xyze_(1,inode);
+  }
+  center/=nen_;
+
+
+  // ---------------------------------------------------------------------
+  // calculate volume
+  // ---------------------------------------------------------------------
+  // evaluate shape functions and derivatives at element center
+  EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
+  // element area or volume
+  const double vol = fac_;
+
+  if (f3Parameter_->mat_gp_ or f3Parameter_->tau_gp_)
+   dserror ("Evaluation of material or stabilization parameters at gauss point not supported,yet!");
+  // ---------------------------------------------------------------------
+  // get material
+  // ---------------------------------------------------------------------
+  if (mat->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+
+    // get constant viscosity
+    visc_ = actmat->Viscosity();
+  }
+  else dserror("Only material m_fluid supported");
+  densaf_ = 1.0;
+  if (f3Parameter_->physicaltype_ != INPAR::FLUID::incompressible)
+    dserror("CalcDissipation() only for incompressible flows!");
+
+
+  // ---------------------------------------------------------------------
+  // calculate turbulent viscosity at element center
+  // ---------------------------------------------------------------------
+  double Cs_delta_sq = ele->CsDeltaSq();
+  double visceff = 0.0;
+  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+  {
+    CalcSubgrVisc(evel,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+    // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+    visceff = visc_ + sgvisc_;
+  }
+  else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+    CalcFineScaleSubgrVisc(evel,fsevel,vol,f3Parameter_->Cs_);
+
+  // ---------------------------------------------------------------------
+  // calculate stabilization parameters at element center
+  // ---------------------------------------------------------------------
+  // Stabilization parameter
+  CalcStabParameter(vol);
+  const double tau_M       = tau_(0);
+  const double tau_Mp      = tau_(1);
+  const double tau_C       = tau_(2);
+
+  // ---------------------------------------------------------------------
+  // get bodyforce
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_,nen_> edead(true);
+  BodyForce(ele, f3Parameter_, edead);
+
+  // working arrays for the quantities we want to compute
+  double eps_visc        = 0.0;
+  double eps_smag        = 0.0;
+  double eps_avm3        = 0.0;
+  double eps_scsim       = 0.0;
+  double eps_scsimfs     = 0.0;
+  double eps_scsimbs     = 0.0;
+  double eps_supg        = 0.0;
+  double eps_cstab       = 0.0;
+  double eps_pspg        = 0.0;
+
+  // gaussian points
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+
+    // get velocity at integration point
+    velint_.Multiply(evel,funct_);
+    // get velocity derivatives at integration point
+    vderxy_.MultiplyNT(evel,derxy_);
+
+    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+      fsvderxy_.MultiplyNT(fsevel,derxy_);
+    // get pressure gradient at integration point
+    gradp_.Multiply(derxy_,epre);
+    // convective term
+    convvelint_.Update(velint_);
+    conv_old_.Multiply(vderxy_,convvelint_);
+    // get bodyforce at integration point
+    bodyforce_.Multiply(edead,funct_);
+    // get acceleration at integartion point
+    accint_.Multiply(eacc,funct_);
+
+    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+    {
+      reystressinthat_.Clear();
+      velinthat_.Clear();
+      // get filtered velocity at integration point
+      velinthat_.Multiply(evel_hat,funct_);
+      // get filtered reynoldsstress at integration point
+      for (int dimi=0;dimi<nsd_;dimi++)
+      {
+        for (int dimj=0;dimj<nsd_;dimj++)
+        {
+          for (int inode=0;inode<nen_;inode++)
+          {
+            reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
+          }
+        }
+      }
+
+#ifdef TAU_SUBGRID_IN_RES_MOM
+      velhatderxy_.Clear();
+      reystresshatdiv_.Clear();
+      // get filtered velocity derivatives at integration point
+      velhatderxy_.MultiplyNT(evel_hat,derxy_);
+      // get divergence of filtered reynoldsstress at integration point
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+            int index = 3*nn+rr;
+            for (int mm=0;mm<nen_;++mm)
+            {
+              reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
+            }
+        }
+      }
+#endif
+    }
+    // calculate residual of momentum equation at integration point
+    /*
+                               /                  \
+      r    (x) = acc    (x) + | vel    (x) o nabla | vel    (x) +
+       M                       \                  /
+
+                 + nabla p    - f             (not higher order, i.e. 2 * visceff * nabla o eps(vel))
+    */
+    for (int rr=0;rr<nsd_;rr++)
+    {
+      momres_old_(rr,0) = densaf_ * (accint_(rr,0) + conv_old_(rr,0) + gradp_(rr,0) - bodyforce_(rr,0));
+#ifdef TAU_SUBGRID_IN_RES_MOM
+      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+          or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+      {
+        momres_old_(rr) += f3Parameter_->Cl_*(reystresshatdiv_(rr,0)
+                             - (velinthat_(0,0) * velhatderxy_(rr,0)
+                               +velinthat_(1,0) * velhatderxy_(rr,1)
+                               +velinthat_(2,0) * velhatderxy_(rr,2)));
+      }
+#endif
+    }
+    // get second derivative of the viscous term:
+    // div(epsilon(u))
+    if (is_higher_order_ele_)
+    {
+      CalcDivEps(evel);
+      for (int rr=0;rr<nsd_;rr++)
+      {
+        momres_old_(rr,0) -= 2*visceff*visc_old_(rr,0);
+      }
+    }
+    else
+    {
+      viscs2_.Clear();
+      visc_old_.Clear();
+    }
+
+    // calculate residual of continuity equation integration point
+    vdiv_ = 0.0;
+    for (int rr=0;rr<nsd_;rr++)
+    {
+      vdiv_ += vderxy_(rr, rr);
+    }
+
+    LINALG::Matrix<nsd_,nsd_> two_epsilon;
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        two_epsilon(rr,mm) = vderxy_(rr,mm) + vderxy_(mm,rr);
+      }
+    }
+
+    // contribution of this gausspoint to viscous energy
+    // dissipation (Galerkin)
+    /*
+                     /                                \
+                    |       / n+1 \         / n+1 \   |
+          2* visc * |  eps | u     | , eps | u     |  |
+                    |       \     /         \     /   |
+                     \                                /
+    */
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        eps_visc += 0.5*visc_*fac_*two_epsilon(rr,mm)*two_epsilon(mm,rr);
+      }
+    }
+
+    // contribution of this gausspoint to viscous energy
+    // dissipation (Smagorinsky)
+    /*
+                         /                                \
+                        |       / n+1 \         / n+1 \   |
+          2* visc    *  |  eps | u     | , eps | u     |  |
+                 turb   |       \     /         \     /   |
+                         \                                /
+    */
+    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky
+       or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+    {
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          eps_smag += 0.5*sgvisc_*fac_*two_epsilon(rr,mm)*two_epsilon(mm,rr);
+        }
+      }
+    }
+
+    // contribution of this gausspoint to viscous energy
+    // dissipation (AVM3)
+    /*
+                         /                                \
+                        |       /  n+1 \         / n+1 \   |
+          2* visc    *  |  eps | du     | , eps | u     |  |
+                 turb   |       \      /         \     /   |
+                         \                                /
+    */
+    if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+    {
+      LINALG::Matrix<nsd_,nsd_> fstwo_epsilon;
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          fstwo_epsilon(rr,mm) = fsvderxy_(rr,mm) + fsvderxy_(mm,rr);
+        }
+      }
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+//          eps_avm3 += 0.5*fssgvisc_*fac_*fstwo_epsilon(rr,mm)*two_epsilon(mm,rr);
+          eps_avm3 += 0.5*fssgvisc_*fac_*fstwo_epsilon(rr,mm)*fstwo_epsilon(mm,rr);
+        }
+      }
+    }
+
+    // contribution of this gausspoint to viscous energy
+    // dissipation (Scale Similarity)
+    /*
+             /                                \
+            |   ssm  /^n+1 \         / n+1 \   |
+            |  tau  | u     | , eps | u     |  |
+            |        \     /         \     /   |
+             \                                /
+    */
+    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+       or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
+    {
+      LINALG::Matrix<nsd_,nsd_> tau_scale_sim;
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          tau_scale_sim(rr,mm) = reystressinthat_(rr,mm) - velinthat_(rr) * velinthat_(mm);
+        }
+      }
+
+      //old version
+        double Production = 0.0;
+
+        for (int dimi=0;dimi<nsd_;dimi++)
+        {
+          for (int dimj=0;dimj<nsd_;dimj++)
+          {
+            Production += - tau_scale_sim(dimi,dimj)*0.5*two_epsilon(dimi,dimj);
+          }
+        }
+
+      // dissipation due to scale similarity model
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          eps_scsim += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+        }
+      }
+      if (Production >= 0.0)
+      {
+        // forwardscatter
+        for(int rr=0;rr<nsd_;++rr)
+        {
+          for(int mm=0;mm<nsd_;++mm)
+          {
+            eps_scsimfs += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+          }
+        }
+      }
+      else
+      {
+        // backscatter
+        for(int rr=0;rr<nsd_;++rr)
+        {
+          for(int mm=0;mm<nsd_;++mm)
+          {
+            eps_scsimbs += -0.5*fac_*densaf_*f3Parameter_->Cl_*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
+          }
+        }
+      }
+    }
+
+    // contribution of this gausspoint to energy
+    // dissipation by supg-stabilization
+    if (f3Parameter_->supg_ == INPAR::FLUID::convective_stab_supg)
+    {
+      for (int rr=0;rr<nsd_;rr++)
+      {
+        eps_supg += densaf_ * fac_ * conv_old_(rr,0) * tau_M * momres_old_(rr,0);
+      }
+    }
+
+    // contribution of this gausspoint to energy
+    // dissipation by continuity-stabilization
+    if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes)
+    {
+      eps_cstab += fac_ * vdiv_ * tau_C * vdiv_;
+    }
+
+    // contribution of this gausspoint to energy
+    // dissipation by pspg-stabilization
+    if (f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)
+    {
+      for (int rr=0;rr<nsd_;rr++)
+      {
+        eps_pspg += fac_ * gradp_(rr,0) * tau_Mp * momres_old_(rr,0);
+      }
+    }
+
+    velint_.Clear();
+    vderxy_.Clear();
+    fsvderxy_.Clear();
+    gradp_.Clear();
+    convvelint_.Clear();
+    conv_old_.Clear();
+    bodyforce_.Clear();
+    accint_.Clear();
+    velinthat_.Clear();
+    reystressinthat_.Clear();
+    momres_old_.Clear();
+    viscs2_.Clear();
+    visc_old_.Clear();
+    vdiv_ = 0.0;
+
+  }
+
+
+  eps_visc /= vol;
+  eps_smag /= vol;
+  eps_avm3 /= vol;
+  eps_scsim /= vol;
+  eps_scsimfs /= vol;
+  eps_scsimbs /= vol;
+  eps_supg /= vol;
+  eps_cstab /= vol;
+  eps_pspg /= vol;
+
+  RefCountPtr<vector<double> > incrvol           = params.get<RefCountPtr<vector<double> > >("incrvol"          );
+
+  RefCountPtr<vector<double> > incr_eps_visc      = params.get<RefCountPtr<vector<double> > >("incr_eps_visc"    );
+  RefCountPtr<vector<double> > incr_eps_eddyvisc  = params.get<RefCountPtr<vector<double> > >("incr_eps_eddyvisc");
+  RefCountPtr<vector<double> > incr_eps_avm3      = params.get<RefCountPtr<vector<double> > >("incr_eps_avm3"    );
+  RefCountPtr<vector<double> > incr_eps_scsim     = params.get<RefCountPtr<vector<double> > >("incr_eps_scsim"   );
+  RefCountPtr<vector<double> > incr_eps_scsimfs   = params.get<RefCountPtr<vector<double> > >("incr_eps_scsimfs" );
+  RefCountPtr<vector<double> > incr_eps_scsimbs   = params.get<RefCountPtr<vector<double> > >("incr_eps_scsimbs" );
+  RefCountPtr<vector<double> > incr_eps_supg      = params.get<RefCountPtr<vector<double> > >("incr_eps_supg"    );
+  RefCountPtr<vector<double> > incr_eps_cstab     = params.get<RefCountPtr<vector<double> > >("incr_eps_cstab"   );
+  RefCountPtr<vector<double> > incr_eps_pspg      = params.get<RefCountPtr<vector<double> > >("incr_eps_pspg"    );
+
+  bool found = false;
+
+  int nlayer = 0;
+  for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+  {
+    if(center<(*planecoords)[nlayer+1])
+    {
+      found = true;
+      break;
+    }
+    nlayer++;
+  }
+  if (found ==false)
+  {
+    dserror("could not determine element layer");
+  }
+
+  // collect layer volume
+  (*incrvol      )[nlayer] += vol;
+
+  (*incr_eps_visc    )[nlayer] += eps_visc       ;
+  (*incr_eps_eddyvisc)[nlayer] += eps_smag       ;
+  (*incr_eps_avm3    )[nlayer] += eps_avm3       ;
+  (*incr_eps_scsim   )[nlayer] += eps_scsim      ;
+  (*incr_eps_scsimfs )[nlayer] += eps_scsimfs    ;
+  (*incr_eps_scsimbs )[nlayer] += eps_scsimbs    ;
+  (*incr_eps_supg    )[nlayer] += eps_supg       ;
+  (*incr_eps_cstab   )[nlayer] += eps_cstab      ;
+  (*incr_eps_pspg    )[nlayer] += eps_pspg       ;
+
+  return 0;
 }
 
 #endif

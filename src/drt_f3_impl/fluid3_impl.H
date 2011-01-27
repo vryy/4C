@@ -133,6 +133,8 @@ namespace ELEMENTS
                  const LINALG::Matrix<nsd_,nen_> & edispnp,
                  const LINALG::Matrix<nsd_,nen_> & egridv,
                  const LINALG::Matrix<nsd_,nen_> & fsevelaf,
+                 const LINALG::Matrix<nsd_,nen_> & evel_hat,
+                 const LINALG::Matrix<nsd_*nsd_,nen_> & ereynoldsstress_hat,
                  Teuchos::RCP<MAT::Material> mat,
                  bool                       isale,
                  bool                       isowned,
@@ -140,6 +142,12 @@ namespace ELEMENTS
                  double * saccn,
                  double * sveln,
                  double * svelnp);
+
+    virtual int CalcDissipation(Fluid3*                    ele,
+                                ParameterList&             params,
+                                DRT::Discretization&       discretization,
+                                vector<int>&               lm,
+                                RefCountPtr<MAT::Material> mat);
 
     /*!
       \brief calculate element matrix and rhs
@@ -191,6 +199,8 @@ namespace ELEMENTS
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
+                const LINALG::Matrix<nsd_,nen_>&               evel_hat,
+                const LINALG::Matrix<nsd_*nsd_,nen_>&          ereynoldsstress_hat,
                 const LINALG::Matrix<nen_,1>&                  epreaf,
                 const LINALG::Matrix<nsd_,nen_>&               eaccam,
                 const LINALG::Matrix<nen_,1>&                  escaaf,
@@ -325,9 +335,9 @@ namespace ELEMENTS
     //! calculate the residual of the fluid momentum equation
     void GetResidualMomentumEq(
         const LINALG::Matrix<nsd_,nen_>&              eaccam,     ///< acceleration at time n+alpha_a / n
-        const double &                                timefac,    ///< time factor
-        double &                                      rhsfac,     ///< right-hand-side factor
-        double &                                      rhsresfac   ///< right-hand-side factor for residuals
+        const double &                                timefac     ///< time factor
+//        double &                                      rhsfac,     ///< right-hand-side factor
+//        double &                                      rhsresfac   ///< right-hand-side factor for residuals
         );
 
     //! update the subscale velocity
@@ -422,7 +432,7 @@ namespace ELEMENTS
     void ConservativeFormulation(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,      ///< block (weighting function v x u)
         LINALG::Matrix<nsd_,nen_> &               velforce,     ///< rhs forces velocity
-        const double&                             timefacfac,   ///< = timefac x fac
+        const double &                            timefacfac,   ///< = timefac x fac
         const double &                            rhsfac        ///< right-hand-side factor
         );
 
@@ -500,6 +510,12 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         const double &                            fssgviscfac     ///< = (fine scale subgrid viscousity) x timefacfac
         );
+
+    void SubGridStressTerm(
+        //const int &                               eid,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            rhsfac,
+        const double &                            Cl);
 
     //! linearisation in the case of mesh motion 2-D
     void LinMeshMotion_2D(
@@ -652,6 +668,18 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> fsvelint_;
     //! subgrid-scale velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> sgvelint_;
+    //! filtered velocity in gausspoint
+    LINALG::Matrix<nsd_,1> velinthat_;
+    //! global filtered velocity derivatives in gausspoint w.r.t x,y,z
+    LINALG::Matrix<nsd_,nsd_> velhatderxy_;
+    //! filtered reynoldsstess in gausspoint
+    LINALG::Matrix<nsd_,nsd_> reystressinthat_;
+    //! divergence of filtered reynoldsstess in gausspoint
+    LINALG::Matrix<nsd_,1> reystresshatdiv_;
+    //! divergence of convective term of filtered velocity in gausspoint
+    LINALG::Matrix<nsd_,1> velhativelhatjdiv_;
+    //! filtered velocity divergence
+    double velhatdiv_;
     //! density-weighted ale convective velocity in gausspoint, c=rho*u-rho*u_G
     LINALG::Matrix<nsd_,1> convvelint_;
     //! acceleration vector in gausspoint

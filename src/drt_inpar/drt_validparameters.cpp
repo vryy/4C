@@ -2083,7 +2083,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "no_model",
       "Smagorinsky",
       "Smagorinsky_with_van_Driest_damping",
-      "Dynamic_Smagorinsky"),
+      "Dynamic_Smagorinsky",
+      "Scale_Similarity",
+      "Mixed_Scale_Similarity_Eddy_Viscosity_Model"),
     tuple<std::string>(
       "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
@@ -2095,6 +2097,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
 
   DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbu);
+
+  DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbu);
 
   setStringToIntegralParameter<int>(
     "CANONICAL_FLOW",
