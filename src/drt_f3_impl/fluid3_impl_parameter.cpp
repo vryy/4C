@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   if(set_general_fluid_parameter_ == false)
     set_general_fluid_parameter_ = true;
   else
-    dserror("SetGeneralFluidParameter() can be called only once in the fluid constructor");
+    dserror("SetGeneralFluidParameter() is supposed to be called only once during runtime");
 
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
 {
   // second check: timealgo
   // work around to use SetTimeParameter in GenaAlpha (Neumann BC)
-  if((set_general_fluid_parameter_!= true) and (timealgo_ != INPAR::FLUID::timeint_gen_alpha))
+  if(set_general_fluid_parameter_!= true)
     dserror("General fluid parameter are not set yet!!");
 
   //----------------------------------------------------------------------
