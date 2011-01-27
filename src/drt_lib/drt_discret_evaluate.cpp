@@ -160,8 +160,8 @@ void DRT::Discretization::Evaluate(
 #endif
 
   } // for (int i=0; i<numcolele; ++i)
-  
-  
+
+
 #ifdef THROWELEMENTERRORS
   ExitElementLoop();
 #endif
@@ -1206,6 +1206,10 @@ cout << "angereicherter druck freiheitsgrad wird gesetzt" << endl;
         }
       }  // loop over nodal DOFs
     }
+    else if (numdf==0) //relevant for xfsi and fxf-Coupling (void enrichment)
+    {
+
+    }
     else
     {
       dserror("So viele dofs gibts doch gar nicht an einem Knoten!");
@@ -1492,10 +1496,10 @@ void DRT::Discretization::EvaluateScalars(
     // pointer to current element
     DRT::Element* actele = lRowElement(i);
 
-    // get element location vector 
+    // get element location vector
     Element::LocationArray la(dofsets_.size());
     actele->LocationVector(*this,la,false);
-        
+
     // define element vector
     Epetra_SerialDenseVector elescalars(numscalars);
 
