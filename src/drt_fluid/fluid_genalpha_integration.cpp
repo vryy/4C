@@ -3269,7 +3269,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
   // set general element parameters
   eleparams.set("dt",dt_);
   // There is only one time integration scheme in FluidGenAlphaIntegration
-  // Pseudo-Theta: There is only one time integration scheme
+  eleparams.set("total time",time_-(1-alphaF_)*dt_);
   eleparams.set("theta",alphaF_*gamma_/alphaM_);
   eleparams.set("omtheta",1-(alphaF_*gamma_/alphaM_));
   eleparams.set("alphaF",alphaF_);
