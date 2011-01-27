@@ -901,7 +901,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
       // set scheme-specific element parameters and vector values
       if (timealgo_==INPAR::FLUID::timeint_stationary)
       {
-        eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+        eleparams.set("action","calc_fluid_systemmat_and_residual");
         eleparams.set("using generalized-alpha time integration",false);
         eleparams.set("total time",time_);
         eleparams.set("is stationary", true);
@@ -2436,6 +2436,7 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::FluidXFluidImplicitTimeInt::Compute
     // if dofs appear, extrapolate from the interface to the newly created dofs
     if (Step() > 1)
     {
+      // dofswitch.InterpolatePatchtoBackgroundfluid(fluiddis_, ih_np_->cutterdis()->GetState("ivelcoln"),xfluidstate_.veln_) ;
       dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , xfluidstate_.veln_ );
       dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), xfluidstate_.velnm_);
       dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , xfluidstate_.accn_ );
