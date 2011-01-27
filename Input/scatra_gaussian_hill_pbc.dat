@@ -72,7 +72,7 @@ FSSUGRDIFF       No
 WRITEFLUX        No
 MATID            4
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-DEFINITION_TAU   Franca_Valentin    // Zero Franca_Valentin Bazilevs
+DEFINITION_TAU   Franca_Valentin
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -------------------------------------------------------FSI DYNAMIC

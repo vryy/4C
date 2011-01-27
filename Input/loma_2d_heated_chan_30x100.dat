@@ -113,7 +113,7 @@ OUTMEAN          Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE         SUPG
 SUGRVEL          yes
-DEFINITION_TAU   Bazilevs
+DEFINITION_TAU   Taylor_Hughes_Zarins
 EVALUATION_TAU   integration_point
 EVALUATION_MAT   integration_point
 ------------------------------------------------------LOMA CONTROL

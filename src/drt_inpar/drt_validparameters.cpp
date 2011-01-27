@@ -1819,29 +1819,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                                &redawdyn);
 
-
-  setStringToIntegralParameter<int>("SOLVERTYPE","Linear",
-                               "Solver type",
-                               tuple<std::string>(
-                                 "Linear",
-                                 "Nonlinear"
-                                 ),
-                               tuple<int>(
-                                 linear,
-                                 nonlinear
-                                ),
-                               &redawdyn);
-
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
-
-  IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
-  DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
-
-  //airwaystimeparams.set                  ("solver type"       ,rawdyn.get<string>("SOLVER_TYPE"));
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
@@ -2127,7 +2108,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "square_cylinder",
       "square_cylinder_nurbs",
       "rotating_circular_cylinder_nurbs",
-      "rotating_circular_cylinder_nurbs_scatra",
       "loma_channel_flow_of_height_2",
       "loma_lid_driven_cavity",
       "loma_backward_facing_step"),
@@ -2139,11 +2119,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
       "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
       "For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
-      "For this flow with mass transport, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
       "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
       "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
       "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>(
@@ -2476,25 +2455,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Franca_Valentin",
                                "Definition of tau",
                                tuple<std::string>(
+                                 "Taylor_Hughes_Zarins",
+                                 "Taylor_Hughes_Zarins_wo_dt",
                                  "Franca_Valentin",
-                                 "Bazilevs",
-                                 "Exact_1D",
-                                 "Oberai",
+                                 "Franca_Valentin_wo_dt",
+                                 "Shakib_Hughes_Codina",
+                                 "Shakib_Hughes_Codina_wo_dt",
                                  "Codina",
+                                 "Codina_wo_dt",
+                                 "Exact_1D",
                                  "Zero"),
-                               tuple<std::string>(
-                                 "tau according to Franca and Valentin (2000)",
-                                 "tau according to Bazilevs et al. (2007) (based on G_ij and g_i)",
-                                 "exact tau for stationary 1d problems and linear shape functions",
-                                 "tau according to Oberai for instationary problems",
-                                 "tau according to Codina (2000)",
-                                 "zero tau (no stabilizing effect)"),
                                 tuple<INPAR::SCATRA::TauType>(
+                                    INPAR::SCATRA::tau_taylor_hughes_zarins,
+                                    INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt,
                                     INPAR::SCATRA::tau_franca_valentin,
-                                    INPAR::SCATRA::tau_bazilevs,
-                                    INPAR::SCATRA::tau_exact_1d,
-                                    INPAR::SCATRA::tau_oberai,
+                                    INPAR::SCATRA::tau_franca_valentin_wo_dt,
+                                    INPAR::SCATRA::tau_shakib_hughes_codina,
+                                    INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt,
                                     INPAR::SCATRA::tau_codina,
+                                    INPAR::SCATRA::tau_codina_wo_dt,
+                                    INPAR::SCATRA::tau_exact_1d,
                                     INPAR::SCATRA::tau_zero),
                                &scatradyn_stab);
 

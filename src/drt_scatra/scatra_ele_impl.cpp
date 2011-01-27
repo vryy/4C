@@ -351,30 +351,48 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set parameters for stabilization
     ParameterList& stablist = params.sublist("STABILIZATION");
 
-    // select tau definition
+    // get definition for stabilization parameter tau
     INPAR::SCATRA::TauType whichtau = Teuchos::getIntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+
+    // set correct stationary definition for stabilization parameter automatically
+    // and ensure that exact stabilization parameter is only used in stationary case
+    if (is_stationary_)
+    {
+      if (whichtau == INPAR::SCATRA::tau_taylor_hughes_zarins)
+        whichtau = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
+      else if (whichtau == INPAR::SCATRA::tau_franca_valentin)
+        whichtau = INPAR::SCATRA::tau_franca_valentin_wo_dt;
+      else if (whichtau == INPAR::SCATRA::tau_shakib_hughes_codina)
+        whichtau = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
+      else if (whichtau == INPAR::SCATRA::tau_codina)
+        whichtau = INPAR::SCATRA::tau_codina_wo_dt;
+    }
+    else
+    {
+      if (whichtau == INPAR::SCATRA::tau_exact_1d)
+        dserror("exact stabilization parameter only available for stationary case");
+    }
 
     // set (sign) factor for diffusive and reactive stabilization terms
     // (factor is zero for SUPG) and overwrite tau definition when there
     // is no stabilization
     const INPAR::SCATRA::StabType stabinp = Teuchos::getIntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
-
     switch(stabinp)
     {
-    case INPAR::SCATRA::stabtype_no_stabilization:
-      whichtau = INPAR::SCATRA::tau_zero;
-      break;
-    case INPAR::SCATRA::stabtype_SUPG:
-      diffreastafac_ = 0.0;
-      break;
-    case INPAR::SCATRA::stabtype_GLS:
-      diffreastafac_ = 1.0;
-      break;
-    case INPAR::SCATRA::stabtype_USFEM:
-      diffreastafac_ = -1.0;
-      break;
-    default:
-      dserror("Unknown type of stabilization type");
+      case INPAR::SCATRA::stabtype_no_stabilization:
+        whichtau = INPAR::SCATRA::tau_zero;
+        break;
+      case INPAR::SCATRA::stabtype_SUPG:
+        diffreastafac_ = 0.0;
+        break;
+      case INPAR::SCATRA::stabtype_GLS:
+        diffreastafac_ = 1.0;
+        break;
+      case INPAR::SCATRA::stabtype_USFEM:
+        diffreastafac_ = -1.0;
+        break;
+      default:
+        dserror("unknown definition for stabilization parameter");
     }
 
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
@@ -2431,58 +2449,80 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   tauderpot_[k].Clear();
 
   //----------------------------------------------------------------------
-  // computation of stabilization parameter
+  // computation of stabilization parameters depending on definition used
   //----------------------------------------------------------------------
   switch (whichtau)
   {
-    // stabilization parameter definition according to Bazilevs et al. (2007)
-    case INPAR::SCATRA::tau_bazilevs:
+    case INPAR::SCATRA::tau_taylor_hughes_zarins:
+    case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
     {
-      // effective velocity at element center:
-      // (weighted) convective velocity + individual migration velocity
-      LINALG::Matrix<nsd_,1> veleff(velint_,false);
-
-      if (iselch_) // ELCH
-      {
-        if (migrationintau)
-        {
-          veleff.Update(diffusvalence_[k],migvelint_,1.0);
-        }
-      }
-
       /*
-                                                                              1.0
-                 +-                                                      -+ - ---
-                 |        2                                               |   2.0
-                 | 4.0*rho         n+1             n+1          2         |
-          tau  = | -------  + rho*u     * G * rho*u     + C * mu  * G : G |
-                 |     2                  -                I        -   - |
-                 |   dt                   -                         -   - |
-                 +-                                                      -+
 
-      */
-      /*          +-           -+   +-           -+   +-           -+
+      literature:
+      1) C.A. Taylor, T.J.R. Hughes, C.K. Zarins, Finite element modeling
+         of blood flow in arteries, Comput. Methods Appl. Mech. Engrg. 158
+         (1998) 155-196.
+      2) V. Gravemeier, W.A. Wall, An algebraic variational multiscale-
+         multigrid method for large-eddy simulation of turbulent variable-
+         density flow at low Mach number, J. Comput. Phys. 229 (2010)
+         6047-6070.
+         -> version for variable-density scalar transport equation as
+            implemented here, which corresponds to constant-density
+            version as given in the previous publication when density
+            is constant
+
+                                                                           1
+                     +-                                               -+ - -
+                     |        2                                        |   2
+                     | c_1*rho                                  2      |
+           tau = C * | -------   +  c_2*rho*u*G*rho*u  +  c_3*mu *G:G  |
+                     |     2                                           |
+                     |   dt                                            |
+                     +-                                               -+
+
+          with the constants and covariant metric tensor defined as follows:
+
+          C   = 1.0 (not explicitly defined here),
+          c_1 = 4.0,
+          c_2 = 1.0 (not explicitly defined here),
+          c_3 = 12.0/m_k (36.0 for linear and 144.0 for quadratic elements)
+
+                  +-           -+   +-           -+   +-           -+
                   |             |   |             |   |             |
                   |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
             G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
              ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
-      */
-      /*          +----
+
+                  +----
                    \
           G : G =   +   G   * G
-          -   -    /     ij    ij
-          -   -   +----
+                   /     ij    ij
+                  +----
                    i,j
+                             +----
+                             \
+          rho*u*G*rho*u  =   +   rho*u * G  *rho*u
+                             /        i   ij      j
+                            +----
+                              i,j
       */
-      /*                               +----
-               n+1             n+1     \         n+1              n+1
-          rho*u     * G * rho*u     =   +   rho*u    * G   * rho*u
-                      -                /         i     -ij        j
-                      -               +----        -
-                                        i,j
-      */
+      // effective velocity at element center:
+      // (weighted) convective velocity + individual migration velocity
+      LINALG::Matrix<nsd_,1> veleff(velint_,false);
+      if (iselch_)
+      {
+        if (migrationintau) veleff.Update(diffusvalence_[k],migvelint_,1.0);
+      }
+
+      // total reaction coefficient sigma_tot: sum of "artificial" reaction
+      // due to time factor and reaction coefficient (reaction coefficient
+      // ensured to be zero in GetMaterialParams for non-reactive material)
+      double sigma_tot = reacoeff_[k];
+      if (whichtau == INPAR::SCATRA::tau_taylor_hughes_zarins) sigma_tot += 1.0/dt;
+
+      // computation of various values derived from covariant metric tensor
       double G;
       double normG(0.0);
       double Gnormu(0.0);
@@ -2510,37 +2550,48 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         }
       }
 
-      // definition of constant:
-      // 12.0/m_k = 36.0 for linear elements and 144.0 for quadratic elements
-      // (differently defined, e.g., in Akkerman et al. (2008))
-      const double CI = 12.0/mk;
+      // definition of constants as described above
+      const double c1 = 4.0;
+      const double c3 = 12.0/mk;
 
-      // stabilization parameters for stationary and instationary case, respectively
-      if (is_stationary_)
-        tau_[k] = 1.0/(sqrt(dens_sqr*reacoeff_[k]*reacoeff_[k]+Gnormu+CI*diffus*diffus*normG));
-      else
-        tau_[k] = 1.0/(sqrt(dens_sqr*(4.0/(dt*dt)+reacoeff_[k]*reacoeff_[k])+Gnormu+CI*diffus*diffus*normG));
+      // compute diffusive part
+      const double Gdiff = c3*diffus*diffus*normG;
 
-      if (iselch_) //ELCH
+      // computation of stabilization parameter tau
+      tau_[k] = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gdiff));
+
+      // finalize derivative of present tau w.r.t electric potential
+      if (iselch_)
       {
-        if (migrationintau)
-        {
-          // finalize derivative of Bazilves-tau w.r.t electric potential
-          tauderpot_[k].Scale(0.5*tau_[k]*tau_[k]*tau_[k]);
-        }
+        if (migrationintau) tauderpot_[k].Scale(0.5*tau_[k]*tau_[k]*tau_[k]);
       }
     }
     break;
     case INPAR::SCATRA::tau_franca_valentin:
-    // stabilization parameter definition according to Franca and Valentin (2000)
     {
+      /*
+
+      literature:
+         L.P. Franca, F. Valentin, On an improved unusual stabilized
+         finite element method for the advective-reactive-diffusive
+         equation, Comput. Methods Appl. Mech. Engrg. 190 (2000) 1785-1800.
+
+
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+
+      */
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm;
-
-      if (iselch_ and migrationintau)
-      {
-        migrationstab_=false;
-      }
+      if (iselch_ and migrationintau) migrationstab_=false;
          // dserror("FrancaValentin with migrationintau not available at the moment");
         /*
           // get Euclidean norm of effective velocity at element center:
@@ -2568,64 +2619,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
       }
       else*/
-        vel_norm = velint_.Norm2();
+      vel_norm = velint_.Norm2();
 
-      // get characteristic element length
-      // There exist different definitions for 'the' characteristic element length h:
+      // total reaction coefficient sigma_tot: sum of "artificial" reaction
+      // due to time factor and reaction coefficient (reaction coefficient
+      // ensured to be zero in GetMaterialParams for non-reactive material)
+      const double sigma_tot = 1.0/timefac + reacoeff_[k];
 
-      // 1) streamlength (based on velocity vector at element centre) -> default
-      // normed velocity at element centre
-      LINALG::Matrix<nsd_,1> velino;
-      if (vel_norm>=1e-6)
-        velino.Update(1.0/vel_norm,velint_);
-      else
-      {
-        velino.Clear();
-        velino(0,0) = 1;
-      }
-      // get streamlength using the normed velocity at element centre
-      LINALG::Matrix<nen_,1> tmp;
-      tmp.MultiplyTN(derxy_,velino);
-      const double val = tmp.Norm1();
-      const double h = 2.0/val; // h=streamlength
+      // calculate characteristic element length
+      const double h = CalcCharEleLength(vol,vel_norm);
 
-      // 2) get element length for tau_Mp/tau_C: volume-equival. diameter -> not default
-      // const double h = pow((6.*vol/PI),(1.0/3.0)); //warning: 3D formula
+      // various parameter computations for case without dt:
+      // relating convective to viscous part
+      const double epe = mk * densnp_[k] * vel_norm * h / diffus;
+      // relating viscous to reactive part
+      const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
 
-      // 3) use cubic root of the element volume as characteristic length -> not default
-      //    2D case: characterisitc length is the square root of the element area
-      //    1D case: characteristic length is the element length
-      // get number of dimensions (convert from int to double)
-      // const double dim = (double) nsd_;
-      // const double h = pow(vol,(1.0/dim));
+      // respective "switching" parameters
+      const double xi  = DMAX(epe,1.0);
+      const double xi1 = DMAX(epe1,1.0);
 
-      // parameter relating convective and diffusive forces + respective switch
-      double epe = mk * densnp_[k] * vel_norm * h / diffus;
-      const double xi = DMAX(epe,1.0);
-
-      // stabilization parameter for stationary and instationary case
-      if (is_stationary_)
-      {
-        // parameter relating diffusive and reactive forces + respective switch
-        double epe1 = 0.0;
-        if (reaction_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
-
-        const double xi1 = DMAX(epe1,1.0);
-
-        tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
-      }
-      else
-      {
-        // parameter relating diffusive and reactive forces + respective switch
-        double epe1 = 0.0;
-        if (reaction_)
-             epe1 = 2.0*(timefac+1.0/reacoeff_[k])*diffus/(mk*densnp_[k]*DSQR(h));
-        else epe1 = 2.0*timefac*diffus/(mk*densnp_[k]*DSQR(h));
-
-        const double xi1 = DMAX(epe1,1.0);
-
-        tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*(reacoeff_[k]+1.0/timefac)*xi1 + 2.0*diffus*xi/mk);
-      }
+      tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*sigma_tot*xi1 + 2.0*diffus*xi/mk);
 
 #ifdef VISUALIZE_ELEMENT_DATA
       // visualize resultant Pe number
@@ -2639,12 +2653,170 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
     }
     break;
+    case INPAR::SCATRA::tau_franca_valentin_wo_dt:
+    {
+      /*
+
+      stabilization parameter as above without inclusion of dt-part
+
+      */
+      // get Euclidean norm of (weighted) velocity at element center
+      double vel_norm;
+      if (iselch_ and migrationintau) migrationstab_=false;
+       // dserror("FrancaValentin with migrationintau not available at the moment");
+        /*
+          // get Euclidean norm of effective velocity at element center:
+          // (weighted) convective velocity + individual migration velocity
+          LINALG::Matrix<nsd_,1> veleff(velint_,false);
+
+          veleff.Update(diffusvalence_[k],migvelint_,1.0);
+          vel_norm = veleff.Norm2();
+
+#ifdef VISUALIZE_ELEMENT_DATA
+          veleff.Update(diffusvalence_[k],migvelint_,0.0);
+          double vel_norm_mig = veleff.Norm2();
+          double migepe2 = mk * vel_norm_mig * h / diffus;
+
+          DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+          if (!actele) dserror("cast to Transport* failed");
+          vector<double> v(1,migepe2);
+          ostringstream temp;
+          temp << k;
+          string name = "Pe_mig_"+temp.str();
+          actele->AddToData(name,v);
+          name = "hk_"+temp.str();
+          v[0] = h;
+          actele->AddToData(name,v);
+#endif
+      }
+      else*/
+      vel_norm = velint_.Norm2();
+
+      // calculate characteristic element length
+      const double h = CalcCharEleLength(vol,vel_norm);
+
+      // various parameter computations for case without dt:
+      // relating convective to viscous part
+      const double epe = mk * densnp_[k] * vel_norm * h / diffus;
+      // relating viscous to reactive part
+      double epe1 = 0.0;
+      if (reaction_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
+
+      // respective "switching" parameters
+      const double xi  = DMAX(epe,1.0);
+      const double xi1 = DMAX(epe1,1.0);
+
+      tau_[k] = DSQR(h)/(DSQR(h)*densnp_[k]*reacoeff_[k]*xi1 + 2.0*diffus*xi/mk);
+
+#ifdef VISUALIZE_ELEMENT_DATA
+      // visualize resultant Pe number
+      DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
+      if (!actele) dserror("cast to Transport* failed");
+      vector<double> v(1,epe);
+      ostringstream temp;
+      temp << k;
+      string name = "Pe_"+temp.str();
+      actele->AddToData(name,v);
+#endif
+    }
+    break;
+    case INPAR::SCATRA::tau_shakib_hughes_codina:
+    case INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt:
+    {
+      /*
+
+      literature:
+      1) F. Shakib, Finite element analysis of the compressible Euler and
+         Navier-Stokes equations, PhD thesis, Division of Applied Mechanics,
+         Stanford University, Stanford, CA, USA, 1989.
+      2) F. Shakib, T.J.R. Hughes, A new finite element formulation for
+         computational fluid dynamics: IX. Fourier analysis of space-time
+         Galerkin/least-squares algorithms, Comput. Methods Appl. Mech.
+         Engrg. 87 (1991) 35-58.
+      3) R. Codina, Stabilized finite element approximation of transient
+         incompressible flows using orthogonal subscales, Comput. Methods
+         Appl. Mech. Engrg. 191 (2002) 4295-4321.
+
+         All those proposed definitions were for non-reactive incompressible
+         flow; they are adapted to potentially reactive scalar transport
+         equations with potential density variations here.
+
+         constants defined as in Shakib (1989) / Shakib and Hughes (1991),
+         merely slightly different with respect to c_3:
+
+         c_1 = 4.0,
+         c_2 = 4.0,
+         c_3 = 4.0/(m_k*m_k) (36.0 for linear, 576.0 for quadratic ele.)
+
+         Codina (2002) proposed present version without dt and explicit
+         definition of constants
+         (condition for constants as defined here: c_2 <= sqrt(c_3)).
+
+    */
+      // get Euclidean norm of velocity
+      const double vel_norm = velint_.Norm2();
+      if (iselch_ and migrationintau) migrationstab_=false;
+
+      // total reaction coefficient sigma_tot: sum of "artificial" reaction
+      // due to time factor and reaction coefficient (reaction coefficient
+      // ensured to be zero in GetMaterialParams for non-reactive material)
+      double sigma_tot = reacoeff_[k];
+      if (whichtau == INPAR::SCATRA::tau_shakib_hughes_codina) sigma_tot += 1.0/dt;
+
+      // calculate characteristic element length
+      const double h = CalcCharEleLength(vol,vel_norm);
+
+      // definition of constants as described above
+      const double c1 = 4.0;
+      const double c2 = 4.0;
+      const double c3 = 4.0/(mk*mk);
+      // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
+
+      tau_[k] = 1.0/(sqrt(c1*DSQR(densnp_[k])*DSQR(sigma_tot)
+                        + c2*DSQR(densnp_[k])*DSQR(vel_norm)/DSQR(h)
+                        + c3*DSQR(diffus)/(DSQR(h)*DSQR(h))));
+    }
+    break;
+    case INPAR::SCATRA::tau_codina:
+    case INPAR::SCATRA::tau_codina_wo_dt:
+    {
+      /*
+
+      literature:
+         R. Codina, Comparison of some finite element methods for solving
+         the diffusion-convection-reaction equation, Comput. Methods
+         Appl. Mech. Engrg. 156 (1998) 185-210.
+
+         constants:
+         c_1 = 1.0,
+         c_2 = 2.0,
+         c_3 = 4.0/m_k (12.0 for linear, 48.0 for quadratic elements)
+
+         Codina (1998) proposed present version without dt.
+
+      */
+      // get Euclidean norm of velocity
+      const double vel_norm = velint_.Norm2();
+
+      // total reaction coefficient sigma_tot: sum of "artificial" reaction
+      // due to time factor and reaction coefficient (reaction coefficient
+      // ensured to be zero in GetMaterialParams for non-reactive material)
+      double sigma_tot = reacoeff_[k];
+      if (whichtau == INPAR::SCATRA::tau_codina) sigma_tot += 1.0/dt;
+
+      // calculate characteristic element length
+      const double h = CalcCharEleLength(vol,vel_norm);
+
+      // definition of constants as described above
+      const double c1 = 1.0;
+      const double c2 = 2.0;
+      const double c3 = 4.0/mk;
+
+      tau_[k] = 1.0/(c1*sigma_tot + c2*vel_norm/h + c3*diffus/(h*h));
+    }
+    break;
     case INPAR::SCATRA::tau_exact_1d:
     {
-      // optimal tau (stationary 1D-problem using linear shape functions)
-      if (not is_stationary_)
-        dserror("Exact stabilization parameter only available for stationary case");
-
       // get number of dimensions (convert from int to double)
       const double dim = (double) nsd_;
 
@@ -2703,77 +2875,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       else tau_[k] = 0.0;
     }
     break;
-    case INPAR::SCATRA::tau_codina:
-    {
-      // Parameter from Codina, Badia (Constants are chosen according to
-      // the values in the standard definition above)
-
-      const double CI  = 4.0/mk;
-      const double CII = 2.0/mk;
-
-      const double vel_norm = velint_.Norm2();
-
-      // get number of dimensions (convert from int to double)
-      const double dim = (double) nsd_;
-
-      // get characteristic element length
-      double hk = pow(vol,(1.0/dim)); // equals streamlength in 1D
-
-      // in contrast to the original definition, we neglect the influence of
-      // the subscale velocity on velnormaf
-      tau_[k]=1.0/(1./timefac+CI*diffus/(hk*hk)+CII*vel_norm/hk);
-
-    }
-    break;
-    case INPAR::SCATRA::tau_oberai:
-    {
-      // tau according to Assad Oberai's suggestion
-      if (is_stationary_) dserror("This stabilization parameter only available for instationary case");
-
-      // get number of dimensions (convert from int to double)
-      const double dim = (double) nsd_;
-
-      // get characteristic element length
-      const double h = pow(vol,(1.0/dim));
-
-      // get Euclidean norm of (weighted) velocity at element center
-      double vel_norm = velint_.Norm2();
-
-      // compute element Peclet number
-      // (caution: element Peclet number defined here without division by 2)
-      const double epe = densnp_[k] * vel_norm * h / diffus;
-
-      // compute CFL number
-      const double cfl = vel_norm * dt / h;
-
-      // compute k_bar
-      const double pp = exp(epe/200.0);
-      const double pm = exp(-epe/200.0);
-      const double k_bar = epe*(1.0 + 8.0*((pp-pm)/(pp+pm))/(1.0+((pp-pm)/(pp+pm))));
-
-      // compute factors gamma, kappa, alpha and mu
-      const double kp = exp(k_bar);
-      const double km = exp(-k_bar);
-      const double fac_gamma = exp(k_bar*cfl*(1.0-(k_bar/epe)));
-      const double fac_kappa = (2.0/(kp+km))-1.0;
-      double fac_alpha = 1.0;
-      if (k_bar < 700.0) fac_alpha = (kp-km)/(kp+km);
-      const double fac_mu    = (2.0*(2.0/(kp+km))+1.0)/3.0;
-
-      // compute non-dimensional form of tau
-      tau_[k] = (fac_mu*(fac_gamma-1.0)-(fac_gamma+1.0)*cfl*((fac_alpha/2.0)+(fac_kappa/epe)))/(fac_alpha*(fac_gamma-1.0)+cfl*fac_kappa*(fac_gamma+1.0));
-
-      // compute dimensional (final) form of tau
-      tau_[k] *= h/vel_norm;
-    }
-    break;
     case INPAR::SCATRA::tau_zero:
     {
       // set tau's to zero (-> no stabilization effect)
       tau_[k] = 0.0;
     }
     break;
-    default: dserror("Unknown definition of tau\n");
+    default: dserror("unknown definition for stabilization parameter tau\n");
   } //switch (whichtau)
 
 #if 0
@@ -2792,6 +2900,46 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
   return;
 } //ScaTraImpl::CalTau
+
+
+/*----------------------------------------------------------------------*
+ |  calculation of characteristic element length               vg 01/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraImpl<distype>::CalcCharEleLength(
+    const double  vol,
+    const double  vel_norm
+    )
+{
+  //---------------------------------------------------------------------
+  // various definitions for characteristic element length
+  //---------------------------------------------------------------------
+  // a) streamlength due to Tezduyar et al. (1992) -> default
+  // normed velocity vector
+  LINALG::Matrix<nsd_,1> velino;
+  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,velint_);
+  else
+  {
+    velino.Clear();
+    velino(0,0) = 1;
+  }
+
+  // get streamlength using the normed velocity at element centre
+  LINALG::Matrix<nen_,1> tmp;
+  tmp.MultiplyTN(derxy_,velino);
+  const double val = tmp.Norm1();
+  const double hk = 2.0/val; // h=streamlength
+
+  // b) volume-equivalent diameter (warning: 3-D formula!)
+  //hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+  // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
+  // cast dimension to a double varibale -> pow()
+  //const double dim = (double) nsd_;
+  //hk = pow(vol,1/dim);
+
+  return hk;
+}
 
 
 /*----------------------------------------------------------------------*

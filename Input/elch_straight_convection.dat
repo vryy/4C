@@ -102,7 +102,7 @@ CONVTOL          1e-9
 ITEMAX           10
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE         SUPG
-DEFINITION_TAU   Bazilevs //Franca_Valentin
+DEFINITION_TAU   Taylor_Hughes_Zarins
 ------------------------------------------------------ELCH CONTROL
 ITEMAX           12
 MAXTIME          1000

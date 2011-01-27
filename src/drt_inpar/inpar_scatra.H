@@ -89,11 +89,15 @@ namespace INPAR
     /// possible options for the stabilization parameter
     enum TauType
     {
+      tau_taylor_hughes_zarins,
+      tau_taylor_hughes_zarins_wo_dt,
       tau_franca_valentin,
-      tau_bazilevs,
-      tau_exact_1d,
-      tau_oberai,
+      tau_franca_valentin_wo_dt,
+      tau_shakib_hughes_codina,
+      tau_shakib_hughes_codina_wo_dt,
       tau_codina,
+      tau_codina_wo_dt,
+      tau_exact_1d,
       tau_zero
     };
 

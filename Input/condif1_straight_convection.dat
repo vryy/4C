@@ -69,7 +69,7 @@ FSSUGRDIFF       No
 WRITEFLUX        No
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE         SUPG
-DEFINITION_TAU   Franca_Valentin //Bazilevs
+DEFINITION_TAU   Franca_Valentin
 ------------------------------------------------------ELCH CONTROL
 ITEMAX           12
 MAXTIME          1000

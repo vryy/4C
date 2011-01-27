@@ -209,19 +209,6 @@ public:
     //! get the material parameters
     virtual void GetMaterialParams(const DRT::Element* ele);
 
-    //! calculate stabilization parameter
-    virtual void CalTau(
-        DRT::Element*                         ele,
-        double                                diffus,
-        const double                          dt,
-        const double                          timefac,
-        const enum INPAR::SCATRA::TauType     whichtau,
-        const double                          vol,
-        const int                             k,
-        const double                          frt,
-        const bool                            migrationintau
-    );
-
     //! calculate all-scale subgrid diffusivity
     virtual void CalcSubgrDiff(
         const double                          dt,
@@ -244,6 +231,25 @@ public:
         const double                          tpn,
         const double                          vol,
         const int                             k
+    );
+
+    //! calculate stabilization parameter
+    virtual void CalTau(
+        DRT::Element*                         ele,
+        double                                diffus,
+        const double                          dt,
+        const double                          timefac,
+        const enum INPAR::SCATRA::TauType     whichtau,
+        const double                          vol,
+        const int                             k,
+        const double                          frt,
+        const bool                            migrationintau
+    );
+
+    //! calculate characteristic element length
+    virtual double CalcCharEleLength(
+                                     const double  vol,
+                                     const double  vel_norm
     );
 
     //! calculate subgrid-scale velocity
