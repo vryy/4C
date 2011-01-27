@@ -418,7 +418,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
 {
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  const double time = f3Parameter_->time_;
   if (time<0.0) usetime = false;
 
   // get time-curve factor/ n = - grad phi / |grad phi|
@@ -436,7 +436,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
   const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
 
   // get time factor for Neumann term
-  const double timefac = params.get("thsl",0.0);
+  const double timefac = f3Parameter_->timefacrhs_;
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -2409,11 +2409,6 @@ template <DRT::Element::DiscretizationType bndydistype,
      Epetra_SerialDenseVector&       elevec_epetra)
 {
   //--------------------------------------------------
-  // check whether we have a generalized-alpha time-integration scheme
-  // assuming a fully implicit pressure treatment
-  const bool is_genalpha = params.get<bool>("using p^{n+1} generalized-alpha time integration");
-
-  //--------------------------------------------------
   // get my parent element
   DRT::Element* parent=surfele->ParentElement();
 
@@ -3618,38 +3613,23 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   // --------------------------------
   // organise the timefac business
-  double timefacrhs  =0.0;
-  double timefacmat_u=0.0;
-  double timefacmat_p=0.0;
 
-  // get timefactor for right-hand side
+  // One-step-Theta:            timefacrhs = theta*dt
+  // BDF2:                      timefacrhs = 2/3 * dt
+  // af-generalized-alpha:      timefacrhs = (1.0/alpha_M) * gamma * dt
+  // Peters-generalized-alpha:  timefacrhs = 1.0
+  double timefacrhs  = f3Parameter_->timefacrhs_;
+  // One-step-Theta:            timefacmat_u = theta*dt
+  // BDF2:                      timefacmat_u = 2/3 * dt
+  // af-generalized-alpha:      timefacmat_u = (alphaF/alpha_M) * gamma * dt
+  // Peters-generalized-alpha:  timefacmat_u = alphaF* gamma * dt
+  double timefacmat_u= f3Parameter_->afgdt_;
+  // One-step-Theta:            timefacmat_p = theta*dt
+  // BDF2:                      timefacmat_p = 2/3 * dt
+  // af-generalized-alpha:      timefacmat_p = (alphaF/alpha_M) * gamma * dt
+  // Peters-generalized-alpha:  timefacmat_p = gamma * dt
+  double timefacmat_p= f3Parameter_->timefacmat_p_;
 
-  if (is_genalpha)
-  {
-    // Peter's generalised-alpha:
-
-     double alphaF = params.get<double>("alpha_F");
-     double gamma  = params.get<double>("gamma");
-     double dt     = params.get<double>("dt");
-
-     timefacrhs  =1.0;
-     timefacmat_u=alphaF*gamma*dt;
-     timefacmat_p=gamma*dt;
-
-  }
-  else
-  {
-
-    // time integration related parameters
-    const double timefac= params.get<double>("timefac");
-
-    // One-step-Theta:            timefacrhs = theta*dt
-    // BDF2:                      timefacrhs = 2/3 * dt
-    // af-generalized-alpha:      timefacrhs = (alpha_F/alpha_M) * gamma * dt
-    timefacrhs  =timefac;
-    timefacmat_u=timefac;
-    timefacmat_p=timefac;
-  }
 
   // --------------------------------
   // rearrange to pattern uvwp uvwp ...

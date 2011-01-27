@@ -342,6 +342,11 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // do output to screen
   this->GenAlphaEchoToScreen("print start-up info");
 
+  // ---------------------------------------------------------------------
+  // set general fluid parameter defined before
+  // ---------------------------------------------------------------------
+  SetElementGeneralFluidParameter();
+
   // end time measurement for timeloop
 
   tm7_ref_ = null;
@@ -806,11 +811,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
     locsysman_->RotateLocalToGlobal(velnp_);
   }
 
+  // -------------------------------------------------------------------
+  //  Set time parameter for element call
+  // -------------------------------------------------------------------
+  SetElementTimeParameter();
+
   // --------------------------------------------------
   // evaluate Neumann conditions
-  eleparams.set("total time",time_-(1-alphaF_)*dt_);
-  eleparams.set("thsl",1.);
-  eleparams.set("Physical Type", physicaltype_);
+  // ---------------------------------------------------
 
   neumann_loads_->PutScalar(0.0);
   discret_->SetState("scaaf",scaaf_);
@@ -3217,5 +3225,60 @@ void FLD::FluidGenAlphaIntegration::SetScalarField(
 
 } // FluidGenAlphaIntegration::SetScalarField
 
+// -------------------------------------------------------------------
+// set general fluid parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_general_fluid_parameter");
+
+  // set general element parameters
+  eleparams.set("form of convective term","convective");
+  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("Linearisation",newton_);
+  eleparams.set("Physical Type", physicaltype_);
+
+  // parameter for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameter for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // timealgorithm is gen_alpha
+  eleparams.set("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+
+// -------------------------------------------------------------------
+// set general time parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_time_parameter");
+
+  // set general element parameters
+  eleparams.set("dt",dt_);
+  // There is only one time integration scheme in FluidGenAlphaIntegration
+  // Pseudo-Theta: There is only one time integration scheme
+  eleparams.set("theta",alphaF_*gamma_/alphaM_);
+  eleparams.set("omtheta",1-(alphaF_*gamma_/alphaM_));
+  eleparams.set("alphaF",alphaF_);
+  eleparams.set("alphaM",alphaM_);
+  eleparams.set("gamma",gamma_);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
 
 #endif

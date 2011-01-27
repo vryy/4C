@@ -712,6 +712,30 @@ public:
      RCP<const Epetra_Vector> scalarnp,
      Teuchos::RCP<DRT::Discretization> scatradis);
 
+private:
+
+  //@}
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementGeneralFluidParameter();
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over a time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementTimeParameter();
+
 protected:
 
 private:

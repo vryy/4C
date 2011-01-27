@@ -117,13 +117,13 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
   if (action == "set_general_fluid_parameter")
   {
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
-    f3Parameter->SetGeneralFluidParameter(p);
+    f3Parameter->SetElementGeneralFluidParameter(p);
   }
 
   if (action == "set_time_parameter")
   {
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
-    f3Parameter->SetTimeParameter(p);
+    f3Parameter->SetElementTimeParameter(p);
   }
 
   return;

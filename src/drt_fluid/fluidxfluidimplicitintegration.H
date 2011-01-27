@@ -63,12 +63,12 @@ namespace LINALG
 /// fluid algorithms
 namespace FLD
 {
-  
+
 namespace UTILS
 {
   class MapExtractor;
   class FluidXfluidMapExtractor;
-//  class KSPMapExtractor; 
+//  class KSPMapExtractor;
 }
 
 
@@ -77,24 +77,24 @@ class FluidXFluidImplicitTimeInt
   friend class FluidXFluidResultTest;
 
 public:
-  
+
   /*!
     \brief Standard Constructor
 
     */
-  
+
   FluidXFluidImplicitTimeInt(RCP<DRT::Discretization>  fluiddis,
                              RCP<DRT::Discretization>  xfluiddis,
                              LINALG::Solver&           solver,
                              ParameterList&            params,
                              IO::DiscretizationWriter& output,
                              bool                      alefluid=false);
- 
+
   /*!
   \brief Destructor
 
   */
-  
+
   virtual  ~FluidXFluidImplicitTimeInt();
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
@@ -114,15 +114,15 @@ public:
 
   /*!
   \brief Solve stationary problem
-  
+
   */
   void SolveStationaryProblem(
       const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis   ///< surface discretization used to intersect fluid elements
       );
 
   /// setup the variables to do a new time step
-  void PrepareTimeStep(); 
-  
+  void PrepareTimeStep();
+
   /// setup the variables to do a new nonlinear iteration
   void PrepareNonlinearSolve();
 
@@ -213,13 +213,13 @@ public:
 
   Teuchos::RCP<Epetra_Vector> Dispnp() { return fluidstate_.dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return fluidstate_.dispn_; }
-  
+
   Teuchos::RCP<DRT::Discretization> Discretization() { return fluiddis_; }
- 
+
   LINALG::MapExtractor& VelPresSplitter(){ return fluidvelpressplitter_;};
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
-  Teuchos::RCP<const Epetra_Map> PressureRowMap(); 
-   
+  Teuchos::RCP<const Epetra_Map> PressureRowMap();
+
   double ResidualScaling() const
   { if (TimIntScheme()==INPAR::FLUID::timeint_stationary) return density_;
     else return density_/dta_/theta_;}
@@ -243,13 +243,13 @@ public:
     initialized extractor object iff we are on an ale mesh.
    */
   void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
- 
+
   /// determine grid velocity
   void UpdateGridv();
 
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
-    
+
    /// compute flow rate
   void ComputeFlowRates() const;
 
@@ -258,10 +258,10 @@ public:
      Needed for Mortar coupling at the FSI interface
     */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
-  
+
   /// setup the variables to do a new time step
   void PrepareTimeLoop(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
-  
+
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ComputeInterfaceAndSetDOFs(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
 
   /*!
@@ -271,19 +271,19 @@ public:
       const Teuchos::RCP<XFEM::InterfaceHandleXFSI>  ih,
       const Teuchos::RCP<XFEM::DofManager> dofmanager
       );
-     
+
   void PrepareFluidXFluidBoundaryDis(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
-  
+
   void PrepareFluidXFluidBoundaryDofset(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
-  
+
   protected:
 
    // don't want = operator and cctor
   FluidXFluidImplicitTimeInt operator = (const FluidXFluidImplicitTimeInt& old);
   FluidXFluidImplicitTimeInt (const FluidXFluidImplicitTimeInt& old);
-  
-  void ComputeFluidXFluidInterfaceAccelerationsAndVelocities(); 
-  
+
+  void ComputeFluidXFluidInterfaceAccelerationsAndVelocities();
+
   void MonolithicMultiDisEvaluate(
         Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
         const Teuchos::RCP<DRT::Discretization> xfluiddis,
@@ -298,7 +298,7 @@ public:
         const bool                              assemble_coupling_matrices,
         const bool                              fluidfluidcoupling
         );
-  
+
   /*!
   \brief output solution fields to Gmsh for debugging
   */
@@ -306,7 +306,7 @@ public:
       const int     step,
       const double  time
       ) const;
-  
+
   /*!
    * \brief plot a vector field to a Gmsh postprocessing file
    *
@@ -323,11 +323,11 @@ public:
       const int step,
       const double time
       ) const;
-  
-  void MovingFluidOutput();  
-  
+
+  void MovingFluidOutput();
+
   void FluidXFluidBoundaryOutput(const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis);
-  
+
   void PrintFluidFluidBoundaryVectorField(
       const Teuchos::RCP<DRT::Discretization> fluidxfluidboundarydis,
       const Teuchos::RCP<Epetra_Vector>   displacementfield,
@@ -354,10 +354,10 @@ public:
   Teuchos::RCP<Epetra_Vector>   c_;
   ParameterList&                params_;
   ParameterList&                xparams_;
-  IO::DiscretizationWriter&     output_; 
-  
-  Teuchos::RCP<IO::DiscretizationWriter>   xfluidoutput_; 
-  
+  IO::DiscretizationWriter&     output_;
+
+  Teuchos::RCP<IO::DiscretizationWriter>   xfluidoutput_;
+
   //! the processor ID from the communicator
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -434,12 +434,12 @@ public:
   double  dtfilter_;
   double  dtsolve_;
 
-  /// (standard) fluid system matrix 
+  /// (standard) fluid system matrix
   RCP<LINALG::SparseOperator> fluidsysmat_;
-  
-  /// (standard) xfluid system matrix 
+
+  /// (standard) xfluid system matrix
   RCP<LINALG::SparseOperator> xfluidsysmat_;
-  
+
   /// fluidxfluid sysmat
   RCP<LINALG::SparseOperator> fluidxfluidsysmat_;
 
@@ -448,10 +448,10 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> Cud_;
   Teuchos::RCP<LINALG::SparseMatrix> Cdd_;
   Teuchos::RCP<Epetra_Vector>        rhsd_;
-    
+
   /// maps for extracting Dirichlet and free DOF sets
   RCP<LINALG::MapExtractor> fluiddbcmaps_;
-  
+
   RCP<LINALG::MapExtractor> xfluiddbcmaps_;
 
 
@@ -460,9 +460,9 @@ public:
 
   /// the vector containing body and surface forces
   RCP<Epetra_Vector>    neumann_loads_; //to be removed
-  
+
   RCP<Epetra_Vector>    fluid_neumann_loads_;
-  
+
   RCP<Epetra_Vector>    xfluid_neumann_loads_;
 
   /// the vector containing potential Neumann-type outflow terms
@@ -470,19 +470,19 @@ public:
 
   /// rhs: right hand side vector for linearised flow solution
   RCP<Epetra_Vector>    rhs_;
-  
-  /// (standard) residual vector 
+
+  /// (standard) residual vector
   Teuchos::RCP<Epetra_Vector>    fluidxfluidresidual_;
-  Teuchos::RCP<Epetra_Vector>    fluidresidual_; 
+  Teuchos::RCP<Epetra_Vector>    fluidresidual_;
   Teuchos::RCP<Epetra_Vector>    xfluidresidual_;
-  
-  /// true (rescaled) residual vector without zeros at dirichlet positions  
-  RCP<Epetra_Vector>    fluidtrueresidual_; 
+
+  /// true (rescaled) residual vector without zeros at dirichlet positions
+  RCP<Epetra_Vector>    fluidtrueresidual_;
   RCP<Epetra_Vector>    xfluidtrueresidual_;
 
 
   /// Nonlinear iteration increment vector
-  RCP<Epetra_Vector>    fluidxfluidincvel_; 
+  RCP<Epetra_Vector>    fluidxfluidincvel_;
   RCP<Epetra_Vector>    fluidincvel_;
   RCP<Epetra_Vector>    xfluidincvel_;
 
@@ -494,8 +494,8 @@ public:
   RCP<Epetra_Vector>    hist_;
 
   //! vel-pres Extractor used for convergence check
-  LINALG::MapExtractor      fluidvelpressplitter_;  
-  LINALG::MapExtractor      xfluidvelpressplitter_;  
+  LINALG::MapExtractor      fluidvelpressplitter_;
+  LINALG::MapExtractor      xfluidvelpressplitter_;
   LINALG::MapExtractor fluidxfluidvelpressplitter_;
 
   /// row dof map extractor
@@ -503,10 +503,10 @@ public:
 
   /// Krylov space projection map extractor
   FLD::UTILS::KSPMapExtractor kspsplitter_;
-  
+
   // Extractor used for splitting fluid and xfluid
   FLD::UTILS::FluidXFluidMapExtractor fluidxfluidsplitter_;
-  
+
    /// connection between master and slave nodes on this proc
   RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
 
@@ -520,7 +520,7 @@ public:
 
   // state of fluid
   struct FluidState
-  {      
+  {
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
     RCP<Epetra_Vector>    accnp_;
     RCP<Epetra_Vector>    accn_;
@@ -533,7 +533,7 @@ public:
     RCP<Epetra_Vector>    velnm_;
     RCP<Epetra_Vector>    velaf_;
     //@}
-    
+
     //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
     RCP<Epetra_Vector>    scaaf_;
     RCP<Epetra_Vector>    scaam_;
@@ -546,23 +546,23 @@ public:
     //@}
   } fluidstate_;
   //@}
-  
+
   //XFEM Stuff
-  
+
   /// this struct holds information about degrees of freedom for the problem
   struct PhysProb
   {
     std::set<XFEM::PHYSICS::Field> fieldset_; ///< which physical fields are used in this problem
     RCP<XFEM::ElementAnsatz> elementAnsatz_;  ///< element dofs for this problem
   } physprob_;
-    
+
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanager_np_;
-  
+
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_n_;
 
   Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih_np_;
-  
+
   // state of xfluid
   struct XFluidState
   {
@@ -589,7 +589,7 @@ public:
     Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
   } xfluidstate_;
-  
+
   // state of fluidxfluid
   struct FluidXFluidState
   {
@@ -597,14 +597,14 @@ public:
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
     //@}
-      
+
     //! @name velocities and pressures
     Teuchos::RCP<Epetra_Vector>    velnp_;  ///< velocities and pressures at time n+1
     Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
     Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
   } fluidxfluidstate_;
-  
+
   //! @name state vectors using the fluid-xfluid boundary parallel distribution (row vectors)
   Teuchos::RCP<Epetra_Vector>            fxfidispnp_;   ///< interface displacement  n+1
   Teuchos::RCP<Epetra_Vector>            fxfivelnp_;    ///< interface velocity      n+1
@@ -615,19 +615,43 @@ public:
   Teuchos::RCP<Epetra_Vector>            fxfiaccnp_;    ///< interface acceleration  n+1
   Teuchos::RCP<Epetra_Vector>            fxfiaccn_;     ///< interface acceleration  n
   //@}
-  
+
   Teuchos::RCP<Epetra_Vector>    fxfiincvel_;
-  
+
   Teuchos::RCP<IO::DiscretizationWriter> fluidxfluidboundaryoutput_;
-  
+
   Teuchos::RCP<Epetra_Map> fluidxfluidrowmap_;
-  
+
   //! Extractor used for output
   LINALG::MapExtractor      xfluidvelpressplitterForOutput_;
-  
+
   // store dofset for unintersected domain!!!!????
   DRT::DofSet                xfluiddofset_out_;
-  
+
+  private:
+
+    //@}
+
+    //! @name Set general parameter in class f3Parameter
+    /*!
+
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
+
+    */
+    void SetElementGeneralFluidParameter();
+
+    //! @name Set general parameter in class f3Parameter
+    /*!
+
+    \brief parameter (fix over a time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
+
+    */
+    void SetElementTimeParameter();
+
 }; // class FluidXFluidImplicitTimeInt
 
 }

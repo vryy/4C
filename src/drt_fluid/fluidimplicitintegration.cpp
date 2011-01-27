@@ -667,7 +667,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
-  SetGeneralFluidParameter();
+  SetElementGeneralFluidParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -886,6 +886,49 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   }
 
   // -------------------------------------------------------------------
+  //  For af-generalized-alpha time-integration scheme:
+  //  set "pseudo-theta", calculate initial accelerations according to
+  //  prescribed Dirichlet values for generalized-alpha time
+  //  integration and values at intermediate time steps
+  // -------------------------------------------------------------------
+
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    // starting algorithm
+    if (startalgo_)
+    {
+      // use backward-Euler-type parameter combination
+      if (step_<=numstasteps_)
+      {
+        cout<<"Starting algorithm for Af_GenAlpha active."
+            <<"Performing step "<<step_ <<" of "<<numstasteps_<<
+            " Backward Euler starting steps"<<endl;
+        alphaM_ = 1.0;
+        alphaF_ = 1.0;
+        gamma_  = 1.0;
+      }
+      else
+      {
+        // recall original user wish
+        alphaM_ = params_.get<double>("alpha_M");
+        alphaF_ = params_.get<double>("alpha_F");
+        gamma_  = params_.get<double>("gamma");
+        // do not enter starting algorithm section in the future
+        startalgo_ = false;
+      }
+    }
+
+    // compute "pseudo-theta" for af-generalized-alpha scheme
+    theta_ = alphaF_*gamma_/alphaM_;
+  }
+
+  // -------------------------------------------------------------------
+  //  Set time parameter for element call
+  // -------------------------------------------------------------------
+
+  SetElementTimeParameter();
+
+  // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   {
@@ -932,18 +975,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
 
     // set thermodynamic pressure
-    eleparams.set("Physical Type",physicaltype_);
     eleparams.set("thermodynamic pressure",thermpressaf_);
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    {
-      eleparams.set("total time",time_-(1-alphaF_)*dta_);
-      eleparams.set("thsl",(gamma_/alphaM_)*dta_);
-    }
-    else
-    {
-      eleparams.set("total time",time_);
-      eleparams.set("thsl",theta_*dta_);
-    }
 
     // evaluate Neumann conditions
     neumann_loads_->PutScalar(0.0);
@@ -952,45 +984,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
   }
 
-  // -------------------------------------------------------------------
-  //  Compute accelerations and set time parameter
-  // -------------------------------------------------------------------
-
-  // -------------------------------------------------------------------
-  //  For af-generalized-alpha time-integration scheme:
-  //  set "pseudo-theta", calculate initial accelerations according to
-  //  prescribed Dirichlet values for generalized-alpha time
-  //  integration and values at intermediate time steps
-  // -------------------------------------------------------------------
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
-    // starting algorithm
-    if (startalgo_)
-    {
-      // use backward-Euler-type parameter combination
-      if (step_<=numstasteps_)
-      {
-        cout<<"Starting algorithm for Af_GenAlpha active."
-            <<"Performing step "<<step_ <<" of "<<numstasteps_<<
-            " Backward Euler starting steps"<<endl;
-        alphaM_ = 1.0;
-        alphaF_ = 1.0;
-        gamma_  = 1.0;
-      }
-      else
-      {
-        // recall original user wish
-        alphaM_ = params_.get<double>("alpha_M");
-        alphaF_ = params_.get<double>("alpha_F");
-        gamma_  = params_.get<double>("gamma");
-        // do not enter starting algorithm section in the future
-        startalgo_ = false;
-      }
-    }
-
-    // compute "pseudo-theta" for af-generalized-alpha scheme
-    theta_ = alphaF_*gamma_/alphaM_;
-
     // --------------------------------------------------
     // adjust accnp according to Dirichlet values of velnp
     //
@@ -1007,8 +1002,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // ----------------------------------------------------------------
     GenAlphaIntermediateValues();
   }
-
-  SetTimeParameter();
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -1219,20 +1212,13 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           mhdbcparams.set("action"    ,"MixedHybridDirichlet");
 
           // set the only required state vectors
-
           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
           {
-            // careful: true is connected to the implicit treatment of p here
-            mhdbcparams.set("using p^{n+1} generalized-alpha time integration",false);
-
-            mhdbcparams.set("timefac",(gamma_/alphaM_)*dta_);
             discret_->SetState("u and p (trial)",velaf_);
             discret_->SetState("velaf",velaf_);
           }
           else
           {
-            mhdbcparams.set("using p^{n+1} generalized-alpha time integration",false);
-            mhdbcparams.set("timefac"   ,theta_*dta_           );
             discret_->SetState("u and p (trial)",velnp_);
           }
 
@@ -3904,6 +3890,8 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
    }
 
+    SetElementTimeParameter();
+
     // -------------------------------------------------------------------
     //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
@@ -3912,13 +3900,6 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
 
       // other parameters needed by the elements
       eleparams.set("total time",time_);
-      eleparams.set("delta time",dta_);
-      eleparams.set("thsl",1.0);
-      eleparams.set("form of convective term",convform_);
-      eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("Physical Type", physicaltype_);
-
-      eleparams.set("thermodynamic pressure",thermpressaf_);
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -3957,13 +3938,14 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
 
+      // set thermodynamic pressure
+      eleparams.set("thermodynamic pressure",thermpressaf_);
+
       neumann_loads_->PutScalar(0.0);
       discret_->SetState("scaaf",scaaf_);
       discret_->EvaluateNeumann(eleparams,*neumann_loads_);
       discret_->ClearState();
     }
-
-    SetTimeParameter();
 
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
@@ -4481,7 +4463,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
 // set general fluid parameter (AE 01/2011)
 // -------------------------------------------------------------------
 
-void FLD::FluidImplicitTimeInt::SetGeneralFluidParameter()
+void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 {
   ParameterList eleparams;
 
@@ -4512,7 +4494,7 @@ void FLD::FluidImplicitTimeInt::SetGeneralFluidParameter()
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
 
-void FLD::FluidImplicitTimeInt::SetTimeParameter()
+void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
 {
   ParameterList eleparams;
 

@@ -716,7 +716,7 @@ private:
          and in the fluid boundary element
 
   */
-  void SetGeneralFluidParameter();
+  void SetElementGeneralFluidParameter();
 
   //! @name Set general parameter in class f3Parameter
   /*!
@@ -726,7 +726,7 @@ private:
          and in the fluid boundary element
 
   */
-  void SetTimeParameter();
+  void SetElementTimeParameter();
 
 }; // class FluidImplicitTimeInt
 

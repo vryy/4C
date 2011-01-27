@@ -73,8 +73,9 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   gamma_(0.0),
   alphaF_(0.0),
   alphaM_(0.0),
-  afgdt_(0.0),
-  timefacrhs_(0.0),
+  afgdt_(1.0),
+  timefacrhs_(1.0),
+  timefacmat_p_(1.0),
   Cs_(0.0),
   l_tau_(0.0)
 {
@@ -84,10 +85,13 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3ImplParameter::SetGeneralFluidParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teuchos::ParameterList& params )
 {
   // routine SetGeneralFluidParameter was called once
-  set_general_fluid_parameter_ = true;
+  if(set_general_fluid_parameter_ == false)
+    set_general_fluid_parameter_ = true;
+  else
+    dserror("SetGeneralFluidParameter() can be called only once in the fluid constructor");
 
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
@@ -279,9 +283,11 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetGeneralFluidParameter( Teuchos::Para
   } // end if(Classical LES)
 }
 
-void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::ParameterList& params )
 {
-  if(set_general_fluid_parameter_!= true)
+  // second check: timealgo
+  // work around to use SetTimeParameter in GenaAlpha (Neumann BC)
+  if((set_general_fluid_parameter_!= true) and (timealgo_ != INPAR::FLUID::timeint_gen_alpha))
     dserror("General fluid parameter are not set yet!!");
 
   //----------------------------------------------------------------------
@@ -297,7 +303,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterLis
   if (not is_stationary_)
   {
     // get time-step length and time-integration parameters
-    dt_      = params.get<double>("dt");
+    dt_      = params.get<double>("dt",-1.0);
     theta_   = params.get<double>("theta",-1.0);
     omtheta_ = params.get<double>("omtheta",-1.0);
 
@@ -313,9 +319,9 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterLis
     // otherwise
     if (is_genalpha_)
     {
-      gamma_  = params.get<double>("gamma");
-      alphaF_ = params.get<double>("alphaF");
-      alphaM_ = params.get<double>("alphaM");
+      gamma_  = params.get<double>("gamma",-1.0);
+      alphaF_ = params.get<double>("alphaF",-1.0);
+      alphaM_ = params.get<double>("alphaM",-1.0);
     }
     else
     {
@@ -325,17 +331,21 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterLis
     }
 
     // if not generalized-alpha: afgdt = theta * dt_ = timefac_
+    // Peter's generalized alpha: timefacmat_u_ for velocity terms
     afgdt_=alphaF_*gamma_*dt_;
 
-    if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
-    {
-      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacrhs_ =gamma_/alphaM_*dt_;
-    }
-    else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
+    if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       timefacrhs_ = 1.0;
+      timefacmat_p_ = gamma_*dt_;
+    }
+    else
+    {
+      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
+      timefacrhs_ = gamma_/alphaM_*dt_;
+      // if not generalized-alpha: timefacmat_p_=theta * dt_ = timefac_
+      timefacmat_p_ = alphaF_*gamma_/alphaM_*dt_;
     }
   }
   else // is_stationary == true
@@ -344,7 +354,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetTimeParameter( Teuchos::ParameterLis
     timefac_ = 1.0;
   }
 
-  if (timefac_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or timefacrhs_ < 0.0
-      or afgdt_ < 0.0)
-    dserror("Negative time-integration parameter or time-step length supplied");
+  if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
+      or alphaF_ < 0.0 or alphaM_ < 0.0)
+    dserror("Negative (or no) time-integration parameter or time-step length supplied");
 }

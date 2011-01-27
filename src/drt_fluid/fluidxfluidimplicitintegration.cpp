@@ -105,6 +105,9 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   // parameter theta for time-integration schemes
   theta_    = params_.get<double>("theta");
 
+  if (timealgo_== INPAR::FLUID::timeint_afgenalpha or timealgo_ == INPAR::FLUID::timeint_gen_alpha)
+    dserror("Generalized alpha integration scheme is not available in FluidXFluid coubling!!");
+
   if (timealgo_ == INPAR::FLUID::timeint_stationary and params_.get<double>("time step size") != 1.0)
     dserror("Timestep size (delta t) has to be 1.0 for stationary computations!");
 
@@ -388,6 +391,12 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
     }
     xfluiddis_->Comm().Barrier();
   }
+
+  // ---------------------------------------------------------------------
+  // set general fluid parameter defined before
+  // ---------------------------------------------------------------------
+  SetElementGeneralFluidParameter();
+
 } // FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt
 
 
@@ -579,6 +588,11 @@ void FLD::FluidXFluidImplicitTimeInt::PrepareTimeStep()
       if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
     }
   }
+
+  // -------------------------------------------------------------------
+  //  Set time parameter for element call
+  // -------------------------------------------------------------------
+  SetElementTimeParameter();
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
@@ -2033,6 +2047,12 @@ void FLD::FluidXFluidImplicitTimeInt::SolveStationaryProblem(
     {
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
     }
+
+   // -------------------------------------------------------------------
+   //  Set time parameter for element call
+   // -------------------------------------------------------------------
+   SetElementTimeParameter();
+
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
@@ -3530,4 +3550,75 @@ void FLD::FluidXFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
     if (screen_out) std::cout << " done" << endl;
   }
 }
+
+// -------------------------------------------------------------------
+// set general fluid parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidXFluidImplicitTimeInt::SetElementGeneralFluidParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_general_fluid_parameter");
+
+  // set general element parameters
+  eleparams.set("form of convective term",convform_);
+  eleparams.set("fs subgrid viscosity",fssgv_);
+  eleparams.set("Linearisation",newton_);
+  eleparams.set("Physical Type", physicaltype_);
+
+  // parameter for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameter for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  //set time integration scheme
+  eleparams.set("TimeIntegrationScheme", timealgo_);
+
+  // call standard loop over elements
+  fluiddis_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+
+// -------------------------------------------------------------------
+// set general time parameter (AE 01/2011)
+// -------------------------------------------------------------------
+
+void FLD::FluidXFluidImplicitTimeInt::SetElementTimeParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_time_parameter");
+
+  // set general element parameters
+  eleparams.set("dt",dta_);
+  eleparams.set("theta",theta_);
+  eleparams.set("omtheta",omtheta_);
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
+  {
+    eleparams.set("total time",time_);
+  }
+  // is not available in FluidXFluid coupling
+  /*
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
+  }*/
+  else
+  {
+    eleparams.set("total time",time_);
+  }
+
+  // call standard loop over elements
+  fluiddis_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
 #endif /* CCADISCRET       */

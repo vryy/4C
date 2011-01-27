@@ -38,11 +38,11 @@ public:
   static Fluid3ImplParameter* Instance();
 
   //! general fluid parameter are set
-  void SetGeneralFluidParameter(Teuchos::ParameterList& params    //> parameter list
+  void SetElementGeneralFluidParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
   //! time parameter are set
-  void SetTimeParameter(Teuchos::ParameterList& params    //> parameter list
+  void SetElementTimeParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
   //! Flag SetGeneralParameter was called
@@ -109,8 +109,10 @@ public:
   //! generalised-alpha parameter, alphaF_*gamma_*dt_
   double afgdt_;
   //! generalised-alpha parameter, gamma_/alphaM_*dt_
-  //! time integration factor for the left hand side (boundary elements)
+  //! time integration factor for the right hand side (boundary elements)
   double timefacrhs_;
+  //! time integration factor for the left hand side (pressure)
+  double timefacmat_p_;
 
   /// constant parameters for the turbulence formulation
   //! smagorinsky constant
