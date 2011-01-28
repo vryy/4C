@@ -49,6 +49,11 @@ and the type is in partition.h
 *----------------------------------------------------------------------*/
 struct _PAR     par;
 
+void ntam(
+    int                 argc,
+    char               *argv[]
+  );
+
 /*!
 
 \brief main routine
@@ -60,11 +65,11 @@ main is only printing the ccarat head and the finish
 \param argv     *char[] (i)   array of arguments from command line
 
 */
-int main(INT argc, char *argv[])
+int main(int argc, char *argv[])
 {
 #ifdef PARALLEL
-  static char *buff,*dbuff;
-  unsigned     buffsize=MPIBUFFSIZE;
+  char *buff,*dbuff;
+  int   buffsize=MPIBUFFSIZE;
   MPI_Init(&argc,&argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
@@ -82,7 +87,7 @@ int main(INT argc, char *argv[])
   par.myrank=0;
   par.nprocs=1;
 #endif
-  
+
   if (par.myrank==0)
   {
     printf("\n"

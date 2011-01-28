@@ -164,7 +164,7 @@ if (DSERROR_DUMP)
   add_definitions("-DDSERROR_DUMP")
 endif(DSERROR_DUMP)
 
-option (TRAP_FE "crash ccarat if a nan of inf occurs" ON)
+option (TRAP_FE "crash baci if a nan of inf occurs" ON)
 if (TRAP_FE)
   add_definitions("-DTRAP_FE")
 endif(TRAP_FE)
@@ -944,9 +944,9 @@ set(OBJS_DRT_MAT
 set(OBJS_BACI_MAIN
   src/drt_lib/drt_init_control.cpp
   src/drt_lib/global_inp_control2.cpp
-  src/global_full/global_cal_control.c
-  src/global_full/global_control.c
-  src/global_full/main_ccarat.c
+  src/global_full/global_cal_control.cpp
+  src/global_full/global_control.cpp
+  src/global_full/baci.cpp
   src/drt_stk/stk_adaptive_main.cpp
 )
 set(OBJS_DRT_B3II_LIB
