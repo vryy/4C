@@ -7,10 +7,6 @@
 
 namespace GEO
 {
-  namespace CELL
-  {
-    class Cell;
-  }
 
 namespace CUT
 {
