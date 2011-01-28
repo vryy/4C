@@ -848,7 +848,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells()
   }
 }
 
-#ifdef DEBUG
+#ifdef DEBUGCUTLIBRARY
 void GEO::CUT::Mesh::TestElementVolume()
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();

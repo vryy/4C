@@ -117,7 +117,7 @@ public:
 
   void CreateIntegrationCells();
 
-#ifdef DEBUG
+#ifdef DEBUGCUTLIBRARY
   void TestElementVolume();
 #endif
 
