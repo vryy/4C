@@ -1177,7 +1177,9 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_Serial
                 points_[side[2]]->Coordinates( &xyz( 0, 2 ) );
                 side_coords.push_back( xyz );
 
+#ifdef TETMESH_GMSH_DEBUG_OUTPUT
                 surface_tris_.push_back( side );
+#endif
                 break;
               }
             }
