@@ -41,52 +41,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <stdexcept>
+
 #include "drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
-#ifdef THROWELEMENTERRORS
-
-#include "drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-
-
-static bool elementcall = false;
-static int elementerrorcount = 0;
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void EnterElementLoop()
-{
-  if (elementerrorcount!=0)
-    dserror("inconsistent error system: %d", elementerrorcount);
-  elementcall = true;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ExitElementLoop()
-{
-  elementcall = false;
-  if (elementerrorcount!=0)
-    dserror("%d element errors occured",elementerrorcount);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ElementError(int ele, const std::string& err)
-{
-  if (not elementcall)
-    dserror("element error outside of element loop");
-  elementerrorcount += 1;
-  fprintf(DRT::Problem::Instance()->ErrorFile()->Handle(),"element %d error: %s\n",ele,err.c_str());
-  fflush(DRT::Problem::Instance()->ErrorFile()->Handle());
-}
-
-
-#endif
 
 static int         latest_line = -1;
 static std::string latest_file = "{dserror_func call without prototype}";
@@ -170,33 +128,7 @@ void cpp_dserror_func(const char* text, ...)
 
   va_end(ap);
 
-#ifdef THROWELEMENTERRORS
-  if (elementcall)
-  {
-    throw std::string(errbuf);
-  }
-  else
-#endif
-  {
-    char line[] = "=========================================================================\n";
-    printf("\n\n");
-    printf(line);
-    printf(errbuf);
-    printf("\n");
-    printf(line);
-    printf("\n\n");
-    fflush(stdout);
-
-#ifdef DSERROR_DUMP
-    abort();
-#endif
-
-#ifdef PARALLEL
-    MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
-#else
-    exit(1);
-#endif
-  }
+  throw std::runtime_error(errbuf);
 } /* end of dserror_func */
 
 /*----------------------------------------------------------------------*
@@ -222,35 +154,8 @@ void cpp_dserror_func(const std::string text, ...)
 
   va_end(ap);
 
-#ifdef THROWELEMENTERRORS
-  if (elementcall)
-  {
-    throw std::string(errbuf);
-  }
-  else
-#endif
-  {
-    char line[] = "=========================================================================\n";
-    printf("\n\n");
-    printf(line);
-    printf(errbuf);
-    printf("\n");
-    printf(line);
-    printf("\n\n");
-    fflush(stdout);
-
-#ifdef DSERROR_DUMP
-    abort();
-#endif
-
-#ifdef PARALLEL
-    MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
-#else
-    exit(0);
-#endif
-  }
+  throw std::runtime_error(errbuf);
 } /* end of dserror_func */
-
 
 
 #endif  // #ifdef CCADISCRET

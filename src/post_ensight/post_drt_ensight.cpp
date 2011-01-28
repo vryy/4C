@@ -46,6 +46,9 @@ int main(
     }
 #endif
 
+    try
+    {
+
     // each problem type is different and writes different results
     switch (problem.Problemtype())
     {
@@ -327,6 +330,27 @@ int main(
     }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
+    }
+
+    }
+    catch ( std::runtime_error & err )
+    {
+      char line[] = "=========================================================================\n";
+      std::cout << "\n\n"
+                << line
+                << err.what()
+                << "\n"
+                << line
+                << "\n" << std::endl;
+#ifdef DSERROR_DUMP
+      abort();
+#endif
+
+#ifdef PARALLEL
+      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+#else
+      exit(1);
+#endif
     }
 
     return 0;

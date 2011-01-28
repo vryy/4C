@@ -30,18 +30,33 @@ Maintainer: Michael Gee
 
 #include "../drt_stk/stk_adaptive_main.H"
 
+namespace
+{
+  /// helper that causes the removal of any pending problem instances upon destruction
+  class DRTCleanupHelper
+  {
+  public:
+    ~DRTCleanupHelper()
+    {
+      drt_problem_done();
+    }
+  };
+}
+
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+  DRTCleanupHelper cleanup_helper;
+
   if ( genprob.adaptive )
   {
     adaptive_main();
   }
   else
   {
-  
+
   switch (genprob.probtyp)
   {
     case prb_structure:
@@ -111,7 +126,7 @@ void ntacal()
     case prb_tsi:
       tsi_dyn_drt();
       break;
-      
+
     case prb_loma:
       loma_dyn(genprob.numff,genprob.numscatra,genprob.restart);
       break;
@@ -141,6 +156,5 @@ void ntacal()
       break;
   }
   }
-  
-  drt_problem_done();
+
 }

@@ -2,6 +2,9 @@
 \brief main routine
 */
 
+#include <iostream>
+#include <stdexcept>
+
 #include "../drt_lib/standardtypes_cpp.H"
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
@@ -201,7 +204,29 @@ int main(int argc, char *argv[])
 #endif /* TRAP_FE */
 
 /*----------------------------------------------- everything is in here */
-    ntam(argc,argv);
+    try
+    {
+      ntam(argc,argv);
+    }
+    catch ( std::runtime_error & err )
+    {
+      char line[] = "=========================================================================\n";
+      std::cout << "\n\n"
+                << line
+                << err.what()
+                << "\n"
+                << line
+                << "\n" << std::endl;
+#ifdef DSERROR_DUMP
+      abort();
+#endif
+
+#ifdef PARALLEL
+      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+#else
+      exit(1);
+#endif
+    }
 /*----------------------------------------------------------------------*/
   }
 

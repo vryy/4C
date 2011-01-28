@@ -120,6 +120,12 @@ int main(
   // check for quad->tri conversion
   My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");
 
+  // create a problem instance
+  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  try
+  {
+
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = My_CLP.parse(argc,argv);
 
@@ -131,9 +137,6 @@ int main(
   {
     dserror("CommandLineProcessor reported an error");
   }
-
-  // create a problem instance
-  Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   // create error files
   // call this one rather early, since ReadConditions etc
@@ -334,6 +337,27 @@ int main(
     //validate the generated BACI input file
     EXODUS::ValidateInputFile(comm, datfile);
   }
+
+    }
+    catch ( std::runtime_error & err )
+    {
+      char line[] = "=========================================================================\n";
+      std::cout << "\n\n"
+                << line
+                << err.what()
+                << "\n"
+                << line
+                << "\n" << std::endl;
+#ifdef DSERROR_DUMP
+      abort();
+#endif
+
+#ifdef PARALLEL
+      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+#else
+      exit(1);
+#endif
+    }
 
   // free the global problem instance
   problem->Done();

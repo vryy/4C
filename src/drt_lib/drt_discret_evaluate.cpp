@@ -98,10 +98,6 @@ void DRT::Discretization::Evaluate(
                                              strategy.Systemvector3());
   }
 
-#ifdef THROWELEMENTERRORS
-  EnterElementLoop();
-#endif
-
   Element::LocationArray la(dofsets_.size());
 
   // loop over column elements
@@ -125,10 +121,6 @@ void DRT::Discretization::Evaluate(
     strategy.ClearElementStorage( eledim );
     }
 
-#ifdef THROWELEMENTERRORS
-    try {
-#endif
-
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
     // call the element evaluate method
@@ -151,20 +143,7 @@ void DRT::Discretization::Evaluate(
       strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
     }
 
-#ifdef THROWELEMENTERRORS
-    }
-    catch (const std::string& err)
-    {
-      ElementError(actele->Id(),err);
-    }
-#endif
-
   } // for (int i=0; i<numcolele; ++i)
-
-
-#ifdef THROWELEMENTERRORS
-  ExitElementLoop();
-#endif
 
   return;
 }
