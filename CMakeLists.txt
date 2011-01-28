@@ -86,9 +86,9 @@ if (DEBUG)
 endif (DEBUG)
 
 option (DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF)
-if (DEBUG)
+if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
-endif (DEBUG)
+endif (DEBUGCUTLIBRARY)
 
 option (STKADAPTIVE "adaptive meshes based on the stk library" OFF)
 if (STKADAPTIVE)
