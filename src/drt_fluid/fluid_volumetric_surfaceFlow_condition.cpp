@@ -749,9 +749,32 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii()
 
         if (!isBorderNode)
         {
-          double angle_rl = acos(v_right.Dot(v_left));
-          double angle_r  = acos(v_right.Dot(c_cnd ));
-          double border_raduis = R_r + (R_l - R_r)*angle_r/angle_rl;
+
+	  double cos_rl = v_right.Dot(v_left);
+	  double cos_r  = v_right.Dot(c_cnd );
+
+	  double angle_rl = 0.0;
+          double angle_r  = 0.0;
+	  double border_raduis = 0.0;
+
+	  if (cos_r>=1.0 || cos_r<=-1.0)
+          {
+            border_raduis = R_r;
+          }
+	  else if (cos_rl>=1.0 || cos_rl<=-1.0)
+          {
+            border_raduis = R_l;
+          }
+	  else
+          {
+            angle_rl = acos(v_right.Dot(v_left));
+            angle_r  = acos(v_right.Dot(c_cnd ));
+            border_raduis = R_r + (R_l - R_r)*angle_r/angle_rl;
+          }
+
+//          double angle_rl = acos(v_right.Dot(v_left));
+//          double angle_r  = acos(v_right.Dot(c_cnd ));
+//          double border_raduis = R_r + (R_l - R_r)*angle_r/angle_rl;
 
           // update local raduis
           R /= border_raduis;
