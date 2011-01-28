@@ -4,7 +4,6 @@
 #include "cut_node.H"
 #include "cut_edge.H"
 #include "cut_side.H"
-#include "cut_tetgen.H"
 
 namespace GEO
 {
@@ -50,6 +49,8 @@ public:
 
   int Id() const { return eid_; }
 
+  virtual DRT::Element::DiscretizationType Shape() const = 0;
+
   virtual bool PointInside( Point* p ) = 0;
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
@@ -60,16 +61,9 @@ public:
 
   void MakeVolumeCells( Mesh & mesh );
 
-  void Delaunay( Mesh & mesh, std::vector<std::vector<Point*> > & tets );
-
   void FindNodePositions();
 
   bool IsCut();
-
-#ifdef QHULL
-  virtual void FillTetgen( tetgenio & out )
-  { throw std::runtime_error( "not supported" ); }
-#endif
 
   bool OnSide( const std::vector<Point*> & facet_points );
 
@@ -98,8 +92,6 @@ public:
   const std::vector<Node*> & Nodes() { return nodes_; }
 
   void GetCutPoints( std::set<Point*> & cut_points );
-
-  void GetAllPoints( std::set<Point*> & cut_points );
 
   const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
 
@@ -139,16 +131,14 @@ public:
     : Element( eid, sides, nodes )
   {}
 
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
+
   virtual bool PointInside( Point* p );
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
   void Coordinates( LINALG::Matrix<3, 4> & xyze )
   { Element::Coordinates( xyze.A() ); }
-
-#ifdef QHULL
-  virtual void FillTetgen( tetgenio & out );
-#endif
 
 };
 
@@ -163,6 +153,8 @@ public:
                                          const std::vector<Node*> & nodes )
     : Element( eid, sides, nodes )
   {}
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
   virtual bool PointInside( Point* p );
 
@@ -185,6 +177,8 @@ public:
     : Element( eid, sides, nodes )
   {}
 
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
+
   virtual bool PointInside( Point* p );
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
@@ -205,6 +199,8 @@ public:
                                        const std::vector<Node*> & nodes )
     : Element( eid, sides, nodes )
   {}
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
   virtual bool PointInside( Point* p );
 

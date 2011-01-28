@@ -1,7 +1,6 @@
 
 //#include "../drt_geometry/intersection_templates.H"
 
-#include "cut_tetgen.H"
 #include "cut_position.H"
 #include "cut_position2d.H"
 #include "cut_intersection.H"
@@ -316,7 +315,8 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
         {
           throw std::runtime_error( "expect side with one (uncut) facet" );
         }
-        facets_[0]->AddHole( facet_points );
+        Facet * hole = mesh.NewFacet( facet_points, this, false );
+        facets_[0]->AddHole( hole );
       }
     }
   }

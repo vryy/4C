@@ -3,38 +3,13 @@
 #include "cut_integrationcell.H"
 #include "cut_facet.H"
 #include "cut_mesh.H"
-#include "cut_tetgen.H"
 #include "cut_boundarycell.H"
+#include "cut_element.H"
 #include "cut_volumecell.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-#if 0
-GEO::CUT::Hex8MainIntegrationCell::Hex8MainIntegrationCell( ConcreteElement<DRT::Element::hex8> * e )
-  : element_( e )
-{
-  // Get all cut points.
-  // Which sides are touched?
-
-  std::set<Point*> cut_points;
-  e->GetCutPoints( cut_points );
-}
-
-GEO::CUT::Tet4MainIntegrationCell::Tet4MainIntegrationCell( ConcreteElement<DRT::Element::tet4> * e )
-  : element_( e )
-{
-}
-
-GEO::CUT::Wedge6MainIntegrationCell::Wedge6MainIntegrationCell( ConcreteElement<DRT::Element::wedge6> * e )
-  : element_( e )
-{
-}
-
-GEO::CUT::Pyramid5MainIntegrationCell::Pyramid5MainIntegrationCell( ConcreteElement<DRT::Element::pyramid5> * e )
-  : element_( e )
-{
-}
-#endif
+#include "../drt_geometry/element_volume.H"
 
 
 GEO::CUT::Point::PointPosition GEO::CUT::IntegrationCell::VolumePosition( const std::set<Facet*> & facets )
@@ -363,180 +338,6 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
                                                                            const std::vector<Point*> & tet )
 {
   return mesh.NewTet4Cell( position, tet, cell );
-}
-
-void GEO::CUT::Tet4IntegrationCell::CreateCells( Mesh & mesh,
-                                                 Element * element,
-                                                 VolumeCell * cell,
-                                                 const std::set<Facet*> & facets,
-                                                 std::set<IntegrationCell*> & integrationcells )
-{
-#ifdef QHULL
-  const int dim = 3;
-  tetgenio in;
-
-  std::set<Point*, PointPidLess> points;
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
-  {
-    Facet & f = **i;
-    f.GetPoints( mesh, points );
-  }
-
-  // allocate pointlist
-  in.numberofpoints = points.size();
-  in.pointlist = new double[in.numberofpoints * dim];
-
-  int pos = 0;
-  for ( std::set<Point*, PointPidLess>::iterator i=points.begin();
-        i!=points.end();
-        ++i )
-  {
-    Point & p = **i;
-    p.Coordinates( & in.pointlist[pos*dim] );
-//     for ( int j=0; j<dim; ++j )
-//     {
-//       in.pointlist[pos*dim+j] *= TETGENPOINTSCALE;
-//     }
-    pos += 1;
-  }
-
-  in.pointmarkerlist = new int[in.numberofpoints];
-  std::fill( in.pointmarkerlist, in.pointmarkerlist+in.numberofpoints, 0 );
-
-  in.numberoffacets = 0;
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
-  {
-    Facet & facet = **i;
-    in.numberoffacets += facet.NumTetgenFacets( mesh );
-  }
-  in.facetlist = new tetgenio::facet[in.numberoffacets];
-  in.facetmarkerlist = new int[in.numberoffacets];
-  std::fill( in.facetmarkerlist, in.facetmarkerlist+in.numberoffacets, 0 );
-
-  std::vector<Point*> pointlist;
-  pointlist.reserve( points.size() );
-  std::copy( points.begin(), points.end(), std::back_inserter( pointlist ) );
-
-  pos = 0;
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
-  {
-    Facet & facet = **i;
-    int numtets = facet.NumTetgenFacets( mesh );
-    for ( int j=0; j<numtets; ++j )
-    {
-      tetgenio::facet & f = in.facetlist[pos];
-
-      facet.GenerateTetgen( mesh, element, f, j, in.facetmarkerlist[pos], pointlist );
-
-      pos += 1;
-    }
-  }
-
-//   if ( generator==NULL )
-//   {
-//     // debug
-//     const char * name = "tet";
-//     in.save_nodes( const_cast<char*>( name ) );
-//     in.save_poly( const_cast<char*>( name ) );
-//   }
-
-  char switches[] = "pQ";    // pQ o2 Y R nn
-  tetgenio out;
-
-  try
-  {
-    tetrahedralize( switches, &in, &out );
-  }
-  catch ( int & err )
-  {
-    const char * name = "tet";
-    in.save_nodes( const_cast<char*>( name ) );
-    in.save_poly( const_cast<char*>( name ) );
-
-    throw;
-  }
-
-//   if ( generator!=NULL )
-//   {
-//     generator->Generate( parent, out );
-//   }
-//   else
-//   {
-//     // debug
-//     // Output mesh
-//     const char * name = "tetout";
-//     out.save_nodes( const_cast<char*>( name ) );
-//     out.save_elements( const_cast<char*>( name ) );
-//     out.save_faces( const_cast<char*>( name ) );
-//   }
-
-  std::map<int, int> nodeidmap;
-
-  std::map<int, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
-
-  // need to copy surface markers via side id
-  for ( int i=0; i<out.numberoftrifaces; ++i )
-  {
-    if ( out.trifacemarkerlist[i] > -1 )
-    {
-      std::vector<Epetra_SerialDenseMatrix> & side_xyz = sides_xyz[out.trifacemarkerlist[i]];
-      side_xyz.push_back( Epetra_SerialDenseMatrix( 3, 3 ) );
-      Epetra_SerialDenseMatrix & xyz = side_xyz.back();
-      for ( int j=0; j<3; ++j )
-      {
-        int pointidx = out.trifacelist[i*3+j] * 3;
-        std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], &xyz( 0, j ) );
-      }
-//       xyz.Scale( 1./TETGENPOINTSCALE );
-    }
-  }
-
-  std::map<int, Facet*> sides;
-
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
-  {
-    Facet * f = *i;
-    int sid = f->SideId();
-    if ( sid > -1 )
-    {
-      sides[sid] = f;
-    }
-  }
-
-  for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::iterator i=sides_xyz.begin();
-        i!=sides_xyz.end();
-        ++i )
-  {
-    std::map<int, Facet*>::iterator j = sides.find( i->first );
-    if ( j!=sides.end() )
-    {
-      Facet * f = j->second;
-      std::vector<Epetra_SerialDenseMatrix> & xyz = i->second;
-      cell->NewTri3Cells( mesh, f, xyz );
-    }
-    else
-    {
-      throw std::runtime_error( "side id not found" );
-    }
-  }
-
-  const int numTetNodes = 4;
-  Epetra_SerialDenseMatrix xyz( 3, 4 );
-
-  Point::PointPosition position = VolumePosition( facets );
-
-  for ( int i=0; i<out.numberoftetrahedra; ++i )
-  {
-    for ( int j=0; j<numTetNodes; ++j )
-    {
-      int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
-      std::copy( &out.pointlist[pointidx], &out.pointlist[pointidx+3], &xyz( 0, j ) );
-    }
-//     xyz.Scale( 1./TETGENPOINTSCALE );
-    integrationcells.insert( mesh.NewTet4Cell( position, xyz, cell ) );
-  }
-
-#endif
 }
 
 GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
@@ -991,22 +792,7 @@ void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file )
   file << "};\n";
 }
 
-// double GEO::CUT::Hex8IntegrationCell::Volume() const
-// {
-//   throw std::runtime_error( "" );
-// }
-
-// double GEO::CUT::Tet4IntegrationCell::Volume() const
-// {
-//   throw std::runtime_error( "" );
-// }
-
-// double GEO::CUT::Wedge6IntegrationCell::Volume() const
-// {
-//   throw std::runtime_error( "" );
-// }
-
-// double GEO::CUT::Pyramid5IntegrationCell::Volume() const
-// {
-//   throw std::runtime_error( "" );
-// }
+double GEO::CUT::IntegrationCell::Volume() const
+{
+  return GEO::ElementVolume( Shape(), xyz_ );
+}

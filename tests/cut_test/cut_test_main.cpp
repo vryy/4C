@@ -50,6 +50,8 @@ void test_hex8_quad4_touch7();
 void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 
+void test_hex8_quad4_qhull1();
+void test_hex8_quad4_shadan1();
 void test_hex8_quad4_mesh_many();
 void test_hex8_quad4_mesh_edgecut();
 void test_hex8_quad4_mesh_edgecut2();
@@ -109,7 +111,11 @@ int main( int argc, char ** argv )
   functable["hex8_hex8_onside"] = test_hex8_hex8_onside;
   functable["hex8_hex8_internal"] = test_hex8_hex8_internal;
   functable["hex8_hex8_sideintersection"] = test_hex8_hex8_sideintersection;
-  functable["hex8_hex8_inside"] = test_hex8_hex8_inside;
+
+  // Cells within cells without contact to any surface are not supported.
+  //
+  //functable["hex8_hex8_inside"] = test_hex8_hex8_inside;
+
   //functable["hex8_quad4_schnitt"] = test_hex8_quad4_schnitt;
   functable["hex8_quad4_touch4"] = test_hex8_quad4_touch4;
   functable["hex8_quad4_touch5"] = test_hex8_quad4_touch5;
@@ -117,6 +123,8 @@ int main( int argc, char ** argv )
   //functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
 
+  functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
+  functable["hex8_quad4_shadan1"] = test_hex8_quad4_shadan1;
   functable["hex8_quad4_mesh_edgecut"] = test_hex8_quad4_mesh_edgecut;
   functable["hex8_quad4_mesh_edgecut2"] = test_hex8_quad4_mesh_edgecut2;
   //functable["hex8_quad4_mesh_inner"] = test_hex8_quad4_mesh_inner;

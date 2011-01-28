@@ -18,26 +18,7 @@ namespace CUT
   class Mesh;
   class VolumeCell;
 
-/// Base of (non-tetgen) integration cells
-#if 0
-/*!
-  Die sich selbst in Unterzellen zerlegende Zelle. Das Kriterium für die
-  Zerlegung ist jeweils verschieden. Es gibt die
-
-  - Hauptzellen, die dem Element gleichen und bei der die Zerlegung ihren
-  Anfang nimmt
-
-  - leere Zellen, die lediglich Raum im Element füllen und sich selbst nicht
-  weiter unterteilen
-
-  - geschnittene Zellen, die den Schnitt enthalten und aus diesem Grund weiter
-  unterteilt werden müssen
-
-  Die Unterteilung erfolgt jeweils anhand von Topologie-Informationen, die
-  Geometrie braucht hier nicht mehr ausgewertet werden, da die Elemente selbst
-  bereits geschnitten sind. Die Aufteilung findet in Elementkoordinaten statt.
- */
-#endif
+/// Base of integration cells
 class IntegrationCell
 {
 public:
@@ -55,7 +36,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file ) = 0;
 
-  //virtual double Volume() const = 0;
+  double Volume() const;
 
   Point::PointPosition Position() const { return position_; }
 
@@ -103,17 +84,12 @@ public:
 
   static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & tet );
 
-  static void CreateCells( Mesh & mesh,
-                           Element * element,
-                           VolumeCell * cell,
-                           const std::set<Facet*> & facets,
-                           std::set<IntegrationCell*> & integrationcells );
-
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
 
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
+
 };
 
 class Wedge6IntegrationCell : public IntegrationCell

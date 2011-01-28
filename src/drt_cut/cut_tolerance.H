@@ -19,8 +19,4 @@
 
 #define BOXOVERLAP  1e-7
 
-// Scale all points that go inside tetgen, so the tetgen internal tolerance
-// does not merge nodes.
-//#define TETGENPOINTSCALE 1e5
-
 #endif

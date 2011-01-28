@@ -1,7 +1,6 @@
 
 //#include "../drt_geometry/intersection_templates.H"
 
-#include "cut_tetgen.H"
 #include "cut_intersection.H"
 #include "cut_position.H"
 #include "cut_facet.H"
@@ -11,8 +10,6 @@
 #include <stack>
 
 #include "cut_element.H"
-
-#include "cell_cell.H"
 
 bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 {
@@ -291,19 +288,8 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
   }
 }
 
-void GEO::CUT::Element::GetAllPoints( std::set<Point*> & cut_points )
-{
-  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
-  {
-    VolumeCell * cell = *i;
-    cell->GetAllPoints( cut_points );
-  }
-}
-
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
-  //cell_ = Teuchos::rcp( new GEO::CELL::Cell( this ) );
-
   std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -317,16 +303,40 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 
   std::set<Facet*> facets_done;
 
+  std::set<Facet*> all_facets = facets_;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    const std::set<Facet*> holes = f->Holes();
+    std::copy( holes.begin(), holes.end(), std::inserter( all_facets, all_facets.begin() ) );
+  }
+
+#if 0
+  int facet_count = 0;
+#endif
+
+  for ( std::set<Facet*>::iterator i=all_facets.begin(); i!=all_facets.end(); ++i )
   {
     Facet * f = *i;
     if ( facets_done.count( f )==0 and OwnedSide( f->ParentSide() ) )
     {
       std::stack<Facet*> new_facets;
       std::set<Facet*> collected_facets;
-      std::set<Side*> sides_done;
+      //std::set<Side*> sides_done;
+      std::map<std::pair<Point*, Point*>, std::set<Facet*> > done_lines;
 
       new_facets.push( f );
+      f->GetLines( done_lines );
+
+      {
+#if 0
+        std::stringstream str;
+        str << "facet" << ( facet_count++ ) << ".plot";
+        std::ofstream file( str.str().c_str() );
+        f->Print( file );
+        file.close();
+#endif
+      }
 
       while ( not new_facets.empty() )
       {
@@ -334,7 +344,9 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
         new_facets.pop();
 
         collected_facets.insert( f );
-        sides_done.insert( f->ParentSide() );
+        Side * facet_side = f->ParentSide();
+        //bool is_owned = OwnedSide( facet_side );
+        //sides_done.insert( f->ParentSide() );
         std::map<std::pair<Point*, Point*>, std::set<Facet*> > facet_lines;
         f->GetLines( facet_lines );
 
@@ -343,44 +355,58 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
               ++i )
         {
           const std::pair<Point*, Point*> & line = i->first;
-          std::set<Facet*> & facets = lines[line];
-
-          if ( facets.size()==2 )
+          if ( done_lines[line].size() < 2 )
           {
+            std::set<Facet*> & facets = lines[line];
+
+            Facet * found_facet = NULL;
             for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
             {
               Facet * f = *i;
               if ( collected_facets.count( f )==0 )
               {
-                new_facets.push( f );
-              }
-            }
-          }
-          else
-          {
-            Facet * found_facet = NULL;
-            for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
-            {
-              Facet * f = *i;
-              if ( collected_facets.count( f )==0 and
-                   not OwnedSide( f->ParentSide() ) )
-              {
-                if ( found_facet==NULL )
+                bool found = false;
+                if ( not OwnedSide( f->ParentSide() ) )
                 {
-                  found_facet = f;
+                  found = true;
                 }
-                else
+                else if ( facet_side != f->ParentSide() and
+                          facets_done.count( f )==0 )
                 {
-                  // undecided. Ignore all matches. Hope we are able to close
-                  // the volume anyway. We should be.
-                  found_facet = NULL;
-                  break;
+                  found = true;
+                }
+
+                if ( found )
+                {
+                  if ( found_facet==NULL )
+                  {
+                    found_facet = f;
+                  }
+                  else
+                  {
+                    // undecided. Ignore all matches. Hope we are able to close
+                    // the volume anyway. We should be.
+                    found_facet = NULL;
+                    break;
+                  }
                 }
               }
             }
             if ( found_facet!=NULL )
             {
               new_facets.push( found_facet );
+              found_facet->GetLines( done_lines );
+
+              {
+#if 0
+                std::stringstream str;
+                str << "facet" << ( facet_count++ ) << ".plot";
+                std::ofstream file( str.str().c_str() );
+                found_facet->Print( file );
+                file.close();
+#endif
+              }
+
             }
           }
         }
@@ -404,6 +430,17 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
         std::set<Facet*> & facets = i->second;
         if ( facets.size()!=2 )
         {
+#if 0
+          std::ofstream file( "collected_facets.plot" );
+          for ( std::set<Facet*>::iterator i=collected_facets.begin();
+                i!=collected_facets.end();
+                ++i )
+          {
+            Facet * f = *i;
+            f->Print( file );
+          }
+          file.close();
+#endif
           throw std::runtime_error( "not properly closed line in volume cell" );
         }
       }
@@ -414,64 +451,44 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
                  collected_facets.end(),
                  std::inserter( facets_done, facets_done.begin() ) );
 
+      {
+#if 0
+        std::stringstream str;
+        str << "volume" << cells_.size() << ".plot";
+        std::ofstream file( str.str().c_str() );
+        for ( std::set<Facet*>::iterator i=collected_facets.begin();
+              i!=collected_facets.end();
+              ++i )
+        {
+          Facet * f = *i;
+          f->Print( file );
+        }
+        file.close();
+#endif
+      }
+
       cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
 
-      //cell_->AddVolume( collected_facets, volume_lines );
-    }
-  }
-}
+#if 0
+      // create extra volumes for any holes in the wall
 
-#ifdef QHULL
-void GEO::CUT::ConcreteElement<DRT::Element::tet4>::FillTetgen( tetgenio & out )
-{
-  const int dim = 3;
-
-  out.numberofpoints = 4;
-  out.pointlist = new double[out.numberofpoints * dim];
-  out.pointmarkerlist = new int[out.numberofpoints];
-  std::fill( out.pointmarkerlist, out.pointmarkerlist+out.numberofpoints, 0 );
-
-  out.numberoftrifaces = 4;
-  out.trifacemarkerlist = new int[out.numberoftrifaces];
-  out.trifacelist = new int[out.numberoftrifaces * dim];
-
-  out.numberoftetrahedra = 1;
-  out.tetrahedronlist = new int[out.numberoftetrahedra * 4];
-  //out.tetrahedronmarkerlist = new int[out.numberoftetrahedra];
-  //std::fill( out.tetrahedronmarkerlist, out.tetrahedronmarkerlist+out.numberoftetrahedra, 0 );
-
-  const std::vector<Node*> & nodes = Nodes();
-  for ( int i=0; i<4; ++i )
-  {
-    Node * n = nodes[i];
-    n->Coordinates( &out.pointlist[i*dim] );
-    out.pointmarkerlist[i] = n->point()->Position();
-    out.tetrahedronlist[i] = i;
-  }
-
-  const std::vector<Side*> & sides = Sides();
-  for ( int i=0; i<4; ++i )
-  {
-    Side * s = sides[i];
-    const std::vector<Node*> & side_nodes = s->Nodes();
-
-    for ( int j=0; j<3; ++j )
-    {
-      out.trifacelist[i*dim+j] = std::find( nodes.begin(), nodes.end(), side_nodes[j] ) - nodes.begin();
-    }
-
-    int sid = s->Id();
-    if ( sid < 0 )
-    {
-      for ( int j=0; j<3; ++j )
+      for ( std::set<Facet*>::iterator i=collected_facets.begin(); i!=collected_facets.end(); ++i )
       {
-        sid = std::min( sid, out.pointmarkerlist[out.trifacelist[i*dim+j]] );
+        Facet * f = *i;
+        if ( OwnedSide( f->ParentSide() ) )
+        {
+          if ( f->HasHoles() )
+          {
+          }
+        }
       }
-    }
-    out.trifacemarkerlist[i] = sid;
-  }
-}
 #endif
+    }
+  }
+
+  if ( facets_done.size() != all_facets.size() )
+    throw std::runtime_error( "unhandled facets" );
+}
 
 bool GEO::CUT::ConcreteElement<DRT::Element::tet4>::PointInside( Point* p )
 {

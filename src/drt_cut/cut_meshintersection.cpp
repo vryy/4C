@@ -1,6 +1,5 @@
 
 #include "cut_meshintersection.H"
-#include "cut_tetcutgenerator.H"
 
 void GEO::CUT::MeshIntersection::AddElement( int eid,
                                              const std::vector<int> & nids,
@@ -70,7 +69,7 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
 
 void GEO::CUT::MeshIntersection::Cut()
 {
-  //Status();
+  Status();
 
 //   std::vector<Teuchos::RCP<CellGenerator> > cutgens;
 //   for ( int i=cut_mesh_.size()-1; i>0; --i )
@@ -104,14 +103,12 @@ void GEO::CUT::MeshIntersection::Cut()
 
   NormalMesh().CreateIntegrationCells();
 
-  //Status();
-}
+#ifdef DEBUGCUTLIBRARY
+  NormalMesh().TestElementVolume();
+#endif
 
-void GEO::CUT::MeshIntersection::SelfCut()
-{
-  CutMesh().SelfCut();
+  Status();
 }
-
 
 GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
 {
@@ -135,6 +132,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
 
 void GEO::CUT::MeshIntersection::Status()
 {
+#ifdef DEBUG
   NormalMesh().Status();
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -145,7 +143,8 @@ void GEO::CUT::MeshIntersection::Status()
     cut_mesh.Status();
   }
 
-  NormalMesh().DumpGmsh( "mesh" );
+#ifdef DEBUGCUTLIBRARY
+  NormalMesh().DumpGmsh( "mesh.pos" );
   int count = 0;
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -154,10 +153,12 @@ void GEO::CUT::MeshIntersection::Status()
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
     std::stringstream str;
-    str << "cut_mesh" << count;
+    str << "cut_mesh" << count << ".pos";
     cut_mesh.DumpGmsh( str.str().c_str() );
     count++;
   }
 
-  NormalMesh().DumpGmshIntegrationcells( "integrationcells" );
+  NormalMesh().DumpGmshIntegrationcells( "integrationcells.pos" );
+#endif
+#endif
 }

@@ -216,8 +216,12 @@ void GEO::Intersection::computeIntersection(
       completePLC();
 
       //debugTetgenDataStructure(xfemElement);
+#if 0
 #ifdef QHULL
       computeCDT(xfemElement, currentcutterpositions, domainintcells, boundaryintcells);
+#endif
+#else
+      dserror( "tetgen has been removed. This code does not work any more and will be removed soon." );
 #endif
     }
   }// for-loop over all  actdis->NumMyColElements()
@@ -1473,7 +1477,7 @@ bool GEO::Intersection::checkIfCDT()
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  CDT:    rounds points on tetrahedral XFEM elements       u.may 07/08|
  |          only surface 1 needs special treatment                      |
@@ -1540,7 +1544,7 @@ void GEO::Intersection::roundOnXFEMTetSurface1(
   }
   return;
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -1644,7 +1648,7 @@ void GEO::Intersection::quickFixForIntersectingStructures(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  CDT:    computes the Constrained Delaunay                u.may 06/07|
  |          Tetrahedralization in 3D with help of Tetgen library        |
@@ -1848,7 +1852,7 @@ void GEO::Intersection::computeCDT(
 
 }
 #endif
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  CDT:    fills the point list with the corner points      u.may 06/07|
@@ -2419,7 +2423,7 @@ void GEO::Intersection::storeSurfacePlaneFacetsInTriangles(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    recovers the curved interface after the          u.may 08/07|
  |          Constrained Delaunay Tetrahedralization                     |
@@ -2502,12 +2506,13 @@ void GEO::Intersection::recoverCurvedInterface(
 
   intersectingCutterElements_.clear();
 }
+#endif
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    store linear boundary and integration cells      u.may 03/08|
- |                               										                    |
+ |                               					|
  *----------------------------------------------------------------------*/
 void GEO::Intersection::storeIntCells(
     const DRT::Element*                   xfemElement,
@@ -2552,7 +2557,7 @@ void GEO::Intersection::storeIntCells(
   boundaryintcells[xfemElement->Id()] = listBoundaryICPerElement;
   intersectingCutterElements_.clear();
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -2588,7 +2593,7 @@ void GEO::Intersection::storeSurfaceIntCells(
   }
 }
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    checks if all tetrahedra corner points are lying u.may 09/07|
  |          in a surface element                                        |
@@ -2641,9 +2646,9 @@ void GEO::Intersection::liftAllSteinerPoints(
     }
   }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    stores for each Steiner point its adjacent       u.may 11/07|
  |          faces and face markers                                      |
@@ -2701,9 +2706,9 @@ void GEO::Intersection::locateSteinerPoints(
         }
     }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    checks if the Steiner points lies within         u.may 11/07|
  |          the cutter element or on one of its edges                   |
@@ -2766,9 +2771,9 @@ GEO::SteinerType GEO::Intersection::decideSteinerCase(
 
     return caseSteiner;
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          within a cutter element                                     |
@@ -2868,9 +2873,9 @@ void GEO::Intersection::liftSteinerPointOnSurface(
       }
     }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          on the edge of a  cutter element                            |
@@ -2941,8 +2946,9 @@ void GEO::Intersection::liftSteinerPointOnEdge(
         printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
+#endif
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          on the boundary of the xfem element                         |
@@ -3033,9 +3039,9 @@ void GEO::Intersection::liftSteinerPointOnBoundary(
     }
 
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    returns information of the tetrahedra            u.may 08/07|
  *----------------------------------------------------------------------*/
@@ -3073,9 +3079,9 @@ void GEO::Intersection::getTetrahedronInformation(
             }
     }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    collects the tetrahedron corner nodes            u.may 09/07|
  |          transforms them into current coordinates                    |
@@ -3095,9 +3101,9 @@ void GEO::Intersection::getTetrahedronNodes(
         elementToCurrentCoordinatesInPlace(xfemDistype_, xyze_xfemElement_, tetraCornerNodes[i]);
     }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    lifts the higher-order point of an edge of the   u.may 09/07|
  |          linearized interface onto the curved interface              |
@@ -3214,9 +3220,9 @@ void GEO::Intersection::computeHigherOrderPoint(
     }
 
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    returns the other two point indices belonging    u.may 09/07|
  |          to a triface that obtains a Steiner point                   |
@@ -3236,9 +3242,9 @@ vector<int> GEO::Intersection::getPointIndices(
 
     return pointIndices;
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
@@ -3327,9 +3333,9 @@ void GEO::Intersection::computeIntersectionNormalA(
         plane.push_back(midpoint);
     }
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    computes the normal to the interface edge of     u.may 11/07|
  |          two adjacent triangular faces                               |
@@ -3429,9 +3435,9 @@ void GEO::Intersection::computeIntersectionNormalB(
     }
     */
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
@@ -3502,7 +3508,7 @@ void GEO::Intersection::computeIntersectionNormalC(
     }
     */
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -3519,7 +3525,7 @@ LINALG::Matrix<3,1> GEO::Intersection::computeLineMidpoint(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    searches for the face marker                     u.may 10/07|
  |          of a facet adjacent to a given edge of                      |
@@ -3562,9 +3568,9 @@ void GEO::Intersection::findAdjacentFace(
         adjacentFaceMarker = -2;
 
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    finds the global index of the point opposite     u.may 08/07|
  |          to an edge in the adjacent triangular face                  |
@@ -3581,9 +3587,9 @@ int GEO::Intersection::findEdgeOppositeIndex(
 
   return -1;
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    searchs for the common edge of two               u.may 10/07|
  |          adjacent facets                                             |
@@ -3613,7 +3619,7 @@ bool GEO::Intersection::findCommonFaceEdge(
 
   return false;
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -3741,7 +3747,7 @@ int GEO::Intersection::findIntersectingSurfaceEdge(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    stores the higher-order node in the pointlist    u.may 08/07|
  |          at the place of the linear node                             |
@@ -3785,9 +3791,9 @@ void GEO::Intersection::storeHigherOrderNode(
     //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi(0), xsi(1), xsi(2));
     //printf("\n");
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    stores domain integration cells                  u.may 11/07|
  *----------------------------------------------------------------------*/
@@ -3830,11 +3836,11 @@ void GEO::Intersection::addCellsToDomainIntCellsMap(
     }
     domainintcells.insert(make_pair(xfemElement->Id(),listDomainICPerElement));
 }
-
-
+#endif
+#if 0
 /*----------------------------------------------------------------------*
  |  RCI:    stores boundary integration cells                u.may 11/07|
- |																		|
+ |									|
  *----------------------------------------------------------------------*/
 void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     const int                               trifaceIndex,
@@ -3892,7 +3898,7 @@ void GEO::Intersection::addCellsToBoundaryIntCellsMap(
     eleBoundaryCoord(2, cornerIndex+3) = 0.0;
   }
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -4190,7 +4196,7 @@ void GEO::Intersection::debugTetgenDataStructure(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/
@@ -4232,8 +4238,8 @@ void GEO::Intersection::debugTetgenOutput(
     }
 }
 #endif
-
-
+#endif
+#if 0
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 09/07|
  *----------------------------------------------------------------------*/
@@ -4267,9 +4273,9 @@ void GEO::Intersection::printTetViewOutput(
     }
     fclose(outFile);
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 09/07|
  *----------------------------------------------------------------------*/
@@ -4310,9 +4316,9 @@ void GEO::Intersection::printTetViewOutputPLC(
     }
     fclose(outFile);
 }
+#endif
 
-
-
+#if 0
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 09/07|
  *----------------------------------------------------------------------*/
@@ -4341,7 +4347,7 @@ void GEO::Intersection::debugFaceMarker(
   f_system << "};" << endl;
   f_system.close();
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -4537,7 +4543,7 @@ void GEO::Intersection::debugXAABBs(
   f_system.close();
 }
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 04/09|
  *----------------------------------------------------------------------*/
@@ -4578,6 +4584,7 @@ void GEO::Intersection::debugTetVolumes(
 
   return;
 }
+#endif
 #endif
 
 #endif  // #ifdef QHULL

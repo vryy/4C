@@ -85,6 +85,11 @@ if (DEBUG)
   add_definitions("-DDEBUG")
 endif (DEBUG)
 
+option (DEBUGCUTLIBRARY "Turn on special output inside the cut library to be able to track errors" OFF)
+if (DEBUG)
+  add_definitions("-DDEBUGCUTLIBRARY")
+endif (DEBUG)
+
 option (STKADAPTIVE "adaptive meshes based on the stk library" OFF)
 if (STKADAPTIVE)
   add_definitions("-DSTKADAPTIVE")
@@ -1208,17 +1213,10 @@ set(OBJS_DRT_STK
   src/drt_stk/stk_gmsh.cpp
 )
 set(OBJS_DRT_CUT
-  src/drt_cut/cell_cell.cpp  
-  src/drt_cut/cell_facet.cpp  
-  src/drt_cut/cell_facetset.cpp  
-  src/drt_cut/cell_line.cpp  
-  src/drt_cut/cell_point.cpp  
-  src/drt_cut/cell_volume.cpp
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
-  src/drt_cut/cut_element_delaunay.cpp
   src/drt_cut/cut_elementhandle.cpp
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_integrationcell.cpp
@@ -1235,7 +1233,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
   src/drt_cut/cut_sidehandle.cpp
-  src/drt_cut/cut_tetcutgenerator.cpp
+  src/drt_cut/cut_tetmesh.cpp
   src/drt_cut/cut_volumecell.cpp
 )
 set(OBJS_CUT_TEST
@@ -1248,6 +1246,8 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_units.cpp
   tests/cut_test/cut_test_utils.cpp
   tests/cut_test/drt_dserror.cpp
+  src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
+  src/drt_fem_general/drt_utils_integration.cpp
 )
 ###------------------------------------------------------------------ Element flags
 

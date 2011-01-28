@@ -64,25 +64,16 @@ void GEO::CUT::Point::AddEdge( Edge* cut_edge )
              std::inserter( cut_sides_, cut_sides_.begin() ) );
 }
 
-GEO::CUT::Edge * GEO::CUT::Point::CommonEdge( Point * other )
+void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )
 {
-  Edge * found = NULL;
   for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
   {
     Edge * e = *i;
     if ( other->IsCut( e ) )
     {
-      if ( found==NULL )
-      {
-        found = e;
-      }
-      else
-      {
-        throw std::runtime_error( "not unique" );
-      }
+      edges.insert( e );
     }
   }
-  return found;
 }
 
 // std::vector<GEO::CUT::Edge*> GEO::CUT::Point::CutEdges( Point * other )

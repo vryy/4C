@@ -372,15 +372,15 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
 
   subnids[0] = nids[ 4];
-  subnids[1] = nids[ 8];
+  subnids[1] = nids[ 6];
   subnids[2] = nids[ 7];
-  subnids[3] = nids[ 6];
+  subnids[3] = nids[ 8];
   subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
 
   subnids[0] = nids[ 9];
-  subnids[1] = nids[ 8];
+  subnids[1] = nids[ 6];
   subnids[2] = nids[ 5];
-  subnids[3] = nids[ 6];
+  subnids[3] = nids[ 8];
   subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
 }
 

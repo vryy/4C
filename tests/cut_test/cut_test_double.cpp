@@ -7,6 +7,7 @@
 
 void test_quad4_surface_mesh_cut()
 {
+#if 0
   GEO::CUT::MeshIntersection intersection;
 
   create_quad4_cylinder_mesh( intersection, 0., 0., 60, 10 );
@@ -14,6 +15,7 @@ void test_quad4_surface_mesh_cut()
 
   intersection.SelfCut();
   intersection.Status();
+#endif
 }
 
 void test_hex8_quad4_double_cut()

@@ -48,16 +48,41 @@ void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> &
     throw std::runtime_error( "wrong number of points" );
   }
 
-  std::set<Facet*> facets = side[0]->Facets();
-  side[1]->Intersection( facets );
-  side[2]->Intersection( facets );
+  std::set<Facet*> facets;
+  FindCommonFacets( side[0], side[1], side[2], facets );
 
-  if ( facets.size()!=1 )
+  Facet * f;
+  if ( facets.size()==1 )
   {
-    throw std::runtime_error( "not a valid cut side" );
+    f = *facets.begin();
+  }
+  else
+  {
+    Facet * found = NULL;
+    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( f->IsTriangle( side ) )
+      {
+        if ( found==NULL )
+        {
+          found = f;
+        }
+        else
+        {
+          throw std::runtime_error( "not unique" );
+        }
+      }
+    }
+
+    if ( found==NULL )
+    {
+      throw std::runtime_error( "not a valid cut side" );
+    }
+
+    f = found;
   }
 
-  Facet * f = *facets.begin();
   if ( f->SideId() < 0 )
   {
     return;
@@ -82,10 +107,8 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
     throw std::runtime_error( "wrong number of points" );
   }
 
-  std::set<Facet*> facets = side[0]->Facets();
-  side[1]->Intersection( facets );
-  side[2]->Intersection( facets );
-  side[3]->Intersection( facets );
+  std::set<Facet*> facets;
+  FindCommonFacets( side[0], side[1], side[2], side[3], facets );
 
   if ( facets.size()!=1 )
   {

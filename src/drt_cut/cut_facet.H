@@ -15,18 +15,11 @@
 
 // #include "../drt_lib/drt_element.H"
 
-#include "cut_tetgen.H"
 #include "cut_point.H"
 #include "cut_line.H"
 
 namespace GEO
 {
-  namespace CELL
-  {
-    class Facet;
-    class FacetSet;
-    class Cell;
-  }
 
 namespace CUT
 {
@@ -34,6 +27,9 @@ class BoundaryCell;
 class VolumeCell;
 class Element;
 class Mesh;
+class Facet;
+
+//typedef EntityIdLess<Facet> FacetPidLess;
 
 class Facet
 {
@@ -67,34 +63,11 @@ public:
 
   void CornerCoordinates( double * x );
 
-  void GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points );
-
-  void GetAllPoints( std::set<Point*> & cut_points );
-
-#ifdef QHULL
-  void GenerateTetgen( Mesh & mesh, Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist );
-#endif
+  void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points );
 
   void CreateLinearElements( Mesh & mesh );
 
-  void AddHole( const std::vector<Point*> & hole )
-  {
-    holes_.insert( hole );
-  }
-
-  int NumTetgenFacets( Mesh & mesh )
-  {
-    if ( IsPlanar( mesh ) )
-    {
-      return 1;
-    }
-    else
-    {
-      if ( holes_.size()>0 )
-        throw std::runtime_error( "cannot have holes in a non-planar facet" );
-      return triangulation_.size();
-    }
-  }
+  void AddHole( Facet * hole );
 
   void ExchangeSide( Side * side, bool cutsurface )
   {
@@ -112,6 +85,8 @@ public:
 
   bool Equals( const std::vector<Point*> & facet_points );
 
+  bool Equals( DRT::Element::DiscretizationType distype );
+
   bool IsCutSide( Side * side );
 
   Point::PointPosition Position() const { return position_; }
@@ -120,25 +95,21 @@ public:
 
   void GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
 
-//   DRT::Element::DiscretizationType Shape();
+  bool IsLine( Point * p1, Point * p2 );
 
-  void CreateFacets( GEO::CELL::Cell * cell, std::set<GEO::CELL::Facet *> & nf );
+  bool Contains( Point * p ) const;
 
-  bool Contains( Point * p );
+  bool Contains( const std::vector<Point*> & side ) const;
 
   bool Contains( const std::vector<Point*> & side );
 
   bool Touches( Facet * f );
-
-  //bool PositiveDistance( Facet * f );
 
   void Neighbors( Point * p,
                   const std::set<VolumeCell*> & cells,
                   const std::set<VolumeCell*> & done,
                   std::set<VolumeCell*> & connected,
                   std::set<Element*> & elements );
-
-  bool Equals( DRT::Element::DiscretizationType distype );
 
   const std::vector<Point*> & Points() const { return points_; }
 
@@ -150,17 +121,22 @@ public:
 
   void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
+  bool IsTriangle( const std::vector<Point*> & tri ) const;
+
+  bool IsTriangulated() const { return triangulation_.size() > 0; }
+
+  bool IsTriangulatedSide( const std::vector<Point*> & tri ) const;
+
+  bool HasHoles() const { return holes_.size() > 0; }
+
+  const std::set<Facet*> Holes() const { return holes_; }
+
+  unsigned NumPoints();
+
 private:
 
   Facet( const Facet & );
   Facet & operator=( const Facet & );
-
-#ifdef QHULL
-  void GeneratePolygon( tetgenio::polygon & p,
-                        const std::vector<Point*> & points,
-                        const std::vector<Point*> & pointlist,
-                        LINALG::Matrix<3,1> & mid );
-#endif
 
   bool IsPlanar( Mesh & mesh );
 
@@ -169,8 +145,6 @@ private:
   void CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points );
 
   void GetNodalIds( Mesh & mesh, const std::vector<Point*> & points, std::vector<int> & nids );
-
-  GEO::CELL::Facet * CreateCellFacet( GEO::CELL::Cell * cell, const std::vector<Point*> & points );
 
   unsigned Normal( const std::vector<Point*> & points,
                    LINALG::Matrix<3,1> & x1,
@@ -191,11 +165,13 @@ private:
                                 LINALG::Matrix<3,1> & b3,
                                 unsigned i );
 
+  bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
+
   std::vector<Point*> points_;
 
   std::vector<Point*> corner_points_;
 
-  std::set<std::vector<Point*> > holes_;
+  std::set<Facet*> holes_;
 
   std::vector<std::vector<Point*> > triangulation_;
 
@@ -207,11 +183,11 @@ private:
 
   Point::PointPosition position_;
 
-  //std::map<VolumeCell*, std::set<BoundaryCell*> > bcells_;
-
   std::set<VolumeCell*> cells_;
 };
 
+//inline int EntityId( const Facet & f ) { return f.InternalId(); }
+//inline int EntityId( const Facet & f ) { return reinterpret_cast<int>( &f ); }
 
 }
 }

@@ -59,15 +59,7 @@ void test_hex8_simple()
 
   e->Cut( mesh, *( s ) );
 
-  mesh.Status();
-
-  mesh.MakeFacets();
-  mesh.MakeVolumeCells();
-  mesh.FindNodePositions();
-  mesh.FindNodalDOFSets();
-  mesh.CreateIntegrationCells();
-  mesh.DumpGmshIntegrationcells( "integrationcells" );
-
+  cutmesh( mesh );
 }
 
 void test_tet4_simple()
@@ -99,15 +91,7 @@ void test_tet4_simple()
 
   e->Cut( mesh, *( s ) );
 
-  mesh.Status();
-
-  mesh.MakeFacets();
-  mesh.MakeVolumeCells();
-  mesh.FindNodePositions();
-  mesh.FindNodalDOFSets();
-  mesh.CreateIntegrationCells();
-  mesh.DumpGmshIntegrationcells( "integrationcells" );
-
+  cutmesh( mesh );
 }
 
 void test_pyramid5_simple()
@@ -143,15 +127,7 @@ void test_pyramid5_simple()
 
   e->Cut( mesh, *( s ) );
 
-  mesh.Status();
-
-  mesh.MakeFacets();
-  mesh.MakeVolumeCells();
-  mesh.FindNodePositions();
-  mesh.FindNodalDOFSets();
-  mesh.CreateIntegrationCells();
-  mesh.DumpGmshIntegrationcells( "integrationcells" );
-
+  cutmesh( mesh );
 }
 
 void test_wedge6_simple()
@@ -223,9 +199,10 @@ void test_hex8_diagonal()
 
 void test_hex8_tet4()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
-  GEO::CUT::Element * tet4 = create_tet4( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
+  w.CreateTet4Sides();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -247,88 +224,47 @@ void test_hex8_tet4()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=tet4->Sides().begin();
-        i!=tet4->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8->Cut( mesh, *( s ) );
-  }
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh );
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, 0.5, 0.5, 0.5 );
+  SimpleWrapper w;
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.CreateHex8();
+  w.CreateHex8Sides( 0.5, 0.5, 0.5 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_touch()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh );
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, 1, 0, 0 );
+  SimpleWrapper w;
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.CreateHex8();
+  w.CreateHex8Sides( 1, 0, 0 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_touch2()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh );
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, 1, 0.5, 0.5 );
+  SimpleWrapper w;
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.CreateHex8();
+  w.CreateHex8Sides( 1, 0.5, 0.5 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_schraeg()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -348,21 +284,17 @@ void test_hex8_schraeg()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  mesh.Status();
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_tet4_touch()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -382,7 +314,7 @@ void test_hex8_tet4_touch()
   xyze( 1, 3 ) = 0.5;
   xyze( 2, 3 ) = 0.5;
 
-  GEO::CUT::Element * tet4 = create_tet4( mesh, xyze );
+  w.CreateTet4Sides( xyze );
 
   // add second cut to be able to find nodal positions
 
@@ -402,28 +334,17 @@ void test_hex8_tet4_touch()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=tet4->Sides().begin();
-        i!=tet4->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8->Cut( mesh, *( s ) );
-  }
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_tet4_touch2()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -443,20 +364,10 @@ void test_hex8_tet4_touch2()
   xyze( 1, 3 ) = 0.5;
   xyze( 2, 3 ) = 1.5;
 
-  GEO::CUT::Element * tet4 = create_tet4( mesh, xyze );
+  w.CreateTet4Sides( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=tet4->Sides().begin();
-        i!=tet4->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_mesh()
@@ -496,7 +407,7 @@ void test_hex8_multiple()
   GEO::CUT::Mesh mesh;
   GEO::CUT::Element * e = create_hex8( mesh );
 
-  for ( int i=0; i<11; ++i )
+  for ( int i=1; i<10; ++i )
   {
     double x = 0.1*i;
     GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0 );
@@ -755,8 +666,9 @@ void test_hex8_bad4()
 
 void test_hex8_wedge6()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 6 );
 
@@ -784,24 +696,17 @@ void test_hex8_wedge6()
   xyze( 1, 5 ) = 0.5;
   xyze( 2, 5 ) = 1.5;
 
-  GEO::CUT::Element * wedge6 = create_wedge6( mesh, xyze );
+  w.CreateWedge6Sides( xyze );
 
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=wedge6->Sides().begin();
-        i!=wedge6->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -821,19 +726,17 @@ void test_hex8_quad4_touch()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 1.5;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch2()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -853,19 +756,17 @@ void test_hex8_quad4_touch2()
   xyze( 1, 3 ) = 0.5;
   xyze( 2, 3 ) = 1.5;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch3()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -885,19 +786,17 @@ void test_hex8_quad4_touch3()
   xyze( 1, 3 ) = 0.5;
   xyze( 2, 3 ) = 1.5;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_cut()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -917,19 +816,17 @@ void test_hex8_quad4_cut()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_gedreht()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
 #if 0
   Epetra_SerialDenseMatrix xyze( 3, 4 );
@@ -953,24 +850,17 @@ void test_hex8_quad4_gedreht()
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 #endif
 
-  std::vector<GEO::CUT::Side*> sides;
-  create_quad4_mesh( mesh, 2, 2, sides );
+  w.CreateQuad4Mesh( 2, 2 );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
-  {
-    GEO::CUT::Side* quad4 = *i;
-    hex8->Cut( mesh, *( quad4 ) );
-  }
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8_durchstoss()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -1006,7 +896,7 @@ void test_hex8_hex8_durchstoss()
   xyze( 1, 7 ) =  0.2;
   xyze( 2, 7 ) =  0.8;
 
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+  w.CreateHex8Sides( xyze );
 
   // add second cut to be able to find nodal positions
 
@@ -1026,28 +916,17 @@ void test_hex8_hex8_durchstoss()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  hex8_1->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8_1 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8_onside()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -1083,7 +962,7 @@ void test_hex8_hex8_onside()
   xyze( 1, 7 ) = 0.9;
   xyze( 2, 7 ) = 0.8;
 
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+  w.CreateHex8Sides( xyze );
 
   // add second cut to be able to find nodal positions
 
@@ -1103,27 +982,15 @@ void test_hex8_hex8_onside()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  hex8_1->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8_1 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8_internal()
 {
-  GEO::CUT::Mesh mesh;
+  SimpleWrapper w;
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -1159,7 +1026,7 @@ void test_hex8_hex8_internal()
   xyze( 1, 7 ) = 1;
   xyze( 2, 7 ) = 1;
 
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+  w.CreateHex8( xyze );
 
   xyze( 0, 0 ) = -1.5;
   xyze( 1, 0 ) = -0.5;
@@ -1193,25 +1060,15 @@ void test_hex8_hex8_internal()
   xyze( 1, 7 ) = 1.5;
   xyze( 2, 7 ) = 0.707107;
 
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
+  w.CreateHex8Sides( xyze );
 
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8_sideintersection()
 {
-  GEO::CUT::Mesh mesh;
+  SimpleWrapper w;
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -1247,7 +1104,7 @@ void test_hex8_hex8_sideintersection()
   xyze( 1, 7 ) = 1;
   xyze( 2, 7 ) = 1;
 
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+  w.CreateHex8( xyze );
 
   xyze( 0, 0 ) =  0.5;
   xyze( 1, 0 ) = -0.5;
@@ -1281,26 +1138,15 @@ void test_hex8_hex8_sideintersection()
   xyze( 1, 7 ) = 0.5;
   xyze( 2, 7 ) = 0.5;
 
+  w.CreateHex8Sides( xyze );
 
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
-
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_hex8_inside()
 {
-  GEO::CUT::Mesh mesh;
+  SimpleWrapper w;
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -1336,7 +1182,7 @@ void test_hex8_hex8_inside()
   xyze( 1, 7 ) = 1;
   xyze( 2, 7 ) = 1;
 
-  GEO::CUT::Element * hex8_1 = create_hex8( mesh, xyze );
+  w.CreateHex8( xyze );
 
   xyze( 0, 0 ) = -0.5;
   xyze( 1, 0 ) = -0.5;
@@ -1370,27 +1216,17 @@ void test_hex8_hex8_inside()
   xyze( 1, 7 ) = 0.5;
   xyze( 2, 7 ) = 0.5;
 
+  w.CreateHex8Sides( xyze );
 
-  GEO::CUT::Element * hex8_2 = create_hex8( mesh, xyze );
-
-  mesh.Status();
-
-  for ( std::vector<GEO::CUT::Side*>::const_iterator i=hex8_2->Sides().begin();
-        i!=hex8_2->Sides().end();
-        ++i )
-  {
-    GEO::CUT::Side * s = *i;
-    s->SetId( 1 );
-    hex8_1->Cut( mesh, *( s ) );
-  }
-
-  cutelement( mesh, hex8_1 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_schnitt()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -1410,17 +1246,17 @@ void test_hex8_quad4_schnitt()
   xyze( 1, 3 ) = 0.5;
   xyze( 2, 3 ) = 1.2;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch4()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -1440,17 +1276,17 @@ void test_hex8_quad4_touch4()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 1.2;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch5()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -1470,17 +1306,17 @@ void test_hex8_quad4_touch5()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 1.2;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch6()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -1500,7 +1336,7 @@ void test_hex8_quad4_touch6()
   xyze( 1, 3 ) = 0;
   xyze( 2, 3 ) = 0.5;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
   // add second cut to be able to find nodal positions
 
@@ -1520,18 +1356,17 @@ void test_hex8_quad4_touch6()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  GEO::CUT::Side* quad4_2 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  hex8->Cut( mesh, *( quad4 ) );
-  hex8->Cut( mesh, *( quad4_2 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 void test_hex8_quad4_touch7()
 {
-  GEO::CUT::Mesh mesh;
-  GEO::CUT::Element * hex8 = create_hex8( mesh );
+  SimpleWrapper w;
+
+  w.CreateHex8();
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -1551,11 +1386,10 @@ void test_hex8_quad4_touch7()
   xyze( 1, 3 ) = 0.2;
   xyze( 2, 3 ) = 0.5;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  w.CreateQuad4( xyze );
 
-  hex8->Cut( mesh, *( quad4 ) );
-
-  cutelement( mesh, hex8 );
+  w.Status();
+  w.Cut();
 }
 
 #if 0

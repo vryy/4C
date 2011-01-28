@@ -1,7 +1,6 @@
 
 //#include "../drt_geometry/intersection_templates.H"
 
-#include "cut_tetgen.H"
 #include "cut_position.H"
 #include "cut_intersection.H"
 #include "cut_facet.H"

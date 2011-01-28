@@ -19,6 +19,8 @@
 #include "cut_volumecell.H"
 #include "cut_integrationcell.H"
 
+#include "../drt_geometry/element_volume.H"
+
 GEO::CUT::Mesh::Mesh( double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
   : setup_( true ),
     norm_( norm ),
@@ -30,171 +32,6 @@ GEO::CUT::Mesh::Mesh( double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
     pp_ = Teuchos::rcp( new PointPool( norm ) );
   }
 }
-
-#ifdef QHULL
-
-void GEO::CUT::Mesh::AddTetgen( const tetgenio & out )
-{
-  std::map<int, int> nodeidmap;
-
-  // need to copy surface markers via side id
-  for ( int i=0; i<out.numberoftrifaces; ++i )
-  {
-    std::vector<int> nids;
-    nids.reserve( 3 );
-    for ( int j=0; j<3; ++j )
-    {
-      int nid;
-      int pointidx = out.trifacelist[i*3+j] * 3;
-      std::map<int, int>::iterator ni = nodeidmap.find( pointidx );
-      if ( ni==nodeidmap.end() )
-      {
-        nid = nodes_.size();
-        if ( nodes_.find( nid )!=nodes_.end() )
-        {
-          throw std::runtime_error( "node ids not consecutive" );
-        }
-        LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
-//         x.Scale( 1./TETGENPOINTSCALE );
-        //Node* n =
-        GetNode( nid, x.A() );
-        nodeidmap[pointidx] = nid;
-      }
-      else
-      {
-        nid = ni->second;
-      }
-      nids.push_back( nid );
-    }
-    //Side * side =
-    CreateTri3( out.trifacemarkerlist[i], nids );
-  }
-
-  const int numTetNodes = 4;
-
-  for ( int i=0; i<out.numberoftetrahedra; ++i )
-  {
-    std::vector<int> nids;
-    nids.reserve( numTetNodes );
-    for ( int j=0; j<numTetNodes; ++j )
-    {
-      int nid;
-      int pointidx = out.tetrahedronlist[i*out.numberofcorners+j] * 3;
-      std::map<int, int>::iterator ni = nodeidmap.find( pointidx );
-      if ( ni==nodeidmap.end() )
-      {
-        nid = nodes_.size();
-        if ( nodes_.find( nid )!=nodes_.end() )
-        {
-          throw std::runtime_error( "node ids not consecutive" );
-        }
-        LINALG::Matrix<3,1> x( &out.pointlist[pointidx] );
-//         x.Scale( 1./TETGENPOINTSCALE );
-        //Node* n =
-        GetNode( nid, x.A() );
-        nodeidmap[pointidx] = nid;
-      }
-      else
-      {
-        nid = ni->second;
-      }
-      nids.push_back( nid );
-    }
-    int eid = elements_.size();
-    if ( elements_.find( eid )!=elements_.end() )
-    {
-      throw std::runtime_error( "element ids not consecutive" );
-    }
-    //Element * e =
-    CreateTet4( eid, nids );
-  }
-}
-
-void GEO::CUT::Mesh::ExtractTetgen( tetgenio & out )
-{
-  const int dim = 3;
-
-  out.numberofpoints = nodes_.size();
-  out.pointlist = new double[out.numberofpoints * dim];
-  out.pointmarkerlist = new int[out.numberofpoints];
-
-  out.numberoftrifaces = sides_.size();
-  out.trifacemarkerlist = new int[out.numberoftrifaces];
-  out.trifacelist = new int[out.numberoftrifaces * 3];
-
-  out.numberoftetrahedra = elements_.size();
-  out.tetrahedronlist = new int[out.numberoftetrahedra * 4];
-
-  std::map<int, int> nodeidmap;
-
-  int count = 0;
-  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
-        i!=nodes_.end();
-        ++i )
-  {
-    Node * n = &*i->second;
-    n->Coordinates( &out.pointlist[count*dim] );
-//     for ( int j=0; j<dim; ++j )
-//     {
-//       out.pointlist[count*dim+j] *= TETGENPOINTSCALE;
-//     }
-    out.pointmarkerlist[count] = n->point()->Position();
-    nodeidmap[n->Id()] = count;
-    count += 1;
-  }
-
-  count = 0;
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
-        i!=sides_.end();
-        ++i )
-  {
-    Side * s = &*i->second;
-    const std::vector<Node*> & side_nodes = s->Nodes();
-
-    if ( side_nodes.size()!=3 )
-    {
-      throw std::runtime_error( "side not a tri3" );
-    }
-
-    for ( int j=0; j<3; ++j )
-    {
-      out.trifacelist[count*3+j] = nodeidmap[side_nodes[j]->Id()];
-    }
-
-    int sid = s->Id();
-    if ( sid < 0 )
-    {
-      for ( int j=0; j<3; ++j )
-      {
-        sid = std::min( sid, out.pointmarkerlist[out.trifacelist[count*3+j]] );
-      }
-    }
-    out.trifacemarkerlist[count] = sid;
-    count += 1;
-  }
-
-  count = 0;
-  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();
-        ++i )
-  {
-    Element * e = &*i->second;
-    const std::vector<Node*> & element_nodes = e->Nodes();
-
-    if ( element_nodes.size()!=4 )
-    {
-      throw std::runtime_error( "element not a tet4" );
-    }
-
-    for ( int j=0; j<4; ++j )
-    {
-      out.tetrahedronlist[count*4+j] = nodeidmap[element_nodes[j]->Id()];
-    }
-    count += 1;
-  }
-}
-
-#endif
 
 GEO::CUT::Element * GEO::CUT::Mesh::CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype )
 {
@@ -707,6 +544,8 @@ GEO::CUT::Tet4IntegrationCell* GEO::CUT::Mesh::NewTet4Cell( Point::PointPosition
                                                             const std::vector<Point*> & points,
                                                             VolumeCell * cell )
 {
+  if ( points.size()!=4 )
+    throw std::runtime_error( "wrong number of cell points" );
   Epetra_SerialDenseMatrix xyz( 3, points.size() );
   for ( unsigned i=0; i<points.size(); ++i )
   {
@@ -756,6 +595,7 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
 }
 
 
+#if 0
 void GEO::CUT::Mesh::SelfCut()
 {
   std::set<Facet*> facets;
@@ -820,6 +660,7 @@ void GEO::CUT::Mesh::SelfCut()
     f->CreateLinearElements( *this );
   }
 }
+#endif
 
 void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
 {
@@ -1007,8 +848,77 @@ void GEO::CUT::Mesh::CreateIntegrationCells()
   }
 }
 
+#ifdef DEBUG
+void GEO::CUT::Mesh::TestElementVolume()
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+
+    if ( e.IsCut() )
+    {
+      const std::vector<Node*> & nodes = e.Nodes();
+      Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
+      for ( unsigned i=0; i<nodes.size(); ++i )
+      {
+        nodes[i]->Coordinates( &xyze( 0, i ) );
+      }
+
+      double ev = GEO::ElementVolume( e.Shape(), xyze );
+
+      double cv = 0;
+      const std::set<VolumeCell*> & cells = e.VolumeCells();
+      for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        cv += vc->Volume();
+      }
+
+      std::cout << ev << "  "
+                << cv << "  "
+                << ev-cv << "  "
+                << ( ev-cv )/ev << "\n";
+    }
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+
+    if ( e.IsCut() )
+    {
+      const std::vector<Node*> & nodes = e.Nodes();
+      Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
+      for ( unsigned i=0; i<nodes.size(); ++i )
+      {
+        nodes[i]->Coordinates( &xyze( 0, i ) );
+      }
+
+      double ev = GEO::ElementVolume( e.Shape(), xyze );
+
+      double cv = 0;
+      const std::set<VolumeCell*> & cells = e.VolumeCells();
+      for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        cv += vc->Volume();
+      }
+
+      std::cout << ev << "  "
+                << cv << "  "
+                << ev-cv << "  "
+                << ( ev-cv )/ev << "\n";
+    }
+  }
+}
+#endif
+
 void GEO::CUT::Mesh::Status()
 {
+#if 0
   std::cout << "#points:    " << pp_->size() << "\n"
             << "#lines:     " << lines_.size() << "\n"
             << "#facets:    " << facets_.size() << "\n"
@@ -1019,6 +929,7 @@ void GEO::CUT::Mesh::Status()
             << "#snodes:    " << shadow_nodes_.size() << "\n"
             << "#selements: " << shadow_elements_.size() << "\n"
             << "\n";
+#endif
 
 //   std::cout << "GetElement: ";
 //   std::copy( nids.begin(), nids.end(), std::ostream_iterator<int>( std::cout, " " ) );
@@ -1038,6 +949,7 @@ void GEO::CUT::Mesh::Status()
   std::cout << "}\n";
 #endif
 
+#ifdef DEBUGCUTLIBRARY
   std::string name;
 
   if ( cutmesh_ )
@@ -1068,6 +980,7 @@ void GEO::CUT::Mesh::Status()
   {
     i->second->Plot( ef );
   }
+#endif
 }
 
 void GEO::CUT::Mesh::PrintFacets()

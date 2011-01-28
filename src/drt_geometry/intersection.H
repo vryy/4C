@@ -16,7 +16,6 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
-#include "../drt_cut/cut_tetgen.H"
 #include "../drt_geometry/intersection_interfacepoint.H"
 #include "../drt_geometry/intersection_templates.H"
 #include "../drt_geometry/intersection_service.H"
@@ -699,10 +698,10 @@ class Intersection
   \brief round point on xfem tetrahedron surface 1 for tetgen
 
   */
-  void roundOnXFEMTetSurface1(
-    tetgenio&	in,
-    const int 	scalefactor
-	  );
+//   void roundOnXFEMTetSurface1(
+//     tetgenio&	in,
+//     const int 	scalefactor
+// 	  );
 
 
   /*!
@@ -714,12 +713,12 @@ class Intersection
   \param domainintcells           (out)   : list of domainintegrationcells for each intersected element
   \param boundaryintcells         (out)   : list of boundaryintegrationcells for each intersected element
   */
-  void computeCDT(
-    const DRT::Element*                     xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
-    map< int, DomainIntCells >&             domainintcells,
-    map< int, BoundaryIntCells >&           boundaryintcells
-    );
+//   void computeCDT(
+//     const DRT::Element*                     xfemElement,
+//     const map<int,LINALG::Matrix<3,1> >&    currentcutterpositions,
+//     map< int, DomainIntCells >&             domainintcells,
+//     map< int, BoundaryIntCells >&           boundaryintcells
+//     );
 
 
   /*!
@@ -961,13 +960,13 @@ class Intersection
   \param domainintcells           (out)   : list of domainintegrationcells for each intersected element
   \param out                      (out)   : output data structure of TetGen
   */
-  void recoverCurvedInterface(
-    const DRT::Element*                         xfemElement,
-    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
-    map< int, BoundaryIntCells >&               boundaryintcells,
-    tetgenio&                                   out,
-    bool 							                          recovery
-    );
+//   void recoverCurvedInterface(
+//     const DRT::Element*                         xfemElement,
+//     const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
+//     map< int, BoundaryIntCells >&               boundaryintcells,
+//     tetgenio&                                   out,
+//     bool 							                          recovery
+//     );
 
 
  	/*!
@@ -977,12 +976,12 @@ class Intersection
   \param domainintcells           (out)   :   list of domainintegrationcells for each intersected element
   \param out                      (out)   :   output data structure of TetGen
   */
-  void storeIntCells(
-  	const DRT::Element*                        xfemElement,
-  	const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  ///< current positions of all cutter nodes
-  	map< int, BoundaryIntCells >&              boundaryintcells,
-  	tetgenio&                                  out
-    );
+//   void storeIntCells(
+//   	const DRT::Element*                        xfemElement,
+//   	const map<int,LINALG::Matrix<3,1> >&       currentcutterpositions,  ///< current positions of all cutter nodes
+//   	map< int, BoundaryIntCells >&              boundaryintcells,
+//   	tetgenio&                                  out
+//     );
 
 
   /*!
@@ -1006,10 +1005,10 @@ class Intersection
   \param currentcutterpositions   (in)    :   current cutter node positions
   \param out                      (out)   :   output data structure of TetGen
   */
-  void liftAllSteinerPoints(
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    tetgenio&                             out
-    );
+//   void liftAllSteinerPoints(
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     tetgenio&                             out
+//     );
 
 
   /*!
@@ -1019,11 +1018,11 @@ class Intersection
   \param adjacentFacemarkerList   (out)    :   list of face marker of each adjacent face
   \param out                      (in)     :   output data structure of TetGen
   */
-  void locateSteinerPoints(
-    vector< vector<int> >&      adjacentFacesList,
-    vector< vector<int> >&      adjacentFacemarkerList,
-    const tetgenio&             out
-    ) const;
+//   void locateSteinerPoints(
+//     vector< vector<int> >&      adjacentFacesList,
+//     vector< vector<int> >&      adjacentFacemarkerList,
+//     const tetgenio&             out
+//     ) const;
 
 
   /*!
@@ -1041,17 +1040,17 @@ class Intersection
   \param out                      (in)     :   output data structure of TetGen
   \return steiner type S_SURAFCE S_EDGE S_BOUNDARY
   */
-  GEO::SteinerType decideSteinerCase(
-    const int                             steinerIndex,
-    int&                                  lineIndex,
-    int&                                  cutterIndex,
-    const vector< vector<int> >&          adjacentFacesList,
-    const vector< vector<int> >&          adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    LINALG::Matrix<3,1>&                  edgePoint,
-    LINALG::Matrix<3,1>&                  oppositePoint,
-    const tetgenio&                       out
-    ) const;
+//   GEO::SteinerType decideSteinerCase(
+//     const int                             steinerIndex,
+//     int&                                  lineIndex,
+//     int&                                  cutterIndex,
+//     const vector< vector<int> >&          adjacentFacesList,
+//     const vector< vector<int> >&          adjacentFacemarkerList,
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     LINALG::Matrix<3,1>&                  edgePoint,
+//     LINALG::Matrix<3,1>&                  oppositePoint,
+//     const tetgenio&                       out
+//     ) const;
 
 
   /*!
@@ -1063,13 +1062,13 @@ class Intersection
   \param currentcutterpositions   (in)     :   current cutter node positions
   \param out                      (in)     :   output data structure of TetGen
   */
-  void liftSteinerPointOnSurface(
-    const int                             steinerIndex,
-    const vector<vector<int> >&           adjacentFacesList,
-    const vector<vector<int> >&           adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    tetgenio&                             out
-    );
+//   void liftSteinerPointOnSurface(
+//     const int                             steinerIndex,
+//     const vector<vector<int> >&           adjacentFacesList,
+//     const vector<vector<int> >&           adjacentFacemarkerList,
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     tetgenio&                             out
+//     );
 
 
   /*!
@@ -1085,16 +1084,16 @@ class Intersection
   \param currentcutterpositions   (in)     :   current cutter node positions
   \param out                      (in/out) :   output data structure of TetGen
   */
-  void liftSteinerPointOnEdge(
-    const int                             steinerIndex,
-    int                                   lineIndex,
-    const int                             cutterIndex,
-    LINALG::Matrix<3,1>&                  edgePoint,
-    LINALG::Matrix<3,1>&                  oppositePoint,
-    const vector<vector<int> >&           adjacentFacesList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    tetgenio&                             out
-    );
+//   void liftSteinerPointOnEdge(
+//     const int                             steinerIndex,
+//     int                                   lineIndex,
+//     const int                             cutterIndex,
+//     LINALG::Matrix<3,1>&                  edgePoint,
+//     LINALG::Matrix<3,1>&                  oppositePoint,
+//     const vector<vector<int> >&           adjacentFacesList,
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     tetgenio&                             out
+//     );
 
 
   /*!
@@ -1106,13 +1105,13 @@ class Intersection
   \param currentcutterpositions   (in)        :   current cutter node positions
   \param out                      (in/out)    :   output data structure of TetGen
   */
-  void liftSteinerPointOnBoundary(
-    const int                             steinerIndex,
-    const vector<vector<int> >&           adjacentFacesList,
-    const vector<vector<int> >&           adjacentFacemarkerList,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    tetgenio&                             out
-    );
+//   void liftSteinerPointOnBoundary(
+//     const int                             steinerIndex,
+//     const vector<vector<int> >&           adjacentFacesList,
+//     const vector<vector<int> >&           adjacentFacemarkerList,
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     tetgenio&                             out
+//     );
 
 
   /*!
@@ -1125,13 +1124,13 @@ class Intersection
   \param order                (out)   : order the tetrahedron corner points appear
   \param out                  (in)    : output data structure of TetGen
   */
-  void getTetrahedronInformation(
-    const int           tetIndex,
-    const int           faceIndex,
-    vector<int>&        tetraCornerIndices,
-    vector<int>&        order,
-    const tetgenio&     out
-    ) const;
+//   void getTetrahedronInformation(
+//     const int           tetIndex,
+//     const int           faceIndex,
+//     vector<int>&        tetraCornerIndices,
+//     vector<int>&        order,
+//     const tetgenio&     out
+//     ) const;
 
 
   /*!
@@ -1143,11 +1142,11 @@ class Intersection
                                         configuration of the xfem element
   \param out                  (in)    : output data structure of TetGen
   */
-  void getTetrahedronNodes(
-    vector<LINALG::Matrix<3,1> >&       tetraCornerNodes,
-    const vector<int>&                  tetraCornerIndices,
-    const tetgenio&                     out
-    ) const;
+//   void getTetrahedronNodes(
+//     vector<LINALG::Matrix<3,1> >&       tetraCornerNodes,
+//     const vector<int>&                  tetraCornerIndices,
+//     const tetgenio&                     out
+//     ) const;
 
 
    /*!
@@ -1164,17 +1163,17 @@ class Intersection
    \param currentcutterpositions   (in)    :   current cutter node positions
    \param out                      (in)    :   output data structure of TetGen
    */
-  void computeHigherOrderPoint(
-    const int                             index1,
-    const int                             index2,
-    const int                             faceIndex,
-    const int                             faceMarker,
-    const int                             globalHigherOrderIndex,
-    const vector<int>&                    tetraCornerIndices,
-    const vector<LINALG::Matrix<3,1> >&   tetraCornerNodes,
-    const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
-    tetgenio&                             out
-    );
+//   void computeHigherOrderPoint(
+//     const int                             index1,
+//     const int                             index2,
+//     const int                             faceIndex,
+//     const int                             faceMarker,
+//     const int                             globalHigherOrderIndex,
+//     const vector<int>&                    tetraCornerIndices,
+//     const vector<LINALG::Matrix<3,1> >&   tetraCornerNodes,
+//     const map<int,LINALG::Matrix<3,1> >&  currentcutterpositions,
+//     tetgenio&                             out
+//     );
 
 
   /*!
@@ -1186,11 +1185,11 @@ class Intersection
   \param steinerPointIndex    (in)    :   index of the Steiner point
   \return vector of point indices
   */
-  vector<int> getPointIndices(
-    const tetgenio&   out,
-    const int         trifaceIndex,
-    const int         steinerPointIndex
-    ) const;
+//   vector<int> getPointIndices(
+//     const tetgenio&   out,
+//     const int         trifaceIndex,
+//     const int         steinerPointIndex
+//     ) const;
 
 
   /*!
@@ -1210,17 +1209,17 @@ class Intersection
   \param plane                    (out)   : nodes of the normal and plane
   \param out                      (in)    : output data structure of tetGen
   */
-  void computeIntersectionNormalA(
-    const bool                              onBoundary,
-    const int                               index1,
-    const int                               index2,
-    const int                               oppositePointIndex,
-    const int                               globalHigherOrderIndex,
-    const vector<int>&                      tetraCornerIndices,
-    const vector<LINALG::Matrix<3,1> >&     tetraCornerNodes,
-    vector<LINALG::Matrix<3,1> >&           plane,
-    const tetgenio&                         out
-    ) const;
+//   void computeIntersectionNormalA(
+//     const bool                              onBoundary,
+//     const int                               index1,
+//     const int                               index2,
+//     const int                               oppositePointIndex,
+//     const int                               globalHigherOrderIndex,
+//     const vector<int>&                      tetraCornerIndices,
+//     const vector<LINALG::Matrix<3,1> >&     tetraCornerNodes,
+//     vector<LINALG::Matrix<3,1> >&           plane,
+//     const tetgenio&                         out
+//     ) const;
 
 
   /*!
@@ -1234,15 +1233,15 @@ class Intersection
   \param plane                    (out)   : nodes of the normal and plane
   \param out                      (in)    : output data structure of tetGen
   */
-  void computeIntersectionNormalB(
-    const int                                 index1,
-    const int                                 index2,
-    const int                                 faceIndex,
-    const int                                 adjacentFaceIndex,
-    const int                                 globalHigherOrderIndex,
-    vector<LINALG::Matrix<3,1> >&             plane,
-    const tetgenio&                           out
-    ) const;
+//   void computeIntersectionNormalB(
+//     const int                                 index1,
+//     const int                                 index2,
+//     const int                                 faceIndex,
+//     const int                                 adjacentFaceIndex,
+//     const int                                 globalHigherOrderIndex,
+//     vector<LINALG::Matrix<3,1> >&             plane,
+//     const tetgenio&                           out
+//     ) const;
 
 
   /*!
@@ -1255,13 +1254,13 @@ class Intersection
   \param plane                    (out)   : nodes of the normal and plane
   \param out                      (in)    : output data structure of tetGen
   */
-  void computeIntersectionNormalC(
-    const int                               steinerIndex,
-    const int                               edgeIndex,
-    const int                               oppositeIndex,
-    vector<LINALG::Matrix<3,1> >&           plane,
-    const tetgenio&                         out
-    ) const;
+//   void computeIntersectionNormalC(
+//     const int                               steinerIndex,
+//     const int                               edgeIndex,
+//     const int                               oppositeIndex,
+//     vector<LINALG::Matrix<3,1> >&           plane,
+//     const tetgenio&                         out
+//     ) const;
 
 
   /*!
@@ -1289,15 +1288,15 @@ class Intersection
   \param out                      (in)   : output data structure of tetGen
   \return the index of the face marker of the adjacent facet
   */
-  void findAdjacentFace(
-    const int         edgeIndex1,
-    const int         edgeIndex2,
-    const int         faceMarker,
-    int&              adjacentFaceMarker,
-    const int         faceIndex,
-    int&              adjacentFaceIndex,
-    const tetgenio&   out
-    ) const;
+//   void findAdjacentFace(
+//     const int         edgeIndex1,
+//     const int         edgeIndex2,
+//     const int         faceMarker,
+//     int&              adjacentFaceMarker,
+//     const int         faceIndex,
+//     int&              adjacentFaceIndex,
+//     const tetgenio&   out
+//     ) const;
 
 
   /*!
@@ -1311,14 +1310,14 @@ class Intersection
   \param out                      (in)    : output data structure of tetGen
   \return true if common edge was found, false otherwise
   */
-  bool findCommonFaceEdge(
-    const int                     faceIndex1,
-    const int                     faceIndex2,
-    const vector<int>&            adjacentFacesList,
-    LINALG::Matrix<3,1>&          edgePoint,
-    LINALG::Matrix<3,1>&          oppositePoint,
-    const tetgenio&               out
-    ) const;
+//   bool findCommonFaceEdge(
+//     const int                     faceIndex1,
+//     const int                     faceIndex2,
+//     const vector<int>&            adjacentFacesList,
+//     LINALG::Matrix<3,1>&          edgePoint,
+//     LINALG::Matrix<3,1>&          oppositePoint,
+//     const tetgenio&               out
+//     ) const;
 
 
   /*!
@@ -1350,12 +1349,12 @@ class Intersection
   \param out                      (in)   : output data structure of tetGen
   \return the line index of the intersection line element of the given cutter element
   */
-  int findEdgeOppositeIndex(
-    const int                                 edgeIndex1,
-    const int                                 edgeIndex2,
-    const int                                 adjacentFaceIndex,
-    const tetgenio&                           out
-    ) const;
+//   int findEdgeOppositeIndex(
+//     const int                                 edgeIndex1,
+//     const int                                 edgeIndex2,
+//     const int                                 adjacentFaceIndex,
+//     const tetgenio&                           out
+//     ) const;
 
 
   /*!
@@ -1391,15 +1390,15 @@ class Intersection
   \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
   \param out                      (in)    : output data structure of tetGen
   */
-  void storeHigherOrderNode(
-    const bool                                  normal,
-    const int                                   globalHigherOrderIndex,
-    const int                                   lineIndex,
-    LINALG::Matrix<3,1>&                        xsi,
-    DRT::Element*                               cutterElement,
-    const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
-    tetgenio&                                   out
-    ) const;
+//   void storeHigherOrderNode(
+//     const bool                                  normal,
+//     const int                                   globalHigherOrderIndex,
+//     const int                                   lineIndex,
+//     LINALG::Matrix<3,1>&                        xsi,
+//     DRT::Element*                               cutterElement,
+//     const map<int,LINALG::Matrix<3,1> >&        currentcutterpositions,
+//     tetgenio&                                   out
+//     ) const;
 
 
   /*!
@@ -1409,12 +1408,12 @@ class Intersection
   \param out                  (in)        :   tetgenio output data structure
   \param higherorder          (in)        :   boll value to decide if linear or higherorder
   */
-  void addCellsToDomainIntCellsMap(
-    const DRT::Element*               xfemElement,
-    map< int, DomainIntCells >&       domainintcells,
-    const tetgenio&                   out,
-    bool                              higherorder
-    ) const;
+//   void addCellsToDomainIntCellsMap(
+//     const DRT::Element*               xfemElement,
+//     map< int, DomainIntCells >&       domainintcells,
+//     const tetgenio&                   out,
+//     bool                              higherorder
+//     ) const;
 
 
   /*!
@@ -1429,17 +1428,17 @@ class Intersection
   \param boundaryCoord            (out)       :   point coordinates of the triangular face in cutter configuration
   \param out                      (in)        :   tetgenio output data structure
   */
-  void addCellsToBoundaryIntCellsMap(
-  	const int                            trifaceIndex,
-  	const int                            cornerIndex,
-  	const int                            globalHigherOrderIndex,
-  	const int                            faceMarker,
-  	const map<int,LINALG::Matrix<3,1> >& currentcutterpositions,
-    LINALG::SerialDenseMatrix&           eleDomainCoord,
-    LINALG::SerialDenseMatrix&           eleBoundaryCoord,
-    LINALG::SerialDenseMatrix&           physDomainCoord,
-  	const tetgenio&                	     out
-    ) const;
+//   void addCellsToBoundaryIntCellsMap(
+//   	const int                            trifaceIndex,
+//   	const int                            cornerIndex,
+//   	const int                            globalHigherOrderIndex,
+//   	const int                            faceMarker,
+//   	const map<int,LINALG::Matrix<3,1> >& currentcutterpositions,
+//     LINALG::SerialDenseMatrix&           eleDomainCoord,
+//     LINALG::SerialDenseMatrix&           eleBoundaryCoord,
+//     LINALG::SerialDenseMatrix&           physDomainCoord,
+//   	const tetgenio&                	     out
+//     ) const;
 
 
   /*!
@@ -1552,13 +1551,13 @@ class Intersection
   \param timestepcounter   (in)       : timestepcounter
   */
 #ifdef QHULL
- 	void debugTetgenOutput(
- 	  tetgenio&             in,
- 	  tetgenio&             out,
- 	  const DRT::Element*   xfemElement,
-    vector<int>&          elementIds,
-    int                   timestepcounter
-    ) const;
+//  	void debugTetgenOutput(
+//  	  tetgenio&             in,
+//  	  tetgenio&             out,
+//  	  const DRT::Element*   xfemElement,
+//     vector<int>&          elementIds,
+//     int                   timestepcounter
+//     ) const;
 #endif
 
   /*!
@@ -1569,10 +1568,10 @@ class Intersection
   \param index            (in)        : index of the xfem element
   \param out              (in)        : tetgenio output data structure
   */
-  void printTetViewOutput(
-    int             index,
-    tetgenio&       out
-    ) const;
+//   void printTetViewOutput(
+//     int             index,
+//     tetgenio&       out
+//     ) const;
 
 
   /*!
@@ -1583,11 +1582,11 @@ class Intersection
   \param index            (in)        : index of the xfem element
   \param out              (in)        : tetgenio output data structure
   */
-  void printTetViewOutputPLC(
-    const DRT::Element*   xfemElement,
-    int                   index,
-    tetgenio&             in
-    ) const;
+//   void printTetViewOutputPLC(
+//     const DRT::Element*   xfemElement,
+//     int                   index,
+//     tetgenio&             in
+//     ) const;
 
 
   /*!
@@ -1596,10 +1595,10 @@ class Intersection
   \param eleId            (in)        : id of the xfem element
   \param out              (in)        : tetgenio output data structure
   */
-  void debugFaceMarker(
-  	const int 				 eleId,
-  	tetgenio&					 out
-  	) const;
+//   void debugFaceMarker(
+//   	const int 				 eleId,
+//   	tetgenio&					 out
+//   	) const;
 
 
   /*!
@@ -1662,10 +1661,10 @@ class Intersection
   \param out                (in)        : out
   */
   #ifdef QHULL
-  void debugTetVolumes(
-      const DRT::Element*       xfemElement,
-      tetgenio&                 out
-      );
+//   void debugTetVolumes(
+//       const DRT::Element*       xfemElement,
+//       tetgenio&                 out
+//       );
   #endif
 
 };

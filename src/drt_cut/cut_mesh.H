@@ -15,9 +15,9 @@
 
 #include "../drt_lib/drt_element.H"
 
-#include "cut_tetgen.H"
 #include "cut_boundingbox.H"
 #include "cut_point.H"
+#include "cut_facet.H"
 
 namespace GEO
 {
@@ -54,14 +54,6 @@ class Mesh
 public:
 
   Mesh( double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
-
-#ifdef QHULL
-
-  void AddTetgen( const tetgenio & out );
-
-  void ExtractTetgen( tetgenio & out );
-
-#endif
 
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
@@ -105,7 +97,7 @@ public:
 
   Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
-  void SelfCut();
+//   void SelfCut();
 
   void Cut( Mesh & mesh, std::set<Element*> & elements_done );
 
@@ -124,6 +116,10 @@ public:
   void FindNodalDOFSets();
 
   void CreateIntegrationCells();
+
+#ifdef DEBUG
+  void TestElementVolume();
+#endif
 
   void Status();
 

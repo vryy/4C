@@ -99,7 +99,7 @@ public:
     facets_.insert( facet );
   }
 
-  Edge * CommonEdge( Point * other );
+  void CommonEdge( Point * other, std::set<Edge *> & edges );
 
   Line * CommonLine( Point * other );
 
@@ -194,26 +194,31 @@ inline std::ostream & operator<<( std::ostream & stream, Point * point )
   return stream;
 }
 
-class PointPidLess
+inline int EntityId( const Point & p ) { return p.Pid(); }
+
+template <class T>
+class EntityIdLess
 {
 public:
 
-  bool operator()( const Point& p1, const Point& p2 ) const
+  bool operator()( const T& p1, const T& p2 ) const
   {
-    return p1.Pid() < p2.Pid();
+    return EntityId( p1 ) < EntityId( p2 );
   }
 
-  bool operator()( const Point* p1, const Point* p2 ) const
+  bool operator()( const T* p1, const T* p2 ) const
   {
-    return p1->Pid() < p2->Pid();
+    return EntityId( *p1 ) < EntityId( *p2 );
   }
 
-  bool operator()( const Teuchos::RCP<Point> p1, const Teuchos::RCP<Point> p2 ) const
+  bool operator()( const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2 ) const
   {
-    return p1->Pid() < p2->Pid();
+    return EntityId( *p1 ) < EntityId( *p2 );
   }
 
 };
+
+typedef EntityIdLess<Point> PointPidLess;
 
 class PointPositionLess
 {
@@ -307,6 +312,66 @@ private:
   Side * side1_;
   Side * side2_;
 };
+
+inline void FindCommonSides( const std::vector<Point*> & side, std::set<Side*> & sides )
+{
+  std::vector<Point*>::const_iterator is = side.begin();
+  sides = ( *is )->CutSides();
+  for ( ++is; is!=side.end(); ++is )
+  {
+    Point * p = *is;
+    p->Intersection( sides );
+    if ( sides.size()==0 )
+    {
+      break;
+    }
+  }
+}
+
+inline void FindCommonSides( Point * p1, Point * p2, Point * p3, std::set<Side*> & sides )
+{
+  sides = p1->CutSides();
+  p2->Intersection( sides );
+  p3->Intersection( sides );
+}
+
+inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Side*> & sides )
+{
+  sides = p1->CutSides();
+  p2->Intersection( sides );
+  p3->Intersection( sides );
+  p4->Intersection( sides );
+}
+
+inline void FindCommonFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
+{
+  std::vector<Point*>::const_iterator is = side.begin();
+  facets = ( *is )->Facets();
+  for ( ++is; is!=side.end(); ++is )
+  {
+    Point * p = *is;
+    p->Intersection( facets );
+    if ( facets.size()==0 )
+    {
+      break;
+    }
+  }
+}
+
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, std::set<Facet*> & facets )
+{
+  facets = p1->Facets();
+  p2->Intersection( facets );
+  p3->Intersection( facets );
+}
+
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Facet*> & facets )
+{
+  facets = p1->Facets();
+  p2->Intersection( facets );
+  p3->Intersection( facets );
+  p4->Intersection( facets );
+}
 
 }
 }

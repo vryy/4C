@@ -45,8 +45,6 @@ public:
 
   void Cut();
 
-  void SelfCut();
-
   Node * GetNode( int nid ) const;
 
   ElementHandle * GetElement( int eid ) const;

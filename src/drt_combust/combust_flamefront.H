@@ -16,7 +16,6 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "combust_refinementcell.H"
-#include "../drt_cut/cut_tetgen.H"
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"
@@ -222,6 +221,7 @@ namespace COMBUST
         GEO::BoundaryIntCells& boundaryintcelllist
     );
 
+#if 0
     /// call external program TetGen to generate tetrahedral domain integration cells
     void CallTetGen(
             const std::vector<std::vector<double> >&  pointlist,
@@ -241,6 +241,7 @@ namespace COMBUST
             const LINALG::SerialDenseMatrix  xyze,
             const std::vector<double>&       gfuncvalue
             );
+#endif
 #endif
 
     /// decide which domain an integration cell belongs to (based on associated element)

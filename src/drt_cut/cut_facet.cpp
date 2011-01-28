@@ -9,8 +9,6 @@
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
 
-#include "cell_cell.H"
-
 GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
   : points_( points ),
     parentside_( side ),
@@ -96,72 +94,6 @@ int GEO::CUT::Facet::PositionSideId()
   throw std::runtime_error( "unhandled position" );
 }
 
-#ifdef QHULL
-void GEO::CUT::Facet::GenerateTetgen( Mesh & mesh, Element * element, tetgenio::facet & f, int num, int & marker, const std::vector<Point*> & pointlist )
-{
-  f.numberofpolygons = 1 + holes_.size();
-  f.polygonlist = new tetgenio::polygon[f.numberofpolygons];
-
-  f.numberofholes = 0;
-  f.holelist = NULL;
-
-  LINALG::Matrix<3,1> x;
-
-  if ( IsPlanar( mesh ) )
-  {
-    GeneratePolygon( f.polygonlist[0], points_, pointlist, x );
-
-    int pos = 0;
-    for ( std::set<std::vector<Point*> >::iterator i=holes_.begin();
-          i!=holes_.end();
-          ++i )
-    {
-      const std::vector<Point*> & points = *i;
-      GeneratePolygon( f.polygonlist[pos+1], points, pointlist, x );
-      pos += 1;
-    }
-  }
-  else
-  {
-    GeneratePolygon( f.polygonlist[0], triangulation_[num], pointlist, x );
-  }
-
-  marker = PositionSideId();
-}
-#endif
-
-#ifdef QHULL
-void GEO::CUT::Facet::GeneratePolygon( tetgenio::polygon & p,
-                             const std::vector<Point*> & points,
-                             const std::vector<Point*> & pointlist,
-                             LINALG::Matrix<3,1> & mid )
-{
-  p.numberofvertices = points.size();
-  p.vertexlist = new int[p.numberofvertices];
-
-  mid = 0;
-  LINALG::Matrix<3,1> x;
-
-  int pos = 0;
-  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-  {
-    Point * point = *i;
-    point->Coordinates( x.A() );
-    mid.Update( 1, x, 1 );
-    std::vector<Point*>::const_iterator iter = std::find( pointlist.begin(), pointlist.end(), point );
-    if ( iter==pointlist.end() )
-    {
-      throw std::runtime_error( "facet point not in point list" );
-    }
-    p.vertexlist[pos] = iter - pointlist.begin();
-    pos += 1;
-  }
-
-  // assume planar holes!
-  mid.Scale( 1./points.size() );
-}
-#endif
-
 void GEO::CUT::Facet::Coordinates( double * x )
 {
   for ( std::vector<Point*>::const_iterator i=points_.begin(); i!=points_.end(); ++i )
@@ -183,20 +115,15 @@ void GEO::CUT::Facet::CornerCoordinates( double * x )
   }
 }
 
-void GEO::CUT::Facet::GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & points )
+void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
 {
   if ( IsPlanar( mesh ) )
   {
-    std::copy( points_.begin(), points_.end(),
-               std::inserter( points, points.begin() ) );
-
-    for ( std::set<std::vector<Point*> >::iterator i=holes_.begin();
-          i!=holes_.end();
-          ++i )
+    std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
+    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
-      const std::vector<Point*> & hole_points = *i;
-      std::copy( hole_points.begin(), hole_points.end(),
-                 std::inserter( points, points.begin() ) );
+      Facet * h = *i;
+      h->GetAllPoints( mesh, cut_points );
     }
   }
   else
@@ -207,18 +134,8 @@ void GEO::CUT::Facet::GetPoints( Mesh & mesh, std::set<Point*, PointPidLess> & p
     {
       std::vector<Point*> & tri = *i;
       std::copy( tri.begin(), tri.end(),
-                 std::inserter( points, points.begin() ) );
+                 std::inserter( cut_points, cut_points.begin() ) );
     }
-  }
-}
-
-void GEO::CUT::Facet::GetAllPoints( std::set<Point*> & cut_points )
-{
-  std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
-  for ( std::set<std::vector<Point*> >::iterator i=holes_.begin(); i!=holes_.end(); ++i )
-  {
-    const std::vector<Point*> & h = *i;
-    std::copy( h.begin(), h.end(), std::inserter( cut_points, cut_points.begin() ) );
   }
 }
 
@@ -259,6 +176,11 @@ void GEO::CUT::Facet::CreateLinearElements( Mesh & mesh )
     GetNodalIds( mesh, t, nids );
     mesh.CreateTri3( SideId(), nids );
   }
+}
+
+void GEO::CUT::Facet::AddHole( Facet * hole )
+{
+  holes_.insert( hole );
 }
 
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh )
@@ -397,7 +319,9 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
 
   x2.Scale( 1./points.size() );
 
-  Point * p1 = mesh.NewPoint( x2.A(), NULL, NULL );
+  Point * p1 = mesh.NewPoint( x2.A(), NULL, NULL /*ParentSide()*/ );
+  p1->Position( Position() );
+  p1->Register( this );
   triangulation_.clear();
 
   for ( std::vector<std::vector<Point*> >::iterator i=lines.begin(); i!=lines.end(); ++i )
@@ -519,96 +443,91 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Fac
     }
   }
 
-  for ( std::set<std::vector<Point*> >::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
   {
-    const std::vector<Point*> & hole = *i;
-    length = hole.size();
-
-    for ( unsigned i=0; i<length; ++i )
-    {
-      unsigned j = ( i+1 ) % length;
-
-      Point * p1 = hole[i];
-      Point * p2 = hole[j];
-
-      if ( p1->Id() < p2->Id() )
-      {
-        lines[std::make_pair( p1, p2 )].insert( this );
-      }
-      else
-      {
-        lines[std::make_pair( p2, p1 )].insert( this );
-      }
-    }
+    Facet * hole = *i;
+    hole->GetLines( lines );
   }
 }
 
-// DRT::Element::DiscretizationType GEO::CUT::Facet::Shape()
-// {
-//   if ( holes_.size()==0 )
-//   {
-//     if ( points_.size()==3 )
-//     {
-//       return DRT::Element::tri3;
-//     }
-//     if ( points_.size()==4 )
-//     {
-//       return DRT::Element::quad4;
-//     }
-//   }
-//   return DRT::Element::dis_none;
-// }
-
-
-void GEO::CUT::Facet::CreateFacets( GEO::CELL::Cell * cell, std::set<GEO::CELL::Facet *> & nf )
+bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
 {
-  // Convert current facet to cell facets. One of the places where real work
-  // might have to be done.
-  //
-  // - we might have holes
-  // - cut facets might need to be split into triangles
-
-//   if ( position_==Point::oncutsurface )
-//   {
-//   }
-//   else
-//   {
-//   }
-
-  if ( holes_.size()>0 )
+  if ( IsLine( points_, p1, p2 ) )
+    return true;
+  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
   {
-    throw std::runtime_error( "holes not supported right now" );
+    Facet * hole = *i;
+    if ( hole->IsLine( p1, p2 ) )
+      return true;
   }
-
-  if ( triangulation_.size()>0 )
-  {
-    for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin(); i!=triangulation_.end(); ++i )
-    {
-      std::vector<Point*> & t = *i;
-      nf.insert( CreateCellFacet( cell, t ) );
-    }
-  }
-  else
-  {
-    nf.insert( CreateCellFacet( cell, points_ ) );
-  }
+  return false;
 }
 
-GEO::CELL::Facet * GEO::CUT::Facet::CreateCellFacet( GEO::CELL::Cell * cell, const std::vector<Point*> & points )
+bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 )
 {
-  std::vector<GEO::CELL::Point*> ps;
-  ps.reserve( points.size() );
-  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+  std::vector<Point*>::const_iterator i1 = std::find( points.begin(), points.end(), p1 );
+  if ( i1!=points_.end() )
+  {
+    std::vector<Point*>::const_iterator i2 = i1 + 1;
+    if ( i2!=points_.end() )
+    {
+      if ( *i2 == p2 )
+      {
+        return true;
+      }
+    }
+    else
+    {
+      i2 = points_.begin();
+      if ( *i2 == p2 )
+      {
+        return true;
+      }
+    }
+    if ( i1!=points_.begin() )
+    {
+      i2 = i1 - 1;
+      if ( *i2 == p2 )
+      {
+        return true;
+      }
+    }
+    else
+    {
+      i2 = points.end() - 1;
+      if ( *i2 == p2 )
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool GEO::CUT::Facet::Contains( Point * p ) const
+{
+  if ( std::find( points_.begin(), points_.end(), p ) != points_.end() )
+    return true;
+  for ( std::set<Facet*>::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  {
+    Facet * hole = *i;
+    if ( hole->Contains( p ) )
+      return true;
+  }
+  return false;
+}
+
+bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side ) const
+{
+  for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
   {
     Point * p = *i;
-    ps.push_back( cell->NewPoint( p ) );
+    if ( not Contains( p ) )
+    {
+      return false;
+    }
   }
-  return cell->NewFacet( this, ps );
-}
-
-bool GEO::CUT::Facet::Contains( Point * p )
-{
-  return std::find( points_.begin(), points_.end(), p ) != points_.end();
+  return true;
 }
 
 bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side )
@@ -636,23 +555,6 @@ bool GEO::CUT::Facet::Touches( Facet * f )
   }
   return false;
 }
-
-// bool GEO::CUT::Facet::PositiveDistance( Facet * f )
-// {
-//   LINALG::Matrix<3,1> x1;
-//   LINALG::Matrix<3,1> x2;
-//   LINALG::Matrix<3,1> x3;
-
-//   LINALG::Matrix<3,1> b1;
-//   LINALG::Matrix<3,1> b2;
-//   LINALG::Matrix<3,1> b3;
-
-//   unsigned i = Normal( points_, x1, x2, x3, b1, b2, b3 );
-//   if ( i==0 )
-//   {
-//     throw std::runtime_error( "straight line?!" );
-//   }
-// }
 
 void GEO::CUT::Facet::Neighbors( Point * p,
                                  const std::set<VolumeCell*> & cells,
@@ -896,12 +798,82 @@ void GEO::CUT::Facet::Print( std::ostream & stream )
 {
   if ( points_.size() > 0 )
   {
+    LINALG::Matrix<3,1> middle;
+    LINALG::Matrix<3,1> x;
+
+    middle = 0;
     for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = *i;
-      p->Plot( stream );
+      p->Coordinates( x.A() );
+      middle.Update( 1, x, 1 );
+      //p->Plot( stream );
     }
-    ( *points_.begin() )->Plot( stream );
+    middle.Scale( 1./points_.size() );
+    for ( unsigned i=0; i<=points_.size(); ++i )
+    {
+      Point * p = points_[i % points_.size()];
+      p->Coordinates( x.A() );
+      x.Update( -1, middle, 1 );
+      x.Scale( 0.8 );
+      x.Update( 1, middle, 1 );
+      stream << x( 0, 0 ) << " " << x( 1, 0 ) << " " << x( 2, 0 ) << "\n";
+    }
     stream << "\n\n";
+
+    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    {
+      Facet * hole = *i;
+      hole->Print( stream );
+    }
   }
+}
+
+bool GEO::CUT::Facet::IsTriangle( const std::vector<Point*> & tri ) const
+{
+  if ( tri.size()!=3 )
+    throw std::runtime_error( "three points expected" );
+
+  return points_.size()==3 and not IsTriangulated() and not HasHoles() and Contains( tri );
+}
+
+bool GEO::CUT::Facet::IsTriangulatedSide( const std::vector<Point*> & tri ) const
+{
+  if ( tri.size()!=3 )
+    throw std::runtime_error( "three points expected" );
+
+  for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation_.begin();
+        i!=triangulation_.end();
+        ++i )
+  {
+    const std::vector<Point*> & t = *i;
+    bool found = true;
+    for ( std::vector<Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
+    {
+      Point * p = *i;
+      if ( std::find( t.begin(), t.end(), p )==t.end() )
+      {
+        found = false;
+        break;
+      }
+    }
+    if ( found )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+unsigned GEO::CUT::Facet::NumPoints()
+{
+  unsigned numpoints = points_.size();
+  if ( IsTriangulated() )
+    return numpoints + 1;
+  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  {
+    Facet * hole = *i;
+    numpoints += hole->NumPoints();
+  }
+  return numpoints;
 }

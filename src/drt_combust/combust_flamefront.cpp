@@ -1910,7 +1910,7 @@ void COMBUST::FlameFront::FindFlameFront(
 
       const int numnode = cell->Ele()->NumNode();
 #if DEBUG
-      if (gfuncelement.size() != numnode)
+      if (gfuncelement.size() != static_cast<unsigned>( numnode ))
         dserror("number of G-Function values does not match number of element nodes");
 #endif
       // loop over all vertices of the refinement cell
@@ -3915,7 +3915,7 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
   }
 }
 
-
+#if 0
 #ifdef QHULL
 /*------------------------------------------------------------------------------------------------*
  | calls the CDT to create tetrahedral integration cells in TetGen format             henke 10/08 |
@@ -4073,8 +4073,9 @@ void COMBUST::FlameFront::CallTetGen(
   return;
 }
 #endif
+#endif
 
-
+#if 0
 #ifdef QHULL
 /*------------------------------------------------------------------------------------------------*
  | transform tetrahedral integration cells from TetGen format to BACI format          henke 10/08 |
@@ -4124,7 +4125,7 @@ void COMBUST::FlameFront::TransformIntegrationCells(
   return;
 }
 #endif
-
+#endif
 
 /*------------------------------------------------------------------------------------------------*
  | compute GfuncValue for hexahedral integration cell                              rasthofer 04/10|
