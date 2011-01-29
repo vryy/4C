@@ -1725,6 +1725,8 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 										}
 									}
 				}
+				else
+					cout<<"Homogeneous network"<<endl;
 			}
 			break;
 			// bundle network
@@ -1863,102 +1865,72 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			// layer
 			default:
 			{
-				cout<<"Layer"<<endl;
-				double halfthick = characlength_/2.0;
-				// compute normal
-				// cross product v_1 x v_2, plane normal
-				LINALG::Matrix<3,1> normal;
-				LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
-				LINALG::Matrix<3,1> secdir = testvolumepos_[1];
-				firstdir -= testvolumepos_[0];
-				secdir -= testvolumepos_[2];
-				normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
-				normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
-				normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
-				normal.Scale(1.0/normal.Norm2());
-				// upper and lower bound
-				//(have to find a more elegant way than this but for now it works)
-				std::vector<int> indices((int)testvolumepos_.size(),0);
-				switch((int)testvolumepos_.size())
-				{
-					//triangle
-					case 3:
-						for(int i=0; i<(int)indices.size(); i++)
-							indices[i] = i;
-					break;
-					// trapezoid
-					case 4:
-					{
-						indices[0] = 0;
-						indices[1] = 1;
-						indices[2] = 3;
-						indices[3] = 2;
-					}
-					break;
-					// hexagon
-					case 6:
-					{
-						indices[0] = 0;
-						indices[1] = 1;
-						indices[2] = 5;
-						indices[3] = 2;
-						indices[4] = 3;
-						indices[5] = 4;
-					}
-					break;
-					default: dserror("Incorrect number of intersection points!");
-				}
-
-				for(int i=1; i<(int)testvolumepos_.size()+1; i++)
-				{
-					int index0 = indices[(i-1)%(int)indices.size()];
-					int index1 = indices[i%(int)indices.size()];
-					int numsections = 10;
-
-					LINALG::SerialDenseMatrix loweredge(3,2);
-					LINALG::SerialDenseMatrix upperedge(3,2);
-					LINALG::SerialDenseMatrix connection0(3,2);
-					LINALG::SerialDenseMatrix connection1(3,2);
-					for(int k=0; k<loweredge.M(); k++)
-					{
-						loweredge(k,0) = testvolumepos_[index0](k)-halfthick*normal(k);
-						loweredge(k,1) = testvolumepos_[index1](k)-halfthick*normal(k);
-						upperedge(k,0) = testvolumepos_[index0](k)+halfthick*normal(k);
-						upperedge(k,1) = testvolumepos_[index1](k)+halfthick*normal(k);
-						connection0(k,0) = loweredge(k,0);
-						connection0(k,1) = upperedge(k,0);
-						connection1(k,0) = loweredge(k,1);
-						connection1(k,1) = upperedge(k,1);
-					}
-					// (long) edges
-					GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
-					GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
-					// connecting edges
-					GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
-					GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
-
-					// periodic boundary shift for connections
-
-					// upper edge
-					gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
-					gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2);
-					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-					// lower edge
-					gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2) << ",";
-					gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-					// connections
-					gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << testvolumepos_[index0](0)+halfthick*normal(0) << "," << testvolumepos_[index0](1)+halfthick*normal(1) << "," << testvolumepos_[index0](2)+halfthick*normal(2) << ",";
-					gmshfilecontent << testvolumepos_[index0](0)-halfthick*normal(0) << "," << testvolumepos_[index0](1)-halfthick*normal(1) << "," << testvolumepos_[index0](2)-halfthick*normal(2);
-					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-					gmshfilecontent << "SL(" << scientific;
-					gmshfilecontent << testvolumepos_[index1](0)+halfthick*normal(0) << "," << testvolumepos_[index1](1)+halfthick*normal(1) << "," << testvolumepos_[index1](2)+halfthick*normal(2) << ",";
-					gmshfilecontent << testvolumepos_[index1](0)-halfthick*normal(0) << "," << testvolumepos_[index1](1)-halfthick*normal(1) << "," << testvolumepos_[index1](2)-halfthick*normal(2);
-					gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
-				}
+              cout<<"Layer ("<<testvolumepos_.size()<<"-noded)"<<endl;
+              double halfthick = characlength_/2.0;
+              // compute normal
+              // cross product v_1 x v_2, plane normal
+              LINALG::Matrix<3,1> normal;
+              LINALG::Matrix<3,1> firstdir = testvolumepos_[1];
+              LINALG::Matrix<3,1> secdir = testvolumepos_[1];
+              firstdir -= testvolumepos_[0];
+              secdir -= testvolumepos_[2];
+              normal(0) = firstdir(1)*secdir(2) - firstdir(2)*secdir(1);
+              normal(1) = firstdir(2)*secdir(0) - firstdir(0)*secdir(2);
+              normal(2) = firstdir(0)*secdir(1) - firstdir(1)*secdir(0);
+              normal.Scale(1.0/normal.Norm2());
+              // upper and lower bound
+              // componentwise comparison between two points to determine whether or not their connection is an edge
+              // of the volume to visualize
+              for(int i=0; i<(int)testvolumepos_.size(); i++)
+                for(int j=0; j<(int)testvolumepos_.size(); j++)
+                  if(j>i) // consider entries above diagonal only
+                    for(int k=0; k<3; k++)
+                      if(fabs((testvolumepos_[i])(k)-(testvolumepos_[j])(k))<1e-7)
+                      {
+                        int numsections = 10;
+    
+                        LINALG::SerialDenseMatrix loweredge(3,2);
+                        LINALG::SerialDenseMatrix upperedge(3,2);
+                        LINALG::SerialDenseMatrix connection0(3,2);
+                        LINALG::SerialDenseMatrix connection1(3,2);
+                        for(int l=0; l<loweredge.M(); l++)
+                        {
+                          loweredge(l,0) = testvolumepos_[i](l)-halfthick*normal(l);
+                          loweredge(l,1) = testvolumepos_[j](l)-halfthick*normal(l);
+                          upperedge(l,0) = testvolumepos_[i](l)+halfthick*normal(l);
+                          upperedge(l,1) = testvolumepos_[j](l)+halfthick*normal(l);
+                          connection0(l,0) = loweredge(l,0);
+                          connection0(l,1) = upperedge(l,0);
+                          connection1(l,0) = loweredge(l,1);
+                          connection1(l,1) = upperedge(l,1);
+                        }
+                        // (long) edges
+                        GmshNetworkStructVolumePeriodic(loweredge,numsections,gmshfilecontent,color-0.5);
+                        GmshNetworkStructVolumePeriodic(upperedge,numsections,gmshfilecontent,color-0.5);
+                        // connecting edges
+                        GmshNetworkStructVolumePeriodic(connection0,4,gmshfilecontent,color-0.5);
+                        GmshNetworkStructVolumePeriodic(connection1,4,gmshfilecontent,color-0.5);
+                        // draw continous box also (for now)
+                        // upper edge
+                        gmshfilecontent << "SL(" << scientific;
+                        gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
+                        gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2);
+                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                        // lower edge
+                        gmshfilecontent << "SL(" << scientific;
+                        gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2) << ",";
+                        gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
+                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                        // connections
+                        gmshfilecontent << "SL(" << scientific;
+                        gmshfilecontent << testvolumepos_[i](0)+halfthick*normal(0) << "," << testvolumepos_[i](1)+halfthick*normal(1) << "," << testvolumepos_[i](2)+halfthick*normal(2) << ",";
+                        gmshfilecontent << testvolumepos_[i](0)-halfthick*normal(0) << "," << testvolumepos_[i](1)-halfthick*normal(1) << "," << testvolumepos_[i](2)-halfthick*normal(2);
+                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                        gmshfilecontent << "SL(" << scientific;
+                        gmshfilecontent << testvolumepos_[j](0)+halfthick*normal(0) << "," << testvolumepos_[j](1)+halfthick*normal(1) << "," << testvolumepos_[j](2)+halfthick*normal(2) << ",";
+                        gmshfilecontent << testvolumepos_[j](0)-halfthick*normal(0) << "," << testvolumepos_[j](1)-halfthick*normal(1) << "," << testvolumepos_[j](2)-halfthick*normal(2);
+                        gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
+                      }
 			}
 		}
 		// clear the vector
@@ -2764,6 +2736,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						int exponent = 1;
 
 						// loop as long as pr has not yet reached pthresh
+						bool converged = true;
 						while(!leaveloop)
 						{
 							int rcount = 0;
@@ -2781,26 +2754,35 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							exponent++;
 							niter[0]++;
 							// new radius
-							if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
+							if(exponent<=maxexponent)
 							{
-								// determine "growth direction"
-								double sign;
-								if(pr<pthresh)
-									sign = 1.0;
+								if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+								{
+									// determine "growth direction"
+									double sign;
+									if(pr<pthresh)
+										sign = 1.0;
+									else
+										sign = -1.0;
+									radius += sign*periodlength/pow(2.0,(double)exponent);
+								}
 								else
-									sign = -1.0;
-								radius += sign*periodlength/pow(2.0,(double)exponent);
+									leaveloop = true;
 							}
 							else
 							{
+								converged = false;
 								crosslinksinvolume[i] = rcount;
 								crossfraction[i] = pr;
 								leaveloop = true;
 							}
 						}
 						// store characteristic length and test sphere volume
-						characlength[i] = radius;
-						volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
+						if(converged)
+						{
+							characlength[i] = radius;
+							volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
+						}
 					}
 					break;
 					// cylindrical volume
@@ -2856,6 +2838,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						cyllength = deltaisecs.Norm2();
 
 						// calculate fraction of crosslinkers within cylinder
+						bool converged = true;
 						while(!leaveloop)
 						{
 							int rcount = 0;
@@ -2886,25 +2869,34 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 							exponent++;
 							niter[1]++;
 							// new radius
-							if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
+							if(exponent<=maxexponent)
 							{
-								// determine "growth direction"
-								double sign;
-								if(pr<pthresh)
-									sign = 1.0;
+								if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+								{
+									// determine "growth direction"
+									double sign;
+									if(pr<pthresh)
+										sign = 1.0;
+									else
+										sign = -1.0;
+									radius += sign*periodlength/pow(2.0,(double)exponent);
+								}
 								else
-									sign = -1.0;
-								radius += sign*periodlength/pow(2.0,(double)exponent);
+									leaveloop = true;
 							}
 							else
 							{
+								converged = false;
 								crosslinksinvolume[i] = rcount;
 								crossfraction[i] = pr;
 								leaveloop = true;
 							}
 						}
-						characlength[i] = radius;
-						volumes[i] = M_PI*radius*radius*cyllength;
+						if(converged)
+						{
+							characlength[i] = radius;
+							volumes[i] = M_PI*radius*radius*cyllength;
+						}
 					}
 					break;
 					// cuboid layer volume
@@ -2958,9 +2950,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
 						normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
 
-						// only calculate the volume if the layer vectors are not parallel (meaning we have a bundle)
-						if(normal.Norm2()>0.1)
+						// only proceed to volume calculation if there exist two linearly independent pairs of projected vectors
+						if(normal.Norm2()>0.9)
 						{
+							bool converged = true;
 							while(!leaveloop)
 							{
 								int rcount = 0;
@@ -2981,167 +2974,168 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								exponent++;
 								niter[2]++;
 
-								if((pr<pthresh-lowertol || pr>pthresh+uppertol) && exponent<=maxexponent)
+								if(exponent<=maxexponent)
 								{
-									double sign;
-									if(pr<pthresh)
-										sign = 1.0;
+									if((pr<pthresh-lowertol || pr>pthresh+uppertol))
+									{
+										double sign;
+										if(pr<pthresh)
+											sign = 1.0;
+										else
+											sign = -1.0;
+										thickness += sign*periodlength/pow(2.0,(double)exponent);
+									}
 									else
-										sign = -1.0;
-									thickness += sign*periodlength/pow(2.0,(double)exponent);
+										leaveloop = true;
 								}
 								else
 								{
+									converged = false;
 									crosslinksinvolume[i] = rcount;
 									crossfraction[i] = pr;
 									leaveloop = true;
 								}
 							}
-
 							// calculation of the volume
-							// cube face boundaries of jk-surface of cubical volume
-							LINALG::Matrix<3,2> surfaceboundaries;
-							for(int j=0; j<(int)surfaceboundaries.M(); j++)
+							if(converged)
 							{
-								surfaceboundaries(j,0) = (*centershift)(j);
-								surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
-							}
-
-							for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
-							{
-								for(int j=0; j<3; j++) // spatial component j
-									for(int k=0; k<3; k++) // spatial component k
-										if(k>j)// above diagonal
-											for(int l=0; l<3; l++) // spatial component l
-												if(l!=j && l!=k)
-												{
-													LINALG::Matrix<3,1> coords;
-													coords(l) = surfaceboundaries(l,surf);
-													for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
-														for(int m=0; m<(int)surfaceboundaries.M(); m++)
-															if(l!=m)
-															{
-																coords(m) = surfaceboundaries(m,edge);
-																for(int n=0; n<(int)surfaceboundaries.M(); n++)
-																	if(n!=m && n!=l)
-																	{
-																		coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
-																		double lowerbound = surfaceboundaries(n,0);
-																		double upperbound = surfaceboundaries(n,1);
-																		if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
+								// cube face boundaries of jk-surface of cubical volume
+								LINALG::Matrix<3,2> surfaceboundaries;
+								for(int j=0; j<(int)surfaceboundaries.M(); j++)
+								{
+									surfaceboundaries(j,0) = (*centershift)(j);
+									surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
+								}
+	
+								for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
+								{
+									for(int j=0; j<3; j++) // spatial component j
+										for(int k=0; k<3; k++) // spatial component k
+											if(k>j)// above diagonal
+												for(int l=0; l<3; l++) // spatial component l
+													if(l!=j && l!=k)
+													{
+														LINALG::Matrix<3,1> coords;
+														coords(l) = surfaceboundaries(l,surf);
+														for(int edge=0; edge<(int)surfaceboundaries.N(); edge++)
+															for(int m=0; m<(int)surfaceboundaries.M(); m++)
+																if(l!=m)
+																{
+																	coords(m) = surfaceboundaries(m,edge);
+																	for(int n=0; n<(int)surfaceboundaries.M(); n++)
+																		if(n!=m && n!=l)
 																		{
-																			bool redundant = false;
-																			// check for redundant entries
-																			if((int)interseccoords.size()>0)
+																			coords(n) = (((*cog)(l)-coords(l))*normal(l) - (coords(m)-(*cog)(m))*normal(m))/normal(n) + (*cog)(n);
+																			double lowerbound = surfaceboundaries(n,0);
+																			double upperbound = surfaceboundaries(n,1);
+																			if((coords(n)>= lowerbound || fabs(coords(n)-lowerbound)<1e-6) && (coords(n)<= upperbound || fabs(coords(n)-upperbound)<1e-6))
 																			{
-																				LINALG::Matrix<3,1> check = coords;
-																				for(int p=0; p<(int)interseccoords.size(); p++)
+																				bool redundant = false;
+																				// check for redundant entries
+																				if((int)interseccoords.size()>0)
 																				{
-																					check -= interseccoords[p];
-																					if(check.Norm2()<1e-4)
-																						redundant = true;
-																					check = coords;
+																					LINALG::Matrix<3,1> check = coords;
+																					for(int p=0; p<(int)interseccoords.size(); p++)
+																					{
+																						check -= interseccoords[p];
+																						if(check.Norm2()<1e-4)
+																							redundant = true;
+																						check = coords;
+																					}
+																				}
+																				if(!redundant)
+																				{
+																					interseccoords.push_back(coords);
+																					//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
+																					//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
+																					//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
 																				}
 																			}
-																			if(!redundant)
-																			{
-																				interseccoords.push_back(coords);
-																				//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
-																				//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
-																				//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
-																			}
 																		}
-																	}
-															}
-												}
-							}
-
-							//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
-							// calculate volume according to number of intersection points
-							switch((int)interseccoords.size())
-							{
-								// triangle
-								case 3:
-								{
-									// area of the triangle via cosine rule
-									LINALG::Matrix<3,1> c = interseccoords[0];
-									c -= interseccoords[1];
-									LINALG::Matrix<3,1> a = interseccoords[1];
-									a -= interseccoords[2];
-									LINALG::Matrix<3,1> b = interseccoords[0];
-									b -= interseccoords[2];
-									double cl = c.Norm2();
-									double al = a.Norm2();
-									double bl = b.Norm2();
-									double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
-									double h = bl * sin(alpha);
-
-									// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
-									volumes[i] = cl*h*thickness;
+																}
+													}
 								}
-								break;
-								// square/rectangle/trapezoid
-								case 4:
+	
+								//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
+								// calculate volume according to number of intersection points (only if crosslinker fraction calculation converged)
+								switch((int)interseccoords.size())
 								{
-									// edges
-									LINALG::Matrix<3,1> a = interseccoords[1];
-									a -= interseccoords[0];
-									LINALG::Matrix<3,1> c = interseccoords[3];
-									c -= interseccoords[2];
-									LINALG::Matrix<3,1> d = interseccoords[2];
-									d -= interseccoords[0];
-									// diagonal
-									LINALG::Matrix<3,1> f = interseccoords[2];
-									f -= interseccoords[1];
-									double al = a.Norm2();
-									double cl = c.Norm2();
-									double dl = d.Norm2();
-									double fl = f.Norm2();
-									double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
-									double h = dl * sin(alpha);
-
-									volumes[i] = (al+cl) * h * thickness;
-								}
-								break;
-								// hexahedron
-								case 6:
-								{
-									double hexvolume = 0.0;
-									// indices mapping correct order of hexagon edges
-									std::vector<int> indices((int)interseccoords.size(),0);
-									indices[0] = 0;
-									indices[1] = 1;
-									indices[2] = 5;
-									indices[3] = 2;
-									indices[4] = 3;
-									indices[5] = 4;
-
-									for(int j=1; j<(int)indices.size()+1; j++)
+									// triangle
+									case 3:
 									{
-										int index0 = indices[(j-1)%(int)indices.size()];
-										int index1 = indices[j%(int)indices.size()];
-										// get edge of j-th triangle within hexagon
-										LINALG::Matrix<3,1> a = interseccoords[index1];
-										a -= *cog;
-										LINALG::Matrix<3,1> b = interseccoords[index0];
-										b -= *cog;
-										LINALG::Matrix<3,1> c = interseccoords[index1];
-										c -= interseccoords[index0];
-
-
+										// area of the triangle via cosine rule
+										LINALG::Matrix<3,1> c = interseccoords[0];
+										c -= interseccoords[1];
+										LINALG::Matrix<3,1> a = interseccoords[1];
+										a -= interseccoords[2];
+										LINALG::Matrix<3,1> b = interseccoords[0];
+										b -= interseccoords[2];
+										double cl = c.Norm2();
 										double al = a.Norm2();
 										double bl = b.Norm2();
-										double cl = c.Norm2();
 										double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
 										double h = bl * sin(alpha);
-
-										hexvolume += cl*h*thickness;
+	
+										// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
+										volumes[i] = cl*h*thickness;
 									}
-									volumes[i] = hexvolume;
+									break;
+									// square/rectangle/trapezoid
+									case 4:
+									{
+										// edges
+										LINALG::Matrix<3,1> a = interseccoords[1];
+										a -= interseccoords[0];
+										LINALG::Matrix<3,1> c = interseccoords[3];
+										c -= interseccoords[2];
+										LINALG::Matrix<3,1> d = interseccoords[2];
+										d -= interseccoords[0];
+										// diagonal
+										LINALG::Matrix<3,1> f = interseccoords[2];
+										f -= interseccoords[1];
+										double al = a.Norm2();
+										double cl = c.Norm2();
+										double dl = d.Norm2();
+										double fl = f.Norm2();
+										double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
+										double h = dl * sin(alpha);
+	
+										volumes[i] = (al+cl) * h * thickness;
+									}
+									break;
+									// hexahedron
+									case 6:
+									{
+										double hexvolume = 0.0;
+										// indices mapping correct order of hexagon edges
+										for(int j=0; j<(int)interseccoords.size(); j++)
+											for(int k=0; k<(int)interseccoords.size(); k++)
+												if(k<j)
+													for(int l=0; l<3; l++)
+														if(fabs(interseccoords[i](l)-interseccoords[j](l))<1e-7)// components identical
+														{
+															// get edge of j-th triangle within hexagon
+															LINALG::Matrix<3,1> a = interseccoords[k];
+															a -= *cog;
+															LINALG::Matrix<3,1> b = interseccoords[j];
+															b -= *cog;
+															LINALG::Matrix<3,1> c = interseccoords[k];
+															c -= interseccoords[j];
+					
+															double al = a.Norm2();
+															double bl = b.Norm2();
+															double cl = c.Norm2();
+															double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
+															double h = bl * sin(alpha);
+					
+															hexvolume += cl*h*thickness;
+														}
+										volumes[i] = hexvolume;
+									}
+									break;
 								}
-								break;
+								characlength[i] = 2.0*thickness;
 							}
-							characlength[i] = 2.0*thickness;
 						}
 					}
 					break;
