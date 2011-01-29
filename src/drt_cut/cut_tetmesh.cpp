@@ -191,6 +191,7 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
   std::vector<std::string> options;
   options.push_back( "qhull d Qt Qbb Qc Pp" );
   options.push_back( "qhull d Qt Qbb Qc Qz Pp" );
+  options.push_back( "qhull d Qt Qbb Qc QJ Pp" );
 
   // If you want some debugging information replace the 0 pointer
   // with stdout or some other file open for writing.
