@@ -51,6 +51,7 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   is_stationary_(false),
   is_newton_(false),
   is_inconsistent_(false),
+  reaction_(false),
   physicaltype_(INPAR::FLUID::incompressible),
   tds_(INPAR::FLUID::subscales_none),
   transient_(INPAR::FLUID::inertia_stab_drop),
@@ -76,6 +77,7 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   afgdt_(1.0),
   timefacrhs_(1.0),
   timefacmat_p_(1.0),
+  viscreastabfac_(0.0),
   Cs_(0.0),
   l_tau_(0.0)
 {
@@ -150,6 +152,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   pspg_     = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
   supg_     = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
   vstab_    = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+  rstab_    = Teuchos::getIntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
   cstab_    = Teuchos::getIntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
   cross_    = Teuchos::getIntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
   reynolds_ = Teuchos::getIntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
@@ -195,6 +198,30 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   // this might be interesting for fast (but slightly
   // less accurate) computations
   if (stablist.get<std::string>("STABTYPE") == "inconsistent") is_inconsistent_ = true;
+
+  // in case of viscous and/or reactive stabilization, decide whether to use
+  // GLS or USFEM
+  if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
+      vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
+  {
+    viscreastabfac_ = -1.0;
+    if (rstab_ != INPAR::FLUID::reactive_stab_usfem)
+      dserror("inconsistent reactive and viscous stabilization!");
+  }
+  else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
+           vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
+  {
+    viscreastabfac_ = 1.0;
+    if (rstab_ != INPAR::FLUID::reactive_stab_gls)
+      dserror("inconsistent reactive and viscous stabilization!");
+  }
+  else if (vstab_ == INPAR::FLUID::viscous_stab_none)
+  {
+    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
+      viscreastabfac_ = -1.0;
+    else if (rstab_ == INPAR::FLUID::reactive_stab_gls)
+      viscreastabfac_ = 1.0;
+  }
 
   // set flags for potential evaluation of tau and material law at int. point
   // default value: evaluation at element center

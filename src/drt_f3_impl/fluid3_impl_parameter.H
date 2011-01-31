@@ -58,6 +58,8 @@ public:
   bool is_newton_;
   //! flag to (de)activate second derivatives
   bool is_inconsistent_;
+  //! flag to (de)activate potential reactive terms
+  bool reaction_;
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType physicaltype_;
   //! Flag to (de)activate time-dependent subgrid stabilization
@@ -70,6 +72,8 @@ public:
   INPAR::FLUID::SUPG supg_;
   //! Flag to (de)activate viscous term in residual-based stabilization
   INPAR::FLUID::VStab vstab_;
+  //! Flag to (de)activate reactive term in residual-based stabilization
+  INPAR::FLUID::RStab rstab_;
   //! Flag to (de)activate least-squares stabilization of continuity equation
   INPAR::FLUID::CStab cstab_;
   //! Flag to (de)activate cross-stress term -> residual-based VMM
@@ -113,6 +117,10 @@ public:
   double timefacrhs_;
   //! time integration factor for the left hand side (pressure)
   double timefacmat_p_;
+
+  /// parameter for stabilization
+  //! (sign) factor for viscous and reactive stabilization terms
+  double viscreastabfac_;
 
   /// constant parameters for the turbulence formulation
   //! smagorinsky constant

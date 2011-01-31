@@ -36,6 +36,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/permeablefluid.H"
 
 #ifdef DEBUG
 #endif
@@ -179,6 +180,7 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     visc_(0.0),
     sgvisc_(0.0),
     visceff_(0.0),
+    reacoeff_(0.0),
     fssgvisc_(0.0),
     rhscon_(true),
     densaf_(1.0),         // initialized to 1.0 (filled in Fluid3::GetMaterialParams)
@@ -632,15 +634,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   LINALG::Matrix<nsd_*nsd_,nen_>  lin_resM_Du(true);
   LINALG::Matrix<nsd_,1>          resM_Du(true);
 
-  // in case of viscous stabilization, decide whether to use GLS or USFEM
-  double vstabfac= 0.0;
-  if (f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_usfem or
-      f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
-    vstabfac =  1.0;
-  else if(f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_gls or
-      f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
-    vstabfac = -1.0;
-
   // add displacement when fluid nodes move in the ALE case
   if (isale) xyze_ += edispnp;
 
@@ -948,14 +941,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // computation of standard Galerkin and stabilization contributions to
     // element matrix and right-hand-side vector
     //----------------------------------------------------------------------
-    // 1) standard Galerkin inertia and convection terms
+    // 1) standard Galerkin inertia, convection and reaction terms
     //    (convective and reactive part for convection term)
     //    as well as first part of cross-stress term on left-hand side
-    InertiaAndConvectionGalPart(estif_u,
-                                velforce,
-                                lin_resM_Du,
-                                resM_Du,
-                                rhsfac);
+    InertiaConvectionReactionGalPart(estif_u,
+                                     velforce,
+                                     lin_resM_Du,
+                                     resM_Du,
+                                     rhsfac);
 
     // 2) standard Galerkin viscous term
     //    (including viscous stress computation,
@@ -1046,7 +1039,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
            rhsresfac);
     }
 
-    // 11) viscous stabilization term
+    // 11) reactive stabilization term
+   if (f3Parameter_->rstab_ != INPAR::FLUID::reactive_stab_none)
+   {
+      ReacStab(estif_u,
+               estif_p_v,
+               velforce,
+               lin_resM_Du,
+               timefacfac,
+               rhsresfac,
+               fac3);
+   }
+
+    // 12) viscous stabilization term
     if (is_higher_order_ele_ &&
         (f3Parameter_->vstab_ != INPAR::FLUID::viscous_stab_none))
     {
@@ -1054,14 +1059,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                estif_p_v,
                velforce,
                lin_resM_Du,
-               f3Parameter_->timefac_,
-               vstabfac,
+               timefacfac,
                rhsresfac,
                fac3);
     }
 
 
-    // 12) cross-stress term: second part on left-hand side (only for Newton
+    // 13) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
     if(f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
     {
@@ -1069,13 +1073,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                       estif_p_v,
                       velforce,
                       lin_resM_Du,
-                      f3Parameter_->timefac_,
                       timefacfac,
                       rhsresfac,
                       fac3);
     }
 
-    // 13) Reynolds-stress term: second part on left-hand side
+    // 14) Reynolds-stress term: second part on left-hand side
     //     (only for Newton iteration)
     if (f3Parameter_->reynolds_ == INPAR::FLUID::reynolds_stress_stab and
         f3Parameter_->is_newton_)
@@ -1087,7 +1090,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                          fac3);
     }
 
-    // 14) fine-scale subgrid-viscosity term
+    // 15) fine-scale subgrid-viscosity term
     //     (contribution only to right-hand-side vector)
     if(f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
     {
@@ -1097,7 +1100,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                                     fssgviscfac);
     }
 
-    // 15) subgrid-stress term
+    // 16) subgrid-stress term
     //     (contribution only to right-hand-side vector)
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
         or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -2019,6 +2022,23 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     }
   }
 }
+else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+{
+  const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+  // get constant viscosity
+  visc_ = actmat->Viscosity();
+
+  // check whether there is zero or negative permeability
+  if (actmat->Permeability() < EPS15)
+    dserror("zero or negative permeability");
+
+  // calculate reaction coefficient
+  reacoeff_ = visc_/actmat->Permeability();
+
+  // set reaction flag to true
+  f3Parameter_->reaction_ = true;
+}
 else dserror("Material type is not supported");
 
 // check whether there is zero or negative (physical) viscosity
@@ -2412,12 +2432,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     */
 
     //TODO: Boussinesq
-    // definition of constants as described above
+
+    // definition of constants as described above and computation of
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = reacoeff_;
     double c1 = 4.0;
     if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
         f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
         f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt)
       c1 = 0.0;
+    else sigma_tot += 1.0/f3Parameter_->dt_;
     c3 = 12.0/mk;
 
     // computation of various values derived from covariant metric tensor
@@ -2449,8 +2475,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
 
     // computation of stabilization parameters tau_Mu and tau_Mp
     // -> identical for the present definitions
-    tau_(0) = 1.0/(sqrt(c1*dens_sqr/(f3Parameter_->dt_*f3Parameter_->dt_)
-                  + Gnormu + Gvisc));
+    tau_(0) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gvisc));
     tau_(1) = tau_(0);
   }
   break;
@@ -2483,13 +2508,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // get velocity norm
     vel_norm = velint_.Norm2();
 
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    const double sigma_tot = 1.0/f3Parameter_->timefac_ + reacoeff_;
+
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-    const double re01 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(strle));
-    const double re11 = 4.0 * f3Parameter_->timefac_ * visceff_ / (mk * densaf_ * DSQR(hk));
+    const double re01 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(strle));
+    const double re11 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(hk));
 
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
     const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
@@ -2501,8 +2531,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     const double xi02 = DMAX(re02,1.0);
     const double xi12 = DMAX(re12,1.0);
 
-    tau_(0) = f3Parameter_->timefac_*DSQR(strle)/(DSQR(strle)*densaf_*xi01+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi02);
-    tau_(1) = f3Parameter_->timefac_*DSQR(hk)/(DSQR(hk)*densaf_*xi11+(4.0*f3Parameter_->timefac_*visceff_/mk)*xi12);
+    tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*sigma_tot*xi01+(4.0*visceff_/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2520,16 +2550,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
     // various parameter computations for case without dt:
+    // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
+    double re01 = 0.0;
+    double re11 = 0.0;
+    if (f3Parameter_->reaction_)
+    {
+      re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(strle));
+      re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(hk));
+    }
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
     const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
                  re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
     // respective "switching" parameters
+    const double xi01 = DMAX(re01,1.0);
+    const double xi11 = DMAX(re11,1.0);
     const double xi02 = DMAX(re02,1.0);
     const double xi12 = DMAX(re12,1.0);
 
-    tau_(0) = (DSQR(strle)*mk)/(4.0*visceff_*xi02);
-    tau_(1) = (DSQR(hk)*mk)/(4.0*visceff_*xi12);
+    tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*reacoeff_*xi01+(4.0*visceff_/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2568,18 +2608,23 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
-    // definition of constants as described above
+    // definition of constants as described above and computation of
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = reacoeff_;
     double c1 = 4.0;
     if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
       c1 = 0.0;
+    else sigma_tot += 1.0/f3Parameter_->dt_;
     const double c2 = 4.0;
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+    tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
                       + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
-    tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)/DSQR(f3Parameter_->dt_)
+    tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
                       + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
   }
@@ -2609,16 +2654,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
-    // definition of constants as described above
+    // definition of constants as described above and computation of
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = reacoeff_;
     double c1 = 1.0;
     if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_codina_wo_dt) c1 = 0.0;
+    else sigma_tot += 1.0/f3Parameter_->dt_;
     const double c2 = 2.0;
     c3 = 4.0/mk;
 
-    tau_(0) = 1.0/(sqrt(c1*densaf_/f3Parameter_->dt_
+    tau_(0) = 1.0/(sqrt(c1*densaf_*sigma_tot
                       + c2*densaf_*vel_norm/strle
                       + c3*visceff_/DSQR(strle)));
-    tau_(1) = 1.0/(sqrt(c1*densaf_/f3Parameter_->dt_
+    tau_(1) = 1.0/(sqrt(c1*densaf_*sigma_tot
                       + c2*densaf_*vel_norm/hk
                       + c3*visceff_/DSQR(hk)));
   }
@@ -2955,7 +3005,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
     for (int rr=0;rr<nsd_;++rr)
     {
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr);
+                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr);
 #ifdef TAU_SUBGRID_IN_RES_MOM
       if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
           or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -2996,7 +3046,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
       {
         momres_old_(rr) = densaf_*velint_(rr)/f3Parameter_->dt_
                          +f3Parameter_->theta_*(densaf_*conv_old_(rr)+gradp_(rr)
-                         -2*visceff_*visc_old_(rr))-rhsmom_(rr);
+                         -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr))-rhsmom_(rr);
 #ifdef TAU_SUBGRID_IN_RES_MOM
         if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
            or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -3029,7 +3079,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
       for (int rr=0;rr<nsd_;++rr)
       {
         momres_old_(rr) = densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)
-                         -rhsmom_(rr);
+                         +reacoeff_*velint_(rr)-rhsmom_(rr);
       }
     }
   }
@@ -3340,7 +3390,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(
                      const double &                      timefacfac)
 {
   /*
-      stationary                            cross-stress, part 1
+      instationary                          cross-stress, part 1
        +-----+                             +-------------------+
        |     |                             |                   |
 
@@ -3349,11 +3399,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(
                  \      (i)        /        \      (i)        /
 
                  /                \  n+1
-              + |   rho*Du o nabla | u
+              + |   rho*Du o nabla | u      +  sigma*Du
                  \                /   (i)
-                |                        |
-                +------------------------+
-                        Newton
+                |                        |     |       |
+                +------------------------+     +-------+
+                        Newton                  reaction
   */
 
   int idim_nsd_p_idim[nsd_];
@@ -3404,6 +3454,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(
         {
           lin_resM_Du(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
         }
+      }
+    }
+  }
+
+  if (f3Parameter_->reaction_)
+  {
+    const double fac_reac=timefacfac*reacoeff_;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const double v=fac_reac*funct_(ui);
+
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
       }
     }
   }
@@ -3555,7 +3620,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU_subscales(
 
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
+void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaConvectionReactionGalPart(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,
@@ -3585,7 +3650,16 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
            |  \                /   (i)       |
             \                               /
   */
-  if(f3Parameter_->is_newton_ || (is_higher_order_ele_ && f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent))
+  /*  reaction */
+  /*
+            /                \
+           |                  |
+           |    sigma*Du , v  |
+           |                  |
+            \                /
+  */
+  if (f3Parameter_->is_newton_ ||
+      (is_higher_order_ele_ && f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent))
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -3641,6 +3715,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::InertiaAndConvectionGalPart(
   {
     resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
   }  // end for(idim)
+
+  if (f3Parameter_->reaction_)
+  {
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      resM_Du(idim) += rhsfac*reacoeff_*velint_(idim);
+    }
+  }  // end if (reaction_)
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -4204,9 +4286,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(
        rho*Du + |   rho*u   o nabla | Du + |   rho*Du o nabla | u   +
                  \      (i)        /        \                /   (i)
 
-                             /  \
-              + nabla o eps | Du |
-                             \  /
+                               /  \
+     + sigma*Du + nabla o eps | Du |
+                               \  /
   */
   if(f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent
      ||
@@ -4252,7 +4334,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(
       }
     }
 
-    if(f3Parameter_->is_newton_)
+    if (f3Parameter_->is_newton_)
     {
 //
 //
@@ -4272,6 +4354,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::StabLinGalMomResU(
           {
             lin_resM_Du(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
           }
+        }
+      }
+    }
+
+    if (f3Parameter_->reaction_)
+    {
+      const double fac_reac=timefacfac*reacoeff_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double v=fac_reac*funct_(ui);
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
         }
       }
     }
@@ -4357,11 +4454,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(
              |  \                /   (i)           |
               \                                   /
     */
+    /* pressure stabilisation: reaction if included */
+    /*
+              /                     \
+             |                      |
+             |  sigma*Du , nabla q  |
+             |                      |
+              \                    /
+    */
     /* pressure stabilisation: viscosity (-L_visc_u) */
     /*
               /                              \
              |               /  \             |
-             |  nabla o eps | Du | , nabla q  |
+         mu  |  nabla o eps | Du | , nabla q  |
              |               \  /             |
               \                              /
     */
@@ -4499,14 +4604,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
            |    \       (i)        /        \      (i)       /     |
             \                                                     /
      */
-     /* supg stabilisation: viscous part  (-L_visc_u) if is_higher_order_ele_ */
-     /*
-            /                                              \
-           |               /  \    /       n+1        \     |
-           |  nabla o eps | Du |, |   rho*u    o nabla | v  |
-           |               \  /    \       (i)        /     |
-            \                                              /
-     */
      /* supg stabilisation: convective part ( L_conv_u) , reactive term if Newton */
      /*
             /                                                     \
@@ -4514,6 +4611,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
            |   |   rho*u    o nabla | Du , | rho*u    o nabla | v  |
            |    \       (i)        /        \     (i)        /     |
             \                                                     /
+     */
+     /* supg stabilisation: reaction if included */
+     /*
+            /                                  \
+           |              /     n+1       \     |
+           |  sigma*Du , | rho*u   o nabla | v  |
+           |              \     (i)       /     |
+            \                                  /
+     */
+     /* supg stabilisation: viscous part  (-L_visc_u) if is_higher_order_ele_ */
+     /*
+            /                                              \
+           |               /  \    /       n+1        \     |
+           |  nabla o eps | Du |, |   rho*u    o nabla | v  |
+           |               \  /    \       (i)        /     |
+            \                                              /
      */
      if (is_higher_order_ele_ || f3Parameter_->is_newton_)
      {
@@ -4597,6 +4710,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
                 |    \       (i)        /   (i)     \              /      |
                  \                                                       /
      */
+     /* supg stabilisation: reaction, linearisation of testfunction  */
+     /*
+                 /                                         \
+                |           n+1       /              \      |
+                |    sigma*u      ,  | rho*Du o nabla | v   |
+                |           (i)       \              /      |
+                 \                                         /
+     */
      /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
      /*
                 /                                     \
@@ -4659,10 +4780,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
        } //idim
      }
 
-     // NOTE: Here we have a difference to the previous version of this
-     // element! Before we did not care for the mesh velocity in this
-     // term. This seems unreasonable and wrong.
-
      if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
      {
        for(int jdim=0;jdim<nsd_;++jdim)
@@ -4691,29 +4808,169 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
 }
 
 template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::ReacStab(
+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
+    LINALG::Matrix<nsd_,nen_> &               velforce,
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefacfac,
+    const double &                            rhsresfac,
+    const double &                            fac3)
+{
+   double reac_tau;
+   if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+     reac_tau = f3Parameter_->viscreastabfac_*reacoeff_*tau_(1);
+   else
+     reac_tau = f3Parameter_->viscreastabfac_*reacoeff_*f3Parameter_->alphaF_*fac3;
+
+
+   /* reactive stabilisation, inertia part if not stationary */
+   /*
+                /                    \
+               |                      |
+           -/+ |    rho*Du , sigma*v  |
+               |                      |
+                \                    /
+   */
+   /* reactive stabilisation, convective part, convective type */
+   /*
+              /                                  \
+             |  /       n+1       \               |
+         -/+ | |   rho*u   o nabla | Du , sigma*v |
+             |  \       (i)       /               |
+              \                                  /
+   */
+   /* reactive stabilisation, reactive part of convection */
+   /*
+              /                                   \
+             |  /                \   n+1           |
+         -/+ | |   rho*Du o nabla | u    , sigma*v |
+             |  \                /   (i)           |
+              \                                   /
+   */
+   /* reactive stabilisation, reaction part if included */
+   /*
+                /                      \
+               |                        |
+           -/+ |    sigma*Du , sigma*v  |
+               |                        |
+                \                      /
+   */
+   /* reactive stabilisation, viscous part (-L_visc_u) */
+   /*
+              /                             \
+             |               /  \            |
+        +/-  |  nabla o eps | Du | , sigma*v |
+             |               \  /            |
+              \                             /
+   */
+   if (is_higher_order_ele_ or f3Parameter_->is_newton_)
+   {
+     for (int vi=0; vi<nen_; ++vi)
+     {
+       const double v = reac_tau*funct_(vi);
+
+       for(int idim=0;idim<nsd_;++idim)
+       {
+         const int nsd_idim=nsd_*idim;
+
+         const int fvi_p_idim = nsd_*vi+idim;
+
+         for(int jdim=0;jdim<nsd_;++jdim)
+         {
+           const int nsd_idim_p_jdim=nsd_idim+jdim;
+
+           for (int ui=0; ui<nen_; ++ui)
+           {
+             const int fui_p_jdim   = nsd_*ui + jdim;
+
+             estif_u(fvi_p_idim,fui_p_jdim) += v*lin_resM_Du(nsd_idim_p_jdim,ui);
+           } // jdim
+         } // vi
+       } // ui
+     } //idim
+   } // end if (is_higher_order_ele_) or (newton_)
+   else
+   {
+     for (int vi=0; vi<nen_; ++vi)
+     {
+       const double v = reac_tau*funct_(vi);
+
+       for(int idim=0;idim<nsd_;++idim)
+       {
+         const int fvi_p_idim = nsd_*vi+idim;
+
+         const int nsd_idim=nsd_*idim;
+
+         for (int ui=0; ui<nen_; ++ui)
+         {
+           const int fui_p_idim   = nsd_*ui + idim;
+
+           estif_u(fvi_p_idim,fui_p_idim) += v*lin_resM_Du(nsd_idim+idim,ui);
+         } // ui
+       } //idim
+     } // vi
+   } // end if not (is_higher_order_ele_) nor (newton_)
+
+
+   /* reactive stabilisation, pressure part ( L_pres_p) */
+   /*
+              /                    \
+             |                      |
+        -/+  |  nabla Dp , sigma*v  |
+             |                      |
+              \                    /
+   */
+   const double reac_tau_timefacfac = reac_tau*timefacfac;
+   for (int vi=0; vi<nen_; ++vi)
+   {
+     const double v = reac_tau_timefacfac*funct_(vi);
+
+     for (int idim = 0; idim <nsd_; ++idim)
+     {
+       const int fvi = nsd_*vi + idim;
+
+       for (int ui=0; ui<nen_; ++ui)
+       {
+         estif_p_v(fvi,ui) += v*derxy_(idim, ui);
+       }
+     }
+   }  // end for(idim)
+
+   const double reac_fac = f3Parameter_->viscreastabfac_*rhsresfac*reacoeff_;
+   for (int idim =0;idim<nsd_;++idim)
+   {
+     const double v = reac_fac*sgvelint_(idim);
+
+     for (int vi=0; vi<nen_; ++vi)
+     {
+         velforce(idim,vi) += v*funct_(vi);
+     }
+   } // end for(idim)
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-    const double &                            timefac,
-    const double &                            vstabfac,
+    const double &                            timefacfac,
     const double &                            rhsresfac,
     const double &                            fac3)
 {
   // viscous stabilization either on left hand side or on right hand side
-   if (f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_gls || f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_usfem)
+   if (f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_gls or
+       f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_usfem)
    {
      double two_visc_tau;
-
-     if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
-     {
-       two_visc_tau      = vstabfac*2.0*visc_*tau_(1);
-     }
+     if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+       two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*tau_(1);
      else
-     {
-       two_visc_tau      = vstabfac*2.0*visc_*f3Parameter_->alphaF_*fac3;
-     }
+       two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*f3Parameter_->alphaF_*fac3;
 
 
      /* viscous stabilisation, inertia part if not stationary */
@@ -4739,6 +4996,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
          +/- | |   rho*Du o nabla | u    , div eps (v) |
              |  \                /   (i)               |
               \                                       /
+     */
+     /* viscous stabilisation, reaction part if included */
+     /*
+                /                          \
+               |                            |
+           +/- |    sigma*Du , div eps (v)  |
+               |                            |
+                \                          /
      */
      /* viscous stabilisation, viscous part (-L_visc_u) */
      /*
@@ -4778,27 +5043,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
              |                          |
               \                        /
      */
+     const double two_visc_tau_timefacfac = two_visc_tau*timefacfac;
      for (int idim=0;idim<nsd_; ++idim)
      {
        for (int ui=0; ui<nen_; ++ui)
        {
-         //const int fui = ui*numdofpernode_ + nsd_;
          for (int vi=0; vi<nen_; ++vi)
          {
-           //const int fvi = vi*numdofpernode_ + idim;
-
            for(int jdim=0;jdim<nsd_;++jdim)
            {
-             estif_p_v(vi*nsd_ + idim,ui)
-               //ppmat(vi, ui)
-               += two_visc_tau*timefac*fac_*(derxy_(jdim, ui))*viscs2_(jdim+(idim*nsd_), vi);
+             estif_p_v(vi*nsd_+idim,ui) += two_visc_tau_timefacfac*derxy_(jdim, ui)*viscs2_(jdim+(idim*nsd_),vi);
            }
          }
        }
      } // end for(idim)
 
-     const double two_visc_fac = vstabfac*rhsresfac*2.0*visc_;
-
+     const double two_visc_fac = -f3Parameter_->viscreastabfac_*rhsresfac*2.0*visc_;
      for (int idim =0;idim<nsd_;++idim)
      {
        for (int vi=0; vi<nen_; ++vi)
@@ -4822,7 +5082,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
-    const double &                            timefac,
     const double &                            timefacfac,
     const double &                            rhsresfac,
     const double &                            fac3)
@@ -4877,6 +5136,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
              | | | | u     o nabla | Du  | o nabla | u    , v  |
              |  \ \ \             /     /         /            |
               \                                               /
+       */
+       /*
+              /                               \
+             |  /                \   n+af      |
+             | | sigma*Du o nabla | u     , v  |
+             |  \                /             |
+              \                               /
        */
        /*
               /                                             \
@@ -5007,6 +5273,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
          |  u     , | | | Du o nabla | u      | o nabla | v  |
          |           \ \ \          /        /         /     |
           \                                                 /
+  */
+  /*
+          /                                \
+         |  ~n+af                           |
+         |  u     , ( sigma*Du o nabla ) v  |
+         |                                  |
+          \                                /
   */
   /*
           /                                               \

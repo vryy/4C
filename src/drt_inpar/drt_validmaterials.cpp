@@ -131,6 +131,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // fluid flow in a permeable material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_permeable",
+                                            "permeability for flow in porous media",
+                                            INPAR::MAT::m_permeable_fluid));
+
+    AddNamedReal(m,"VISCOSITY","kinematic viscosity");
+    AddNamedReal(m,"DENSITY","density");
+    AddNamedReal(m,"PERMEABILITY","permeability of medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m

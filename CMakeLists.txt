@@ -446,6 +446,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mooneyrivlin.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
+  src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticneohooke.cpp
   src/drt_mat/protein.cpp
   src/drt_mat/scatra_mat.cpp

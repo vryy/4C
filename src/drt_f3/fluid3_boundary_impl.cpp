@@ -40,6 +40,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/permeablefluid.H"
 
 #include <blitz/array.h>
 
@@ -1434,7 +1435,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+      && mat->MaterialType() != INPAR::MAT::m_fluid
+      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -1454,6 +1456,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
     densaf_ = actmat->Density();
     dserror("How to extract viscosity from modified power law material for artery tree??");
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
+    densaf_ = actmat->Density();
+    visc_   = actmat->Viscosity();
   }
   else
     dserror("Fluid material expected but got type %d", mat->MaterialType());
@@ -1533,7 +1541,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+      && mat->MaterialType() != INPAR::MAT::m_fluid
+      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -1550,6 +1559,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
     densaf_ = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
+    densaf_ = actmat->Density();
+    visc_   = actmat->Viscosity();
   }
   else
     dserror("Fluid material expected but got type %d", mat->MaterialType());
@@ -2114,7 +2129,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+      && mat->MaterialType() != INPAR::MAT::m_fluid
+      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -2130,6 +2146,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
   else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    invdensity = 1.0/actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
     invdensity = 1.0/actmat->Density();
   }
   else
@@ -2386,6 +2407,13 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
 }
+else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+{
+  const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+  // get constant viscosity
+  visc_ = actmat->Viscosity();
+}
 else dserror("Material type is not supported for boundary element!");
 
 // check whether there is zero or negative (physical) viscosity
@@ -2417,7 +2445,8 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
       && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+      && mat->MaterialType() != INPAR::MAT::m_fluid
+      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)

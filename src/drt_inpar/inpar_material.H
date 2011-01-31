@@ -52,6 +52,7 @@ namespace INPAR
       m_fluid,       ///< fluid
       m_carreauyasuda,///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_modpowerlaw,  ///< fluid with nonlinear viscosity according to a modified power law
+      m_permeable_fluid,       ///< permeable fluid
       m_scatra,   ///< scalar transport material
       m_mixfrac,  ///< material according to mixture-fraction approach
       m_sutherland,     ///< material with temperature dependence according to Sutherland law

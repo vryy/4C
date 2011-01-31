@@ -376,8 +376,9 @@ namespace ELEMENTS
         const double &                          facMtau         ///< facMtau = modified tau_M (see code)
         );
 
-    //! Compute element matrix entries: the reactive and convective terms of the Galerkin part and rhs
-    void InertiaAndConvectionGalPart(
+    //! Compute element matrix and rhs entries: inertia, convective and
+    //! reactive terms of the Galerkin part
+    void InertiaConvectionReactionGalPart(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nsd_,nen_> &             velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
@@ -472,14 +473,24 @@ namespace ELEMENTS
         const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
+    //! Compute element matrix entries: reactive stabilization
+    void ReacStab(
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
+        LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+        LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
+        const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
+        const double &                            fac3            ///< factor for residual in current subgrid velocities
+        );
+
     //! Compute element matrix entries: viscous stabilization
     void ViscStab(
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,        ///< block (weighting function v x u)
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
-        const double &                            timefac,        ///< time factor
-        const double &                            vstabfac,       ///< in case of viscous stabilization decide whether to use GLS or USFEM
+        const double &                            timefacfac,     ///< = timefac x fac
         const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
@@ -490,7 +501,6 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
-        const double &                            timefac,        ///< time factor
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
@@ -741,6 +751,8 @@ namespace ELEMENTS
     double sgvisc_;
     //! effective viscosity = physical viscosity + (all-scale) subgrid viscosity
     double visceff_;
+    //! reaction coefficient
+    double reacoeff_;
     //! fine-scale subgrid viscosity
     double fssgvisc_;
     //! LOMA-specific variables:

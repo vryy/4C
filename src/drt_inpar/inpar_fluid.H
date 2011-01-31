@@ -51,6 +51,13 @@ namespace INPAR
       viscous_stab_usfem,
       viscous_stab_usfem_only_rhs
     };
+    //! flag to select the type of reactive stabilization
+    enum RStab
+    {
+      reactive_stab_none,
+      reactive_stab_gls,
+      reactive_stab_usfem
+    };
     //! flag to (de)activate continuity stabilization
     enum CStab
     {

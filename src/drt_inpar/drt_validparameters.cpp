@@ -1946,6 +1946,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &fdyn_stab);
 
+  setStringToIntegralParameter<INPAR::FLUID::RStab>("RSTAB",
+                               "no_rstab",
+                               "Flag to (de)activate reactive term in residual-based stabilization.",
+                               tuple<std::string>(
+                                 "no_rstab",
+                                 "rstab_gls",
+                                 "rstab_usfem"
+                                 ),
+                               tuple<std::string>(
+                                 "no reactive term in stabilization",
+                                 "reactive stabilization of GLS type",
+                                 "reactive stabilization of USFEM type"
+                                 ),
+                                 tuple<INPAR::FLUID::RStab>(
+                                     INPAR::FLUID::reactive_stab_none,
+                                     INPAR::FLUID::reactive_stab_gls,
+                                     INPAR::FLUID::reactive_stab_usfem
+                                   ),
+                               &fdyn_stab);
+
   setStringToIntegralParameter<INPAR::FLUID::CStab>("CSTAB",
                                "cstab_qs",
                                "Flag to (de)activate least-squares stabilization of continuity equation.",

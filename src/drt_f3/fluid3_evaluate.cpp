@@ -35,6 +35,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/permeablefluid.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -589,7 +590,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
           params.set("density", actmat->Density());
         }
-      else dserror("no constant density, material appears to be incorrect");
+        else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+        {
+          const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
+          params.set("density", actmat->Density());
+        }
+        else dserror("no constant density, material appears to be incorrect");
       }
       break;
       case get_gas_constant:
