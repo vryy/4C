@@ -24,7 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
-//#include "../drt_geometry/integrationcell.H"
+#include "../drt_geometry/tetrahedradecomposition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_io/io_gmsh.H"
@@ -45,7 +45,6 @@ Maintainer: Florian Henke
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_integrationcell.H"
 
-// extern struct _FILES  allfiles;
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 10/08 |
@@ -53,15 +52,15 @@ Maintainer: Florian Henke
 COMBUST::FlameFront::FlameFront(
     const Teuchos::RCP<const DRT::Discretization> fluiddis,
     const Teuchos::RCP<DRT::Discretization> gfuncdis
-    ) :
-    fluiddis_(fluiddis),
-    gfuncdis_(gfuncdis),
-    phinm_(Teuchos::null),
-    phin_(Teuchos::null),
-    phinp_(Teuchos::null),
-    gradphi_(Teuchos::null),
-    maxRefinementLevel_(0),
-    xfeminttype_(INPAR::COMBUST::xfemintegration_tetgen)
+) :
+fluiddis_(fluiddis),
+gfuncdis_(gfuncdis),
+phinm_(Teuchos::null),
+phin_(Teuchos::null),
+phinp_(Teuchos::null),
+gradphi_(Teuchos::null),
+maxRefinementLevel_(0),
+xfeminttype_(INPAR::COMBUST::xfemintegration_tetgen)
 {
 }
 
@@ -78,16 +77,16 @@ COMBUST::FlameFront::~FlameFront()
  | public: update the flame front                                                     henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::UpdateFlameFront(
-        const Teuchos::ParameterList& combustdyn,
-        const Teuchos::RCP<const Epetra_Vector>& phin,
-        const Teuchos::RCP<const Epetra_Vector>& phinp,
-        bool ReinitModifyPhi
-    )
+    const Teuchos::ParameterList& combustdyn,
+    const Teuchos::RCP<const Epetra_Vector>& phin,
+    const Teuchos::RCP<const Epetra_Vector>& phinp,
+    bool ReinitModifyPhi
+)
 {
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
   // modify phi vectors nearly zero
-//  ModifyPhiVector(combustdyn, ReinitModifyPhi);
+  //  ModifyPhiVector(combustdyn, ReinitModifyPhi);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
@@ -97,7 +96,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   // remark: must be called after ProcessFlameFront, since it relies on the new interface position
 
   const INPAR::COMBUST::SmoothGradPhi smoothgradphi = Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>
-      (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
+  (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
   if(smoothgradphi!=INPAR::COMBUST::smooth_grad_phi_none)
     CallSmoothGradPhi(combustdyn);
 
@@ -108,8 +107,8 @@ void COMBUST::FlameFront::UpdateFlameFront(
  | public: generate the interface geometry based on the G-function (level set field)  henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::ProcessFlameFront(
-       const Teuchos::ParameterList& combustdyn,
-       const Teuchos::RCP<const Epetra_Vector> phi)
+    const Teuchos::ParameterList& combustdyn,
+    const Teuchos::RCP<const Epetra_Vector> phi)
 {
   /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
    * interface handle constructor. If the FlameFront class will always do the same thing, this
@@ -200,9 +199,9 @@ void COMBUST::FlameFront::ProcessFlameFront(
  | rearrange and store phi vectors for use in the fluid time integration routine      henke 06/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::StorePhiVectors(
-      //const Teuchos::RCP<Epetra_Vector> phinm,
-      const Teuchos::RCP<const Epetra_Vector> phin,
-      const Teuchos::RCP<const Epetra_Vector> phinp)
+    //const Teuchos::RCP<Epetra_Vector> phinm,
+    const Teuchos::RCP<const Epetra_Vector> phin,
+    const Teuchos::RCP<const Epetra_Vector> phinp)
 {
   /* In the processing of the flame front the fluid discretization is cut by the level set
    * function (G-function). This is the reason why fluid elements need to be able to access the
@@ -304,488 +303,488 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
 {
   std::cout << "\n---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
 
-if (ReinitModifyPhi==true)
-{
-  // Benedikt:
-  // this case shall circumvent the tetgen-problem only!
-  // when tetgen is not used any more, this case can be removed
-
-  // get relative tolerance for which we modify G-function values in the fluid part
-  const double ModifyTOL = 1e-012;
-
-  cout << "\n \t -> ModifyTOL for G-func values is set to " << ModifyTOL << " (relative to element diameter) to handle problems with tetgen!" << endl;
-
-  // count modified phi node values
-  int modified_counter = 0;
-
-
-  //========================================================================================
-  // get an absolute tolerance for which we modify phi values with |phi(node)-0.0| < TOL
-  //========================================================================================
-
-  // number space dimensions for 3d combustion element
-  const size_t nsd = 3;
-
-  // TODO template this part with switch(DISTYPE)
-  const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
-
-  // number of nodes of this element for interpolation!!!
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-  // pointer to phivector at time n with rowmap
-  RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  LINALG::Export(*phin_,*phinTmp);
-  // pointer to phivector at time n+1 with rowmap
-  RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  LINALG::Export(*phinp_,*phinpTmp);
-
-
-  // phinp_ and phin_ are given in same nodeColMap
-  // loop over nodes
-
-  for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
+  if (ReinitModifyPhi==true)
   {
-    // get node from fluid discretization
-    const DRT::Node *actnode = fluiddis_->lRowNode(inode);
+    // Benedikt:
+    // this case shall circumvent the tetgen-problem only!
+    // when tetgen is not used any more, this case can be removed
 
-    // this processor has to modify the phi-value for the current node
-    // get local processor id of node
-    int nodeID = actnode->Id();
+    // get relative tolerance for which we modify G-function values in the fluid part
+    const double ModifyTOL = 1e-012;
 
-    // get all adjacent elements of this row node -> we find these in a
-    int numberOfElements = actnode->NumElement();
-    const DRT::Element* const* elements = actnode->Elements();
+    cout << "\n \t -> ModifyTOL for G-func values is set to " << ModifyTOL << " (relative to element diameter) to handle problems with tetgen!" << endl;
 
-    // initialize maximal element diameter to 0.0
-    double maxEleDiam = 0.0;
+    // count modified phi node values
+    int modified_counter = 0;
 
-    //==========================================================================
-    // loop over adjacent elements => set max eleDiam
-    for(int ele_current=0; ele_current<numberOfElements; ele_current++)
+
+    //========================================================================================
+    // get an absolute tolerance for which we modify phi values with |phi(node)-0.0| < TOL
+    //========================================================================================
+
+    // number space dimensions for 3d combustion element
+    const size_t nsd = 3;
+
+    // TODO template this part with switch(DISTYPE)
+    const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
+
+    // number of nodes of this element for interpolation!!!
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    // pointer to phivector at time n with rowmap
+    RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    LINALG::Export(*phin_,*phinTmp);
+    // pointer to phivector at time n+1 with rowmap
+    RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    LINALG::Export(*phinp_,*phinpTmp);
+
+
+    // phinp_ and phin_ are given in same nodeColMap
+    // loop over nodes
+
+    for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
     {
-      // get current element
-      const DRT::Element* ele_adj = elements[ele_current];
+      // get node from fluid discretization
+      const DRT::Node *actnode = fluiddis_->lRowNode(inode);
 
-      //-------------------------------------------------------------
-      // get element diameter for the current adjacent element
-      //-------------------------------------------------------------
-      if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
+      // this processor has to modify the phi-value for the current node
+      // get local processor id of node
+      int nodeID = actnode->Id();
 
-      static LINALG::Matrix<nsd,numnode> xyze_adj;
-      GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+      // get all adjacent elements of this row node -> we find these in a
+      int numberOfElements = actnode->NumElement();
+      const DRT::Element* const* elements = actnode->Elements();
 
-      // calculate element diameter
-      const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
+      // initialize maximal element diameter to 0.0
+      double maxEleDiam = 0.0;
 
-
-      //-------------------------------------------------------------
-      // update maxEleDiam
-      //-------------------------------------------------------------
-      maxEleDiam = max(hk_current,maxEleDiam);
-
-    } // end loop over adjacent
-    //==========================================================================
-
-    // set TOL dependent on maxEleDiam
-    const double TOL = maxEleDiam * ModifyTOL;
-
-
-    // get current phi-value
-    // lid is the local processor id of the current node
-    // phinp_ is a nodeColMap
-    const int lid = (*phinpTmp).Map().LID(nodeID);
-    if (lid<0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
-    double phinp_current = (*phinpTmp)[lid];
-    double phin_current = (*phinTmp)[lid];
-
-    // decide if modification to phi=0.0 is necessary
-    // reset small phi values to zero
-    if (fabs(phinp_current - 0.0) < TOL)
-    {
-      cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << std::endl;
-      (*phinpTmp)[lid] = 0.0;
-      modified_counter++;
-    }
-    if (fabs(phin_current - 0.0) < TOL)
-    {
-      (*phinTmp)[lid] = 0.0;
-      // no additional cout-comment here because this value has been
-      // modified in the timestep before and cout was created there
-    }
-
-  } // end loop over nodes
-
-  if(modified_counter > 0)
-    std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done" << std::flush;;
-
-  LINALG::Export(*phinTmp,*phin_);
-  LINALG::Export(*phinpTmp,*phinp_);
-}
-else // non-ReinitModifyPhi case (standard case)
-{
-  //========================================================================================
-  // get a tolerance for the main modify criterion: ModifyTOL
-  // REMARK:
-  // crit_i in [0,1] is a critical value for node i_
-  //		crit_i near 0.0 means: "node i is !!!very critical!!! for the adjacent element"
-  //		crit_i near 1.0 means: "node i is !!!uncritical!!! for the adjacent element"
-  // crit_i := crit(i,1) * ... * crit(i,8) in [0,1] for hex8 elements with 8 nodes
-  //           crit(i,j):= critical value for pair of nodes i and j
-  // if (crit_i := crit(i,1) * ... * crit(i,8) < ModifyTOL) -> modify the critical node i
-  //========================================================================================
-  // get relative tolerance for which we modify G-function values ( done just in the fluid part )
-  const double ModifyTOL = combustdyn.sublist("COMBUSTION FLUID").get<double>("PHI_MODIFY_TOL");
-
-  //========================================================================================
-  // get a tolerance for which we look for nodes which potentially get modified
-  // REMARK:
-  // SearchTOL means e.g. |phi_i-0.0| < SearchTOL * max(eleDiam, over adjacent elements to node i)
-  // thats not a modify criterion!
-  // usually we choose SearchTOL = 0.1
-  //========================================================================================
-  const double SearchTOL = 0.1;
-  cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
-
-  // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
-  const double TOL_zero = 1e-14;
-
-  cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
-
-
-  // number space dimensions for 3d combustion element
-  const size_t nsd = 3;
-
-  // TODO template this part with switch(DISTYPE)
-  const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
-
-  // number of nodes of this element for interpolation!!!
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  // count modified phi node values
-  int modified_counter = 0;
-
-
-  // pointer to phivector at time n with rowmap
-  RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  LINALG::Export(*phin_,*phinTmp);
-  // pointer to phivector at time n+1 with rowmap
-  RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
-  LINALG::Export(*phinp_,*phinpTmp);
-
-  // phinp_ and phin_ are given in same nodeColMap
-  // loop over nodes
-
-  for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
-  {
-    // get node from fluid discretization
-    const DRT::Node *actnode = fluiddis_->lRowNode(inode);
-
-
-    // this processor has to modify the phi-value for the current node
-    // get local processor id of node
-    int nodeID = actnode->Id();
-
-
-    // get all adjacent elements of this row node
-    int numberOfElements = actnode->NumElement();
-    const DRT::Element* const* elements = actnode->Elements();
-
-
-    // element critical value current node
-    // initialization with 1.0
-    // REMARK: 1.0 means uncritical, 0.0 means highly critical
-    Epetra_SerialDenseVector ele_critical_inode_np(numberOfElements);
-    //ele_critical_inode_np.Clear();
-    Epetra_SerialDenseVector ele_critical_inode_n(numberOfElements);
-    //ele_critical_inode_n.Clear();
-
-    const int lid = (*phinpTmp).Map().LID(nodeID);
-    if (lid<0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
-    double phinp_current = (*phinpTmp)[lid];
-    double phin_current = (*phinTmp)[lid];
-
-    // initialize maximal element diameter to 0.0
-    double maxEleDiam = 0.0;
-
-    //==========================================================================
-    // loop over adjacent elements => set max eleDiam
-    for(int ele_current=0; ele_current<numberOfElements; ele_current++)
-    {
-      // get current element
-      const DRT::Element* ele_adj = elements[ele_current];
-
-      //-------------------------------------------------------------
-      // get element diameter for the current adjacent element
-      //-------------------------------------------------------------
-      if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
-
-      static LINALG::Matrix<nsd,numnode> xyze_adj;
-      GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
-
-      //cout << xyze_adj << endl;
-
-      // calculate element diameter
-      const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
-
-      //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
-
-      //-------------------------------------------------------------
-      // update maxEleDiam
-      //-------------------------------------------------------------
-      maxEleDiam = max(hk_current,maxEleDiam);
-
-    } // end loop over adjacent
-    //==========================================================================
-    // decide if the current node "maybe" have to be modified
-    // call the main modification check if search-criterion is positive
-    //   and phi-value is not 0.0 already
-    bool modify_phinp_pot = false;
-    bool modify_phin_pot  = false;
-
-    if ( (fabs(phinp_current - 0.0) < SearchTOL * maxEleDiam) and (phinp_current != 0.0) )
-    {
-      modify_phinp_pot = true;
-      cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << std::endl<< std::flush;
-    }
-
-    if ( (fabs(phin_current - 0.0) < SearchTOL * maxEleDiam)  and (phin_current  != 0.0) )
-      modify_phin_pot  = true;
-    //==========================================================================
-
-    // we decide if we have to show for a need of a modification of the phi-value to zero
-    // do nothing if phi-value is zero already or phi-value is large enough
-    if( (modify_phinp_pot == true) or (modify_phin_pot == true) )
-    {
-      // boolian for real modification of phi value
-      bool inode_modified_n = false;
-      bool inode_modified_np = false;
-
-      // modify numerical zeros to 0.0 directly
-      if((fabs(phinp_current - 0.0) < TOL_zero) && (phinp_current!= 0.0))
-      {
-        inode_modified_np = true;
-        cout << "\t\t -> a numerical zero is set to 0.0" << std::endl<< std::flush;
-      }
-      if((fabs(phin_current - 0.0) < TOL_zero) && (phin_current!= 0.0))  inode_modified_n = true;
       //==========================================================================
-      if((inode_modified_np == false) or (inode_modified_n == false))
+      // loop over adjacent elements => set max eleDiam
+      for(int ele_current=0; ele_current<numberOfElements; ele_current++)
       {
-        // calculate critical node values for all adjacent elements
-        for(int ele_current=0; ele_current<numberOfElements; ele_current++)
-        {
-          // get current element
-          const DRT::Element* ele_adj = elements[ele_current];
+        // get current element
+        const DRT::Element* ele_adj = elements[ele_current];
 
-          if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
+        //-------------------------------------------------------------
+        // get element diameter for the current adjacent element
+        //-------------------------------------------------------------
+        if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
 
-          // initialize entry to 1.0
-          ele_critical_inode_np(ele_current) = 1.0;
-          ele_critical_inode_n(ele_current) = 1.0;
+        static LINALG::Matrix<nsd,numnode> xyze_adj;
+        GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
 
-          // loop over all nodes of the current element
-          const int* ptToNodeIds_adj = ele_adj->NodeIds();
-
-          // get phi-values of current adjacent element ele_adj
-          // create vector "ephinp" holding scalar phi values for this element
-          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
-          Epetra_SerialDenseVector ephin(numnode); //local vector phi-values of adjacent element
-
-          // which node in param space of element ele_adj has actnode
-          int ID_param_space = -1;
-
-          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-          vector<int> nodeID_adj(numnode);
-          for (size_t node=0; node < numnode; node++){
-            nodeID_adj[node] = ptToNodeIds_adj[node];
-            // get local number of node actnode in ele_adj
-            if(actnode->Id() == ptToNodeIds_adj[node]) ID_param_space = node;
-          }
-
-          // extract the phi-values of adjacent element with local ids from global vector *phinp
-          // get pointer to vector holding G-function values at the fluid nodes
-          DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
-          LINALG::Matrix<numnode,1> ephinp_adj(ephinp);
-
-          DRT::UTILS::ExtractMyValues(*phin_, ephin, nodeID_adj);
-          LINALG::Matrix<numnode,1> ephin_adj(ephin);
-
-          //==============================================================================================
-          // ------calculate critical values crit_adj_inode(j) for all nodes jnode to current node inode------
-          //==============================================================================================
-          // REMARK:
-          // we define for each node j a critical value to node i in [0,1] if there is a sign change in the
-          // corresponding phi-values
-          // if the zero point at the line between inode and jnode is near node i, the critical value
-          // gets a value near 0 => such zero points yield ill-conditioned entries in matrices
-          // with enriched shape functions
-          // if the zero point at the line is near node j, the critical value
-          // gets a value near 1 => such zero points are not ill for the current node i, but maybe for node j,
-          // but this checks the loop iteration for jnode
-          //
-          // we have to distinguish three types of lines
-          // 1. lines between neighbouring nodes -> lines are edges of the element (linear progress of crit_adj_val)
-          // 2. lines between nodes within one 2D-face -> lines lie in a 2D face (quadratic progress of crit_adj_val)
-          // 3. lines between nodes within the whole 3D-element (3D-diagonals) -> (cubic progress)
-          // => we simplify the three cases to case 1.
-          // illustration: the intersection points of the resulting interface (boundary integration cells) are connected
-          //               linearly. Therefore a quadratic or cubic progress is not necessary.
-          //               A estimated linear progress overestimates the quadratic of cubic progress,
-          //               so we get a !more critical! value for a linear progress, that's okay!
-
-          // loop over nodes: calculate critical values for each node jnode!=inode to current inode
-          LINALG::Matrix<numnode,1> crit_adj_inode_n;
-          LINALG::Matrix<numnode,1> crit_adj_inode_np;
-          for(int jnode=0;jnode<(int)numnode;jnode++)
-          {
-            if(jnode != ID_param_space)
-            {
-              // we take the same formula for all node pairs (inode,jnode), inode=fix, jnode =1..numnode
-              // REMARK: see illustration above
-
-              // get phi-values for the to nodes: jnode and inode
-              // it holds for a linear progress
-              // dx_i denotes the distance between node i and the existing intersection point
-              // at the line between inode and jnode holds
-              // |dx_i| / (|dx_i| + |dx_j|) = |phi(inode)| / (|phi(inode)| + |phi(jnode)|)
-              //
-              // we set:
-              // crit_adj_inode = max (0, -sign(phi_i)*sign(phi_j) * |phi(inode)| / (|phi(inode)| + |phi(jnode)|) )
-              if(modify_phinp_pot == true)
-              {
-                double phi_np_i = ephinp_adj(ID_param_space);
-                double phi_np_j = ephinp_adj(jnode);
+        // calculate element diameter
+        const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
 
+        //-------------------------------------------------------------
+        // update maxEleDiam
+        //-------------------------------------------------------------
+        maxEleDiam = max(hk_current,maxEleDiam);
 
-                int sign_phi_np_i = (phi_np_i > 0) - (phi_np_i < 0);
-                int sign_phi_np_j = (phi_np_j > 0) - (phi_np_j < 0);
-
-
-                // standard cases:
-                // phi_j > 0 and phi_i <~ 0
-                // phi_j < 0 and phi_i >~ 0
-                double relative_distance_np =  fabs(phi_np_i) / (fabs(phi_np_i) + (fabs(phi_np_j)) );
-
-
-                if(sign_phi_np_i != sign_phi_np_j)
-                {
-                  crit_adj_inode_np(jnode) = relative_distance_np;
-                }
-                else if((sign_phi_np_i == sign_phi_np_j) && (sign_phi_np_i != 0))
-                {
-                  // no intersection point between
-                  crit_adj_inode_np(jnode) = 1.0;
-                }
-                else
-                {
-                  dserror("impossible");
-                }
-              } // end if inode_modified_np
-              else
-              {
-                // set critical value to 1.0
-                crit_adj_inode_np(jnode) = 1.0;
-              }
-              if(modify_phin_pot ==true)
-              {
-                double phi_n_i = ephin_adj(ID_param_space);
-                double phi_n_j = ephin_adj(jnode);
-
-                int sign_phi_n_i = (phi_n_i > 0) - (phi_n_i < 0);
-                int sign_phi_n_j = (phi_n_j > 0) - (phi_n_j < 0);
-
-
-                double relative_distance_n  =  fabs(phi_n_i)  / (fabs(phi_n_i)  + (fabs(phi_n_j))  );
-                if(sign_phi_n_i != sign_phi_n_j)
-                {
-                  crit_adj_inode_n(jnode)  = relative_distance_n;
-                }
-                else if((sign_phi_n_i == sign_phi_n_j) && (sign_phi_n_i != 0))
-                {
-                  // no intersection point between
-                  crit_adj_inode_n(jnode) = 1.0;
-                }
-                else
-                {
-                  dserror("impossible");
-                }
-              } // end if inode_modified_n
-              else
-              {
-                // set critical value to 1.0
-                crit_adj_inode_n(jnode)  = 1.0;
-              }
-            }
-            else
-            {
-              // set critical value for the node inode itself
-              crit_adj_inode_np(jnode) = 1.0;
-              crit_adj_inode_n(jnode)  = 1.0;
-            }
-            // update the element critical value for node inode
-            ele_critical_inode_np(ele_current) *= crit_adj_inode_np(jnode);
-            ele_critical_inode_n(ele_current)  *= crit_adj_inode_n(jnode);
-          }// end loop over nodes of current adjacent element
-        } // end loop over adjacent
-
-        // ============== decide if the corresponding phi value of node inode gets modified ===========
-
-        double minimal_crit_val_np = 1.0;
-        double minimal_crit_val_n = 1.0;
-
-        for(int ele = 0; ele < numberOfElements; ele++)
-        {
-          if (fabs(ele_critical_inode_np(ele) - 0.0 ) < ModifyTOL)
-          {
-            inode_modified_np = true;
-          }
-          if (fabs(ele_critical_inode_n(ele)  - 0.0 ) < ModifyTOL)
-          {
-            inode_modified_n  = true;
-          }
-          minimal_crit_val_np = min(minimal_crit_val_np, fabs(ele_critical_inode_np(ele) - 0.0 ));
-          minimal_crit_val_n = min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
-        }
-        if(inode_modified_np == true)
-          cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << std::endl<< std::flush;
-        if(inode_modified_n == true)
-          cout << "\t \t    minimal_crit_val_n was: " << minimal_crit_val_n << std::endl<< std::flush;
-      } // end set inode_modifed_np status
+      } // end loop over adjacent
       //==========================================================================
 
+      // set TOL dependent on maxEleDiam
+      const double TOL = maxEleDiam * ModifyTOL;
 
+
+      // get current phi-value
+      // lid is the local processor id of the current node
+      // phinp_ is a nodeColMap
+      const int lid = (*phinpTmp).Map().LID(nodeID);
+      if (lid<0)
+        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
+      double phinp_current = (*phinpTmp)[lid];
+      double phin_current = (*phinTmp)[lid];
 
       // decide if modification to phi=0.0 is necessary
       // reset small phi values to zero
-      if (inode_modified_np == true)
+      if (fabs(phinp_current - 0.0) < TOL)
       {
-        cout << "\t \t -> modified: a critical phi-value was modified to 0.0" << std::endl<< std::flush;
+        cout << "\t !!!warning (ModifyPhiVector)!!! we modify a small phi-value to 0.0" << std::endl;
         (*phinpTmp)[lid] = 0.0;
         modified_counter++;
       }
-
-      if (inode_modified_n == true)
+      if (fabs(phin_current - 0.0) < TOL)
       {
         (*phinTmp)[lid] = 0.0;
         // no additional cout-comment here because this value has been
         // modified in the timestep before and cout was created there
       }
-    } // end if SearchTOL
 
-    // REMARK: all not row nodes are reconstructed by another processor!!!
-  } // end loop over nodes
+    } // end loop over nodes
+
+    if(modified_counter > 0)
+      std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done" << std::flush;;
+
+    LINALG::Export(*phinTmp,*phin_);
+    LINALG::Export(*phinpTmp,*phinp_);
+  }
+  else // non-ReinitModifyPhi case (standard case)
+  {
+    //========================================================================================
+    // get a tolerance for the main modify criterion: ModifyTOL
+    // REMARK:
+    // crit_i in [0,1] is a critical value for node i_
+    //		crit_i near 0.0 means: "node i is !!!very critical!!! for the adjacent element"
+    //		crit_i near 1.0 means: "node i is !!!uncritical!!! for the adjacent element"
+    // crit_i := crit(i,1) * ... * crit(i,8) in [0,1] for hex8 elements with 8 nodes
+    //           crit(i,j):= critical value for pair of nodes i and j
+    // if (crit_i := crit(i,1) * ... * crit(i,8) < ModifyTOL) -> modify the critical node i
+    //========================================================================================
+    // get relative tolerance for which we modify G-function values ( done just in the fluid part )
+    const double ModifyTOL = combustdyn.sublist("COMBUSTION FLUID").get<double>("PHI_MODIFY_TOL");
+
+    //========================================================================================
+    // get a tolerance for which we look for nodes which potentially get modified
+    // REMARK:
+    // SearchTOL means e.g. |phi_i-0.0| < SearchTOL * max(eleDiam, over adjacent elements to node i)
+    // thats not a modify criterion!
+    // usually we choose SearchTOL = 0.1
+    //========================================================================================
+    const double SearchTOL = 0.1;
+    cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
+
+    // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
+    const double TOL_zero = 1e-14;
+
+    cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
 
 
-  if(modified_counter > 0)
-    std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done\n" << std::flush;
+    // number space dimensions for 3d combustion element
+    const size_t nsd = 3;
 
-  LINALG::Export(*phinTmp,*phin_);
-  LINALG::Export(*phinpTmp,*phinp_);
+    // TODO template this part with switch(DISTYPE)
+    const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
 
-}
+    // number of nodes of this element for interpolation!!!
+    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    // count modified phi node values
+    int modified_counter = 0;
 
-return;
+
+    // pointer to phivector at time n with rowmap
+    RCP<Epetra_Vector> phinTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    LINALG::Export(*phin_,*phinTmp);
+    // pointer to phivector at time n+1 with rowmap
+    RCP<Epetra_Vector> phinpTmp = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
+    LINALG::Export(*phinp_,*phinpTmp);
+
+    // phinp_ and phin_ are given in same nodeColMap
+    // loop over nodes
+
+    for(int inode=0;inode<fluiddis_->NumMyRowNodes();inode++)
+    {
+      // get node from fluid discretization
+      const DRT::Node *actnode = fluiddis_->lRowNode(inode);
+
+
+      // this processor has to modify the phi-value for the current node
+      // get local processor id of node
+      int nodeID = actnode->Id();
+
+
+      // get all adjacent elements of this row node
+      int numberOfElements = actnode->NumElement();
+      const DRT::Element* const* elements = actnode->Elements();
+
+
+      // element critical value current node
+      // initialization with 1.0
+      // REMARK: 1.0 means uncritical, 0.0 means highly critical
+      Epetra_SerialDenseVector ele_critical_inode_np(numberOfElements);
+      //ele_critical_inode_np.Clear();
+      Epetra_SerialDenseVector ele_critical_inode_n(numberOfElements);
+      //ele_critical_inode_n.Clear();
+
+      const int lid = (*phinpTmp).Map().LID(nodeID);
+      if (lid<0)
+        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinpTmp).Comm().MyPID(),lid);
+      double phinp_current = (*phinpTmp)[lid];
+      double phin_current = (*phinTmp)[lid];
+
+      // initialize maximal element diameter to 0.0
+      double maxEleDiam = 0.0;
+
+      //==========================================================================
+      // loop over adjacent elements => set max eleDiam
+      for(int ele_current=0; ele_current<numberOfElements; ele_current++)
+      {
+        // get current element
+        const DRT::Element* ele_adj = elements[ele_current];
+
+        //-------------------------------------------------------------
+        // get element diameter for the current adjacent element
+        //-------------------------------------------------------------
+        if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
+
+        static LINALG::Matrix<nsd,numnode> xyze_adj;
+        GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+
+        //cout << xyze_adj << endl;
+
+        // calculate element diameter
+        const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
+
+        //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << endl;
+
+        //-------------------------------------------------------------
+        // update maxEleDiam
+        //-------------------------------------------------------------
+        maxEleDiam = max(hk_current,maxEleDiam);
+
+      } // end loop over adjacent
+      //==========================================================================
+      // decide if the current node "maybe" have to be modified
+      // call the main modification check if search-criterion is positive
+      //   and phi-value is not 0.0 already
+      bool modify_phinp_pot = false;
+      bool modify_phin_pot  = false;
+
+      if ( (fabs(phinp_current - 0.0) < SearchTOL * maxEleDiam) and (phinp_current != 0.0) )
+      {
+        modify_phinp_pot = true;
+        cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << std::endl<< std::flush;
+      }
+
+      if ( (fabs(phin_current - 0.0) < SearchTOL * maxEleDiam)  and (phin_current  != 0.0) )
+        modify_phin_pot  = true;
+      //==========================================================================
+
+      // we decide if we have to show for a need of a modification of the phi-value to zero
+      // do nothing if phi-value is zero already or phi-value is large enough
+      if( (modify_phinp_pot == true) or (modify_phin_pot == true) )
+      {
+        // boolian for real modification of phi value
+        bool inode_modified_n = false;
+        bool inode_modified_np = false;
+
+        // modify numerical zeros to 0.0 directly
+        if((fabs(phinp_current - 0.0) < TOL_zero) && (phinp_current!= 0.0))
+        {
+          inode_modified_np = true;
+          cout << "\t\t -> a numerical zero is set to 0.0" << std::endl<< std::flush;
+        }
+        if((fabs(phin_current - 0.0) < TOL_zero) && (phin_current!= 0.0))  inode_modified_n = true;
+        //==========================================================================
+        if((inode_modified_np == false) or (inode_modified_n == false))
+        {
+          // calculate critical node values for all adjacent elements
+          for(int ele_current=0; ele_current<numberOfElements; ele_current++)
+          {
+            // get current element
+            const DRT::Element* ele_adj = elements[ele_current];
+
+            if(ele_adj->Shape() != DRT::Element::hex8) dserror("ModifyPhiVector only implemented for hex8 elements!");
+
+            // initialize entry to 1.0
+            ele_critical_inode_np(ele_current) = 1.0;
+            ele_critical_inode_n(ele_current) = 1.0;
+
+            // loop over all nodes of the current element
+            const int* ptToNodeIds_adj = ele_adj->NodeIds();
+
+            // get phi-values of current adjacent element ele_adj
+            // create vector "ephinp" holding scalar phi values for this element
+            Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
+            Epetra_SerialDenseVector ephin(numnode); //local vector phi-values of adjacent element
+
+            // which node in param space of element ele_adj has actnode
+            int ID_param_space = -1;
+
+            // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
+            vector<int> nodeID_adj(numnode);
+            for (size_t node=0; node < numnode; node++){
+              nodeID_adj[node] = ptToNodeIds_adj[node];
+              // get local number of node actnode in ele_adj
+              if(actnode->Id() == ptToNodeIds_adj[node]) ID_param_space = node;
+            }
+
+            // extract the phi-values of adjacent element with local ids from global vector *phinp
+            // get pointer to vector holding G-function values at the fluid nodes
+            DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
+            LINALG::Matrix<numnode,1> ephinp_adj(ephinp);
+
+            DRT::UTILS::ExtractMyValues(*phin_, ephin, nodeID_adj);
+            LINALG::Matrix<numnode,1> ephin_adj(ephin);
+
+            //==============================================================================================
+            // ------calculate critical values crit_adj_inode(j) for all nodes jnode to current node inode------
+            //==============================================================================================
+            // REMARK:
+            // we define for each node j a critical value to node i in [0,1] if there is a sign change in the
+            // corresponding phi-values
+            // if the zero point at the line between inode and jnode is near node i, the critical value
+            // gets a value near 0 => such zero points yield ill-conditioned entries in matrices
+            // with enriched shape functions
+            // if the zero point at the line is near node j, the critical value
+            // gets a value near 1 => such zero points are not ill for the current node i, but maybe for node j,
+            // but this checks the loop iteration for jnode
+            //
+            // we have to distinguish three types of lines
+            // 1. lines between neighbouring nodes -> lines are edges of the element (linear progress of crit_adj_val)
+            // 2. lines between nodes within one 2D-face -> lines lie in a 2D face (quadratic progress of crit_adj_val)
+            // 3. lines between nodes within the whole 3D-element (3D-diagonals) -> (cubic progress)
+            // => we simplify the three cases to case 1.
+            // illustration: the intersection points of the resulting interface (boundary integration cells) are connected
+            //               linearly. Therefore a quadratic or cubic progress is not necessary.
+            //               A estimated linear progress overestimates the quadratic of cubic progress,
+            //               so we get a !more critical! value for a linear progress, that's okay!
+
+            // loop over nodes: calculate critical values for each node jnode!=inode to current inode
+            LINALG::Matrix<numnode,1> crit_adj_inode_n;
+            LINALG::Matrix<numnode,1> crit_adj_inode_np;
+            for(int jnode=0;jnode<(int)numnode;jnode++)
+            {
+              if(jnode != ID_param_space)
+              {
+                // we take the same formula for all node pairs (inode,jnode), inode=fix, jnode =1..numnode
+                // REMARK: see illustration above
+
+                // get phi-values for the to nodes: jnode and inode
+                // it holds for a linear progress
+                // dx_i denotes the distance between node i and the existing intersection point
+                // at the line between inode and jnode holds
+                // |dx_i| / (|dx_i| + |dx_j|) = |phi(inode)| / (|phi(inode)| + |phi(jnode)|)
+                //
+                // we set:
+                // crit_adj_inode = max (0, -sign(phi_i)*sign(phi_j) * |phi(inode)| / (|phi(inode)| + |phi(jnode)|) )
+                if(modify_phinp_pot == true)
+                {
+                  double phi_np_i = ephinp_adj(ID_param_space);
+                  double phi_np_j = ephinp_adj(jnode);
+
+
+
+                  int sign_phi_np_i = (phi_np_i > 0) - (phi_np_i < 0);
+                  int sign_phi_np_j = (phi_np_j > 0) - (phi_np_j < 0);
+
+
+                  // standard cases:
+                  // phi_j > 0 and phi_i <~ 0
+                  // phi_j < 0 and phi_i >~ 0
+                  double relative_distance_np =  fabs(phi_np_i) / (fabs(phi_np_i) + (fabs(phi_np_j)) );
+
+
+                  if(sign_phi_np_i != sign_phi_np_j)
+                  {
+                    crit_adj_inode_np(jnode) = relative_distance_np;
+                  }
+                  else if((sign_phi_np_i == sign_phi_np_j) && (sign_phi_np_i != 0))
+                  {
+                    // no intersection point between
+                    crit_adj_inode_np(jnode) = 1.0;
+                  }
+                  else
+                  {
+                    dserror("impossible");
+                  }
+                } // end if inode_modified_np
+                else
+                {
+                  // set critical value to 1.0
+                  crit_adj_inode_np(jnode) = 1.0;
+                }
+                if(modify_phin_pot ==true)
+                {
+                  double phi_n_i = ephin_adj(ID_param_space);
+                  double phi_n_j = ephin_adj(jnode);
+
+                  int sign_phi_n_i = (phi_n_i > 0) - (phi_n_i < 0);
+                  int sign_phi_n_j = (phi_n_j > 0) - (phi_n_j < 0);
+
+
+                  double relative_distance_n  =  fabs(phi_n_i)  / (fabs(phi_n_i)  + (fabs(phi_n_j))  );
+                  if(sign_phi_n_i != sign_phi_n_j)
+                  {
+                    crit_adj_inode_n(jnode)  = relative_distance_n;
+                  }
+                  else if((sign_phi_n_i == sign_phi_n_j) && (sign_phi_n_i != 0))
+                  {
+                    // no intersection point between
+                    crit_adj_inode_n(jnode) = 1.0;
+                  }
+                  else
+                  {
+                    dserror("impossible");
+                  }
+                } // end if inode_modified_n
+                else
+                {
+                  // set critical value to 1.0
+                  crit_adj_inode_n(jnode)  = 1.0;
+                }
+              }
+              else
+              {
+                // set critical value for the node inode itself
+                crit_adj_inode_np(jnode) = 1.0;
+                crit_adj_inode_n(jnode)  = 1.0;
+              }
+              // update the element critical value for node inode
+              ele_critical_inode_np(ele_current) *= crit_adj_inode_np(jnode);
+              ele_critical_inode_n(ele_current)  *= crit_adj_inode_n(jnode);
+            }// end loop over nodes of current adjacent element
+          } // end loop over adjacent
+
+          // ============== decide if the corresponding phi value of node inode gets modified ===========
+
+          double minimal_crit_val_np = 1.0;
+          double minimal_crit_val_n = 1.0;
+
+          for(int ele = 0; ele < numberOfElements; ele++)
+          {
+            if (fabs(ele_critical_inode_np(ele) - 0.0 ) < ModifyTOL)
+            {
+              inode_modified_np = true;
+            }
+            if (fabs(ele_critical_inode_n(ele)  - 0.0 ) < ModifyTOL)
+            {
+              inode_modified_n  = true;
+            }
+            minimal_crit_val_np = min(minimal_crit_val_np, fabs(ele_critical_inode_np(ele) - 0.0 ));
+            minimal_crit_val_n = min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
+          }
+          if(inode_modified_np == true)
+            cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << std::endl<< std::flush;
+          if(inode_modified_n == true)
+            cout << "\t \t    minimal_crit_val_n was: " << minimal_crit_val_n << std::endl<< std::flush;
+        } // end set inode_modifed_np status
+        //==========================================================================
+
+
+
+        // decide if modification to phi=0.0 is necessary
+        // reset small phi values to zero
+        if (inode_modified_np == true)
+        {
+          cout << "\t \t -> modified: a critical phi-value was modified to 0.0" << std::endl<< std::flush;
+          (*phinpTmp)[lid] = 0.0;
+          modified_counter++;
+        }
+
+        if (inode_modified_n == true)
+        {
+          (*phinTmp)[lid] = 0.0;
+          // no additional cout-comment here because this value has been
+          // modified in the timestep before and cout was created there
+        }
+      } // end if SearchTOL
+
+      // REMARK: all not row nodes are reconstructed by another processor!!!
+    } // end loop over nodes
+
+
+    if(modified_counter > 0)
+      std::cout << "---  \t number of modified phi-values: " << modified_counter << " ...done\n" << std::flush;
+
+    LINALG::Export(*phinTmp,*phin_);
+    LINALG::Export(*phinpTmp,*phinp_);
+
+  }
+
+  return;
 }
 
 
@@ -841,38 +840,38 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //    cout << actele->Id() << "\t" << IntCells.size() << endl;
     //    cout << actele->Id() << "\t" <<BoundIntCells.size() << endl;
 
-    if (IntCells.size() > 1 || BoundIntCells.size() > 0) // element is intersected or touched
+    //    if (IntCells.size() > 1 || BoundIntCells.size() > 0) // element is intersected or touched
+    //    {
+    //cout << "element with ID: " << actele->Id() << "is reconstructed "<< endl;
+    // -> assemble all adjacent nodes, these node values must be reconstructed
+
+    // number of nodes of this element (number of vertices)
+    // e.g. hex20 elements hasGEO::DomainIntCells IntCells = myelementintcells_[actele_GID]; numnode=20 but numberOfNodes=8
+    // if actele is an element at processor boundary, actele will be less than 8
+    // TODO:: check this
+    const int numberOfNodes = actele->NumNode();
+
+    // get vector of pointers of node (for this element)
+    const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
+
+    for(int vec_it = 0; vec_it < numberOfNodes; vec_it++)
     {
-      //cout << "element with ID: " << actele->Id() << "is reconstructed "<< endl;
-      // -> assemble all adjacent nodes, these node values must be reconstructed
+      // get owner of the node to compare with my_rank
+      int node_owner = (ele_vecOfPtsToNode[vec_it])->Owner();
 
-      // number of nodes of this element (number of vertices)
-      // e.g. hex20 elements hasGEO::DomainIntCells IntCells = myelementintcells_[actele_GID]; numnode=20 but numberOfNodes=8
-      // if actele is an element at processor boundary, actele will be less than 8
-      // TODO:: check this
-      const int numberOfNodes = actele->NumNode();
-
-      // get vector of pointers of node (for this element)
-      const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
-
-      for(int vec_it = 0; vec_it < numberOfNodes; vec_it++)
+      // check wheather this node is a row node, compare with actual processor id
+      if(node_owner == fluiddis_->Comm().MyPID() )
       {
-        // get owner of the node to compare with my_rank
-        int node_owner = (ele_vecOfPtsToNode[vec_it])->Owner();
+        // get local processor id of node
 
-        // check wheather this node is a row node, compare with actual processor id
-        if(node_owner == fluiddis_->Comm().MyPID() )
-        {
-          // get local processor id of node
+        // TODO: check whether insert in map avoids twice-inserting
+        int lid = ele_vecOfPtsToNode[vec_it]->LID();
+        nodesToReconstruct[lid] = ele_vecOfPtsToNode[vec_it];
+      } // end if
 
-          // TODO: check whether insert in map avoids twice-inserting
-          int lid = ele_vecOfPtsToNode[vec_it]->LID();
-          nodesToReconstruct[lid] = ele_vecOfPtsToNode[vec_it];
-        } // end if
-
-        // REMARK: all not row nodes are reconstructed by another processor!!!
-      }// end vec iteration (vec of nodes of element)
-    }// end if element intersected
+      // REMARK: all not row nodes are reconstructed by another processor!!!
+    }// end vec iteration (vec of nodes of element)
+    //    }// end if element intersected
   }// end for loop over row elements
 
   typedef std::map<int, const DRT::Node*> Node_Map;
@@ -1034,51 +1033,51 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
       }// end loop over all adjacent elements
 #if(0)
-		  // special case for straight_bodyforce
-		  // this is a node of an intersected element
-		  // the element must be a boundary element!
-		  // assume a continued interface across the domain boundary
-		  if(numberOfElements == 2)
-		  {
-		    // set two vectors in y-direction
-		    PHI_SMOOTHED_3D(0,0) = 1.0;
-		    PHI_SMOOTHED_3D(1,0) = 1.0;
-		    PHI_SMOOTHED_3D(2,0) = 0.0;
+      // special case for straight_bodyforce
+      // this is a node of an intersected element
+      // the element must be a boundary element!
+      // assume a continued interface across the domain boundary
+      if(numberOfElements == 2)
+      {
+        // set two vectors in y-direction
+        PHI_SMOOTHED_3D(0,0) = 1.0;
+        PHI_SMOOTHED_3D(1,0) = 1.0;
+        PHI_SMOOTHED_3D(2,0) = 0.0;
 
-		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
-		  }
+        cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+      }
 #endif
 
 #if(0)
-		  // special case for Rayleigh-Taylor
-		  // this is a node of an intersected element
-		  // the element must be a boundary element!
-		  // assume a continued interface across the domain boundary
-		  if(numberOfElements == 2)
-		  {
-		    // set two vectors in y-direction
-		    PHI_SMOOTHED_3D(0,0) = 0.0;
-		    PHI_SMOOTHED_3D(1,0) = 2.0;
-		    PHI_SMOOTHED_3D(2,0) = 0.0;
+      // special case for Rayleigh-Taylor
+      // this is a node of an intersected element
+      // the element must be a boundary element!
+      // assume a continued interface across the domain boundary
+      if(numberOfElements == 2)
+      {
+        // set two vectors in y-direction
+        PHI_SMOOTHED_3D(0,0) = 0.0;
+        PHI_SMOOTHED_3D(1,0) = 2.0;
+        PHI_SMOOTHED_3D(2,0) = 0.0;
 
-		    cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
-		  }
+        cout << "\n\t !!! warning !!! (Rayleigh-Taylor modification) we modify the gradient of phi periodically at the domain boundary";
+      }
 #endif
 
 #if(0)
-		  // special case for flame vortex interaction
-		  // this is a node of an intersected element
-		  // the element must be a boundary element!
-		  // assume a continued interface across the domain boundary
-		  if(numberOfElements == 2 || numberOfElements == 1)
-		  {
-		    // set two vectors in y-direction
-		    PHI_SMOOTHED_3D(0,0) = 0.0;
-		    PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
-		    PHI_SMOOTHED_3D(2,0) = 0.0;
+      // special case for flame vortex interaction
+      // this is a node of an intersected element
+      // the element must be a boundary element!
+      // assume a continued interface across the domain boundary
+      if(numberOfElements == 2 || numberOfElements == 1)
+      {
+        // set two vectors in y-direction
+        PHI_SMOOTHED_3D(0,0) = 0.0;
+        PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
+        PHI_SMOOTHED_3D(2,0) = 0.0;
 
-		    cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
-		  }
+        cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
+      }
 #endif
 
 
@@ -1231,8 +1230,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       solver.SetVectors(PHI_SMOOTHED,RHS);
       solver.Solve();
 
-//      cout << " node:" << (it_node->second)->Id() << endl;
-//      cout << "PHI_SMOOTHED" << PHI_SMOOTHED << endl;
+      //      cout << " node:" << (it_node->second)->Id() << endl;
+      //      cout << "PHI_SMOOTHED" << PHI_SMOOTHED << endl;
       // set full 3D vector especially important for 2D leastsquares reconstruction
       if(CurrTypeOfNodeReconst == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D)
       {
@@ -1290,310 +1289,310 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
 
 
-//
-//  //===================================== new 2-Ring version
-//  for(Reconstruct_iterator it_node = nodesToReconstruct.begin(); it_node!= nodesToReconstruct.end(); it_node++)
-//  {
-//    // define vector for smoothed values (Phi, grad_Phi) of current node
-//    static LINALG::Matrix<9,1> PHI_SMOOTHED; // for real reconstruction 2D or 3D
-//    PHI_SMOOTHED.Clear();
-//    static LINALG::Matrix<9,1> PHI_SMOOTHED_3D; // set whole 3D vector also for 2D examples
-//    PHI_SMOOTHED_3D.Clear();
-//
-//
-//    // get local processor id of current node and pointer to current node
-//    //int lid_node = it_node->first;
-//    const DRT::Node* ptToNode = it_node->second;
-////    cout << "node:" << (it_node->second)->Id();
-//
-//    int numberOfElements = ptToNode->NumElement();
-//
-//    if(true) // least squares reconstruction
-//    {
-//        // get all adjacent elements in a 2-Ring
-//        // get adjacent elements to current node actnode (1-Ring)
-//        const DRT::Element* const* elementsOneRing = ptToNode->Elements();
-//
-//
-//        // map of pointers to nodes which must be reconstructed by this processor
-//        // key is the local id at processor
-//        std::map<int, const DRT::Element*> elesinTwoRing;
-//        elesinTwoRing.clear();
-//
-//        // loop over adjacent elements (1-ring elements)
-//        for(int ele_current=0; ele_current<numberOfElements; ele_current++)
-//        {
-//          // get current element
-//          const DRT::Element* ele_adj = elementsOneRing[ele_current];
-//
-//          // these are global Ids
-//          const int* ptToNodeIds_adj = ele_adj->NodeIds();
-//
-//
-//          for(int currentNode = 0; currentNode < (int)numnode; currentNode++)
-//          {
-//        	  // get local ID
-//              int curr_GID = ptToNodeIds_adj[currentNode];
-//
-//              // get local processor id according to global node id
-//              const int curr_lid = (*phinp_).Map().LID(curr_GID);
-//
-//              if (curr_lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),curr_GID);
-//
-//
-//        	  // get current Node, the local ID is needed
-//        	  const DRT::Node *actnode = fluiddis_->lColNode(curr_lid);
-//
-//        	  // get pointer to all adjacent elements of this node actnode
-//              const DRT::Element* const* elementsTwoRing = actnode->Elements();
-//
-//              int numberOfElementsTwoRing = actnode->NumElement();
-//
-//        	  // get all elements of the 2-ring and insert these in a vector
-//              // loop over these elements, insert to map
-//              for(int ele_current_two_ring=0; ele_current_two_ring < numberOfElementsTwoRing; ele_current_two_ring++)
-//              {
-//                  // get current element
-//                  const DRT::Element* ele_Two_Ring = elementsTwoRing[ele_current_two_ring];
-//
-//                  // insert in map of all two-ring elements respect to one node
-//                  int lid = elementsTwoRing[ele_current_two_ring]->LID();
-//                  elesinTwoRing[lid] = ele_Two_Ring;
-//              } // end loop over elements in 2-ring
-//          } // end loop over nodes of 1-ring
-//        } // end loop over elements of 1-ring
-//
-//        // get node xyze-coordinates
-//        LINALG::Matrix<nsd,1> xyz_node(ptToNode->X());
-////        cout << "xyz_node" << xyz_node << endl;
-//
-//
-//    	const int numberOfTwoRingElements = elesinTwoRing.size();
-////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << endl;
-//      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
-//      Epetra_SerialDenseMatrix MAT_LS(numberOfTwoRingElements, 9);
-//
-//      // map iterator
-//      typedef std::map<int, const DRT::Element*> Map_EleOfTwoRing;
-//      typedef Map_EleOfTwoRing::iterator TwoRing_iterator;
-//      int element_counter = 0;
-//
-//
-////      cout << "=====================iterate over elements in two-ring==============" << endl;
-//      for(TwoRing_iterator it_ele = elesinTwoRing.begin(); it_ele!= elesinTwoRing.end(); it_ele++)
-//      {
-//
-//          // get adjacent elements to current node actnode
-//          const DRT::Element* ele_Two_Ring= it_ele->second;
-//
-//          // get pointer to NodeIds of current element (global Ids)
-//          const int* ptToNodeIds_adj = ele_Two_Ring->NodeIds();
-//
-//
-//          // get phi-values of current adjacent element ele_adj
-//          // create vector "ephinp" holding scalar phi values for this element
-//          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
-//
-////          cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << endl;
-//          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-//          vector<int> nodeID_adj(numnode);
-//          for (size_t inode=0; inode < numnode; inode++){
-//            nodeID_adj[inode] = ptToNodeIds_adj[inode];
-////            cout << nodeID_adj[inode] << endl;
-//          }
-//
-//          // extract the phi-values of adjacent element with local ids from global vector *phinp
-//          // get pointer to vector holding G-function values at the fluid nodes
-//          DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
-//          LINALG::Matrix<numnode,1> ephi_adj(ephinp);
-//
-//
-//          // calculate center of gravity
-//          static LINALG::Matrix<numnode,1> funct;
-//          funct.Clear();
-//          static LINALG::Matrix<nsd,1> centerOfGravXi;
-//          centerOfGravXi.Clear();
-//
-//          // xi-coord = 0.0.0 for hex8
-//          if (DISTYPE != DRT::Element::hex8) dserror("center of gravity implemented only for hex8 elements");
-//          centerOfGravXi(0) = 0.0;
-//          centerOfGravXi(1) = 0.0;
-//          centerOfGravXi(2) = 0.0;
-//
-//
-//
-//          DRT::UTILS::shape_function_3D(funct,centerOfGravXi(0),centerOfGravXi(1),centerOfGravXi(2),DISTYPE);
-//
-//          // get node coordinates of this element
-//          static LINALG::Matrix<nsd,numnode> xyze_adj;
-//          GEO::fillInitialPositionArray<DISTYPE>(ele_Two_Ring, xyze_adj);
-//
-//          // interpolate center of gravity
-//          static LINALG::Matrix<nsd,1> centerOfGravXYZ;
-//          centerOfGravXYZ.Clear();
-//
-//          centerOfGravXYZ.Multiply(xyze_adj,funct);
-//
-//          // reconstruct xyz-gradient
-//          // calculate vector from current node to point of gravity (direction for taylor)
-//          static LINALG::Matrix<nsd,1> direction;
-//          direction.Clear();
-//
-//          direction(0) = centerOfGravXYZ(0) - xyz_node(0);
-//          direction(1) = centerOfGravXYZ(1) - xyz_node(1);
-//          direction(2) = centerOfGravXYZ(2) - xyz_node(2);
-//
-////          cout << "direction" << direction << endl;
-//
-//          // calculate ephi at point of gravity via interpolation
-//          static LINALG::Matrix<1,1> phi_adj;
-//          phi_adj.Clear();
-//          phi_adj.MultiplyTN(ephi_adj,funct);
-//
-////          cout << "phi_adj" << phi_adj << endl;
-//
-////          // cancel out the 2D direction
-////          if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
-//          // get the global id for current node
-//          int GID = ptToNode->Id();
-//
-//          // get local processor id according to global node id
-//          const int lid = (*phinp_).Map().LID(GID);
-//
-//          if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
-//
-//          double phi_node_value = (*phinp_)[lid];
-////          cout << "phi_node_value " << phi_node_value << endl;
-//
-//          // set RHS and MAT for least squares method
-//
-//            RHS_LS(element_counter,0) = phi_adj(0,0) -phi_node_value;
-//
-//            MAT_LS(element_counter,0) = direction(0);
-//            MAT_LS(element_counter,1) = direction(1);
-//            MAT_LS(element_counter,2) = direction(2);
-//
-//            MAT_LS(element_counter,3) = 0.5*direction(0)*direction(0);
-//            MAT_LS(element_counter,4) = 0.5*direction(1)*direction(1);
-//            MAT_LS(element_counter,5) = 0.5*direction(2)*direction(2);
-//
-//            MAT_LS(element_counter,6) = direction(0)*direction(1);
-//            MAT_LS(element_counter,7) = direction(0)*direction(2);
-//            MAT_LS(element_counter,8) = direction(1)*direction(2);
-////            MAT_LS(element_counter,0) = 1.0;
-////            MAT_LS(element_counter,1) = direction(0);
-////            MAT_LS(element_counter,2) = direction(1);
-////            MAT_LS(element_counter,3) = direction(2);
-////
-////            MAT_LS(element_counter,4) = 0.5*direction(0)*direction(0);
-////            MAT_LS(element_counter,5) = 0.5*direction(1)*direction(1);
-////            MAT_LS(element_counter,6) = 0.5*direction(2)*direction(2);
-////
-////            MAT_LS(element_counter,7) = direction(0)*direction(1);
-////            MAT_LS(element_counter,8) = direction(0)*direction(2);
-////            MAT_LS(element_counter,9) = direction(1)*direction(2);
-//
-//
-//            element_counter++;
-//      } // end loop over two-ring-elements
-//
-////      cout << "MATLS" << endl;
-////      for(int row = 0; row < element_counter; row++)
-////      {
-////    	  for(int col = 0; col < 10; col++)
-////    	  {
-////    		  cout << MAT_LS(row, col) << "\t";
-////    	  }
-////    	  cout << endl;
-////      }
-////      cout << endl;
-//
-//      // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
-//      // MAT_LS is not square
-//      // -> solve MAT_LS^T * MAT_LS * phi_smoothed = MAT_LS^T * RHS_LS
-//      Epetra_SerialDenseMatrix MAT_tmp(9,9);
-//      Epetra_SerialDenseMatrix RHS_tmp(9,1);
-//
-//      MAT_tmp.Multiply('T','N', 1.0, MAT_LS,MAT_LS, 0.0);
-//      RHS_tmp.Multiply('T','N', 1.0, MAT_LS,RHS_LS, 0.0);
-//
-//      // set LINALG-Matrix with fixed size
-//      // initialize element matrix for A^T*A and RHS-vector to solve Normalengleichung
-//
-//      LINALG::Matrix<9,9> MAT(MAT_tmp);
-//      LINALG::Matrix<9,1> RHS(RHS_tmp);
-//
-////      cout << "MAT" << MAT << endl;
-////      cout << "RHS" << RHS << endl;
-//      //=================solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)================
-//
-//      // solve the system for current node
-//      LINALG::FixedSizeSerialDenseSolver<9,9,1> solver; //1 is dimension of RHS
-//      solver.SetMatrix(MAT);
-//      solver.SetVectors(PHI_SMOOTHED,RHS);
-//      solver.Solve();
-//
-////      cout << " node:" << (it_node->second)->Id() << endl;
-////      cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << endl;
-//      // set full 3D vector especially important for 2D leastsquares reconstruction
-////        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(1,0);
-////        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(2,0);
-////        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(3,0);
-////        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(4,0);
-////        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(5,0);
-////        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(6,0);
-////        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(7,0);
-////        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(8,0);
-////        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(9,0);
-//
-//        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(0,0);
-//        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(1,0);
-//        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(2,0);
-//        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(3,0);
-//        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(4,0);
-//        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(5,0);
-//        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(6,0);
-//        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(7,0);
-//        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(8,0);
-//
-//    } // end of standard (Least_squares-) reconstruction case
-//
-//
-//    //=====================================================================================================
-//    // set the global vector gradphirow holding the new reconstructed values of gradient of phi in row!!! map
-//    //=====================================================================================================
-//
-//    // get the global id for current node
-//    int GID = (it_node->second)->Id();
-//
-//    // get local processor id according to global node id
-//    const int lid = (*gradphirow).Map().LID(GID);
-//
-//    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
-//
-//    const int numcol = (*gradphirow).NumVectors();
-////    if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not identically to nsd");
-//
-//    // loop over dimensions (= number of columns in multivector)
-//    for(int col=0; col< numcol; col++)
-//    {
-//      // get columns vector of multivector
-//      double* globalcolumn = (*gradphirow)[col];
-//
-//
-//      // set smoothed gradient entry of phi into column of global multivector
-////      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
-//      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
-//    }
-//
-//  }// ====================================== end loop over nodes ==========================================
-//
-//  // export NodeRowMap to NodeColMap gradphi_
-//  LINALG::Export(*gradphirow,*gradphi_);
-//
-//  std::cout << "done" << std::endl;
-//
-//
+  //
+  //  //===================================== new 2-Ring version
+  //  for(Reconstruct_iterator it_node = nodesToReconstruct.begin(); it_node!= nodesToReconstruct.end(); it_node++)
+  //  {
+  //    // define vector for smoothed values (Phi, grad_Phi) of current node
+  //    static LINALG::Matrix<9,1> PHI_SMOOTHED; // for real reconstruction 2D or 3D
+  //    PHI_SMOOTHED.Clear();
+  //    static LINALG::Matrix<9,1> PHI_SMOOTHED_3D; // set whole 3D vector also for 2D examples
+  //    PHI_SMOOTHED_3D.Clear();
+  //
+  //
+  //    // get local processor id of current node and pointer to current node
+  //    //int lid_node = it_node->first;
+  //    const DRT::Node* ptToNode = it_node->second;
+  ////    cout << "node:" << (it_node->second)->Id();
+  //
+  //    int numberOfElements = ptToNode->NumElement();
+  //
+  //    if(true) // least squares reconstruction
+  //    {
+  //        // get all adjacent elements in a 2-Ring
+  //        // get adjacent elements to current node actnode (1-Ring)
+  //        const DRT::Element* const* elementsOneRing = ptToNode->Elements();
+  //
+  //
+  //        // map of pointers to nodes which must be reconstructed by this processor
+  //        // key is the local id at processor
+  //        std::map<int, const DRT::Element*> elesinTwoRing;
+  //        elesinTwoRing.clear();
+  //
+  //        // loop over adjacent elements (1-ring elements)
+  //        for(int ele_current=0; ele_current<numberOfElements; ele_current++)
+  //        {
+  //          // get current element
+  //          const DRT::Element* ele_adj = elementsOneRing[ele_current];
+  //
+  //          // these are global Ids
+  //          const int* ptToNodeIds_adj = ele_adj->NodeIds();
+  //
+  //
+  //          for(int currentNode = 0; currentNode < (int)numnode; currentNode++)
+  //          {
+  //        	  // get local ID
+  //              int curr_GID = ptToNodeIds_adj[currentNode];
+  //
+  //              // get local processor id according to global node id
+  //              const int curr_lid = (*phinp_).Map().LID(curr_GID);
+  //
+  //              if (curr_lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),curr_GID);
+  //
+  //
+  //        	  // get current Node, the local ID is needed
+  //        	  const DRT::Node *actnode = fluiddis_->lColNode(curr_lid);
+  //
+  //        	  // get pointer to all adjacent elements of this node actnode
+  //              const DRT::Element* const* elementsTwoRing = actnode->Elements();
+  //
+  //              int numberOfElementsTwoRing = actnode->NumElement();
+  //
+  //        	  // get all elements of the 2-ring and insert these in a vector
+  //              // loop over these elements, insert to map
+  //              for(int ele_current_two_ring=0; ele_current_two_ring < numberOfElementsTwoRing; ele_current_two_ring++)
+  //              {
+  //                  // get current element
+  //                  const DRT::Element* ele_Two_Ring = elementsTwoRing[ele_current_two_ring];
+  //
+  //                  // insert in map of all two-ring elements respect to one node
+  //                  int lid = elementsTwoRing[ele_current_two_ring]->LID();
+  //                  elesinTwoRing[lid] = ele_Two_Ring;
+  //              } // end loop over elements in 2-ring
+  //          } // end loop over nodes of 1-ring
+  //        } // end loop over elements of 1-ring
+  //
+  //        // get node xyze-coordinates
+  //        LINALG::Matrix<nsd,1> xyz_node(ptToNode->X());
+  ////        cout << "xyz_node" << xyz_node << endl;
+  //
+  //
+  //    	const int numberOfTwoRingElements = elesinTwoRing.size();
+  ////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << endl;
+  //      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
+  //      Epetra_SerialDenseMatrix MAT_LS(numberOfTwoRingElements, 9);
+  //
+  //      // map iterator
+  //      typedef std::map<int, const DRT::Element*> Map_EleOfTwoRing;
+  //      typedef Map_EleOfTwoRing::iterator TwoRing_iterator;
+  //      int element_counter = 0;
+  //
+  //
+  ////      cout << "=====================iterate over elements in two-ring==============" << endl;
+  //      for(TwoRing_iterator it_ele = elesinTwoRing.begin(); it_ele!= elesinTwoRing.end(); it_ele++)
+  //      {
+  //
+  //          // get adjacent elements to current node actnode
+  //          const DRT::Element* ele_Two_Ring= it_ele->second;
+  //
+  //          // get pointer to NodeIds of current element (global Ids)
+  //          const int* ptToNodeIds_adj = ele_Two_Ring->NodeIds();
+  //
+  //
+  //          // get phi-values of current adjacent element ele_adj
+  //          // create vector "ephinp" holding scalar phi values for this element
+  //          Epetra_SerialDenseVector ephinp(numnode); //local vector phi-values of adjacent element
+  //
+  ////          cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << endl;
+  //          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
+  //          vector<int> nodeID_adj(numnode);
+  //          for (size_t inode=0; inode < numnode; inode++){
+  //            nodeID_adj[inode] = ptToNodeIds_adj[inode];
+  ////            cout << nodeID_adj[inode] << endl;
+  //          }
+  //
+  //          // extract the phi-values of adjacent element with local ids from global vector *phinp
+  //          // get pointer to vector holding G-function values at the fluid nodes
+  //          DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
+  //          LINALG::Matrix<numnode,1> ephi_adj(ephinp);
+  //
+  //
+  //          // calculate center of gravity
+  //          static LINALG::Matrix<numnode,1> funct;
+  //          funct.Clear();
+  //          static LINALG::Matrix<nsd,1> centerOfGravXi;
+  //          centerOfGravXi.Clear();
+  //
+  //          // xi-coord = 0.0.0 for hex8
+  //          if (DISTYPE != DRT::Element::hex8) dserror("center of gravity implemented only for hex8 elements");
+  //          centerOfGravXi(0) = 0.0;
+  //          centerOfGravXi(1) = 0.0;
+  //          centerOfGravXi(2) = 0.0;
+  //
+  //
+  //
+  //          DRT::UTILS::shape_function_3D(funct,centerOfGravXi(0),centerOfGravXi(1),centerOfGravXi(2),DISTYPE);
+  //
+  //          // get node coordinates of this element
+  //          static LINALG::Matrix<nsd,numnode> xyze_adj;
+  //          GEO::fillInitialPositionArray<DISTYPE>(ele_Two_Ring, xyze_adj);
+  //
+  //          // interpolate center of gravity
+  //          static LINALG::Matrix<nsd,1> centerOfGravXYZ;
+  //          centerOfGravXYZ.Clear();
+  //
+  //          centerOfGravXYZ.Multiply(xyze_adj,funct);
+  //
+  //          // reconstruct xyz-gradient
+  //          // calculate vector from current node to point of gravity (direction for taylor)
+  //          static LINALG::Matrix<nsd,1> direction;
+  //          direction.Clear();
+  //
+  //          direction(0) = centerOfGravXYZ(0) - xyz_node(0);
+  //          direction(1) = centerOfGravXYZ(1) - xyz_node(1);
+  //          direction(2) = centerOfGravXYZ(2) - xyz_node(2);
+  //
+  ////          cout << "direction" << direction << endl;
+  //
+  //          // calculate ephi at point of gravity via interpolation
+  //          static LINALG::Matrix<1,1> phi_adj;
+  //          phi_adj.Clear();
+  //          phi_adj.MultiplyTN(ephi_adj,funct);
+  //
+  ////          cout << "phi_adj" << phi_adj << endl;
+  //
+  ////          // cancel out the 2D direction
+  ////          if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
+  //          // get the global id for current node
+  //          int GID = ptToNode->Id();
+  //
+  //          // get local processor id according to global node id
+  //          const int lid = (*phinp_).Map().LID(GID);
+  //
+  //          if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
+  //
+  //          double phi_node_value = (*phinp_)[lid];
+  ////          cout << "phi_node_value " << phi_node_value << endl;
+  //
+  //          // set RHS and MAT for least squares method
+  //
+  //            RHS_LS(element_counter,0) = phi_adj(0,0) -phi_node_value;
+  //
+  //            MAT_LS(element_counter,0) = direction(0);
+  //            MAT_LS(element_counter,1) = direction(1);
+  //            MAT_LS(element_counter,2) = direction(2);
+  //
+  //            MAT_LS(element_counter,3) = 0.5*direction(0)*direction(0);
+  //            MAT_LS(element_counter,4) = 0.5*direction(1)*direction(1);
+  //            MAT_LS(element_counter,5) = 0.5*direction(2)*direction(2);
+  //
+  //            MAT_LS(element_counter,6) = direction(0)*direction(1);
+  //            MAT_LS(element_counter,7) = direction(0)*direction(2);
+  //            MAT_LS(element_counter,8) = direction(1)*direction(2);
+  ////            MAT_LS(element_counter,0) = 1.0;
+  ////            MAT_LS(element_counter,1) = direction(0);
+  ////            MAT_LS(element_counter,2) = direction(1);
+  ////            MAT_LS(element_counter,3) = direction(2);
+  ////
+  ////            MAT_LS(element_counter,4) = 0.5*direction(0)*direction(0);
+  ////            MAT_LS(element_counter,5) = 0.5*direction(1)*direction(1);
+  ////            MAT_LS(element_counter,6) = 0.5*direction(2)*direction(2);
+  ////
+  ////            MAT_LS(element_counter,7) = direction(0)*direction(1);
+  ////            MAT_LS(element_counter,8) = direction(0)*direction(2);
+  ////            MAT_LS(element_counter,9) = direction(1)*direction(2);
+  //
+  //
+  //            element_counter++;
+  //      } // end loop over two-ring-elements
+  //
+  ////      cout << "MATLS" << endl;
+  ////      for(int row = 0; row < element_counter; row++)
+  ////      {
+  ////    	  for(int col = 0; col < 10; col++)
+  ////    	  {
+  ////    		  cout << MAT_LS(row, col) << "\t";
+  ////    	  }
+  ////    	  cout << endl;
+  ////      }
+  ////      cout << endl;
+  //
+  //      // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
+  //      // MAT_LS is not square
+  //      // -> solve MAT_LS^T * MAT_LS * phi_smoothed = MAT_LS^T * RHS_LS
+  //      Epetra_SerialDenseMatrix MAT_tmp(9,9);
+  //      Epetra_SerialDenseMatrix RHS_tmp(9,1);
+  //
+  //      MAT_tmp.Multiply('T','N', 1.0, MAT_LS,MAT_LS, 0.0);
+  //      RHS_tmp.Multiply('T','N', 1.0, MAT_LS,RHS_LS, 0.0);
+  //
+  //      // set LINALG-Matrix with fixed size
+  //      // initialize element matrix for A^T*A and RHS-vector to solve Normalengleichung
+  //
+  //      LINALG::Matrix<9,9> MAT(MAT_tmp);
+  //      LINALG::Matrix<9,1> RHS(RHS_tmp);
+  //
+  ////      cout << "MAT" << MAT << endl;
+  ////      cout << "RHS" << RHS << endl;
+  //      //=================solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)================
+  //
+  //      // solve the system for current node
+  //      LINALG::FixedSizeSerialDenseSolver<9,9,1> solver; //1 is dimension of RHS
+  //      solver.SetMatrix(MAT);
+  //      solver.SetVectors(PHI_SMOOTHED,RHS);
+  //      solver.Solve();
+  //
+  ////      cout << " node:" << (it_node->second)->Id() << endl;
+  ////      cout << "============PHI_SMOOTHED==========" << PHI_SMOOTHED << endl;
+  //      // set full 3D vector especially important for 2D leastsquares reconstruction
+  ////        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(1,0);
+  ////        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(2,0);
+  ////        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(3,0);
+  ////        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(4,0);
+  ////        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(5,0);
+  ////        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(6,0);
+  ////        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(7,0);
+  ////        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(8,0);
+  ////        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(9,0);
+  //
+  //        PHI_SMOOTHED_3D(0,0) = PHI_SMOOTHED(0,0);
+  //        PHI_SMOOTHED_3D(1,0) = PHI_SMOOTHED(1,0);
+  //        PHI_SMOOTHED_3D(2,0) = PHI_SMOOTHED(2,0);
+  //        PHI_SMOOTHED_3D(3,0) = PHI_SMOOTHED(3,0);
+  //        PHI_SMOOTHED_3D(4,0) = PHI_SMOOTHED(4,0);
+  //        PHI_SMOOTHED_3D(5,0) = PHI_SMOOTHED(5,0);
+  //        PHI_SMOOTHED_3D(6,0) = PHI_SMOOTHED(6,0);
+  //        PHI_SMOOTHED_3D(7,0) = PHI_SMOOTHED(7,0);
+  //        PHI_SMOOTHED_3D(8,0) = PHI_SMOOTHED(8,0);
+  //
+  //    } // end of standard (Least_squares-) reconstruction case
+  //
+  //
+  //    //=====================================================================================================
+  //    // set the global vector gradphirow holding the new reconstructed values of gradient of phi in row!!! map
+  //    //=====================================================================================================
+  //
+  //    // get the global id for current node
+  //    int GID = (it_node->second)->Id();
+  //
+  //    // get local processor id according to global node id
+  //    const int lid = (*gradphirow).Map().LID(GID);
+  //
+  //    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
+  //
+  //    const int numcol = (*gradphirow).NumVectors();
+  ////    if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not identically to nsd");
+  //
+  //    // loop over dimensions (= number of columns in multivector)
+  //    for(int col=0; col< numcol; col++)
+  //    {
+  //      // get columns vector of multivector
+  //      double* globalcolumn = (*gradphirow)[col];
+  //
+  //
+  //      // set smoothed gradient entry of phi into column of global multivector
+  ////      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
+  //      globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
+  //    }
+  //
+  //  }// ====================================== end loop over nodes ==========================================
+  //
+  //  // export NodeRowMap to NodeColMap gradphi_
+  //  LINALG::Export(*gradphirow,*gradphi_);
+  //
+  //  std::cout << "done" << std::endl;
+  //
+  //
 
 
   return;
@@ -1658,9 +1657,9 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
  | refine the region around the flame front                                           henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
-                                           const Teuchos::RCP<const Epetra_Vector> phi)
+    const Teuchos::RCP<const Epetra_Vector> phi)
 {
-/* Hier wird der rekursive Verfeinerungsprozess gestartet.
+  /* Hier wird der rekursive Verfeinerungsprozess gestartet.
 
   rufe FindFlameFront() für eine Verfeinerungszelle
   falls Rückgabe = true (Zelle wird geschnitten)
@@ -1669,21 +1668,21 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
     für alle neuen Verfeinerungszellen
       falls maximale Anzahl von Verfeinerungen noch nicht erreicht
         rekursiver Aufruf: RefineFlamefront() (RefineCell())
- */
+   */
 
   // get G-Function values of refinement cell and determine, if it is intersected
   FindFlameFront(cell,phi);
   // is maximal refinement level already reached?
   if (cell->RefinementLevel() < maxRefinementLevel_) //->No
   {
-     if (cell->Bisected()) // cell is bisected ....
-     {
-        cell->RefineCell(); // ... and will be refined
-//        std::cout << "RefineCell done" << std::endl;
-        // loop over all new refinement cells and call of RefineFlameFront
-        for (int icell = 0; icell < cell->NumOfChildren(); icell++)
-            RefineFlameFront(cell->GetRefinementCell(icell),phi);
-     }
+    if (cell->Bisected()) // cell is bisected ....
+    {
+      cell->RefineCell(); // ... and will be refined
+      //        std::cout << "RefineCell done" << std::endl;
+      // loop over all new refinement cells and call of RefineFlameFront
+      for (int icell = 0; icell < cell->NumOfChildren(); icell++)
+        RefineFlameFront(cell->GetRefinementCell(icell),phi);
+    }
   }
 
   return;
@@ -1694,8 +1693,8 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
  | find the flame front within a refinement cell according to G-function field        henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::FindFlameFront(
-       const Teuchos::RCP<COMBUST::RefinementCell> cell,
-       const Teuchos::RCP<const Epetra_Vector> phi)
+    const Teuchos::RCP<COMBUST::RefinementCell> cell,
+    const Teuchos::RCP<const Epetra_Vector> phi)
 {
   // get the element which this cell belongs to
   const DRT::Element* ele = cell->Ele();
@@ -1717,7 +1716,7 @@ void COMBUST::FlameFront::FindFlameFront(
       const int* nodeids = ele->NodeIds();
       for (unsigned inode=0; inode < lm.size(); inode++)
         lm[inode] = nodeids[inode];
-/*
+      /*
   weitere Implementierungsmöglichkeiten
   2.Möglichkeit, führt Schleife für NodeIds() von Hand aus und spart so Umschreiben vin nodeids auf lm
       // get pointer to nodes of this element
@@ -1735,7 +1734,7 @@ void COMBUST::FlameFront::FindFlameFront(
         const vector<int> lm = gfuncdis_->Dof(ele);
         // create local vector "myphinp"
         vector<double> myphinp(lm.size()); // vector<double> degeneriert hier zum scalaren double!
- */
+       */
       //--------------------------------------------------------------------------------------------
       // extract G-function values for all nodes belonging to this fluid element ( == cell!)
       //--------------------------------------------------------------------------------------------
@@ -1836,39 +1835,39 @@ void COMBUST::FlameFront::FindFlameFront(
       //       phis[6]=3.0;
       //       phis[7]=-3.0;
       //
-//             phis[0]=-8.642922e-03;
-//             phis[1]=-8.622150e-03;
-//             phis[2]=1.790659e-02;
-//             phis[3]=1.647029e-02;
-//             phis[4]=9.449617e-03;
-//             phis[5]=8.525568e-03;
-//             phis[6]=-7.705337e-04;
-//             phis[7]=2.363820e-04;
-//              cell->SetGfuncValues(phis);
+      //             phis[0]=-8.642922e-03;
+      //             phis[1]=-8.622150e-03;
+      //             phis[2]=1.790659e-02;
+      //             phis[3]=1.647029e-02;
+      //             phis[4]=9.449617e-03;
+      //             phis[5]=8.525568e-03;
+      //             phis[6]=-7.705337e-04;
+      //             phis[7]=2.363820e-04;
+      //              cell->SetGfuncValues(phis);
 
       //TEST Einheitswürfel mit verschiedenen Schnitten (Hex20)
-//      vector<double> phis (20);
-//      phis[0]=-1;
-//      phis[1]=-1;
-//      phis[2]=3;
-//      phis[3]=3;
-//      phis[4]=-1;
-//      phis[5]=-1;
-//      phis[6]=3;
-//      phis[7]=3;
-//      phis[8]=-1;
-//      phis[9]=1;
-//      phis[10]=3;
-//      phis[11]=1;
-//      phis[12]=-1;
-//      phis[13]=-1;
-//      phis[14]=3;
-//      phis[15]=3;
-//      phis[16]=-1;
-//      phis[17]=1;
-//      phis[18]=3;
-//      phis[19]=1;
-//      cell->SetGfuncValues(phis);
+      //      vector<double> phis (20);
+      //      phis[0]=-1;
+      //      phis[1]=-1;
+      //      phis[2]=3;
+      //      phis[3]=3;
+      //      phis[4]=-1;
+      //      phis[5]=-1;
+      //      phis[6]=3;
+      //      phis[7]=3;
+      //      phis[8]=-1;
+      //      phis[9]=1;
+      //      phis[10]=3;
+      //      phis[11]=1;
+      //      phis[12]=-1;
+      //      phis[13]=-1;
+      //      phis[14]=3;
+      //      phis[15]=3;
+      //      phis[16]=-1;
+      //      phis[17]=1;
+      //      phis[18]=3;
+      //      phis[19]=1;
+      //      cell->SetGfuncValues(phis);
 
       //Ausgabe
       //      for (int l=0;l<8;l++)
@@ -1909,7 +1908,7 @@ void COMBUST::FlameFront::FindFlameFront(
       //  std::cout<< gfuncelement[i] << std::endl;
 
       const int numnode = cell->Ele()->NumNode();
-#if DEBUG
+#ifdef DEBUG
       if (gfuncelement.size() != static_cast<unsigned>( numnode ))
         dserror("number of G-Function values does not match number of element nodes");
 #endif
@@ -2046,7 +2045,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
             // x = x1 + (phi(=0) - phi1)/(phi2 - phi1)*(x2 - x1)
             // store intersection point coordinate (local element coordinates) for every component dim
             coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
-            * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
+                * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
 
             // shift intersection point to vertex if it is very close
             //if((fabs(vertexcoord[lines[iline][0]][dim]-coordinates[dim]) < 1.0E-4) or
@@ -2084,153 +2083,153 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   {
-      dserror("Hallo Kilian, ich habe noch einige Hinweise!");
-      // TODO @ Kilian:Kannst du, bevor du damit deine Level-Set-Beispiele
-      //        rechnest noch eine paar Testfaelle dafuer rechnen. Du kannst
-      //        von mir dazu ein Inputfile mit einem Hex20-Element haben.
-      //        Wenn das passt, dann sollte fuer einfache Faelle auch richtig
-      //        geschnitten werden und der Rest durchlaufen. Das hat zumindest
-      //        fuer meinen Testfall funktioniert. Dennoch solltest du dir folgende
-      //        Stellen nochmal anschauen:
-      //        - buildPLC(): * alle vom distype abhängigen Stellen
-      //                      * sich daraus ergebende Folgen fuer CallTetGen() und
-      //                        TransformIntegrationCell()
-      //        - buildFlameFrontSegments(): *bei den Faellen mit 3 bzw 4 Intersectionpoints
-      //                                      waere ich mal sehr vorsichtig
-      //        - darueberhinaus kann ein Blick in StoreDomainIntegrationCell() und
-      //          IdentifyPolygonOrientation() nicht schaden
-      //        - außerdem wuerde ich projectmidpoint in TriangulateFlameFront() erstmal rausnehmen
-      //        Und noch etwas: Ich habe mal zwei Gmsh-Output-Funktionen geschrieben:
-      //        RootCelltoGmsh() und FlamefronttoGmsh(). Vielleicht kannst du sie brauchen.
-      //        Bei Fragen einfach vorbeikommen.
-      //        Ursula
+    dserror("Hallo Kilian, ich habe noch einige Hinweise!");
+    // TODO @ Kilian:Kannst du, bevor du damit deine Level-Set-Beispiele
+    //        rechnest noch eine paar Testfaelle dafuer rechnen. Du kannst
+    //        von mir dazu ein Inputfile mit einem Hex20-Element haben.
+    //        Wenn das passt, dann sollte fuer einfache Faelle auch richtig
+    //        geschnitten werden und der Rest durchlaufen. Das hat zumindest
+    //        fuer meinen Testfall funktioniert. Dennoch solltest du dir folgende
+    //        Stellen nochmal anschauen:
+    //        - buildPLC(): * alle vom distype abhängigen Stellen
+    //                      * sich daraus ergebende Folgen fuer CallTetGen() und
+    //                        TransformIntegrationCell()
+    //        - buildFlameFrontSegments(): *bei den Faellen mit 3 bzw 4 Intersectionpoints
+    //                                      waere ich mal sehr vorsichtig
+    //        - darueberhinaus kann ein Blick in StoreDomainIntegrationCell() und
+    //          IdentifyPolygonOrientation() nicht schaden
+    //        - außerdem wuerde ich projectmidpoint in TriangulateFlameFront() erstmal rausnehmen
+    //        Und noch etwas: Ich habe mal zwei Gmsh-Output-Funktionen geschrieben:
+    //        RootCelltoGmsh() und FlamefronttoGmsh(). Vielleicht kannst du sie brauchen.
+    //        Bei Fragen einfach vorbeikommen.
+    //        Ursula
 
-      lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
-      // remark: vertices are assumed to be numbered in the same way the nodes are
-      //         convention documented in globalreport.pdf
-      /* L1:  0 1  8
-       * L2:  1 2  9
-       * L3:  2 3 10
-       * L4:  0 3 11
-       * L5:  0 4 12
-       * L6:  1 5 13
-       * L7:  2 6 14
-       * L8:  3 7 15
-       * L9:  4 5 16
-       * L10: 5 6 17
-       * L11: 6 7 18
-       * L12: 4 7 19
-       */
+    lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
+    // remark: vertices are assumed to be numbered in the same way the nodes are
+    //         convention documented in globalreport.pdf
+    /* L1:  0 1  8
+     * L2:  1 2  9
+     * L3:  2 3 10
+     * L4:  0 3 11
+     * L5:  0 4 12
+     * L6:  1 5 13
+     * L7:  2 6 14
+     * L8:  3 7 15
+     * L9:  4 5 16
+     * L10: 5 6 17
+     * L11: 6 7 18
+     * L12: 4 7 19
+     */
 
-      //-------------------------------
-      // determine intersection points
-      //-------------------------------
-      // loop edges of refinement cell
-      for(std::size_t iline=0; iline<lines.size(); iline++)
+    //-------------------------------
+    // determine intersection points
+    //-------------------------------
+    // loop edges of refinement cell
+    for(std::size_t iline=0; iline<lines.size(); iline++)
+    {
+      // get G-function value of the three nodes
+      double gfuncval1 = gfuncvalues[lines[iline][0]]; // left node
+      //std::cout << "1: " << gfuncval1 << std::endl;
+      double gfuncval2 = gfuncvalues[lines[iline][1]]; // right node
+      //std::cout << "2: " << gfuncval2 << std::endl;
+      double gfuncval3 = gfuncvalues[lines[iline][2]]; // node in the middle
+      //std::cout << "3: " << gfuncval3 << std::endl;
+
+      std::vector<double> coordinates1 (3);
+      std::vector<double> coordinates2 (3);
+
+      // ---------------------------------------
+      // reformulation of the curve of the g-function along the edge leads
+      // a*xi^2 + b*xi + c = 0
+      //----------------------------------------
+      double a = 0.5*gfuncval1 + 0.5*gfuncval2 - gfuncval3;
+      double b = 0.5*gfuncval2 - 0.5*gfuncval1;
+      double c = gfuncval3;
+
+      // check weather the curve is really quadratic
+      if (a != 0)
       {
-        // get G-function value of the three nodes
-        double gfuncval1 = gfuncvalues[lines[iline][0]]; // left node
-        //std::cout << "1: " << gfuncval1 << std::endl;
-        double gfuncval2 = gfuncvalues[lines[iline][1]]; // right node
-        //std::cout << "2: " << gfuncval2 << std::endl;
-        double gfuncval3 = gfuncvalues[lines[iline][2]]; // node in the middle
-        //std::cout << "3: " << gfuncval3 << std::endl;
+        double determinant = b*b -4*a*c;
+        //std::cout << "Determinante betraegt: " <<determinant<<" \n" ;
 
-        std::vector<double> coordinates1 (3);
-        std::vector<double> coordinates2 (3);
-
-        // ---------------------------------------
-        // reformulation of the curve of the g-function along the edge leads
-        // a*xi^2 + b*xi + c = 0
-        //----------------------------------------
-        double a = 0.5*gfuncval1 + 0.5*gfuncval2 - gfuncval3;
-        double b = 0.5*gfuncval2 - 0.5*gfuncval1;
-        double c = gfuncval3;
-
-        // check weather the curve is really quadratic
-        if (a != 0)
+        // exclude complex solutions
+        if (determinant >= 0.0)
         {
-          double determinant = b*b -4*a*c;
-          //std::cout << "Determinante betraegt: " <<determinant<<" \n" ;
+          // compute intersectionpoints
+          double xi_1 = (-b + sqrt(determinant))/(2*a);
+          double xi_2 = (-b - sqrt(determinant))/(2*a);
+          //Test: Ausgabe der Schnittpunkte
+          std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+          std::cout << "Schnittpunkt2: " <<xi_2<<" \n" ;
 
-          // exclude complex solutions
-          if (determinant >= 0.0)
+          // check weather intersection points are inside the element, i.e. they have to be in the interval ]-1.0;1.0[
+          if ((fabs(xi_1) < 1.0) or (fabs(xi_2) < 1.0))
           {
-              // compute intersectionpoints
-              double xi_1 = (-b + sqrt(determinant))/(2*a);
-              double xi_2 = (-b - sqrt(determinant))/(2*a);
-              //Test: Ausgabe der Schnittpunkte
-              std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
-              std::cout << "Schnittpunkt2: " <<xi_2<<" \n" ;
-
-              // check weather intersection points are inside the element, i.e. they have to be in the interval ]-1.0;1.0[
-              if ((fabs(xi_1) < 1.0) or (fabs(xi_2) < 1.0))
+            // get coordinates
+            for (int dim = 0; dim < 3; dim++)
+            {
+              // vertices have one coordinate in common
+              if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
               {
-                // get coordinates
-                for (int dim = 0; dim < 3; dim++)
-                {
-                  // vertices have one coordinate in common
-                  if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
-                  {
-                    coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
-                    coordinates2[dim] = vertexcoord[lines[iline][0]][dim];
-                  }
-                  else // store coordinate of intersectionpoint
-                  {
-                    coordinates1[dim] = xi_1;
-                    coordinates2[dim] = xi_2;
-                  }
-                }
-
-                // at the moment the following intersection algorithm can only handle simple intersected elements
-                // i.e. it based on the assumption that each edge is intersected only once
-                if (fabs(xi_1)<1.0 and fabs(xi_2)<1.0 and (xi_2 != xi_1))
-                {
-                  std::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << std::endl;
-                  std::cout << "G-Function-Values of element:" << std::endl;
-                  for (std::size_t k=0;k<gfuncvalues.size();k++)
-                     std::cout << gfuncvalues[k] << std::endl;
-                  std::cout << "Adapt BuildFlameFrontSegements()!" << std::endl;
-                  dserror("Check this first!");
-                }
-
-                // store intersectionpoint if it is located in the interval ]-1.0;1.0[
-                if (fabs(xi_1) < 1.0)
-                  intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
-                if ((fabs(xi_2) < 1.0) and (xi_2 != xi_1))
-                  intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates2));
+                coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
+                coordinates2[dim] = vertexcoord[lines[iline][0]][dim];
               }
-          }
-        }
-        else //linear curve of g-function along the edge
-        {
-          if (b != 0)
-          {
-            // compute intersectionpoint
-            double xi_1 = -c/b;
-            std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+              else // store coordinate of intersectionpoint
+              {
+                coordinates1[dim] = xi_1;
+                coordinates2[dim] = xi_2;
+              }
+            }
+
+            // at the moment the following intersection algorithm can only handle simple intersected elements
+            // i.e. it based on the assumption that each edge is intersected only once
+            if (fabs(xi_1)<1.0 and fabs(xi_2)<1.0 and (xi_2 != xi_1))
+            {
+              std::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << std::endl;
+              std::cout << "G-Function-Values of element:" << std::endl;
+              for (std::size_t k=0;k<gfuncvalues.size();k++)
+                std::cout << gfuncvalues[k] << std::endl;
+              std::cout << "Adapt BuildFlameFrontSegements()!" << std::endl;
+              dserror("Check this first!");
+            }
+
             // store intersectionpoint if it is located in the interval ]-1.0;1.0[
             if (fabs(xi_1) < 1.0)
-            {
-              // get coordinates
-              for (int dim = 0; dim < 3; dim++)
-              {
-                // vertices have one coordinate in common
-                if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
-                {
-                  coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
-                }
-                else // store coordinates of intersectionpoint
-                {
-                  coordinates1[dim] = xi_1;
-                }
-              }
               intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
-            }
+            if ((fabs(xi_2) < 1.0) and (xi_2 != xi_1))
+              intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates2));
           }
         }
       }
-      break;
+      else //linear curve of g-function along the edge
+      {
+        if (b != 0)
+        {
+          // compute intersectionpoint
+          double xi_1 = -c/b;
+          std::cout << "Schnittpunkt1: " <<xi_1<<" \n" ;
+          // store intersectionpoint if it is located in the interval ]-1.0;1.0[
+          if (fabs(xi_1) < 1.0)
+          {
+            // get coordinates
+            for (int dim = 0; dim < 3; dim++)
+            {
+              // vertices have one coordinate in common
+              if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
+              {
+                coordinates1[dim] = vertexcoord[lines[iline][0]][dim];
+              }
+              else // store coordinates of intersectionpoint
+              {
+                coordinates1[dim] = xi_1;
+              }
+            }
+            intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
+          }
+        }
+      }
+    }
+    break;
   }
   default:
     dserror("FindIntersectionPoints() does not support this element shape!");
@@ -2289,7 +2288,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     // remark: this covers the whole domain of the root cell
     for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
     {
-#if DEBUG
+#ifdef DEBUG
       // check if distype of cell correct (hex8)
       const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
       if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
@@ -2330,20 +2329,30 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     // remark: this covers the whole domain of the root cell
     for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
     {
-      // DecomposeIntoTetrahedra()
-
-      // check if distype of cell is correct (tet4)
+#ifdef DEBUG
+      // check if distype of cell correct (hex8)
       const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
-      if(distype != DRT::Element::tet4) dserror("tet4 refinement cell expected");
+      if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
+#endif
 
-      // CreateIntegrationCells()
-      // hex8 und tet4 koennen entstehen
-
-      // StoreDomainIntegrationCell
-      // TODO Erweiterung auf tet4 und hex8
-
-      // StoreBoundaryIntegrationCell()
-      // TODO Erweiterung auf tri3 und quad4
+      if(RefinementCells[icell]->Bisected())
+      {
+        GEO::TetrahedraDecomposition decomposition(RefinementCells[icell], listBoundaryIntCellsperEle, listDomainIntCellsperEle);
+      }
+      // the cell is touched (interface aligned with a cell surface)
+      else if(RefinementCells[icell]->Touched())
+      {
+        // store hex8 domain integration cell
+        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        // store quad4 boundary integration cell
+        StoreBoundaryIntegrationCell(RefinementCells[icell],listBoundaryIntCellsperEle);
+      }
+      else // (not bisected) and (not touched)
+      {
+        // store hex8 domain integration cell
+        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        // no boundary integration cell required
+      }
 
     } // end loop over all refinement cells
     break;
@@ -2354,7 +2363,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   //----------------------------------------------------------------------------
   case INPAR::COMBUST::xfemintegration_hexahedra:
   {
-#if DEBUG
+#ifdef DEBUG
     // check if distype of cell correct (hex8)
     const DRT::Element::DiscretizationType distype = rootcell->Shape();
     if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
@@ -2418,7 +2427,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
  | project midpoint on level set zero iso-surface                                     henke 10/10 |
  *------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType DISTYPE,
-         class V>
+class V>
 bool projectMidpoint(
     V& valuesGcell,                      // values of G-function at vertices of refinement cell
     const std::vector<double>& midpoint, // midpoint vector
@@ -2632,7 +2641,7 @@ void COMBUST::FlameFront::projectMidpoint2D(
     }
   }
   if(!((point1[thirddim] > -1.0-1.0E-8) and (point1[thirddim] < -1.0+1.0E-8) and
-       (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8)))
+      (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8)))
     dserror("2D midpoint projection algorithm failed");
 
   // add frontside and backside mid point to list of points
@@ -2687,7 +2696,7 @@ void COMBUST::FlameFront::projectMidpoint2D(
   {
     std::vector<int> points = iter->second;
     if(((points[0]==polypoints[first_id]) or (points[1] == polypoints[first_id])) and
-       ((points[0]==polypoints[second_id]) or (points[1] == polypoints[second_id])))
+        ((points[0]==polypoints[second_id]) or (points[1] == polypoints[second_id])))
     {
       segid = iter->first;
     }
@@ -2730,13 +2739,13 @@ void COMBUST::FlameFront::projectMidpoint2D(
  | triangulate the interface (flame front) inside a refinement cell                   henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::TriangulateFlameFront(
-       const COMBUST::RefinementCell* cell,
-       std::vector<std::vector<int> >&       trianglelist,
-       std::multimap<int,std::vector<int> >& segmentlist,
-       std::vector<std::vector<double> >&    pointlist,
-       std::map<int,int>&                    intersectionpointsids,
-       const std::vector<double>&            gfuncvalues
-       )
+    const COMBUST::RefinementCell* cell,
+    std::vector<std::vector<int> >&       trianglelist,
+    std::multimap<int,std::vector<int> >& segmentlist,
+    std::vector<std::vector<double> >&    pointlist,
+    std::map<int,int>&                    intersectionpointsids,
+    const std::vector<double>&            gfuncvalues
+)
 {
   // check -> is cell really bisected?
   // This means, not only edges of the cell are contained in segmentlist (key=-1)
@@ -2922,7 +2931,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         }
       }
 
-#if 1
+#if 0
       //--------------------------------------------------------------------------------
       // perform Newton-Raphson method to project midpoint on level set zero iso-surface
       //--------------------------------------------------------------------------------
@@ -3016,27 +3025,27 @@ void COMBUST::FlameFront::TriangulateFlameFront(
  | identify the orientation of the interface polygon, normal vector + -> -                        |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::IdentifyPolygonOrientation(
-       std::vector<int>&           segment,
-       const int                   surf_id,
-       std::map<int,int>&          intersectionpointsids,
-       const std::vector<double>&  gfuncvalues
-       )
+    std::vector<int>&           segment,
+    const int                   surf_id,
+    std::map<int,int>&          intersectionpointsids,
+    const std::vector<double>&  gfuncvalues
+)
 {
   // array containing the line_id's for each surface
   int surfacelines[6][4] = {{3, 2, 1, 0},
-                            {0, 5, 8, 4},
-                            {1, 6, 9, 5},
-                            {2, 7,10, 6},
-                            {4,11, 7, 3},
-                            {8, 9,10,11}};
+      {0, 5, 8, 4},
+      {1, 6, 9, 5},
+      {2, 7,10, 6},
+      {4,11, 7, 3},
+      {8, 9,10,11}};
   // array containing test vertex for each surface
   // that means : test of sign of g-func
   int testnode[6][4] = {{0, 3, 2, 1},
-                        {0, 1, 5, 4},
-                        {1, 2, 6, 5},
-                        {2, 3, 7, 6},
-                        {0, 4, 7, 3},
-                        {4, 5, 6, 7}};
+      {0, 1, 5, 4},
+      {1, 2, 6, 5},
+      {2, 3, 7, 6},
+      {0, 4, 7, 3},
+      {4, 5, 6, 7}};
   int line_id = -1;
   int testpoint = -1;
 
@@ -3092,19 +3101,19 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
  | hex8 only                                                                                      |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildFlameFrontSegments(
-        std::map<int,int>&                       intersectionpointsids,
-        std::multimap<int,std::vector<int> >&    segmentlist,
-        const std::vector<double>&               gfuncvalues,
-        const std::vector<std::vector<double> >& pointlist
-        )
+    std::map<int,int>&                       intersectionpointsids,
+    std::multimap<int,std::vector<int> >&    segmentlist,
+    const std::vector<double>&               gfuncvalues,
+    const std::vector<std::vector<double> >& pointlist
+)
 {
   // array containing the line_id's for each surface
   int surface[6][4] = {{3, 2, 1, 0},
-                       {0, 5, 8, 4},
-                       {1, 6, 9, 5},
-                       {2, 7,10, 6},
-                       {4,11, 7, 3},
-                       {8, 9,10,11}};
+      {0, 5, 8, 4},
+      {1, 6, 9, 5},
+      {2, 7,10, 6},
+      {4,11, 7, 3},
+      {8, 9,10,11}};
 
   //int numsurf = DRT::UTILS::getNumberOfElementSurfaces(DRT::Element::hex8);
   //hex8 only
@@ -3288,7 +3297,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       {
         for (size_t l=0; l < gfuncvalues.size(); l++)
         {
-           std::cout << gfuncvalues[l] << std::endl;
+          std::cout << gfuncvalues[l] << std::endl;
         }
         dserror("can't build intersection segment");
       }
@@ -3381,20 +3390,20 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
  | build piecewise linear complex (PLC) in Tetgen format                              henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildPLC(
-        const COMBUST::RefinementCell* cell,
-        const std::vector<double>& gfuncvaluesrootcell,
-        GEO::DomainIntCells& domainintcelllist,
-        GEO::BoundaryIntCells& boundaryintcelllist)
+    const COMBUST::RefinementCell* cell,
+    const std::vector<double>& gfuncvaluesrootcell,
+    GEO::DomainIntCells& domainintcelllist,
+    GEO::BoundaryIntCells& boundaryintcelllist)
 {
- /* A PLC contains
-  * - points -> vertices, intersection points, center of interface patch
-  * - segmentlist -> intersection curve between interface and surfaces of cell: buildFlameFrontSegments()
-  * - trianglelist -> triangles approximating the interface: TriangulateFlameFront()
-  * A PLC is the input for TetGen -> CallTetGen()
-  * The triangles from the triangle list are stored as boundary integration cells. TetGaen also
-  * generates triangular boundary integration cells. However, these are not used since their
-  * configuaration (vertex numbering) is unknown.
-  */
+  /* A PLC contains
+   * - points -> vertices, intersection points, center of interface patch
+   * - segmentlist -> intersection curve between interface and surfaces of cell: buildFlameFrontSegments()
+   * - trianglelist -> triangles approximating the interface: TriangulateFlameFront()
+   * A PLC is the input for TetGen -> CallTetGen()
+   * The triangles from the triangle list are stored as boundary integration cells. TetGaen also
+   * generates triangular boundary integration cells. However, these are not used since their
+   * configuaration (vertex numbering) is unknown.
+   */
 
   //-----------------------------------------------------
   // prepare lists, get coordinates and G-function values
@@ -3558,8 +3567,8 @@ void COMBUST::FlameFront::buildPLC(
       for (int inode=0; inode<3; inode++)
       {
         std::copy( pointlist[t[inode]].begin(),
-                   pointlist[t[inode]].end(),
-                   &trianglecoord(0,inode) );
+            pointlist[t[inode]].end(),
+            &trianglecoord(0,inode) );
       }
 
       intersection.AddCutSide( i+1, t, trianglecoord, DRT::Element::tri3, 0 );
@@ -3570,8 +3579,8 @@ void COMBUST::FlameFront::buildPLC(
     for (int ivert=0; ivert<numnode; ivert++)
     {
       std::copy(vertexcoord[ivert].begin(),
-                vertexcoord[ivert].end(),
-                &cellcoord(0,ivert));
+          vertexcoord[ivert].end(),
+          &cellcoord(0,ivert));
     }
 
     intersection.AddElement( 1, nids, cellcoord, cell_distype );
@@ -3605,15 +3614,15 @@ void COMBUST::FlameFront::buildPLC(
           LINALG::Matrix<3,1> vertcoord;
 
           std::copy(&coord(0,ivert),
-                    &coord(0,ivert)+3,
-                    vertcoord.A());
+              &coord(0,ivert)+3,
+              vertcoord.A());
 
           // transform vertex from local (element) coordinates to global (physical) coordinates
           GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
 
           std::copy(vertcoord.A(),
-                    vertcoord.A()+3,
-                    &physCoord(0,ivert));
+              vertcoord.A()+3,
+              &physCoord(0,ivert));
         }
 
         // if degenerated don't store
@@ -3642,15 +3651,15 @@ void COMBUST::FlameFront::buildPLC(
       LINALG::Matrix<3,1> vertcoord;
 
       std::copy(vertexcoord[ivert].begin(),
-                vertexcoord[ivert].end(),
-                vertcoord.A());
+          vertexcoord[ivert].end(),
+          vertcoord.A());
 
       // transform vertex from local (element) coordinates to global (physical) coordinates
       GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
 
       std::copy(vertcoord.A(),
-                vertcoord.A()+3,
-                &globalcellcoord(0,ivert));
+          vertcoord.A()+3,
+          &globalcellcoord(0,ivert));
     }
 
     // get G-function values at vertices from cell
@@ -3789,7 +3798,7 @@ void COMBUST::FlameFront::StoreDomainIntegrationCell(
     // store vertex in array of global cell coordinates
     for(int  dim=0; dim<3; dim++)
       globalcellcoord(dim,ivert) = vertcoord(dim);
-#if DEBUG
+#ifdef DEBUG
     // if cell == element, globalcellcoord == xyze!
     // TODO we could use a check here
 #endif
@@ -3799,7 +3808,7 @@ void COMBUST::FlameFront::StoreDomainIntegrationCell(
   // determine which domain the cell belongs to
   //-------------------------------------------
   // compute average G-function value for this refinement cell (= integration cell)
-   bool inGplus = GetIntCellDomain(cellcoord,gfuncvalues,cell->Shape());
+  bool inGplus = GetIntCellDomain(cellcoord,gfuncvalues,cell->Shape());
 
   //TEST
   //std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
@@ -3836,7 +3845,7 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
 
   // check cell shape
   DRT::Element::DiscretizationType celldistype = cell->Shape();
-#if DEBUG
+#ifdef DEBUG
   if (cell->Shape()!=DRT::Element::hex8)
     dserror("not supported for this cell shape");
   // TODO not sure if this is really a prerequisite for this function
@@ -3937,8 +3946,8 @@ void COMBUST::FlameFront::CallTetGen(
   tetgenio in;
   tetgenio out;
   char switches[] = "pQYY";    //- p     tetrahedralizes a PLC
-                               //-Q      no terminal output except errors
-                               // YY     do not generate additional points on surfaces -> fewer cells
+  //-Q      no terminal output except errors
+  // YY     do not generate additional points on surfaces -> fewer cells
   tetgenio::facet *f;
   tetgenio::polygon *p;
 
@@ -4081,12 +4090,12 @@ void COMBUST::FlameFront::CallTetGen(
  | transform tetrahedral integration cells from TetGen format to BACI format          henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::TransformIntegrationCells(
-       tetgenio&                       out,
-       GEO::DomainIntCells&            domainintcelllist,
-       //GEO::BoundaryIntCells&          boundaryintcelllist,
-       const LINALG::SerialDenseMatrix xyze,
-       const std::vector<double>&      gfuncvalues
-       ) // output: integration cells in baci format
+    tetgenio&                       out,
+    GEO::DomainIntCells&            domainintcelllist,
+    //GEO::BoundaryIntCells&          boundaryintcelllist,
+    const LINALG::SerialDenseMatrix xyze,
+    const std::vector<double>&      gfuncvalues
+) // output: integration cells in baci format
 {
   DRT::Element::DiscretizationType distype = DRT::Element::tet4;
   const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
@@ -4116,9 +4125,9 @@ void COMBUST::FlameFront::TransformIntegrationCells(
     // if degenerated don't store
     if(!GEO::checkDegenerateTet(numTetNodes, tetrahedroncoord, phystetrahedroncoord))
     {
-       bool inGplus = GetIntCellDomainInElement(tetrahedroncoord, gfuncvalues, DRT::Element::hex8, distype);
+      bool inGplus = GetIntCellDomainInElement(tetrahedroncoord, gfuncvalues, DRT::Element::hex8, distype);
 
-       domainintcelllist.push_back(GEO::DomainIntCell(distype, tetrahedroncoord, phystetrahedroncoord, inGplus));
+      domainintcelllist.push_back(GEO::DomainIntCell(distype, tetrahedroncoord, phystetrahedroncoord, inGplus));
     }
   }
 
@@ -4131,11 +4140,11 @@ void COMBUST::FlameFront::TransformIntegrationCells(
  | compute GfuncValue for hexahedral integration cell                              rasthofer 04/10|
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
-       const LINALG::SerialDenseMatrix        IntCellCoord,
-       const std::vector<double>&             gfuncvalues_ele,
-       const DRT::Element::DiscretizationType xfem_distype,
-       const DRT::Element::DiscretizationType cell_distype
-       )
+    const LINALG::SerialDenseMatrix        IntCellCoord,
+    const std::vector<double>&             gfuncvalues_ele,
+    const DRT::Element::DiscretizationType xfem_distype,
+    const DRT::Element::DiscretizationType cell_distype
+)
 {
   /*------------------------------------------------------------------------------
    * - compute phi at the midpoint of domain integration cell
@@ -4149,18 +4158,18 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   int numcellnodes = 0;
   switch(cell_distype)
   {
-//    case DRT::Element::tet4:
-//    {
-//      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-//      break;
-//    }
-    case DRT::Element::hex8:
-    {
-      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      break;
-    }
-    default:
-      dserror("Discretization Type (IntCell) not supported yet!");
+  //    case DRT::Element::tet4:
+  //    {
+  //      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+  //      break;
+  //    }
+  case DRT::Element::hex8:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    break;
+  }
+  default:
+    dserror("Discretization Type (IntCell) not supported yet!");
   }
 
   int numelenodes = 0;
@@ -4175,14 +4184,14 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   //cell center is midpoint of diagonal of integration cell
   for (int i=0; i<3; i++)
   {
-     cellcenter(i) = 0.5 * (IntCellCoord(i,6) - IntCellCoord(i,0)) + IntCellCoord(i,0);
+    cellcenter(i) = 0.5 * (IntCellCoord(i,6) - IntCellCoord(i,0)) + IntCellCoord(i,0);
   }
 
   //compute g-funct value at cell center
   double gvalcellcenter = 0.0;
-//  std::vector<double> gvalcellnodes (numcellnodes);
-//  for (int icellnode=0; icellnode<numcellnodes; icellnode++)
-//    gvalcellnodes[icellnode] = 0.0;
+  //  std::vector<double> gvalcellnodes (numcellnodes);
+  //  for (int icellnode=0; icellnode<numcellnodes; icellnode++)
+  //    gvalcellnodes[icellnode] = 0.0;
 
   Epetra_SerialDenseVector  funct(numelenodes);
   DRT::UTILS::shape_function_3D(funct,cellcenter(0),cellcenter(1),cellcenter(2),DRT::Element::hex8);
@@ -4192,7 +4201,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   }
 
   if (gvalcellcenter >= 0.0)
-     inGplus = true;
+    inGplus = true;
 
   return inGplus;
 }
@@ -4202,10 +4211,10 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
  | compute average GfuncValue for integration cell                                                |
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::FlameFront::GetIntCellDomain(
-       const LINALG::SerialDenseMatrix        IntCellCoord,
-       const std::vector<double>&             gfuncvalues_cell,
-       const DRT::Element::DiscretizationType cell_distype
-       )
+    const LINALG::SerialDenseMatrix        IntCellCoord,
+    const std::vector<double>&             gfuncvalues_cell,
+    const DRT::Element::DiscretizationType cell_distype
+)
 {
   /*------------------------------------------------------------------------------
    * - compute phi at each node of domain integration cell
@@ -4219,18 +4228,18 @@ bool COMBUST::FlameFront::GetIntCellDomain(
   int numcellnodes = 0;
   switch(cell_distype)
   {
-    case DRT::Element::tet4:
-    {
-      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-      break;
-    }
-    case DRT::Element::hex8:
-    {
-      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      break;
-    }
-    default:
-      dserror("Discretization Type (IntCell) not supported yet!");
+  case DRT::Element::tet4:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+    break;
+  }
+  case DRT::Element::hex8:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    break;
+  }
+  default:
+    dserror("Discretization Type (IntCell) not supported yet!");
   }
 
   //calculate average Gfunc value
@@ -4259,11 +4268,11 @@ bool COMBUST::FlameFront::GetIntCellDomain(
  | compute average GfuncValue for integration cell                                                |
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::FlameFront::GetIntCellDomainInElement(
-       const LINALG::SerialDenseMatrix        IntCellCoord,
-       const std::vector<double>&             gfuncvalues_ele,
-       const DRT::Element::DiscretizationType xfem_distype,
-       const DRT::Element::DiscretizationType cell_distype
-       )
+    const LINALG::SerialDenseMatrix        IntCellCoord,
+    const std::vector<double>&             gfuncvalues_ele,
+    const DRT::Element::DiscretizationType xfem_distype,
+    const DRT::Element::DiscretizationType cell_distype
+)
 {
   /*------------------------------------------------------------------------------
    * - compute phi at each node of domain integration cell
@@ -4277,18 +4286,18 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
   int numcellnodes = 0;
   switch(cell_distype)
   {
-    case DRT::Element::tet4:
-    {
-      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
-      break;
-    }
-    case DRT::Element::hex8:
-    {
-      numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      break;
-    }
-    default:
-      dserror("Discretization Type (IntCell) not supported yet!");
+  case DRT::Element::tet4:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+    break;
+  }
+  case DRT::Element::hex8:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    break;
+  }
+  default:
+    dserror("Discretization Type (IntCell) not supported yet!");
   }
 
   int numelenodes = 0;
@@ -4337,8 +4346,8 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
   // this is just one more
   if(averageGvalue>=0.0)
     inGplus = true;
-//  if(averageGvalue==0)
-//    dserror("can't determine DomainIntCell position");
+  //  if(averageGvalue==0)
+  //    dserror("can't determine DomainIntCell position");
 
   return inGplus;
 }
@@ -4372,24 +4381,24 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   if(myrank == 0)
     source = numproc-1;
 
-//#ifdef DEBUG
-//  cout << "number of cell groups (cut column elements) on proc " << myrank << " " << myflamefront.size() << endl;
-//  for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=myflamefront.begin(); cellgroup != myflamefront.end(); ++cellgroup)
-//    {
-//      // put ID of cut element here
-//      if (cellgroup->first == 1274)
-//      {
-//        cout << "output for element 1274 packing" << endl;
-//        const size_t numcells = (cellgroup->second).size();
-//        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
-//        for (size_t icell=0; icell<numcells; ++icell)
-//        {
-//          GEO::BoundaryIntCell cell = cellgroup->second[icell];
-//          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
-//        }
-//      }
-//    }
-//#endif
+  //#ifdef DEBUG
+  //  cout << "number of cell groups (cut column elements) on proc " << myrank << " " << myflamefront.size() << endl;
+  //  for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=myflamefront.begin(); cellgroup != myflamefront.end(); ++cellgroup)
+  //    {
+  //      // put ID of cut element here
+  //      if (cellgroup->first == 1274)
+  //      {
+  //        cout << "output for element 1274 packing" << endl;
+  //        const size_t numcells = (cellgroup->second).size();
+  //        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+  //        for (size_t icell=0; icell<numcells; ++icell)
+  //        {
+  //          GEO::BoundaryIntCell cell = cellgroup->second[icell];
+  //          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+  //        }
+  //      }
+  //    }
+  //#endif
 
 #ifdef DEBUG
   std::cout << "proc " << myrank << " number of flame front pieces available before export " << myflamefront.size() << std::endl;
@@ -4443,26 +4452,26 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
 
     COMBUST::FlameFront::unpackBoundaryIntCells(dataRecv, flamefront_recv);
 
-//#ifdef DEBUG
-//    cout << "proc " << myrank << " receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
-//    cout << "proc " << myrank << " receiving "<< flamefront_recv.size() << " flame front pieces from proc " << source << endl;
-//
-//    for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=flamefront_recv.begin(); cellgroup != flamefront_recv.end(); ++cellgroup)
-//    {
-//      // put ID of cut element here
-//      if (cellgroup->first == 1274)
-//      {
-//        cout << "output for element 1274 unpacking" << endl;
-//        const size_t numcells = (cellgroup->second).size();
-//        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
-//        for (size_t icell=0; icell<numcells; ++icell)
-//        {
-//          GEO::BoundaryIntCell cell = cellgroup->second[icell];
-//          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
-//        }
-//      }
-//    }
-//#endif
+    //#ifdef DEBUG
+    //    cout << "proc " << myrank << " receiving "<< lengthRecv[0] << " bytes from proc " << source << endl;
+    //    cout << "proc " << myrank << " receiving "<< flamefront_recv.size() << " flame front pieces from proc " << source << endl;
+    //
+    //    for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=flamefront_recv.begin(); cellgroup != flamefront_recv.end(); ++cellgroup)
+    //    {
+    //      // put ID of cut element here
+    //      if (cellgroup->first == 1274)
+    //      {
+    //        cout << "output for element 1274 unpacking" << endl;
+    //        const size_t numcells = (cellgroup->second).size();
+    //        cout << "proc " << myrank << " number of integration cells: " << numcells << endl;
+    //        for (size_t icell=0; icell<numcells; ++icell)
+    //        {
+    //          GEO::BoundaryIntCell cell = cellgroup->second[icell];
+    //          cout << "proc " << myrank << " cell " << icell << " vertexcoord " << cell.CellNodalPosXYZ();
+    //        }
+    //      }
+    //    }
+    //#endif
 
     // add group of cells to my flame front map
     // remark: all groups of boundary integration cells (flame front pieces within an element) are collected here
@@ -4508,19 +4517,18 @@ void COMBUST::FlameFront::packBoundaryIntCells(
     {
       GEO::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
-      // distype of cell
       const DRT::Element::DiscretizationType distype = cell.Shape();
       DRT::ParObject::AddtoPack(data,distype);
 
       // coordinates of cell vertices in (fluid) element parameter space
-//      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
-//      const LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      //      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      //      const LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       const LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
       DRT::ParObject::AddtoPack(data,vertices_xi);
 
       // coordinates of cell vertices in physical space
-//      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
-//      const LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      //      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      //      const LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       const LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
       DRT::ParObject::AddtoPack(data,vertices_xyz);
     }
@@ -4538,12 +4546,12 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
   // pointer to current position of group of cells in global string (counts bytes)
-	vector<char>::size_type posofgroup = 0;
+  vector<char>::size_type posofgroup = 0;
 
   while (posofgroup < dataRecv.size())
   {
     // pointer to current position in a group of cells in local string (counts bytes)
-  	vector<char>::size_type posingroup = 0;
+    vector<char>::size_type posingroup = 0;
     vector<char> data;
     DRT::ParObject::ExtractfromPack(posofgroup, dataRecv, data);
 
@@ -4584,7 +4592,7 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
 
       //store boundary integration cells in boundaryintcelllist
       intcellvector.push_back(GEO::BoundaryIntCell(distype, -1, vertices_xi,
-                              Teuchos::null, vertices_xyz));
+          Teuchos::null, vertices_xyz));
     }
 
     // add group of cells for this element to the map
@@ -4603,10 +4611,10 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
  |output to gmsh                                                     rasthofer 05/10|
  *----------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::FlamefrontToGmsh(
-     const COMBUST::RefinementCell* cell,
-     const std::vector<std::vector<double> >& pointlist,
-     const std::multimap<int,std::vector<int> >& segmentlist,
-     const std::vector<std::vector<int> >& trianglelist)
+    const COMBUST::RefinementCell* cell,
+    const std::vector<std::vector<double> >& pointlist,
+    const std::multimap<int,std::vector<int> >& segmentlist,
+    const std::vector<std::vector<int> >& trianglelist)
 {
   const bool screen_out = false;
 
@@ -4638,7 +4646,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
       const std::vector<double> point = iter->second;
       LINALG::Matrix<3,1> pos;
       for (size_t k=0; k<point.size(); k++)
-         pos(k) = point[k];
+        pos(k) = point[k];
 
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
     }
@@ -4655,7 +4663,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
       for (int k=0; k<2; k++)
       {
         for (int i=0; i<3; i++)
-            pos(i,k) = pointlist[segmentpoints[k]][i];
+          pos(i,k) = pointlist[segmentpoints[k]][i];
       }
       IO::GMSH::cellWithScalarToStream(DRT::Element::line2, id, pos, gmshfilecontent);
     }
@@ -4671,7 +4679,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
       for (int k=0; k<3; k++)
       {
         for (int i=0; i<3; i++)
-            pos(i,k) = pointlist[trianglepoints[k]][i];
+          pos(i,k) = pointlist[trianglepoints[k]][i];
       }
       IO::GMSH::cellWithScalarToStream(DRT::Element::tri3, 1, pos, gmshfilecontent);
     }

@@ -708,6 +708,7 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/searchtree.cpp
   src/drt_geometry/searchtree_geometry_service.cpp
   src/drt_geometry/searchtree_nearestobject.cpp
+  src/drt_geometry/tetrahedradecomposition.cpp
   src/drt_io/io_gmsh.cpp
   src/drt_io/io_gmsh_xfem_extension.cpp
   src/drt_lib/drt_condition_selector.cpp
