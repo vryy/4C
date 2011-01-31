@@ -1027,11 +1027,17 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   // Possible versions for self contact:
   // *********************************************************************
   //
-  // 1) Combined Update and Contact Search
-  // -> In this case we only have to call SearchContactCombined(), which
-  //    does both bottom-up update and search. Then the dynamics master/slave
-  //    assignment routine UpdateMasterSlaveSets() is called and the new
-  //    slave nodes' data containers are initialized.
+  // 1) Combined Update and Search
+  // -> In this case we have to call SearchContactCombined(), which
+  //    does both top-down update (where necessary) and search. Then
+  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
+  //    is called and the new slave nodes' data containers are initialized.
+  //
+  // 2) Separate Update and Search
+  // -> In this case we have to call SearchContactSeparate(), which
+  //    does both bottom-up update (on whole interface) and search. Then
+  //    the dynamics master/slave assignment routine UpdateMasterSlaveSets()
+  //    is called and the new slave nodes' data containers are initialized.
   //
   // *********************************************************************
   if (SelfContact())
@@ -1039,8 +1045,11 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // calculate minimal element length
     binarytreeself_->SetEnlarge(false);
 
-    // search for contact with an combined algorithm
-    binarytreeself_->SearchContactCombined();
+    // update and search for contact with a combined algorithm
+    //binarytreeself_->SearchContactCombined();
+
+    // update and search for contact with separate algorithms
+    binarytreeself_->SearchContactSeparate();
 
     // update master/slave sets of interface
     UpdateMasterSlaveSets();
@@ -1068,7 +1077,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   // *********************************************************************
   //
   // 1) Combined Update and Contact Search
-  // -> In this case we only have to call SearchCOntactCombined(), which
+  // -> In this case we only have to call SearchContactCombined(), which
   //    does both top-down update (where necessary) and search.
   //
   // 2) Separate Update and Contact Search

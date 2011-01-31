@@ -724,7 +724,18 @@ public:
   void InitializeTreeBottomUp(map<RCP<SelfDualEdge>,vector <RCP<SelfDualEdge> > > *dualGraph);
 
   /*!
-  \brief Evaluate Binary search tree for combined search and update
+  \brief Evaluate Binary search tree for separate update (bottom-up,
+         on whole interface) and search
+
+  This is the default version, because it outperforms the combined
+  algorithm for large self contact problems.
+
+  */
+  void SearchContactSeparate();
+
+  /*!
+  \brief Evaluate Binary search tree for combined update (top-down,
+         only where necessary) and search
 
   */
   void SearchContactCombined();
@@ -732,16 +743,19 @@ public:
   /*!
   \brief Evaluate Binary search tree for self contact search 
 
-  */ 
-  void SearchSelfContact(RCP<SelfBinaryTreeNode> treenode);
+  */
+  void SearchSelfContactSeparate(RCP<SelfBinaryTreeNode> treenode);
+  void SearchSelfContactCombined(RCP<SelfBinaryTreeNode> treenode);
   
   /*!
   \brief Evaluate Binary search tree for contact search between separate roots
          (this is more or less identical to two-body contact search)
 
   */
-  void SearchRootContact(RCP<SelfBinaryTreeNode> treenode1,
-                         RCP<SelfBinaryTreeNode> treenode2);
+  void SearchRootContactSeparate(RCP<SelfBinaryTreeNode> treenode1,
+                                 RCP<SelfBinaryTreeNode> treenode2);
+  void SearchRootContactCombined(RCP<SelfBinaryTreeNode> treenode1,
+                                 RCP<SelfBinaryTreeNode> treenode2);
 
   /*!
   \brief Find contact of adjacent surfaces

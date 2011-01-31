@@ -1575,9 +1575,36 @@ void CONTACT::SelfBinaryTree::CalculateAdjacentTnodes()
 }
 
 /*----------------------------------------------------------------------*
+ | Search for self contact (public)                           popp 01/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::SearchSelfContactSeparate(RCP<SelfBinaryTreeNode> treenode)
+{
+
+  if (treenode->QualifiedVectors().size()==0)
+    dserror("no test vectors defined!");
+
+  //if there is a qualified sample vector, there is no self contact
+  for(int i=0; i < (int)treenode->QualifiedVectors().size();i++)
+    if(treenode->QualifiedVectors()[i] == true)
+    {
+      return;
+    }
+
+  if (treenode->Type() != SELFCO_LEAF)
+  {
+    SearchSelfContactSeparate(treenode->Leftchild());
+    SearchSelfContactSeparate(treenode->Rightchild());
+    EvaluateContactAndAdjacency(treenode->Leftchild(),
+                                treenode->Rightchild(),true);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Search for self contact (public)                           popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchSelfContact(RCP<SelfBinaryTreeNode> treenode)
+void CONTACT::SelfBinaryTree::SearchSelfContactCombined(RCP<SelfBinaryTreeNode> treenode)
 {
 
   if (treenode->QualifiedVectors().size()==0)
@@ -1596,8 +1623,8 @@ void CONTACT::SelfBinaryTree::SearchSelfContact(RCP<SelfBinaryTreeNode> treenode
     treenode->Leftchild()->EnlargeGeometry(enlarge_);
     treenode->Rightchild()->CalculateSlabsDop(false);
     treenode->Rightchild()->EnlargeGeometry(enlarge_);
-    SearchSelfContact(treenode->Leftchild());
-    SearchSelfContact(treenode->Rightchild());
+    SearchSelfContactCombined(treenode->Leftchild());
+    SearchSelfContactCombined(treenode->Rightchild());
     EvaluateContactAndAdjacency(treenode->Leftchild(),
                                 treenode->Rightchild(),true);
   }
@@ -1608,7 +1635,74 @@ void CONTACT::SelfBinaryTree::SearchSelfContact(RCP<SelfBinaryTreeNode> treenode
 /*----------------------------------------------------------------------*
  | Search for root contact (public)                           popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SearchRootContact(RCP<SelfBinaryTreeNode> treenode1,
+void CONTACT::SelfBinaryTree::SearchRootContactSeparate(RCP<SelfBinaryTreeNode> treenode1,
+                                                RCP<SelfBinaryTreeNode> treenode2)
+{
+  // check if treenodes intercept
+  // (they only intercept if ALL slabs intersect!)
+  int nintercepts = 0;
+
+  for (int i=0;i<kdop_/2;++i)
+  {
+    if (treenode1->Slabs()(i,0) <= treenode2->Slabs()(i,0))
+    {
+      if (treenode1->Slabs()(i,1) >= treenode2->Slabs()(i,0))
+        nintercepts++;
+      else if (treenode1->Slabs()(i,1) >= treenode2->Slabs()(i,1))
+        nintercepts++;
+    }
+    else if (treenode1->Slabs()(i,0) >= treenode2->Slabs()(i,0))
+    {
+      if (treenode2->Slabs()(i,1) >= treenode1->Slabs()(i,1))
+        nintercepts++;
+      else if (treenode2->Slabs()(i,1) >= treenode1->Slabs()(i,0))
+        nintercepts++;
+    }
+  }
+
+  // treenodes intercept
+  if (nintercepts==kdop_/2)
+  {
+    // both treenodes are inner nodes
+    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
+    {
+      SearchRootContactSeparate(treenode1->Leftchild(),treenode2->Leftchild());
+      SearchRootContactSeparate(treenode1->Leftchild(),treenode2->Rightchild());
+      SearchRootContactSeparate(treenode1->Rightchild(),treenode2->Leftchild());
+      SearchRootContactSeparate(treenode1->Rightchild(),treenode2->Rightchild());
+    }
+
+    // treenode1 is inner, treenode2 is leaf
+    if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
+    {
+      SearchRootContactSeparate(treenode1->Leftchild(),treenode2);
+      SearchRootContactSeparate(treenode1->Rightchild(),treenode2);
+    }
+
+    // treenode1 is leaf, treenode3 is inner
+    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
+    {
+      SearchRootContactSeparate(treenode1,treenode2->Leftchild());
+      SearchRootContactSeparate(treenode1,treenode2->Rightchild());
+    }
+
+    // both treenodes are leaf --> feasible pair
+    if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
+    {
+      int gid1 = (int)treenode1->Elelist()[0]; //global id of first element
+      int gid2 = (int)treenode2->Elelist()[0]; //global id of second element
+      contactpairs_[gid1].push_back(gid2);
+      contactpairs_[gid2].push_back(gid1);
+     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Search for root contact (public)                           popp 01/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::SearchRootContactCombined(RCP<SelfBinaryTreeNode> treenode1,
                                                 RCP<SelfBinaryTreeNode> treenode2)
 {
   // check if treenodes intercept
@@ -1649,10 +1743,10 @@ void CONTACT::SelfBinaryTree::SearchRootContact(RCP<SelfBinaryTreeNode> treenode
       treenode2->Rightchild()->CalculateSlabsDop(false);
       treenode2->Rightchild()->EnlargeGeometry(enlarge_);
 
-      SearchRootContact(treenode1->Leftchild(),treenode2->Leftchild());
-      SearchRootContact(treenode1->Leftchild(),treenode2->Rightchild());
-      SearchRootContact(treenode1->Rightchild(),treenode2->Leftchild());
-      SearchRootContact(treenode1->Rightchild(),treenode2->Rightchild());
+      SearchRootContactCombined(treenode1->Leftchild(),treenode2->Leftchild());
+      SearchRootContactCombined(treenode1->Leftchild(),treenode2->Rightchild());
+      SearchRootContactCombined(treenode1->Rightchild(),treenode2->Leftchild());
+      SearchRootContactCombined(treenode1->Rightchild(),treenode2->Rightchild());
     }
 
     // treenode1 is inner, treenode2 is leaf
@@ -1663,8 +1757,8 @@ void CONTACT::SelfBinaryTree::SearchRootContact(RCP<SelfBinaryTreeNode> treenode
       treenode1->Rightchild()->CalculateSlabsDop(false);
       treenode1->Rightchild()->EnlargeGeometry(enlarge_);
 
-      SearchRootContact(treenode1->Leftchild(),treenode2);
-      SearchRootContact(treenode1->Rightchild(),treenode2);
+      SearchRootContactCombined(treenode1->Leftchild(),treenode2);
+      SearchRootContactCombined(treenode1->Rightchild(),treenode2);
     }
 
     // treenode1 is leaf, treenode3 is inner
@@ -1675,8 +1769,8 @@ void CONTACT::SelfBinaryTree::SearchRootContact(RCP<SelfBinaryTreeNode> treenode
       treenode2->Rightchild()->CalculateSlabsDop(false);
       treenode2->Rightchild()->EnlargeGeometry(enlarge_);
 
-      SearchRootContact(treenode1,treenode2->Leftchild());
-      SearchRootContact(treenode1,treenode2->Rightchild());
+      SearchRootContactCombined(treenode1,treenode2->Leftchild());
+      SearchRootContactCombined(treenode1,treenode2->Rightchild());
     }
 
     // both treenodes are leaf --> feasible pair
@@ -1976,6 +2070,125 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID,bool isslave)
 }
 
 /*----------------------------------------------------------------------*
+ | Separate update, contact search and master/slave sorting   popp 01/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::SearchContactSeparate()
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // check is root node available
+  if ((int)roots_.size()==0) dserror("ERROR: No root node for search!");
+  if (roots_[0]==null) dserror("ERROR: No root node for search!");
+
+  // reset contact pairs from last iteration
+  contactpairs_.clear();
+
+  //**********************************************************************
+  // STEP 1: update geometry (DOPs and sample vectors) bottom-up
+  //**********************************************************************
+  // update tree bottom up (for every treelayer)
+  for (int i=((int)(treenodes_.size()-1));i>=0;--i)
+  {
+    for (int j=0;j<(int)(treenodes_[i].size());j++)
+      treenodes_[i][j]->UpdateSlabsBottomUp(enlarge_);
+  }
+  UpdateNormals();
+
+  //**********************************************************************
+  // STEP 2a: search for self contact starting at root nodes
+  //**********************************************************************
+  for (int k=0;k<(int)roots_.size();++k)
+  {
+    //cout << "Self search for root node " << k << endl;
+    SearchSelfContactSeparate(roots_[k]);
+  }
+
+  //**********************************************************************
+  // STEP 2b: search for two-body contact between different roots
+  //**********************************************************************
+  for (int k=0;k<(int)roots_.size();++k)
+  {
+    for (int m=k+1;m<(int)roots_.size();++m)
+    {
+      //cout << "-> Root search for pair " << k << " " << m << endl;
+      SearchRootContactSeparate(roots_[k],roots_[m]);
+    }
+  }
+
+  //**********************************************************************
+  // STEP 3: slave and master facet sorting
+  //**********************************************************************
+  map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter = leafsmap_.begin();
+  map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter_end = leafsmap_.end();
+
+  // first (re)set all contact elements and nodes to master
+  while (leafiter != leafiter_end)
+  {
+    int gid = leafiter->first;
+    DRT::Element* element= idiscret_.gElement(gid);
+    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+
+    if (celement->IsSlave() == true)
+    {
+      // reset element to master
+      celement->SetSlave() = false;
+
+      // reset nodes to master
+      for (int i=0;i<(int)element->NumNode();++i)
+      {
+        DRT::Node* node = element->Nodes()[i];
+        CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+        cnode->SetSlave() = false;
+      }
+    }
+
+    // increment iterator
+    ++leafiter;
+  }
+
+  // now do new slave and master sorting
+  while (!contactpairs_.empty())
+  {
+    DRT::Element* element = idiscret_.gElement(contactpairs_.begin()->first);
+    CONTACT::CoElement* celement = static_cast<CONTACT::CoElement*>(element);
+    MasterSlaveSorting(contactpairs_.begin()->first,celement->IsSlave());
+  }
+
+  //**********************************************************************
+  // STEP 3: check consistency of slave and master facet sorting
+  //**********************************************************************
+  for (int i=0; i<elements_->NumMyElements();++i)
+  {
+    int gid1 = elements_->GID(i);
+    DRT::Element* ele1 = idiscret_.gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find element with gid %",gid1);
+    MORTAR::MortarElement* element1 = static_cast<MORTAR::MortarElement*>(ele1);
+
+    // only slave elements store search candidates
+    if (!element1->IsSlave())
+      continue;
+
+    // loop over the search candidates of elements1
+    for (int j=0;j<element1->MoData().NumSearchElements();++j)
+    {
+      int gid2 = element1->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_.gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find element with gid %",gid2);
+      MORTAR::MortarElement* element2 = static_cast<MORTAR::MortarElement*>(ele2);
+
+      // error if this is a slave element
+      // (this happens if individual self contact patches are connected,
+      // because our sorting algorithm still fails in that case)
+      if (element2->IsSlave())
+        dserror("ERROR: Slave / master inconsistency in self contact");
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Combined update, contact search and master/slave sorting   popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::SearchContactCombined()
@@ -2001,20 +2214,23 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   UpdateNormals();
 
   //**********************************************************************
-  // STEP 2: recursive search for self contact starting at root node
-  //         (and search for two-body contact between different roots)
+  // STEP 2a: search for self contact starting at root nodes
   //**********************************************************************
   for (int k=0;k<(int)roots_.size();++k)
   {
-    // self contact first
     //cout << "Self search for root node " << k << endl;
-    SearchSelfContact(roots_[k]);
+    SearchSelfContactCombined(roots_[k]);
+  }
 
-    // two-body contact with all other roots
+  //**********************************************************************
+  // STEP 2b: search for two-body contact between different roots
+  //**********************************************************************
+  for (int k=0;k<(int)roots_.size();++k)
+  {
     for (int m=k+1;m<(int)roots_.size();++m)
     {
       //cout << "-> Root search for pair " << k << " " << m << endl;
-      SearchRootContact(roots_[k],roots_[m]);
+      SearchRootContactCombined(roots_[k],roots_[m]);
     }
   }
 
