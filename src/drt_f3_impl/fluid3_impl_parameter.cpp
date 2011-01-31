@@ -200,27 +200,25 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   if (stablist.get<std::string>("STABTYPE") == "inconsistent") is_inconsistent_ = true;
 
   // in case of viscous and/or reactive stabilization, decide whether to use
-  // GLS or USFEM
+  // GLS or USFEM and ensure compatibility of respective definitions
   if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
       vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
   {
     viscreastabfac_ = -1.0;
-    if (rstab_ != INPAR::FLUID::reactive_stab_usfem)
+    if (rstab_ == INPAR::FLUID::reactive_stab_gls)
       dserror("inconsistent reactive and viscous stabilization!");
   }
   else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
            vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
   {
     viscreastabfac_ = 1.0;
-    if (rstab_ != INPAR::FLUID::reactive_stab_gls)
+    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
       dserror("inconsistent reactive and viscous stabilization!");
   }
   else if (vstab_ == INPAR::FLUID::viscous_stab_none)
   {
-    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
-      viscreastabfac_ = -1.0;
-    else if (rstab_ == INPAR::FLUID::reactive_stab_gls)
-      viscreastabfac_ = 1.0;
+    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
+    else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
   }
 
   // set flags for potential evaluation of tau and material law at int. point
