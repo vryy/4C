@@ -1819,10 +1819,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                                &redawdyn);
 
+
+  setStringToIntegralParameter<int>("SOLVERTYPE","Linear",
+                               "Solver type",
+                               tuple<std::string>(
+                                 "Linear",
+                                 "Nonlinear"
+                                 ),
+                               tuple<int>(
+                                 linear,
+                                 nonlinear
+                                ),
+                               &redawdyn);
+
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
+
+  IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
+  DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 

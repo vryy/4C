@@ -327,8 +327,24 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double q_in    = params.get<double>("qin_n");
   //  double qin_np  = params.get<double>("qin_np");
 
-
   if(ele->type() == "PoiseuilleResistive")
+  {
+    // get element information
+    double A;
+    ele->getParams("Area",A);
+
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
+    sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
+
+    rhs(0) = 0.0;
+    rhs(1) = 0.0;
+
+  }
+  else if(ele->type() == "TurbulentPoiseuilleResistive")
   {
     // get element information
     double A;
@@ -479,6 +495,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       const double E2 = condition->GetDouble("Stiffness2") / VolAcinus;
       const double B  = condition->GetDouble("Viscosity")  / VolAcinus;
       const double NumOfAcini = double(floor(VolPerArea*Area/VolAcinus));
+
+      //      cout<<"Area: "<<Area<<" V/A "<<VolPerArea<<" NumOfAcini: "<< NumOfAcini<<endl;
       if (NumOfAcini < 1.0)
       {
         dserror("Acinus condition at node (%d) has zero acini",ele->Nodes()[i]->Id());
@@ -542,36 +560,71 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
       else if (MatType == "ViscoElastic_2dof")
       {
-
 #if 0
-        const double K = E1*E2/2.0 + (E2*B+B*E1)/dt;
-        const double Kp= E2/dt + B/pow(dt,2);
-        double Qeq_n, Qeq_nm;
-        double pnm = epnm(i);
-
-        Qeq_nm = -(pnm*B/pow(dt,2))/K;
-        Qeq_n  = (E2*epn(i)/dt +2.0*B*epn(i)/pow(dt,2) + E1*E2/2.0*q_out - (E2*B+B*E1)*q_out/dt)/K;
-        
-        sysmat(i,i) += pow(-1.0,i)*(Kp/K);
-        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm);
-#endif
         const double R  = B;
-        const double Kp_np =  (E1+E2)/dt + R/(dt*dt);
-        const double Kp_n  = -(E1+E2)/dt - 2.0*R/(dt*dt);
-        const double Kp_nm =  (R/(dt*dt));
+        double Kp_np =  (E1+E2)/dt + R/(dt*dt);
+        double Kp_n  = -(E1+E2)/dt - 2.0*R/(dt*dt);
+        double Kp_nm =  (R/(dt*dt));
         const double Kq_np =  (E1*E2 + R*E1/dt);
         const double Kq_n  =  (-R*E1/dt);
 
-        double Qeq_n, Qeq_nm;
+        Kp_np *= NumOfAcini;
+        Kp_n  *= NumOfAcini;
+        Kp_nm *= NumOfAcini;
 
-        Qeq_nm = (-Kp_nm* pnm *NumOfAcini)/Kq_np;
-        Qeq_n  = (-Kp_n * pn  *NumOfAcini + Kq_n*qn)/Kq_np;
+        //        double Qeq_n, Qeq_nm;
+        
+        //        Qeq_nm = (-Kp_nm* pnm *NumOfAcini)/Kq_np;
+        //        Qeq_n  = (-Kp_n * pn  *NumOfAcini + Kq_n*qn)/Kq_np;
         
         // -------------------------------------------------------------
         // Evaluate sysmat and rhs
         // -------------------------------------------------------------
-        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np)*NumOfAcini;
-        rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm + Kp_np/Kq_np*Pp_np*NumOfAcini);
+        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np);
+        //rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm + Kp_np/Kq_np*Pp_np*NumOfAcini);
+        rhs(i)      += pow(-1.0,i)*(- Kp_n*pn - Kp_nm*pnm + Kp_np*Pp_np + qn*Kq_n)/Kq_np;
+#endif
+
+#if 0
+        pn  += Pp_n;
+        pnm += Pp_nm;
+        
+        pnm   *= NumOfAcini;
+        pn    *= NumOfAcini;
+        Pp_nm *= NumOfAcini;
+        Pp_n  *= NumOfAcini;
+        Pp_np *= NumOfAcini;
+
+        cout<<"Pn: "<<pn<<" Pnm: "<<pnm<<" Pp_np: "<<Pp_np<<" Pp_n: "<<Pp_n<<" Pp_nm: "<<Pp_nm<<" qn: "<<qn<<" qnm: "<<endl;
+        const double R     = B;
+        const double Kp_np = (R+ E2*dt+E1*dt);
+        const double Kp_n  = 2.0*R* + E2*dt + dt*E1;
+        //        const double Kp_n2 = dt*E1;
+        const double Kp_nm = R;
+        const double Kq_np = dt * E1*R + E2*dt*dt*E1;
+        const double Kq_n  = dt*E1*R;
+        
+        cout<<"r "<<R <<"kpnp "<<Kp_np  <<" "<<Kp_n  <<" "<<Kp_nm  <<" "<<Kq_np<<" "<< Kq_n<< endl;
+        cout<<"Sysmat: "<<sysmat(i,i)<<endl;
+        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np);
+        cout<<"rhs: "<<rhs(i)<<endl;
+        rhs(i)      += pow(-1.0,i)*(-qn *Kq_n + (pn - Pp_n)*Kp_n - (pnm-Pp_nm)*Kp_nm + Pp_np*Kp_np)/Kq_np;
+        cout<<pow(-1.0,i)<<endl;
+#endif
+
+#if 1
+
+        const double R     = B;
+        const double Kp_np = E2/dt + R/(dt*dt);
+        const double Kp_n  = E2*dt + 2*R/(dt*dt);
+        //        const double Kp_n2 = dt*E1;
+        const double Kp_nm = -R/(dt*dt);
+        const double Kq_np = E1*E2 + R*(E1 + E2)/dt;
+        const double Kq_n  = -R*(E1+E2);
+        
+        sysmat(i,i)+= pow(-1.0,i)*(Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*pn + Kp_nm*pnm)*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
+#endif
       }
       else
       {
@@ -989,7 +1042,19 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   double qout= (*qout_n)[ele->LID()];
   double Qin_np  = (*qin_np )[ele->LID()];
   double Qout_np = (*qout_np)[ele->LID()];
+
   if(ele->type() == "PoiseuilleResistive")
+  {
+    // get element information
+    double A;
+    ele->getParams("Area",A);
+
+    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
+    Qin_np = Qout_np = qout= qin = (epnp(0)-epnp(1))/R;
+    cout<<"R: "<< R<<endl;
+
+  }
+  else if(ele->type() == "TurbulentPoiseuilleResistive")
   {
     // get element information
     double A;

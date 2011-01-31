@@ -38,7 +38,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "PoiseuilleResistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
+  if (elemType_ == "PoiseuilleResistive" || elemType_ == "TurbulentPoiseuilleResistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
   {
     double Ew, Ea, tw, A;
     linedef->ExtractDouble("WallCompliance",Ew);
@@ -54,7 +54,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   }
   else
   {
-    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/InductoResistive/RLC/SUKI");
+    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/SUKI");
     exit(1);
   }
 

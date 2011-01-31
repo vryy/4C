@@ -601,6 +601,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
 
+    //    cout<<"DBC toggel: "<<endl<<*dbctog_<<endl;
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
   }
 
