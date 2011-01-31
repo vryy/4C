@@ -1052,7 +1052,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
    }
 
     // 12) viscous stabilization term
-    if (is_higher_order_ele_ &&
+    if (is_higher_order_ele_ and
         (f3Parameter_->vstab_ != INPAR::FLUID::viscous_stab_none))
     {
       ViscStab(estif_u,
@@ -4962,115 +4962,111 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
     const double &                            rhsresfac,
     const double &                            fac3)
 {
-  // viscous stabilization either on left hand side or on right hand side
-   if (f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_gls or
-       f3Parameter_->vstab_ == INPAR::FLUID::viscous_stab_usfem)
-   {
-     double two_visc_tau;
-     if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
-       two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*tau_(1);
-     else
-       two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*f3Parameter_->alphaF_*fac3;
+  // preliminary parameter computation
+  double two_visc_tau;
+  if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
+    two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*tau_(1);
+  else
+    two_visc_tau = -f3Parameter_->viscreastabfac_*2.0*visc_*f3Parameter_->alphaF_*fac3;
 
-
-     /* viscous stabilisation, inertia part if not stationary */
-     /*
+  /* viscous stabilisation, inertia part if not stationary */
+  /*
                 /                        \
                |                          |
            +/- |    rho*Du , div eps (v)  |
                |                          |
                 \                        /
-     */
-     /* viscous stabilisation, convective part, convective type */
-     /*
+  */
+  /* viscous stabilisation, convective part, convective type */
+  /*
               /                                      \
              |  /       n+1       \                   |
          +/- | |   rho*u   o nabla | Du , div eps (v) |
              |  \       (i)       /                   |
               \                                      /
-     */
-     /* viscous stabilisation, reactive part of convection */
-     /*
+  */
+  /* viscous stabilisation, reactive part of convection */
+  /*
               /                                       \
              |  /                \   n+1               |
          +/- | |   rho*Du o nabla | u    , div eps (v) |
              |  \                /   (i)               |
               \                                       /
-     */
-     /* viscous stabilisation, reaction part if included */
-     /*
+  */
+  /* viscous stabilisation, reaction part if included */
+  /*
                 /                          \
                |                            |
            +/- |    sigma*Du , div eps (v)  |
                |                            |
                 \                          /
-     */
-     /* viscous stabilisation, viscous part (-L_visc_u) */
-     /*
+  */
+  /* viscous stabilisation, viscous part (-L_visc_u) */
+  /*
               /                                 \
              |               /  \                |
         -/+  |  nabla o eps | Du | , div eps (v) |
              |               \  /                |
               \                                 /
-     */
-     for(int jdim=0;jdim<nsd_;++jdim)
-     {
-       for (int ui=0; ui<nen_; ++ui)
-       {
-         const int fui_p_jdim   = nsd_*ui + jdim;
+  */
+  for(int jdim=0;jdim<nsd_;++jdim)
+  {
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui_p_jdim   = nsd_*ui + jdim;
 
-         for(int idim=0;idim<nsd_;++idim)
-         {
-           for(int kdim=0;kdim<nsd_;++kdim)
-           {
-             for (int vi=0; vi<nen_; ++vi)
-             {
-               const int fvi_p_idim = nsd_*vi+idim;
+      for(int idim=0;idim<nsd_;++idim)
+      {
+        for(int kdim=0;kdim<nsd_;++kdim)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi_p_idim = nsd_*vi+idim;
 
-               estif_u(fvi_p_idim,fui_p_jdim) += two_visc_tau*lin_resM_Du(nsd_*kdim+jdim,ui)*viscs2_(nsd_*idim+kdim,vi);
-             } // vi
-           } // kdim
-         } // idim
-       } // ui
-     } //jdim
+            estif_u(fvi_p_idim,fui_p_jdim) += two_visc_tau*lin_resM_Du(nsd_*kdim+jdim,ui)*viscs2_(nsd_*idim+kdim,vi);
+          } // vi
+        } // kdim
+      } // idim
+    } // ui
+  } //jdim
 
 
-     /* viscous stabilisation, pressure part ( L_pres_p) */
-     /*
+  /* viscous stabilisation, pressure part ( L_pres_p) */
+  /*
               /                        \
              |                          |
         +/-  |  nabla Dp , div eps (v)  |
              |                          |
               \                        /
-     */
-     const double two_visc_tau_timefacfac = two_visc_tau*timefacfac;
-     for (int idim=0;idim<nsd_; ++idim)
-     {
-       for (int ui=0; ui<nen_; ++ui)
-       {
-         for (int vi=0; vi<nen_; ++vi)
-         {
-           for(int jdim=0;jdim<nsd_;++jdim)
-           {
-             estif_p_v(vi*nsd_+idim,ui) += two_visc_tau_timefacfac*derxy_(jdim, ui)*viscs2_(jdim+(idim*nsd_),vi);
-           }
-         }
-       }
-     } // end for(idim)
+  */
+  const double two_visc_tau_timefacfac = two_visc_tau*timefacfac;
+  for (int idim=0;idim<nsd_; ++idim)
+  {
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        for(int jdim=0;jdim<nsd_;++jdim)
+        {
+          estif_p_v(vi*nsd_+idim,ui) += two_visc_tau_timefacfac*derxy_(jdim, ui)*viscs2_(jdim+(idim*nsd_),vi);
+        }
+      }
+    }
+  } // end for(idim)
 
-     const double two_visc_fac = -f3Parameter_->viscreastabfac_*rhsresfac*2.0*visc_;
-     for (int idim =0;idim<nsd_;++idim)
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         /* viscous stabilisation */
-         for (int jdim=0;jdim<nsd_;++jdim)
-         {
-           velforce(idim,vi)+= two_visc_fac*sgvelint_(jdim)*viscs2_(jdim+(idim*nsd_),vi);
-         }
-       }
-     } // end for(idim)
-   } // end if viscous stabilization on left hand side
+  // viscous stabilization term on right-hand side
+  const double two_visc_fac = -f3Parameter_->viscreastabfac_*rhsresfac*2.0*visc_;
+  for (int idim =0;idim<nsd_;++idim)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      /* viscous stabilisation */
+      for (int jdim=0;jdim<nsd_;++jdim)
+      {
+        velforce(idim,vi)+= two_visc_fac*sgvelint_(jdim)*viscs2_(jdim+(idim*nsd_),vi);
+      }
+    }
+  } // end for(idim)
 
   return;
 }
