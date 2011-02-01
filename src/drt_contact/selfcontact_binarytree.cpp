@@ -838,8 +838,45 @@ eps_(eps)
       node1->SetEndnodes(nodeIds);
     }
 
-    // loop over all nodes of current element
-    for(int j=0; j<element->NumNode();j++)
+    // find all first-order nodes of current element
+    // we exclude higher-order nodes (i.e. edge and center nodes)
+    // in both 2D and 3D as they do not bring in any additional
+    // information about connectivity / adjacency
+    int numnode = 0;
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(element);
+
+    switch(mele->Shape())
+    {
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+      {
+        numnode = 2;
+        break;
+      }
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      {
+        numnode = 3;
+        break;
+      }
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      {
+        numnode = 4;
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: Unknown mortar element type");
+        break;
+      }
+    }
+
+    // loop over all first-order nodes of current element
+    // (here we make use of the fact that first-order nodes
+    // are always stored before higher-order nodes)
+    for(int j=0; j<numnode;j++)
     {
       DRT::Node* node =nodes[j];
       if (!node) dserror("ERROR: Null pointer!");
