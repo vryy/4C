@@ -867,10 +867,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     else
     {
       // modify residual integration factor for right-hand side in instat. case:
-      if (not f3Parameter_->is_stationary_)
-      {
-        rhsresfac *= f3Parameter_->dt_;
-      }
+      if (not f3Parameter_->is_stationary_) rhsresfac *= f3Parameter_->dt_;
     }
 
     //----------------------------------------------------------------------
@@ -2030,8 +2027,7 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   visc_ = actmat->Viscosity();
 
   // check whether there is zero or negative permeability
-  if (actmat->Permeability() < EPS15)
-    dserror("zero or negative permeability");
+  if (actmat->Permeability() < EPS15) dserror("zero or negative permeability");
 
   // calculate reaction coefficient
   reacoeff_ = visc_/actmat->Permeability();
@@ -2433,17 +2429,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
 
     //TODO: Boussinesq
 
-    // definition of constants as described above and computation of
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    double c1 = 4.0;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt)
-      c1 = 0.0;
-    else sigma_tot += 1.0/f3Parameter_->dt_;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
+        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+        f3Parameter_->whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+      sigma_tot += 1.0/f3Parameter_->dt_;
+
+    // definition of constants as described above
+    const double c1 = 4.0;
     c3 = 12.0/mk;
 
     // computation of various values derived from covariant metric tensor
@@ -2608,15 +2604,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
-    // definition of constants as described above and computation of
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    double c1 = 4.0;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt)
-      c1 = 0.0;
-    else sigma_tot += 1.0/f3Parameter_->dt_;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
+      sigma_tot += 1.0/f3Parameter_->dt_;
+
+    // definition of constants as described above
+    const double c1 = 4.0;
     const double c2 = 4.0;
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
@@ -2654,14 +2650,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
 
-    // definition of constants as described above and computation of
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     double sigma_tot = reacoeff_;
-    double c1 = 1.0;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_codina_wo_dt) c1 = 0.0;
-    else sigma_tot += 1.0/f3Parameter_->dt_;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_codina)
+      sigma_tot += 1.0/f3Parameter_->dt_;
+
+    // definition of constants as described above
+    const double c1 = 1.0;
     const double c2 = 2.0;
     c3 = 4.0/mk;
 

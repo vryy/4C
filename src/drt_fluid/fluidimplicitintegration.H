@@ -316,8 +316,8 @@ public:
   { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
          return density_;
     else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
-         return alphaM_/(gamma_*dta_);
-    else return density_/dta_/theta_;}
+         return density_*alphaM_/(gamma_*dta_);
+    else return density_/(theta_*dta_);}
   double Dt() const { return dta_; }
 
   double Time() const { return time_; }
