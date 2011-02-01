@@ -20,10 +20,6 @@
 #ifdef TRAP_FE
 
 #ifdef LINUX_MUENCH
-/*
- * This is to get the GNU prototypes. Is there a better way to state
- * that we want to use them? */
-#define __USE_GNU
 #include <fenv.h>
 #endif
 
@@ -204,6 +200,9 @@ int main(int argc, char *argv[])
 #endif /* TRAP_FE */
 
 /*----------------------------------------------- everything is in here */
+#ifdef DSERROR_DUMP
+      ntam(argc,argv);
+#else
     try
     {
       ntam(argc,argv);
@@ -217,9 +216,6 @@ int main(int argc, char *argv[])
                 << "\n"
                 << line
                 << "\n" << std::endl;
-#ifdef DSERROR_DUMP
-      abort();
-#endif
 
 #ifdef PARALLEL
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
@@ -227,6 +223,7 @@ int main(int argc, char *argv[])
       exit(1);
 #endif
     }
+#endif
 /*----------------------------------------------------------------------*/
   }
 
