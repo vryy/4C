@@ -844,6 +844,12 @@ void GEO::CUT::Mesh::CreateIntegrationCells()
         ++i )
   {
     VolumeCell * cell = &**i;
+
+//     std::ofstream file( "volumecell.plot" );
+//     file.precision( 16 );
+//     cell->Print( file );
+//     file.close();
+
     cell->CreateIntegrationCells( *this );
   }
 }

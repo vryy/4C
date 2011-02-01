@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <iostream>
 
 #include "cut_point.H"
 #include "cut_facet.H"
@@ -23,9 +24,23 @@ namespace GEO
     class Point;
     class Facet;
 
+    /// Mesh of tet elements that is used to triangulate a VolumeCell
+    /*!
+      We use qhull for triangulation. qhull assumes convex volumes, thus it
+      might create more tets than we need. Furthermore, it is not guaranteed
+      to reconstruct the cut surface. We need to do post-processing of the
+      qhull triangulation to get proper integration cells.
 
+      \author u.kue
+      \date 01/11
+     */
     class TetMesh
     {
+
+      /// Unique description of an entity in a tet mesh.
+      /*!
+        The node numbers of an entity, sorted.
+       */
       template <int length>
       class Handle
       {
@@ -116,6 +131,7 @@ namespace GEO
         int points_[length];
       };
 
+      /// An entity in a tet mesh. Might be tet, tri, line, point.
       template <int length>
       class Entity
       {
@@ -146,7 +162,7 @@ namespace GEO
           id_ = i;
         }
 
-        const Handle<length> & GetHandle()
+        const Handle<length> & GetHandle() const
         {
           return handle_;
         }
@@ -230,62 +246,6 @@ namespace GEO
           }
         }
 
-        /// find all the cut facets this entity belongs to
-        void FindCutEntities( const std::vector<Point*> & points,
-                              const std::set<Facet*> & facets,
-                              std::map<Facet*, std::vector<Entity<3>*> > & cutsurface )
-        {
-          if ( AllOnCutSurface( points ) )
-          {
-            std::vector<Point*> mypoints;
-            this->PointVector( points, mypoints );
-            std::set<Facet*> cut_facets;
-            FindCommonFacets( mypoints, cut_facets );
-            if ( cut_facets.size() > 0 )
-            {
-              for ( std::set<Facet*>::iterator i=cut_facets.begin();
-                    i!=cut_facets.end();
-                    ++i )
-              {
-                Facet * f = *i;
-                if ( facets.count( f ) > 0 and f->SideId() >= 0 )
-                {
-                  if ( f->IsTriangulated() )
-                  {
-                    if ( f->IsTriangulatedSide( mypoints ) )
-                    {
-                      cutsurface[f].push_back( this );
-                    }
-                  }
-                  else
-                  {
-                    cutsurface[f].push_back( this );
-                  }
-                }
-              }
-            }
-#if 0
-            else if ( parents_.size()==1 )
-            {
-              // Collect all "surfaces" that are at the cut surface but do not
-              // belong to any cut facet. If there is one parent (we are at a
-              // surface) and its other point does not belong to the cut
-              // surface, we have a match.
-              //
-              // These are the "surfaces" that need to be rotated. Along with
-              // its parents.
-
-              Entity<length+1> * parent = parents_[0];
-              Point * p = points[parent->OtherPoint( this )];
-              if ( p->Position()!=Point::oncutsurface )
-              {
-                cutsurface[NULL].push_back( this );
-              }
-            }
-#endif
-          }
-        }
-
         /// test if this entity belongs entirely to a cut surface
         bool AllOnCutSurface( const std::vector<Point*> & points )
         {
@@ -298,44 +258,18 @@ namespace GEO
           return true;
         }
 
-#if 0
-        bool AtElementSide( const std::vector<Point*> & points,
-                            const std::set<Facet*> & facets )
+        bool HasOnCutSurface( const std::vector<Point*> & points )
         {
-          std::vector<Point*> mypoints;
-          this->PointVector( points, mypoints );
-          std::set<Side*> cut_sides;
-          FindCommonSides( mypoints, cut_sides );
-          if ( cut_sides.size()==0 )
+          for ( int i=0; i<length; ++i )
           {
-            return false;
-          }
-          for ( std::set<Side*>::iterator i=cut_sides.begin(); i!=cut_sides.end(); ++i )
-          {
-            Side * side = *i;
-            if ( side->Id() < 0 )
-            {
-              // this needs to be unique!
-              std::set<Facet*> cut_facets;
-              FindCommonFacets( mypoints, cut_facets );
-              for ( std::set<Facet*>::iterator i=cut_facets.begin();
-                    i!=cut_facets.end();
-                    ++i )
-              {
-                Facet * f = *i;
-                if ( facets.count( f ) > 0 )
-                {
-                  return true;
-                }
-              }
-            }
+            Point * p = points[handle_[i]];
+            if ( p->Position()==Point::oncutsurface )
+              return true;
           }
           return false;
         }
-#endif
 
-        int CountMarkedParents( const std::vector<int> & marker1,
-                                const std::vector<int> & marker2 )
+        int CountMarkedParents( const std::vector<int> & marker )
         {
           int count = 0;
           for ( typename std::vector<Entity<length+1>*>::iterator i=parents_.begin();
@@ -343,7 +277,7 @@ namespace GEO
                 ++i )
           {
             Entity<length+1> * pt = *i;
-            if ( marker1[pt->Id()] and marker2[pt->Id()] )
+            if ( marker[pt->Id()] )
             {
               count += 1;
             }
@@ -372,7 +306,7 @@ namespace GEO
             if ( std::find( other_children.begin(), other_children.end(), child )!=other_children.end() )
               return child;
           }
-          throw std::runtime_error( "exactly one common child required" );
+          return NULL;
         }
 
         const std::vector<Entity<length+1>*> & Parents() const { return parents_; }
@@ -394,6 +328,7 @@ namespace GEO
 
         void PointVector( const std::vector<Point*> & points, std::vector<Point*> & mypoints )
         {
+          mypoints.clear();
           mypoints.reserve( length );
           for ( int i=0; i<length; ++i )
           {
@@ -410,21 +345,170 @@ namespace GEO
         std::vector<Entity<length-1>*> children_;
       };
 
+      /// Representation of one possible triangulation of a facet
+      /*!
+        We find the triangulation of each facet from the qhull tet
+        mesh. Sometimes, this triangulation is ambiguous. Thus we need to
+        collect all possible interpretations of a facet and select the right
+        one later on.
+       */
+      struct OverlappingTriSets
+      {
+        std::set<Entity<2>*> lset_;
+        std::set<Entity<3>*> tset_;
+        std::set<Entity<2>*> dlset_;
+        std::set<Entity<2>*> openlines_;
+        bool full_;
+
+        OverlappingTriSets()
+          : full_( true )
+        {}
+
+        bool Done()
+        {
+          return lset_.size()==0;
+        }
+
+        Entity<2> * NextLine() { return *lset_.begin(); }
+
+        void NewLineTris( const std::set<Entity<3>*> & tris,
+                          Entity<2> * line,
+                          std::set<Entity<3>*> & new_tris )
+        {
+          const std::vector<Entity<3>*> & line_tris = line->Parents();
+          for ( std::vector<Entity<3>*>::const_iterator i=line_tris.begin();
+                i!=line_tris.end();
+                ++i )
+          {
+            Entity<3> * tri = *i;
+            if ( tris.count( tri ) > 0 and tset_.count( tri )==0 )
+            {
+              new_tris.insert( tri );
+            }
+          }
+        }
+
+        void EmptyTriSet( Entity<2> * line )
+        {
+          full_ = false;
+          lset_.erase( line );
+          dlset_.insert( line );
+          openlines_.insert( line );
+        }
+
+        void InsertTri( Entity<3> * tri )
+        {
+          const std::vector<Entity<2>*> tri_lines = tri->Children();
+          bool reject = false;
+          for ( std::vector<Entity<2>*>::const_iterator i=tri_lines.begin();
+                i!=tri_lines.end();
+                ++i )
+          {
+            Entity<2> * line = *i;
+            if ( lset_.count( line ) == 0 and dlset_.count( line ) > 0 )
+            {
+              // reject this tri, if it would overlap with any other tri
+              full_ = false;
+              reject = true;
+              break;
+            }
+          }
+          for ( std::vector<Entity<2>*>::const_iterator i=tri_lines.begin();
+                i!=tri_lines.end();
+                ++i )
+          {
+            Entity<2> * line = *i;
+            dlset_.insert( line );
+            if ( lset_.count( line ) > 0 )
+            {
+              lset_.erase( line );
+            }
+            else if ( not reject )
+            {
+              lset_.insert( line );
+            }
+          }
+          if ( not reject )
+          {
+            tset_.insert( tri );
+          }
+        }
+      };
+
+      /// Collection of facet triangulations.
+      struct FacetInfo
+      {
+        std::set<Entity<3>*> tris_;
+        std::list<OverlappingTriSets> overlappingsets_;
+        bool done_;
+
+        FacetInfo()
+          : done_( false )
+        {}
+
+        bool IsUnique()
+        {
+          return overlappingsets_.size()==1;
+        }
+
+        bool IsFull()
+        {
+          for ( std::list<OverlappingTriSets>::iterator i=overlappingsets_.begin();
+                i!=overlappingsets_.end();
+                ++i )
+          {
+            OverlappingTriSets & ots = *i;
+            if ( ots.full_ )
+              return true;
+          }
+          return false;
+        }
+
+        void SetMarker( std::vector<int> & marker, bool value )
+        {
+          for ( std::set<Entity<3>*>::iterator i=tris_.begin(); i!=tris_.end(); ++i )
+          {
+            Entity<3> * tri = *i;
+            marker[tri->Id()] = value;
+          }
+        }
+
+        void ExchangeTriSet( std::set<Entity<3>*> & tris, std::vector<int> & marker )
+        {
+          SetMarker( marker, false );
+          std::swap( tris_, tris );
+          SetMarker( marker, true );
+        }
+      };
+
     public:
 
+      /// Construct a tet mesh by calling qhull and selecting all the tets and
+      /// tris that are needed.
+      /*!
+        This is where the work is done.
+       */
       TetMesh( const std::vector<Point*> & points,
                const std::set<Facet*> & facets );
 
+      /// Return the list of tets.
       const std::vector<std::vector<int> > & Tets() const { return tets_; }
 
+      /// Return the tris for each facet
       const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & SidesXYZ() const { return sides_xyz_; }
 
     private:
 
       void FindTriFacets();
 
-      /// find all tris at a cut surface
-      void FindCutSurfaceTris();
+      void FindOverlappingTriFacets();
+
+      void RemoveSimpleOverlappingTriFacets();
+
+      bool FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
+                            std::set<Entity<3>*> & surface_tris );
+
+      void RemoveFullOverlappingTriFacets();
 
 #if 0
       void RotateNonMatchingCutTets();
@@ -435,20 +519,18 @@ namespace GEO
 
       void ActivateCutSurfaceTris();
 
-      void DeactivateOverlappingTris();
-
       /// test for illegal (cutted) cut surfaces
       void TestCutSurface();
 
       /// if there is just one tet at an cut surface it is active
-      void ActivateSingleTetsOnCutSurface();
+      void ActivateSingleTetsOnFacets();
 
       /// activate the right tets at the cut surface
       void ActivateDoubleTetsOnCutSurface();
 
       void ActivateSurroundingTets( Entity<4> * tet );
 
-      void ActivateUsedCutSurfaceTris();
+      //void ActivateUsedCutSurfaceTris();
 
       /// remove deactivated tets
       void ClearExternalTets();
@@ -458,13 +540,16 @@ namespace GEO
       /// Get tri coordinates at the cut facets in the proper order
       void FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
+      void FindProperSides( const std::set<Entity<3>*> & tris, std::vector<std::vector<int> > & sides );
+
+      void CollectCoordinates( const std::vector<std::vector<int> > & sides,
+                               std::vector<Epetra_SerialDenseMatrix> & side_coords );
+
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
 
       void GmshWriteCells();
 
       void GmshWriteActiveCells();
-
-      void GmshWriteBrokenSurfaceTris( const std::set<Entity<3>*> & tris );
 
       void GmshWriteFacetTris();
 
@@ -473,6 +558,10 @@ namespace GEO
       void GmshWriteActiveSurfaceCells();
 
       void GmshWriteSurfaceTris();
+
+      void GmshWriteTriSet( const std::string & name, const std::set<Entity<3>*> & tris );
+
+      void GmshWriteTetSet( const std::string & name, const std::set<Entity<4>*> & tets );
 
       void GmshWriteTri( std::ostream & file, int eid, const std::vector<int> & t );
 
@@ -516,12 +605,43 @@ namespace GEO
         return &new_e;
       }
 
+      Handle<2> MakeHandle( Point * p1, Point * p2 )
+      {
+        std::vector<Point*>::const_iterator i1 = std::find( points_.begin(), points_.end(), p1 );
+        std::vector<Point*>::const_iterator i2 = std::find( points_.begin(), points_.end(), p2 );
+        if ( i1==points_.end() or i2==points_.end() )
+        {
+          throw std::runtime_error( "point not in list" );
+        }
+        int points[2];
+        points[0] = i1 - points_.begin();
+        points[1] = i2 - points_.begin();
+        std::sort( points, points+2 );
+        return Handle<2>( points );
+      }
+
+      Handle<3> MakeHandle( Point * p1, Point * p2, Point * p3 )
+      {
+        std::vector<Point*>::const_iterator i1 = std::find( points_.begin(), points_.end(), p1 );
+        std::vector<Point*>::const_iterator i2 = std::find( points_.begin(), points_.end(), p2 );
+        std::vector<Point*>::const_iterator i3 = std::find( points_.begin(), points_.end(), p3 );
+        if ( i1==points_.end() or i2==points_.end() or i3==points_.end() )
+        {
+          throw std::runtime_error( "point not in list" );
+        }
+        int points[3];
+        points[0] = i1 - points_.begin();
+        points[1] = i2 - points_.begin();
+        points[2] = i3 - points_.begin();
+        std::sort( points, points+3 );
+        return Handle<3>( points );
+      }
+
       const std::vector<Point*> & points_;
       const std::set<Facet*> & facets_;
       std::vector<std::vector<int> > tets_;
 
       std::vector<int> accept_tets_;
-      std::vector<int> accept_tris_;
       std::vector<int> active_surface_tris_;
 
       std::vector<Entity<4> > tet_entities_;
@@ -530,14 +650,37 @@ namespace GEO
       //std::map<Handle<1>, Entity<1> > tet_points_;
 
       std::map<Entity<3>*, Facet*> tri_facets_;
+      std::map<Facet*, FacetInfo> facet_info_;
 
-      std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
+      std::set<Entity<3>*> broken_tris_;
+
+      //std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
       std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz_;
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
       std::vector<std::vector<int> > surface_tris_;
 #endif
     };
+
+    template <int length>
+    std::ostream & operator<<( std::ostream & stream, const TetMesh::Handle<length> & h )
+    {
+      stream << "{";
+      for ( int i=0; i<length; ++i )
+      {
+        if ( i > 0 )
+          stream << ",";
+        stream << h[i];
+      }
+      return stream << "}";
+    }
+
+    template <int length>
+    std::ostream & operator<<( std::ostream & stream, const TetMesh::Entity<length> & e )
+    {
+      stream << "( id=" << e.Id() << ", " << e.GetHandle() << " )";
+      return stream;
+    }
 
   }
 }

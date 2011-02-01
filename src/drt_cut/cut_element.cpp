@@ -311,21 +311,52 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
     std::copy( holes.begin(), holes.end(), std::inserter( all_facets, all_facets.begin() ) );
   }
 
+  // We really need to do the side facets first, since there is now way to
+  // decide which side facet to chose, when all we have is an cut facet. Thus
+  // we need a special order here.
+  //
+  // This might still fail in bizarre cases. The right solution needs to
+  // consider concave connections and so on.
+
+  std::vector<Facet*> all_facets_sorted;
+  all_facets_sorted.reserve( all_facets.size() );
+
+  for ( std::vector<Node*>::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+  {
+    Node * n = *i;
+    Point * p = n->point();
+    const std::set<Facet*> & point_facets = p->Facets();
+    for ( std::set<Facet*>::const_iterator i=point_facets.begin();
+          i!=point_facets.end();
+          ++i )
+    {
+      Facet * f = *i;
+      if ( all_facets.count( f ) > 0 )
+      {
+        all_facets.erase( f );
+        all_facets_sorted.push_back( f );
+      }
+    }
+  }
+
+  std::copy( all_facets.begin(), all_facets.end(), std::back_inserter( all_facets_sorted ) );
+  all_facets.clear();
+
 #if 0
   int facet_count = 0;
 #endif
 
-  for ( std::set<Facet*>::iterator i=all_facets.begin(); i!=all_facets.end(); ++i )
+  for ( std::vector<Facet*>::iterator i=all_facets_sorted.begin(); i!=all_facets_sorted.end(); ++i )
   {
     Facet * f = *i;
     if ( facets_done.count( f )==0 and OwnedSide( f->ParentSide() ) )
     {
-      std::stack<Facet*> new_facets;
+      std::set<std::vector<Facet*>::iterator> new_facets;
       std::set<Facet*> collected_facets;
       //std::set<Side*> sides_done;
       std::map<std::pair<Point*, Point*>, std::set<Facet*> > done_lines;
 
-      new_facets.push( f );
+      new_facets.insert( std::find( all_facets_sorted.begin(), all_facets_sorted.end(), f ) );
       f->GetLines( done_lines );
 
       {
@@ -338,15 +369,15 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 #endif
       }
 
-      while ( not new_facets.empty() )
+      while ( new_facets.size() > 0 )
       {
-        Facet * f = new_facets.top();
-        new_facets.pop();
+        std::set<std::vector<Facet*>::iterator>::iterator first = new_facets.begin();
+        Facet * f = **first;
+        new_facets.erase( first );
 
         collected_facets.insert( f );
         Side * facet_side = f->ParentSide();
-        //bool is_owned = OwnedSide( facet_side );
-        //sides_done.insert( f->ParentSide() );
+
         std::map<std::pair<Point*, Point*>, std::set<Facet*> > facet_lines;
         f->GetLines( facet_lines );
 
@@ -394,7 +425,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
             }
             if ( found_facet!=NULL )
             {
-              new_facets.push( found_facet );
+              new_facets.insert( std::find( all_facets_sorted.begin(), all_facets_sorted.end(), found_facet ) );
               found_facet->GetLines( done_lines );
 
               {
@@ -430,7 +461,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
         std::set<Facet*> & facets = i->second;
         if ( facets.size()!=2 )
         {
-#if 0
+#if 1
           std::ofstream file( "collected_facets.plot" );
           for ( std::set<Facet*>::iterator i=collected_facets.begin();
                 i!=collected_facets.end();
@@ -486,7 +517,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
     }
   }
 
-  if ( facets_done.size() != all_facets.size() )
+  if ( facets_done.size() != all_facets_sorted.size() )
     throw std::runtime_error( "unhandled facets" );
 }
 

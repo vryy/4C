@@ -425,13 +425,44 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
 
 void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines )
 {
-  unsigned length = points_.size();
+#if 0
+  // We are interested in the surrounding lines of the facet. Thus the
+  // internal lines that result from a triangulation are not wanted
+  // here. (There are no other facets connected to any of our internal lines.)
+  if ( IsTriangulated() )
+  {
+    for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
+          i!=triangulation_.end();
+          ++i )
+    {
+      std::vector<Point*> & points = *i;
+      GetLines( points, lines );
+    }
+  }
+  else
+#endif
+  {
+    GetLines( points_, lines );
+
+    // add hole lines but do not connect with parent facet
+    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    {
+      Facet * hole = *i;
+      hole->GetLines( lines );
+    }
+  }
+}
+
+void GEO::CUT::Facet::GetLines( const std::vector<Point*> & points,
+                                std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines )
+{
+  unsigned length = points.size();
   for ( unsigned i=0; i<length; ++i )
   {
     unsigned j = ( i+1 ) % length;
 
-    Point * p1 = points_[i];
-    Point * p2 = points_[j];
+    Point * p1 = points[i];
+    Point * p2 = points[j];
 
     if ( p1->Id() < p2->Id() )
     {
@@ -442,23 +473,31 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Fac
       lines[std::make_pair( p2, p1 )].insert( this );
     }
   }
-
-  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
-  {
-    Facet * hole = *i;
-    hole->GetLines( lines );
-  }
 }
 
 bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
 {
-  if ( IsLine( points_, p1, p2 ) )
-    return true;
-  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  if ( IsTriangulated() )
   {
-    Facet * hole = *i;
-    if ( hole->IsLine( p1, p2 ) )
+    for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
+          i!=triangulation_.end();
+          ++i )
+    {
+      std::vector<Point*> & points = *i;
+      if ( IsLine( points, p1, p2 ) )
+        return true;
+    }
+  }
+  else
+  {
+    if ( IsLine( points_, p1, p2 ) )
       return true;
+    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    {
+      Facet * hole = *i;
+      if ( hole->IsLine( p1, p2 ) )
+        return true;
+    }
   }
   return false;
 }
@@ -466,10 +505,10 @@ bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
 bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 )
 {
   std::vector<Point*>::const_iterator i1 = std::find( points.begin(), points.end(), p1 );
-  if ( i1!=points_.end() )
+  if ( i1!=points.end() )
   {
     std::vector<Point*>::const_iterator i2 = i1 + 1;
-    if ( i2!=points_.end() )
+    if ( i2!=points.end() )
     {
       if ( *i2 == p2 )
       {
@@ -478,13 +517,13 @@ bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Po
     }
     else
     {
-      i2 = points_.begin();
+      i2 = points.begin();
       if ( *i2 == p2 )
       {
         return true;
       }
     }
-    if ( i1!=points_.begin() )
+    if ( i1!=points.begin() )
     {
       i2 = i1 - 1;
       if ( *i2 == p2 )
@@ -506,31 +545,32 @@ bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Po
 
 bool GEO::CUT::Facet::Contains( Point * p ) const
 {
-  if ( std::find( points_.begin(), points_.end(), p ) != points_.end() )
-    return true;
-  for ( std::set<Facet*>::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  if ( IsTriangulated() )
   {
-    Facet * hole = *i;
-    if ( hole->Contains( p ) )
+    for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation_.begin();
+          i!=triangulation_.end();
+          ++i )
+    {
+      const std::vector<Point*> & points = *i;
+      if ( std::find( points.begin(), points.end(), p ) != points.end() )
+        return true;
+    }
+  }
+  else
+  {
+    if ( std::find( points_.begin(), points_.end(), p ) != points_.end() )
       return true;
+    for ( std::set<Facet*>::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    {
+      Facet * hole = *i;
+      if ( hole->Contains( p ) )
+        return true;
+    }
   }
   return false;
 }
 
 bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side ) const
-{
-  for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
-  {
-    Point * p = *i;
-    if ( not Contains( p ) )
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side )
 {
   for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
   {

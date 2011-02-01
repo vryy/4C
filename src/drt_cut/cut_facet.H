@@ -101,8 +101,6 @@ public:
 
   bool Contains( const std::vector<Point*> & side ) const;
 
-  bool Contains( const std::vector<Point*> & side );
-
   bool Touches( Facet * f );
 
   void Neighbors( Point * p,
@@ -166,6 +164,10 @@ private:
                                 unsigned i );
 
   bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
+
+  void GetLines( const std::vector<Point*> & points,
+                 std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
+
 
   std::vector<Point*> points_;
 
