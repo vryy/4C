@@ -81,7 +81,7 @@ SIMPLER          No
 PREDICTOR        steady_state_predictor
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
-DEFINITION_TAU        Bazilevs   // this tau does not involve streamlengths, hk or similar
+DEFINITION_TAU        Taylor_Hughes_Zarins_Whiting_Jansen   // this tau does not involve streamlengths, hk or similar
 TDS                   quasistatic
 TRANSIENT             no_transient
 PSPG                  yes_pspg

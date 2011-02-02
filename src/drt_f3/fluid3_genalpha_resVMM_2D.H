@@ -8313,7 +8313,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
     //          TAUS FOR TIME DEPENDENT SUBSCALES
     //-------------------------------------------------------
 
-    if(whichtau == INPAR::FLUID::bazilevs)
+    if(whichtau == INPAR::FLUID::taylor_hughes_zarins_whiting_jansen)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 
@@ -8734,7 +8734,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau_2D(
     //-------------------------------------------------------
     //        TAUS FOR THE QUASISTATIC FORMULATION
     //-------------------------------------------------------
-    if(whichtau == INPAR::FLUID::bazilevs)
+    if(whichtau == INPAR::FLUID::taylor_hughes_zarins_whiting_jansen)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 

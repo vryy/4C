@@ -2044,10 +2044,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Shakib_Hughes_Codina_wo_dt",
                                  "Codina",
                                  "Codina_wo_dt",
+                                 "Franca_Madureira_Valentin",
+                                 "Franca_Madureira_Valentin_wo_dt",
                                  //"BFVW_gradient_based_hk",
-                                 "Smoothed_FBVW",
-                                 "Bazilevs",
-                                 "Bazilevs_wo_dt"),
+                                 "Smoothed_FBVW"),
                                tuple<INPAR::FLUID::TauType>(
                                    INPAR::FLUID::tau_taylor_hughes_zarins,
                                    INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
@@ -2061,9 +2061,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tau_shakib_hughes_codina_wo_dt,
                                    INPAR::FLUID::tau_codina,
                                    INPAR::FLUID::tau_codina_wo_dt,
+                                   INPAR::FLUID::tau_franca_madureira_valentin,
+                                   INPAR::FLUID::tau_franca_madureira_valentin_wo_dt,
                                    //INPAR::FLUID::tau_not_defined,
-                                   INPAR::FLUID::tau_not_defined,
-                                   INPAR::FLUID::tau_not_defined,
                                    INPAR::FLUID::tau_not_defined),
                                &fdyn_stab);
 

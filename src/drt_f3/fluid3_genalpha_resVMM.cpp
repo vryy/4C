@@ -270,9 +270,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     {
       whichtau = INPAR::FLUID::franca_barrenechea_valentin_wall;
     }
-    else if(taudef == "Bazilevs")
+    else if(taudef == "Taylor_Hughes_Zarins_Whiting_Jansen")
     {
-      whichtau = INPAR::FLUID::bazilevs;
+      whichtau = INPAR::FLUID::taylor_hughes_zarins_whiting_jansen;
     }
     else if(taudef == "Codina")
     {
@@ -10544,9 +10544,9 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       whichtau = INPAR::FLUID::franca_barrenechea_valentin_wall;
     }
-    else if(taudef == "Bazilevs")
+    else if(taudef == "Taylor_Hughes_Zarins_Whiting_Jansen")
     {
-      whichtau = INPAR::FLUID::bazilevs;
+      whichtau = INPAR::FLUID::taylor_hughes_zarins_whiting_jansen;
     }
     else if(taudef == "Codina")
     {
@@ -10556,7 +10556,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
     {
       whichtau = INPAR::FLUID::smoothed_franca_barrenechea_valentin_wall;
     }
-    else if(taudef == "FBVW_without_dt")
+    else if(taudef == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt")
     {
       whichtau = INPAR::FLUID::fbvw_wo_dt;
     }
@@ -12089,7 +12089,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
     //          TAUS FOR TIME DEPENDENT SUBSCALES
     //-------------------------------------------------------
 
-    if(whichtau == INPAR::FLUID::bazilevs)
+    if(whichtau == INPAR::FLUID::taylor_hughes_zarins_whiting_jansen)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 
@@ -12497,7 +12497,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcTau(
     //-------------------------------------------------------
     //        TAUS FOR THE QUASISTATIC FORMULATION
     //-------------------------------------------------------
-    if(whichtau == INPAR::FLUID::bazilevs)
+    if(whichtau == INPAR::FLUID::taylor_hughes_zarins_whiting_jansen)
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 

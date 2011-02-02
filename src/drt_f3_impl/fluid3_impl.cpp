@@ -686,14 +686,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,eid);
 
     //----------------------------------------------------------------------
-    //  evaluation of various values and operators at integration point
+    //  evaluation of various values at integration point:
+    //  1) velocity (including derivatives, fine-scale and grid velocity)
+    //  2) pressure (including derivatives)
+    //  3) body-force vector
+    //  4) "history" vector for momentum equation
     //----------------------------------------------------------------------
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     velint_.Multiply(evelaf,funct_);
-
-    // get momentum history data at integration point
-    histmom_.Multiply(emhist,funct_);
 
     // get velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -712,38 +713,21 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     convvelint_.Update(velint_);
     if (isale) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
 
-    // get pressure gradient at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    gradp_.Multiply(derxy_,epreaf);
-
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     double press = funct_.Dot(epreaf);
+
+    // get pressure gradient at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    gradp_.Multiply(derxy_,epreaf);
 
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     bodyforce_.Multiply(edeadaf,funct_);
 
-    // calculate div(epsilon(u)) for viscous term
-    if (is_higher_order_ele_) CalcDivEps(evelaf);
-    else
-    {
-      viscs2_.Clear();
-      visc_old_.Clear();
-    }
-
-    // compute convective term from previous iteration
-    conv_old_.Multiply(vderxy_,convvelint_);
-
-    // compute convective operator
-    conv_c_.MultiplyTN(derxy_,convvelint_);
-
-    // compute velocity divergence from previous iteration
-    vdiv_ = 0.0;
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      vdiv_ += vderxy_(idim, idim);
-    }
+    // get momentum history data at integration point
+    // (only required for one-step-theta and BDF2 time-integration schemes)
+    histmom_.Multiply(emhist,funct_);
 
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
         or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -848,6 +832,37 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
       // calculate stabilization parameters at integration point
       CalcStabParameter(vol);
+    }
+
+    //----------------------------------------------------------------------
+    //  evaluation of various partial operators at integration point
+    //  1) convective term from previous iteration and convective operator
+    //  2) viscous term from previous iteration and viscous operator
+    //  3) divergence of velocity from previous iteration
+    //----------------------------------------------------------------------
+    // compute convective term from previous iteration
+    // (zero for reactive problems, for the time being)
+    if (f3Parameter_->reaction_) conv_old_.Clear();
+    else                         conv_old_.Multiply(vderxy_,convvelint_);
+
+    // compute convective operator
+    // (zero for reactive problems, for the time being)
+    if (f3Parameter_->reaction_) conv_c_.Clear();
+    else                         conv_c_.MultiplyTN(derxy_,convvelint_);
+
+    // compute viscous term from previous iteration and viscous operator
+    if (is_higher_order_ele_) CalcDivEps(evelaf);
+    else
+    {
+      viscs2_.Clear();
+      visc_old_.Clear();
+    }
+
+    // compute divergence of velocity from previous iteration
+    vdiv_ = 0.0;
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      vdiv_ += vderxy_(idim, idim);
     }
 
     //----------------------------------------------------------------------
@@ -2671,6 +2686,43 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   }
   break;
 
+  case INPAR::FLUID::tau_franca_madureira_valentin:
+  case INPAR::FLUID::tau_franca_madureira_valentin_wo_dt:
+  {
+    /*
+
+    This stabilization parameter is only intended to be used for
+    viscous-reactive problems such as Darcy-Stokes/Brinkman problems.
+
+    literature:
+       L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
+       functions: enriching finite element spaces with local but not
+       bubble-like functions, Comput. Methods Appl. Mech. Engrg. 194
+       (2005) 3006-3021.
+
+    */
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient
+    double sigma_tot = reacoeff_;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin)
+      sigma_tot += 1.0/f3Parameter_->timefac_;
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,0.0,strle,hk);
+
+    // various parameter computations for case with dt:
+    // relating viscous to reactive part
+    const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(hk));
+
+    // respective "switching" parameter
+    const double xi11 = DMAX(re11,1.0);
+
+    // tau_Mu not required
+    tau_(0) = 0.0;
+    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
+  }
+  break;
+
   default: dserror("unknown definition for tau_M\n %i  ", f3Parameter_->whichtau_);
   }  // end switch (f3Parameter_->whichtau_)
 
@@ -2825,6 +2877,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     */
 
     tau_(2) = DSQR(hk)/(sqrt(c3)*tau_(1));
+  }
+  break;
+
+  case INPAR::FLUID::tau_franca_madureira_valentin:
+  case INPAR::FLUID::tau_franca_madureira_valentin_wo_dt:
+  {
+    /*
+
+    This stabilization parameter is only intended to be used for
+    viscous-reactive problems such as Darcy-Stokes/Brinkman problems.
+    The stabilization parameter tau_C is set to zero for such problems,
+    for the time being.
+
+    */
+
+    tau_(2) = 0.0;
   }
   break;
 

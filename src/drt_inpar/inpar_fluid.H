@@ -107,6 +107,8 @@ namespace INPAR
       tau_shakib_hughes_codina_wo_dt,
       tau_codina,
       tau_codina_wo_dt,
+      tau_franca_madureira_valentin,
+      tau_franca_madureira_valentin_wo_dt,
       tau_not_defined
     };
 
@@ -117,9 +119,8 @@ namespace INPAR
     franca_barrenechea_valentin_codina       ,
     fbvw_gradient_based_hk                   ,
     codina                                   ,
-    bazilevs                                 ,
+    taylor_hughes_zarins_whiting_jansen      ,
     fbvw_wo_dt                               ,
-    oberai                                   ,
     tautype_not_defined
   };
 
