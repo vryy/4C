@@ -1888,7 +1888,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                       if(fabs((testvolumepos_[i])(k)-(testvolumepos_[j])(k))<1e-7)
                       {
                         int numsections = 10;
-    
+
                         LINALG::SerialDenseMatrix loweredge(3,2);
                         LINALG::SerialDenseMatrix upperedge(3,2);
                         LINALG::SerialDenseMatrix connection0(3,2);
@@ -2456,7 +2456,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
-	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,3 , true);
+	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
 	DDCorrFunction(crosslinksperbinrow, &centershift);
 
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
@@ -2469,7 +2469,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   RadialDensityDistribution(radialdistancesrow, &cog, &centershift, &crosslinkerentries);
 
   // Import
-  Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,3 , true);
+  Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,crosslinksperbinrow.NumVectors() , true);
   Epetra_Vector phibinscol(*ddcorrcolmap_, true);
   Epetra_Vector thetabinscol(*ddcorrcolmap_, true);
   Epetra_Vector costhetabinscol(*ddcorrcolmap_, true);
@@ -2482,7 +2482,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   radialdistancescol.Import(radialdistancesrow, importer, Insert);
 
   // Add the processor-specific data up
-  std::vector<std::vector<int> > crosslinksperbin(numbins, std::vector<int>(3,0));
+  std::vector<std::vector<int> > crosslinksperbin(numbins, std::vector<int>(crosslinksperbincol.NumVectors(),0));
   std::vector<int> phibins(numbins, 0);
   std::vector<int> thetabins(numbins, 0);
   std::vector<int> costhetabins(numbins, 0);
@@ -2507,7 +2507,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream histogram;
     histogram<<internalenergy;
-    for(int i=0; i<7; i++)
+    for(int i=0; i<13; i++)
     	histogram<<"    "<<0;
     histogram<<endl;
 
@@ -2767,7 +2767,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									radius += sign*periodlength/pow(2.0,(double)exponent);
 								}
 								else
+								{
+									crosslinksinvolume[i] = rcount;
+									crossfraction[i] = pr;
 									leaveloop = true;
+								}
 							}
 							else
 							{
@@ -2882,7 +2886,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									radius += sign*periodlength/pow(2.0,(double)exponent);
 								}
 								else
+								{
+									crosslinksinvolume[i] = rcount;
+									crossfraction[i] = pr;
 									leaveloop = true;
+								}
 							}
 							else
 							{
@@ -2950,7 +2958,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
 						normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
 
-						// only proceed to volume calculation if there exist two linearly independent pairs of projected vectors
 						if(normal.Norm2()>0.9)
 						{
 							bool converged = true;
@@ -2986,7 +2993,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										thickness += sign*periodlength/pow(2.0,(double)exponent);
 									}
 									else
+									{
+										crosslinksinvolume[i] = rcount;
+										crossfraction[i] = pr;
 										leaveloop = true;
+									}
 								}
 								else
 								{
@@ -3006,7 +3017,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									surfaceboundaries(j,0) = (*centershift)(j);
 									surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 								}
-	
+
 								for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
 								{
 									for(int j=0; j<3; j++) // spatial component j
@@ -3055,7 +3066,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 																}
 													}
 								}
-	
+
 								//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
 								// calculate volume according to number of intersection points (only if crosslinker fraction calculation converged)
 								switch((int)interseccoords.size())
@@ -3075,7 +3086,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										double bl = b.Norm2();
 										double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
 										double h = bl * sin(alpha);
-	
+
 										// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
 										volumes[i] = cl*h*thickness;
 									}
@@ -3099,7 +3110,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										double fl = f.Norm2();
 										double alpha = acos((al*al+dl*dl-fl*fl)/(2.0*al*dl));
 										double h = dl * sin(alpha);
-	
+
 										volumes[i] = (al+cl) * h * thickness;
 									}
 									break;
@@ -3121,13 +3132,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 															b -= *cog;
 															LINALG::Matrix<3,1> c = interseccoords[k];
 															c -= interseccoords[j];
-					
+
 															double al = a.Norm2();
 															double bl = b.Norm2();
 															double cl = c.Norm2();
 															double alpha = acos((cl*cl+bl*bl-al*al)/(2.0*bl*cl));
 															double h = bl * sin(alpha);
-					
+
 															hexvolume += cl*h*thickness;
 														}
 										volumes[i] = hexvolume;
@@ -3166,7 +3177,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		fp = fopen(filename.str().c_str(), "w");
 		std::stringstream structuretype;
 		structuretype<<structurenumber<<"    "<<characlength[minimum];
-		for(int j=0; j<6; j++)
+		for(int j=0; j<13; j++)
 			structuretype<<"    "<<0.0;
 		structuretype<<endl;
 		fprintf(fp, structuretype.str().c_str());
@@ -3296,7 +3307,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	// 3.0*periodlength*sqrt(3.0) since volume diagonal grows threefold due to periodic continuation of the boundary volume
-	double maxdist = 3.0*periodlength*sqrt(3.0);
+	//double maxdist = 3.0*periodlength*sqrt(3.0);
 	// number of overall crosslink molecules (in central boundary box)
 	int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
 	// number of overall independent crosslink molecule combinations (in central box and its 26 surrounding mirrored boxes)
@@ -3335,9 +3346,10 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 							// only do calculate deltaxij if the following if both indices i and j stand for crosslinker elements
 							if((*crosslinkerbond_)[0][i]>-0.9 && (*crosslinkerbond_)[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
 							{
-								double deltaxij = 0.0;
+								//double deltaxij = 0.0;
 								std::vector<int> indices(2,0);
 								LINALG::Matrix<3,2> currpositions;
+								std::vector<int> bins(3,0);
 
 								indices[0] = i;
 								indices[1] = j;
@@ -3353,19 +3365,29 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 										if (currpositions(m,n) < 0.0+(*centershift)(m))
 											currpositions(m,n) += periodlength;
 									}
-									deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
 								}
-								deltaxij = sqrt(deltaxij);
+								for(int m=0; m<(int)currpositions.M(); m++)
+								{
+									//deltaxij += (currpositions(m,1)-currpositions(m,0)) * (currpositions(m,1)-currpositions(m,0));
+									// componentwise distance into bin
+									int absbin = (int)floor(fabs(currpositions(m,1)-currpositions(m,0))/periodlength*(double)numbins);
+									if(absbin==3*numbins)
+										absbin--;
+									int thebin = absbin%numbins;
+									int thecol = (int)floor((double)absbin/(double)numbins)+3*m;
+									crosslinksperbinrow[thecol][thebin] += 1.0;
+								}
+								//deltaxij = sqrt(deltaxij);
 
 								// calculate the actual bin to which the current distance belongs and increment the count for that bin (currbin=LID)
-								int absbin = (int)floor(deltaxij/maxdist*3.0*(double)numbins);
+								//int absbin = (int)floor(deltaxij/maxdist*3.0*(double)numbins);
 								// in case the distance is exactly 3*periodlength*sqrt(3)
-								if(absbin==3*numbins)
-									absbin--;
+								//if(absbin==3*numbins)
+								//	absbin--;
 								// sort into correct bin
-								int thebin = absbin%numbins;
-								int thecol = (int)floor((double)absbin/(double)numbins);
-								crosslinksperbinrow[thecol][thebin] += 1.0;
+								//int thebin = absbin%numbins;
+								//int thecol = (int)floor((double)absbin/(double)numbins);
+								//crosslinksperbinrow[thecol][thebin] += 1.0;
 							}
 						}
 						else
@@ -3461,9 +3483,17 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 								surrboxpos(m) -= periodlength;
 							if (surrboxpos(m) < (*centershift)(m) + (surrboxindex-1)*periodlength)
 								surrboxpos(m) += periodlength;
+
+							double distm = fabs(surrboxpos(m)-cboxpos(m));
+							int absbin = (int)floor(distm/periodlength*(double)numbins);
+							if(absbin==3*numbins)
+								absbin--;
+							int thebin = absbin%numbins;
+							int thecol = (int)floor((double)absbin/(double)numbins)+3*m;
+							crosslinksperbinrow[thecol][thebin] += 1.0;
 						}
 
-						// distance between crosslinkers
+						/*/ distance between crosslinkers
 						LINALG::Matrix<3,1> distance = surrboxpos;
 						distance -= cboxpos;
 						double deltaxij = distance.Norm2();
@@ -3475,10 +3505,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
 						// sort into correct bin
 						int thebin = absbin%numbins;
 						int thecol = (int)floor((double)absbin/(double)numbins);
-						if(thebin<0 || thebin>=numbins || thecol<0 || thecol>=3)
-						//cout<<"thebin = "<<thebin<<", thecol = "<<thecol<<endl;
-							cout<<deltaxij<<endl;
-						crosslinksperbinrow[thecol][thebin] += 1.0;
+						crosslinksperbinrow[thecol][thebin] += 1.0;*/
 					}
 				}
 			}
