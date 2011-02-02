@@ -948,7 +948,7 @@ bool GEO::CUT::TetMesh::FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
         {
           Entity<3> * tri = intersection[0];
 
-          if ( tri_facets_.count( tri )==0 )
+          if ( tri_facets_.count( tri )==0 and surface_tris.count( tri )==0 )
           {
             surface_tris.insert( tri );
 
@@ -966,8 +966,8 @@ bool GEO::CUT::TetMesh::FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
               {
                 surface_lines.insert( line );
               }
-              line_found = true;
             }
+            line_found = true;
           }
         }
         else if ( intersection.size() > 1 )
@@ -977,6 +977,11 @@ bool GEO::CUT::TetMesh::FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
         else
         {
           // there are more that one tris at this point
+        }
+        if ( line_found )
+        {
+          // after each change we need to rebuild the tet_points connection
+          break;
         }
       }
     }
