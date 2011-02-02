@@ -840,22 +840,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //  2) viscous term from previous iteration and viscous operator
     //  3) divergence of velocity from previous iteration
     //----------------------------------------------------------------------
-    // compute convective term from previous iteration
-    // (zero for reactive problems, for the time being)
-    if (f3Parameter_->reaction_) conv_old_.Clear();
-    else                         conv_old_.Multiply(vderxy_,convvelint_);
-
-    // compute convective operator
-    // (zero for reactive problems, for the time being)
-    if (f3Parameter_->reaction_) conv_c_.Clear();
-    else                         conv_c_.MultiplyTN(derxy_,convvelint_);
+    // compute convective term from previous iteration and convective operator
+    // (both zero for reactive problems, for the time being)
+    if (f3Parameter_->reaction_)
+    {
+      conv_old_.Clear();
+      conv_c_.Clear();
+    }
+    else
+    {
+      conv_old_.Multiply(vderxy_,convvelint_);
+      conv_c_.MultiplyTN(derxy_,convvelint_);
+    }
 
     // compute viscous term from previous iteration and viscous operator
     if (is_higher_order_ele_) CalcDivEps(evelaf);
     else
     {
-      viscs2_.Clear();
       visc_old_.Clear();
+      viscs2_.Clear();
     }
 
     // compute divergence of velocity from previous iteration
