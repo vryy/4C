@@ -655,7 +655,10 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
           for ( std::set<Entity<3>*>::iterator i=new_tris.begin(); i!=new_tris.end(); ++i )
           {
             Entity<3> * tri = *i;
-            new_ots[tri]->InsertTri( tri );
+            if ( not new_ots[tri]->InsertTri( tri ) )
+            {
+              new_ots[tri]->EmptyTriSet( line );
+            }
           }
         }
       }

@@ -356,7 +356,7 @@ namespace GEO
       {
         std::set<Entity<2>*> lset_;
         std::set<Entity<3>*> tset_;
-        std::set<Entity<2>*> dlset_;
+        std::set<Entity<2>*> donelines_;
         std::set<Entity<2>*> openlines_;
         bool full_;
 
@@ -392,11 +392,11 @@ namespace GEO
         {
           full_ = false;
           lset_.erase( line );
-          dlset_.insert( line );
+          donelines_.insert( line );
           openlines_.insert( line );
         }
 
-        void InsertTri( Entity<3> * tri )
+        bool InsertTri( Entity<3> * tri )
         {
           const std::vector<Entity<2>*> tri_lines = tri->Children();
           bool reject = false;
@@ -405,7 +405,7 @@ namespace GEO
                 ++i )
           {
             Entity<2> * line = *i;
-            if ( lset_.count( line ) == 0 and dlset_.count( line ) > 0 )
+            if ( lset_.count( line ) == 0 and donelines_.count( line ) > 0 )
             {
               // reject this tri, if it would overlap with any other tri
               full_ = false;
@@ -418,7 +418,7 @@ namespace GEO
                 ++i )
           {
             Entity<2> * line = *i;
-            dlset_.insert( line );
+            donelines_.insert( line );
             if ( lset_.count( line ) > 0 )
             {
               lset_.erase( line );
@@ -431,7 +431,9 @@ namespace GEO
           if ( not reject )
           {
             tset_.insert( tri );
+            return true;
           }
+          return false;
         }
       };
 
