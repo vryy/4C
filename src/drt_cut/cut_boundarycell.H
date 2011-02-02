@@ -35,6 +35,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  virtual void DumpGmsh( std::ofstream & file ) = 0;
+
   virtual double Area() const = 0;
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
@@ -60,6 +62,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
+  virtual void DumpGmsh( std::ofstream & file );
+
   virtual double Area() const;
 };
 
@@ -76,6 +80,8 @@ public:
                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
+
+  virtual void DumpGmsh( std::ofstream & file );
 
   virtual double Area() const;
 };

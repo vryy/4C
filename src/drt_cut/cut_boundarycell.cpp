@@ -141,3 +141,45 @@ double GEO::CUT::Quad4BoundaryCell::Area() const
 {
   throw std::runtime_error( "" );
 }
+
+void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file )
+{
+  file << "ST(";
+  for ( int i=0; i<3; ++i )
+  {
+    if ( i > 0 )
+      file << ",";
+    file << xyz_( 0, i ) << ","
+         << xyz_( 1, i ) << ","
+         << xyz_( 2, i );
+  }
+  file << "){";
+  for ( int i=0; i<3; ++i )
+  {
+    if ( i > 0 )
+      file << ",";
+    file << -1;
+  }
+  file << "};\n";
+}
+
+void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file )
+{
+  file << "SQ(";
+  for ( int i=0; i<4; ++i )
+  {
+    if ( i > 0 )
+      file << ",";
+    file << xyz_( 0, i ) << ","
+         << xyz_( 1, i ) << ","
+         << xyz_( 2, i );
+  }
+  file << "){";
+  for ( int i=0; i<4; ++i )
+  {
+    if ( i > 0 )
+      file << ",";
+    file << -1;
+  }
+  file << "};\n";
+}

@@ -1122,8 +1122,7 @@ void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & 
 void GEO::CUT::Mesh::DumpGmshIntegrationcells( std::string name )
 {
   std::ofstream file( name.c_str() );
-  file << "View \"" << name << "\" {\n";
-
+  file << "View \"IntegrationCells\" {\n";
   for ( std::list<Teuchos::RCP<IntegrationCell> >::iterator i=integrationcells_.begin();
         i!=integrationcells_.end();
         ++i )
@@ -1131,7 +1130,16 @@ void GEO::CUT::Mesh::DumpGmshIntegrationcells( std::string name )
     IntegrationCell * ic = &**i;
     ic->DumpGmsh( file );
   }
+  file << "};\n";
 
+  file << "View \"BoundaryCells\" {\n";
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=boundarycells_.begin();
+        i!=boundarycells_.end();
+        ++i )
+  {
+    BoundaryCell * bc = &**i;
+    bc->DumpGmsh( file );
+  }
   file << "};\n";
 }
 
