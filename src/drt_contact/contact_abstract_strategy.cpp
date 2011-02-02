@@ -94,10 +94,6 @@ wear_(false)
   if (DRT::Problem::Instance()->ProblemType()=="tsi")
     tsi_ = true;
 
-  // check for infeasible self contact combinations
-  if (isselfcontact_ && ftype != INPAR::CONTACT::friction_none)
-    dserror("ERROR: Self contact only implemented for frictionless contact!");
-
   // call setup method with flag redistributed=FALSE, init=TRUE
   Setup(false,true);
 

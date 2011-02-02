@@ -101,12 +101,11 @@ void CONTACT::CoLagrangeStrategy::Initialize()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate frictional contact (public)                    gitterle 06/08|
+ | evaluate frictional contact (public)                   gitterle 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& kteff,
                                                    RCP<Epetra_Vector>& feff)
 {
-  
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
@@ -302,8 +301,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
       LINALG::SplitVector(*problemrowmap_,*feff,gsmdofrowmap_,fsm,gndofrowmap_,fn);
     }
 
-    // abbreviations for slave  and master set
+    // abbreviations for slave and master set
     int sset = gsdofrowmap_->NumGlobalElements();
+    int mset = gmdofrowmap_->NumGlobalElements();
     
     // we want to split fsm into 2 groups s,m
     fs = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -617,15 +617,46 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     //--------------------------------------------------------- FIRST LINE
     // fn: nothing to do
 
-    //-------------------------------------------------------- SECOND LINE
+    //---------------------------------------------------------- SECOND LINE
     // fm: add alphaf * old contact forces (t_n)
-    RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true,*zold_,*tempvecm);
-    fm->Update(alphaf_,*tempvecm,1.0);
+    // for self contact, slave and master sets may have changed,
+    // thus we have to export the product Mold^T * zold to fit
+    if (IsSelfContact())
+    {
+      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+      RCP<Epetra_Vector> tempvecm2  = rcp(new Epetra_Vector(mold_->DomainMap()));
+      RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(mold_->RowMap()));
+      if (mold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+      mold_->Multiply(true,*zoldexp,*tempvecm2);
+      if (mset) LINALG::Export(*tempvecm2,*tempvecm);
+      fm->Update(alphaf_,*tempvecm,1.0);
+    }
+    // if there is no self contact everything is ok
+    else
+    {
+      RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+      mold_->Multiply(true,*zold_,*tempvecm);
+      fm->Update(alphaf_,*tempvecm,1.0);
+    }
 
     // fs: prepare alphaf * old contact forces (t_n)
     RCP<Epetra_Vector> fsadd = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true,*zold_,*fsadd);
+
+    // for self contact, slave and master sets may have changed,
+    // thus we have to export the product Dold^T * zold to fit
+    if (IsSelfContact())
+    {
+      RCP<Epetra_Vector> tempvec  = rcp(new Epetra_Vector(dold_->DomainMap()));
+      RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(dold_->RowMap()));
+      if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+      dold_->Multiply(true,*zoldexp,*tempvec);
+      if (sset) LINALG::Export(*tempvec,*fsadd);
+    }
+    // if there is no self contact everything is ok
+    else
+    {
+      dold_->Multiply(true,*zold_,*fsadd);
+    }
 
     // fa: subtract alphaf * old contact forces (t_n)
     if (aset)
@@ -908,31 +939,70 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
     kteff->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
     kteff->Complete();
     
-    // add contact force terms
-    RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true,*z_,*fs);
-    RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fs,*fsexp);
-    feff->Update(-(1.0-alphaf_),*fsexp,1.0);
-    
-    RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true,*z_,*fm);
-    RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fm,*fmexp);
-    feff->Update(1.0-alphaf_,*fmexp,1.0);
+    // for self contact, slave and master sets may have changed,
+    // thus we have to export the products Dold^T * zold / D^T * z to fit
+    // thus we have to export the products Mold^T * zold / M^T * z to fit
+    if (IsSelfContact())
+    {
+      // add contact force terms
+      RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+      RCP<Epetra_Vector> tempvecd  = rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+      RCP<Epetra_Vector> zexp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+      if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
+      dmatrix_->Multiply(true,*zexp,*tempvecd);
+      LINALG::Export(*tempvecd,*fsexp);
+      feff->Update(-(1.0-alphaf_),*fsexp,1.0);
 
-    // add old contact forces (t_n)
-    RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
-    dold_->Multiply(true,*zold_,*fsold);
-    RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fsold,*fsoldexp);
-    feff->Update(-alphaf_,*fsoldexp,1.0);
+      RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+      RCP<Epetra_Vector> tempvecm  = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+      mmatrix_->Multiply(true,*zexp,*tempvecm);
+      LINALG::Export(*tempvecm,*fmexp);
+      feff->Update(1.0-alphaf_,*fmexp,1.0);
 
-    RCP<Epetra_Vector> fmold = rcp(new Epetra_Vector(*gmdofrowmap_));
-    mold_->Multiply(true,*zold_,*fmold);
-    RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
-    LINALG::Export(*fmold,*fmoldexp);
-    feff->Update(alphaf_,*fmoldexp,1.0);
+      // add old contact forces (t_n)
+      RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+      RCP<Epetra_Vector> tempvecdold  = rcp(new Epetra_Vector(dold_->DomainMap()));
+      RCP<Epetra_Vector> zoldexp  = rcp(new Epetra_Vector(dold_->RowMap()));
+      if (dold_->RowMap().NumGlobalElements()) LINALG::Export(*zold_,*zoldexp);
+      dold_->Multiply(true,*zoldexp,*tempvecdold);
+      LINALG::Export(*tempvecdold,*fsoldexp);
+      feff->Update(-alphaf_,*fsoldexp,1.0);
+
+      RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+      RCP<Epetra_Vector> tempvecmold  = rcp(new Epetra_Vector(mold_->DomainMap()));
+      mold_->Multiply(true,*zoldexp,*tempvecmold);
+      LINALG::Export(*tempvecmold,*fmoldexp);
+      feff->Update(alphaf_,*fmoldexp,1.0);
+    }
+    // if there is no self contact everything is ok
+    else
+    {
+      // add contact force terms
+      RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+      dmatrix_->Multiply(true,*z_,*fs);
+      RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fs,*fsexp);
+      feff->Update(-(1.0-alphaf_),*fsexp,1.0);
+
+      RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+      mmatrix_->Multiply(true,*z_,*fm);
+      RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fm,*fmexp);
+      feff->Update(1.0-alphaf_,*fmexp,1.0);
+
+      // add old contact forces (t_n)
+      RCP<Epetra_Vector> fsold = rcp(new Epetra_Vector(*gsdofrowmap_));
+      dold_->Multiply(true,*zold_,*fsold);
+      RCP<Epetra_Vector> fsoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fsold,*fsoldexp);
+      feff->Update(-alphaf_,*fsoldexp,1.0);
+
+      RCP<Epetra_Vector> fmold = rcp(new Epetra_Vector(*gmdofrowmap_));
+      mold_->Multiply(true,*zold_,*fmold);
+      RCP<Epetra_Vector> fmoldexp = rcp(new Epetra_Vector(*problemrowmap_));
+      LINALG::Export(*fmold,*fmoldexp);
+      feff->Update(alphaf_,*fmoldexp,1.0);
+    }
   }
     
 
