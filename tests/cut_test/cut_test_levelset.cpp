@@ -177,6 +177,8 @@ void test_ls_hex8_simple4()
     nids[i] = i;
   }
 
+  // this is the impossible (undefined) case
+
   lsvs[1] = 1;
   lsvs[3] = 1;
   lsvs[4] = 1;

@@ -51,6 +51,7 @@ void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 
 void test_hex8_quad4_qhull1();
+void test_hex8_quad4_axel1();
 void test_hex8_quad4_shadan1();
 void test_hex8_quad4_shadan2();
 void test_hex8_quad4_shadan3();
@@ -126,6 +127,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
 
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
+  functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
   functable["hex8_quad4_shadan1"] = test_hex8_quad4_shadan1;
   functable["hex8_quad4_shadan2"] = test_hex8_quad4_shadan2;
   functable["hex8_quad4_shadan3"] = test_hex8_quad4_shadan3;
@@ -142,7 +144,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
-  functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
+  //functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
 
   functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
