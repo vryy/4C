@@ -143,6 +143,36 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
       BoundaryCell::CreateCells( mesh, this, sides_xyz );
     }
   }
+  else
+  {
+    IntegrationCell * ic;
+    switch ( element_->Shape() )
+    {
+    case DRT::Element::tet4:
+      ic = Tet4IntegrationCell::CreateCell( mesh, this, facets_ );
+      break;
+    case DRT::Element::hex8:
+      ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ );
+      break;
+    case DRT::Element::wedge6:
+      ic = Wedge6IntegrationCell::CreateCell( mesh, this, facets_ );
+      break;
+    case DRT::Element::pyramid5:
+      ic = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_ );
+      break;
+    default:
+      throw std::runtime_error( "unsupported element shape" );
+    }
+
+    if ( ic!=NULL )
+    {
+      integrationcells_.insert( ic );
+    }
+    else
+    {
+      throw std::runtime_error( "failed to recognize uncut element shape" );
+    }
+  }
 }
 
 void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
