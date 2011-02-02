@@ -166,8 +166,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
 
   // number of nodes (slave)
   int nrow = sele.NumNode();
-  int ndof = Dim();
-  int ncol = nrow;
+  int ncol = sele.NumNode();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty objects for shape fct. evaluation
   LINALG::SerialDenseVector val(nrow);
@@ -253,7 +253,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = Dim();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -615,7 +615,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = Dim();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -805,7 +805,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = Dim();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -1027,8 +1027,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = Dim();
   int nintrow = sintele.NumNode();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -1317,8 +1317,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
-  int ndof = Dim();
   int nintrow = sintele.NumNode();
+  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);

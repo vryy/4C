@@ -2903,8 +2903,10 @@ bool MORTAR::Coupling3d::IntegrateCells()
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       
       // check whether auxiliary plane coupling or not and call integrator
@@ -2930,8 +2932,10 @@ bool MORTAR::Coupling3d::IntegrateCells()
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       
       // static_cast to make sure to pass in IntElement&
@@ -2964,8 +2968,10 @@ bool MORTAR::Coupling3d::IntegrateCells()
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       int nintrow = SlaveIntElement().NumNode();
-      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
-      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*ndof,nrow*ndof));
+      RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*ndof,ncol*ndof));
       RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       
       // static_cast to make sure to pass in IntElement&

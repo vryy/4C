@@ -560,8 +560,10 @@ bool MORTAR::Coupling2d::IntegrateOverlap(vector<double>& xiproj)
   // do the overlap integration (integrate and linearize both M and gap)
   int nrow = sele_.NumNode();
   int ncol = mele_.NumNode();
-  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+  int ndof = static_cast<MORTAR::MortarNode*>(sele_.Nodes()[0])->NumDof();
+  if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
+  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
   integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg);
 
