@@ -109,6 +109,13 @@ void test_hex8_quad4_axel3()
 
   intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
 
+  nxyz1( 0.727374824073424, 0.462177278436167, 1.90794171e-19);
+  nxyz2( 0.753577731984463, 0.546598870509341, 3.1223752e-19);
+  nxyz3( 0.75313893225359, 0.546607019469259,-0.0150000751);
+  nxyz4( 0.727052975413278, 0.462358773546029,-0.0150000751);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
   Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
 
   hex8_xyze(0,0) = 0.818181813;
