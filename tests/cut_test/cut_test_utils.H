@@ -6,9 +6,9 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "../drt_lib/drt_element.H"
+#include "../../src/drt_lib/drt_element.H"
 
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../../src/linalg/linalg_fixedsizematrix.H"
 
 namespace GEO
 {
