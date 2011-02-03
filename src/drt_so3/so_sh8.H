@@ -296,6 +296,19 @@ protected:
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
+  
+  //! Find aspect ratio of the element
+  double sosh8_calcaspectratio();
+  
+  //! Calculate the STC matrix
+  virtual void CalcSTCMatrix
+  (
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& elemat1,
+    const INPAR::STR::STC_Scale stc_scaling,
+    const int stc_layer,
+    vector<int>& lm,
+    DRT::Discretization& discretization
+  );
 
   //! Find parametric co-ordinate which directs in enforced thickness direction
   ThicknessDirection sosh8_enfthickdir(

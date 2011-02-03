@@ -404,331 +404,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
-
-      const double stc_fact = params.get<double>("stc_factor");
-
-      const int stc_layer = params.get<int>("stc_layer");
-
-      if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
+      else
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-        DRT::Node** nodes = Nodes();
-        for (int i=0; i<NUMNOD_SOH8; ++i)
-        {
-          const double* x = nodes[i]->X();
-
-          xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
-          xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
-          xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
-        }
-
-        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJac(true);
-        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJacInv(true);
-        vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
-        LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
-        for(int i=0; i<NUMNOD_SOH8; i++)
-        {
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac(true);
-          jac.Multiply(derivs_X[i],xcurr);
-          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jacInv(jac);
-          LINALG::FixedSizeSerialDenseSolver<NUMDIM_SOH8,NUMDIM_SOH8,1> solve_for_inverseJ;
-
-          solve_for_inverseJ.SetMatrix(jacInv);
-          int err2 = solve_for_inverseJ.Factor();
-          int err = solve_for_inverseJ.Invert();
-          if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
-
-          for (int k=0; k<NUMDIM_SOH8; k++)
-          {
-            for (int l=0; l<NUMDIM_SOH8; l++)
-            {
-              TotJac(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jac(k,l);
-              TotJacInv(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jacInv(k,l);
-            }
-          }
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-        }
-
-
-        for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
-        {
-          elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0);
-          if (ind1<NUMDOF_SOH8/2)
-          {
-            elemat1(ind1,ind1+12)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
-            elemat1(ind1+12,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
-          }
-        }
-
-        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp;
-        tmp.Multiply(TotJacInv,elemat1);
-        elemat1.Multiply(tmp,TotJac);
+        CalcSTCMatrix(elemat1,stc_scaling,params.get<int>("stc_layer"),lm, discretization);
       }
-      else if(stc_scaling==INPAR::STR::stc_curr or stc_scaling==INPAR::STR::stc_currsym)
-      {
-        LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
-        DRT::Node** nodes = Nodes();
 
-        vector<DRT::Condition*> cond0;
-        int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
-        bool current0 = false; // layer with nodes 0..4 to be scaled
-        (nodes[0])->GetCondition("STC Layer",cond0);
-        vector<DRT::Condition*> cond1;
-        int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
-        bool current1 = false; // minimun STCid of layer with nodes 4..7
-        (nodes[NUMNOD_SOH8/2])->GetCondition("STC Layer",cond1);
-
-        for (unsigned int conu = 0; conu < cond0.size(); ++conu)
-        {
-          int tmp = cond0[conu]->GetInt("ConditionID");
-          if (tmp < condnum0)
-            condnum0 = tmp;
-        }
-        if (condnum0 == stc_layer)
-          current0 = true;
-
-
-        for (unsigned int conu = 0; conu < cond1.size(); ++conu)
-        {
-          int tmp = cond1[conu]->GetInt("ConditionID");
-          if (tmp < condnum1)
-            condnum1 = tmp;
-        }
-        if (condnum1 == stc_layer)
-          current1 = true;
-
-
-        // both surfaces are to be scaled
-        if (current0 and current1)
-        {
-          // only valid for first round
-          if (condnum0 != 1)
-            dserror("STC error: non-initial layer is not connected to a smaller id");
-          else
-          {
-            for(int i=0; i<NUMNOD_SOH8; i++)
-            {
-              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-
-            }
-            for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
-            {
-              elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0)*cond0.size();
-              elemat1(ind1+NUMDOF_SOH8/2,ind1+NUMDOF_SOH8/2)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
-              elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0)*cond0.size();
-              elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
-            }
-          }
-        }
-        // surface with nodes 0..3 is to be scaled
-        else if (current0)
-        {
-          //but not by this element
-          if (condnum1 > condnum0)
-          {
-            for(int i=0; i<NUMNOD_SOH8; i++)
-            {
-              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-
-            }
-            for(int ind1=NUMDOF_SOH8/2; ind1< NUMDOF_SOH8; ind1++)
-            {
-              elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
-            }
-          }
-          // this element has to do the whole scaling
-          else if (condnum1 < condnum0)
-          {
-            for(int i=0; i<NUMNOD_SOH8; i++)
-            {
-              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-
-            }
-            for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
-            {
-
-              if (ind1<NUMDOF_SOH8/2)
-              {
-                elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond0.size();
-                elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond0.size();
-              }
-              else
-              {
-                elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
-              }
-            }
-          }
-        }
-        // surface with nodes 4..7 is to be scaled
-        else if (current1)
-        {
-          //but not by this element
-          if (condnum0 > condnum1)
-          {
-            for(int i=0; i<NUMNOD_SOH8; i++)
-            {
-              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-
-            }
-            for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
-            {
-              elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
-            }
-          }
-          // this element has to do the whole scaling
-          else if (condnum0 < condnum1)
-          {
-            for(int i=0; i<NUMNOD_SOH8; i++)
-            {
-              adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-              adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-
-            }
-            for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
-            {
-
-              if (ind1>=NUMDOF_SOH8/2)
-              {
-                elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond1.size();
-                elemat1(ind1,-NUMDOF_SOH8/2+ind1)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond1.size();
-              }
-              else
-              {
-                elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
-              }
-            }
-          }
-        }
-        else
-        {
-          for(int i=0; i<NUMNOD_SOH8; i++)
-          {
-            adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-            adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-            adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-          }
-          for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
-          {
-            elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
-          }
-        }
-      }
-//      else if (stc_scaling==INPAR::STR::sdc_rot or stc_scaling==INPAR::STR::sdc_rotsym)
-//      {
-//
-//        LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
-//        DRT::Node** nodes = Nodes();
-//        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//        if (disp==null) dserror("Cannot get state vector 'displacement'");
-//        vector<double> mydisp(lm.size());
-//        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
-//
-//        for (int i=0; i<NUMNOD_SOH8; ++i)
-//        {
-//          const double* x = nodes[i]->X();
-//
-//          xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
-//          xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
-//          xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
-//
-//          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-//          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-//          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
-//        }
-//
-//        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp_elemat(true);
-//        Epetra_SerialDenseMatrix tmpmat1(NUMDOF_SOH8,NUMDOF_SOH8);
-//        Epetra_SerialDenseMatrix tmpmat2(NUMDOF_SOH8,NUMDOF_SOH8);
-//
-//        //compute direction of fixpoint
-//        LINALG::Matrix<NUMNOD_SOH8/2,NUMDIM_SOH8> fixpoints;
-//        for (int i =0; i<NUMNOD_SOH8/2; ++i)
-//        {
-//          LINALG::Matrix<NUMDIM_SOH8,1> dir1;
-//          LINALG::Matrix<NUMDIM_SOH8,1> dir2;
-//          LINALG::Matrix<NUMDIM_SOH8,1> dist;
-//          dist(0,0) = xcurr(i,0)-xcurr(i+NUMNOD_SOH8/2,0);
-//          dist(1,0) = xcurr(i,1)-xcurr(i+NUMNOD_SOH8/2,1);
-//          dist(2,0) = xcurr(i,2)-xcurr(i+NUMNOD_SOH8/2,2);
-//
-//          //make dir1 linearly independent of tmp
-//          if (fabs(dist(0,0))<1E-9)
-//            dir1(0,0)=1.0;
-//          else
-//            dir1(0,0)=0.0;
-//
-//          dir1(1,0)=dist(1,0);
-//          dir1(2,0)=dist(2,0);
-//
-//          //make dir2 orthogonal to tmp
-//          dir2(0,0)=dist(1,0)*dir1(2,0)-dist(2,0)*dir1(1,0);
-//          dir2(1,0)=dist(2,0)*dir1(0,0)-dist(0,0)*dir1(2,0);
-//          dir2(2,0)=dist(0,0)*dir1(1,0)-dist(1,0)*dir1(0,0);
-//
-//          dir2(0,0)=1.0;
-//          dir2(1,0)=0.0;
-//          dir2(2,0)=1.0;
-//
-//          dir2.Scale(dist.Norm2()/dir2.Norm2());
-//
-//          fixpoints(i,0)=xcurr(i,0)-0.5*dist(0,0)+dir2(0,0);
-//          fixpoints(i,1)=xcurr(i,1)-0.5*dist(1,0)+dir2(1,0);
-//          fixpoints(i,2)=xcurr(i,2)-0.5*dist(2,0)+dir2(2,0);
-//
-//          double scale=1.;///dist.Norm2();
-//
-//          //fill row by row
-//          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+0) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i,2)-fixpoints(i,2));
-//          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i,1)-fixpoints(i,1));
-//
-//          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+1) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i,2)-fixpoints(i,2));
-//          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i,0)-fixpoints(i,0));
-//
-//          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+2) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i,1)-fixpoints(i,1));
-//          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i,0)-fixpoints(i,0));
-//
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+0) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
-//
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+1) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
-//
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+2) = 1.0;
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
-//          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
-//
-//
-//        }
-//        tmp_elemat.Update(elemat1);
-//        Epetra_LAPACK lapack;
-//        int ndof=NUMDOF_SOH8;
-//        int tmp3=0;
-//        lapack.GEQRF(ndof,ndof,&(tmp_elemat(0,0)),ndof,&(tmpmat1(0,0)),&(tmpmat2(0,0)),ndof,&tmp3);
-//        lapack.ORGQR(ndof,ndof,ndof,&(tmp_elemat(0,0)),ndof,&(tmpmat1(0,0)),&(tmpmat2(0,0)),ndof,&tmp3);
-//        elemat1.Update(tmp_elemat);
-//      }
     }
     break;
     // compute additional stresses due to intermolecular potential forces
@@ -1554,7 +1234,346 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>
   return;
 }
 
-
+void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
+(
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& elemat1,
+    const INPAR::STR::STC_Scale stc_scaling,
+    const int stc_layer,
+    vector<int>& lm,
+    DRT::Discretization&      discretization
+)
+{
+  double stc_fact;
+  if (stc_scaling==INPAR::STR::stc_currsym or stc_scaling==INPAR::STR::stc_parasym)
+  {
+    stc_fact = sqrt(sosh8_calcaspectratio());
+  }
+  else
+  {
+    stc_fact = sosh8_calcaspectratio();
+  }
+  
+  if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
+  {
+    RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<NUMNOD_SOH8; ++i)
+    {
+      const double* x = nodes[i]->X();
+  
+      xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
+      xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
+      xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
+    }
+  
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJac(true);
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJacInv(true);
+    vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
+    LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
+    for(int i=0; i<NUMNOD_SOH8; i++)
+    {
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac(true);
+      jac.Multiply(derivs_X[i],xcurr);
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jacInv(jac);
+      LINALG::FixedSizeSerialDenseSolver<NUMDIM_SOH8,NUMDIM_SOH8,1> solve_for_inverseJ;
+  
+      solve_for_inverseJ.SetMatrix(jacInv);
+      int err2 = solve_for_inverseJ.Factor();
+      int err = solve_for_inverseJ.Invert();
+      if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
+  
+      for (int k=0; k<NUMDIM_SOH8; k++)
+      {
+        for (int l=0; l<NUMDIM_SOH8; l++)
+        {
+          TotJac(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jac(k,l);
+          TotJacInv(i*NUMDIM_SOH8+k,i*NUMDIM_SOH8+l) = jacInv(k,l);
+        }
+      }
+      adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+      adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+      adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+    }
+  
+  
+    for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+    {
+      elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0);
+      if (ind1<NUMDOF_SOH8/2)
+      {
+        elemat1(ind1,ind1+12)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
+        elemat1(ind1+12,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0);
+      }
+    }
+  
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp;
+    tmp.Multiply(TotJacInv,elemat1);
+    elemat1.Multiply(tmp,TotJac);
+  }
+  else if(stc_scaling==INPAR::STR::stc_curr or stc_scaling==INPAR::STR::stc_currsym)
+  {
+    LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
+    DRT::Node** nodes = Nodes();
+  
+    vector<DRT::Condition*> cond0;
+    int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
+    bool current0 = false; // layer with nodes 0..4 to be scaled
+    (nodes[0])->GetCondition("STC Layer",cond0);
+    vector<DRT::Condition*> cond1;
+    int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
+    bool current1 = false; // minimun STCid of layer with nodes 4..7
+    (nodes[NUMNOD_SOH8/2])->GetCondition("STC Layer",cond1);
+  
+    for (unsigned int conu = 0; conu < cond0.size(); ++conu)
+    {
+      int tmp = cond0[conu]->GetInt("ConditionID");
+      if (tmp < condnum0)
+        condnum0 = tmp;
+    }
+    if (condnum0 == stc_layer)
+      current0 = true;
+  
+  
+    for (unsigned int conu = 0; conu < cond1.size(); ++conu)
+    {
+      int tmp = cond1[conu]->GetInt("ConditionID");
+      if (tmp < condnum1)
+        condnum1 = tmp;
+    }
+    if (condnum1 == stc_layer)
+      current1 = true;
+  
+  
+    // both surfaces are to be scaled
+    if (current0 and current1)
+    {
+      // only valid for first round
+      if (condnum0 != 1)
+        dserror("STC error: non-initial layer is not connected to a smaller id");
+      else
+      {
+        for(int i=0; i<NUMNOD_SOH8; i++)
+        {
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  
+        }
+        for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
+        {
+          elemat1(ind1,ind1)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1,0)*cond0.size();
+          elemat1(ind1+NUMDOF_SOH8/2,ind1+NUMDOF_SOH8/2)+=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
+          elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1,0)*cond0.size();
+          elemat1(ind1+NUMDOF_SOH8/2,ind1)+=(stc_fact-1.0)/(2.0*stc_fact)/adjele(ind1+NUMDOF_SOH8/2,0)*cond1.size();
+        }
+      }
+    }
+    // surface with nodes 0..3 is to be scaled
+    else if (current0)
+    {
+      //but not by this element
+      if (condnum1 > condnum0)
+      {
+        for(int i=0; i<NUMNOD_SOH8; i++)
+        {
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  
+        }
+        for(int ind1=NUMDOF_SOH8/2; ind1< NUMDOF_SOH8; ind1++)
+        {
+          elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+        }
+      }
+      // this element has to do the whole scaling
+      else if (condnum1 < condnum0)
+      {
+        for(int i=0; i<NUMNOD_SOH8; i++)
+        {
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  
+        }
+        for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+        {
+  
+          if (ind1<NUMDOF_SOH8/2)
+          {
+            elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond0.size();
+            elemat1(ind1,ind1+NUMDOF_SOH8/2)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond0.size();
+          }
+          else
+          {
+            elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+          }
+        }
+      }
+    }
+    // surface with nodes 4..7 is to be scaled
+    else if (current1)
+    {
+      //but not by this element
+      if (condnum0 > condnum1)
+      {
+        for(int i=0; i<NUMNOD_SOH8; i++)
+        {
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  
+        }
+        for(int ind1=0; ind1< NUMDOF_SOH8/2; ind1++)
+        {
+          elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+        }
+      }
+      // this element has to do the whole scaling
+      else if (condnum0 < condnum1)
+      {
+        for(int i=0; i<NUMNOD_SOH8; i++)
+        {
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  
+        }
+        for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+        {
+  
+          if (ind1>=NUMDOF_SOH8/2)
+          {
+            elemat1(ind1,ind1)+=(1.0/stc_fact)/adjele(ind1,0)*cond1.size();
+            elemat1(ind1,-NUMDOF_SOH8/2+ind1)+=(1.0-1.0/stc_fact)/adjele(ind1,0)*cond1.size();
+          }
+          else
+          {
+            elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+          }
+        }
+      }
+    }
+    else
+    {
+      for(int i=0; i<NUMNOD_SOH8; i++)
+      {
+        adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+        adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+        adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+      }
+      for(int ind1=0; ind1< NUMDOF_SOH8; ind1++)
+      {
+        elemat1(ind1,ind1)+=1.0/adjele(ind1,0);
+      }
+    }
+  }
+  //      else if (stc_scaling==INPAR::STR::sdc_rot or stc_scaling==INPAR::STR::sdc_rotsym)
+  //      {
+  //
+  //        LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
+  //        DRT::Node** nodes = Nodes();
+  //        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  //        if (disp==null) dserror("Cannot get state vector 'displacement'");
+  //        vector<double> mydisp(lm.size());
+  //        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  //        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+  //
+  //        for (int i=0; i<NUMNOD_SOH8; ++i)
+  //        {
+  //          const double* x = nodes[i]->X();
+  //
+  //          xcurr(i,0) = x[0] + mydisp[i*NODDOF_SOH8+0];
+  //          xcurr(i,1) = x[1] + mydisp[i*NODDOF_SOH8+1];
+  //          xcurr(i,2) = x[2] + mydisp[i*NODDOF_SOH8+2];
+  //
+  //          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
+  //          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
+  //          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+  //        }
+  //
+  //        LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> tmp_elemat(true);
+  //        Epetra_SerialDenseMatrix tmpmat1(NUMDOF_SOH8,NUMDOF_SOH8);
+  //        Epetra_SerialDenseMatrix tmpmat2(NUMDOF_SOH8,NUMDOF_SOH8);
+  //
+  //        //compute direction of fixpoint
+  //        LINALG::Matrix<NUMNOD_SOH8/2,NUMDIM_SOH8> fixpoints;
+  //        for (int i =0; i<NUMNOD_SOH8/2; ++i)
+  //        {
+  //          LINALG::Matrix<NUMDIM_SOH8,1> dir1;
+  //          LINALG::Matrix<NUMDIM_SOH8,1> dir2;
+  //          LINALG::Matrix<NUMDIM_SOH8,1> dist;
+  //          dist(0,0) = xcurr(i,0)-xcurr(i+NUMNOD_SOH8/2,0);
+  //          dist(1,0) = xcurr(i,1)-xcurr(i+NUMNOD_SOH8/2,1);
+  //          dist(2,0) = xcurr(i,2)-xcurr(i+NUMNOD_SOH8/2,2);
+  //
+  //          //make dir1 linearly independent of tmp
+  //          if (fabs(dist(0,0))<1E-9)
+  //            dir1(0,0)=1.0;
+  //          else
+  //            dir1(0,0)=0.0;
+  //
+  //          dir1(1,0)=dist(1,0);
+  //          dir1(2,0)=dist(2,0);
+  //
+  //          //make dir2 orthogonal to tmp
+  //          dir2(0,0)=dist(1,0)*dir1(2,0)-dist(2,0)*dir1(1,0);
+  //          dir2(1,0)=dist(2,0)*dir1(0,0)-dist(0,0)*dir1(2,0);
+  //          dir2(2,0)=dist(0,0)*dir1(1,0)-dist(1,0)*dir1(0,0);
+  //
+  //          dir2(0,0)=1.0;
+  //          dir2(1,0)=0.0;
+  //          dir2(2,0)=1.0;
+  //
+  //          dir2.Scale(dist.Norm2()/dir2.Norm2());
+  //
+  //          fixpoints(i,0)=xcurr(i,0)-0.5*dist(0,0)+dir2(0,0);
+  //          fixpoints(i,1)=xcurr(i,1)-0.5*dist(1,0)+dir2(1,0);
+  //          fixpoints(i,2)=xcurr(i,2)-0.5*dist(2,0)+dir2(2,0);
+  //
+  //          double scale=1.;///dist.Norm2();
+  //
+  //          //fill row by row
+  //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+0) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i,2)-fixpoints(i,2));
+  //          elemat1(i*NUMDIM_SOH8+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i,1)-fixpoints(i,1));
+  //
+  //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+1) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i,2)-fixpoints(i,2));
+  //          elemat1(i*NUMDIM_SOH8+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i,0)-fixpoints(i,0));
+  //
+  //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+2) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i,1)-fixpoints(i,1));
+  //          elemat1(i*NUMDIM_SOH8+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i,0)-fixpoints(i,0));
+  //
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+0) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)+=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+0,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)-=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
+  //
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+1) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)-=scale*(xcurr(i+NUMNOD_SOH8/2,2)-fixpoints(i,2));
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+1,i*NUMDIM_SOH8+NUMDOF_SOH8/2+2)+=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
+  //
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+2) = 1.0;
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+0)+=scale*(xcurr(i+NUMNOD_SOH8/2,1)-fixpoints(i,1));
+  //          elemat1(i*NUMDIM_SOH8+NUMDOF_SOH8/2+2,i*NUMDIM_SOH8+NUMDOF_SOH8/2+1)-=scale*(xcurr(i+NUMNOD_SOH8/2,0)-fixpoints(i,0));
+  //
+  //
+  //        }
+  //        tmp_elemat.Update(elemat1);
+  //        Epetra_LAPACK lapack;
+  //        int ndof=NUMDOF_SOH8;
+  //        int tmp3=0;
+  //        lapack.GEQRF(ndof,ndof,&(tmp_elemat(0,0)),ndof,&(tmpmat1(0,0)),&(tmpmat2(0,0)),ndof,&tmp3);
+  //        lapack.ORGQR(ndof,ndof,ndof,&(tmp_elemat(0,0)),ndof,&(tmpmat1(0,0)),&(tmpmat2(0,0)),ndof,&tmp3);
+  //        elemat1.Update(tmp_elemat);
+  //      }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1631,7 +1650,8 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
       }
       case DRT::ELEMENTS::So_sh8::autor:
       case DRT::ELEMENTS::So_sh8::enfor: {
-        // resorting of nodes to arrive at local t-dir for global x-dir
+        // resorting of nodes, 
+        // such that previous local r-dir is local t-dir afterwards 
         new_nodeids[0] = actele->NodeIds()[7];
         new_nodeids[1] = actele->NodeIds()[4];
         new_nodeids[2] = actele->NodeIds()[0];
@@ -1648,7 +1668,8 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
       }
       case DRT::ELEMENTS::So_sh8::autos:
       case DRT::ELEMENTS::So_sh8::enfos: {
-        // resorting of nodes to arrive at local t-dir for global y-dir
+        // resorting of nodes, 
+        // such that previous local s-dir is local t-dir afterwards
         new_nodeids[0] = actele->NodeIds()[4];
         new_nodeids[1] = actele->NodeIds()[5];
         new_nodeids[2] = actele->NodeIds()[1];
