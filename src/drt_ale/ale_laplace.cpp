@@ -188,6 +188,8 @@ void ALE::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
  *----------------------------------------------------------------------*/
 void ALE::AleLaplace::Solve()
 {
+  EvaluateElements();
+  
   // set fixed nodes
   ParameterList eleparams;
   eleparams.set("total time", time_);
