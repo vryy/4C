@@ -136,7 +136,6 @@ RESEVRYERGY                     0
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
-STC_FACTOR                      1 // new parameter 220310
 STC_SCALING                     no // new parameter 220310
 TIMEADAPT                       0
 TIMESTEP                        0.0005

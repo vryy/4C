@@ -159,7 +159,6 @@ RESEVRYERGY                     0
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
-STC_FACTOR                      1
 STC_SCALING                     no
 TIMEADAPT                       0
 TIMESTEP                        0.01

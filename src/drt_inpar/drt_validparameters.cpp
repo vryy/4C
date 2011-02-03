@@ -694,10 +694,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &sdyn);
 
 
-  DoubleParameter("STC_FACTOR",1.0,
-      "Scaled director conditioning factor",
-      &sdyn);
-
   IntParameter("STC_LAYER",1,
                "number of STC layers for multilayer case",
                &sdyn);

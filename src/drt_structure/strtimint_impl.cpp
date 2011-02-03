@@ -85,7 +85,6 @@ STR::TimIntImpl::TimIntImpl
   freact_(Teuchos::null),
   fifc_(Teuchos::null),
   stcscale_(Teuchos::getIntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
-  stcfact_(sdynparams.get<double>("STC_FACTOR")),
   stclayer_(sdynparams.get<int>("STC_LAYER"))
 {
   // verify: Old-style convergence check has to be 'vague' to
@@ -1067,11 +1066,11 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // Apply STC on constraint matrices of desired
     if(stcscale_ != INPAR::STR::stc_none)
     {
-      cout<<"scaling constraint matrices"<<endl;
+      //cout<<"scaling constraint matrices"<<endl;
       constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
       if ((stcscale_ == INPAR::STR::stc_currsym) or (stcscale_ == INPAR::STR::stc_parasym))
       {
-        cout<<"symmetric scaling constraint matrices"<<endl;
+        //cout<<"symmetric scaling constraint matrices"<<endl;
         constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
       }
     }
@@ -2045,7 +2044,6 @@ void STR::TimIntImpl::ComputeSTCMatrix()
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
   p.set("stc_scaling", stcscale_);
-  p.set("stc_factor", stcfact_);
   p.set("stc_layer",1);
 
   discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
@@ -2068,7 +2066,6 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
     pe.set("action", action);
     pe.set("stc_scaling", stcscale_);
-    pe.set("stc_factor", stcfact_);
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat=

@@ -1430,7 +1430,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Volume));
 
   stclayer->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  stclayer->AddComponent(Teuchos::rcp(new RealConditionComponent("STCFactor")));
 
   condlist.push_back(stclayer);
 
