@@ -247,6 +247,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
     if ( fabs( det ) < tol )
     {
+      // There is no solution. The line is parallel to the surface.
       return false;
     }
 
@@ -295,7 +296,11 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 //   std::cout << xyze_surfaceElement_;
 //   std::cout << xyze_lineElement_;
 // #endif
-  return false;
+
+  // Failed to converge Newton loop! This is bad. We have probably a very slow
+  // cut here. But lets assume we are as close to the solution as possible and
+  // use it further.
+  return true;
 }
 
 
