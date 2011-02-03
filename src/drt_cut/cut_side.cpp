@@ -76,7 +76,6 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
     reverse_cuts.erase( *cuts.begin() );
     if ( reverse_cuts.size()==1 )
     {
-      //Line * l =
       mesh.NewLine( *cuts.begin(), *reverse_cuts.begin(), this, &other, element );
       return true;
     }
@@ -93,8 +92,9 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
   case 2:
   {
     // The normal case. A straight cut.
-    std::vector<Point*> c( cuts.begin(), cuts.end() );
-    //Line * l =
+    std::vector<Point*> c;
+    c.reserve( 2 );
+    c.assign( cuts.begin(), cuts.end() );
     mesh.NewLine( c[0], c[1], this, &other, element );
     return true;
   }
@@ -112,7 +112,6 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
       for ( unsigned i=0; i<nodes.size(); ++i )
       {
         unsigned j = ( i+1 ) % nodes.size();
-        //Line* l =
         mesh.NewLine( nodes[i]->point(), nodes[j]->point(), this, &other, element );
       }
       return true;
