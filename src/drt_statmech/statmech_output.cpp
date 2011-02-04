@@ -2736,6 +2736,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						int exponent = 1;
 
 						// loop as long as pr has not yet reached pthresh
+						// flag indicating convergence (set to false, if max no. of iterations is reached)
 						bool converged = true;
 						while(!leaveloop)
 						{
@@ -2806,7 +2807,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						const int maxiterations = 25;
 						cout<<"\nVector iteration:"<<endl;
 						cout<<"Bundle: ";
-						cout<<"n_0 = n["<<startiterindex<<"]"<<endl;
+						cout<<"n = n["<<startiterindex<<"]: ";
 						DDCorrIterateVector(discol, &normj, maxiterations);
 						// for output
 						cylvec = normj;
@@ -2842,6 +2843,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						cyllength = deltaisecs.Norm2();
 
 						// calculate fraction of crosslinkers within cylinder
+						// flag indicating convergence (set to false, if max no. of iterations is reached)
 						bool converged = true;
 						while(!leaveloop)
 						{
@@ -2960,10 +2962,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 						if(normal.Norm2()>0.9)
 						{
+							// crosslinkerpositions which are considered to be within the cuboid
+							std::vector<LINALG::Matrix<3,1> > crosslinkswithinvolume;
+
+							// flag indicating convergence (set to false, if max no. of iterations is reached)
 							bool converged = true;
 							while(!leaveloop)
 							{
-								int rcount = 0;
 								for(int j=0; j<numcrossele; j++)
 								{
 									// given, that cog E plane with normal vector "normal"
@@ -2974,9 +2979,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									double disttoplane = fabs(pn-d);
 
 									if(disttoplane <= thickness)
-										rcount++;
+										crosslinkswithinvolume.push_back(shiftedpositions[j]);
 								}
-								pr = double(rcount)/double(numcrossele);
+								pr = double(crosslinkswithinvolume.size())/double(numcrossele);
 
 								exponent++;
 								niter[2]++;
@@ -2991,10 +2996,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										else
 											sign = -1.0;
 										thickness += sign*periodlength/pow(2.0,(double)exponent);
+										crosslinkswithinvolume.clear();
 									}
 									else
 									{
-										crosslinksinvolume[i] = rcount;
+										crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
 										crossfraction[i] = pr;
 										leaveloop = true;
 									}
@@ -3002,12 +3008,13 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								else
 								{
 									converged = false;
-									crosslinksinvolume[i] = rcount;
+									crosslinksinvolume[i] = (int)crosslinkswithinvolume.size();
 									crossfraction[i] = pr;
 									leaveloop = true;
 								}
 							}
 							// calculation of the volume
+							// according to number of intersection points (only if crosslinker fraction calculation converged)
 							if(converged)
 							{
 								// cube face boundaries of jk-surface of cubical volume
@@ -3018,6 +3025,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									surfaceboundaries(j,1) = (*centershift)(j)+periodlength;
 								}
 
+								// first step: find the intersection points layer x volume egdes.
+								// At first, we assume a layer delimited by the volume boundaries)
 								for(int surf=0; surf<(int)surfaceboundaries.N(); surf++) // (two) planes perpendicular to l-direction
 								{
 									for(int j=0; j<3; j++) // spatial component j
@@ -3055,20 +3064,122 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 																					}
 																				}
 																				if(!redundant)
-																				{
 																					interseccoords.push_back(coords);
-																					//cout<<"coords(l="<<l<<", surf="<<surf<<") = "<<coords(l)<<endl;
-																					//cout<<"  coords(m="<<m<<", edge="<<edge<<") = "<<coords(m)<<endl;
-																					//cout<<"    coords(n="<<n<<", edge="<<edge<<") = "<<coords(n)<<endl;
-																				}
 																			}
 																		}
 																}
 													}
 								}
+								//second step: Approximate the base area of the volume/prism
+								// calculate and store unit direction vectors corners-COG
+								std::vector<LINALG::Matrix<3,1> > itercoords = interseccoords;
+								std::vector<LINALG::Matrix<3,1> > dirvecs;
+								std::vector<double> initdistances;
+								for(int j=0; j<(int)interseccoords.size(); j++)
+								{
+									LINALG::Matrix<3,1> dirvec = interseccoords[j];
+									dirvec -= *cog;
+									initdistances.push_back(dirvec.Norm2());
+									dirvec.Scale(1.0/dirvec.Norm2());
+									dirvecs.push_back(dirvec);
+								}
 
-								//cout<<"no. of intersections: "<<interseccoords.size()<<endl;
-								// calculate volume according to number of intersection points (only if crosslinker fraction calculation converged)
+								// iterate as long as layer volume contains 90-95% of the crosslinks
+								leaveloop = false;
+								int numiter = 25;
+								int iter = 0;
+								int rcount = 0;
+								double uplim = 0.01;
+								double lowlim = 0.03;
+								double threshold = 0.95;
+								// start with 1.0 (100% of crosslinkers within layer volume)
+								double crossfrac = 1.0;
+								while(!leaveloop)
+								{
+									if(iter<numiter)
+									{
+										if(crossfrac<threshold-lowlim || crossfrac>threshold+uplim)
+										{
+											//calculate new set of layer corner coordinates
+											for(int j=0; j<(int)itercoords.size(); j++)
+											{
+												LINALG::Matrix<3,1> deltaj = dirvecs[j];
+												// the "pow()"-term found heuristically (hm, for now, we go with 1.5)
+												deltaj.Scale(initdistances[j]/pow(1.5,(double)(iter+1)));
+												// depending on crossfrac, choose in which direction the triangle grows:
+												if(crossfrac>threshold)
+													itercoords[j] -= deltaj;
+												if(crossfrac<threshold)
+													itercoords[j] += deltaj;
+											}
+
+											// check if crosslinkers lie within the volume with the new base area
+											// number of crosslinkers
+											rcount = 0;
+											for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
+											{
+												// calculate projection of crosslinker onto layer plane
+												LINALG::Matrix<3,1> crossproj = crosslinkswithinvolume[j];
+												LINALG::Matrix<3,1> diffvec = normal;
+												// line paramater
+												double mu = (interseccoords[0].Dot(normal) - crosslinkswithinvolume[j].Dot(normal)) / (normal.Dot(normal));
+												diffvec.Scale(mu);
+												crossproj += diffvec;
+												// determine distances
+												std::vector<int> sortedindices;
+												std::vector<double> distcrosstocorner;
+												for(int k=0; k<(int)interseccoords.size(); k++)
+												{
+													LINALG::Matrix<3,1> dist = crossproj;
+													dist -= itercoords[k];
+													distcrosstocorner.push_back(dist.Norm2());
+													sortedindices.push_back(k);
+												}
+												//sort distances in ascending order
+												for(int k=0; k<(int)distcrosstocorner.size(); k++)
+													for(int l=0; l<k; l++)
+														if(distcrosstocorner[k]<distcrosstocorner[l])
+														{
+															int tmpindex = sortedindices[l];
+															sortedindices[l] = sortedindices[k];
+															sortedindices[k] = tmpindex;
+															double dtmp = distcrosstocorner[l];
+															distcrosstocorner[l] = distcrosstocorner[k];
+															distcrosstocorner[k] = dtmp;
+														}
+												// compare second and third smallest crosslinker-corner distances to respective corner-corner distances
+												int numofconditionsmet = 0;
+												for(int k=1; k<3; k++)
+												{
+													// get the corner closest to the crosslinker
+													LINALG::Matrix<3,1> distcornertocorner = itercoords[sortedindices[0]];
+													// calculate distance to the two next closest corner
+													distcornertocorner -= itercoords[sortedindices[k]];
+													if(distcrosstocorner[k]<distcornertocorner.Norm2())
+														numofconditionsmet++;
+												}
+												// if crosslinker lies within the new volume
+												if(numofconditionsmet==2)
+													rcount++;
+											}
+											//new crosslinker fraction in volume
+											crossfrac = double(rcount)/double(crosslinkswithinvolume.size());
+											iter++;
+										}
+										else
+										{
+											cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
+											leaveloop = true;
+										}
+									}
+									else
+									{
+										cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
+										leaveloop = true;
+									}
+								}
+
+								// calculation of layer volume
 								switch((int)interseccoords.size())
 								{
 									// triangle
@@ -3205,7 +3316,14 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		// layer
   		case 2:
   		{
-  			cout<<"\nNetwork structure: Layer"<<endl;
+  			cout<<"\nNetwork structure: Layer ( ";
+  			switch(int(interseccoords.size()))
+  			{
+  				case 3: cout<<"triangular shape )"; break;
+  				case 4: cout<<"recangular shape )"; break;
+  				case 6: cout<<"haxagonal shape )"; break;
+  			}
+  			cout<<endl;
   			for(int i=0; i<(int)layervecs.size(); i++)
   				cout<<"layer vector "<<i+1<<": "<<layervecs[i](0)<<" "<<layervecs[i](1)<<" "<<layervecs[i](2)<<endl;
   			characlength_ = characlength[structurenumber];
@@ -3286,7 +3404,7 @@ void StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol, LINALG::M
 			double vecvecangle = acos(vectorjp.Dot((*vectorj)));
 			if(vecvecangle < tolangle)
 			{
-				cout<<"vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
+				cout<<" vector converged after "<<iteration+1<<" iteration(s) with angle "<<vecvecangle/M_PI*180.0<<" deg"<<endl;
 				vectorconverged = true;
 			}
 			*vectorj = vectorjp;

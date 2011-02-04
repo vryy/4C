@@ -183,7 +183,17 @@ void StatMechTime::Integrate()
     /*in the very first step and in case that special output for statistical mechanics is requested we have
      * to initialize the related output method*/
     if(i == 0)
+    {
       statmechmanager_->InitOutput(ndim,dt);
+      // handling gmsh output seperately
+      if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
+    	{
+    		std::ostringstream filename;
+    			filename << "./GmshOutput/networkInit.pos";
+    		//calling method for writing Gmsh output
+    		statmechmanager_->GmshOutput(*dis_,filename,step);
+    	}
+    }
 
     //time_ is time at the end of this time step
     double time = params_.get<double>("total time",0.0);
