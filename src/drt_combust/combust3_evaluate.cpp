@@ -276,7 +276,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool instationary = true;
       // smoothed gradient of phi required (surface tension application)
       double gradphi = true;
-      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
+      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
+          smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
       {
         gradphi = false;
       }
@@ -394,12 +395,14 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
       const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
       const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
+      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = params.get<INPAR::COMBUST::SmoothGradPhi>("smoothgradphi");
 
       // stationary formulation
       const bool instationary = false;
       // smoothed gradient of phi required (surface tension application)
       double gradphi = true;
-      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow)
+      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
+          smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
       {
         gradphi = false;
       }
