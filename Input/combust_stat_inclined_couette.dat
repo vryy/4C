@@ -56,7 +56,7 @@ UPRES                           1
 COMBUSTTYPE                     Premixed_Combustion
 LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
-NITSCHE_VELOCITY                100000
+NITSCHE_VELOCITY                10
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
 FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
@@ -70,7 +70,7 @@ INITIALFIELD     zero_field
 STARTFUNCNO      -1
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
-NONLINITER       Newton
+NONLINITER       fixed_point_like // Newton
 ITEMAX           10 // 20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-5
@@ -1205,6 +1205,6 @@ NODE 294  	COORD	1.00000000e+00	3.00000012e-01	5.00000007e-02
 FLUID DIS 1 NODE 134 POSITION velx     NAME velx     VALUE  4.5e+00       TOLERANCE 1e-9
 FLUID DIS 1 NODE 147 POSITION velx     NAME velx     VALUE  6.5e+00       TOLERANCE 1e-9
 FLUID DIS 1 NODE 110 POSITION pressure NAME pressure VALUE -4.1666666e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -9.0e00        TOLERANCE 1e-9
+FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -9.0e+00       TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
