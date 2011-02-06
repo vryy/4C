@@ -1035,7 +1035,6 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         if(j==3) xfemj = 2;
         if(j==4) xfemj = 3;
         if(j==5) xfemj = 3;
-
         //-------------------------
         // ich bin ein Standard dof
         //-------------------------
@@ -1107,19 +1106,80 @@ void DoDirichletConditionXFEM(DRT::Condition&             cond,
         //-----------------------------------
         else if(j==3 && (*onoff)[0]!=0 && (*onoff)[1]!=0 && (*onoff)[2]!=0 )
         {
-cout << "angereicherter veln freiheitsgrad wird gesetzt" << endl;
-            //--------------------------
-            // ich bin ein Dirichlet dof
-            //--------------------------
-            const int gid = dofs[j];
-            vector<double> value(deg+1,(*val)[xfemj]);
+          //--------------------------
+          // ich bin ein Dirichlet dof
+          //--------------------------
+          const int gid = dofs[j];
+          vector<double> value(deg+1,(*val)[xfemj]);
 
-//cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (veln) is set to 0.0 for node " << actnode->Id() << endl;
-            // apply factors to Dirichlet value
+          //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (veln) is set to 0.0 for node " << actnode->Id() << endl;
+          // apply factors to Dirichlet value
+          for (unsigned i=0; i<deg+1; ++i)
+          {
+            value[i] = 0.0;
+          }
+#ifdef COMBUST_TESTCOUETTEFLOW
+          //--------------------------------------------
+          // ugly hack for decoupled Couette flow example
+          //--------------------------------------------
+
+          // domain with 10 elements in x-direction
+          //if (actnode->Id() == 26 or
+          //    actnode->Id() == 27 or
+          //    actnode->Id() == 40 or
+          //    actnode->Id() == 41)
+          // domain with 20 elements in x-direction
+          if (actnode->Id() == 96 or
+              actnode->Id() == 97 or
+              actnode->Id() == 110 or
+              actnode->Id() == 111)
+          {
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
+            cout << *actnode << endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
-              value[i] = 0.0;
+#ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
+              value[i] = 6.5*sqrt(2.0);
+#else
+              value[i] = -1.0*sqrt(2.0);
+#endif
             }
+          }
+          // domain with 10 elements in x-direction
+          //if (actnode->Id() == 98 or
+          //    actnode->Id() == 99 or
+          //    actnode->Id() == 112 or
+          //    actnode->Id() == 113)
+          // domain with 20 elements in x-direction
+          else if (actnode->Id() == 168 or
+              actnode->Id() == 169 or
+              actnode->Id() == 182 or
+              actnode->Id() == 183)
+          {
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
+            cout << *actnode << endl;
+            for (unsigned i=0; i<deg+1; ++i)
+            {
+#ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
+              value[i] = 2.5*sqrt(2.0);
+#else
+              value[i] = -1.0*sqrt(2.0);
+#endif
+            }
+          }
+          else // free x-velocity dof for all other Dirichlet nodes
+          {
+            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+            const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+            if (toggle!=Teuchos::null)
+              (*toggle)[lid] = 0.0;
+            // get rid of entry in DBC map - if it exists
+            if (dbcgids != Teuchos::null)
+              (*dbcgids).erase(dofs[j]);
+            continue; // for loop over dofs is advanced by 1 (++j)
+          }
+#endif
             // assign value
             const int lid = (*systemvectoraux).Map().LID(gid);
             if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
@@ -1141,14 +1201,13 @@ cout << "angereicherter veln freiheitsgrad wird gesetzt" << endl;
         //-----------------------------------
         else if( j==5 && (*onoff)[4]!=0 )
         {
-cout << "angereicherter druck freiheitsgrad wird gesetzt" << endl;
             //--------------------------
             // ich bin ein Dirichlet dof
             //--------------------------
             const int gid = dofs[j];
             vector<double> value(deg+1,(*val)[xfemj]);
 
-//cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (pres) is set to 0.0 for node " << actnode->Id() << endl;
+            //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (pres) is set to 0.0 for node " << actnode->Id() << endl;
             // apply factors to Dirichlet value
             for (unsigned i=0; i<deg+1; ++i)
             {
@@ -1172,7 +1231,7 @@ cout << "angereicherter druck freiheitsgrad wird gesetzt" << endl;
         }
         else
         {
-//cout << "/!\\ warning === no Dirichlet value set for normal velocity dof of node " << actnode->Id() << endl;
+          //cout << "/!\\ warning === no Dirichlet value set for dof " << j << " of node " << actnode->Id() << endl;
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
           if (toggle!=Teuchos::null)
@@ -1180,7 +1239,6 @@ cout << "angereicherter druck freiheitsgrad wird gesetzt" << endl;
           // get rid of entry in DBC map - if it exists
           if (dbcgids != Teuchos::null)
             (*dbcgids).erase(dofs[j]);
-//cout << "free dof " << j << endl;
           continue;
         }
       }  // loop over nodal DOFs
