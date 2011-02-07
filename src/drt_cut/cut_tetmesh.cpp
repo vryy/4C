@@ -98,13 +98,19 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
   ActivateSingleTetsOnFacets();
   ActivateDoubleTetsOnCutSurface();
 
-  RemoveFullOverlappingTriFacets();
-  TestCutSurface();
-
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
   GmshWriteActiveCells();
+  //GmshWriteActiveSurfaceCells();
+#endif
+
+  RemoveFullOverlappingTriFacets();
+
+#ifdef TETMESH_GMSH_DEBUG_OUTPUT
+  //GmshWriteActiveCells();
   GmshWriteActiveSurfaceCells();
 #endif
+
+  TestCutSurface();
 
   ClearExternalTets();
 
@@ -602,14 +608,15 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
         ++i )
   {
     Facet * f = i->first;
-    std::set<Entity<3>*> & tris = i->second.tris_;
-    std::list<OverlappingTriSets> & overlappingsets = i->second.overlappingsets_;
+    FacetInfo & fi = i->second;
+    std::set<Entity<3>*> & tris = fi.tris_;
 
-    overlappingsets.push_back( OverlappingTriSets() );
+    // find all lines surrounding the facet
 
     std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
     f->GetLines( lines );
 
+    std::set<Entity<2>*> trace_lines;
     for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin();
           i!=lines.end();
           ++i )
@@ -620,8 +627,60 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
       if ( j!=tet_lines_.end() )
       {
         Entity<2> & line = j->second;
-        overlappingsets.back().lset_.insert( &line );
+        trace_lines.insert( &line );
       }
+    }
+
+    // find number of tris at all lines
+
+    std::map<Entity<2>*, std::set<Entity<3>*> > line_usage;
+    for ( std::set<Entity<3>*>::iterator i=tris.begin(); i!=tris.end(); ++i )
+    {
+      Entity<3> * tri = *i;
+      const std::vector<Entity<2>*> & lines = tri->Children();
+      for ( std::vector<Entity<2>*>::const_iterator i=lines.begin(); i!=lines.end(); ++i )
+      {
+        Entity<2> * line = *i;
+        line_usage[line].insert( tri );
+      }
+    }
+
+    std::list<OverlappingTriSets> overlappingsets;
+
+    // Find all possible forks. This creates more ots than needed in
+    // complicated cases. But at least there are all cases covered. The merge
+    // is done later on.
+
+    for ( std::map<Entity<2>*, std::set<Entity<3>*> >::iterator i=line_usage.begin();
+          i!=line_usage.end();
+          ++i )
+    {
+      Entity<2> * line = i->first;
+      std::set<Entity<3>*> & line_tris = i->second;
+      if ( line_tris.size() > 2 )
+      {
+        // find all combinations at this line
+        for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
+        {
+          Entity<3> * tri1 = *i;
+          std::set<Entity<3>*>::iterator j = i;
+          for ( ++j; j!=line_tris.end(); ++j )
+          {
+            Entity<3> * tri2 = *j;
+            overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri1, tri2 ) );
+          }
+        }
+      }
+    }
+
+    // There are no illegal lines, just use the normal trace.
+    if ( overlappingsets.size()==0 )
+    {
+      overlappingsets.push_back( OverlappingTriSets( trace_lines ) );
+
+      // There are no options. The order of lines in input does not matter in
+      // any way. Ignore it.
+      line_usage.clear();
     }
 
     for ( std::list<OverlappingTriSets>::iterator i=overlappingsets.begin();
@@ -632,7 +691,8 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
 
       while ( not ots.Done() )
       {
-        Entity<2> * line = ots.NextLine();
+        Entity<2> * line = ots.NextLine( line_usage );
+
         std::set<Entity<3>*> new_tris;
         ots.NewLineTris( tris, line, new_tris );
         if ( new_tris.size()==0 )
@@ -644,6 +704,8 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
         {
           // Simple new triangle or multiple choices.
 
+          // make a new ots for each triangle that is available at the line
+          // at hand
           std::map<Entity<3>*, OverlappingTriSets*> new_ots;
           std::set<Entity<3>*>::iterator i = new_tris.begin();
           new_ots[*i] = &ots;
@@ -663,6 +725,9 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
         }
       }
     }
+
+    // remove duplicates
+    fi.SetOverlappingTriSets( overlappingsets );
   }
 }
 
@@ -680,16 +745,9 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
     Facet * f = i->first;
     FacetInfo & fi = i->second;
     std::set<Entity<3>*> & tris = fi.tris_;
-    std::list<OverlappingTriSets> & overlappingsets = fi.overlappingsets_;
+    std::vector<OverlappingTriSets> & overlappingsets = fi.overlappingsets_;
     std::vector<OverlappingTriSets*> matches;
-    for ( std::list<OverlappingTriSets>::iterator i=overlappingsets.begin();
-          i!=overlappingsets.end();
-          ++i )
-    {
-      OverlappingTriSets & ots = *i;
-      if ( ots.full_ )
-        matches.push_back( &ots );
-    }
+    fi.FindFullOTS( matches );
     if ( matches.size() == 1 )
     {
       OverlappingTriSets * ots = matches[0];
@@ -699,9 +757,22 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
     else if ( matches.size() == 0 )
     {
       std::cout << "WARNING: " << overlappingsets.size()
-                << " non-full matches of facet " << f->SideId() << "\n";
+                << " non-full matches of facet " << f->SideId() << ":\n";
+      for ( std::vector<OverlappingTriSets>::iterator i=overlappingsets.begin();
+            i!=overlappingsets.end();
+            ++i )
+      {
+        OverlappingTriSets & ots = *i;
+        std::cout << "\t(";
+        for ( std::set<Entity<3>*>::iterator i=ots.tset_.begin(); i!=ots.tset_.end(); ++i )
+        {
+          Entity<3> & tri = **i;
+          std::cout << tri;
+        }
+        std::cout << ")\n";
+      }
 
-      fi.done_ = true;
+      //fi.done_ = true;
       reconstruct_sets.push_back( &fi );
     }
     else if ( matches.size() > 1 )
@@ -736,26 +807,28 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
 
   if ( reconstruct_sets.size() > 0 )
   {
-    std::vector<std::pair<std::list<OverlappingTriSets>::iterator,
-      std::list<OverlappingTriSets>::iterator> > reconstruct_range;
-    std::vector<std::list<OverlappingTriSets>::iterator> reconstruct_counter;
+    std::vector<std::pair<std::vector<OverlappingTriSets>::iterator,
+      std::vector<OverlappingTriSets>::iterator> > reconstruct_range;
+    std::vector<std::vector<OverlappingTriSets>::iterator> reconstruct_counter;
     reconstruct_range  .reserve( reconstruct_sets.size() );
     reconstruct_counter.reserve( reconstruct_sets.size() );
     for ( std::vector<FacetInfo*>::iterator i=reconstruct_sets.begin();
           i!=reconstruct_sets.end();
           ++i )
     {
-      std::list<OverlappingTriSets> & otsl = ( *i )->overlappingsets_;
+      FacetInfo * fi = *i;
+      std::vector<OverlappingTriSets> & otsl = fi->overlappingsets_;
       reconstruct_range  .push_back( std::make_pair( otsl.begin(), otsl.end() ) );
       reconstruct_counter.push_back( otsl.begin() );
     }
 
-    std::set<Entity<3>*> surface_tris;
+    std::vector<std::set<Entity<3>*> > surface_tris;
+    std::vector<std::vector<std::vector<OverlappingTriSets>::iterator> > counter;
     while ( reconstruct_counter.back() != reconstruct_range.back().second )
     {
       std::set<Entity<2>*> open_surface_lines;
 
-      for ( std::vector<std::list<OverlappingTriSets>::iterator>::iterator i=reconstruct_counter.begin();
+      for ( std::vector<std::vector<OverlappingTriSets>::iterator>::iterator i=reconstruct_counter.begin();
             i!=reconstruct_counter.end();
             ++i )
       {
@@ -764,13 +837,11 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
                    std::inserter( open_surface_lines, open_surface_lines.begin() ) );
       }
 
-      if ( FillSurfaceGaps( open_surface_lines, surface_tris ) )
+      std::set<Entity<3>*> st;
+      if ( FillSurfaceGaps( open_surface_lines, st ) )
       {
-        break;
-      }
-      else
-      {
-        surface_tris.clear();
+        counter.push_back( reconstruct_counter );
+        surface_tris.push_back( st );
       }
 
       // next combination
@@ -791,26 +862,30 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
       }
     }
 
-    if ( surface_tris.size() > 0 )
+    if ( counter.size()==0 )
     {
-      // take the combination that worked for all gaps
-      for ( unsigned i=0; i!=reconstruct_sets.size(); ++i )
-      {
-        FacetInfo * fi = reconstruct_sets[i];
+      throw std::runtime_error( "not able to fill surface gaps" );
+    }
 
-        OverlappingTriSets & ots = *reconstruct_counter[i];
-        fi->ExchangeTriSet( ots.tset_, active_surface_tris_ );
-      }
+    // We are undecided which ots to use. Postphone it. Treat them like the
+    // full non-unique ots.
 
-      // fill all gaps
-      for ( std::set<Entity<3>*>::iterator i=surface_tris.begin(); i!=surface_tris.end(); ++i )
+    for ( unsigned i=0; i<counter.size(); ++i )
+    {
+      std::set<Entity<3>*> & st = surface_tris[i];
+      std::vector<std::vector<OverlappingTriSets>::iterator> & c = counter[i];
+
+      // collect and activate broken tris
+      std::vector<Entity<3>*> local_broken_tris;
+      local_broken_tris.reserve( st.size() );
+      for ( std::set<Entity<3>*>::iterator i=st.begin(); i!=st.end(); ++i )
       {
         Entity<3> * tri = *i;
         if ( tri->AllOnCutSurface( points_ ) )
         {
-          std::cout << "WARNING: Activate non-facet tri " << tri->Id() << "\n";
+          //std::cout << "WARNING: Activate non-facet tri " << tri->Id() << "\n";
           active_surface_tris_[tri->Id()] = true;
-          broken_tris_.insert( tri );
+          local_broken_tris.push_back( tri );
         }
         else
         {
@@ -820,11 +895,85 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
           }
         }
       }
+
+      if ( counter.size() == 1 )
+      {
+        // there is a unique gap fill-in in this facet
+
+        // take the combination that worked for all gaps
+        for ( unsigned i=0; i!=reconstruct_sets.size(); ++i )
+        {
+          FacetInfo * fi = reconstruct_sets[i];
+
+          OverlappingTriSets & ots = *c[i];
+          fi->ExchangeTriSet( ots.tset_, active_surface_tris_ );
+          fi->done_ = true;
+        }
+
+        // fill all gaps
+        std::copy( local_broken_tris.begin(), local_broken_tris.end(),
+                   std::inserter( broken_tris_, broken_tris_.begin() ) );
+      }
+      else
+      {
+        // there are more options
+
+        std::set<OverlappingTriSets*> select;
+
+        // set marker to process later
+        for ( unsigned i=0; i!=reconstruct_sets.size(); ++i )
+        {
+          FacetInfo * fi = reconstruct_sets[i];
+          OverlappingTriSets & ots = *c[i];
+
+          if ( fi->IsUnique() )
+          {
+            fi->ExchangeTriSet( ots.tset_, active_surface_tris_ );
+            fi->done_ = true;
+          }
+          else
+          {
+            fi->done_ = false;
+
+            // mark the ots that it needs to be looked at again
+            ots.full_ = true;
+
+            // mark all tris as (possible) cut surface tris
+            fi->SetMarker( active_surface_tris_, true );
+
+            select.insert( &ots );
+          }
+        }
+
+        // remember the set of broken tris that applies to this particular set
+        // of overlapping tris
+        if ( select.size() > 0 )
+        {
+          std::swap( broken_tri_selection_[select], local_broken_tris );
+        }
+        else
+        {
+          // fill all gaps
+          std::copy( local_broken_tris.begin(), local_broken_tris.end(),
+                     std::inserter( broken_tris_, broken_tris_.begin() ) );
+        }
+      }
     }
-    else
-    {
-      throw std::runtime_error( "not able to fill surface gaps" );
-    }
+
+//     for ( std::vector<FacetInfo*>::iterator i=reconstruct_sets.begin();
+//           i!=reconstruct_sets.end();
+//           ++i )
+//     {
+//       FacetInfo * fi = *i;
+//       std::vector<OverlappingTriSets*> matches;
+//       fi->FindFullOTS( matches );
+//       if ( matches.size()==1 )
+//       {
+//         OverlappingTriSets * ots = matches[0];
+//         fi->ExchangeTriSet( ots->tset_, active_surface_tris_ );
+//         fi->done_ = true;
+//       }
+//     }
   }
 
 #ifdef DEBUGCUTLIBRARY
@@ -837,6 +986,8 @@ void GEO::CUT::TetMesh::RemoveFullOverlappingTriFacets()
   // At this point the tets are assigned and can be used to test which version
   // is to be used.
 
+  std::set<OverlappingTriSets*> select;
+
   for ( std::map<Facet*, FacetInfo>::iterator i=facet_info_.begin();
         i!=facet_info_.end();
         ++i )
@@ -848,17 +999,10 @@ void GEO::CUT::TetMesh::RemoveFullOverlappingTriFacets()
       continue;
 
     //std::set<Entity<3>*> & tris = fi.tris_;
-    std::list<OverlappingTriSets> & overlappingsets = fi.overlappingsets_;
+    //std::vector<OverlappingTriSets> & overlappingsets = fi.overlappingsets_;
     std::vector<OverlappingTriSets*> matches;
-    for ( std::list<OverlappingTriSets>::iterator i=overlappingsets.begin();
-          i!=overlappingsets.end();
-          ++i )
-    {
-      OverlappingTriSets & ots = *i;
-      if ( ots.full_ )
-        matches.push_back( &ots );
-    }
-    if ( matches.size() > 1 )
+    fi.FindFullOTS( matches );
+//     if ( matches.size() > 1 )
     {
 #ifdef DEBUGCUTLIBRARY
       for ( unsigned i=0; i!=matches.size(); ++i )
@@ -877,18 +1021,7 @@ void GEO::CUT::TetMesh::RemoveFullOverlappingTriFacets()
         for ( std::set<Entity<3>*>::iterator i=ots->tset_.begin(); i!=ots->tset_.end(); ++i )
         {
           Entity<3> * tri = *i;
-          bool has_accepted_tet = false;
-          const std::vector<Entity<4>*> & tets = tri->Parents();
-          for ( std::vector<Entity<4>*>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
-          {
-            Entity<4> * tet = *i;
-            if ( accept_tets_[tet->Id()] )
-            {
-              has_accepted_tet = true;
-              break;
-            }
-          }
-          if ( not has_accepted_tet )
+          if ( not HasAcceptedTet( *tri ) )
           {
             all_accepted = false;
             break;
@@ -901,17 +1034,96 @@ void GEO::CUT::TetMesh::RemoveFullOverlappingTriFacets()
       }
       if ( cutsurface_ots.size()==0 )
       {
-        throw std::runtime_error( "no full set with active tet parents" );
+        throw std::runtime_error( "no set with active tet parents" );
       }
       if ( cutsurface_ots.size() > 1 )
       {
-        throw std::runtime_error( "ambiguous full set" );
+        throw std::runtime_error( "ambiguous sets" );
       }
 
       OverlappingTriSets * ots = cutsurface_ots[0];
       fi.ExchangeTriSet( ots->tset_, active_surface_tris_ );
+
+      select.insert( ots );
     }
   }
+
+  //bool found_state = false;
+  for ( std::map<std::set<OverlappingTriSets*>, std::vector<Entity<3>*> >::iterator ibts=broken_tri_selection_.begin();
+        ibts!=broken_tri_selection_.end();
+        ++ibts )
+  {
+    const std::set<OverlappingTriSets*> & select_state = ibts->first;
+    std::vector<Entity<3>*> & broken = ibts->second;
+
+    bool found = true;
+    for ( std::set<OverlappingTriSets*>::const_iterator i=select_state.begin();
+          i!=select_state.end();
+          ++i )
+    {
+      OverlappingTriSets * ots = *i;
+      if ( select.count( ots )==0 )
+      {
+        found = false;
+        break;
+      }
+    }
+    if ( found )
+    {
+      std::copy( broken.begin(), broken.end(),
+                 std::inserter( broken_tris_, broken_tris_.begin() ) );
+
+      // remove used broken tris
+      broken_tri_selection_.erase( ibts );
+
+      //found_state = true;
+      break;
+    }
+  }
+//   if ( not found_state )
+//   {
+//     throw std::runtime_error( "" );
+//   }
+
+  // deactivate unused broken tris
+  for ( std::map<std::set<OverlappingTriSets*>, std::vector<Entity<3>*> >::iterator i=broken_tri_selection_.begin();
+        i!=broken_tri_selection_.end();
+        ++i )
+  {
+    std::vector<Entity<3>*> & broken = i->second;
+    for ( std::vector<Entity<3>*>::iterator i=broken.begin(); i!=broken.end(); ++i )
+    {
+      Entity<3> * tri = *i;
+      active_surface_tris_[tri->Id()] = false;
+    }
+  }
+
+  // Activate used broken tris again, in case there is some overlap with the
+  // unused ones. (There is!)
+  for ( std::set<Entity<3>*>::iterator i=broken_tris_.begin(); i!=broken_tris_.end(); ++i )
+  {
+    Entity<3> * tri = *i;
+    active_surface_tris_[tri->Id()] = true;
+  }
+
+// #ifdef DEBUGCUTLIBRARY
+//   {
+//     int count = 0;
+//     for ( std::set<OverlappingTriSets*>::iterator i=select.begin();
+//           i!=select.end();
+//           ++i )
+//     {
+//       OverlappingTriSets * ots = *i;
+//       std::stringstream str;
+//       str << "select" << count++;
+//       GmshWriteTriSet( str.str(), ots->tset_ );
+//     }
+//   }
+// #endif
+
+#ifdef DEBUGCUTLIBRARY
+  GmshWriteTriSet( "brokentris2", broken_tris_ );
+#endif
 }
 
 bool GEO::CUT::TetMesh::FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
@@ -1062,8 +1274,8 @@ void GEO::CUT::TetMesh::TestCutSurface()
 #endif
           if ( count == 1 and not isline )
           {
-            //throw std::runtime_error( "gap in cut facet" );
-            inner_lines.insert( &line );
+            throw std::runtime_error( "gap in cut facet" );
+            //inner_lines.insert( &line );
           }
 #if 0
           if ( count == 2 and isline )
@@ -1132,7 +1344,7 @@ void GEO::CUT::TetMesh::TestCutSurface()
       }
     }
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
-    GmshWriteTriSet( "brokentris2", broken_tris_ );
+    GmshWriteTriSet( "brokentris3", broken_tris_ );
 #endif
 
     if ( inner_lines.size()>0 )

@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <iostream>
+#include <queue>
 
 #include "cut_point.H"
 #include "cut_facet.H"
@@ -36,6 +37,11 @@ namespace GEO
      */
     class TetMesh
     {
+      class OverlappingTriSets;
+      class FacetInfo;
+
+      friend std::ostream & operator<<( std::ostream & stream, const TetMesh::OverlappingTriSets & ots );
+      friend std::ostream & operator<<( std::ostream & stream, const FacetInfo & fi );
 
       /// Unique description of an entity in a tet mesh.
       /*!
@@ -125,6 +131,18 @@ namespace GEO
           points[length] = p;
           std::sort( points, points+( length+1 ) );
           return Handle<length+1>( points );
+        }
+
+        friend std::ostream & operator<<( std::ostream & stream, const TetMesh::Handle<length> & h )
+        {
+          stream << "{";
+          for ( int i=0; i<length; ++i )
+          {
+            if ( i > 0 )
+              stream << ",";
+            stream << h[i];
+          }
+          return stream << "}";
         }
 
       private:
@@ -337,6 +355,12 @@ namespace GEO
           }
         }
 
+        friend std::ostream & operator<<( std::ostream & stream, const TetMesh::Entity<length> & e )
+        {
+          stream << "( id=" << e.Id() << ", " << e.GetHandle() << " )";
+          return stream;
+        }
+
       private:
 
         int id_;
@@ -364,12 +388,117 @@ namespace GEO
           : full_( true )
         {}
 
+        OverlappingTriSets( const std::set<Entity<2>*> & trace )
+          : lset_( trace ),
+            full_( true )
+        {}
+
+        OverlappingTriSets( const std::set<Entity<2>*> & trace,
+                            Entity<2> * start_line,
+                            Entity<3> * tri1,
+                            Entity<3> * tri2 )
+          : lset_( trace ),
+            full_( true )
+        {
+          if ( not InsertTri( tri1 ) )
+          {
+            throw std::runtime_error( "cannot reject first tri" );
+          }
+          if ( not InsertTri( tri2 ) )
+          {
+            EmptyTriSet( start_line );
+          }
+        }
+
+        bool operator==( const OverlappingTriSets & other ) const
+        {
+//           return ( full_ == other.full_ and
+//                    lset_ == other.lset_ and
+//                    tset_ == other.tset_ and
+//                    donelines_ == other.donelines_ and
+//                    openlines_ == other.openlines_ );
+
+          // donelines_ might be different, but as long as the tris are the
+          // same, this is the same ots
+          return tset_ == other.tset_;
+        }
+
+        bool operator<( const OverlappingTriSets & other ) const
+        {
+          return tset_ < other.tset_;
+        }
+
+        void Swap( OverlappingTriSets & other )
+        {
+          std::swap( lset_, other.lset_ );
+          std::swap( tset_, other.tset_ );
+          std::swap( donelines_, other.donelines_ );
+          std::swap( openlines_, other.openlines_ );
+          std::swap( full_, other.full_ );
+        }
+
+        void Clear()
+        {
+          lset_.clear();
+          tset_.clear();
+          donelines_.clear();
+          openlines_.clear();
+        }
+
+        bool IsValid()
+        {
+          return tset_.size() > 0;
+        }
+
+        bool Contains( const std::set<Entity<3>*> & tris )
+        {
+          if ( tris.size() > tset_.size() )
+            return false;
+          for ( std::set<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+          {
+            Entity<3> * tri = *i;
+            if ( tset_.count( tri )==0 )
+            {
+              return false;
+            }
+          }
+          return true;
+        }
+
         bool Done()
         {
           return lset_.size()==0;
         }
 
-        Entity<2> * NextLine() { return *lset_.begin(); }
+        struct LineCompare
+        {
+          LineCompare( std::map<Entity<2>*, std::set<Entity<3>*> > & line_usage )
+            : line_usage_( line_usage )
+          {}
+
+          bool operator()( Entity<2> * l1, Entity<2> * l2 ) const
+          {
+            return line_usage_[l1].size() < line_usage_[l2].size();
+          }
+
+          std::map<Entity<2>*, std::set<Entity<3>*> > & line_usage_;
+        };
+
+        Entity<2> * NextLine( std::map<Entity<2>*, std::set<Entity<3>*> > & line_usage )
+        {
+          if ( line_usage.size() > 0 )
+          {
+            // Return the line with most options first. This is expensive but
+            // required.
+            std::priority_queue<Entity<2>*, std::vector<Entity<2>*>, LineCompare>
+              queue( lset_.begin(), lset_.end(), LineCompare( line_usage ) );
+            return queue.top();
+          }
+          else
+          {
+            return *lset_.begin();
+          }
+        }
 
         void NewLineTris( const std::set<Entity<3>*> & tris,
                           Entity<2> * line,
@@ -435,31 +564,68 @@ namespace GEO
           }
           return false;
         }
+
+        friend void swap( TetMesh::OverlappingTriSets & ots1, TetMesh::OverlappingTriSets & ots2 )
+        {
+          ots1.Swap( ots2 );
+        }
+
+        friend std::ostream & operator<<( std::ostream & stream, const TetMesh::OverlappingTriSets & ots )
+        {
+          for ( std::set<Entity<3>*>::iterator i=ots.tset_.begin();
+                i!=ots.tset_.end();
+                ++i )
+          {
+            Entity<3> & tri = **i;
+            stream << tri;
+          }
+          return stream << "\n";
+        }
       };
 
       /// Collection of facet triangulations.
       struct FacetInfo
       {
         std::set<Entity<3>*> tris_;
-        std::list<OverlappingTriSets> overlappingsets_;
+        std::vector<OverlappingTriSets> overlappingsets_;
         bool done_;
 
         FacetInfo()
           : done_( false )
         {}
 
+        bool operator==( const FacetInfo & other ) const
+        {
+          return ( done_ == other.done_ and
+                   tris_ == other.tris_ and
+                   overlappingsets_ == other.overlappingsets_ );
+        }
+
         bool IsUnique()
         {
           return overlappingsets_.size()==1;
         }
 
-        bool IsFull()
+        void FindFullOTS( std::vector<OverlappingTriSets*> & matches )
         {
-          for ( std::list<OverlappingTriSets>::iterator i=overlappingsets_.begin();
+          matches.reserve( overlappingsets_.size() );
+          for ( std::vector<OverlappingTriSets>::iterator i=overlappingsets_.begin();
                 i!=overlappingsets_.end();
                 ++i )
           {
             OverlappingTriSets & ots = *i;
+            if ( ots.full_ )
+              matches.push_back( &ots );
+          }
+        }
+
+        bool IsFull()
+        {
+          for ( std::vector<OverlappingTriSets>::iterator i=overlappingsets_.begin();
+                i!=overlappingsets_.end();
+                ++i )
+          {
+            const OverlappingTriSets & ots = *i;
             if ( ots.full_ )
               return true;
           }
@@ -480,6 +646,83 @@ namespace GEO
           SetMarker( marker, false );
           std::swap( tris_, tris );
           SetMarker( marker, true );
+        }
+
+        void SetOverlappingTriSets( std::list<OverlappingTriSets> & overlappingsets )
+        {
+          std::vector<OverlappingTriSets> otss( overlappingsets.size() );
+          std::swap_ranges( overlappingsets.begin(), overlappingsets.end(),
+                            otss.begin() );
+          std::sort( otss.begin(), otss.end() );
+          std::vector<OverlappingTriSets>::iterator i =
+            std::unique( otss.begin(), otss.end() );
+          otss.erase( i, otss.end() );
+
+          for ( std::vector<OverlappingTriSets>::iterator i=otss.begin();
+                i!=otss.end();
+                ++i )
+          {
+            OverlappingTriSets & ots1 = *i;
+            if ( ots1.IsValid() )
+            {
+              std::vector<OverlappingTriSets>::iterator j = i;
+              for ( ++j; j!=otss.end(); ++j )
+              {
+                OverlappingTriSets & ots2 = *j;
+                if ( ots2.IsValid() )
+                {
+                  if ( ots2.Contains( ots1.tset_ ) )
+                  {
+                    ots1.Clear();
+                  }
+                  else if ( ots1.Contains( ots2.tset_ ) )
+                  {
+                    ots2.Clear();
+                  }
+                }
+              }
+            }
+          }
+
+          // count_if
+          int count = 0;
+          for ( std::vector<OverlappingTriSets>::iterator i=otss.begin();
+                i!=otss.end();
+                ++i )
+          {
+            OverlappingTriSets & ots = *i;
+            if ( ots.IsValid() )
+            {
+              count += 1;
+            }
+          }
+
+          overlappingsets_.reserve( count );
+
+          for ( std::vector<OverlappingTriSets>::iterator i=otss.begin();
+                i!=otss.end();
+                ++i )
+          {
+            OverlappingTriSets & ots = *i;
+            if ( ots.IsValid() )
+            {
+              overlappingsets_.push_back( OverlappingTriSets() );
+              swap( ots, overlappingsets_.back() );
+            }
+          }
+        }
+
+        friend std::ostream & operator<<( std::ostream & stream, const FacetInfo & fi )
+        {
+          stream << "{\n";
+          for ( std::vector<OverlappingTriSets>::const_iterator i=fi.overlappingsets_.begin();
+                i!=fi.overlappingsets_.end();
+                ++i )
+          {
+            const OverlappingTriSets & ots = *i;
+            stream << ots;
+          }
+          return stream << "}\n";
         }
       };
 
@@ -639,6 +882,20 @@ namespace GEO
         return Handle<3>( points );
       }
 
+      bool HasAcceptedTet( const Entity<3> & tri )
+      {
+        const std::vector<Entity<4>*> & tets = tri.Parents();
+        for ( std::vector<Entity<4>*>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
+        {
+          Entity<4> * tet = *i;
+          if ( accept_tets_[tet->Id()] )
+          {
+            return true;
+          }
+        }
+        return false;
+      }
+
       const std::vector<Point*> & points_;
       const std::set<Facet*> & facets_;
       std::vector<std::vector<int> > tets_;
@@ -655,6 +912,7 @@ namespace GEO
       std::map<Facet*, FacetInfo> facet_info_;
 
       std::set<Entity<3>*> broken_tris_;
+      std::map<std::set<OverlappingTriSets*>, std::vector<Entity<3>*> > broken_tri_selection_;
 
       //std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
       std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz_;
@@ -663,27 +921,6 @@ namespace GEO
       std::vector<std::vector<int> > surface_tris_;
 #endif
     };
-
-    template <int length>
-    std::ostream & operator<<( std::ostream & stream, const TetMesh::Handle<length> & h )
-    {
-      stream << "{";
-      for ( int i=0; i<length; ++i )
-      {
-        if ( i > 0 )
-          stream << ",";
-        stream << h[i];
-      }
-      return stream << "}";
-    }
-
-    template <int length>
-    std::ostream & operator<<( std::ostream & stream, const TetMesh::Entity<length> & e )
-    {
-      stream << "( id=" << e.Id() << ", " << e.GetHandle() << " )";
-      return stream;
-    }
-
   }
 }
 
