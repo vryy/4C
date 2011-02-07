@@ -111,6 +111,8 @@ public:
 
   const std::vector<Point*> & Points() const { return points_; }
 
+  const std::vector<Point*> & CornerPoints() const { return corner_points_; }
+
   void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells );
 
   void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );

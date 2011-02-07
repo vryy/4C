@@ -62,8 +62,8 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
       throw std::runtime_error( "illegal hex8 cell" );
     }
 
-    const std::vector<Point*> & bot_points = bot->Points();
-    const std::vector<Point*> & top_points = top->Points();
+    const std::vector<Point*> & bot_points = bot->CornerPoints();
+    const std::vector<Point*> & top_points = top->CornerPoints();
 
     std::vector<Point*> points( 8, static_cast<Point*>( NULL ) );
 
@@ -76,7 +76,7 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
       Facet * f = *i;
       if ( f!=bot and f!=top )
       {
-        const std::vector<Point*> & side_points = f->Points();
+        const std::vector<Point*> & side_points = f->CornerPoints();
         for ( std::vector<Point*>::const_iterator i=side_points.begin();
               i!=side_points.end();
               ++i )
@@ -238,14 +238,14 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
     std::set<Facet*>::const_iterator i=facets.begin();
     Facet * bot = *i;
 
-    const std::vector<Point*> & bot_points = bot->Points();
+    const std::vector<Point*> & bot_points = bot->CornerPoints();
     Point* top_point = NULL;
 
     for ( ++i; i!=facets.end(); ++i )
     {
       Facet * f = *i;
 
-      const std::vector<Point*> & side_points = f->Points();
+      const std::vector<Point*> & side_points = f->CornerPoints();
       for ( std::vector<Point*>::const_iterator i=side_points.begin();
             i!=side_points.end();
             ++i )
@@ -374,8 +374,8 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
     Facet * bot = tris[0];
     Facet * top = tris[1];
 
-    const std::vector<Point*> & bot_points = bot->Points();
-    const std::vector<Point*> & top_points = top->Points();
+    const std::vector<Point*> & bot_points = bot->CornerPoints();
+    const std::vector<Point*> & top_points = top->CornerPoints();
 
     std::vector<Point*> points( 6, static_cast<Point*>( NULL ) );
 
@@ -386,7 +386,7 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
     for ( std::vector<Facet*>::const_iterator i=quads.begin(); i!=quads.end(); ++i )
     {
       Facet * f = *i;
-      const std::vector<Point*> & side_points = f->Points();
+      const std::vector<Point*> & side_points = f->CornerPoints();
       for ( std::vector<Point*>::const_iterator i=side_points.begin();
             i!=side_points.end();
             ++i )
@@ -591,14 +591,14 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
 
     Facet * bot = quads[0];
 
-    const std::vector<Point*> & bot_points = bot->Points();
+    const std::vector<Point*> & bot_points = bot->CornerPoints();
     Point* top_point = NULL;
 
     for ( std::vector<Facet*>::iterator i=tris.begin(); i!=tris.end(); ++i )
     {
       Facet * f = *i;
 
-      const std::vector<Point*> & side_points = f->Points();
+      const std::vector<Point*> & side_points = f->CornerPoints();
       for ( std::vector<Point*>::const_iterator i=side_points.begin();
             i!=side_points.end();
             ++i )
