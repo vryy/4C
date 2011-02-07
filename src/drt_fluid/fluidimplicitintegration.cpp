@@ -3221,6 +3221,10 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   discret_->SetState("accam",accam_);
   discret_->SetState("scaaf",scaaf_);
   discret_->SetState("scaam",scaam_);
+
+  // set fine-scale vector: at this
+  discret_->SetState("fsvelaf",fsvelaf_);
+
   if (alefluid_)
   {
     discret_->SetState("dispnp", dispnp_);
