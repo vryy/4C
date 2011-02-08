@@ -33,8 +33,6 @@ Maintainer: Sophie Rausch
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"
 #include "../drt_inv_analysis/inv_analysis.H"
-#include "../drt_inv_analysis/airways_inv_analysis.H"
-#include "../drt_inv_analysis/coll_inv_analysis.H"
 #include "../drt_inv_analysis/gen_inv_analysis.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 
@@ -101,17 +99,6 @@ void STR::invanalysis()
     case INPAR::STR::inv_lung:
     {
       STR::InvAnalysis ia(actdis,solver,output);
-      ia.Integrate();
-    }
-    break;
-    case INPAR::STR::inv_airways:
-    {
-      STR::AirwaysInvAnalysis ia(actdis,solver,output);
-      ia.Integrate();
-    }
-    case INPAR::STR::inv_coll:
-    {
-      STR::CollInvAnalysis ia(actdis,solver,output);
       ia.Integrate();
     }
     break;

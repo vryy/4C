@@ -933,8 +933,6 @@ set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
 )
 set(OBJS_INV_ANALYSIS
-  src/drt_inv_analysis/airways_inv_analysis.cpp
-  src/drt_inv_analysis/coll_inv_analysis.cpp
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
