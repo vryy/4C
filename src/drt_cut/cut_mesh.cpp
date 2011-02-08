@@ -839,6 +839,9 @@ void GEO::CUT::Mesh::FindNodalDOFSets()
 
 void GEO::CUT::Mesh::CreateIntegrationCells()
 {
+#ifdef DEBUGCUTLIBRARY
+  int debugcounter = 0;
+#endif
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
         i!=cells_.end();
         ++i )
@@ -851,6 +854,9 @@ void GEO::CUT::Mesh::CreateIntegrationCells()
 //     file.close();
 
     cell->CreateIntegrationCells( *this );
+#ifdef DEBUGCUTLIBRARY
+    debugcounter += 1;
+#endif
   }
 }
 

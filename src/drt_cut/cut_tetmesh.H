@@ -395,6 +395,18 @@ namespace GEO
 
         OverlappingTriSets( const std::set<Entity<2>*> & trace,
                             Entity<2> * start_line,
+                            Entity<3> * tri )
+          : lset_( trace ),
+            full_( true )
+        {
+          if ( not InsertTri( tri ) )
+          {
+            throw std::runtime_error( "cannot reject first tri" );
+          }
+        }
+
+        OverlappingTriSets( const std::set<Entity<2>*> & trace,
+                            Entity<2> * start_line,
                             Entity<3> * tri1,
                             Entity<3> * tri2 )
           : lset_( trace ),
@@ -528,7 +540,6 @@ namespace GEO
         bool InsertTri( Entity<3> * tri )
         {
           const std::vector<Entity<2>*> tri_lines = tri->Children();
-          bool reject = false;
           for ( std::vector<Entity<2>*>::const_iterator i=tri_lines.begin();
                 i!=tri_lines.end();
                 ++i )
@@ -538,8 +549,7 @@ namespace GEO
             {
               // reject this tri, if it would overlap with any other tri
               full_ = false;
-              reject = true;
-              break;
+              return false;
             }
           }
           for ( std::vector<Entity<2>*>::const_iterator i=tri_lines.begin();
@@ -552,17 +562,13 @@ namespace GEO
             {
               lset_.erase( line );
             }
-            else if ( not reject )
+            else
             {
               lset_.insert( line );
             }
           }
-          if ( not reject )
-          {
-            tset_.insert( tri );
-            return true;
-          }
-          return false;
+          tset_.insert( tri );
+          return true;
         }
 
         friend void swap( TetMesh::OverlappingTriSets & ots1, TetMesh::OverlappingTriSets & ots2 )

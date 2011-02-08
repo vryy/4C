@@ -659,15 +659,27 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
       std::set<Entity<3>*> & line_tris = i->second;
       if ( line_tris.size() > 2 )
       {
-        // find all combinations at this line
-        for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
+        if ( trace_lines.count( line )==0 )
         {
-          Entity<3> * tri1 = *i;
-          std::set<Entity<3>*>::iterator j = i;
-          for ( ++j; j!=line_tris.end(); ++j )
+          // find all combinations at this line
+          for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
           {
-            Entity<3> * tri2 = *j;
-            overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri1, tri2 ) );
+            Entity<3> * tri1 = *i;
+            std::set<Entity<3>*>::iterator j = i;
+            for ( ++j; j!=line_tris.end(); ++j )
+            {
+              Entity<3> * tri2 = *j;
+              overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri1, tri2 ) );
+            }
+          }
+        }
+        else
+        {
+          // this is a trace line, thus there is just one tri
+          for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
+          {
+            Entity<3> * tri = *i;
+            overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri ) );
           }
         }
       }
@@ -1163,7 +1175,8 @@ bool GEO::CUT::TetMesh::FillSurfaceGaps( std::set<Entity<2>*> & surface_lines,
         {
           Entity<3> * tri = intersection[0];
 
-          if ( tri_facets_.count( tri )==0 and surface_tris.count( tri )==0 )
+          if ( //tri_facets_.count( tri )==0 and
+               surface_tris.count( tri )==0 )
           {
             surface_tris.insert( tri );
 
