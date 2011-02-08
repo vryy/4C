@@ -883,6 +883,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &iap);
 
 
+  DoubleParameter("MC_X_0",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_X_1",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_X_2",0.0,"measured displacment of the tension testing in x dir",&iap);
+  DoubleParameter("MC_Y_0",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("MC_Y_1",0.0,"measured displacment of the tension testing in y dir",&iap);
+  DoubleParameter("MC_Y_2",0.0,"measured displacment of the tension testing in y dir",&iap);
+
+
+
   // tolerance for inv_analysis
   DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
   IntParameter("INV_ANA_MAX_RUN",100,"max iterations for inverse analysis",&iap);
