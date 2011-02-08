@@ -180,10 +180,27 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi(ParameterList& params)
 
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
   {
-
     MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
     micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_readrestart");
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  New result files on the microscale                          lw 01/11|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_multi_newresultfile(ParameterList& params)
+{
+  const int ele_ID = Id();
+  RefCountPtr<MAT::Material> mat = Material();
+
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+
+    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_newresultfile");
   }
   return;
 }

@@ -703,189 +703,189 @@ void STR::AirwaysInvAnalysis::ReadInParameters()
 
 void STR::AirwaysInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 {
-  // write new material parameter
-  int num_right_ele=-1;
-  discret_->Comm().Broadcast(&p_cur[0],np_,calc_proc_);
+//   // write new material parameter
+//   int num_right_ele=-1;
+//   discret_->Comm().Broadcast(&p_cur[0],np_,calc_proc_);
 
-  {
-    for (int i=0;i<discret_->NumMyRowElements(); i++)
-    {
-      if (discret_->lRowElement(i)->Material()->MaterialType()!=INPAR::MAT::m_stvenant)
-      {
-        num_right_ele=i;
-        i=discret_->NumMyRowElements();
-      }
-    }
+//   {
+//     for (int i=0;i<discret_->NumMyRowElements(); i++)
+//     {
+//       if (discret_->lRowElement(i)->Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+//       {
+//         num_right_ele=i;
+//         i=discret_->NumMyRowElements();
+//       }
+//     }
 
 
-    cout << num_right_ele << endl;
+//     cout << num_right_ele << endl;
 
-    if (num_right_ele!=-1)
-    {
-      Teuchos::RCP<MAT::Material> material = discret_->lRowElement(num_right_ele)->Material();
-      if (material->MaterialType() == INPAR::MAT::m_lung_penalty)
-      {
-        MAT::LungPenalty* actmat = static_cast<MAT::LungPenalty*>(material.get());
-        actmat->SetC(abs(p_cur(0)));
-        actmat->SetK1(abs(p_cur(1)));
-        actmat->SetK2(abs(p_cur(2)));
-      }
-      else if (material->MaterialType() == INPAR::MAT::m_lung_ogden)
-      {
-        MAT::LungOgden* actmat = static_cast<MAT::LungOgden*>(material.get());
-        actmat->SetC(abs(p_cur(0)));
-        actmat->SetK1(abs(p_cur(1)));
-        actmat->SetK2(abs(p_cur(2)));
-      }
-      else if (material->MaterialType() == INPAR::MAT::m_elasthyper)
-      {
-        // Create a pointer on the Material
-        const MAT::ElastHyper* actmat = static_cast<const MAT::ElastHyper*>(material.get());
+//     if (num_right_ele!=-1)
+//     {
+//       Teuchos::RCP<MAT::Material> material = discret_->lRowElement(num_right_ele)->Material();
+//       if (material->MaterialType() == INPAR::MAT::m_lung_penalty)
+//       {
+//         MAT::LungPenalty* actmat = static_cast<MAT::LungPenalty*>(material.get());
+//         actmat->SetC(abs(p_cur(0)));
+//         actmat->SetK1(abs(p_cur(1)));
+//         actmat->SetK2(abs(p_cur(2)));
+//       }
+//       else if (material->MaterialType() == INPAR::MAT::m_lung_ogden)
+//       {
+//         MAT::LungOgden* actmat = static_cast<MAT::LungOgden*>(material.get());
+//         actmat->SetC(abs(p_cur(0)));
+//         actmat->SetK1(abs(p_cur(1)));
+//         actmat->SetK2(abs(p_cur(2)));
+//       }
+//       else if (material->MaterialType() == INPAR::MAT::m_elasthyper)
+//       {
+//         // Create a pointer on the Material
+//         const MAT::ElastHyper* actmat = static_cast<const MAT::ElastHyper*>(material.get());
 
-        // For each of the summands of the hyperelastic material we need to add the
-        // parameters to the inverse analysis
+//         // For each of the summands of the hyperelastic material we need to add the
+//         // parameters to the inverse analysis
 
-        // Problems with beta, is it the only negative parameter? Maybe
-        // we should exclude it
+//         // Problems with beta, is it the only negative parameter? Maybe
+//         // we should exclude it
 
-        //itterator to go through the parameters
-        int j = 0;
+//         //itterator to go through the parameters
+//         int j = 0;
 
-        for (int i=0; i< actmat->NumMat(); i++)
-        {
-          //get the material of the summand
-          Teuchos::RCP< MAT::ELASTIC::Summand > summat =
-            MAT::ELASTIC::Summand::Factory(actmat->MatID(i));
+//         for (int i=0; i< actmat->NumMat(); i++)
+//         {
+//           //get the material of the summand
+//           Teuchos::RCP< MAT::ELASTIC::Summand > summat =
+//             MAT::ELASTIC::Summand::Factory(actmat->MatID(i));
 
-          switch (summat->MaterialType())
-          {
-          case INPAR::MAT::mes_couplogneohooke:
-          {
-            MAT::ELASTIC::CoupLogNeoHooke* actmat2 =
-              static_cast<MAT::ELASTIC::CoupLogNeoHooke*>(summat.get());
-            //actmat2->SetMue(abs(p_cur(j)));
-            //actmat2->SetLambda(abs(p_cur(j+1)));
-            //actmat2->SetParmode(abs(p_cur(j+2)));
-            actmat2->SetYoungs(abs(p_cur(j)));
-            actmat2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
-            j = j+2;
-            break;
-          }
-          case INPAR::MAT::mes_coupblatzko:
-          {
-            MAT::ELASTIC::CoupBlatzKo* actmat2 =
-              static_cast<MAT::ELASTIC::CoupBlatzKo*>(summat.get());
-            actmat2->SetMue(abs(p_cur(j)));
-            //actmat2->SetF(abs(p_cur(j+1)));
-            actmat2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
-            j = j+2;
-            break;
-          }
-          case INPAR::MAT::mes_isoneohooke:
-          {
-            MAT::ELASTIC::IsoNeoHooke* actmat2 =
-              static_cast<MAT::ELASTIC::IsoNeoHooke*>(summat.get());
-            actmat2->SetMue(abs(p_cur(j)));
-            j = j+1;
-            break;
-          }
-          case INPAR::MAT::mes_isoyeoh:
-          {
-            MAT::ELASTIC::IsoYeoh* actmat2 =
-              static_cast<MAT::ELASTIC::IsoYeoh*>(summat.get());
-            actmat2->SetC1(abs(p_cur(j)));
-            actmat2->SetC2(abs(p_cur(j+1)));
-            actmat2->SetC3(abs(p_cur(j+2)));
-            j = j+3;
-            break;
-          }
-          case INPAR::MAT::mes_isoquad:
-          {
-            MAT::ELASTIC::IsoQuad* actmat2 =
-              static_cast<MAT::ELASTIC::IsoQuad*>(summat.get());
-            actmat2->SetC(abs(p_cur(j)));
-            j = j+1;
-            break;
-          }
-          case INPAR::MAT::mes_isocub:
-          {
-            MAT::ELASTIC::IsoCub* actmat2 =
-              static_cast<MAT::ELASTIC::IsoCub*>(summat.get());
-            actmat2->SetC(abs(p_cur(j)));
-            j = j+1;
-            break;
-          }
-          case INPAR::MAT::mes_isoexpo:
-          {
-            MAT::ELASTIC::IsoExpo* actmat2 =
-              static_cast<MAT::ELASTIC::IsoExpo*>(summat.get());
-            actmat2->SetK1(abs(p_cur(j)));
-            actmat2->SetK2(abs(p_cur(j+1)));
-            j = j+2;
-            break;
-          }
-          case INPAR::MAT::mes_isomooneyrivlin:
-          {
-            MAT::ELASTIC::IsoMooneyRivlin* actmat2 =
-              static_cast<MAT::ELASTIC::IsoMooneyRivlin*>(summat.get());
-            actmat2->SetC1(abs(p_cur(j)));
-            actmat2->SetC2(abs(p_cur(j+1)));
-            j = j+2;
-            break;
-          }
-          case INPAR::MAT::mes_volsussmanbathe:
-          {
-            MAT::ELASTIC::VolSussmanBathe* actmat2 =
-              static_cast<MAT::ELASTIC::VolSussmanBathe*>(summat.get());
-            actmat2->SetKappa(abs(p_cur(j)));
-            j = j+1;
-            break;
-          }
-          case INPAR::MAT::mes_volpenalty:
-          {
-            MAT::ELASTIC::VolPenalty* actmat2 =
-              static_cast<MAT::ELASTIC::VolPenalty*>(summat.get());
-            actmat2->SetEpsilon(abs(p_cur(j)));
-            actmat2->SetGamma(abs(p_cur(j+1)));
-            j = j+2;
-            break;
-          }
-          case INPAR::MAT::mes_vologden:
-          {
-            MAT::ELASTIC::VolOgden* actmat2 =
-              static_cast<MAT::ELASTIC::VolOgden*>(summat.get());
-            actmat2->SetKappa(abs(p_cur(j)));
-            //actmat2->SetBeta(abs(p_cur(j+1)));
-            j = j+1;
-            break;
-          }
-          case INPAR::MAT::mes_coupanisoexpotwo:
-          {
-            MAT::ELASTIC::CoupAnisoExpoTwo* actmat2 =
-              static_cast<MAT::ELASTIC::CoupAnisoExpoTwo*>(summat.get());
-            actmat2->SetK1(abs(p_cur(j)));
-            actmat2->SetK2(abs(p_cur(j+1)));
-            actmat2->SetK3(abs(p_cur(j+2)));
-            actmat2->SetK4(abs(p_cur(j+3)));
-            j = j+4;
-            break;
-          }
-          case INPAR::MAT::mes_coupanisoneohooketwo:
-          {
-            MAT::ELASTIC::CoupAnisoNeoHookeTwo* actmat2 =
-              static_cast<MAT::ELASTIC::CoupAnisoNeoHookeTwo*>(summat.get());
-            actmat2->SetC1(abs(p_cur(j)));
-            actmat2->SetC2(abs(p_cur(j+1)));
-            j = j+2;
-            break;
-          }
-          default:
-            dserror("cannot deal with this material");
-          }
-        }
-      }
-    }
-  }
+//           switch (summat->MaterialType())
+//           {
+//           case INPAR::MAT::mes_couplogneohooke:
+//           {
+//             MAT::ELASTIC::CoupLogNeoHooke* actmat2 =
+//               static_cast<MAT::ELASTIC::CoupLogNeoHooke*>(summat.get());
+//             //actmat2->SetMue(abs(p_cur(j)));
+//             //actmat2->SetLambda(abs(p_cur(j+1)));
+//             //actmat2->SetParmode(abs(p_cur(j+2)));
+//             actmat2->SetYoungs(abs(p_cur(j)));
+//             actmat2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+//             j = j+2;
+//             break;
+//           }
+//           case INPAR::MAT::mes_coupblatzko:
+//           {
+//             MAT::ELASTIC::CoupBlatzKo* actmat2 =
+//               static_cast<MAT::ELASTIC::CoupBlatzKo*>(summat.get());
+//             actmat2->SetMue(abs(p_cur(j)));
+//             //actmat2->SetF(abs(p_cur(j+1)));
+//             actmat2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+//             j = j+2;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isoneohooke:
+//           {
+//             MAT::ELASTIC::IsoNeoHooke* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoNeoHooke*>(summat.get());
+//             actmat2->SetMue(abs(p_cur(j)));
+//             j = j+1;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isoyeoh:
+//           {
+//             MAT::ELASTIC::IsoYeoh* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoYeoh*>(summat.get());
+//             actmat2->SetC1(abs(p_cur(j)));
+//             actmat2->SetC2(abs(p_cur(j+1)));
+//             actmat2->SetC3(abs(p_cur(j+2)));
+//             j = j+3;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isoquad:
+//           {
+//             MAT::ELASTIC::IsoQuad* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoQuad*>(summat.get());
+//             actmat2->SetC(abs(p_cur(j)));
+//             j = j+1;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isocub:
+//           {
+//             MAT::ELASTIC::IsoCub* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoCub*>(summat.get());
+//             actmat2->SetC(abs(p_cur(j)));
+//             j = j+1;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isoexpo:
+//           {
+//             MAT::ELASTIC::IsoExpo* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoExpo*>(summat.get());
+//             actmat2->SetK1(abs(p_cur(j)));
+//             actmat2->SetK2(abs(p_cur(j+1)));
+//             j = j+2;
+//             break;
+//           }
+//           case INPAR::MAT::mes_isomooneyrivlin:
+//           {
+//             MAT::ELASTIC::IsoMooneyRivlin* actmat2 =
+//               static_cast<MAT::ELASTIC::IsoMooneyRivlin*>(summat.get());
+//             actmat2->SetC1(abs(p_cur(j)));
+//             actmat2->SetC2(abs(p_cur(j+1)));
+//             j = j+2;
+//             break;
+//           }
+//           case INPAR::MAT::mes_volsussmanbathe:
+//           {
+//             MAT::ELASTIC::VolSussmanBathe* actmat2 =
+//               static_cast<MAT::ELASTIC::VolSussmanBathe*>(summat.get());
+//             actmat2->SetKappa(abs(p_cur(j)));
+//             j = j+1;
+//             break;
+//           }
+//           case INPAR::MAT::mes_volpenalty:
+//           {
+//             MAT::ELASTIC::VolPenalty* actmat2 =
+//               static_cast<MAT::ELASTIC::VolPenalty*>(summat.get());
+//             actmat2->SetEpsilon(abs(p_cur(j)));
+//             actmat2->SetGamma(abs(p_cur(j+1)));
+//             j = j+2;
+//             break;
+//           }
+//           case INPAR::MAT::mes_vologden:
+//           {
+//             MAT::ELASTIC::VolOgden* actmat2 =
+//               static_cast<MAT::ELASTIC::VolOgden*>(summat.get());
+//             actmat2->SetKappa(abs(p_cur(j)));
+//             //actmat2->SetBeta(abs(p_cur(j+1)));
+//             j = j+1;
+//             break;
+//           }
+//           case INPAR::MAT::mes_coupanisoexpotwo:
+//           {
+//             MAT::ELASTIC::CoupAnisoExpoTwo* actmat2 =
+//               static_cast<MAT::ELASTIC::CoupAnisoExpoTwo*>(summat.get());
+//             actmat2->SetK1(abs(p_cur(j)));
+//             actmat2->SetK2(abs(p_cur(j+1)));
+//             actmat2->SetK3(abs(p_cur(j+2)));
+//             actmat2->SetK4(abs(p_cur(j+3)));
+//             j = j+4;
+//             break;
+//           }
+//           case INPAR::MAT::mes_coupanisoneohooketwo:
+//           {
+//             MAT::ELASTIC::CoupAnisoNeoHookeTwo* actmat2 =
+//               static_cast<MAT::ELASTIC::CoupAnisoNeoHookeTwo*>(summat.get());
+//             actmat2->SetC1(abs(p_cur(j)));
+//             actmat2->SetC2(abs(p_cur(j+1)));
+//             j = j+2;
+//             break;
+//           }
+//           default:
+//             dserror("cannot deal with this material");
+//           }
+//         }
+//       }
+//     }
+//   }
 }
 
 

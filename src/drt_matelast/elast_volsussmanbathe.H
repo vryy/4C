@@ -60,6 +60,11 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetKappa(const double kappa) { kappa_ = kappa; }
+      //@}
+
     };  // class VolSussmanBathe
 
   }  // namespace PAR
@@ -150,10 +155,6 @@ namespace ELASTIC
 
     //@}
 
-    /// @name Write methods
-    //@{
-    void SetKappa(const double kappa) { params_->kappa_ = kappa; }
-    //@}
 
   private:
 

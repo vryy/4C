@@ -64,6 +64,13 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetMue(const double mue) { mue_ = mue; }
+      void SetNue(const double nue) { nue_ = nue; }
+      void SetF(const double f) { f_ = f; }
+      //@}
+
     };  // class CoupBlatzKo
 
   }  // namespace PAR
@@ -156,13 +163,6 @@ namespace ELASTIC
     double Nue() const { return params_->nue_; }
     double F() const { return params_->f_; }
 
-    //@}
-
-    /// @name Write methods
-    //@{
-    void SetMue(const double mue) { params_->mue_ = mue; }
-    void SetNue(const double nue) { params_->nue_ = nue; }
-    void SetF(const double f) { params_->f_ = f; }
     //@}
 
   private:

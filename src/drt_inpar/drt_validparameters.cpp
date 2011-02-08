@@ -952,6 +952,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "filename of file containing measured displacements",
                             &iap);
 
+  setNumericStringParameter("INV_LIST","-1",
+                            "IDs of materials that have to be fitted",
+                            &iap);
+
+  setNumericStringParameter("INV_EH_LIST","-1",
+                            "IDs of materials that have to be fitted",
+                            &iap);
+
+  setStringToIntegralParameter<int>("INV_MULTI_OUT","no",
+                                    "output for optimization on micro-scale",
+                                    yesnotuple,yesnovalue,&iap);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 

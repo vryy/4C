@@ -63,6 +63,12 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetEpsilon(const double eps) { eps_ = eps; }
+      void SetGamma(const double gam) { gam_ = gam; }
+      //@}
+
     };  // class VolPenalty
 
   }  // namespace PAR
@@ -150,12 +156,6 @@ namespace ELASTIC
     double Epsilon() const { return params_->eps_; }
     double Gamma() const { return params_->gam_; }
 
-    //@}
-
-    /// @name Write methods
-    //@{
-    void SetEpsilon(const double eps) { params_->eps_ = eps; }
-    void SetGamma(const double gam) { params_->gam_ = gam; }
     //@}
 
 

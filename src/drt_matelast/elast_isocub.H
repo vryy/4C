@@ -57,6 +57,11 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetC(const double c) { c_ = c; }
+      //@}
+
     };  // class IsoCub
 
   }  // namespace PAR
@@ -143,11 +148,6 @@ namespace ELASTIC
     //@{
     double C() const { return params_->c_; }
 
-    //@}
-
-    /// @name Write methods
-    //@{
-    void SetC(const double c) { params_->c_ = c; }
     //@}
 
   private:

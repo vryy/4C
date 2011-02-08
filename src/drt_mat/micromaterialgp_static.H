@@ -44,6 +44,9 @@ public:
   /// Read restart
   void ReadRestart();
 
+  /// New result file (for inverse analysis)
+  void NewResultFile(bool eleowner, std::string& newfilename);
+
   /// Perform microscale simulation
   void PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                               LINALG::Matrix<6,1>* stress,

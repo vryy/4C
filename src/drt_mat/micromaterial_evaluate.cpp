@@ -84,6 +84,12 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   {
     actmicromatgp->ReadRestart();
   }
+  // read restart if necessary
+  if (action == "multi_newresultfile")
+  {
+    std::string newfilename;
+    actmicromatgp->NewResultFile(eleowner, newfilename);
+  }
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
   else
   {

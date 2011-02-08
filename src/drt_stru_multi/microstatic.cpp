@@ -238,10 +238,11 @@ V0_(V0)
     V0_ = V0;
   else
   {
-    cout << "You have not specified the initial volume of the RVE with number "
-         << microdisnum_ << ", therefore it will now be calculated.\n\n"
-         << "CAUTION: This calculation works only for RVEs without holes penetrating the surface!\n"
-         << endl;
+    if (DRT::Problem::Instance()->Dis(0,0)->Comm().MyPID()==0)
+      cout << "You have not specified the initial volume of the RVE with number "
+           << microdisnum_ << ", therefore it will now be calculated.\n\n"
+           << "CAUTION: This calculation works only for RVEs without holes penetrating the surface!\n"
+           << endl;
 
     // -------------------------- Calculate initial volume of microstructure
     ParameterList p;

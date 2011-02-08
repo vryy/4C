@@ -71,6 +71,15 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetMue    (const double mue    ) { mue_     =  mue    ; }
+      void SetLambda (const double lambda ) { lambda_  =  lambda ; }
+      void SetParmode(const int    parmode) { parmode_ =  parmode; }
+      void SetYoungs (const double youngs ) { youngs_  =  youngs ; }
+      void SetNue    (const double nue    ) { nue_     =  nue    ; }
+      //@}
+
     };  // class CoupLogNeoHooke
 
   }  // namespace PAR
@@ -227,16 +236,6 @@ namespace ELASTIC
     double Nue() const { return params_->nue_; }
 
     //@}
-
-    /// @name Write methods
-    //@{
-    void SetMue    (const double mue    ) { params_->mue_     =  mue    ; }
-    void SetLambda (const double lambda ) { params_->lambda_  =  lambda ; }
-    void SetParmode(const int    parmode) { params_->parmode_ =  parmode; }
-    void SetYoungs (const double youngs ) { params_->youngs_  =  youngs ; }
-    void SetNue    (const double nue    ) { params_->nue_     =  nue    ; }
-    //@}
-
 
   private:
 

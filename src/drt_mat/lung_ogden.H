@@ -60,6 +60,13 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetC(const double c) { c_ = c; }
+      void SetK1(const double k1) { k1_ = k1; }
+      void SetK2(const double k2) { k2_ = k2; }
+      //@}
+
     };  // class LungOgden
 
   }  // namespace PAR
@@ -138,13 +145,6 @@ private:
     double Kappa() const { return params_->kappa_; }
     double Beta() const { return params_->beta_; }
 
-    //@}
-
-    /// @name Write methods
-    //@{
-    void SetC(const double c) { params_->c_ = c; }
-    void SetK1(const double k1) { params_->k1_ = k1; }
-    void SetK2(const double k2) { params_->k2_ = k2; }
     //@}
 
     // material type

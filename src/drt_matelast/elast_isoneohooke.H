@@ -60,6 +60,11 @@ namespace ELASTIC
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// @name Write methods
+      //@{
+      void SetMue(const double mue) { mue_ = mue; }
+      //@}
+
     };  // class IsoNeoHooke
 
   }  // namespace PAR
@@ -162,10 +167,6 @@ namespace ELASTIC
 
     //@}
 
-    /// @name Write methods
-    //@{
-    void SetMue(const double mue) { params_->mue_ = mue; }
-    //@}
   private:
 
     /// my material parameters

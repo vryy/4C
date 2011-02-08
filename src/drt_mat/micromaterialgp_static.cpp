@@ -79,70 +79,8 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // create and initialize "empty" EAS history map
   EasInit();
 
-  // set up micro output
-  //
-  // Get the macro output prefix and insert element and gauss point
-  // identifier. We use the original name here and rely on our (micro)
-  // OutputControl object below to act just like the macro (default)
-  // OutputControl. In particular we assume that there are always micro and
-  // macro control files on restart.
-  RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance(0)->OutputControlFile();
-  std::string microprefix = macrocontrol->RestartName();
-  std::string micronewprefix = macrocontrol->NewOutputFileName();
-
-  // figure out how the file we restart from is called on the microscale
-  size_t pos = microprefix.rfind('-');
-  if (pos!=std::string::npos)
-  {
-    std::string number = microprefix.substr(pos+1);
-    std::string prefix = microprefix.substr(0,pos);
-    ostringstream s;
-    s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
-    microprefix = s.str();
-    s << "-" << number;
-    restartname_ = s.str();
-  }
-  else
-  {
-    ostringstream s;
-    s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
-    restartname_ = s.str();
-  }
-
-  // figure out how the new output file is called on the microscale
-  // note: the trailing number must be the same as on the macroscale
   std::string newfilename;
-  size_t posn = micronewprefix.rfind('-');
-  if (posn!=std::string::npos)
-  {
-    std::string number = micronewprefix.substr(posn+1);
-    std::string prefix = micronewprefix.substr(0,posn);
-    ostringstream s;
-    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
-    newfilename = s.str();
-  }
-  else
-  {
-    ostringstream s;
-    s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
-    newfilename = s.str();
-  }
-
-  if (eleowner)
-  {
-    RCP<OutputControl> microcontrol =
-      rcp(new OutputControl(microdis->Comm(),
-                            "structure",
-                            microproblem->SpatialApproximation(),
-                            "micro-input-file-not-known",
-                            restartname_,
-                            newfilename,
-                            genprob.ndim,
-                            genprob.restart,
-                            macrocontrol->FileSteps()));
-
-    micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
-  }
+  NewResultFile(eleowner, newfilename);
 
   // we are using some parameters from the macroscale input file
   // (e.g. time step size, alphaf etc. which need to be consistent in
@@ -198,6 +136,81 @@ void MAT::MicroMaterialGP::ReadRestart()
   disn_->Update(1.0, *dis_, 0.0);
   // both lastalpha and oldalpha are the same
   *oldalpha_ = *lastalpha_;
+}
+
+
+/// New resultfile
+
+void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename)
+{
+  // set up micro output
+  //
+  // Get the macro output prefix and insert element and gauss point
+  // identifier. We use the original name here and rely on our (micro)
+  // OutputControl object below to act just like the macro (default)
+  // OutputControl. In particular we assume that there are always micro and
+  // macro control files on restart.
+  RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance(0)->OutputControlFile();
+  std::string microprefix = macrocontrol->RestartName();
+  std::string micronewprefix = macrocontrol->NewOutputFileName();
+
+  RefCountPtr<DRT::Problem> microproblem = DRT::Problem::Instance(microdisnum_);
+  RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
+
+  // figure out how the file we restart from is called on the microscale
+  size_t pos = microprefix.rfind('-');
+  if (pos!=std::string::npos)
+  {
+    std::string number = microprefix.substr(pos+1);
+    std::string prefix = microprefix.substr(0,pos);
+    ostringstream s;
+    s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
+    microprefix = s.str();
+    s << "-" << number;
+    restartname_ = s.str();
+  }
+  else
+  {
+    ostringstream s;
+    s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    restartname_ = s.str();
+  }
+
+  // figure out how the new output file is called on the microscale
+  // note: the trailing number must be the same as on the macroscale
+  size_t posn = micronewprefix.rfind('-');
+  if (posn!=std::string::npos)
+  {
+    std::string number = micronewprefix.substr(posn+1);
+    std::string prefix = micronewprefix.substr(0,posn);
+    ostringstream s;
+    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    newfilename = s.str();
+  }
+  else
+  {
+    ostringstream s;
+    s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    newfilename = s.str();
+  }
+
+  if (eleowner)
+  {
+    RCP<OutputControl> microcontrol =
+      rcp(new OutputControl(microdis->Comm(),
+                            "structure",
+                            microproblem->SpatialApproximation(),
+                            "micro-input-file-not-known",
+                            restartname_,
+                            newfilename,
+                            genprob.ndim,
+                            genprob.restart,
+                            macrocontrol->FileSteps()));
+
+    micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
+  }
+
+  return;
 }
 
 
