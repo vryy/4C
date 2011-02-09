@@ -189,16 +189,19 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
   LINALG::Matrix<3,1> b;
   LINALG::Matrix<3,1> dx;
 
+  int off_count = 0;
+
   // calculate rhs
 
   xsi_ = 0;
 
   const double tol = LINSOLVETOL; // / scale_;
 
-#ifdef DEBUG
-  std::vector<double> res;
-  res.push_back( tol );
-#endif
+// #ifdef DEBUG
+//   std::vector<double> res;
+//   res.push_back( tol );
+//   std::vector<LINALG::Matrix<3,1> > xxx;
+// #endif
 
   DRT::UTILS::shape_function_2D(surfaceFunct, xsi_(0), xsi_(1), sidetype);
   DRT::UTILS::shape_function_1D(lineFunct, xsi_(2), edgetype);
@@ -255,6 +258,17 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
     xsi_ += dx;
 
+    if ( not SurfaceWithinLimits() or not LineWithinLimits() )
+    {
+      off_count += 1;
+      if ( off_count==3 )
+        return false;
+    }
+    else
+    {
+      off_count = 0;
+    }
+
     // calculate rhs
 
     DRT::UTILS::shape_function_2D(surfaceFunct, xsi_(0), xsi_(1), sidetype);
@@ -279,23 +293,49 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     double residual = b.Norm2();
     double incr = dx.Norm2();
 
-#ifdef DEBUG
-    res.push_back( residual );
-    res.push_back( incr );
-#endif
+// #ifdef DEBUG
+//     res.push_back( residual );
+//     res.push_back( incr );
+//     xxx.push_back( xsi_ );
+// #endif
 
     if ( residual < tol and incr < tol )
     {
       return true;
     }
   }
-// #ifdef DEBUG
+
+//   std::cout << "============\n";
+//   std::cout << xsi_;
+//   std::cout << b;
+//   std::cout << dx;
 //   std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
 //   std::cout << "\n";
-//   std::cout << xsi_;
-//   std::cout << xyze_surfaceElement_;
-//   std::cout << xyze_lineElement_;
-// #endif
+
+//   LINALG::Matrix<3, numNodesLine> xyze_l( xyze_lineElement_ );
+//   xyze_l.Scale( scale_ );
+//   std::cout << xyze_l;
+
+//   LINALG::Matrix<3, numNodesSurface> xyze_s( xyze_surfaceElement_ );
+//   xyze_s.Scale( scale_ );
+//   std::cout << xyze_s;
+
+//   FinalPoint();
+//   std::cout << x_;
+
+//   DRT::UTILS::shape_function_2D(surfaceFunct, xsi_(0), xsi_(1), sidetype);
+
+//   b = 0;
+
+//   for ( int inode=0; inode<numNodesSurface; ++inode )
+//     for( int isd=0; isd<3; ++isd )
+//     {
+//       b(isd) += xyze_surfaceElement_(isd,inode) * surfaceFunct(inode);
+//     }
+//   b.Scale( scale_ );
+//   std::cout << b;
+
+//   std::copy( xxx.begin(), xxx.end(), std::ostream_iterator<LINALG::Matrix<3,1> >( std::cout, " " ) );
 
   // Failed to converge Newton loop! This is bad. We have probably a very slow
   // cut here. But lets assume we are as close to the solution as possible and
