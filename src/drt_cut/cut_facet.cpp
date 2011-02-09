@@ -696,11 +696,18 @@ void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetr
 //     throw std::runtime_error( "cannot create tri3 boundary cell on facet" );
 //   }
 
-  bcells.insert( mesh.NewTri3Cell( x, volume, this ) );
+  BoundaryCell * bc = mesh.NewTri3Cell( x, volume, this );
+  bcells.insert( bc );
+  if ( bcells_.size()==0 )
+  {
+    bcells_.insert( bc );
+  }
 }
 
 void GEO::CUT::Facet::NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells )
 {
+  bool mine = bcells_.size()==0;
+
   //if ( bcells_.size()==0 )
   {
 #if 0
@@ -720,7 +727,12 @@ void GEO::CUT::Facet::NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std:
             ++i )
       {
         const Epetra_SerialDenseMatrix & x = *i;
-        bcells.insert( mesh.NewTri3Cell( x, volume, this ) );
+        BoundaryCell * bc = mesh.NewTri3Cell( x, volume, this );
+        bcells.insert( bc );
+        if ( mine )
+        {
+          bcells_.insert( bc );
+        }
       }
     }
   }
@@ -733,14 +745,21 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const Epet
 //     throw std::runtime_error( "cannot create quad4 boundary cell on facet" );
 //   }
 
-  bcells.insert( mesh.NewQuad4Cell( x, volume, this ) );
+  BoundaryCell * bc = mesh.NewQuad4Cell( x, volume, this );
+  bcells.insert( bc );
+  if ( bcells_.size()==0 )
+  {
+    bcells_.insert( bc );
+  }
 }
 
 void GEO::CUT::Facet::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
 {
-  if ( cells_.size()==0 )
-    throw std::runtime_error( "no volume cells" );
-  ( *cells_.begin() )->GetBoundaryCells( bcells );
+//   if ( cells_.size()==0 )
+//     throw std::runtime_error( "no volume cells" );
+//   VolumeCell * vc = *cells_.begin();
+//   vc->GetBoundaryCells( bcells );
+  std::copy( bcells_.begin(), bcells_.end(), std::inserter( bcells, bcells.begin() ) );
 }
 
 void GEO::CUT::Facet::FindCornerPoints()

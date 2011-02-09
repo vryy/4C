@@ -594,6 +594,7 @@ namespace GEO
       {
         std::set<Entity<3>*> tris_;
         std::vector<OverlappingTriSets> overlappingsets_;
+        std::set<Entity<2>*> trace_lines_;
         bool done_;
 
         FacetInfo()
@@ -610,6 +611,52 @@ namespace GEO
         bool IsUnique()
         {
           return overlappingsets_.size()==1;
+        }
+
+        void FindTrace( TetMesh * tm, Facet * f )
+        {
+          std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
+          f->GetLines( lines );
+
+          for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin();
+                i!=lines.end();
+                ++i )
+          {
+            const std::pair<Point*, Point*> & l = i->first;
+            Handle<2> h = tm->MakeHandle( l.first, l.second );
+            std::map<Handle<2>, Entity<2> >::iterator j = tm->tet_lines_.find( h );
+            if ( j!=tm->tet_lines_.end() )
+            {
+              Entity<2> & line = j->second;
+              trace_lines_.insert( &line );
+            }
+          }
+        }
+
+        void TestTraceLines()
+        {
+          for ( std::set<Entity<2>*>::iterator i=trace_lines_.begin();
+                i!=trace_lines_.end();
+                ++i )
+          {
+            Entity<2> * line = *i;
+            const std::vector<Entity<3>*> & tris = line->Parents();
+            int count = 0;
+            for ( std::vector<Entity<3>*>::const_iterator i=tris.begin();
+                  i!=tris.end();
+                  ++i )
+            {
+              Entity<3> * tri = *i;
+              if ( tris_.count( tri ) > 0 )
+              {
+                count += 1;
+              }
+            }
+            if ( count > 1 )
+            {
+              throw std::runtime_error( "expect one triangle at each trace line" );
+            }
+          }
         }
 
         void FindFullOTS( std::vector<OverlappingTriSets*> & matches )
@@ -790,6 +837,8 @@ namespace GEO
 
       /// Get tri coordinates at the cut facets in the proper order
       void FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+
+      void AddBrokenTris( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
       void FindProperSides( const std::set<Entity<3>*> & tris, std::vector<std::vector<int> > & sides );
 

@@ -188,6 +188,10 @@ private:
   Point::PointPosition position_;
 
   std::set<VolumeCell*> cells_;
+
+  /// one set of boundary cells if this is a cut surface facet (then there
+  /// exist two sets, one for each volume)
+  std::set<BoundaryCell*> bcells_;
 };
 
 //inline int EntityId( const Facet & f ) { return f.InternalId(); }

@@ -116,6 +116,7 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
 
   FixBrokenTets();
   FillCutSides( sides_xyz_ );
+  AddBrokenTris( sides_xyz_ );
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
   GmshWriteSurfaceTris();
@@ -613,23 +614,7 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
 
     // find all lines surrounding the facet
 
-    std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
-    f->GetLines( lines );
-
-    std::set<Entity<2>*> trace_lines;
-    for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin();
-          i!=lines.end();
-          ++i )
-    {
-      const std::pair<Point*, Point*> & l = i->first;
-      Handle<2> h = MakeHandle( l.first, l.second );
-      std::map<Handle<2>, Entity<2> >::iterator j = tet_lines_.find( h );
-      if ( j!=tet_lines_.end() )
-      {
-        Entity<2> & line = j->second;
-        trace_lines.insert( &line );
-      }
-    }
+    fi.FindTrace( this, f );
 
     // find number of tris at all lines
 
@@ -659,7 +644,7 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
       std::set<Entity<3>*> & line_tris = i->second;
       if ( line_tris.size() > 2 )
       {
-        if ( trace_lines.count( line )==0 )
+        if ( fi.trace_lines_.count( line )==0 )
         {
           // find all combinations at this line
           for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
@@ -669,7 +654,7 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
             for ( ++j; j!=line_tris.end(); ++j )
             {
               Entity<3> * tri2 = *j;
-              overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri1, tri2 ) );
+              overlappingsets.push_back( OverlappingTriSets( fi.trace_lines_, line, tri1, tri2 ) );
             }
           }
         }
@@ -679,7 +664,7 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
           for ( std::set<Entity<3>*>::iterator i=line_tris.begin(); i!=line_tris.end(); ++i )
           {
             Entity<3> * tri = *i;
-            overlappingsets.push_back( OverlappingTriSets( trace_lines, line, tri ) );
+            overlappingsets.push_back( OverlappingTriSets( fi.trace_lines_, line, tri ) );
           }
         }
       }
@@ -688,7 +673,7 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
     // There are no illegal lines, just use the normal trace.
     if ( overlappingsets.size()==0 )
     {
-      overlappingsets.push_back( OverlappingTriSets( trace_lines ) );
+      overlappingsets.push_back( OverlappingTriSets( fi.trace_lines_ ) );
 
       // There are no options. The order of lines in input does not matter in
       // any way. Ignore it.
@@ -1252,8 +1237,6 @@ void GEO::CUT::TetMesh::ActivateCutSurfaceTris()
 /// test for illegal (cutted) cut surfaces
 void GEO::CUT::TetMesh::TestCutSurface()
 {
-  std::set<Entity<2>*> inner_lines;
-
   for ( std::map<Facet*, FacetInfo>::iterator i=facet_info_.begin();
         i!=facet_info_.end();
         ++i )
@@ -1278,91 +1261,18 @@ void GEO::CUT::TetMesh::TestCutSurface()
         {
           Entity<2> & line = **i;
           int count = line.CountMarkedParents( active_surface_tris_ );
-          bool isline = f->IsLine( points_[line[0]], points_[line[1]] );
-#if 1
           if ( count > 2 )
           {
             throw std::runtime_error( "fork in the road" );
           }
-#endif
-          if ( count == 1 and not isline )
+          if ( count == 1 )
           {
-            throw std::runtime_error( "gap in cut facet" );
-            //inner_lines.insert( &line );
-          }
-#if 0
-          if ( count == 2 and isline )
-          {
-            throw std::runtime_error( "two surface elements at line" );
-          }
-#endif
-        }
-      }
-    }
-  }
-
-  if ( inner_lines.size()>0 )
-  {
-    // So we have lines within facets that are not connected to two
-    // tris. Select all tris these lines are connected with, provided
-    //
-    // - the tri is a cut surface tri
-    // - the tri is (not yet) activated at the surface
-    // - the tri has at least one parent with a non cut surface point
-
-    std::set<Entity<3>*> inner_tris;
-    for ( std::set<Entity<2>*>::iterator i=inner_lines.begin(); i!=inner_lines.end(); ++i )
-    {
-      Entity<2> * line = *i;
-      const std::vector<Entity<3>*> & tris = line->Parents();
-      for ( std::vector<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
-      {
-        Entity<3> * tri = *i;
-        if ( not active_surface_tris_[tri->Id()] and tri->AllOnCutSurface( points_ ) )
-        {
-          const std::vector<Entity<4>*> & inner_tets = tri->Parents();
-          for ( std::vector<Entity<4>*>::const_iterator i=inner_tets.begin();
-                i!=inner_tets.end();
-                ++i )
-          {
-            Entity<4> * tet = *i;
-            Point * p = points_[tet->OtherPoint( tri )];
-            if ( p->Position()!=Point::oncutsurface )
-            {
-              inner_tris.insert( tri );
-              break;
-            }
+            bool isline = f->IsLine( points_[line[0]], points_[line[1]] );
+            if ( not isline )
+              throw std::runtime_error( "gap in cut facet" );
           }
         }
       }
-    }
-
-    for ( std::set<Entity<3>*>::iterator i=inner_tris.begin(); i!=inner_tris.end(); ++i )
-    {
-      Entity<3> * tri = *i;
-
-      // activate all tris found in that way
-      active_surface_tris_[tri->Id()] = true;
-      broken_tris_.insert( tri );
-
-#if 1
-      std::cout << "WARNING: Last minute activation of non-facet tri " << tri->Id() << "\n";
-#endif
-
-      const std::vector<Entity<2>*> & lines = tri->Children();
-      for ( std::vector<Entity<2>*>::const_iterator i=lines.begin(); i!=lines.end(); ++i )
-      {
-        Entity<2> * line = *i;
-        inner_lines.erase( line );
-      }
-    }
-#ifdef TETMESH_GMSH_DEBUG_OUTPUT
-    GmshWriteTriSet( "brokentris3", broken_tris_ );
-#endif
-
-    if ( inner_lines.size()>0 )
-    {
-      throw std::runtime_error( "remaining gap in cut facet" );
     }
   }
 }
@@ -1479,7 +1389,7 @@ void GEO::CUT::TetMesh::ClearExternalTets()
 }
 
 /// Get tri coordinates at the cut facets in the proper order
-void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
+void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
 {
   // rotate broken tris and find unique facet
 
@@ -1668,7 +1578,11 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_Serial
       throw std::runtime_error( "unsupported patch topology" );
     }
   }
+}
 
+/// Get tri coordinates at the cut facets in the proper order
+void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
+{
   for ( std::map<Facet*, FacetInfo>::iterator i=facet_info_.begin();
         i!=facet_info_.end();
         ++i )
@@ -1679,7 +1593,16 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_Serial
     {
       std::set<Entity<3>*> & tris = fi.tris_;
 
+#ifdef DEBUGCUTLIBRARY
+      fi.TestTraceLines();
+#endif
+
       std::vector<Epetra_SerialDenseMatrix> & side_coords = sides_xyz[f];
+
+      if ( side_coords.size() > 0 )
+      {
+        throw std::runtime_error( "double facet" );
+      }
 
       std::vector<std::vector<int> > sides;
       FindProperSides( tris, sides );
