@@ -84,8 +84,8 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   {
     actmicromatgp->ReadRestart();
   }
-  // read restart if necessary
-  if (action == "multi_newresultfile")
+  // open new result file if necessary
+  else if (action == "multi_newresultfile")
   {
     std::string newfilename;
     actmicromatgp->NewResultFile(eleowner, newfilename);
