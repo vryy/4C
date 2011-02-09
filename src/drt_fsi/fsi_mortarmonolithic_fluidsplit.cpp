@@ -787,7 +787,7 @@ FSI::MortarMonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
 #if 1
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(
 #else
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
 #endif
