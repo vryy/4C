@@ -109,6 +109,10 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
       points.reserve( cut_points.size() );
       points.assign( cut_points.begin(), cut_points.end() );
 
+      // sort points that go into qhull to obtain the same result independent of
+      // pointer values (compiler flags, code structure, memory usage, ...)
+      std::sort( points.begin(), points.end(), PointPidLess() );
+
 #ifdef DEBUGCUTLIBRARY
       {
         std::ofstream file( "volume.plot" );

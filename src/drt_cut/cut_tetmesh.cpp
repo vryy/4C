@@ -52,10 +52,6 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
 {
   std::vector<std::vector<int> > original_tets;
 
-  // sort points that go into qhull to obtain the same result independent of
-  // pointer values (compiler flags, code structure, memory usage, ...)
-  std::sort( points_.begin(), points_.end(), PointPidLess() );
-
   CallQHull( points_, original_tets );
 
   tets_.reserve( original_tets.size() );

@@ -902,9 +902,7 @@ namespace GEO
         return false;
       }
 
-      //const std::vector<Point*> & points_;
-      std::vector<Point*> points_;
-
+      const std::vector<Point*> & points_;
       const std::set<Facet*> & facets_;
       std::vector<std::vector<int> > tets_;
 
