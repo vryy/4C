@@ -343,36 +343,6 @@ inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, std
   p4->Intersection( sides );
 }
 
-inline void FindCommonFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
-{
-  std::vector<Point*>::const_iterator is = side.begin();
-  facets = ( *is )->Facets();
-  for ( ++is; is!=side.end(); ++is )
-  {
-    Point * p = *is;
-    p->Intersection( facets );
-    if ( facets.size()==0 )
-    {
-      break;
-    }
-  }
-}
-
-inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, std::set<Facet*> & facets )
-{
-  facets = p1->Facets();
-  p2->Intersection( facets );
-  p3->Intersection( facets );
-}
-
-inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Facet*> & facets )
-{
-  facets = p1->Facets();
-  p2->Intersection( facets );
-  p3->Intersection( facets );
-  p4->Intersection( facets );
-}
-
 }
 }
 

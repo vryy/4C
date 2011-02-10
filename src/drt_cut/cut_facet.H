@@ -129,7 +129,7 @@ public:
 
   bool HasHoles() const { return holes_.size() > 0; }
 
-  const std::set<Facet*> Holes() const { return holes_; }
+  const std::set<Facet*> & Holes() const { return holes_; }
 
   unsigned NumPoints();
 
@@ -196,6 +196,69 @@ private:
 
 //inline int EntityId( const Facet & f ) { return f.InternalId(); }
 //inline int EntityId( const Facet & f ) { return reinterpret_cast<int>( &f ); }
+
+inline void RemoveNonmatchingTriangulatedFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
+{
+  if ( side.size()==3 )
+  {
+    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); )
+    {
+      Facet * f = *i;
+      if ( f->IsTriangulated() )
+      {
+        if ( not f->IsTriangulatedSide( side ) )
+        {
+          facets.erase( i++ );
+        }
+        else
+        {
+          ++i;
+        }
+      }
+      else
+      {
+        ++i;
+      }
+    }
+  }
+}
+
+inline void FindCommonFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
+{
+  std::vector<Point*>::const_iterator is = side.begin();
+  facets = ( *is )->Facets();
+  for ( ++is; is!=side.end(); ++is )
+  {
+    Point * p = *is;
+    p->Intersection( facets );
+    if ( facets.size()==0 )
+    {
+      break;
+    }
+  }
+  RemoveNonmatchingTriangulatedFacets( side, facets );
+}
+
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, std::set<Facet*> & facets )
+{
+  facets = p1->Facets();
+  p2->Intersection( facets );
+  p3->Intersection( facets );
+
+  std::vector<Point*> side( 3 );
+  side[0] = p1;
+  side[1] = p2;
+  side[2] = p3;
+  RemoveNonmatchingTriangulatedFacets( side, facets );
+}
+
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Facet*> & facets )
+{
+  facets = p1->Facets();
+  p2->Intersection( facets );
+  p3->Intersection( facets );
+  p4->Intersection( facets );
+}
 
 }
 }

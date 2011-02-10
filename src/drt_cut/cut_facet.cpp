@@ -180,6 +180,11 @@ void GEO::CUT::Facet::CreateLinearElements( Mesh & mesh )
 
 void GEO::CUT::Facet::AddHole( Facet * hole )
 {
+  for ( std::vector<Point*>::iterator i=hole->points_.begin(); i!=hole->points_.end(); ++i )
+  {
+    Point * p = *i;
+    p->Register( this );
+  }
   holes_.insert( hole );
 }
 

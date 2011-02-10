@@ -633,6 +633,11 @@ namespace GEO
           }
         }
 
+        bool IsTraceLine( Entity<2> * line )
+        {
+          return trace_lines_.count( line ) > 0;
+        }
+
         void TestTraceLines()
         {
           for ( std::set<Entity<2>*>::iterator i=trace_lines_.begin();
@@ -703,6 +708,18 @@ namespace GEO
 
         void SetOverlappingTriSets( std::list<OverlappingTriSets> & overlappingsets )
         {
+          if ( overlappingsets.size()==1 )
+          {
+            overlappingsets_.resize( 1 );
+            std::swap_ranges( overlappingsets.begin(), overlappingsets.end(),
+                              overlappingsets_.begin() );
+            return;
+          }
+
+          // This is a cleanup for the imperfect case generator. If we had
+          // unique and complete cases all the time, there would be no reason
+          // to clear duplicates and subsets here.
+
           std::vector<OverlappingTriSets> otss( overlappingsets.size() );
           std::swap_ranges( overlappingsets.begin(), overlappingsets.end(),
                             otss.begin() );
@@ -968,6 +985,7 @@ namespace GEO
 
       std::set<Entity<3>*> broken_tris_;
       std::map<std::set<OverlappingTriSets*>, std::vector<Entity<3>*> > broken_tri_selection_;
+      std::set<Entity<2>*> broken_tri_open_lines_;
 
       //std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
       std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz_;

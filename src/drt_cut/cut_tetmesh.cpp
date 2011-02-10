@@ -454,6 +454,24 @@ void GEO::CUT::TetMesh::FindTriFacets()
 {
   std::map<Handle<3>, std::set<Facet*> > double_tris;
 
+  // Make sure all facet of the volume have a FacetInfo. Even if there are no
+  // tris that match that facet. (e.g. all tris are broken.)
+  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    facet_info_[f].FindTrace( this, f );
+#if 0
+    // no holes in holes here!
+
+    const std::set<Facet*> & holes = f->Holes();
+    for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+    {
+      Facet * h = *i;
+      facet_info_[h].FindTrace( this, h );
+    }
+#endif
+  }
+
   for ( std::map<Handle<3>, Entity<3> >::iterator i=tet_surfaces_.begin();
         i!=tet_surfaces_.end();
         ++i )
@@ -492,6 +510,53 @@ void GEO::CUT::TetMesh::FindTriFacets()
   if ( double_tris.size() == 0 )
     return;
 
+  for ( std::map<Entity<3>*, Facet*>::iterator i=tri_facets_.begin(); i!=tri_facets_.end(); ++i )
+  {
+    Entity<3> & tri = *i->first;
+    Facet * f = i->second;
+    FacetInfo & fi = facet_info_[f];
+
+    const std::vector<Entity<2>*> & lines = tri.Children();
+    for ( std::vector<Entity<2>*>::const_iterator i=lines.begin(); i!=lines.end(); ++i )
+    {
+      Entity<2> & line = **i;
+      bool isfacetline = fi.IsTraceLine( &line );
+      //bool isfacetline = f->IsLine( points_[line[0]], points_[line[1]] );
+
+      if ( not isfacetline )
+      {
+        const std::vector<Entity<3>*> & tris = line.Parents();
+        for ( std::vector<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+        {
+          Entity<3> * other_tri = *i;
+          if ( tri_facets_.count( other_tri )==0 )
+          {
+            std::map<Handle<3>, std::set<Facet*> >::iterator j =
+              double_tris.find( other_tri->GetHandle() );
+            if ( j != double_tris.end() )
+            {
+              if ( j->second.count( f )==0 )
+              {
+                throw std::runtime_error( "assigned facet not in facet list" );
+              }
+              tri_facets_[other_tri] = f;
+              fi.tris_.insert( other_tri );
+              double_tris.erase( j );
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+#ifdef TETMESH_GMSH_DEBUG_OUTPUT
+  GmshWriteFacetTris();
+#endif
+
+  if ( double_tris.size() == 0 )
+    return;
+
   while ( double_tris.size() > 0 )
   {
     std::set<Entity<3>*> patch;
@@ -518,7 +583,9 @@ void GEO::CUT::TetMesh::FindTriFacets()
         for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
         {
           Facet * f = *i;
-          if ( f->IsLine( points_[line[0]], points_[line[1]] ) )
+          FacetInfo & fi = facet_info_[f];
+          if ( fi.IsTraceLine( &line ) )
+          //if ( f->IsLine( points_[line[0]], points_[line[1]] ) )
           {
             isfacetline = true;
             break;
@@ -608,13 +675,9 @@ void GEO::CUT::TetMesh::FindOverlappingTriFacets()
         i!=facet_info_.end();
         ++i )
   {
-    Facet * f = i->first;
+    //Facet * f = i->first;
     FacetInfo & fi = i->second;
     std::set<Entity<3>*> & tris = fi.tris_;
-
-    // find all lines surrounding the facet
-
-    fi.FindTrace( this, f );
 
     // find number of tris at all lines
 
@@ -830,8 +893,20 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
             ++i )
       {
         OverlappingTriSets & ots = **i;
-        std::copy( ots.openlines_.begin(), ots.openlines_.end(),
-                   std::inserter( open_surface_lines, open_surface_lines.begin() ) );
+        for ( std::set<Entity<2>*>::iterator i=ots.openlines_.begin();
+              i!=ots.openlines_.end();
+              ++i )
+        {
+          Entity<2> * line = *i;
+          if ( open_surface_lines.count( line )==0 )
+          {
+            open_surface_lines.insert( line );
+          }
+          else
+          {
+            open_surface_lines.erase( line );
+          }
+        }
       }
 
       std::set<Entity<3>*> st;
@@ -905,6 +980,9 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
           OverlappingTriSets & ots = *c[i];
           fi->ExchangeTriSet( ots.tset_, active_surface_tris_ );
           fi->done_ = true;
+
+          std::copy( ots.openlines_.begin(), ots.openlines_.end(),
+                     std::inserter( broken_tri_open_lines_, broken_tri_open_lines_.begin() ) );
         }
 
         // fill all gaps
@@ -1408,7 +1486,7 @@ void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_Seria
       {
         Entity<3> * patch_tri = *i;
         Entity<2> * line = tri->CommonChild( patch_tri );
-        if ( line != NULL )
+        if ( line != NULL and broken_tri_open_lines_.count( line )==0 )
         {
           common_lines.insert( line );
           patch.insert( tri );
@@ -1498,7 +1576,7 @@ void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_Seria
       }
 
       bool match = true;
-      for ( unsigned step=0; step<patch.size()-1; ++step )
+      for ( unsigned step=0; step<numpoints-1; ++step )
       {
         // rotate
         for ( std::vector<std::vector<int> >::iterator i=sides.begin();
@@ -1527,6 +1605,14 @@ void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_Seria
           }
           std::set<Facet*> facets;
           FindCommonFacets( tri_points, facets );
+
+          // remove all facets that do not belong to the volume cell
+          std::set<Facet*> intersection;
+          std::set_intersection( facets.begin(), facets.end(),
+                                 facets_.begin(), facets_.end(),
+                                 std::inserter( intersection, intersection.begin() ) );
+          std::swap( facets, intersection );
+
           if ( facets.size()==1 )
           {
             Facet * f = *facets.begin();

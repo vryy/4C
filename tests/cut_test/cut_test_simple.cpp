@@ -898,6 +898,7 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateHex8Sides( xyze );
 
+#if 0
   // add second cut to be able to find nodal positions
 
   xyze( 0, 0 ) = -0.1;
@@ -917,6 +918,7 @@ void test_hex8_hex8_durchstoss()
   xyze( 2, 3 ) =  0.1;
 
   w.CreateQuad4( xyze );
+#endif
 
   w.Status();
   w.Cut();
