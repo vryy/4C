@@ -1726,65 +1726,6 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 		(*searchforneighbours_)[i] = (double)newsearchforneighbours[i];
 		(*numbond_)[i] = (double)newnumbond[i];
 	}
-	// new start indices for each processor
-	// number of overall independent combinations (central boundary box + 26 surrounding mirrored boxes)
-	int newsize = crosslinkermap_->NumMyElements();
-	int numcombinations = (newsize*newsize-newsize)/2;
-	// combinations on each processor
-	int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
-	// remainder of above division (will be distributed equally among processors)
-	int remainder = numcombinations%combinationsperproc;
-
-	// get starting index tuples for later use
-	startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
-
-	for(int mypid=0; mypid<discret_.Comm().NumProc()-1; mypid++)
-	{
-		std::vector<int> start(2,0);
-		bool continueloop = false;
-		bool quitloop = false;
-		int counter = 0;
-		int appendix = 0;
-		if(mypid==discret_.Comm().NumProc()-1)
-			appendix = remainder;
-
-		// loop over crosslinker pairs
-		for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
-		{
-			for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
-			{
-				if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
-					continueloop = true;
-				if(j>i && continueloop)
-				{
-					if(counter<combinationsperproc+appendix)
-						counter++;
-					else
-					{
-						// new start index j
-						if(j==crosslinkermap_->NumMyElements()-1)
-							start[1] = 0;
-						else
-							start[1] = j;
-						quitloop = true;
-						break;
-					}
-				}
-			}
-			if(quitloop)
-			{
-				// new start index i
-				if(start[1]==0)
-					start[0] = i+1;
-				else
-					start[0] = i;
-				// new start tuple
-				(*startindex_)[2*(mypid+1)] = (double)(start[0]);
-				(*startindex_)[2*(mypid+1)+1] = (double)(start[1]);
-				break;
-			}
-		}
-	}
 	if(!discret_.Comm().MyPID())
 	{
 		cout<<"-- "<<numdelelements<<" crosslinker elements removed"<<endl;
@@ -1846,8 +1787,6 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 	RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap));
 	numcrossnodesrow->Export(*numcrossnodes_,exporter,Add);
 	output.WriteVector("numcrossnodes",numcrossnodesrow,IO::DiscretizationWriter::nodevector);
-
-  output.WriteRedundantDoubleVector("startindex",startindex_);
 
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
@@ -1915,7 +1854,6 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 
 
 	//Read redundant Epetra_Multivectors and STL vectors
-	reader.ReadRedundantDoubleVector(startindex_,"startindex");
 	ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
 	ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
 	ReadRestartRedundantMultivector(reader,"numbond",numbond_);
@@ -2378,11 +2316,10 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// crosslinker column and row map
 	crosslinkermap_ = rcp(new Epetra_Map(-1, ncrosslink, &gids[0], 0, discret_.Comm()));
 	transfermap_    = rcp(new Epetra_Map(ncrosslink, 0, discret_.Comm()));
-	startindex_ = rcp(new std::vector<double>);
 
 	// create density-density-correlation-function map with
 	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
-		 Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_gmsh)
+		 Teuchos::getIntegralValue<int>(statmechparams_, "GMSHOUTPUT"))
 	{
 		std::vector<int> bins;
 		for(int i=0; i<discret_.Comm().NumProc()*numbins; i++)
@@ -2390,70 +2327,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		ddcorrcolmap_ = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
 		// create processor-specific density-density-correlation-function map
 		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
-
-		// calculation of start indices for each processor
-		// number of overall independent combinations (central boundary box + 26 surrounding mirrored boxes)
-		int numcombinations = (ncrosslink*ncrosslink-ncrosslink)/2;
-		// combinations on each processor
-		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
-		// remainder of above division (will be distributed equally among processors)
-		int remainder = numcombinations%combinationsperproc;
-
-		// get starting index tuples for later use
-		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
-
-		for(int mypid=0; mypid<discret_.Comm().NumProc()-1; mypid++)
-		{
-			std::vector<int> start(2,0);
-			bool continueloop = false;
-			bool quitloop = false;
-			int counter = 0;
-			int appendix = 0;
-			if(mypid==discret_.Comm().NumProc()-1)
-				appendix = remainder;
-
-			// loop over crosslinker pairs
-			for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
-			{
-				for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
-				{
-					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
-						continueloop = true;
-					if(j>i && continueloop)
-					{
-						if(counter<combinationsperproc+appendix)
-							counter++;
-						else
-						{
-							// new start index j
-							if(j==crosslinkermap_->NumMyElements()-1)
-								start[1] = 0;
-							else
-								start[1] = j;
-							quitloop = true;
-							break;
-						}
-					}
-				}
-				if(quitloop)
-				{
-					// new start index i
-					if(start[1]==0)
-						start[0] = i+1;
-					else
-						start[0] = i;
-					// new start tuple
-					(*startindex_)[2*(mypid+1)] = (double)(start[0]);
-					(*startindex_)[2*(mypid+1)+1] = (double)(start[1]);
-					break;
-				}
-			}
-		}
 	}
-	//cout<<"start indices: ";
-	//for(int i=0; i<(int)startindex_->size(); i++)
-	//	cout<<(*startindex_)[i]<<" ";
-	//cout<<endl;
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions

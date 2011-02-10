@@ -385,8 +385,6 @@ protected:
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
-	// \brief a vector holding indices used in DensityDensityCorrOutput()
-	RCP<std::vector<double> > startindex_;
 
 	//the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
 
