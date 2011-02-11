@@ -80,6 +80,13 @@ ADAPTCONV_BETTER 0.1
 SIMPLER          No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
+CANONICAL_FLOW        time_averaging  //for testing the time averaging possibility
+CHAN_AMPL_INIT_DIST   0.1
+HOMDIR                z
+SAMPLING_START        1
+SAMPLING_STOP         15
+DUMPING_PERIOD        1 
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 FSSUGRDIFF                      No
 INITFUNCNO                      3
