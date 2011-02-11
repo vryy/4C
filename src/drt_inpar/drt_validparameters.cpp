@@ -2105,7 +2105,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
-    // Otherwise BACI debug version will crash during runtime!
+    // Otherwise BACI DEBUG version will crash during runtime!
     Teuchos::Tuple<std::string,12> name;
     Teuchos::Tuple<int,12> label;
     name[ 0] = "no";                                      label[ 0] = 0;
@@ -2121,20 +2121,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[10] = "loma_lid_driven_cavity";                  label[10] = 10;
     name[11] = "loma_backward_facing_step";               label[11] = 11;
 
-    Teuchos::Tuple<std::string,12> description(
-        "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
-        "The flow is not further specified, but time averaging of velocity and pressure field is performed",
-        "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-        "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
-        "For this flow, statistical data are evaluated on various lines, averaged over time and z.",
-        "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
-        "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
-        "For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
-        "For this flow with mass transport, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
-        "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-        "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
-        "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."
-    );
+    Teuchos::Tuple<std::string,12> description;
+    description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
+    description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
+    description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
+    description[3]="For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.";
+    description[4]="For this flow, statistical data are evaluated on various lines, averaged over time and z.";
+    description[5]="For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.";
+    description[6]="For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.";
+    description[7]="For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction";
+    description[8]="For this flow with mass transport, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction";
+    description[9]="For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
+    description[10]="For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.";
+    description[11]="For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",
