@@ -1040,6 +1040,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
 
   // update element geometry
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_WEG6; ++i)
   {
@@ -1047,6 +1048,13 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
     xcurr(i,0) = x[0] + disp[i*NODDOF_WEG6+0];
     xcurr(i,1) = x[1] + disp[i*NODDOF_WEG6+1];
     xcurr(i,2) = x[2] + disp[i*NODDOF_WEG6+2];
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      xdisp(i,0) = disp[i*NODDOF_WEG6+0];
+      xdisp(i,1) = disp[i*NODDOF_WEG6+1];
+      xdisp(i,2) = disp[i*NODDOF_WEG6+2];
+    }
   }
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1064,8 +1072,35 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      // get Jacobian mapping wrt to the stored configuration
+      LINALG::Matrix<3,3> invJdef;
+      prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+      // get derivatives wrt to last spatial configuration
+      LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> N_xyz;
+      N_xyz.Multiply(invJdef,derivs[gp]);
+
+      // build multiplicative incremental defgrd
+      defgrd.MultiplyTT(xdisp,N_xyz);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+
+      // get stored old incremental F
+      LINALG::Matrix<3,3> Fhist;
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::Matrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
+      defgrd = Fnew;
+    }
+    else
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> cauchygreen;
     cauchygreen.MultiplyTN(defgrd,defgrd);

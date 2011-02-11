@@ -254,22 +254,22 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
         if (poststress==null) dserror("No element stress/strain vector available");
 
-        if (stresstype=="ndxyz") 
+        if (stresstype=="ndxyz")
         {
           // extrapolate stresses/strains at Gauss points to nodes
           so_tet4_expol(gpstress, *poststress);
         }
-        else if (stresstype=="cxyz") 
+        else if (stresstype=="cxyz")
         {
           const Epetra_BlockMap elemap = poststress->Map();
           int lid = elemap.LID(Id());
-          if (lid!=-1) 
+          if (lid!=-1)
           {
-            for (int i = 0; i < NUMSTR_SOTET4; ++i) 
+            for (int i = 0; i < NUMSTR_SOTET4; ++i)
             {
               double& s = (*((*poststress)(i)))[lid];
               s = 0.;
-              for (int j = 0; j < NUMGPT_SOTET4; ++j) 
+              for (int j = 0; j < NUMGPT_SOTET4; ++j)
               {
                 s += gpstress(j,i);
               }
@@ -277,7 +277,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
             }
           }
         }
-        else 
+        else
           dserror("unknown type of stress/strain output on element level");
       }
     }
@@ -1436,10 +1436,36 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
 
     // size is 3x3
     LINALG::Matrix<3,3> defgrd(false);
-    defgrd.MultiplyTN(xdisp,nxyz);
-    defgrd(0,0)+=1;
-    defgrd(1,1)+=1;
-    defgrd(2,2)+=1;
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      // get derivatives wrt to last spatial configuration
+      LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
+      prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
+
+      // build multiplicative incremental defgrd
+      //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+      defgrd.MultiplyTN(xdisp,N_xyz);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+
+      // get stored old incremental F
+      LINALG::Matrix<3,3> Fhist;
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::Matrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
+      defgrd = Fnew;
+    }
+    else
+    {
+      defgrd.MultiplyTN(xdisp,nxyz);
+      defgrd(0,0)+=1;
+      defgrd(1,1)+=1;
+      defgrd(2,2)+=1;
+    }
 
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
