@@ -199,6 +199,15 @@ namespace TSI
 
   protected:
 
+    //! @name Access methods
+
+    /// velocity calculation given the displacements (like in FSI)
+    Teuchos::RCP<Epetra_Vector> CalcVelocity(
+      Teuchos::RCP<const Epetra_Vector> dispnp
+      );
+
+    //@}
+
     /// convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
 
@@ -302,8 +311,8 @@ namespace TSI
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
-    Teuchos::RCP<Epetra_Vector> incn_;  //!< increment between timestep n and n+1,
-                                               //!< tempn_ in THR, the new solution
+    Teuchos::RCP<Epetra_Vector> timestepincn_;  //!< increment between timestep n and n+1,
+                                                //!< tempn_ in THR, the new solution
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
