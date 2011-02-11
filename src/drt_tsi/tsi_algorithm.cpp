@@ -645,8 +645,6 @@ void TSI::Algorithm::OuterIterationLoop()
       if (itnum == 1) dispnp = StructureField().ExtractDispn();
       // for itnum>1 use the current solution dispnp of old iteration step
 
-      cout << "dispnp\n" << dispnp << *dispnp << endl;
-
       // Begin Nonlinear Solver / Outer Iteration ******************************
 
       // thermo field
