@@ -73,5 +73,9 @@ Maintainer: Alexander Popp
 // PENALTY DEBUGGING OPTIONS
 //#define CONTACTFDPENALTYTRAC      /* flag for FD check of penalty tractions */
 
+// PRINTING OF SPECIFIC INFORMATION
+//#define MASTERNODESINCONTACT     /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/
+//#define PRINTSTRUCTDEFORMEDNODECOORDS /* flag for printing all nodes and xspatial in current configuration - only works for 1 processor*/
+
 #endif  // #ifndef CONTACT_DEFINES_H
 #endif  // #ifdef CCADISCRET

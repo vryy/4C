@@ -2978,6 +2978,69 @@ void CONTACT::CmtStruGenAlpha::Output()
       fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(errfile);
     }
+#ifdef PRINTSTRUCTDEFORMEDNODECOORDS
+    
+    /////////////////////////////////////////////////////////////////
+    // from here I want to output my ale displacements - devaal 14.12.2010
+    /////////////////////////////////////////////////////////////////
+            
+    if (discret_.Comm().NumProc() != 1)
+	dserror("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
+    
+    cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
+    // does discret_ exist here?
+    //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
+    
+    //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
+    //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
+    //dofrowmap_  = rcp(new discret_->DofRowMap());
+    const Epetra_Map* noderowmap = discret_.NodeRowMap();
+    const Epetra_Map* dofrowmap = discret_.DofRowMap();
+    
+    
+    for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
+    {
+	int gid;
+	// get global id of a node
+	gid = noderowmap->GID(lid);
+	// get the node
+	DRT::Node * node = discret_.gNode(gid);
+	//cout<<"mynode"<<*node<<endl;
+	
+	// get the coordinates of the node
+	const double * X = node->X();
+	// get degrees of freedom of a node
+	
+	vector<int> gdofs = discret_.Dof(node);
+	//cout << "for node:" << *node << endl; 
+	//cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
+	
+	// get displacements of a node
+	vector<double> mydisp (3,0.0);
+	for (int ldof = 0; ldof<3; ldof ++)
+	{
+	    int displid = dofrowmap->LID(gdofs[ldof]);
+	    
+	    //cout << "displacement local id - in the rowmap" << displid << endl;
+	    mydisp[ldof] = (*dis_)[displid];
+	    //cout << "at node" << gid << "mydisplacement in each direction" << mydisp[ldof] << endl;
+	    //make zero if it is too small
+	    if (abs(mydisp[ldof]) < 0.00001)
+		{
+		    mydisp[ldof] = 0.0;
+		}
+	}
+	
+	// Export disp, X
+	double newX = mydisp[0]+X[0];
+	double newY = mydisp[1]+X[1];
+	double newZ = mydisp[2]+X[2];
+	//cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
+	cout << gid << " " << newX << " " << newY << " " << newZ << endl;
+	
+    }
+    
+#endif //PRINTSTRUCTDEFORMEDNODECOORDS
   }
 } // CmtStruGenAlpha::Output()
 

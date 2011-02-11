@@ -655,13 +655,12 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   output.WriteVector("norcontactstress",normalstressesexp);
   output.WriteVector("tancontactstress",tangentialstressesexp);
 
-#ifdef CONTACTFORCEOUTPUT  
+#ifdef CONTACTFORCEOUTPUT
 
   // *********************************************************************
   // contact forces on slave non master side,
   // in normal and tangential direction
   // *********************************************************************
- 
   // vectors for contact forces
   RCP<Epetra_Vector> fcslavenor = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
   RCP<Epetra_Vector> fcslavetan = rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
@@ -680,6 +679,61 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   GetStrategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
   GetStrategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
 
+#ifdef MASTERNODESINCONTACT
+  //BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
+  
+  const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
+  int dim = psize.get<int>("DIM");
+
+  if (dim == 2)
+    dserror("Only working for 3D");
+
+  vector<int>  lnid, gnid;
+
+  //cout << "MasterNor" << fcmasternor->MyLength() << endl;
+
+  for (int i=0; i<fcmasternor->MyLength(); i=i+3)
+  {
+   
+    //check if master node in contact
+    if (sqrt(((*fcmasternor)[i])*((*fcmasternor)[i])+((*fcmasternor)[i+1])*((*fcmasternor)[i+1])+((*fcmasternor)[i+2])*((*fcmasternor)[i]+2)) > 0.00001)
+    {
+      lnid.push_back((fcmasternor->Map()).GID(i)/3);
+     }
+  }
+
+  // we want to gather data from on all procs
+  vector<int> allproc(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+
+  // communicate all data to proc 0
+  LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
+  
+  //cout << " size of gnid:" << gnid.size() << endl;
+  
+  ////////////////
+  ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
+  // define my own interface
+  MORTAR::StrategyBase& myStrategy = GetStrategy();
+  CoAbstractStrategy& myContactStrategy = static_cast<CoAbstractStrategy&>(myStrategy);
+  
+  vector<RCP<CONTACT::CoInterface> > myInterface = myContactStrategy.ContactInterfaces();
+  
+  //check interface size - just doing this now for a single interface
+  
+  if (myInterface.size() != 1)
+	  dserror("Interface size should be 1");
+  
+  cout << "OUTPUT OF MASTER NODE IN CONTACT" << endl;
+  //cout << "Master_node_in_contact x_dis y_dis z_dis" << endl;
+  for (int i=0; i<(int)gnid.size(); ++i)
+  {
+      int myGid = gnid[i];
+      cout << gnid[i] << endl; // << " " << myUx << " " << myUy << " " << myUz << endl;
+  }
+  
+#endif  //MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact 
+    
   // export  
   LINALG::Export(*fcslavenor,*fcslavenorexp);
   LINALG::Export(*fcslavetan,*fcslavetanexp);
@@ -691,7 +745,8 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   output.WriteVector("tanslaveforce",fcslavetanexp);
   output.WriteVector("normasterforce",fcmasternorexp);
   output.WriteVector("tanmasterforce",fcmastertanexp);
-#endif
+#endif //CONTACTFORCEOUTPUT
+ 
  
   // *********************************************************************
   // wear
