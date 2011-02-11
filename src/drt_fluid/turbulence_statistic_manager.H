@@ -191,7 +191,8 @@ private:
     square_cylinder                 ,
     square_cylinder_nurbs           ,
     rotating_circular_cylinder_nurbs,
-    rotating_circular_cylinder_nurbs_scatra}    flow_;
+    rotating_circular_cylinder_nurbs_scatra,
+    time_averaging                           }    flow_;
 
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities

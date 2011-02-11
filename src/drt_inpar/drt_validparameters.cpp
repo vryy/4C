@@ -2103,34 +2103,48 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbu);
 
-  setStringToIntegralParameter<int>(
-    "CANONICAL_FLOW",
-    "no",
-    "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
-    tuple<std::string>(
-      "no",
-      "channel_flow_of_height_2",
-      "lid_driven_cavity",
-      "backward_facing_step",
-      "square_cylinder",
-      "square_cylinder_nurbs",
-      "rotating_circular_cylinder_nurbs",
-      "loma_channel_flow_of_height_2",
-      "loma_lid_driven_cavity",
-      "loma_backward_facing_step"),
-    tuple<std::string>(
-      "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
-      "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-      "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
-      "For this flow, statistical data are evaluated on various lines, averaged over time and z.",
-      "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
-      "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
-      "For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
-      "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-      "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
-      "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9),
-    &fdyn_turbu);
+  {
+    // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
+    // Otherwise BACI debug version will crash during runtime!
+    Teuchos::Tuple<std::string,12> name;
+    Teuchos::Tuple<int,12> label;
+    name[ 0] = "no";                                      label[ 0] = 0;
+    name[ 1] = "time_averaging";                          label[ 1] = 1;
+    name[ 2] = "channel_flow_of_height_2";                label[ 2] = 2;
+    name[ 3] = "lid_driven_cavity";                       label[ 3] = 3;
+    name[ 4] = "backward_facing_step";                    label[ 4] = 4;
+    name[ 5] = "square_cylinder";                         label[ 5] = 5;
+    name[ 6] = "square_cylinder_nurbs";                   label[ 6] = 6;
+    name[ 7] = "rotating_circular_cylinder_nurbs";        label[ 7] = 7;
+    name[ 8] = "rotating_circular_cylinder_nurbs_scatra"; label[ 8] = 8;
+    name[ 9] = "loma_channel_flow_of_height_2";           label[ 9] = 9;
+    name[10] = "loma_lid_driven_cavity";                  label[10] = 10;
+    name[11] = "loma_backward_facing_step";               label[11] = 11;
+
+    Teuchos::Tuple<std::string,12> description(
+        "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
+        "The flow is not further specified, but time averaging of velocity and pressure field is performed",
+        "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+        "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+        "For this flow, statistical data are evaluated on various lines, averaged over time and z.",
+        "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time.",
+        "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged over time and eventually in one hom.direction.",
+        "For this flow, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
+        "For this flow with mass transport, statistical data is computed in concentric surfaces and averaged. in time and in one hom. direction",
+        "For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+        "For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+        "For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z."
+    );
+
+    setStringToIntegralParameter<int>(
+        "CANONICAL_FLOW",
+        "no",
+        "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
+        name,
+        description,
+        label,
+        &fdyn_turbu);
+  }
 
   setStringToIntegralParameter<int>(
     "HOMDIR",

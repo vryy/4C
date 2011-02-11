@@ -186,6 +186,13 @@ namespace FLD
                                                       params_             ,
                                                       withscatra));
     }
+    else if(fluid.special_flow_=="time_averaging")
+    {
+      flow_=time_averaging;
+
+      // do the time integration independent setup
+      Setup();
+    }
     else
     {
       flow_=no_special_flow;
@@ -353,6 +360,13 @@ namespace FLD
     else if(fluid.special_flow_=="square_cylinder_nurbs")
     {
       flow_=square_cylinder_nurbs;
+
+      // do the time integration independent setup
+      Setup();
+    }
+    else if(fluid.special_flow_=="time_averaging")
+    {
+      flow_=time_averaging;
 
       // do the time integration independent setup
       Setup();
