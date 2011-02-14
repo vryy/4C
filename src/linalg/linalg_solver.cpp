@@ -361,7 +361,7 @@ void LINALG::Solver::Solve(
   }
 
   if ("aztec"  ==solvertype)
-  Solve_aztec(reset,project,projector);
+    Solve_aztec(reset,project,projector);
   else if ("klu"    ==solvertype)
     Solve_klu(reset);
   else if ("umfpack"==solvertype)
@@ -815,34 +815,31 @@ void LINALG::Solver::Solve_aztec(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_superlu(const bool reset)
 {
+#ifndef HAVENOT_SUPERLU
+#ifdef PARALLEL
+  if (reset || !IsFactored())
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    amesos_ = rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
+  }
 
-//#ifndef HAVENOT_SUPERLU
-//#ifdef PARALLEL
-//  if (reset || !IsFactored())
-//  {
-//    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
-//    amesos_ = rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
-//  }
-//
-//  if (amesos_==null) dserror("No solver allocated");
-//
-//  // Problem has not been factorized before
-//  if (!IsFactored())
-//  {
-//    int err = amesos_->SymbolicFactorization();
-//    if (err) dserror("Amesos::SymbolicFactorization returned an err");
-//    err = amesos_->NumericFactorization();
-//    if (err) dserror("Amesos::NumericFactorization returned an err");
-//  }
-//
-//  int err = amesos_->Solve();
-//  if (err) dserror("Amesos::Solve returned an err");
-//#else
-//  dserror("Distributed SuperLU only in parallel");
-//#endif    //! system of equations
-//#endif
-  RefCountPtr<Epetra_CrsMatrix>     A_;
+  if (amesos_==null) dserror("No solver allocated");
 
+  // Problem has not been factorized before
+  if (!IsFactored())
+  {
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+  }
+
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+#else
+  dserror("Distributed SuperLU only in parallel");
+#endif    //! system of equations
+#endif
   return;
 }
 
