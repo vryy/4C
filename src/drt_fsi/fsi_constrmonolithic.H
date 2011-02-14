@@ -4,7 +4,7 @@
 #define FSI_CONSTR_MONOLITHIC_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_overlapprec.H"
+#include "fsi_constr_overlapprec.H"
 #include "fsi_monolithic.H"
 
 //forward declarations

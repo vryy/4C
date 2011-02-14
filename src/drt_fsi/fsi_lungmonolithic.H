@@ -4,7 +4,7 @@
 #define FSI_LUNG_MONOLITHIC_H
 
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_overlapprec.H"
+#include "fsi_lung_overlapprec.H"
 #include "fsi_monolithic.H"
 
 namespace UTILS
