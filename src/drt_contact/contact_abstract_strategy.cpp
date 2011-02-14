@@ -1478,7 +1478,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // read restart information on actice set and slip set
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+#ifndef RESTARTAFTERPRESTRESSING
   reader.ReadVector(activetoggle,"activetoggle");
+#endif //RESTARTAFTERPRESTRESSING
   
   // friction
   RCP<Epetra_Vector> sliptoggle;
@@ -1486,7 +1488,10 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   if(friction_)
   {  
     sliptoggle =rcp(new Epetra_Vector(*gsnoderowmap_));
+#ifndef RESTARTAFTERPRESTRESSING
     reader.ReadVector(sliptoggle,"sliptoggle");
+#endif //RESTARTAFTERPRESTRESSING
+
   }
 
   // wear
@@ -1532,8 +1537,10 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on Lagrange multipliers
   z_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+#ifndef RESTARTAFTERPRESTRESSING
   reader.ReadVector(LagrMult(),"lagrmultold");
   reader.ReadVector(LagrMultOld(),"lagrmultold");
+#endif //RESTARTAFTERPRESTRESSING
 
   // store restart information on Lagrange multipliers into nodes
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
@@ -1545,7 +1552,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   if (st == INPAR::CONTACT::solution_auglag)
   {
     zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+#ifndef RESTARTAFTERPRESTRESSING
     reader.ReadVector(LagrMultUzawa(),"lagrmultold");
+#endif //RESTARTAFTERPRESTRESSING
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
 
