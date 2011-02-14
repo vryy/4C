@@ -11,7 +11,7 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-contact (coulomb friction) with wear 
+contact (coulomb friction) with wear / 2D 
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS         385
 NODES            463

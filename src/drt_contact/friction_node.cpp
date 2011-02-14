@@ -483,17 +483,6 @@ void CONTACT::FriNode::StoreTracOld()
 }
 
 /*-----------------------------------------------------------------------*
- |  Add a value to wear                                    gitterle 12/10|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddWearValue(double& val)
-{
-  // add given value to wear_
-  FriData().Wear()+=val;
-
-  return;
-}
-
-/*-----------------------------------------------------------------------*
  |  Set the value of deltawear                             gitterle 12/10|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddDeltaWearValue(double& val)

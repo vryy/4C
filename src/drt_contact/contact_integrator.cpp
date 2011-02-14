@@ -606,7 +606,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     
     // evaluate wear at current GP
     // not including wearcoefficient
-    double wearvalue = 0;
+    double wearval = 0;
     if(wear)
     {
       double gpt[3] = {0.0,0.0,0.0};
@@ -651,15 +651,17 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       jump[2] = sgpjump[2] - mgpjump[2]; 
         
       // evaluate wear   
-      double dprod = 0.0;
+      // normal contact stress 
       for (int i=0;i<3;++i)
-        dprod+=(gpn[i]*gplm[i]);
-      wearvalue=dprod;
-        
-      dprod = 0.0;
+        wearval+=gpn[i]*gplm[i];
+ 
+      // value of relative tangential jump
+      double jumpval = 0.0;
       for (int i=0;i<3;++i)
-        dprod+=gpt[i]*jump[i];
-      wearvalue*=abs(dprod);
+        jumpval+=gpt[i]*jump[i];
+      
+      // product
+      wearval=abs(wearval)*abs(jumpval);
     }
     
     // evaluate linearizations *******************************************
@@ -805,7 +807,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     {
       for (int j=0;j<nrow;++j)
       {
-        double prod = lmval[j]*wearvalue;
+        double prod = lmval[j]*wearval;
 
         // add current Gauss point's contribution to wseg
         (*wseg)(j) += prod*dxdsxi*dsxideta*wgt;
@@ -2315,7 +2317,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // mechanical dissipation and wear
     double mechdiss = 0;
-    double wearvalue = 0.0;
+    double wearval = 0.0;
     
     if(tsi or wear)
     {
@@ -2360,8 +2362,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       for (int i=0;i<nrow;++i)
       {
         lm(0,0)+=lmval[i]*(*lagmult)(0,i);
-        lm(1,0)+=lmval[i]*(*lagmult)(0,i);
-        lm(2,0)+=lmval[i]*(*lagmult)(0,i);
+        lm(1,0)+=lmval[i]*(*lagmult)(1,i);
+        lm(2,0)+=lmval[i]*(*lagmult)(2,i);
       }
        
       // build tangential jump
@@ -2379,21 +2381,20 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           mechdiss += lmtan(i,0)*jumptan(i,0);
       }
 
-      // evaluate wear, not including wearcoefficient
+      // evaluate wear
+      // not including wearcoefficient
       if (wear)
       { 
+        // normal contact stress
         for (int i=0;i<3;++i)
-          wearvalue+=lm(i,0)*gpn[i];
-          
-          // FIXGIT: This evaluation contains a bug
-          //         3D wear has to be tested
-          dserror("ERROR: IntegrateDerivCell3DAuxPlane: 3D contact with wear has "
-                  "to be verified and tested!");
-      
-         double prod = 0.0;
-         for (int i=0;i<3;++i)
-           prod+=lmtan(i,0)*jumptan(i,0);
-         wearvalue*=abs(prod);
+          wearval+=lm(i,0)*gpn[i];
+        
+        // absolute value of relative tangential jump
+        double jumpval = 0.0;
+        jumpval = sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
+        
+        // product
+        wearval = abs(wearval)*jumpval;
       }
     }  
     
@@ -2612,7 +2613,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     {
       for (int j=0;j<nrow;++j)
       {
-        double prod = lmval[j]*wearvalue;
+        double prod = lmval[j]*wearval;
 
         // add current Gauss point's contribution to gseg
         (*wseg)(j) += prod*jac*wgt;

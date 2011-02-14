@@ -417,12 +417,6 @@ public:
   void AddBNode (int node);
 
   /*!
-  \brief Add value to wear
-
-   */
-  void AddWearValue(double& val);
-
-  /*!
   \brief Set deltawear to value
 
    */
