@@ -51,7 +51,7 @@ THERM_TEMPGRAD                  Current
 ADAPTIVE                        No
 ALGEBRA                         Trilinos
 MULTISC_STRUCT                  0
-NUMFIELD                        1
+NUMFIELD                        2
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -109,7 +109,7 @@ ALPHA_M                         0.5
 BETA                            0.25
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
-CONV_CHECK                      AbsRes_Or_AbsDis
+CONV_CHECK                      None
 DAMPING                         No
 DELTA                           0.25
 DIVERCONT                       No
@@ -141,8 +141,6 @@ RESEVRYERGY                     0
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
-STC_FACTOR                      1
-STC_LAYER                       1
 STC_SCALING                     no
 TIMEADAPT                       0
 TIMESTEP                        0.1
