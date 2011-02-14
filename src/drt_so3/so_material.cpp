@@ -58,6 +58,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
+#include "../drt_mat/constraintmixture.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -426,6 +427,19 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    {
+      MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+      double dt = params.get<double>("delta time",-1.0);
+      double t = params.get<double>("total time",-1.0);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      *density = comix->Density();
+      return;
+      break;
+    }
     case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
     {
       MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
@@ -614,6 +628,19 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       if (action == "calc_struct_stress") output = true;
       grow->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = grow->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    {
+      MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+      double dt = params.get<double>("delta time",-1.0);
+      double t = params.get<double>("total time",-1.0);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      *density = comix->Density();
       return;
       break;
     }

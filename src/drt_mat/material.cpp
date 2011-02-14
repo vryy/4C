@@ -61,6 +61,7 @@ Maintainer: Lena Wiechert
 #include "holzapfelcardiovascular.H"
 #include "humphreycardiovascular.H"
 #include "growth_ip.H"
+#include "constraintmixture.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -402,6 +403,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Growth(curmat));
     MAT::PAR::Growth* params = static_cast<MAT::PAR::Growth*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_constraintmixture:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ConstraintMixture(curmat));
+    MAT::PAR::ConstraintMixture* params = static_cast<MAT::PAR::ConstraintMixture*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pl_mises_3D:

@@ -423,6 +423,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/charmm.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
+  src/drt_mat/constraintmixture.cpp
   src/drt_mat/contchainnetw.cpp
   src/drt_mat/elasthyper.cpp
   src/drt_mat/ferech_pv.cpp

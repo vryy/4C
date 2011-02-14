@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -568,6 +569,15 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
       names[fiber] = 3;
     }
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+  {
+    string fiber = "MassStress";
+    names[fiber] = 1;
+    fiber = "Fiber1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "Fiber2";
+    names[fiber] = 3; // 3-dim vector
+  }
 
   return;
 }
@@ -818,6 +828,24 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       } else {
         return false;
       }
+    } else {
+      return false;
+    }
+  }
+  if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
+    MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
+    if (name == "MassStress"){
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += cons->GetVis(iter);
+      data[0] = temp/NUMGPT_SOH8;
+    } else if (name == "Fiber1"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0);  // get a1 of first gp
+      data[0] = a1(0); data[1] = a1(1); data[2] = a1(2);
+    } else if (name == "Fiber2"){
+      if ((int)data.size()!=3) dserror("size mismatch");
+      LINALG::Matrix<3,1> a2 = cons->Geta2()->at(0);  // get a2 of first gp
+      data[0] = a2(0); data[1] = a2(1); data[2] = a2(2);
     } else {
       return false;
     }

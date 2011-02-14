@@ -1409,6 +1409,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // growth and remodeling of arteries
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ConstraintMixture",
+                                            "growth and remodeling of arteries",
+                                            INPAR::MAT::m_constraintmixture));
+
+    AddNamedReal(m,"DENS","Density");
+    AddNamedReal(m,"MUE","Shear Modulus");
+    AddNamedReal(m,"PHIE","mass fraction of elastin");
+    AddNamedReal(m,"PREELA","prestretch of elastin");
+    AddNamedReal(m,"K1","Parameter for linear fiber stiffness");
+    AddNamedReal(m,"K2","Parameter for exponential fiber stiffness");
+    AddNamedReal(m,"PRECOLL","prestretch of collagen fibers");
+    AddNamedReal(m,"KAPPA","dilatation modulus");
+//    AddNamedReal(m,"BASALRATE","basal rate of mass production");
+    AddNamedReal(m,"LIFETIME","lifetime of collagen fibers");
+    AddNamedReal(m,"HOMSTR","homeostatic target value of scalar stress measure");
+    AddNamedReal(m,"GROWTHFAC","growth factor");
+    AddNamedReal(m,"STARTTIME","at this time turnover of collagen starts");
+    AddNamedInt(m,"EXPLICIT","wether explicit or implicit time integration scheme");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

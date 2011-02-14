@@ -1,0 +1,323 @@
+/*!----------------------------------------------------------------------
+\file constraintmixture.H
+\brief
+This file contains routines for constraint mixture growth and remodeling.
+example input line
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0E3 PHIE 0.08 PREELA 1.0
+K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0
+HOMSTR 0.0 GROWTHFAC 0.0 STARTTIME 100.0 EXPLICIT 1 TOL 1.0E-8
+
+Here an approach for growth and remodeling of an artery is modeled.
+For a detailed description see:
+- Humphrey, J. & Rajagopal, K.: A constrained mixture model for arterial
+  adaptations to a sustained step change in blood flow,
+  Biomechanics and Modeling in Mechanobiology, 2003, 2, 109-126
+
+<pre>
+Maintainer: Susanna Tinkl
+            tinkl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
+</pre>
+*----------------------------------------------------------------------*/
+
+
+#ifndef CONSTRAINTMIXTURE_H_
+#define CONSTRAINTMIXTURE_H_
+
+#ifdef CCADISCRET
+
+#include "material.H"
+#include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
+
+namespace MAT
+{
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class ConstraintMixture : public Parameter
+    {
+    public:
+
+      /// standard constructor
+      ConstraintMixture(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~ConstraintMixture() { ; }
+
+      /// @name material parameters
+      //@{
+      // density
+      const double density_;
+      // shear modulus
+      const double mue_;
+      // mass fraction of elastin
+      const double phielastin_;
+      // prestretch of elastin
+      const double prestretchelastin_;
+      // parameter for linear fiber stiffness of collagen
+      const double k1_;
+      // parameter for exponential fiber stiffness of collagen
+      const double k2_;
+      // prestretch of collagen fibers
+      const double prestretchcollagen_;
+      // dilatation modulus
+      const double kappa_;
+      // basal rate of mass production
+//      const double massprodbasal_;
+      // lifetime of collagen fibers
+      const double lifetime_;
+      // homeostatic target value of scalar stress measure
+      const double homstress_;
+      // growth factor
+      const double growthfactor_;
+      // at this time turnover of collagen starts
+      const double starttime_;
+      // wether explicit or implicit time integration scheme
+      const bool explicit_;
+      // tolerance for local Newton iteration
+      const double abstol_;
+      //@}
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+    };  // class ConstraintMixture
+
+  }  // namespace PAR
+
+  class ConstraintMixtureType : public DRT::ParObjectType
+  {
+  public:
+
+    std::string Name() const { return "ConstraintMixtureType"; }
+
+    static ConstraintMixtureType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const vector<char> & data );
+
+  private:
+
+    static ConstraintMixtureType instance_;
+  };
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for constraint mixture material
+  class ConstraintMixture : public Material
+  {
+  public:
+
+    /// construct empty material object
+    ConstraintMixture();
+
+    /// construct the material object given material parameters
+    explicit ConstraintMixture(MAT::PAR::ConstraintMixture* params);
+
+    //! @name Packing and Unpacking
+
+    /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    virtual int UniqueParObjectId() const { return ConstraintMixtureType::Instance().UniqueParObjectId(); }
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique parobject id delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+      This material contains history variables, which are packed for restart purposes.
+
+      \param data (in/out): char vector to store class information
+    */
+    virtual void Pack(vector<char>& data) const;
+
+    /*!
+      \brief Unpack data from a char vector into this class
+
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+      History data is unpacked in restart.
+
+      \param data (in) : vector storing all data to be unpacked into this
+      instance.
+    */
+    virtual void Unpack(const vector<char>& data);
+
+    //@}
+
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_constraintmixture; }
+
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ConstraintMixture( *this ) ); }
+
+    /// Setup
+    void Setup
+    (
+      const int numgp,  ///< number of Gauss points
+      DRT::INPUT::LineDefinition* linedef ///< definition of element line
+    );
+
+    /// Update
+    void Update();
+
+    /// Evaluate material
+    void Evaluate
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double dt,  ///< delta time
+      double time,  ///< time
+      bool output  ///< calculate stress for output
+    );
+
+    /// Return density
+    double Density() const {return params_->density_;}
+
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return variables for visualization
+    double GetVis(int gp) const {return vismassstress_->at(gp);}
+
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta2() const {return a2_;}
+
+    /// evaluate fiber directions from locsys, pull back
+    void EvaluateFiberVecs
+    (const int gp, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
+
+  private:
+
+    /// my material parameters
+    MAT::PAR::ConstraintMixture* params_;
+
+    /// temporary for visualization
+    Teuchos::RCP<vector<double> > vismassstress_;
+    /// basal rate of mass production
+    double massprodbasal_;
+    /// number of past steps which are stored
+    int numpast_;
+    // history variables: gp and number of past steps as indexes
+    // convention: massprod_at(gp)[0] corresponds to actual time step
+    // massprod_->at(gp)[numpast-1] corresponds to oldest time step
+    /// stretch of first collagen fiber family
+    Teuchos::RCP<vector<vector<double> > > collagenstretch1_;
+    /// stretch of second collagen fiber family
+    Teuchos::RCP<vector<vector<double> > > collagenstretch2_;
+    /// stretch of third collagen fiber family
+    Teuchos::RCP<vector<vector<double> > > collagenstretch3_;
+    /// stretch of fourth collagen fiber family
+    Teuchos::RCP<vector<vector<double> > > collagenstretch4_;
+    /// mass production rate of first fiber family
+    Teuchos::RCP<vector<vector<double> > > massprod1_;
+    /// mass production rate of second fiber family
+    Teuchos::RCP<vector<vector<double> > > massprod2_;
+    /// mass production rate of third fiber family
+    Teuchos::RCP<vector<vector<double> > > massprod3_;
+    /// mass production rate of fourth fiber family
+    Teuchos::RCP<vector<vector<double> > > massprod4_;
+
+    /// first fiber vector per gp (reference), circumferential
+    //Teuchos::RCP<vector<vector<double> > > a1_;
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a1_;
+    /// second fiber vector per gp (reference), axial
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a2_;
+    /// third fiber vector per gp (reference), diagonal
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a3_;
+    /// fourth fiber vector per gp (reference), diagonal
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a4_;
+    /// indicates if material is initialized
+    bool isinit_;
+
+    /// compute stress and cmat
+    void EvaluateStress
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      const int firstiter,  ///< iteration index, different for explicit and implicit integration
+      double dt,  ///< delta time
+      double time  ///< time
+    );
+
+    /// elastic response for one collagen fiber
+    void EvaluateFiber
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double stretch  ///< prestretch / stretch at deposition time
+    );
+
+    /// elastic response for Elastin
+    void EvaluateElastin
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+    );
+
+    /// volumetric part
+    void EvaluateVolumetric
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double currMassDens,  ///< current mass density
+      double refMassDens  ///< initial mass density
+    );
+
+    /// computes mass production rates
+    void MassProduction
+    (
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< cauchy green strain
+      LINALG::Matrix<3,3>* Cmatrix,
+      LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
+      LINALG::Matrix<3,3>* Smatrix,
+      LINALG::Matrix<4,1>* massstress,  ///< growth stress measure
+      LINALG::Matrix<4,1>* massprodcomp  ///< mass production rate
+    );
+
+    /// returns how much collagen has been degraded
+    void Degradation(double t, double* degr) {*degr = 1.0;};
+
+  };
+
+  /// Debug output to gmsh-file
+  /* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
+  {
+    discret_->SetState("displacement",Dis());
+    MAT::ConstraintMixtureOutputToGmsh(discret_, GetStep(), 1);
+  }
+  don't forget to include growth_ip.H */
+  void ConstraintMixtureOutputToGmsh
+  (
+    const Teuchos::RCP<DRT::Discretization> dis, ///< discretization with displacements
+    const int timestep, ///< index of timestep
+    const int iter ///< iteration index of newton iteration
+  );
+
+}  // namespace MAT
+
+#endif /*CCADISCRET*/
+#endif /* CONSTRAINTMIXTURE_H_ */

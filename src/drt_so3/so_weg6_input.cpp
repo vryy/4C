@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -49,6 +50,9 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(const std::string& eletype,
   } else if (Material()->MaterialType() == INPAR::MAT::m_growth){
     MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
     grow->Setup(NUMGPT_WEG6, linedef);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
+    MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(Material().get());
+    comix->Setup(NUMGPT_SOH8, linedef);
   }
 
   std::string buffer;
