@@ -141,7 +141,6 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   {
   if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
-    std::stringstream stream1, stream2, stream3;
     // define a vector with all electro kinetic BC
     vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
