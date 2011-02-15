@@ -118,6 +118,13 @@ int main(
         PostField* field = problem.get_discretization(0);
         FluidEnsightWriter writer(field, problem.outname());
         writer.WriteFiles();
+        if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
+        {
+          string basename = problem.outname();
+          PostField* fluidfield = problem.get_discretization(1);
+          XFluidEnsightWriter xfluidwriter(fluidfield, basename);
+          xfluidwriter.WriteFiles();
+        }
         break;
     }
     case prb_fluid_dgfem:
