@@ -98,11 +98,11 @@ SHAPEDERIVATIVES                yes                             // Supported in 
 COUPMETHOD                      conforming                      // MTR,Mtr,mtr,conforming
 COUPVARIABLE                    Displacement                    // Displacement,Force
 LINEARBLOCKSOLVER               FSIAMG                          // FSIAMG PreconditionedKrylov  
-FLUIDPCITER                     1 0 0                           // Number of Richardson iterations on fluid block in MFSI block preconditioner
+FLUIDPCITER                     2 1 1                           // Number of Richardson iterations on fluid block in MFSI block preconditioner
 FLUIDPCOMEGA                    0.79 1.0 1.0                    // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-STRUCTPCITER                    1 0 0                           // Number of Richardson iterations on structural block in MFSI block preconditioner
+STRUCTPCITER                    2 1 1                           // Number of Richardson iterations on structural block in MFSI block preconditioner
 STRUCTPCOMEGA                   0.89 1.0 1.0                    // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-ALEPCITER                       1 0 0                           // Number of Richardson iterations on ale block in MFSI block preconditioner
+ALEPCITER                       2 1 1                           // Number of Richardson iterations on ale block in MFSI block preconditioner
 ALEPCOMEGA                      0.85 1.0 1.0                     // Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
 PCITER                          1 2 2                           // Number of Richardson iterations on whole MFSI block preconditioner
 PCOMEGA                         0.85 1.0 1.0                    // Relaxation factor for Richardson iteration on whole MFSI block preconditioner

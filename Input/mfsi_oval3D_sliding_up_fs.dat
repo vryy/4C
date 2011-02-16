@@ -220,8 +220,8 @@ COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 ENERGYCHECK                     No
-FLUIDPCITER                     0
-FLUIDPCOMEGA                    1
+FLUIDPCITER                     1 1 1
+FLUIDPCOMEGA                    1.0 1.0 1.0 
 IALE                            Pseudo_Structure
 ICHMAX                          1
 INFNORMSCALING                  Yes
@@ -239,8 +239,10 @@ RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     No
 SHAPEDERIVATIVES                No
-STRUCTPCITER                    0
-STRUCTPCOMEGA                   1
+STRUCTPCITER                    1 1 1
+STRUCTPCOMEGA                   1.0 1.0 1.0
+PCITER                          1 1 1
+PCOMEGA                         1.0 1.0 1.0
 TIMESTEP                        10.0
 TOLENCHECK                      1e-06
 UPPSS                           1

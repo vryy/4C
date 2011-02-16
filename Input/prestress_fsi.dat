@@ -111,11 +111,11 @@ COUPALGO                        iter_stagg_AITKEN_rel_param // iter_monolithicst
 COUPMETHOD                      conforming       // MTR,Mtr,mtr,conforming
 COUPVARIABLE                    Displacement     // Displacement,Force
 LINEARBLOCKSOLVER               FSIAMG           // FSIAMG PreconditionedKrylov
-FLUIDPCITER                     0 1 0            // Number of Richardson iterations on fluid block in MFSI block preconditioner
+FLUIDPCITER                     1 2 1            // Number of Richardson iterations on fluid block in MFSI block preconditioner
 FLUIDPCOMEGA                    1.0 0.89 1.0      // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-STRUCTPCITER                    0 1 0            // Number of Richardson iterations on structural block in MFSI block preconditioner
+STRUCTPCITER                    1 2 1            // Number of Richardson iterations on structural block in MFSI block preconditioner
 STRUCTPCOMEGA                   1.0 0.89 1.0      // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-ALEPCITER                       0 1 0            // Number of Richardson iterations on structural block in MFSI block preconditioner
+ALEPCITER                       1 2 1            // Number of Richardson iterations on structural block in MFSI block preconditioner
 ALEPCOMEGA                      1.0 0.89 1.0     // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
 PCITER                          1 2 4            // Number of Richardson iterations on whole MFSI block preconditioner
 PCOMEGA                         0.89 0.95 0.95   // Relaxation factor for Richardson iteration on whole MFSI block preconditioner

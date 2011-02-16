@@ -94,10 +94,12 @@ RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6
 BASETOL                         1.0E-3
-STRUCTPCOMEGA                   1.0
-STRUCTPCITER                    0
-FLUIDPCOMEGA                    1.0
-FLUIDPCITER                     0
+STRUCTPCOMEGA                   1.0 1.0
+STRUCTPCITER                    1 1
+FLUIDPCOMEGA                    1.0 1.0 1.0
+FLUIDPCITER                     1 1 1
+PCITER                          1 1 2            // Number of Richardson iterations on whole MFSI block preconditioner
+PCOMEGA                         0.89 0.95 0.95   // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
 SHAPEDERIVATIVES                Yes
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
