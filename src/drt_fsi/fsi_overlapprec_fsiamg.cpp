@@ -30,6 +30,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     vector<int>& fiterations,
                                                     vector<double>& aomega,
                                                     vector<int>& aiterations,
+                                                    int analyze,
+                                                    INPAR::FSI::LinearBlockSolver strategy,
                                                     FILE* err)
   : OverlappingBlockMatrix(Teuchos::null,
                            maps,
@@ -41,12 +43,21 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                            omega[0],
                            iterations[0],
                            somega[0],
-                           siterations[0],
+                           siterations[0]-1, // base class counts iterations starting from 0
                            fomega[0],
-                           fiterations[0],
+                           fiterations[0]-1,
                            aomega[0],
-                           aiterations[0],
+                           aiterations[0]-1,
                            err),
+sisml_(false),
+fisml_(false),
+aisml_(false),
+srun_(0),
+frun_(0),
+arun_(0),
+minnlevel_(0),
+analyze_(analyze),
+strategy_(strategy),
 pcomega_(omega),
 pciter_(iterations),
 somega_(somega),
@@ -56,6 +67,9 @@ fiterations_(fiterations),
 aomega_(aomega),
 aiterations_(aiterations)
 {
+  if (strategy_!= INPAR::FSI::FSIAMG &&
+      strategy_!= INPAR::FSI::PreconditionedKrylov) 
+    dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
 /*----------------------------------------------------------------------*
@@ -94,12 +108,18 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     dynamic_cast<ML_Epetra::MultiLevelPreconditioner*>(fprec.get());
   ML_Epetra::MultiLevelPreconditioner* amlclass =
     dynamic_cast<ML_Epetra::MultiLevelPreconditioner*>(aprec.get());
-  if (!smlclass || !fmlclass || !amlclass) dserror("Not using ML for Fluid, Structure or Ale");
+  
+  if (smlclass) sisml_ = true;
+  if (fmlclass) fisml_ = true;
+  if (amlclass) aisml_ = true;
+  bool candofsiamg = (SisAMG() && FisAMG() && AisAMG());
+  if (strategy_==INPAR::FSI::FSIAMG && !candofsiamg)
+    dserror("All fields have to be configured as AMG to do FSIAMG");
 
   // get copy of ML parameter list
-  sparams_ = structuresolver_->Params().sublist("ML Parameters");
-  fparams_ = fluidsolver_->Params().sublist("ML Parameters");
-  aparams_ = alesolver_->Params().sublist("ML Parameters");
+  if (SisAMG()) sparams_ = structuresolver_->Params().sublist("ML Parameters");
+  if (FisAMG()) fparams_ = fluidsolver_->Params().sublist("ML Parameters");
+  if (AisAMG()) aparams_ = alesolver_->Params().sublist("ML Parameters");
   //cout << "====================Structure Params\n" << sparams_;
   //cout << "========================Fluid Params\n" << fparams_;
   //cout << "========================Ale Params\n" << aparams_;
@@ -107,24 +127,39 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   bool SisPetrovGalerkin = sparams_.get("energy minimization: enable",false);
   bool FisPetrovGalerkin = fparams_.get("energy minimization: enable",false);
   bool AisPetrovGalerkin = aparams_.get("energy minimization: enable",false);
-
+  
   // get ML handle
-  ML* sml = const_cast<ML*>(smlclass->GetML());
-  ML* fml = const_cast<ML*>(fmlclass->GetML());
-  ML* aml = const_cast<ML*>(amlclass->GetML());
-  if (!sml || !fml || !aml) dserror("Not using ML for Fluid, Structure or Ale");
+  ML* sml = NULL;
+  ML* fml = NULL;
+  ML* aml = NULL;
+  if (SisAMG()) sml = const_cast<ML*>(smlclass->GetML());
+  if (FisAMG()) fml = const_cast<ML*>(fmlclass->GetML());
+  if (AisAMG()) aml = const_cast<ML*>(amlclass->GetML());
+  if ((!sml && SisAMG()) || (!fml && FisAMG()) || (!aml && AisAMG()))
+    dserror("Not using ML for Fluid, Structure or Ale");
 
   // number of grids in structure, fluid and ale
-  snlevel_ = sml->ML_num_actual_levels;
-  fnlevel_ = fml->ML_num_actual_levels;
-  anlevel_ = aml->ML_num_actual_levels;
-  // min of number of grids over fields
-  minnlevel_ = min(snlevel_,fnlevel_);
-  minnlevel_ = min(minnlevel_,anlevel_);
-
-  if (!myrank)
+  if (SisAMG()) snlevel_ = sml->ML_num_actual_levels; else snlevel_ = 1;
+  if (FisAMG()) fnlevel_ = fml->ML_num_actual_levels; else fnlevel_ = 1;
+  if (AisAMG()) anlevel_ = aml->ML_num_actual_levels; else anlevel_ = 1;
+  if (strategy_==INPAR::FSI::FSIAMG)
   {
-    printf("Setting up FSIAMG: snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
+    // min of number of grids over fields
+    minnlevel_ = min(snlevel_,fnlevel_);
+    minnlevel_ = min(minnlevel_,anlevel_);
+  }
+  else minnlevel_=1;
+
+  if (!myrank) printf("       -----------------------------------------------------------------------\n");
+  if (!myrank && strategy_==INPAR::FSI::FSIAMG)
+  {
+    printf("       Setting up AMG(BGS)/BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
+           snlevel_,fnlevel_,anlevel_,minnlevel_);
+    fflush(stdout);
+  }
+  else if (!myrank && strategy_==INPAR::FSI::PreconditionedKrylov)
+  {
+    printf("       Setting up PreconditionedKrylov: snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
            snlevel_,fnlevel_,anlevel_,minnlevel_);
     fflush(stdout);
   }
@@ -133,6 +168,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if ((int)pciter_.size() < minnlevel_ ||
       (int)pcomega_.size() < minnlevel_)
     dserror("You need at least %d values of PCITER and PCOMEGA in input file",minnlevel_);
+  if (strategy_==INPAR::FSI::PreconditionedKrylov)
+    if ((int)pciter_.size() < 3 || (int)pcomega_.size() < 3)
+      dserror("You need at least 3 values of PCITER and PCOMEGA in input file");
   if ((int)siterations_.size() < snlevel_ ||
       (int)somega_.size() < snlevel_)
     dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",snlevel_);
@@ -142,8 +180,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if ((int)aiterations_.size() < anlevel_ ||
       (int)aomega_.size() < anlevel_)
     dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
-
-
 
   Ass_.resize(snlevel_);
   Pss_.resize(snlevel_-1);
@@ -171,7 +207,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(structInnerOp.RowMap());
-    if (!myrank) printf("Structure: NumGlobalElements fine space %d\n",structInnerOp.RowMap().NumGlobalElements());
+    if (!myrank) printf("       Structure: NumGlobalElements fine level %d\n",structInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -199,11 +235,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     MLAPI::Space space;
     for (int i=0; i<snlevel_; ++i)
     {
-      ML_Operator* Aml = &(sml->Amat[i]);
+      ML_Operator* Aml = NULL;
+      if (SisAMG()) Aml = &(sml->Amat[i]);
       if (i==0) space = finespace;
       else      space.Reshape(-1,Aml->invec_leng);
-      MLAPI::Operator A(space,space,Aml,false);
-      Ass_[i] = A;
+      if (SisAMG()) 
+      {
+        MLAPI::Operator A(space,space,Aml,false);
+        Ass_[i] = A;
+      }
+      else
+      {
+        MLAPI::Operator A(space,space,structInnerOp.EpetraMatrix().get(),false);
+        Ass_[i] = A;
+      }
     }
   }
 
@@ -211,7 +256,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(fluidInnerOp.RowMap());
-    if (!myrank) printf("Fluid    : NumGlobalElements fine space %d\n",fluidInnerOp.RowMap().NumGlobalElements());
+    if (!myrank) printf("       Fluid    : NumGlobalElements fine level %d\n",fluidInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -241,11 +286,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     MLAPI::Space space;
     for (int i=0; i<fnlevel_; ++i)
     {
-      ML_Operator* Aml = &(fml->Amat[i]);
+      ML_Operator* Aml = NULL;
+      if (FisAMG()) Aml = &(fml->Amat[i]);
       if (i==0) space = finespace;
       else      space.Reshape(-1,Aml->invec_leng);
-      MLAPI::Operator A(space,space,Aml,false);
-      Aff_[i] = A;
+      if (FisAMG())
+      {
+        MLAPI::Operator A(space,space,Aml,false);
+        Aff_[i] = A;
+      }
+      else
+      {
+        MLAPI::Operator A(space,space,fluidInnerOp.EpetraMatrix().get(),false);
+        Aff_[i] = A;
+      }
     }
   }
 
@@ -253,7 +307,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(aleInnerOp.RowMap());
-    if (!myrank) printf("Ale      : NumGlobalElements fine space %d\n",aleInnerOp.RowMap().NumGlobalElements());
+    if (!myrank) printf("       Ale      : NumGlobalElements fine level %d\n",aleInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -282,11 +336,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     MLAPI::Space space;
     for (int i=0; i<anlevel_; ++i)
     {
-      ML_Operator* Aml = &(aml->Amat[i]);
+      ML_Operator* Aml = NULL;
+      if (AisAMG()) Aml = &(aml->Amat[i]);
       if (i==0) space = finespace;
       else      space.Reshape(-1,Aml->invec_leng);
-      MLAPI::Operator A(space,space,Aml,false);
-      Aaa_[i] = A;
+      if (AisAMG())
+      {
+        MLAPI::Operator A(space,space,Aml,false);
+        Aaa_[i] = A;
+      }
+      else
+      {
+        MLAPI::Operator A(space,space,aleInnerOp.EpetraMatrix().get(),false);
+        Aaa_[i] = A;
+      }
     }
   }
 
@@ -327,99 +390,154 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
 
   //==================== explicit FSI off-diagonal blocks on coarse levels
-  RAPoffdiagonals();
+  if (strategy_==INPAR::FSI::FSIAMG) RAPoffdiagonals();
 
   //================set up MLAPI smoothers for structure, fluid, ale on each level
   RCP<MLAPI::InverseOperator> S;
   RCP<MLAPI::LoadBalanceInverseOperator> lbS;
-  // structure
-  for (int i=0; i<snlevel_-1; ++i)
+  if (SisAMG())
   {
-    Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist(sparams_.sublist("smoother: ifpack list"));
-    char levelstr[11];
-    sprintf(levelstr,"(level %d)",i);
-    Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
-    string type = "";
-    SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU")
+    // structure
+    for (int i=0; i<snlevel_-1; ++i)
     {
-      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
-      WrapILUSmoother(sml,Ass_[i],*lbS,i);
-      Sss_[i] = lbS;
+      Teuchos::ParameterList p;
+      Teuchos::ParameterList pushlist(sparams_.sublist("smoother: ifpack list"));
+      char levelstr[11];
+      sprintf(levelstr,"(level %d)",i);
+      Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
+      string type = "";
+      SelectMLAPISmoother(type,i,subp,p,pushlist);
+      if (type=="ILU")
+      {
+        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+        WrapILUSmoother(sml,Ass_[i],*lbS,i);
+        Sss_[i] = lbS;
+      }
+      else
+      {
+        S = rcp(new MLAPI::InverseOperator());
+        S->Reshape(Ass_[i],type,p,&pushlist);
+        Sss_[i] = S;
+      }
     }
-    else
-    {
-      S = rcp(new MLAPI::InverseOperator());
-      S->Reshape(Ass_[i],type,p,&pushlist);
-      Sss_[i] = S;
-    }
+    // structure coarse grid:
+    S = rcp(new MLAPI::InverseOperator());
+    S->Reshape(Ass_[snlevel_-1],"Amesos-KLU");
+    Sss_[snlevel_-1] = S;
   }
-  // structure coarse grid:
-  S = rcp(new MLAPI::InverseOperator());
-  S->Reshape(Ass_[snlevel_-1],"Amesos-KLU");
-  Sss_[snlevel_-1] = S;
-  
-  
-  // fluid
-  for (int i=0; i<fnlevel_-1; ++i)
+  else
   {
-    Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist(fparams_.sublist("smoother: ifpack list"));
-    char levelstr[11];
-    sprintf(levelstr,"(level %d)",i);
-    Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
-    string type = "";
-    SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU") 
-    {
-      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
-      WrapILUSmoother(fml,Aff_[i],*lbS,i);
-      Sff_[i] = lbS;
-    }
-    else             
-    {
-      S = rcp(new MLAPI::InverseOperator());
-      S->Reshape(Aff_[i],type,p,&pushlist);
-      Sff_[i] = S;
-    }
+    // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
+    structuresolver_->Setup(Matrix(0,0).EpetraMatrix());
+    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(0,0).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(0,0).DomainMap(),true));
+    structuresolver_->Solve(Matrix(0,0).EpetraMatrix(),x,b,true,true);
+    srun_ = 1; // a first solve has been performed
   }
-  // fluid coarse grid:
-  S = rcp(new MLAPI::InverseOperator());
-  S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
-  Sff_[fnlevel_-1] = S;
   
-  
-  // ale
-  for (int i=0; i<anlevel_-1; ++i)
+  if (FisAMG())
   {
-    Teuchos::ParameterList p;
-    Teuchos::ParameterList pushlist(aparams_.sublist("smoother: ifpack list"));
-    char levelstr[11];
-    sprintf(levelstr,"(level %d)",i);
-    Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
-    string type = "";
-    SelectMLAPISmoother(type,i,subp,p,pushlist);
-    if (type=="ILU") 
+    // fluid
+    for (int i=0; i<fnlevel_-1; ++i)
     {
-      lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
-      WrapILUSmoother(aml,Aaa_[i],*lbS,i);
-      Saa_[i] = lbS;
+      Teuchos::ParameterList p;
+      Teuchos::ParameterList pushlist(fparams_.sublist("smoother: ifpack list"));
+      char levelstr[11];
+      sprintf(levelstr,"(level %d)",i);
+      Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
+      string type = "";
+      SelectMLAPISmoother(type,i,subp,p,pushlist);
+      if (type=="ILU") 
+      {
+        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+        WrapILUSmoother(fml,Aff_[i],*lbS,i);
+        Sff_[i] = lbS;
+      }
+      else             
+      {
+        S = rcp(new MLAPI::InverseOperator());
+        S->Reshape(Aff_[i],type,p,&pushlist);
+        Sff_[i] = S;
+      }
     }
-    else             
-    {
-      S = rcp(new MLAPI::InverseOperator());
-      S->Reshape(Aaa_[i],type,p,&pushlist);
-      Saa_[i] = S;
-    }
+    // fluid coarse grid:
+    S = rcp(new MLAPI::InverseOperator());
+    S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
+    Sff_[fnlevel_-1] = S;
   }
-  // ale coarse grid:
-  S = rcp(new MLAPI::InverseOperator());
-  S->Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
-  Saa_[anlevel_-1] = S;
-
+  else
+  {
+    // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
+    RCP<LINALG::MapExtractor> fsidofmapex = null;
+    RCP<Epetra_Map>           irownodes = null;
+    fluidsolver_->Setup(Matrix(1,1).EpetraMatrix(),fsidofmapex,
+                        fluid_.Discretization(),irownodes,structuresplit_);
+    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(1,1).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(1,1).DomainMap(),true));
+    fluidsolver_->Solve(Matrix(1,1).EpetraMatrix(),x,b,true,true);
+    frun_ = 1; // a first solve has been performed
+  }
+  
+  if (AisAMG())
+  {
+    // ale
+    for (int i=0; i<anlevel_-1; ++i)
+    {
+      Teuchos::ParameterList p;
+      Teuchos::ParameterList pushlist(aparams_.sublist("smoother: ifpack list"));
+      char levelstr[11];
+      sprintf(levelstr,"(level %d)",i);
+      Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
+      string type = "";
+      SelectMLAPISmoother(type,i,subp,p,pushlist);
+      if (type=="ILU") 
+      {
+        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+        WrapILUSmoother(aml,Aaa_[i],*lbS,i);
+        Saa_[i] = lbS;
+      }
+      else             
+      {
+        S = rcp(new MLAPI::InverseOperator());
+        S->Reshape(Aaa_[i],type,p,&pushlist);
+        Saa_[i] = S;
+      }
+    }
+    // ale coarse grid:
+    S = rcp(new MLAPI::InverseOperator());
+    S->Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
+    Saa_[anlevel_-1] = S;
+  }
+  else
+  {
+    // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
+    alesolver_->Setup(Matrix(2,2).EpetraMatrix());
+    Teuchos::RCP<Epetra_Vector> b = rcp(new Epetra_Vector(Matrix(2,2).RangeMap(),true));
+    Teuchos::RCP<Epetra_Vector> x = rcp(new Epetra_Vector(Matrix(2,2).DomainMap(),true));
+    alesolver_->Solve(Matrix(2,2).EpetraMatrix(),x,b,true,true);
+    arun_ = 1; // a first solve has been performed
+  }
+  
   //-------------------------------------------------------------- timing
-  if (!myrank) printf("Additional FSIAMG setup time %10.5e [s]\n",etime.ElapsedTime());
+  if (!myrank) 
+  {
+    printf("       -----------------------------------------------------------------------\n");
+    printf("       Additional AMG(BGS)/BGS(AMG) setup time %10.5e [s]\n",etime.ElapsedTime());
+  }
+
+  //---------------------------------- preconditioner analysis if desired
+  if (Analyze()) 
+  {
+    AnalyzeFSIAMG(myrank,
+                  snlevel_,fnlevel_,anlevel_,
+                  sparams_,fparams_,aparams_,
+                  Ass_,Aff_,Aaa_,
+                  Pss_,Rss_,
+                  Pff_,Rff_,
+                  Paa_,Raa_,
+                  ASF_,AFS_,AFA_,AAF_,
+                  sml,fml,aml);
+  }
 
   return;
 }
@@ -632,6 +750,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type,
   return;
 }
 
+#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
@@ -724,204 +843,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockVcycle(
 
   return;
 }
+#endif
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MLAPI::MultiVector FSI::OverlappingBlockMatrixFSIAMG::ProlongateMultiplyRestrict(
-                                    const int                      level,
-                                    const MLAPI::MultiVector&      coarse,
-                                    const vector<MLAPI::Operator>& R,
-                                    const MLAPI::Operator&         A,
-                                    const vector<MLAPI::Operator>& P) const
-{
-  MLAPI::MultiVector tmp;
-  if (!level) // we are on the fine grid, nothing to prolongate/restrict
-  {
-    tmp = A * coarse;
-    return tmp;
-  }
-
-  // prolongate to fine level
-  tmp = P[level-1] * coarse;
-  for (int i=level-1; i>0; --i)
-    tmp = P[i-1] * tmp;
-
-  // multiply on fine level
-  tmp = A * tmp;
-
-  // restrict to coarse level
-  for (int i=0; i<level; ++i)
-    tmp = R[i] * tmp;
-
-  return tmp;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::BlockVcycle(const int level,
-                                                    const int nlevel,
-                                                    MLAPI::MultiVector& mlsy,
-                                                    MLAPI::MultiVector& mlfy,
-                                                    MLAPI::MultiVector& mlay,
-                                                    const MLAPI::MultiVector& mlsx,
-                                                    const MLAPI::MultiVector& mlfx,
-                                                    const MLAPI::MultiVector& mlax) const
-{
-  // coarsest common level
-  if (level==nlevel-1)
-  {
-    // on the coarsest common level, use a BlockRichardson that
-    // uses "the leftover peak" of the individual multigrid hierachies instead of
-    // the simple smoothing schemes within the level. In case a field does not
-    // have a remaining "leftover peak", direct solve will be called
-    // automatically.
-    mlsy = 0.0; mlay = 0.0; mlfy = 0.0;
-    BlockGaussSeidelSmoother(level,mlsy,mlfy,mlay,mlsx,mlfx,mlax,true);
-    return;
-  }
-
-  //-------------------------- presmoothing block Gauss Seidel
-  mlsy = 0.0; mlay = 0.0; mlfy = 0.0;
-  BlockGaussSeidelSmoother(level,mlsy,mlfy,mlay,mlsx,mlfx,mlax,false);
-
-  //----------------------------------- coarse level residuals
-  // structure
-  // sxc = Rss_[level] * ( mlsx - Ass_[level] * mlsy - Asf[level] * mlfy)
-  MLAPI::MultiVector sxc;
-  sxc = mlsx - Ass_[level] * mlsy;
-  sxc = sxc - ProlongateMultiplyRestrict(level,mlfy,Rss_,Asf_,Pff_);
-  sxc = Rss_[level] * sxc;
-
-  // ale
-  // axc = Raa_[level] * ( mlax - Aaa_[level] * mlay - Aaf[level] * mlfy)
-  MLAPI::MultiVector axc;
-  axc = mlax - Aaa_[level] * mlay;
-  axc = axc - ProlongateMultiplyRestrict(level,mlfy,Raa_,Aaf_,Pff_);
-  axc = Raa_[level] * axc;
-
-  // fluid
-  // fxc = Rff_[level] * ( mlfx - Aff_[level] * mlfy - Afs[level] * mlsy - Afa[level] * mlay)
-  MLAPI::MultiVector fxc;
-  fxc = mlfx - Aff_[level] * mlfy;
-  fxc = fxc - ProlongateMultiplyRestrict(level,mlsy,Rff_,Afs_,Pss_);
-  fxc = fxc - ProlongateMultiplyRestrict(level,mlay,Rff_,Afa_,Paa_);
-  fxc = Rff_[level] * fxc;
-
-  //----------------------------------- coarse level corrections
-  MLAPI::MultiVector syc(sxc.GetVectorSpace(),1,false);
-  MLAPI::MultiVector ayc(axc.GetVectorSpace(),1,false);
-  MLAPI::MultiVector fyc(fxc.GetVectorSpace(),1,false);
-
-  //--------------------------------------- solve coarse problem
-  BlockVcycle(level+1,nlevel,syc,fyc,ayc,sxc,fxc,axc);
-
-  //------------------------------- prolongate coarse correction
-  MLAPI::MultiVector tmp;
-  tmp = Pss_[level] * syc;
-  mlsy.Update(1.0,tmp,1.0);
-  tmp = Paa_[level] * ayc;
-  mlay.Update(1.0,tmp,1.0);
-  tmp = Pff_[level] * fyc;
-  mlfy.Update(1.0,tmp,1.0);
-
-  //---------------------------- postsmoothing block Gauss Seidel
-  // (do NOT zero initial guess)
-  BlockGaussSeidelSmoother(level,mlsy,mlfy,mlay,mlsx,mlfx,mlax,false);
-
-  return;
-}
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::BlockGaussSeidelSmoother(
-                                  const int level,
-                                  MLAPI::MultiVector& mlsy,
-                                  MLAPI::MultiVector& mlfy,
-                                  MLAPI::MultiVector& mlay,
-                                  const MLAPI::MultiVector& mlsx,
-                                  const MLAPI::MultiVector& mlfx,
-                                  const MLAPI::MultiVector& mlax,
-                                  const bool amgsolve) const
-{
-
-  MLAPI::MultiVector sx(mlsx.GetVectorSpace(),1,false);
-  MLAPI::MultiVector fx(mlfx.GetVectorSpace(),1,false);
-  MLAPI::MultiVector ax(mlax.GetVectorSpace(),1,false);
-  MLAPI::MultiVector sz(mlsy.GetVectorSpace(),1,false);
-  MLAPI::MultiVector fz(mlfy.GetVectorSpace(),1,false);
-  MLAPI::MultiVector az(mlay.GetVectorSpace(),1,false);
-
-  for (int run=0; run<pciter_[level]; ++run)
-  {
-    // copy of original residual
-    sx.Update(mlsx);
-    fx.Update(mlfx);
-    ax.Update(mlax);
-
-    //-------------- structure block
-    {
-      // compute ( r - A y ) for structure row
-      {
-        // tmp = A_ss * mlsy
-        MLAPI::MultiVector tmp;
-        tmp = Ass_[level] * mlsy;
-        sx.Update(-1.0,tmp,1.0);
-        // tmp = R_s A_sf P_f mlfy
-        tmp = ProlongateMultiplyRestrict(level,mlfy,Rss_,Asf_,Pff_);
-        sx.Update(-1.0,tmp,1.0);
-      }
-      sz = 0.0;
-      if (!amgsolve) Sss_[level]->Apply(sx,sz);
-      else           Vcycle(level,snlevel_,sz,sx,Ass_,Sss_,Pss_,Rss_);
-      mlsy.Update(pcomega_[level],sz,1.0);
-    }
-
-    //-------------------- ale block
-    {
-      // compute ( r - A y ) for ale row
-      {
-        MLAPI::MultiVector tmp;
-        tmp = Aaa_[level] * mlay;
-        ax.Update(-1.0,tmp,1.0);
-        // tmp = R_a * A_af * P_f * mlfy
-        tmp = ProlongateMultiplyRestrict(level,mlfy,Raa_,Aaf_,Pff_);
-        ax.Update(-1.0,tmp,1.0);
-      }
-      az = 0.0;
-      if (!amgsolve) Saa_[level]->Apply(ax,az);
-      else           Vcycle(level,anlevel_,az,ax,Aaa_,Saa_,Paa_,Raa_);
-      mlay.Update(pcomega_[level],az,1.0);
-    }
-
-    //------------------ fluid block
-    {
-      // compute ( r - A y ) for fluid row
-      {
-        MLAPI::MultiVector tmp;
-        tmp = Aff_[level] * mlfy;
-        fx.Update(-1.0,tmp,1.0);
-
-        // tmp = R_f A_fs P_s mlsy
-        tmp = ProlongateMultiplyRestrict(level,mlsy,Rff_,Afs_,Pss_);
-        fx.Update(-1.0,tmp,1.0);
-
-        // tmp = R_f A_fa P_a mlay
-        tmp = ProlongateMultiplyRestrict(level,mlay,Rff_,Afa_,Paa_);
-        fx.Update(-1.0,tmp,1.0);
-      }
-      fz = 0.0;
-      if (!amgsolve) Sff_[level]->Apply(fx,fz);
-      else           Vcycle(level,fnlevel_,fz,fx,Aff_,Sff_,Pff_,Rff_);
-      mlfy.Update(pcomega_[level],fz,1.0);
-    }
-
-  } // for (int run=0; run<pciter_[level]; ++run)
-
-  return;
-}
-
+#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
@@ -991,7 +918,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::ExplicitBlockGaussSeidelSmoother(
 
   return;
 }
+#endif
 
+#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
@@ -1031,9 +960,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::LocalBlockRichardson(
 
   return;
 }
+#endif
 
-
-#if 1
+#if 0 // no longer in use
 /*----------------------------------------------------------------------*
 strongly coupled AMG-Block-Gauss-Seidel
  *----------------------------------------------------------------------*/
@@ -1103,7 +1032,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   MLAPI::Space dfspace(Matrix(1,1).DomainMap());
   MLAPI::Space daspace(Matrix(2,2).DomainMap());
 
-  // initial guess
+  // initial guess 
   Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
   Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
   Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
@@ -1122,9 +1051,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
 
   // run FSIAMG
-  // using implicit off-diagonals on coarse levels
-  //BlockVcycle(0,minnlevel_,mlsy,mlfy,mlay,mlsx,mlfx,mlax);
-  // using explicit off-diagonals on coarse levels
   ExplicitBlockVcycle(0,minnlevel_,mlsy,mlfy,mlay,mlsx,mlfx,mlax);
 
 
@@ -1133,30 +1059,20 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
 }
-#endif
 
 
+#else
 
-#if 0
+
 /*----------------------------------------------------------------------*
-MLAPI version of the identical Kuettler Block Gauss Seidel monolithic precond,
-mainly for proof of concept of using extracted MG hierarchies and to achieve
-same convergence / timings through MLAPI
+strongly coupled AMG-Block-Gauss-Seidel
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SGS(
                  const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-  if (!structuresplit_) dserror("FSIAMG for structuresplit monoFSI only");
-  if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
+  if (symmetric_)  dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
-  // Matrix(0,0); // Ass
-  // Matrix(0,1); // Asf
-  // Matrix(1,0); // Afs
-  // Matrix(1,1); // Aff
-  // Matrix(1,2); // Afa
-  // Matrix(2,1) or Matrix(2,1); // Aaf
-  // Matrix(2,2); // Aaa
-  // rewrap the matrix every time as Uli shoots them irrespective
+  // rewrap the matrix every time as it is killed irrespective
   // of whether the precond is reused or not.
   {
     MLAPI::Space dspace(Matrix(0,0).EpetraMatrix()->DomainMap());
@@ -1167,11 +1083,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     MLAPI::Space dspace(Matrix(0,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(0,1).EpetraMatrix()->RangeMap());
     Asf_.Reshape(dspace,rspace,Matrix(0,1).EpetraMatrix().get(),false);
+    ASF_[0] = Asf_;
   }
   {
     MLAPI::Space dspace(Matrix(1,0).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(1,0).EpetraMatrix()->RangeMap());
     Afs_.Reshape(dspace,rspace,Matrix(1,0).EpetraMatrix().get(),false);
+    AFS_[0] = Afs_;
   }
   {
     MLAPI::Space dspace(Matrix(1,1).EpetraMatrix()->DomainMap());
@@ -1182,18 +1100,21 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     MLAPI::Space dspace(Matrix(1,2).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(1,2).EpetraMatrix()->RangeMap());
     Afa_.Reshape(dspace,rspace,Matrix(1,2).EpetraMatrix().get(),false);
+    AFA_[0] = Afa_;
   }
   if (structuresplit_)
   {
     MLAPI::Space dspace(Matrix(2,1).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,1).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,1).EpetraMatrix().get(),false);
+    AAF_[0] = Aaf_;
   }
   else
   {
     MLAPI::Space dspace(Matrix(2,0).EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix(2,0).EpetraMatrix()->RangeMap());
     Aaf_.Reshape(dspace,rspace,Matrix(2,0).EpetraMatrix().get(),false);
+    AAF_[0] = Aaf_;
   }
   {
     MLAPI::Space dspace(Matrix(2,2).EpetraMatrix()->DomainMap());
@@ -1201,12 +1122,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     Aaa_[0].Reshape(dspace,rspace,Matrix(2,2).EpetraMatrix().get(),false);
   }
 
-  // Extract vector blocks
-  // RHS
   const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-
-  // initial guess
-  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
   // various range and domain spaces
   MLAPI::Space rsspace(Matrix(0,0).RangeMap());
@@ -1217,99 +1133,167 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   MLAPI::Space dfspace(Matrix(1,1).DomainMap());
   MLAPI::Space daspace(Matrix(2,2).DomainMap());
 
-  // these wrap RCP<Epetra_Vector> objects
+  // initial guess has to be zero!
+  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
   Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
   Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
   Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
   MLAPI::MultiVector mlsy(rsspace,sy->Pointers());
   MLAPI::MultiVector mlfy(rfspace,fy->Pointers());
   MLAPI::MultiVector mlay(raspace,ay->Pointers());
+  mlsy = 0.0;
+  mlfy = 0.0;
+  mlay = 0.0;
 
-  // these are original MLAPI objects
-  MLAPI::MultiVector mlsz(rsspace,1,true);
-  MLAPI::MultiVector mlfz(rfspace,1,true);
-  MLAPI::MultiVector mlaz(raspace,1,true);
+  // rhs
+  Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
+  Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
+  Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
+  MLAPI::MultiVector mlsx(dsspace,sx->Pointers());
+  MLAPI::MultiVector mlfx(dfspace,fx->Pointers());
+  MLAPI::MultiVector mlax(daspace,ax->Pointers());
 
 
-  // outer Richardson loop
-  for (int run=0; run<iterations_; ++run)
+  // run FSIAMG
+  if (strategy_==INPAR::FSI::FSIAMG) 
   {
-    // rhs
-    Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
-    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
-    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
-    // these wrap the above RCP<Epetra_Vector> objects
-    MLAPI::MultiVector mlsx(dsspace,sx->Pointers());
-    MLAPI::MultiVector mlfx(dfspace,fx->Pointers());
-    MLAPI::MultiVector mlax(daspace,ax->Pointers());
-
-    // ----------------------------------------------------------------
-    // lower Gauss-Seidel using AMG for main diag block inverses
+    int myrank = X.Comm().MyPID();
+    vector<int> Vsweeps(minnlevel_,1);
+    vector<double> Vdamps(minnlevel_,1.0);  
+    vector<int> blocksweeps[3];   
+    vector<double> blockdamps[3]; 
+    for (int i=0; i<3; ++i) 
     {
-      if (run)
-      {
-        MLAPI::MultiVector tmp;
-        tmp = Ass_[0] * mlsy;
-        mlsx.Update(-1.0,tmp,1.0);
-        tmp = Asf_ * mlfy;
-        mlsx.Update(-1.0,tmp,1.0);
-      }
-
-      // Solve structure equations for sy with the rhs sx
-      Vcycle(0,snlevel_,mlsz,mlsx,Ass_,Sss_,Pss_,Rss_);
-      //mlsz = 0.0; Sss_[0].Apply(mlsx,mlsz);
-
-      if (!run) mlsy.Update(omega_,mlsz);
-      else      mlsy.Update(omega_,mlsz,1.0);
+      blocksweeps[i].resize(minnlevel_,1);
+      blockdamps[i].resize(minnlevel_,1.0);
+    }
+    for (int i=0; i<minnlevel_; ++i) 
+    {
+      Vsweeps[i] = pciter_[i];
+      Vdamps[i] = pcomega_[i];
+      blocksweeps[0][i] = siterations_[i];
+      blockdamps[0][i] = somega_[i];
+      blocksweeps[1][i] = fiterations_[i];
+      blockdamps[1][i] = fomega_[i];
+      blocksweeps[2][i] = aiterations_[i];
+      blockdamps[2][i] = aomega_[i];
+    }
+    
+    
+    AnalyzeBest shierachy(snlevel_);
+    for (int i=0; i<snlevel_; ++i)
+    {
+      shierachy.S()[i] = Sss_[i];
+      shierachy.Type()[i] = "s";
+      shierachy.Damp()[i] = 1.0;
+      shierachy.Sweeps()[i] = 1;
+    }
+    for (int i=minnlevel_; i<snlevel_; ++i)
+    {
+      shierachy.Damp()[i] = somega_[i];
+      shierachy.Sweeps()[i] = siterations_[i];
+    }
+    
+    AnalyzeBest fhierachy(fnlevel_);
+    for (int i=0; i<fnlevel_; ++i)
+    {
+      fhierachy.S()[i] = Sff_[i];
+      fhierachy.Type()[i] = "f";
+      fhierachy.Damp()[i] = 1.0;
+      fhierachy.Sweeps()[i] = 1;
+    }
+    for (int i=minnlevel_; i<fnlevel_; ++i)
+    {
+      fhierachy.Damp()[i] = fomega_[i];
+      fhierachy.Sweeps()[i] = fiterations_[i];
     }
 
+    AnalyzeBest ahierachy(anlevel_);
+    for (int i=0; i<anlevel_; ++i)
     {
-      // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
-      if (run)
-      {
-        MLAPI::MultiVector tmp;
-        tmp = Aaa_[0] * mlay;
-        mlax.Update(-1.0,tmp,1.0);
-        tmp = Aaf_ * mlfy;
-        mlax.Update(-1.0,tmp,1.0);
-      }
-
-      // solve ale block
-      Vcycle(0,anlevel_,mlaz,mlax,Aaa_,Saa_,Paa_,Raa_);
-      //mlaz = 0.0; Saa_[0].Apply(mlax,mlaz);
-
-      if (!run) mlay.Update(omega_,mlaz);
-      else      mlay.Update(omega_,mlaz,1.0);
+      ahierachy.S()[i] = Saa_[i];
+      ahierachy.Type()[i] = "a";
+      ahierachy.Damp()[i] = 1.0;
+      ahierachy.Sweeps()[i] = 1;
+    }
+    for (int i=minnlevel_; i<anlevel_; ++i)
+    {
+      ahierachy.Damp()[i] = aomega_[i];
+      ahierachy.Sweeps()[i] = aiterations_[i];
+    }
+    
+    mlsy = 0.0;
+    mlfy = 0.0;
+    mlay = 0.0;
+    Richardson_BlockV(myrank,1,1.0,Vsweeps,Vdamps,blocksweeps,blockdamps,
+                      shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
+                      Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
+                      Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
+                      Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                      ASF_,AFS_,AFA_,AAF_,true,false,true);
+  }
+  else if (strategy_==INPAR::FSI::PreconditionedKrylov)
+  {
+    int myrank = X.Comm().MyPID();
+    vector<int> Vsweeps(3,1);
+    vector<double> Vdamps(3,1.0);
+    Vsweeps[0] = pciter_[0];
+    Vdamps[0] = pcomega_[0];
+    Vsweeps[1] = pciter_[1];
+    Vdamps[1] = pcomega_[1];
+    Vsweeps[2] = pciter_[2];
+    Vdamps[2] = pcomega_[2];
+    
+    AnalyzeBest shierachy(snlevel_);
+    for (int i=0; i<snlevel_; ++i)
+    {
+      shierachy.S()[i] = Sss_[i];
+      shierachy.Type()[i] = "structure smoother";
+      shierachy.Sweeps()[i] = siterations_[i];
+      shierachy.Damp()[i] = somega_[i];
+    }
+    AnalyzeBest fhierachy(fnlevel_);
+    for (int i=0; i<fnlevel_; ++i)
+    {
+      fhierachy.S()[i] = Sff_[i];
+      fhierachy.Type()[i] = "fluid smoother";
+      fhierachy.Sweeps()[i] = fiterations_[i];
+      fhierachy.Damp()[i] = fomega_[i];
+    }
+    AnalyzeBest ahierachy(anlevel_);
+    for (int i=0; i<anlevel_; ++i)
+    {
+      ahierachy.S()[i] = Saa_[i];
+      ahierachy.Type()[i] = "ale smoother";
+      ahierachy.Sweeps()[i] = aiterations_[i];
+      ahierachy.Damp()[i] = aomega_[i];
     }
 
-    {
-      // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
-      MLAPI::MultiVector tmp;
-      if (run)
-      {
-        tmp = Aff_[0] * mlfy;
-        mlfx.Update(-1.0,tmp,1.0);
-      }
+    if (SisAMG() && FisAMG() && AisAMG())
+      RichardsonBGS_V(myrank,1,1.0,Vsweeps,Vdamps,
+                       shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
+                       Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
+                       Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
+                       Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                       ASF_,AFS_,AFA_,AAF_,true,false,true);
+    else
+      RichardsonBGS_Mixed(myrank,1,1.0,Vsweeps,Vdamps,SisAMG(),FisAMG(),AisAMG(),
+                       shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
+                       Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
+                       Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
+                       Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                       ASF_,AFS_,AFA_,AAF_,true,false,true);
 
-      tmp = Afs_ * mlsy;
-      mlfx.Update(-1.0,tmp,1.0);
-      tmp = Afa_ * mlay;
-      mlfx.Update(-1.0,tmp,1.0);
-
-      // solve fluid block
-      Vcycle(0,fnlevel_,mlfz,mlfx,Aff_,Sff_,Pff_,Rff_,true);
-      //mlfz = 0.0; Sff_[0].Apply(mlfx,mlfz);
-
-      if (!run) mlfy.Update(omega_,mlfz);
-      else      mlfy.Update(omega_,mlfz,1.0);
-    }
 
   }
+  else dserror("Unknown type of preconditioner choice");
 
   // Note that mlsy, mlfy, mlay are views of sy, fy, ay, respectively.
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
+
+  return;
 }
 #endif
 
@@ -1317,118 +1301,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 
 
 
-#if 0
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFSIAMG::SGS(
-                 const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-  if (!structuresplit_) dserror("FSIAMG for structuresplit monoFSI only");
-  if (symmetric_)       dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
-
-  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0); // Ass
-  const LINALG::SparseMatrix& structBoundOp = Matrix(0,1); // Asf
-  const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0); // Afs
-  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1); // Aff
-  const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2); // Afa
-  //const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,1); // Aaf
-  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2); // Aaa
 
 
-  // Extract vector blocks
-  // RHS
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-
-  // initial guess
-  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
-
-  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
-  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
-  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
-
-  Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(sy->Map()));
-  Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
-  Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
-
-  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
-  Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-
-  // outer Richardson loop
-  for (int run=0; run<iterations_; ++run)
-  {
-    // rhs
-    Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
-    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
-    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
-
-    // ----------------------------------------------------------------
-    // lower GS
-    {
-      if (run>0)
-      {
-        structInnerOp.Multiply(false,*sy,*tmpsx);
-        sx->Update(-1.0,*tmpsx,1.0);
-        structBoundOp.Multiply(false,*fy,*tmpsx);
-        sx->Update(-1.0,*tmpsx,1.0);
-      }
-
-      // Solve structure equations for sy with the rhs sx
-      structuresolver_->Solve(structInnerOp.EpetraMatrix(),sz,sx,true);
-
-      // do Richardson iteration
-      LocalBlockRichardson(structuresolver_,structInnerOp,sx,sz,tmpsx,siterations_,somega_,err_,Comm());
-
-      if (!run) sy->Update(omega_,*sz,0.0);
-      else      sy->Update(omega_,*sz,1.0);
-    }
-
-    {
-      // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
-      if (run>0)
-      {
-        aleInnerOp.Multiply(false,*ay,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
-
-        aleBoundOp.Multiply(false,*fy,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
-      }
-
-      alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
-
-      if (!run) ay->Update(omega_,*az,0.0);
-      else      ay->Update(omega_,*az,1.0);
-    }
-
-    {
-      // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
-
-      if (run>0)
-      {
-        fluidInnerOp.Multiply(false,*fy,*tmpfx);
-        fx->Update(-1.0,*tmpfx,1.0);
-      }
-
-      fluidBoundOp.Multiply(false,*sy,*tmpfx);
-      fx->Update(-1.0,*tmpfx,1.0);
-      fluidMeshOp.Multiply(false,*ay,*tmpfx);
-      fx->Update(-1.0,*tmpfx,1.0);
-      fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
-
-      LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
-
-      if (!run) fy->Update(omega_,*fz,0.0);
-      else      fy->Update(omega_,*fz,1.0);
-    }
-
-  }
-
-  RangeExtractor().InsertVector(*sy,0,y);
-  RangeExtractor().InsertVector(*fy,1,y);
-  RangeExtractor().InsertVector(*ay,2,y);
-}
-#endif
-
+#if 1 // no longer in use
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
@@ -1484,13 +1359,17 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
 
   return;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
 {
-  return "FSI::OverlappingBlockMatrix_FSIAMG";
+  if (strategy_==INPAR::FSI::FSIAMG)
+    return "AMG(BGS) / FSIAMG";
+  if (strategy_==INPAR::FSI::PreconditionedKrylov)
+    return "BGS(AMG) / PreconditionedKrylov";
+  return "Unknown strategy in FSI::OverlappingBlockMatrixFSIAMG";
 }
 
 #endif

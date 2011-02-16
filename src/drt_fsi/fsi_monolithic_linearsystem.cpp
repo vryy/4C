@@ -168,7 +168,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
                                  AztecOO_StatusTestResNorm::TwoNorm);
     aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
                                    AztecOO_StatusTestResNorm::TwoNorm);
-    // Linf norm (demanded to be 10 times L2-norm now, to become an input parameter)
+    // Linf norm (demanded to be 1 times L2-norm now, to become an input parameter)
     aztest_norminf_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
     aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
                                    AztecOO_StatusTestResNorm::InfNorm);

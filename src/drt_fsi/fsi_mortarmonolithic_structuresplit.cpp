@@ -162,6 +162,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // create block system matrix
     switch(linearsolverstrategy_)
     {
+    case INPAR::FSI::PreconditionedKrylov:
     case INPAR::FSI::FSIAMG:
       systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                                             Extractor(),
@@ -178,8 +179,11 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                                             fpciter,
                                                             apcomega,
                                                             apciter,
+                                                            Teuchos::getIntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+                                                            linearsolverstrategy_,
                                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
+#if 0 // no longer in use
     case INPAR::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(
                                                             pcdbg_,
@@ -199,6 +203,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                                             apciter[0],
                                                             DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
+#endif    
     default:
       dserror("Unsupported type of monolithic solver");
     break;
