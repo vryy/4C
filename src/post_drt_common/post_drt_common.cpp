@@ -95,18 +95,16 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
 
-  if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
-  {
-    if (printparobjecttypes)
-    {
-      // hack so that the parobject types are registered
-      PrintParObjectList();
-    }
-    exit(0);
-  }
   if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     exit(1);
+  }
+
+  if (printparobjecttypes)
+  {
+    // hack so that the parobject types are registered
+    PrintParObjectList();
+    exit(0);
   }
 
   if (file=="")
