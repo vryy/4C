@@ -29,11 +29,11 @@ Maintainer: Florian Henke
 
 #include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
-//#include "combust_defines.H"
 #include "combust3_interpolation.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/startvalues.H"
@@ -590,6 +590,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     // all initial values can be set including enrichment values
     if (step_ == 1)
     {
+      //cout << "/!\\ set enrichment field"<< endl;
       SetEnrichmentField(dofmanager,newdofrowmap);
     }
 
@@ -1499,12 +1500,18 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
   if (write_visualization_data)  //write solution for visualization
   {
+    std::set<XFEM::PHYSICS::Field> outputfields;
+    outputfields.insert(XFEM::PHYSICS::Velx);
+    outputfields.insert(XFEM::PHYSICS::Vely);
+    outputfields.insert(XFEM::PHYSICS::Velz);
+    outputfields.insert(XFEM::PHYSICS::Pres);
+
     // transform velocity XFEM vector to (standard FEM) output velocity vector
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
-        *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, physprob_.xfemfieldset_);
+        *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, outputfields);
 
     // write physical fields on full domain including voids etc.
-    if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != physprob_.xfemfieldset_.end())
+    if (outputfields.find(XFEM::PHYSICS::Velx) != outputfields.end())
     {
       // output velocity field for visualization
       output_->WriteVector("velocity_smoothed", velnp_out);
@@ -1523,20 +1530,194 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         output_->WriteVector("traction",traction);
       }
     }
-    else if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != physprob_.xfemfieldset_.end())
+    else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
     {
       output_->WriteVector("temperature_smoothed", velnp_out);
     }
 
     // write domain decomposition for visualization
     output_->WriteElementData();
-  }
 
+#if 0
+    for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      LINALG::Matrix<3,1> nodecoord(true);
+      // get physical coordinates of this node
+      nodecoord(0) = lnode->X()[0];
+      nodecoord(1) = lnode->X()[1];
+      nodecoord(2) = lnode->X()[2];
+
+      LINALG::Matrix<3,1> vel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
+      std::vector<int> lids(3);
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      if (lnode->Id()==163) //or
+          //lnode->Id()==498 or
+          //lnode->Id()==726 or
+          //lnode->Id()==242)
+      {
+        cout << "node " << lnode->Id() << " ";
+        // extract velocity values (no pressure!) from global velocity vector
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
+          vel(icomp) = (*velnp_out)[lids[icomp]];
+          std::cout << std::setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+        }
+        cout << "coordinates ";
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          std::cout << nodecoord(icomp) << " ";
+        }
+        cout << endl;
+      }
+    }
+        for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      LINALG::Matrix<3,1> nodecoord(true);
+      // get physical coordinates of this node
+      nodecoord(0) = lnode->X()[0];
+      nodecoord(1) = lnode->X()[1];
+      nodecoord(2) = lnode->X()[2];
+
+      LINALG::Matrix<3,1> vel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
+      std::vector<int> lids(3);
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      if (lnode->Id()==149)
+
+      {
+        cout << "node " << lnode->Id() << " ";
+        // extract velocity values (no pressure!) from global velocity vector
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
+          vel(icomp) = (*velnp_out)[lids[icomp]];
+          std::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+        }
+        cout << "coordinates ";
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          std::cout << nodecoord(icomp) << " ";
+        }
+        cout << endl;
+      }
+    }
+            for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      LINALG::Matrix<3,1> nodecoord(true);
+      // get physical coordinates of this node
+      nodecoord(0) = lnode->X()[0];
+      nodecoord(1) = lnode->X()[1];
+      nodecoord(2) = lnode->X()[2];
+
+      LINALG::Matrix<3,1> vel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
+      std::vector<int> lids(3);
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      if (lnode->Id()==227)
+      {
+        cout << "node " << lnode->Id() << " ";
+        // extract velocity values (no pressure!) from global velocity vector
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
+          vel(icomp) = (*velnp_out)[lids[icomp]];
+          std::cout << setw(18)<< std::setprecision(12) <<vel(icomp) << " ";
+        }
+        cout << "coordinates ";
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          std::cout << nodecoord(icomp) << " ";
+        }
+        cout << endl;
+      }
+    }
+    for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      LINALG::Matrix<3,1> nodecoord(true);
+      // get physical coordinates of this node
+      nodecoord(0) = lnode->X()[0];
+      nodecoord(1) = lnode->X()[1];
+      nodecoord(2) = lnode->X()[2];
+
+      LINALG::Matrix<3,1> vel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
+      std::vector<int> lids(3);
+      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+      if (lnode->Id()==59)
+      {
+        cout << "node " << lnode->Id() << " ";
+        // extract velocity values (no pressure!) from global velocity vector
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
+          vel(icomp) = (*velnp_out)[lids[icomp]];
+          std::cout << setw(18)<<  std::setprecision(12) <<vel(icomp) << " ";
+        }
+        cout << "coordinates ";
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          std::cout << nodecoord(icomp) << " ";
+        }
+        cout << endl;
+      }
+    }
+//    for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+//    {
+//      // get the processor local node
+//      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+//
+//      LINALG::Matrix<3,1> nodecoord(true);
+//      // get physical coordinates of this node
+//      nodecoord(0) = lnode->X()[0];
+//      nodecoord(1) = lnode->X()[1];
+//      nodecoord(2) = lnode->X()[2];
+//
+//      LINALG::Matrix<3,1> vel(true);
+//      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+//      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
+//      std::vector<int> lids(3);
+//      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
+//      if (lnode->Id()==517 or
+//          lnode->Id()==725 or
+//          lnode->Id()==451 or
+//          lnode->Id()==243)
+//      {
+//        cout << "node " << lnode->Id() << " ";
+//        // extract velocity values (no pressure!) from global velocity vector
+//        for (int icomp=0; icomp<3; ++icomp)
+//        {
+//          lids[icomp] = velnp_out->Map().LID(dofids[icomp]);
+//          vel(icomp) = (*velnp_out)[lids[icomp]];
+//          std::cout << std::setprecision(12) <<vel(icomp) << " ";
+//        }
+//        cout << endl;
+//      }
+//    }
+#endif
+  }
 
   // write restart
   if (false)//(write_restart_data)
   {
-   std::cout << "Write restart" << std::endl;
+    std::cout << "Write restart" << std::endl;
     //std::cout << state_.velnp_->GlobalLength() << std::endl;
     output_->WriteVector("velnp", state_.velnp_);
     //std::cout << state_.veln_->GlobalLength() << std::endl;
@@ -1672,7 +1853,6 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   //std::cout << state_.accnp_->GlobalLength() << std::endl;
   reader.ReadVector(state_.accn_ ,"accn");
   //std::cout << state_.accn_->GlobalLength() << std::endl;
-
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1690,44 +1870,54 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
   const bool screen_out = true;
 
-  // get a copy on columnmn parallel distribution
+  // get a copy on column parallel distribution
   Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
 
-
+  //------------------------
+  // write pressure solution
+  //------------------------
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 3, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
-
-    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
     {
+      //---------------------------------
+      // write physical pressure solution
+      //---------------------------------
       gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lRowElement(i);
+        const DRT::Element* ele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
+        //-------------------------------------------
+        // extract pressure values from global vector
+        //-------------------------------------------
         vector<int> lm;
         vector<int> lmowner;
         vector<int> lmstride;
-        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
-
+        ele->LocationVector(*(discret_), lm, lmowner, lmstride);
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
-        const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-
-        LINALG::SerialDenseMatrix elementvalues(1,numparam);
+        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
+        // get pressure values for this element
+        LINALG::SerialDenseMatrix presele(1,numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
-          elementvalues(0,iparam) = myvelnp[dofpos[iparam]];
+          presele(0,iparam) = myvelnp[dofpos[iparam]];
 
-        //------------------------------------------------------------------------------------------
+//        if (ele->Id()==140)
+//        {
+//          cout << "element " << ele->Id() << presele << endl;
+//        }
+
+        //---------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
-        //------------------------------------------------------------------------------------------
+        //---------------------------------------------------------------
         // get pointer to vector holding G-function values at the fluid nodes
         const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
 #ifdef DEBUG
@@ -1736,56 +1926,176 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         // check, whether this map is still identical with the current node map in the discretization
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
-
-        size_t numnode = actele->NumNode();
+        size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
-        const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
 
-        for (GEO::DomainIntCells::const_iterator cell =
-          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        //----------------------------------------
+        // interpolate values from element to cell
+        //----------------------------------------
+        const GEO::DomainIntCells& domainintcells = dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
+        for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
-          LINALG::SerialDenseMatrix cellvalues(1,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          // pressure values for this integration cell
+          LINALG::SerialDenseMatrix prescell(1,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 
           switch(combusttype_)
           {
           case INPAR::COMBUST::combusttype_premixedcombustion:
           case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
-            //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
-              elementvalues, cellvalues);
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*ele, eledofman, *cell, myphinp,
+                XFEM::PHYSICS::Pres, presele, prescell);
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow:
           {
-            //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
-              elementvalues, cellvalues);
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*ele, eledofman, *cell, myphinp,
+                XFEM::PHYSICS::Pres, presele, prescell);
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow_surf:
           {
-            // schott May 17, 2010
-            // there is interpolation function for combined enrichments (jumps in pressure and kinks in velocity field)
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
-              elementvalues, cellvalues);
+            // interpolation function for combined enrichments (jumps in pressure and kinks in velocity field)
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*ele, eledofman, *cell, myphinp,
+                XFEM::PHYSICS::Pres, presele, prescell);
             break;
           }
           default:
             dserror("unknown type of combustion problem!");
           }
-          //
+
+          // copy values from matrix format to vector format
           const size_t numnodes = DRT::UTILS::getNumberOfElementNodes(cell->Shape());
-          LINALG::SerialDenseVector cellvaluesvec(numnodes);
+          LINALG::SerialDenseVector prescellvec(numnodes);
           for (size_t inode=0; inode<numnodes; ++inode)
+            prescellvec(inode) = prescell(0,inode);
+
+          // write data to Gmsh file
+          IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), prescellvec, cell->CellNodalPosXYZ(), gmshfilecontent);
+        }
+      }
+      gmshfilecontent << "};\n";
+
+      //---------------------------------------
+      // write pressure jump at Gaussian points
+      //---------------------------------------
+      if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
+          combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
+      {
+        gmshfilecontent << "View \" " << "Pressure Jump \" {\n";
+        for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
+        {
+          const DRT::Element* ele = discret_->lRowElement(iele);
+
+          // output only for bisected elements
+          if (dofmanagerForOutput_->getInterfaceHandle()->ElementBisected(ele))
           {
-            cellvaluesvec(inode) = cellvalues(0,inode);
+            //------------------------------------------------------------------------------------------
+            // extract local level-set (G-function) values from global vector
+            //------------------------------------------------------------------------------------------
+            // get pointer to vector holding G-function values at the fluid nodes
+            const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+#ifdef DEBUG
+            // get map of this vector
+            const Epetra_BlockMap& phimap = phinp->Map();
+            // check, whether this map is still identical with the current node map in the discretization
+            if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
+            size_t numnode = ele->NumNode();
+            vector<double> myphinp(numnode);
+            // extract G-function values to element level
+            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+#ifdef DEBUG
+            if (numnode != 8) dserror("pressure jump output only available for hex8 elements!");
+#endif
+            LINALG::Matrix<8,1> ephi;
+            for (size_t iparam=0; iparam<numnode; ++iparam)
+              ephi(iparam) = myphinp[iparam];
+
+            // create local copy of information about dofs
+            const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
+
+            //-------------------------------------------
+            // extract pressure values from global vector
+            //-------------------------------------------
+            vector<int> lm;
+            vector<int> lmowner;
+            vector<int> lmstride;
+            ele->LocationVector(*(discret_), lm, lmowner, lmstride);
+            // extract local values from the global vector
+            vector<double> myvelnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+
+            const size_t numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
+            const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
+            LINALG::SerialDenseVector epres(numparam);
+            for (size_t iparam=0; iparam<numparam; ++iparam)
+              epres(iparam) = myvelnp[dofpos[iparam]];
+
+            // get node coordinates for this element
+            LINALG::SerialDenseMatrix xyze(3,numnode);
+            GEO::fillInitialPositionArray(ele,xyze);
+
+            // evaluate the enrichment function at the interface (boundary integration cells)
+            const XFEM::ElementEnrichmentValues enrvals_plus(*ele,eledofman,XFEM::Enrichment::approachFromPlus,ephi);
+            const XFEM::ElementEnrichmentValues enrvals_minus(*ele,eledofman,XFEM::Enrichment::approachFromMinus,ephi);
+
+            //--------------------------------------------------------------------
+            // interpolate values from element to Gaussian points of boundary cell
+            //--------------------------------------------------------------------
+            const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
+            for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+            {
+              if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
+              // choose an arbitrary number of Gaussian points for the output
+              const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_3point);
+              // loop over Gaussian points
+              for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+              {
+                // transform coordinates of this Gaussian point
+                // coordinates of this integration point in boundary cell coordinates \eta^boundary
+                const LINALG::Matrix<2,1> posEtaBoundary(intpoints.qxg[iquad]);
+                // coordinates of this integration point in element coordinates \xi^domain
+                LINALG::Matrix<3,1> posXiDomain;
+                GEO::mapEtaBToXiD(*cell, posEtaBoundary, posXiDomain);
+
+                LINALG::SerialDenseVector funct(numnode,true);
+                DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),ele->Shape());
+
+                LINALG::SerialDenseVector enrfunct_plus(numparam,true);
+                LINALG::SerialDenseVector enrfunct_minus(numparam,true);
+
+                enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Pres, funct, enrfunct_plus);
+                enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Pres, funct, enrfunct_minus);
+
+                XFEM::ApproxFunc<0,16> shp_jump;
+#ifdef DEBUG
+                if (numparam != 16) dserror("pressure jump output only available for fully enriched hex8 elements!");
+#endif
+                // fill approximation functions
+                for (std::size_t iparam = 0; iparam < 16; ++iparam)
+                  shp_jump.d0(iparam) = enrfunct_minus(iparam) - enrfunct_plus(iparam);
+
+                // pressure jump
+                double presjump = 0.0;
+                for (int iparam = 0; iparam < 16; ++iparam)
+                  presjump += epres(iparam)*shp_jump.d0(iparam);
+
+                LINALG::Matrix<3,1> posXYZDomain(true);
+                for (size_t inode=0;inode<numnode;++inode)
+                {
+                  posXYZDomain(0) += funct(inode)*xyze(0,inode);
+                  posXYZDomain(1) += funct(inode)*xyze(1,inode);
+                  posXYZDomain(2) += funct(inode)*xyze(2,inode);
+                }
+
+                // write data to Gmsh file
+                IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
+              }
+            }
           }
-          IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvaluesvec, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
       }
       gmshfilecontent << "};\n";
@@ -1793,6 +2103,10 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
+#if 0
+  //---------------------------
+  // write temperature solution
+  //---------------------------
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out, discret_->Comm().MyPID());
@@ -1803,15 +2117,15 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontent << "View \" " << "Temperature Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lRowElement(i);
+        const DRT::Element* ele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
         vector<int> lmstride;
-        actele->LocationVector(*(discret_), lm, lmowner, lmstride);
+        ele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -1836,13 +2150,13 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
 
-        size_t numnode = actele->NumNode();
+        size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
@@ -1854,14 +2168,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
             //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*ele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow:
           {
             //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*ele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
@@ -1869,7 +2183,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           {
             // schott May 17, 2010
             // there is interpolation function for combined enrichments (jumps in pressure and kinks in velocity field)
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*ele, eledofman, *cell, myphinp, field,
               elementvalues, cellvalues);
             break;
           }
@@ -1892,6 +2206,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
   }
+#endif
+
 #if 0
   if (gmshdebugout)
   {
@@ -1910,19 +2226,19 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lRowElement(i);
+        const DRT::Element* ele = discret_->lRowElement(i);
 
         static LINALG::Matrix<3,27> xyze_xfemElement;
-        GEO::fillInitialPositionArray(actele,xyze_xfemElement);
+        GEO::fillInitialPositionArray(ele,xyze_xfemElement);
 
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(actele->Shape()));
+        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(ele->Shape()));
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,element_ansatz,*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*ele,element_ansatz,*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        ele->LocationVector(*(discret_), lm, lmowner);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -1936,12 +2252,12 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
           IO::GMSH::cellWithScalarFieldToStream(
               cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
@@ -1953,6 +2269,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     if (screen_out) std::cout << " done" << endl;
   }
 #endif
+
 #if 0
   if (gmshdebugout)
   {
@@ -1989,14 +2306,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       gmshfilecontentyz << "View \" " << "Discontinous Stress (yz) Solution (Physical) \" {\n";
       for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lRowElement(i);
+        const DRT::Element* ele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman(*actele,physprob_.elementAnsatz_->getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
-        actele->LocationVector(*(discret_), lm, lmowner);
+        ele->LocationVector(*(discret_), lm, lmowner);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
@@ -2030,50 +2347,50 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
 
         const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
+          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
         for (GEO::DomainIntCells::const_iterator cell =
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           //LINALG::SerialDenseMatrix xyze_cell(3, cell->NumNode());
-          //cell->NodalPosXYZ(*actele, xyze_cell);
+          //cell->NodalPosXYZ(*ele, xyze_cell);
           // TODO remove
           const LINALG::SerialDenseMatrix& xyze_cell = cell->CellNodalPosXYZ();
 
           {
           LINALG::SerialDenseMatrix cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
+          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman,
               *cell, field, elementvalues, cellvalues);
            IO::GMSH::cellWithTensorFieldToStream(cell->Shape(), cellvalues, xyze_cell, gmshfilecontent);
           }
 
           {
           LINALG::SerialDenseVector cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexx, cellvaluexx);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexx, xyze_cell, gmshfilecontentxx);
           }
           {
           LINALG::SerialDenseVector cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyy, cellvalueyy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyy, xyze_cell, gmshfilecontentyy);
           }
           {
           LINALG::SerialDenseVector cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluezz, cellvaluezz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluezz, xyze_cell, gmshfilecontentzz);
           }
           {
           LINALG::SerialDenseVector cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexy, cellvaluexy);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexy, xyze_cell, gmshfilecontentxy);
           }
           {
           LINALG::SerialDenseVector cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvaluexz, cellvaluexz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvaluexz, xyze_cell, gmshfilecontentxz);
           }
           {
           LINALG::SerialDenseVector cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*ele, dofmanagerForOutput_->getInterfaceHandle(), eledofman, *cell, field, elementvalueyz, cellvalueyz);
           IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalueyz, xyze_cell, gmshfilecontentyz);
           }
         }
@@ -2090,6 +2407,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   }
 #endif
 
+  //------------------------
+  // write velocity solution
+  //------------------------
   if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
   {
     PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), velName,"Velocity Solution (Physical) n+1",true, step, time);
@@ -2130,7 +2450,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
       for (int i=0; i<discret_->NumMyRowElements(); ++i)
       {
-        const DRT::Element* actele = discret_->lRowElement(i);
+        const DRT::Element* ele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
 #ifdef COMBUST_STRESS_BASED
@@ -2144,32 +2464,39 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         // just define a default element ansatz; it is not used anyway
         const COMBUST::TauPressureAnsatz elementAnsatz;
 #endif
-        const XFEM::ElementDofManager eledofman(*actele,elementAnsatz.getElementAnsatz(actele->Shape()),*dofmanagerForOutput_);
+        const XFEM::ElementDofManager eledofman(*ele,elementAnsatz.getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
         vector<int> lm;
         vector<int> lmowner;
         vector<int> lmstride;
-        actele->LocationVector(*discret_, lm, lmowner, lmstride);
+        ele->LocationVector(*discret_, lm, lmowner, lmstride);
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
-        const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-        const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-        const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+        const vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+        const vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+        const vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+        const vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
+#endif
 
-        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
-        LINALG::SerialDenseMatrix elementvalues(3, numparam);
-        for (int iparam=0; iparam<numparam; ++iparam)
+        const int numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
+        LINALG::SerialDenseMatrix elementvalues(4, numparamvelx,true);
+        for (int iparam=0; iparam<numparamvelx; ++iparam)
         {
           elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
           elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
+#ifdef COMBUST_NORMAL_ENRICHMENT
+        const int numparamveln = eledofman.NumDofPerField(XFEM::PHYSICS::Veln);
+        for (int iparam=0; iparam<numparamveln; ++iparam)
+        {
+          elementvalues(3, iparam) = myvelnp[dofposveln[iparam]];
+        }
+#endif
 
         //------------------------------------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
@@ -2182,41 +2509,61 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         // check, whether this map is still identical with the current node map in the discretization
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
-
-        size_t numnode = actele->NumNode();
+        size_t numnode = ele->NumNode();
         vector<double> myphinp(numnode);
         // extract G-function values to element level
-        DRT::UTILS::ExtractMyNodeBasedValues(actele, myphinp, *phinp);
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
 
-        const GEO::DomainIntCells& domainintcells =
-          dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(actele);
-        for (GEO::DomainIntCells::const_iterator cell =
-          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+#ifdef COMBUST_NORMAL_ENRICHMENT
+        // get pointer to vector holding smoothed  G-function gradient values at the fluid nodes
+        const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
+        std::vector<double> mygradphi;
+        DRT::UTILS::ExtractMyNodeBasedValues(ele, mygradphi,*gradphinp);
+
+        if (numnode != 8) dserror("only available for hex8 elements!");
+        LINALG::Matrix<3,8> egradphi(true);
+
+        unsigned ipos;
+        for (size_t inode=0; inode<numnode; ++inode)
+        {
+          ipos = inode*3;
+          egradphi(0, inode) = mygradphi[ipos  ];
+          egradphi(1, inode) = mygradphi[ipos+1];
+          egradphi(2, inode) = mygradphi[ipos+2];
+        }
+#endif
+
+        const GEO::DomainIntCells& domainintcells = dofmanagerForOutput_->getInterfaceHandle()->GetDomainIntCells(ele);
+        for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
 
-          const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Velx;
           switch(combusttype_)
           {
           case INPAR::COMBUST::combusttype_premixedcombustion:
           case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
+#ifndef COMBUST_NORMAL_ENRICHMENT
             //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSet(*ele, eledofman, *cell, myphinp, XFEM::PHYSICS::Velx,
               elementvalues, cellvalues);
+#else
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(*ele, eledofman, *cell, myphinp, egradphi, XFEM::PHYSICS::Velx,
+              elementvalues, cellvalues);
+#endif
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow:
           {
             //
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(*ele, eledofman, *cell, myphinp, XFEM::PHYSICS::Velx,
               elementvalues, cellvalues);
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow_surf:
           {
             // plots for Velx, Vely, Velz ... (Kink enrichment)
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*actele, eledofman, *cell, myphinp, field,
+            XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(*ele, eledofman, *cell, myphinp, XFEM::PHYSICS::Velx,
               elementvalues, cellvalues);
             break;
           }
@@ -2224,55 +2571,235 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             dserror("unknown type of combustion problem!");
           }
 
-          IO::GMSH::cellWithVectorFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+          IO::GMSH::cellWithVectorFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
         }
-//          const GEO::BoundaryIntCells& boundaryintcells =
-//              dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(actele->Id());
-//          // draw boundary integration cells with values
-//          for (GEO::BoundaryIntCells::const_iterator cell =
-//            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
-//          {
-//            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//
-//            // the 'label' is set to -1 for combustion problems   henke 10/09
-//            XFEM::computeVectorCellNodeValues(*actele, ih_np_, eledofman,
-//                *cell, XFEM::PHYSICS::Velx, -1, elementvalues, cellvalues);
-//            IO::GMSH::cellWithVectorFieldToStream(
-//                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
-//          }
-
-        // draw uncut element
-//        {
-//          LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
-//          static LINALG::Matrix<3,27> xyze_ele;
-//          GEO::fillInitialPositionArray(actele, xyze_ele);
-//          IO::GMSH::cellWithVectorFieldToStream(
-//                          actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
-//        }
-
-//        }
-        //if (dofmanagerForOutput_->getInterfaceHandle()->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-//        if (elegid == 14 and elementvalues.N() > 0 and plot_to_gnuplot)
-        if (actele->Id() == 1 and elementvalues.N() > 0 and plot_to_gnuplot)
-        {
-          //std::cout << elementvalues << std::endl;
-          std::ofstream f;
-          const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                                  + ".outflowvel.txt";
-          if (step <= 1)
-            f.open(fname.c_str(),std::fstream::trunc);
-          else
-            f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-          //f << time_ << " " << (-1.5*std::sin(0.1*2.0*time_* M_PI) * M_PI*0.1) << "  " << elementvalues(0,0) << endl;
-          f << time << "  " << elementvalues(0,0) << "\n";
-
-          f.close();
-        }
-
       }
       gmshfilecontent << "};\n";
+#if 1
+      //---------------------------------------
+      // write velocity jump at Gaussian points
+      //---------------------------------------
+      if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
+          combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
+      {
+        gmshfilecontent << "View \" " << "Velocity Jump \" {\n";
+        for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
+        {
+          const DRT::Element* ele = discret_->lRowElement(iele);
+
+          // output only for bisected elements
+          if (dofmanagerForOutput_->getInterfaceHandle()->ElementBisected(ele))
+          {
+            //------------------------------------------------------------------------------------------
+            // extract local level-set (G-function) values from global vector
+            //------------------------------------------------------------------------------------------
+            // get pointer to vector holding G-function values at the fluid nodes
+            const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+#ifdef DEBUG
+            // get map of this vector
+            const Epetra_BlockMap& phimap = phinp->Map();
+            // check, whether this map is still identical with the current node map in the discretization
+            if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
+            size_t numnode = ele->NumNode();
+            vector<double> myphinp(numnode);
+            // extract G-function values to element level
+            DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+#ifdef DEBUG
+            if (numnode != 8) dserror("velocity jump output only available for hex8 elements!");
+#endif
+            LINALG::Matrix<8,1> ephi;
+            for (size_t iparam=0; iparam<numnode; ++iparam)
+              ephi(iparam) = myphinp[iparam];
+
+#ifdef COMBUST_NORMAL_ENRICHMENT
+            // get pointer to vector holding smoothed  G-function gradient values at the fluid nodes
+            const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
+            std::vector<double> mygradphi;
+            DRT::UTILS::ExtractMyNodeBasedValues(ele, mygradphi,*gradphinp);
+
+            if (numnode != 8) dserror("only available for hex8 elements!");
+            LINALG::Matrix<3,8> egradphi(true);
+
+            unsigned ipos;
+            for (size_t inode=0; inode<numnode; ++inode)
+            {
+              ipos = inode*3;
+              egradphi(0, inode) = mygradphi[ipos  ];
+              egradphi(1, inode) = mygradphi[ipos+1];
+              egradphi(2, inode) = mygradphi[ipos+2];
+            }
+#endif
+            // create local copy of information about dofs
+            const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
+
+            //-------------------------------------------
+            // extract velocity values from global vector
+            //-------------------------------------------
+            vector<int> lm;
+            vector<int> lmowner;
+            vector<int> lmstride;
+            ele->LocationVector(*(discret_), lm, lmowner, lmstride);
+            // extract local values from the global vector
+            vector<double> myvelnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
+
+            const vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+            const vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+            const vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+#ifdef COMBUST_NORMAL_ENRICHMENT
+            const vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
+#endif
+
+            const size_t numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
+            LINALG::SerialDenseMatrix evel(4, numparamvelx,true);
+            for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+            {
+              evel(0,iparam) = myvelnp[dofposvelx[iparam]];
+              evel(1,iparam) = myvelnp[dofposvely[iparam]];
+              evel(2,iparam) = myvelnp[dofposvelz[iparam]];
+            }
+#ifdef COMBUST_NORMAL_ENRICHMENT
+            const size_t numparamveln = eledofman.NumDofPerField(XFEM::PHYSICS::Veln);
+            for (size_t iparam=0; iparam<numparamveln; ++iparam)
+            {
+              evel(3, iparam) = myvelnp[dofposveln[iparam]];
+            }
+#endif
+            // get node coordinates for this element
+            LINALG::SerialDenseMatrix xyze(3,numnode);
+            GEO::fillInitialPositionArray(ele,xyze);
+
+            // evaluate the enrichment function at the interface (boundary integration cells)
+            const XFEM::ElementEnrichmentValues enrvals_plus(*ele,eledofman,XFEM::Enrichment::approachFromPlus,ephi);
+            const XFEM::ElementEnrichmentValues enrvals_minus(*ele,eledofman,XFEM::Enrichment::approachFromMinus,ephi);
+
+            //--------------------------------------------------------------------
+            // interpolate values from element to Gaussian points of boundary cell
+            //--------------------------------------------------------------------
+            const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
+            for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
+            {
+              if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
+              // choose an arbitrary number of Gaussian points for the output
+              const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_3point);
+              // loop over Gaussian points
+              for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+              {
+                // transform coordinates of this Gaussian point
+                // coordinates of this integration point in boundary cell coordinates \eta^boundary
+                const LINALG::Matrix<2,1> posEtaBoundary(intpoints.qxg[iquad]);
+                // coordinates of this integration point in element coordinates \xi^domain
+                LINALG::Matrix<3,1> posXiDomain;
+                GEO::mapEtaBToXiD(*cell, posEtaBoundary, posXiDomain);
+
+                LINALG::SerialDenseVector funct(numnode,true);
+                DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),ele->Shape());
+
+#ifdef DEBUG
+#ifndef COMBUST_NORMAL_ENRICHMENT
+                if (numparamvelx != 16) dserror("velocity jump output only available for fully enriched hex8 elements!");
+#else
+                if (numparamvelx != 8 or numparamveln != 8) dserror("velocity jump output only available for fully enriched hex8 elements!");
+#endif
+#endif
+
+#ifndef COMBUST_NORMAL_ENRICHMENT
+                LINALG::SerialDenseVector enrfunct_plus(numparamvelx,true);
+                LINALG::SerialDenseVector enrfunct_minus(numparamvelx,true);
+
+                enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, enrfunct_plus);
+                enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, enrfunct_minus);
+
+                XFEM::ApproxFunc<0,16> shp_jump;
+                // fill approximation functions
+                for (std::size_t iparam = 0; iparam < 16; ++iparam)
+                  shp_jump.d0(iparam) = enrfunct_minus(iparam) - enrfunct_plus(iparam);
+
+                // velocity jump
+                LINALG::Matrix<3,1> veljump(true);
+                for (int iparam = 0; iparam < 16; ++iparam)
+                {
+                  veljump(0) += evel(0,iparam)*shp_jump.d0(iparam);
+                  veljump(1) += evel(1,iparam)*shp_jump.d0(iparam);
+                  veljump(2) += evel(2,iparam)*shp_jump.d0(iparam);
+                }
+#else
+#ifdef COLLAPSE_FLAME
+                LINALG::Matrix<3,1> normal(true);
+                for (unsigned i=0;i<numnode;i++)
+                {
+                  normal(0) += funct(i)*xyze(0,i);
+                  normal(1) += funct(i)*xyze(1,i);
+                }
+                const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+                if (norm == 0.0) dserror("norm of normal vector is zero!");
+                normal.Scale(-1.0/norm);
+#endif
+//if (ele->Id()==116)
+////  or
+////    ele->Id()==226 or
+////    ele->Id()==326 or
+////    ele->Id()==216)
+//{
+//  cout << "Normalenvektor Post processing Viertelposition" << normal << endl;
+//}
+//if (ele->Id()==141)
+////  or
+////    ele->Id()==308 or
+////    ele->Id()==201 or
+////    ele->Id()==133)
+//{
+//  cout << "Normalenvektor Post processing Achtelposition" << normal << endl;
+//}
+                // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
+                XFEM::ApproxFuncNormalVector<0,8> enrfunct_plus(true);
+                XFEM::ApproxFuncNormalVector<0,8> enrfunct_minus(true);
+
+                enrvals_plus.ComputeNormalShapeFunction(funct, egradphi,
+#ifdef COLLAPSE_FLAME
+                    normal,
+#endif
+                    enrfunct_plus);
+                enrvals_minus.ComputeNormalShapeFunction(funct, egradphi,
+#ifdef COLLAPSE_FLAME
+                    normal,
+#endif
+                    enrfunct_minus);
+
+                XFEM::ApproxFuncNormalVector<0,8> shp_jump(true);     // [[ ]] notation
+                for (size_t iparam = 0; iparam < numparamveln; ++iparam)
+                {
+                  shp_jump.velx.d0.n(iparam) = enrfunct_minus.velx.d0.n(iparam) - enrfunct_plus.velx.d0.n(iparam);
+                  shp_jump.vely.d0.n(iparam) = enrfunct_minus.vely.d0.n(iparam) - enrfunct_plus.vely.d0.n(iparam);
+                  shp_jump.velz.d0.n(iparam) = enrfunct_minus.velz.d0.n(iparam) - enrfunct_plus.velz.d0.n(iparam);
+                }
+                // velocity jump
+                LINALG::Matrix<3,1> veljump(true);
+                veljump = XFEM::interpolateVectorFieldToIntPointNormal(evel, shp_jump, numparamvelx, ele, eledofman);
+#endif
+
+                // norm of velocity jump
+                const double veljumpnorm = veljump.Norm2();
+
+                LINALG::Matrix<3,1> posXYZDomain(true);
+                for (size_t inode=0;inode<numnode;++inode)
+                {
+                  posXYZDomain(0) += funct(inode)*xyze(0,inode);
+                  posXYZDomain(1) += funct(inode)*xyze(1,inode);
+                  posXYZDomain(2) += funct(inode)*xyze(2,inode);
+                }
+
+                // write data to Gmsh file
+                //IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
+                IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
+              }
+            }
+          }
+        }
+      }
+      gmshfilecontent << "};\n";
+#endif
     }
     gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
@@ -2746,6 +3273,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       const int newdofpos = state_.nodalDofDistributionMap_.find(newdofkey)->second;
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
       {
+#ifndef COMBUST_NORMAL_ENRICHMENT
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
           // halbe Sprunghoehe von 1.0
@@ -2762,15 +3290,37 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0;
           (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0;
         }
+#else
+//        -normal(entry)*((-0.5)*averageJumpsAndKinks[ivector](0,0) // -0.5*jump
+//                   +0.5*dist*averageJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
+
+        if (fieldenr->getField() == XFEM::PHYSICS::Veln)
+        {
+          // halbe Sprunghoehe von 1.0
+          (*state_.veln_)[newdofrowmap.LID(newdofpos)] = -0.5;
+          (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = -0.5;
+        }
+#endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
+          //if(gfuncval>=0.0) // outside circle
+          //{
           (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
           (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
+
+//                           -0.5*averageJumpsAndKinks[ivector](0,1) // -0.5*jump
+//                 +0.5*dist*averageJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
+          //}
+          //else // inside circle
+          //{
+          //  (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
+          //  (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
+          //}
         }
       } // end if jump enrichment
       else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
-        if (gfuncval>=0) // Standard dofs ausserhalb vom Kreis
+        if (gfuncval>=0.0)//coordsnorm>0.25 // Standard dofs ausserhalb vom Kreis
         {
           if (fieldenr->getField() == XFEM::PHYSICS::Velx)
           {
@@ -2836,7 +3386,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   {
     DRT::Node* lnode = discret_->lRowNode(nodeid);
 
-    LINALG::Matrix<nsd,1> coords(lnode->X());
+    LINALG::Matrix<3,1> coords(lnode->X());
 
     const int lid = phinp->Map().LID(lnode->Id());
     const double gfuncval = (*phinp)[lid];
@@ -2952,7 +3502,6 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   // smoothed normal vectors for boundary integration terms
   eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
 
-
   // set parameters for parts of the whole Nitsche-error (mesh-dependent norms), here norms not square rooted
   eleparams.set<double>("L2 integrated velocity domain error", 0.0);
   eleparams.set<double>("L2 integrated grad_velocity domain error", 0.0);
@@ -2969,31 +3518,31 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
   // call loop over elements (but do not assemble anything)
   // discret_->Evaluate calls combust3_evaluate for each element
-  discret_->Evaluate(eleparams,null,null,null,null,null); // only actele->Evaluate is called (see combust3_evaluate.cpp)
+  discret_->Evaluate(eleparams,null,null,null,null,null); // only ele->Evaluate is called (see combust3_evaluate.cpp)
 
   discret_->ClearState();
 
-  double locVelDomErr 		= eleparams.get<double>("L2 integrated velocity domain error");
-  double locGradVelDomErr 	= eleparams.get<double>("L2 integrated grad_velocity domain error");
-  double locViscInterfErr 	= eleparams.get<double>("H-1/2 integrated viscosity interface error");
-  double locVelJumpInterfErr 	= eleparams.get<double>("H1/2 integrated velocity jump interface error");
-  double locPresDomErr		= eleparams.get<double>("L2 integrated pressure domain error");
-  double locGradPresDomErr    = eleparams.get<double>("L2 integrated grad_pressure domain error");
-  double locWeightPresDomErr	= eleparams.get<double>("L2 integrated weighted pressure domain error");
-  double locNitscheErr		= eleparams.get<double>("Nitsche integrated error");
+  double locVelDomErr        = eleparams.get<double>("L2 integrated velocity domain error");
+  double locGradVelDomErr    = eleparams.get<double>("L2 integrated grad_velocity domain error");
+  double locViscInterfErr    = eleparams.get<double>("H-1/2 integrated viscosity interface error");
+  double locVelJumpInterfErr = eleparams.get<double>("H1/2 integrated velocity jump interface error");
+  double locPresDomErr       = eleparams.get<double>("L2 integrated pressure domain error");
+  double locGradPresDomErr   = eleparams.get<double>("L2 integrated grad_pressure domain error");
+  double locWeightPresDomErr = eleparams.get<double>("L2 integrated weighted pressure domain error");
+  double locNitscheErr       = eleparams.get<double>("Nitsche integrated error");
 
   // initialize global errors
-  double VelDomErr 			= 0.0;
-  double GradVelDomErr 		= 0.0;
-  double ViscInterfErr	 	= 0.0;
-  double VelJumpInterfErr 	= 0.0;
-  double PresDomErr			= 0.0;
-  double GradPresDomErr		= 0.0;
-  double WeightPresDomErr	= 0.0;
-  double NitscheErr			= 0.0;
+  double VelDomErr        = 0.0;
+  double GradVelDomErr    = 0.0;
+  double ViscInterfErr    = 0.0;
+  double VelJumpInterfErr = 0.0;
+  double PresDomErr       = 0.0;
+  double GradPresDomErr   = 0.0;
+  double WeightPresDomErr = 0.0;
+  double NitscheErr       = 0.0;
 
   // TODO @Benedikt: check wether Comm() works also for interface integrals ? Benedikt: seems so!
-  discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1);			// sum over processors, each list (list of a processor) has length 1
+  discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1); // sum over processors, each list (list of a processor) has length 1
   discret_->Comm().SumAll(&locGradVelDomErr,&GradVelDomErr,1);
   discret_->Comm().SumAll(&locViscInterfErr,&ViscInterfErr,1);
   discret_->Comm().SumAll(&locVelJumpInterfErr,&VelJumpInterfErr,1);
@@ -3004,28 +3553,28 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
 
   // for the norms, we need the square roots
-  VelDomErr 			= sqrt(VelDomErr);
-  GradVelDomErr 		= sqrt(GradVelDomErr);
-  ViscInterfErr 		= sqrt(ViscInterfErr);
-  VelJumpInterfErr 		= sqrt(VelJumpInterfErr);
-  PresDomErr 			= sqrt(PresDomErr);
-  GradPresDomErr		= sqrt(GradPresDomErr);
-  WeightPresDomErr 		= sqrt(WeightPresDomErr);
-  NitscheErr 			= sqrt(NitscheErr);
+  VelDomErr        = sqrt(VelDomErr);
+  GradVelDomErr    = sqrt(GradVelDomErr);
+  ViscInterfErr    = sqrt(ViscInterfErr);
+  VelJumpInterfErr = sqrt(VelJumpInterfErr);
+  PresDomErr       = sqrt(PresDomErr);
+  GradPresDomErr   = sqrt(GradPresDomErr);
+  WeightPresDomErr = sqrt(WeightPresDomErr);
+  NitscheErr       = sqrt(NitscheErr);
 
   if (myrank_ == 0)
   {
     printf("\n======================================================================="
            "\n======================= absolute Nitsche errors ======================="
            "\n======= compare analytical solution with approximated solution=========");
-    printf("\n  || u-u_h ||_L2(Omega)\t\t\t\t\t%15.8e", 						VelDomErr);
-    printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega1 U Omega2) \t%15.8e", 		GradVelDomErr);
-    printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Interface) \t\t%15.8e",			ViscInterfErr);
-    printf("\n  || |[u-u_h]| ||_H1/2(Interface)\t\t\t%15.8e", 				VelJumpInterfErr);
-    printf("\n  || p-p_h ||_L2(Omega)\t\t\t\t\t%15.8e",						PresDomErr);
-    printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",			GradPresDomErr);
-    printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",			WeightPresDomErr);
-    printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",			NitscheErr);
+    printf("\n  || u-u_h ||_L2(Omega)\t\t\t\t\t%15.8e",                  VelDomErr);
+    printf("\n  || sqrt(mu)grad(u-u_h) ||_L2(Omega1 U Omega2) \t%15.8e", GradVelDomErr);
+    printf("\n  || {2mu* E(u-u_h)*n} ||_H-1/2(Interface) \t\t%15.8e",    ViscInterfErr);
+    printf("\n  || |[u-u_h]| ||_H1/2(Interface)\t\t\t%15.8e",            VelJumpInterfErr);
+    printf("\n  || p-p_h ||_L2(Omega)\t\t\t\t\t%15.8e",                  PresDomErr);
+    printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",       GradPresDomErr);
+    printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",     WeightPresDomErr);
+    printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",       NitscheErr);
     printf("\n======================================================================="
            "\n=======================================================================\n");
   }
@@ -3087,8 +3636,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 
     if (myrank_ == 0)
     {
-      printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
-             velerr,preerr);
+      printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n", velerr,preerr);
     }
   }
   break;
