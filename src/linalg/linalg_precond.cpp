@@ -25,6 +25,14 @@ Maintainer: Michael Gee
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+bool LINALG::Preconditioner::IsFactored() const
+{
+  return solver_->IsFactored();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
   : solver_(solver),
     ncall_(0)
@@ -156,8 +164,23 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
   }
   else
   {
+    // this is to bypass an amesos bug that demands the rhs and solution to be
+    // the SAME vector in every reuse of the factorization
+    // as we can not guarantee that x and b are always the physically same vector,
+    // they are always copied to x_ and b_ when the factorization is reused.
+    if (refactor || reset)
+    {
+      b_ = rcp(new Epetra_Vector(*b));
+      x_ = rcp(new Epetra_Vector(*x));
+    }
+    else
+    {
+      b_->Update(1.0,*b,0.0);
+      x_->Update(1.0,*x,0.0);
+    }
     // direct solves are done by the solver itself.
-    solver_->Solve(matrix,x,b,refactor,reset);
+    solver_->Solve(matrix,x_,b_,refactor,reset);
+    x->Update(1.0,*x_,0.0);
   }
 
   ncall_ += 1;

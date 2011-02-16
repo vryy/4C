@@ -92,6 +92,9 @@ namespace LINALG
                bool reset = false);
 
 
+    /// get flag from solver whether factorization has been performed
+    bool IsFactored() const;
+
     /// get underlying preconditioner Epetra_Operator
     Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }
 
@@ -154,6 +157,8 @@ namespace LINALG
     Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
 
     /// there is always a solver object
+    Teuchos::RCP<Epetra_Vector> x_;
+    Teuchos::RCP<Epetra_Vector> b_;
     Teuchos::RCP<Solver> solver_;
 
     //! counting how many times matrix was solved between resets
