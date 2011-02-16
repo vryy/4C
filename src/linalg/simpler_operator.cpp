@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 #include "simpler_operator.H"
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
-#define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
+#define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG/ILU      0: true solve
 #define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA         0.8  // simple pressure damping parameter
 #define SIMPLER_TIMING        0    // printout timing of setup
@@ -237,7 +237,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
 
   //-------------------------------------------------------------------------
   // Allocate and compute approximate Schur complement operator S
-  // S = A(1,1) - A(1,0) * diagAinv * A(0,1)
+  // S = A(1,1) - A(1,0) * diagA00inv * A(0,1)
   //-------------------------------------------------------------------------
   {
     Epetra_Time ltime(A_->Comm());
