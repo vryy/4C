@@ -2993,6 +2993,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                &fsidyn);
 
+  setStringToIntegralParameter<int>("FSIAMGANALYZE","No",
+                               "run analysis on fsiamg multigrid scheme\n"
+                               "Supported in monolithic FSI for now.",
+                               yesnotuple,yesnovalue,&fsidyn);
+
   IntParameter("ITECHAPP",1,"unused",&fsidyn);
   IntParameter("ICHMAX",1,"unused",&fsidyn);
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
