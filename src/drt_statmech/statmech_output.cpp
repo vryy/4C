@@ -383,9 +383,9 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     case INPAR::STATMECH::statout_viscoelasticity:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-      if (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
+      if ((istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
       {
-
+      	cout<<params.get<double>("max time",5)<<endl;
 #ifdef DEBUG
         if (forcesensor_ == null)
           dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
@@ -405,7 +405,6 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
         //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
         double fglob = 0;
         discret_.Comm().SumAll(&f,&fglob,1);
-
 
 
         if(!discret_.Comm().MyPID())
@@ -3428,7 +3427,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LI
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
-/// Part 2: inter-crosslink distances between central box and surrounding box crosslinker elements
+/// inter-crosslink distances between central box and surrounding box crosslinker elements
 	// get crosslinker positions vector
 	Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
 	std::vector<std::vector<int> > boxindices;

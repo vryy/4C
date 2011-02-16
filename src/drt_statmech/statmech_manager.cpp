@@ -253,6 +253,9 @@ discret_(discret)
 	 * Calculations are made on Proc 0, only.*/
 	CrosslinkerMoleculeInit();
 
+	// initialize istart_ with step number of the beginning of statistical mechanics output
+	istart_ = (int)(statmechparams_.get<double>("STARTTIMEOUT", 0.0) / params.get<double>("delta time", 0.01));
+
 	return;
 }// StatMechManager::StatMechManager
 
