@@ -801,6 +801,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_overlapprec_fsiamg.cpp
   src/drt_fsi/fsi_lung_overlapprec.cpp
   src/drt_fsi/fsi_constr_overlapprec.cpp
+  src/drt_fsi/fsi_overlapprec_fsiamg_analysis.cpp
   src/drt_fsi/fsi_partitioned.cpp
   src/drt_fsi/fsi_partitionedmonolithic.cpp
   src/drt_fsi/fsi_robin.cpp
