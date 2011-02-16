@@ -30,10 +30,12 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust3_interpolation.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
+#include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/startvalues.H"
@@ -101,12 +103,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // time measurement: initialization
   //------------------------------------------------------------------------------------------------
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
-  
+
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for computation of initial field from stationary problem
   //------------------------------------------------------------------------------------------------
   if(initstatsol_) step_ = -1;
-  
+
   //------------------------------------------------------------------------------------------------
   // set time integration parameters for stationary simulation
   //------------------------------------------------------------------------------------------------
@@ -815,7 +817,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
   // out to screen
   PrintTimeStepInfo();
-  
+
   // action for elements
   if (timealgo_!=INPAR::FLUID::timeint_stationary and theta_ < 1.0)
   {
@@ -911,7 +913,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // parameters for two-phase flow problems with surface tension
       eleparams.set("surftensapprox",surftensapprox_);
       eleparams.set("connected_interface",connected_interface_);
-      
+
       // smoothed normal vectors for boundary integration
       eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
       eleparams.set("smoothgradphi",smoothgradphi_);
@@ -1092,10 +1094,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           const Epetra_Map* dofcolmap = discret_->DofColMap();
           map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
           dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
-          
+
           RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
           LINALG::Export(*state_.velnp_,*velnp);
-          
+
 
           for (int inode=0;inode<discret_->NumMyColNodes();inode++)
           {
@@ -1105,20 +1107,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               backnode = discret_->gNode(frontnode->Id()+1);
             else // ungerade gid -> nachbar hat gid-1
               backnode = discret_->gNode(frontnode->Id()-1);
-            
+
             const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
-            
+
             { // check if frontnode and backnode is correct
               LINALG::Matrix<3,1> frontcoords(frontnode->X());
               LINALG::Matrix<3,1> backcoords(backnode->X());
-              
+
               if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
               {
                 cout << *frontnode << endl;
                 cout << *backnode << endl;
                 dserror("wrong order of nodes as thought here!");
               }
-              
+
               // compare both fieldenrsets
               const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
               int i=0;
@@ -1139,16 +1141,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                 i++;
               }
             } // if the compare is successful, all fieldenrichments for this node fit for front and back
-            
+
             for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
                 fieldenr != frontfieldEnrSet.end();fieldenr++)
             {
               const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
               const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
-              
+
               const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
               const int backdofpos = dofColDistrib.find(backdofkey)->second;
-              
+
               if (fieldenr->getField() != XFEM::PHYSICS::Velz)
               {
                 double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
@@ -1202,7 +1204,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
       }
-      
+
 #if 0
       // for 2-dimensional problems errors occur because of pseudo 3D code!
       // These error shall be removed with the following modifications
@@ -1212,10 +1214,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         const Epetra_Map* dofcolmap = discret_->DofColMap();
         map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
         dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
-        
+
         RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
         LINALG::Export(*state_.velnp_,*velnp);
-        
+
 
         for (int inode=0;inode<discret_->NumMyColNodes();inode++)
         {
@@ -1225,20 +1227,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             backnode = discret_->gNode(frontnode->Id()+1);
           else // ungerade gid -> nachbar hat gid-1
             backnode = discret_->gNode(frontnode->Id()-1);
-          
+
           const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
-          
+
           { // check if frontnode and backnode is correct
             LINALG::Matrix<3,1> frontcoords(frontnode->X());
             LINALG::Matrix<3,1> backcoords(backnode->X());
-            
+
             if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
             {
               cout << *frontnode << endl;
               cout << *backnode << endl;
               dserror("wrong order of nodes as thought here!");
             }
-            
+
             // compare both fieldenrsets
             const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
             int i=0;
@@ -1259,16 +1261,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
               i++;
             }
           } // if the compare is successful, all fieldenrichments for this node fit for front and back
-          
+
           for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
               fieldenr != frontfieldEnrSet.end();fieldenr++)
           {
             const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
             const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
-            
+
             const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
             const int backdofpos = dofColDistrib.find(backdofkey)->second;
-            
+
             if (fieldenr->getField() != XFEM::PHYSICS::Velz)
             {
               double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
@@ -1374,7 +1376,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   residual_ = Teuchos::null;
   zeros_ = Teuchos::null;
   sysmat_ = Teuchos::null;
-  
+
 #if 0
   //TODO MARTIN: remove after testing
   vector<int> nodegids(1,71);
@@ -1386,7 +1388,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     dataout.open("../output/crossinterface/very_cross_dir2/enrichments.txt", ios::trunc);
   else if (step_ > 2)
     dataout.open("../output/crossinterface/very_cross_dir2/enrichments.txt", ios::app);
-  
+
   for (size_t i=0;i<nodegids.size();i++)
   {
     // set nodal velocities and pressures with help of the field set of node
@@ -2092,7 +2094,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                 }
 
                 // write data to Gmsh file
-                IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
+                //IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
               }
             }
           }
@@ -2792,7 +2794,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
                 // write data to Gmsh file
                 //IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
-                IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
+                //IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
               }
             }
           }
@@ -3120,7 +3122,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
                                +(xyz(1)-xyz0_left(1))*(xyz(1)-xyz0_left(1)))/R_squared;
       double r_squared_right = ((xyz(0)-xyz0_right(0))*(xyz(0)-xyz0_right(0))
                                +(xyz(1)-xyz0_right(1))*(xyz(1)-xyz0_right(1)))/R_squared;
-                               
+
       //----------------------------------------
       // set density with respect to flame front
       //----------------------------------------
@@ -3240,7 +3242,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 
   OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
 #endif
-  
+
 #ifdef COLLAPSE_FLAME
   cout0_ << "==============================================================================================\n";
   cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
@@ -3254,14 +3256,14 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   for (int nodeid=0;nodeid<discret_->NumMyRowNodes();nodeid++) // loop over element nodes
   {
     DRT::Node* lnode = discret_->lRowNode(nodeid);
-    
+
     LINALG::Matrix<nsd,1> coords(lnode->X());
 //    coords(1) -= 0.5;
     double coordsnorm = sqrt(coords(0)*coords(0)+coords(1)*coords(1));
-    
+
     const int lid = phinp->Map().LID(lnode->Id());
     const double gfuncval = (*phinp)[lid];
-    
+
     const double radius = 0.25;
     const double velrad = 1.0;
 
@@ -3473,8 +3475,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
 #endif
 //  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
-  
-  
+
+
 }
 
 
@@ -3498,7 +3500,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   eleparams.set("action", "calc_nitsche_error");
   eleparams.set("Nitsche_Compare_Analyt", NitscheErrorType);
   // switch different test cases -> set "flowproblem" for elements
-  
+
   // smoothed normal vectors for boundary integration terms
   eleparams.set("smoothed_bound_integration", smoothed_boundary_integration_);
 
