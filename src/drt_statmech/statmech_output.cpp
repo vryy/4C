@@ -2515,7 +2515,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream histogram;
     histogram<<internalenergy;
-    for(int i=0; i<13; i++)
+    for(int i=0; i<16; i++)
     	histogram<<"    "<<0;
     histogram<<endl;
 
@@ -3331,7 +3331,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		fp = fopen(filename.str().c_str(), "w");
 		std::stringstream structuretype;
 		structuretype<<structurenumber<<"    "<<characlength[minimum];
-		for(int j=0; j<13; j++)
+		for(int j=0; j<16; j++)
 			structuretype<<"    "<<0.0;
 		structuretype<<endl;
 		fprintf(fp, structuretype.str().c_str());
