@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 #include <sstream>
 
 #include "enrichment_utils.H"
+#include "../drt_combust/combust_defines.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
@@ -63,7 +64,7 @@ XFEM::ElementEnrichmentValues::ElementEnrichmentValues(
  *----------------------------------------------------------------------*/
 void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&                   ele,
-  XFEM::InterfaceHandle*     ih,
+  XFEM::InterfaceHandle*                ih,
   const XFEM::ElementDofManager&        dofman,
   const GEO::DomainIntCell&             cell,
   const XFEM::PHYSICS::Field            field,
@@ -159,9 +160,120 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
       for (std::size_t iparam = 0; iparam < numparam; ++iparam)
         for (std::size_t isd = 0; isd < 3; ++isd)
           cellvalues(isd,inode) += elementvalues(isd,iparam) * enr_funct(iparam);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  cout << "Am Postprocessing muessen wir noch arbeiten!" << endl;
+      break;
+    }
+    default:
+      dserror("interpolation to cells not available for this field");
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | interpolate field from element node values to cell node values based |
+ | on a level-set field                                     henke 01/11 |
+ | remark: function used for modified jump normal enrichment strategy   |
+ *----------------------------------------------------------------------*/
+void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
+  const DRT::Element&                   ele,
+  const XFEM::ElementDofManager&        dofman,
+  const GEO::DomainIntCell&             cell,
+  const std::vector<double>&            phivalues,
+  const LINALG::Matrix<3,8>&            gradphi,
+  const XFEM::PHYSICS::Field            field,
+  const LINALG::SerialDenseMatrix&      elementvalues,
+  LINALG::SerialDenseMatrix&            cellvalues)
+{
+  if (ele.Shape() != DRT::Element::hex8)
+    dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  const size_t numparam  = dofman.NumDofPerField(field);
+
+  // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
+  LINALG::Matrix<numnode,1> phi;
+  for (size_t inode=0; inode<numnode; ++inode)
+    phi(inode) = phivalues[inode];
+
+  // get coordinates of cell vertices
+  const LINALG::SerialDenseMatrix& nodalPosXiDomain(cell.CellNodalPosXiDomain());
+
+  // compute enrichment values based on a level set field 'phi'
+  const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi);
+
+  LINALG::SerialDenseVector enr_funct(numparam);
+  LINALG::SerialDenseVector funct(numnode);
+
+  cellvalues.Zero();
+  for (int ivertex = 0; ivertex < cell.NumNode(); ++ivertex)
+  {
+    // evaluate shape functions
+    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,ivertex),nodalPosXiDomain(1,ivertex),nodalPosXiDomain(2,ivertex),DRT::Element::hex8);
+
+    XFEM::ApproxFuncNormalVector<0,8> shp(true);
+    // fill approximation functions for XFEM
+    for (size_t iparam = 0; iparam != numparam; ++iparam)
+    {
+      shp.velx.d0.s(iparam) = funct(iparam);
+      shp.vely.d0.s(iparam) = funct(iparam);
+      shp.velz.d0.s(iparam) = funct(iparam);
+    }
+
+#ifdef COLLAPSE_FLAME
+    LINALG::Matrix<3,1> normal(true);
+    // get coordinates of cell vertices
+    const LINALG::SerialDenseMatrix& nodalPosXYZ(cell.CellNodalPosXYZ());
+    normal(0) = nodalPosXYZ(0,ivertex);
+    normal(1) = nodalPosXYZ(1,ivertex);
+    normal(2) = 0.0;
+    const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+    if (norm == 0.0) dserror("norm of normal vector is zero!");
+    normal.Scale(-1.0/norm);
 #endif
+
+    // shape functions and derivatives for nodal parameters (dofs)
+    enrvals.ComputeNormalShapeFunction(funct, gradphi,
+#ifdef COLLAPSE_FLAME
+        normal,
+#endif
+        shp);
+
+    switch (field)
+    {
+    // vector fields
+    case XFEM::PHYSICS::Velx:
+    {
+      const int* nodeids = ele.NodeIds();
+
+      std::size_t velncounter = 0;
+      for (std::size_t inode=0; inode<numnode; ++inode)
+      {
+        // standard shape functions are identical for all vector components
+        // shp.velx.d0.s == shp.vely.d0.s == shp.velz.d0.s
+        cellvalues(0,ivertex) += elementvalues(0,inode)*shp.velx.d0.s(inode);
+        cellvalues(1,ivertex) += elementvalues(1,inode)*shp.vely.d0.s(inode);
+        cellvalues(2,ivertex) += elementvalues(2,inode)*shp.velz.d0.s(inode);
+
+        const int gid = nodeids[inode];
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
+
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+          if (enrfield->getField() == XFEM::PHYSICS::Veln)
+          {
+            cellvalues(0,ivertex) += elementvalues(3,velncounter)*shp.velx.d0.n(velncounter);
+            cellvalues(1,ivertex) += elementvalues(3,velncounter)*shp.vely.d0.n(velncounter);
+            cellvalues(2,ivertex) += elementvalues(3,velncounter)*shp.velz.d0.n(velncounter);
+
+            velncounter += 1;
+          }
+        }
+      }
+      // TODO @Florian remove this from release version
+      if (velncounter != dofman.NumDofPerField(XFEM::PHYSICS::Veln)) dserror("Alles falsch, du Depp!");
+      dsassert(velncounter == dofman.NumDofPerField(XFEM::PHYSICS::Veln), "mismatch in information from eledofmanager!");
+
       break;
     }
     default:

@@ -17,6 +17,8 @@ Maintainer: Florian Henke
 #ifndef XFEM_ELEMENT_UTILS_H
 #define XFEM_ELEMENT_UTILS_H
 
+#include "dof_management_element.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_geometry/intersection_service.H"
 
 namespace XFEM
@@ -329,6 +331,274 @@ namespace XFEM
         v(isd) += eleVectorField(isd,iparam)*shp(iparam);
     return v;
   }
+
+template <size_t numparam>
+class ApproxFuncNormalPair
+{
+public:
+  /// default constructor
+  explicit ApproxFuncNormalPair()
+  {
+    // initialize approximation functions
+    for(size_t irow=0;irow<numparam;++irow)
+    {
+      s(irow,0)=0.0;
+      n(irow,0)=0.0;
+    }
+  };
+
+  /// constructor
+  explicit ApproxFuncNormalPair(bool setzero)
+  {
+    if (setzero)
+    {
+      // initialize approximation functions
+      for(size_t irow=0;irow<numparam;++irow)
+      {
+        s(irow,0)=0.0;
+        n(irow,0)=0.0;
+      }
+    }
+  };
+
+  void Clear()
+  {
+    for(size_t irow=0;irow<numparam;++irow)
+    {
+      s(irow,0)=0.0;
+      n(irow,0)=0.0;
+    }
+  };
+
+  void Print()
+  {
+    std::cout << "s ";
+    for(size_t irow=0;irow<numparam;++irow)
+    {
+      std::cout << s(irow,0) << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "n ";
+    for(size_t irow=0;irow<numparam;++irow)
+    {
+      std::cout << n(irow,0) << " ";
+    }
+    std::cout << std::endl;
+  };
+
+  /// approximation functions
+  LINALG::Matrix<numparam,1> s;
+  LINALG::Matrix<numparam,1> n;
+
+private:
+  /// hide copy constructor
+  explicit ApproxFuncNormalPair(const ApproxFuncNormalPair&){}
+};
+
+template <unsigned int numdiv, size_t numparam>
+class ApproxFuncNormalSet
+{
+private:
+  /// hide default constructor
+  explicit ApproxFuncNormalSet(){}
+  /// hide default copy constructor
+  explicit ApproxFuncNormalSet(const ApproxFuncNormalSet&){}
+};
+
+template <size_t numparam>
+class ApproxFuncNormalSet<0,numparam>
+{
+public:
+  /// default constructor
+  explicit ApproxFuncNormalSet(){}
+  /// constructor
+  explicit ApproxFuncNormalSet(bool setzero) :
+    d0(setzero){}
+
+  void Clear()
+  {
+    d0.Clear();
+  }
+
+  void Print()
+  {
+    std::cout << "  d0" << endl; d0.Print();
+  }
+
+  /// pair of approximation functions belonging to this set
+  ApproxFuncNormalPair<numparam> d0;
+
+private:
+  /// hide default copy constructor
+  explicit ApproxFuncNormalSet(const ApproxFuncNormalSet&){}
+};
+
+template <size_t numparam>
+class ApproxFuncNormalSet<1,numparam>
+{
+public:
+  /// default constructor
+  explicit ApproxFuncNormalSet(){}
+  /// constructor
+  explicit ApproxFuncNormalSet(bool setzero) :
+    d0(setzero),
+    dx(setzero),
+    dy(setzero),
+    dz(setzero){}
+
+  void Clear()
+  {
+    d0.Clear();
+    dx.Clear();
+    dy.Clear();
+    dz.Clear();
+  }
+
+  void Print()
+  {
+    std::cout << "  d0" << endl; d0.Print();
+    std::cout << "  dx" << endl; dx.Print();
+    std::cout << "  dy" << endl; dy.Print();
+    std::cout << "  dz" << endl; dz.Print();
+  }
+
+  /// pairs of approximation functions belonging to this set
+  ApproxFuncNormalPair<numparam>  d0;
+  ApproxFuncNormalPair<numparam>  dx;
+  ApproxFuncNormalPair<numparam>  dy;
+  ApproxFuncNormalPair<numparam>  dz;
+
+private:
+  /// hide default copy constructor
+  explicit ApproxFuncNormalSet(const ApproxFuncNormalSet&){}
+};
+
+template <size_t numparam>
+class ApproxFuncNormalSet<2,numparam>
+{
+public:
+  /// default constructor
+  explicit ApproxFuncNormalSet(){}
+  /// constructor
+  explicit ApproxFuncNormalSet(bool setzero) :
+    d0(setzero),
+    dx(setzero),
+    dy(setzero),
+    dz(setzero),
+    dxdx(setzero),
+    dxdy(setzero),
+    dxdz(setzero),
+    dydx(setzero),
+    dydy(setzero),
+    dydz(setzero),
+    dzdx(setzero),
+    dzdy(setzero),
+    dzdz(setzero){}
+
+  void Clear()
+  {
+    d0.Clear();
+    dx.Clear();
+    dy.Clear();
+    dz.Clear();
+    dxdx.Clear();
+    dxdy.Clear();
+    dxdz.Clear();
+    dydx.Clear();
+    dydy.Clear();
+    dydz.Clear();
+    dzdx.Clear();
+    dzdy.Clear();
+    dzdz.Clear();
+  };
+
+  void Print()
+  {
+    std::cout << "  d0"   << endl;   d0.Print();
+    std::cout << "  dx"   << endl;   dx.Print();
+    std::cout << "  dy"   << endl;   dy.Print();
+    std::cout << "  dz"   << endl;   dz.Print();
+    std::cout << "  dxdx" << endl; dxdx.Print();
+    std::cout << "  dxdy" << endl; dxdy.Print();
+    std::cout << "  dxdz" << endl; dxdz.Print();
+    std::cout << "  dydx" << endl; dydx.Print();
+    std::cout << "  dydy" << endl; dydy.Print();
+    std::cout << "  dydz" << endl; dydz.Print();
+    std::cout << "  dzdx" << endl; dzdx.Print();
+    std::cout << "  dzdy" << endl; dzdy.Print();
+    std::cout << "  dzdz" << endl; dzdz.Print();
+  };
+
+  /// pairs of approximation functions belonging to this set
+  ApproxFuncNormalPair<numparam>  d0;
+  ApproxFuncNormalPair<numparam>  dx;
+  ApproxFuncNormalPair<numparam>  dy;
+  ApproxFuncNormalPair<numparam>  dz;
+  ApproxFuncNormalPair<numparam>  dxdx;
+  ApproxFuncNormalPair<numparam>  dxdy;
+  ApproxFuncNormalPair<numparam>  dxdz;
+  ApproxFuncNormalPair<numparam>  dydx;
+  ApproxFuncNormalPair<numparam>  dydy;
+  ApproxFuncNormalPair<numparam>  dydz;
+  ApproxFuncNormalPair<numparam>  dzdx;
+  ApproxFuncNormalPair<numparam>  dzdy;
+  ApproxFuncNormalPair<numparam>  dzdz;
+
+private:
+  /// hide default copy constructor
+  explicit ApproxFuncNormalSet(const ApproxFuncNormalSet&){}
+};
+
+template <unsigned int numdiv, size_t numparam>
+class ApproxFuncNormalVector
+{
+public:
+  /// default constructor
+  explicit ApproxFuncNormalVector(){}
+  /// constructor
+  explicit ApproxFuncNormalVector(bool setzero) :
+    velx(setzero),
+    vely(setzero),
+    velz(setzero){}
+
+  void Clear()
+  {
+    velx.Clear();
+    vely.Clear();
+    velz.Clear();
+  };
+
+  void Print()
+  {
+    std::cout << "velx" << endl; velx.Print();
+    std::cout << "vely" << endl; vely.Print();
+    std::cout << "velz" << endl; velz.Print();
+  };
+
+  /// sets of approximation functions belonging to this vector
+  ApproxFuncNormalSet<numdiv,numparam> velx;
+  ApproxFuncNormalSet<numdiv,numparam> vely;
+  ApproxFuncNormalSet<numdiv,numparam> velz;
+
+private:
+  /// hide default copy constructor
+  explicit ApproxFuncNormalVector(const ApproxFuncNormalVector&){}
+};
+
+template <size_t numparam>
+struct EnrViscs2N
+{
+  ApproxFuncNormalPair<numparam> xx;
+  ApproxFuncNormalPair<numparam> xy;
+  ApproxFuncNormalPair<numparam> xz;
+  ApproxFuncNormalPair<numparam> yx;
+  ApproxFuncNormalPair<numparam> yy;
+  ApproxFuncNormalPair<numparam> yz;
+  ApproxFuncNormalPair<numparam> zx;
+  ApproxFuncNormalPair<numparam> zy;
+  ApproxFuncNormalPair<numparam> zz;
+};
+
 
 }
 
