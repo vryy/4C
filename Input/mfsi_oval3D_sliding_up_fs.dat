@@ -211,7 +211,7 @@ SOLVER                          UMFPACK
 ADAPTIVEDIST                    0
 ALPHA_F                         -1
 ALPHA_S                         -1
-BASETOL                         0.001
+BASETOL                         1E-7
 CONVCRIT                        ||g(i)||:sqrt(neq)
 CONVTOL                         1e-06
 COUPALGO                        iter_mortar_monolithicfluidsplit
@@ -244,7 +244,7 @@ STRUCTPCOMEGA                   1.0 1.0 1.0
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
 TIMESTEP                        10.0
-TOLENCHECK                      1e-06
+TOLENCHECK                      1e-07
 UPPSS                           1
 UPRES                           1
 SLIDEALEPROJ                    Curr
@@ -7474,11 +7474,11 @@ NODE 2482  	COORD	-8.43445003e-01	8.05823207e-01	-2.62499988e-01
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 824 POSITION velx NAME velx VALUE 8.013368222e-01 TOLERANCE 1e-8
-FLUID DIS 1 NODE 824 POSITION vely NAME vely VALUE -1.862844797e-02 TOLERANCE 1e-8
-FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.177075495e-01 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1963 POSITION dispx NAME dispx VALUE 6.981869017e-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1963 POSITION dispy NAME dispy VALUE -6.048619813e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 824 POSITION velx NAME velx VALUE 8.013360278e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 824 POSITION vely NAME vely VALUE -1.862851446e-02 TOLERANCE 1e-8
+FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.176944420e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1963 POSITION dispx NAME dispx VALUE 6.980145395e-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1963 POSITION dispy NAME dispy VALUE -6.047007484e-02 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1963 POSITION dispz NAME dispz VALUE 0.000000000e00 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
