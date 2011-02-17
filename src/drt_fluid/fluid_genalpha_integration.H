@@ -58,6 +58,7 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_io/io.H"
 
+#include "../drt_fluid/fluid_MHD_evaluate.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_locsys.H"
@@ -995,6 +996,14 @@ private:
   //! a manager doing the transfer of boundary data for
   //! turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
+  //@}
+
+
+  //! @name Mixed-hybrid Dirichlet condition
+  //        --------------------------------
+  //
+  //! object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
+  RCP<FluidMHDEvaluate> MHD_evaluator_;
   //@}
 
 

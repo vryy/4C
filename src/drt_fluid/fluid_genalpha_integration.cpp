@@ -34,8 +34,8 @@ Maintainer: Peter Gamnitzer
 FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization>    actdis,
   LINALG::Solver&                     solver,
-  ParameterList&                   params,
-  IO::DiscretizationWriter&        output,
+  ParameterList&                      params,
+  IO::DiscretizationWriter&           output,
   bool                                alefluid,
   RefCountPtr<map<int,vector<int> > > pbcmapmastertoslave
   )
@@ -350,6 +350,9 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // end time measurement for timeloop
 
   tm7_ref_ = null;
+
+  // extra discretisation for mixed/hybrid Dirichlet conditions
+  MHD_evaluator_=rcp(new FluidMHDEvaluate(discret_));
 
   return;
 
@@ -1480,6 +1483,66 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     // update the residual
     residual_->Update(1.0,*wdbcloads,1.0);
+  }
+
+
+  //----------------------------------------------------------------------
+  // apply mixed/hybrid Dirichlet boundary conditions
+  //----------------------------------------------------------------------
+  vector<DRT::Condition*> MHDcnd;
+  discret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
+  
+  if(MHDcnd.size()!=0)
+  {
+
+    ParameterList mhdbcparams;
+
+    // set action for elements
+    mhdbcparams.set("action"    ,"MixedHybridDirichlet");
+    mhdbcparams.set("alpha_F",alphaF_);
+    mhdbcparams.set("gamma"  ,gamma_ );
+    mhdbcparams.set("dt"     ,dt_    );
+    mhdbcparams.set("total time",time_                 );
+    mhdbcparams.set("using p^{n+1} generalized-alpha time integration",true);
+
+    // set the required state vectors
+    discret_->SetState("u and p (trial)"    ,velaf_);
+    discret_->SetState("u and p (trial,n+1)",velnp_);
+
+    discret_->EvaluateConditionUsingParentData
+      (mhdbcparams          ,
+       sysmat_              ,
+       Teuchos::null        ,
+       residual_            ,
+       Teuchos::null        ,
+       Teuchos::null        ,
+       "LineMixHybDirichlet");
+    
+    // clear state
+    discret_->ClearState();
+
+    bool doold=false;
+
+    if(doold)
+    {
+      discret_->EvaluateConditionUsingParentData
+        (mhdbcparams          ,
+         sysmat_              ,
+         Teuchos::null        ,
+         residual_            ,
+         Teuchos::null        ,
+         Teuchos::null        ,
+         "SurfaceMixHybDirichlet");
+    }
+    else
+    {
+      MHD_evaluator_->BoundaryElementLoop(
+        mhdbcparams   ,
+        velaf_        ,
+        velnp_        ,
+        residual_     ,
+        SystemMatrix());
+    }
   }
 
   //----------------------------------------------------------------------

@@ -2500,7 +2500,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   double hB_divided_by=1.0;
 
   // get a characteristic velocity
-  double u_C=params.get<double>("u_C");
+  double u_C=(*hixhybdbc_cond).GetDouble("u_C");
 
   // decide whether to use it or not
   const string* deftauB
@@ -2615,17 +2615,43 @@ template <DRT::Element::DiscretizationType bndydistype,
   if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
 
   // extract local node values for pressure and velocities from global vectors
-  vector<double> mypvel((*plm).size());
-  DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
-
-  for (int inode=0;inode<piel;++inode)
+  if(params.get("using p^{n+1} generalized-alpha time integration",false))
   {
-    for (int idim=0; idim<nsd ; ++idim)
+    RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (trial,n+1)");
+    if (velnp==null) dserror("Cannot get state vector 'u and p (trial,n+1)'");
+
+    vector<double> mypvelaf((*plm).size());
+    vector<double> mypvelnp((*plm).size());
+
+    DRT::UTILS::ExtractMyValues(*vel,  mypvelaf,*plm);
+    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+
+    for (int inode=0;inode<piel;++inode)
     {
-      pevel(idim,inode) = mypvel[(nsd +1)*inode+idim];
+      for (int idim=0; idim<nsd ; ++idim)
+      {
+        pevel(idim,inode) = mypvelaf[(nsd +1)*inode+idim];
+      }
+      pepres(inode) = mypvelnp[(nsd +1)*inode+nsd ];
     }
-    pepres(inode) = mypvel[(nsd +1)*inode+nsd ];
   }
+  else
+  {
+    vector<double> mypvel((*plm).size());
+
+    DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
+
+
+    for (int inode=0;inode<piel;++inode)
+    {
+      for (int idim=0; idim<nsd ; ++idim)
+      {
+        pevel(idim,inode) = mypvel[(nsd +1)*inode+idim];
+      }
+      pepres(inode) = mypvel[(nsd +1)*inode+nsd ];
+    }
+  }
+
 
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
          PART 1: Gaussloop for volume integrals of parent element
@@ -2723,17 +2749,23 @@ template <DRT::Element::DiscretizationType bndydistype,
                     2*nu   |            |
                             \          / Omega
       */
+
+      const double fac_twoviscinv=fac/(2.0*visc_);
+      const double fac_viscinv   =fac/visc_;
       for(int A=0;A<piel;++A)
       {
+        const double fac_twoviscinv_pfunctA=fac_twoviscinv*pfunct(A);
+        const double fac_viscinv_pfunctA   =fac_viscinv   *pfunct(A);
+
         for(int B=0;B<piel;++B)
         {
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*pfunct(A)*pfunct(B)/(2.0*visc_);
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac_twoviscinv_pfunctA*pfunct(B);
           }
           for(int i=nsd;i<numstressdof_;++i)
           {
-            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac*pfunct(A)*pfunct(B)/visc_;
+            mat_r_sigma(A*numstressdof_+i,B*numstressdof_+i)-=fac_viscinv_pfunctA*pfunct(B);
           }
         }
       }
@@ -2747,20 +2779,24 @@ template <DRT::Element::DiscretizationType bndydistype,
       */
       for(int A=0;A<piel;++A)
       {
+        const double fac_twoviscinv_pfunctA=fac_twoviscinv*pfunct(A);
         for(int B=0;B<piel;++B)
         {
+          const double aux=fac_twoviscinv_pfunctA*pfunct(B);
+
           for(int i=0;i<nsd ;++i)
           {
-            mat_r_p(A*numstressdof_+i,B)-=fac*pfunct(A)*pfunct(B)/(2.0*visc_);
+            mat_r_p(A*numstressdof_+i,B)-=aux;
           }
         }
       }
 
       for(int A=0;A<piel;++A)
       {
+        const double fac_twoviscinv_pfunctA_pressure=fac_twoviscinv*pfunct(A)*ppressure;
         for(int i=0;i<nsd ;++i)
         {
-          vec_r_p(A*numstressdof_+i)-=fac*ppressure*pfunct(A)/(2.0*visc_);
+          vec_r_p(A*numstressdof_+i)-=fac_twoviscinv_pfunctA_pressure;
         }
       }
 
@@ -2790,20 +2826,22 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         for(int A=0;A<piel;++A)
         {
+          const double fac_pfunctA=fac*pfunct(A);
+
           for(int B=0;B<piel;++B)
           {
-            mat_r_epsu(A*numstressdof_  ,B*nsd   )+=fac*pfunct(A)*pderxy(0,B);
-            mat_r_epsu(A*numstressdof_+1,B*nsd +1)+=fac*pfunct(A)*pderxy(1,B);
-            mat_r_epsu(A*numstressdof_+2,B*nsd +2)+=fac*pfunct(A)*pderxy(2,B);
+            mat_r_epsu(A*numstressdof_  ,B*nsd   )+=fac_pfunctA*pderxy(0,B);
+            mat_r_epsu(A*numstressdof_+1,B*nsd +1)+=fac_pfunctA*pderxy(1,B);
+            mat_r_epsu(A*numstressdof_+2,B*nsd +2)+=fac_pfunctA*pderxy(2,B);
 
-            mat_r_epsu(A*numstressdof_+3,B*nsd   )+=fac*pfunct(A)*pderxy(1,B);
-            mat_r_epsu(A*numstressdof_+3,B*nsd +1)+=fac*pfunct(A)*pderxy(0,B);
+            mat_r_epsu(A*numstressdof_+3,B*nsd   )+=fac_pfunctA*pderxy(1,B);
+            mat_r_epsu(A*numstressdof_+3,B*nsd +1)+=fac_pfunctA*pderxy(0,B);
 
-            mat_r_epsu(A*numstressdof_+4,B*nsd   )+=fac*pfunct(A)*pderxy(2,B);
-            mat_r_epsu(A*numstressdof_+4,B*nsd +2)+=fac*pfunct(A)*pderxy(0,B);
+            mat_r_epsu(A*numstressdof_+4,B*nsd   )+=fac_pfunctA*pderxy(2,B);
+            mat_r_epsu(A*numstressdof_+4,B*nsd +2)+=fac_pfunctA*pderxy(0,B);
 
-            mat_r_epsu(A*numstressdof_+5,B*nsd +1)+=fac*pfunct(A)*pderxy(2,B);
-            mat_r_epsu(A*numstressdof_+5,B*nsd +2)+=fac*pfunct(A)*pderxy(1,B);
+            mat_r_epsu(A*numstressdof_+5,B*nsd +1)+=fac_pfunctA*pderxy(2,B);
+            mat_r_epsu(A*numstressdof_+5,B*nsd +2)+=fac_pfunctA*pderxy(1,B);
           }
         }
       }
@@ -2820,15 +2858,25 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       else if(nsd ==3)
       {
+
+        LINALG::Matrix<numstressdof_,1> temp(true);
+
+        temp(0)=fac*pvderxy(0,0);
+        temp(1)=fac*pvderxy(1,1);
+        temp(2)=fac*pvderxy(2,2);
+        temp(3)=fac*(pvderxy(0,1)+pvderxy(1,0));
+        temp(4)=fac*(pvderxy(0,2)+pvderxy(2,0));
+        temp(5)=fac*(pvderxy(1,2)+pvderxy(2,1));      
+
         for(int A=0;A<piel;++A)
         {
-          vec_r_epsu(A*numstressdof_  )+=fac*pfunct(A)*pvderxy(0,0);
-          vec_r_epsu(A*numstressdof_+1)+=fac*pfunct(A)*pvderxy(1,1);
-          vec_r_epsu(A*numstressdof_+2)+=fac*pfunct(A)*pvderxy(2,2);
+          vec_r_epsu(A*numstressdof_  )+=temp(0)*pfunct(A);
+          vec_r_epsu(A*numstressdof_+1)+=temp(1)*pfunct(A);
+          vec_r_epsu(A*numstressdof_+2)+=temp(2)*pfunct(A);
 
-          vec_r_epsu(A*numstressdof_+3)+=fac*pfunct(A)*(pvderxy(0,1)+pvderxy(1,0));
-          vec_r_epsu(A*numstressdof_+4)+=fac*pfunct(A)*(pvderxy(0,2)+pvderxy(2,0));
-          vec_r_epsu(A*numstressdof_+5)+=fac*pfunct(A)*(pvderxy(1,2)+pvderxy(2,1));
+          vec_r_epsu(A*numstressdof_+3)+=temp(3)*pfunct(A);
+          vec_r_epsu(A*numstressdof_+4)+=temp(4)*pfunct(A);
+          vec_r_epsu(A*numstressdof_+5)+=temp(5)*pfunct(A);
         }
       }
     }
@@ -3377,21 +3425,33 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       else if(nsd ==3)
       {
+        LINALG::Matrix<nsd,1> temp(true);
+        LINALG::Matrix<nsd,1> tempA(true);
+
+        for(int dim=0;dim<nsd;++dim)
+        {
+          temp(dim)=fac*unitnormal(dim);
+        }
+
         for(int A=0;A<piel;++A)
         {
+          for(int dim=0;dim<nsd;++dim)
+          {
+            tempA(dim)=temp(dim)*pfunct(A);
+          }
           for(int B=0;B<piel;++B)
           {
-            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_  )-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+3)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+4)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-
-            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+3)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+1)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+5)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
-
-            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+4)-=fac*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+5)-=fac*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+2)-=fac*pfunct(A)*pfunct(B)*unitnormal(2);
+            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_  )-=tempA(0)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+3)-=tempA(1)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+4)-=tempA(2)*pfunct(B);
+                                                                                                                                
+            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+3)-=tempA(0)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+1)-=tempA(1)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+5)-=tempA(2)*pfunct(B);
+                                                                                                                                
+            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+4)-=tempA(0)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+5)-=tempA(1)*pfunct(B);
+            mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+2)-=tempA(2)*pfunct(B);
           }
         }
       }
@@ -3529,23 +3589,36 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       else if(nsd==3)
       {
+        LINALG::Matrix<nsd,1> temp;
+        LINALG::Matrix<nsd,1> tempA;
+        
+        for(int dim=0;dim<nsd;++dim)
+        {
+          temp(dim)=fac*C1*unitnormal(dim);
+        }
 
         for(int A=0;A<piel;++A)
         {
+
+          for(int dim=0;dim<nsd;++dim)
+          {
+            tempA(dim)=temp(dim)*pfunct(A);
+          }
+        
           for(int B=0;B<piel;++B)
           {
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
-
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(0);
-
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(2);
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*C1*pfunct(A)*pfunct(B)*unitnormal(1);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=tempA(0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=tempA(1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=tempA(2)*pfunct(B);
+                                                                                                                           
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=tempA(1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=tempA(0)*pfunct(B);
+                                                                                                                           
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=tempA(2)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=tempA(0)*pfunct(B);
+                                                                                                                           
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=tempA(2)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=tempA(1)*pfunct(B);
           }
         }
 
@@ -3590,33 +3663,69 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       else if(nsd==3)
       {
+        LINALG::Matrix<numstressdof_,nsd> temp;
+        LINALG::Matrix<numstressdof_,nsd> tempA;
+
+        temp(0,0)=fac*C2*  unitnormal(0)*unitnormal(0)*unitnormal(0);
+        temp(0,1)=fac*C2*  unitnormal(0)*unitnormal(0)*unitnormal(1);
+        temp(0,2)=fac*C2*  unitnormal(0)*unitnormal(0)*unitnormal(2);
+
+        temp(1,0)=fac*C2*  unitnormal(1)*unitnormal(1)*unitnormal(0);
+        temp(1,1)=fac*C2*  unitnormal(1)*unitnormal(1)*unitnormal(1);
+        temp(1,2)=fac*C2*  unitnormal(1)*unitnormal(1)*unitnormal(2);
+
+        temp(2,0)=fac*C2*  unitnormal(2)*unitnormal(2)*unitnormal(0);
+        temp(2,1)=fac*C2*  unitnormal(2)*unitnormal(2)*unitnormal(1);
+        temp(2,2)=fac*C2*  unitnormal(2)*unitnormal(2)*unitnormal(2);
+
+        temp(3,0)=fac*C2*2*unitnormal(0)*unitnormal(1)*unitnormal(0);
+        temp(3,1)=fac*C2*2*unitnormal(0)*unitnormal(1)*unitnormal(1);
+        temp(3,2)=fac*C2*2*unitnormal(0)*unitnormal(1)*unitnormal(2);
+
+        temp(4,0)=fac*C2*2*unitnormal(0)*unitnormal(2)*unitnormal(0);
+        temp(4,1)=fac*C2*2*unitnormal(0)*unitnormal(2)*unitnormal(1);
+        temp(4,2)=fac*C2*2*unitnormal(0)*unitnormal(2)*unitnormal(2);
+
+        temp(5,0)=fac*C2*2*unitnormal(1)*unitnormal(2)*unitnormal(0);
+        temp(5,1)=fac*C2*2*unitnormal(1)*unitnormal(2)*unitnormal(1);
+        temp(5,2)=fac*C2*2*unitnormal(1)*unitnormal(2)*unitnormal(2);
+
+
         for(int A=0;A<piel;++A)
         {
+          for(int sdof=0;sdof<numstressdof_;++sdof)
+          {
+            for(int dim=0;dim<nsd;++dim)
+            {
+              tempA(sdof,dim)=temp(sdof,dim)*pfunct(A);
+            }
+          }
+
           for(int B=0;B<piel;++B)
           {
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=fac*C2*pfunct(A)*unitnormal(0)*unitnormal(0)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd+1)-=fac*C2*pfunct(A)*unitnormal(0)*unitnormal(0)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_  ,B*nsd+2)-=fac*C2*pfunct(A)*unitnormal(0)*unitnormal(0)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd  )-=fac*C2*pfunct(A)*unitnormal(1)*unitnormal(1)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=fac*C2*pfunct(A)*unitnormal(1)*unitnormal(1)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+1,B*nsd+2)-=fac*C2*pfunct(A)*unitnormal(1)*unitnormal(1)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=fac*C2*pfunct(A)*unitnormal(2)*unitnormal(2)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+3,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(1)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(0)*unitnormal(2)*pfunct(B)*unitnormal(2);
-
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd  )-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(0);
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(1);
-            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=fac*C2*pfunct(A)*2*unitnormal(1)*unitnormal(2)*pfunct(B)*unitnormal(2);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=tempA(0,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd+1)-=tempA(0,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_  ,B*nsd+2)-=tempA(0,2)*pfunct(B);
+                                                             
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd  )-=tempA(1,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=tempA(1,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+1,B*nsd+2)-=tempA(1,2)*pfunct(B);
+                                                             
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=tempA(2,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=tempA(2,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=tempA(2,2)*pfunct(B);
+                                                             
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=tempA(3,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=tempA(3,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+3,B*nsd+2)-=tempA(3,2)*pfunct(B);
+                                                             
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=tempA(4,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd+1)-=tempA(4,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=tempA(4,2)*pfunct(B);
+                                                             
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd  )-=tempA(5,0)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=tempA(5,1)*pfunct(B);
+            mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=tempA(5,2)*pfunct(B);
           }
         }
 
@@ -3658,7 +3767,6 @@ template <DRT::Element::DiscretizationType bndydistype,
   // af-generalized-alpha:      timefacmat_p = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_p = gamma * dt
   double timefacmat_p= f3Parameter_->timefacmat_p_;
-
 
   // --------------------------------
   // rearrange to pattern uvwp uvwp ...
