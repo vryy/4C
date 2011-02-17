@@ -878,6 +878,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_projectionmethod.cpp
   src/drt_fluid/fluid_utils.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
+  src/drt_fluid/fluid_MHD_evaluate.cpp
   src/drt_fluid/fluid_windkessel_optimization.cpp
   src/drt_fluid/fluidimpedancecondition.cpp
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
