@@ -162,9 +162,10 @@ namespace COMBUST
     //const Teuchos::ParameterList& xparams_;
 
     /// pointer to interfacehandle holding information about interface (3D integration cells) at n+1
-    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleNP_;
-    /// pointer to interfacehandle holding information about interface (3D integration cells) at n
-    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandleN_;
+    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
+    /// pointer to interfacehandle holding information about old interface (3D integration cells)
+    // remark: 'old' refers to n (if only one FGI iteration) or n+1, i (if more than one FGI iteration)
+    Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_old_;
 
     /// pointer to flame front holding information about interface (2D surface)
     Teuchos::RCP<COMBUST::FlameFront> flamefront_;

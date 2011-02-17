@@ -20,6 +20,8 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/startvalues.H"
+#include "../drt_xfem/enrichmentvalues.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "combust_flamefront.H"
@@ -92,8 +94,8 @@ public:
 
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleNP,
-      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandleN);
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
+      const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old);
 
   /// import the flame front from the combustion algorithm
   void StoreFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
@@ -186,7 +188,7 @@ public:
   */
   void SetEnrichmentField(
       const Teuchos::RCP<XFEM::DofManager> dofmanager,
-      const Epetra_Map newdofrowmap);
+      const Epetra_Map dofrowmap);
 
   /*!
   \brief calculate error between a analytical solution and the
@@ -372,6 +374,9 @@ protected:
   INPAR::COMBUST::VelocityJumpType veljumptype_;
   INPAR::COMBUST::FluxJumpType fluxjumptype_;
 
+  const bool start_val_semilagrange_;
+  const bool start_val_enrichment_;
+
   // laminar flame speed
   const double flamespeed_;
   // Nitsche parameter velocity
@@ -512,6 +517,12 @@ protected:
 
   //!
   Teuchos::RCP<COMBUST::FlameFront> flamefront_;
+
+  //! Reference values
+  Teuchos::RCP<XFEM::Startvalues> startval_;
+
+  //! Reference enrichment values
+  Teuchos::RCP<XFEM::Enrichmentvalues> enrichmentval_;
 
 }; // class CombustFluidImplicitTimeInt
 

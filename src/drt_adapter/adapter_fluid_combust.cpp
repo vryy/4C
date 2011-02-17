@@ -287,11 +287,11 @@ void ADAPTER::FluidCombust::ImportDiscretization(Teuchos::RCP<DRT::Discretizatio
 }
 
 void ADAPTER::FluidCombust::ImportInterface(
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlenp,
-    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandlen)
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
+    const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old)
 {
   // pass geometrical information about flame front to fluid time integration scheme
-  fluid_.IncorporateInterface(interfacehandlenp,interfacehandlen);
+  fluid_.IncorporateInterface(interfacehandle,interfacehandle_old);
 }
 
 void ADAPTER::FluidCombust::ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront>& flamefront)

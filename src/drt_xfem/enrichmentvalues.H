@@ -1,16 +1,16 @@
 /*!-----------------------------------------------------------------------------------------------*
- \file startvalues.H
+\file enrichmentvalues.cpp
 
- \brief provides the enrichmentvalues class
-
-  detailed description in header file combust_interface.H
+\brief provides the Enrichmentvalues class
 
 <pre>
-Maintainer: Martin Winklmaier
-            martin.winklmaier@mytum.de
+Maintainer: Florian Henke
+            henke@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
  *------------------------------------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 #ifndef ENRICHMENTVALUES_H_
 #define ENRICHMENTVALUES_H_
@@ -53,82 +53,113 @@ namespace XFEM
       return;
     }
     
-    
+    //! main function computing the enrichment values
+    void setEnrichmentValues();
+
+    map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues()
+    {
+      return &eleJumpsAndKinks_;
+    }
+
   private:
     
     //! disabled copy constructor
     explicit Enrichmentvalues(const XFEM::Enrichmentvalues& enrvals);
-
     
     //! disabled assignment operator
     Enrichmentvalues operator = (const Enrichmentvalues& old);
-
     
     //! disabled default constructor
     explicit Enrichmentvalues();
     
-    
-    void setEnrichmentValues();
-    
-    
-    void oldJumpAndKinkValues(
+    //! computation of different values for old interface position
+    void oldValues(
     );
     
-    
+    //! computation of jump and kink values for jump enrichment at old interface position
+    void oldJumpAndKinkValues(
+        const DRT::Element* ele,
+        LINALG::Matrix<1,8>& dmin,
+        LINALG::Matrix<3,1> normal,
+        vector<LINALG::Matrix<4,8> >& kinkEnrValues,
+        int& numnodeused
+    );
+
+    //! computation of kink values for kink enrichment at old interface position
+    void oldKinkValues(
+        const DRT::Element* ele,
+        LINALG::Matrix<1,8>& dmin,
+        vector<LINALG::Matrix<4,8> >& kinkEnrValues,
+        int& numnodeused
+    );
+
+    //! standard computation of new enrichment values at new interface position
     void computeNewEnrichments(
     );
     
-    
+    //! alternative computation of new enrichment values at new interface position
     void handleFailedNodes(
     );
     
-    
+    void computeJumpEnrichmentValues(
+        const DRT::Node* node,
+        vector<LINALG::Matrix<2,4> > jumpsAndKinks
+    );
+
+    void computeKinkEnrichmentValues(
+        const DRT::Node* node,
+        vector<LINALG::Matrix<1,4> > kinks
+    );
+
+    //! data of an intersected element
     void getDataOfIntersectedEle(
         const DRT::Element* element,
         LINALG::Matrix<1,8>& dmin,
         bool& allEleNodesOnProc,
-        vector<LINALG::Matrix<4,8> >& enrValues,
+        vector<LINALG::Matrix<4,8> >& jumpEnrValues,
+        vector<LINALG::Matrix<4,8> >& kinkEnrValues,
         LINALG::Matrix<3,1>& normal
     );
     
-    
+    //! determine if new enrichment value shall be computed
     bool newEnrValueNeeded(
         const DRT::Node* node
     );
     
 #ifndef ENR_FULL
 #ifndef MIN_ENR_VALUES
-    void computeDomainCellVolumes(
+    //! compute elements with critical cut by the interface
+    void getCritCutElements(
     );
 #endif
 #endif
     
-    
+    //! analyse enrichment values if they shall be used
     void analyseEnrichments(
         const DRT::Element* element,
         LINALG::Matrix<1,8>& dmin,
         int& numnodeused
     );
     
-    
+
+    //! compute signed distance of a node to the interface part in an element
     void SignedDistance(
         const DRT::Node* node,
         const int elegid,
         const RCP<InterfaceHandle> curr_ih,
+        const RCP<Epetra_Vector> curr_phi,
         double& dist,
         LINALG::Matrix<3,1>& normal
     );
 
-
-    /// compute normal vector of flame front patch
+    //! compute normal vector of flame front patch
     void ComputeNormalVectorToFlameFront(
         const GEO::BoundaryIntCell&      patch,
         const LINALG::SerialDenseMatrix& patchcoord,
         LINALG::Matrix<3,1>&             normal
      );
 
-
-    /// compute distance to vertex of patch
+    //! compute distance to vertex of patch
     void ComputeDistanceToPatch(
         const LINALG::Matrix<3,1>&       node,
         const GEO::BoundaryIntCell&      patch,
@@ -137,7 +168,7 @@ namespace XFEM
         double&                          vertexdist
     );
 
-    /// find a facing flame front patch by projecton of node on boundary cell edges
+    //! find a facing flame front patch by projecton of node on boundary cell edges
     void FindFacingPatchProjCellEdges(
         const LINALG::Matrix<3,1>&       node,
         const LINALG::SerialDenseMatrix& patch,
@@ -145,7 +176,7 @@ namespace XFEM
         double&                          vertexdist
     );
 
-    /// find a facing flame front patch by projecton of node into boundary cell space
+    //! find a facing flame front patch by projecton of node into boundary cell space
     void FindFacingPatchProjCellSpace(
         const LINALG::Matrix<3,1>&       node,
         const GEO::BoundaryIntCell&      patch,
@@ -155,7 +186,7 @@ namespace XFEM
         double&                          patchdist
     );
 
-    /// project node into the boundary cell space (2D)
+    //! project node into the boundary cell space (2D)
     template<DRT::Element::DiscretizationType DISTYPE>
     bool ProjectNodeOnPatch(
         const LINALG::Matrix<3,1>&       node,
@@ -167,13 +198,10 @@ namespace XFEM
     );
     
     
-    
 #ifdef PARALLEL
-    
-    //! export enrichment data to the neighbour proc
+    //! export enrichment data to the neighbour processor
     void exportEnrichmentData(
     );
-    
 #endif
     
     
@@ -185,11 +213,13 @@ namespace XFEM
     failedData(
         LINALG::Matrix<3,1> coords,
         double dist,
-        vector<LINALG::Matrix<2,4> > enrValues
+        vector<LINALG::Matrix<2,4> > jumpAndKinkValues,
+        vector<LINALG::Matrix<1,4> > kinkValues
     ) :
     coords_(coords),
     dist_(dist),
-    enrValues_(enrValues)
+    jumpAndKinkValues_(jumpAndKinkValues),
+    kinkValues_(kinkValues)
     {return;};
     
     
@@ -200,7 +230,8 @@ namespace XFEM
     :
     coords_(old.coords_),
     dist_(old.dist_),
-    enrValues_(old.enrValues_)
+    jumpAndKinkValues_(old.jumpAndKinkValues_),
+    kinkValues_(old.kinkValues_)
     {return;}
     
     
@@ -211,7 +242,8 @@ namespace XFEM
     
     const LINALG::Matrix<3,1> coords_;
     double dist_;
-    vector<LINALG::Matrix<2,4> > enrValues_;
+    vector<LINALG::Matrix<2,4> > jumpAndKinkValues_;
+    vector<LINALG::Matrix<1,4> > kinkValues_;
     
     private:
     
@@ -222,41 +254,43 @@ namespace XFEM
     
     
     
-    
-    // map for failed nodes
-    map<int,failedData> failed_;
-    map<int,vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_;
+    map<int,failedData> failed_; // map for failed nodes for a node gid
+
+    map<int,vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_; // map for element jump and kink values for an ele gid
+    map<int,vector<LINALG::Matrix<1,4> > > eleKinks_; // map for element jump and kink values for an ele gid
+
 #ifndef ENR_FULL
 #ifndef MIN_ENR_VALUES
-    set<int> critElesPlus_;
-    set<int> critElesMinus_;
-    const double critTol_;
+    set<int> critElesPlus_; // set of element with critical small part in Omega^+
+    set<int> critElesMinus_; // set of element with critical small part in Omega^-
+    const double critTol_; // tolerance for a critical part
 #endif
 #endif
     
     
     // data
-    RCP<Epetra_Vector> phiNewCol_;
-    RCP<Epetra_Vector> phiOldCol_;
-    vector<RCP<Epetra_Vector> > oldVectors_;
-    vector<RCP<Epetra_Vector> > newVectors_;
-    const RCP<InterfaceHandle> ih_old_;
-    const RCP<InterfaceHandle> ih_;
+    RCP<Epetra_Vector> phinpi_; // phi^n+1,i or phi^n in column map
+    RCP<Epetra_Vector> phinpip_; // phi^n+1,i+1
+    vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at last iteration
+    vector<RCP<Epetra_Vector> > newVectors_; // global vectors at new iteration
+    const RCP<InterfaceHandle> interfacehandle_old_; // Gamma^n+1,i or Gamma^n
+    const RCP<InterfaceHandle> interfacehandle_; // Gamma^n+1,i+1
     
     
     // data accessing
-    const RCP<DRT::Discretization> discret_;
-    const RCP<XFEM::DofManager> olddofman_;
-    const RCP<XFEM::DofManager> dofman_;
+    const RCP<DRT::Discretization> discret_; // current discretization
+    const RCP<XFEM::DofManager> olddofman_; // old dof manager
+    const RCP<XFEM::DofManager> dofman_; // current dof manager
     Epetra_Map olddofcolmap_;
     map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
     Epetra_Map newdofrowmap_;
     map<DofKey<onNode>, DofGID> newNodalDofRowDistrib_;
     
+
     // stuff for parallel communication
-    DRT::Exporter exporter_;
-    const int myrank_;
-    const int numproc_;
+    DRT::Exporter exporter_; // exporter for parallel communication
+    const int myrank_; // current processor id
+    const int numproc_; // number of processors
 
   }; // class Enrichmentvalues
 } // namespace XFEM
