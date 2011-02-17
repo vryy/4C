@@ -218,7 +218,7 @@ protected:
 	void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt);
 
 	//! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
-	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, LINALG::Matrix<3,1>* centershift);
+	void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift);
 
 	//! \brief obtain distribution for spherical coordinates (all vectors in and out)
 	void SphericalCoordsDistribution(const Epetra_Vector& disrow, Epetra_Vector& phibinsrow, Epetra_Vector& thetabinsrow, Epetra_Vector& costhetabinsrow);
@@ -360,8 +360,11 @@ protected:
   //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
 
-  //! SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
+  //! brief SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
   Teuchos::RCP<GEO::SearchTree>  octTree_;
+
+  //! brief rotation matrix for transformation from global to local coordinates
+  RCP<LINALG::SerialDenseMatrix> trafo_;
 
   // \brief column Epetra_Map handling crosslink molecules
   RCP<Epetra_Map> crosslinkermap_;
@@ -404,9 +407,9 @@ protected:
 
   // store test volume visualization data for Gmsh Output
   std::vector<LINALG::Matrix<3,1> > testvolumepos_;
-  // characteristic length (radii, thickness) of the detected structure
+  // \brief characteristic length (radii, thickness) of the detected structure
   double characlength_;
-  // center of gravity of the detected structure
+  // \brief center of gravity of the detected structure
   LINALG::Matrix<3,1> cog_;
 }; // class StatMechManager
 
