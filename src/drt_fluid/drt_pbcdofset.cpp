@@ -58,7 +58,10 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsi
 
     if (master_lid<0)
     {
-      dserror("master not on proc");
+      dserror("master gid %d not on proc %d, but required by slave %d",
+              master->first,
+              dis.Comm().MyPID(),
+              master->second[0]);
     }
 
     for (vector<int>::iterator slave=master->second.begin();
