@@ -903,24 +903,33 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
   else if (action=="calc_elch_conductivity")
   {
-    // calculate conductivity of electrolyte solution
-    const double frt = params.get<double>("frt");
-    // extract local values from the global vector
-    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
+    if(iselch_)
     {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
+      // calculate conductivity of electrolyte solution
+      const double frt = params.get<double>("frt");
+      // extract local values from the global vector
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    CalculateConductivity(ele,frt,elevec1_epetra);
+      // fill element arrays
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+        }
+      } // for i
+
+      CalculateConductivity(ele,frt,elevec1_epetra);
+    }
+    else // conductivity = diffusivity for a electric potential field
+    {
+      GetMaterialParams(ele);
+      elevec1_epetra(0)=diffus_[0];
+      elevec1_epetra(1)=diffus_[0];
+    }
   }
   else if (action=="get_material_parameters")
   {
