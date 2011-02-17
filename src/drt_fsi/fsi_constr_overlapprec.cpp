@@ -419,7 +419,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
     // update of all dofs
     // -------------------------------------------------------------------
 
-    if (outerun > 0)
+    if (outerrun > 0)
       cy->Update(alpha_, *interconsol, 1.0);
     else
       cy->Update(alpha_, *interconsol, 0.0);
