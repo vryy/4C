@@ -112,8 +112,8 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       if (numdofs > 0)
       {
         (*idxcolnodes_)[newlid] = dofs[0];
-        if(numdofs!=(int)dofs.size())
-        dserror("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
+//        if(numdofs!=(int)dofs.size())
+//        dserror("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
 
         if(dofs[0]==0)
         {
@@ -160,13 +160,13 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   //
   // problem: sourcenode not necessarily on this proc -> communicate
   //
-  // the idea is to search for the sourcerownode on some proc and to get 
+  // the idea is to search for the sourcerownode on some proc and to get
   // this unique number
   //
   map<int,vector<int> >  gid_to_dofs;
 
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
-  { 
+  {
     const DRT::Node* newnode = newdis.lColNode(inode);
     int gid=newnode->Id();
     vector<int> emptyvec;
@@ -177,15 +177,15 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 #ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(sourcedis.Comm());
-      
+
     // necessary variables
     MPI_Request request;
 #endif
-  
+
     // define send and receive blocks
     vector<char> sblock;
     vector<char> rblock;
-  
+
     // get number of processors and the current processors id
     int numproc=sourcedis.Comm().NumProc();
     int myrank=sourcedis.Comm().MyPID();
@@ -227,10 +227,10 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
   set<int> slaveset;
   std::vector<DRT::Condition*> mypbcs;
-      
+
   // get periodic surface boundary conditions
   sourcedis_->GetCondition("SurfacePeriodic",mypbcs);
-      
+
   if(mypbcs.empty())
   {
     sourcedis_->GetCondition("LinePeriodic",mypbcs);
@@ -239,22 +239,22 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   for (unsigned numcond=0;numcond<mypbcs.size();++numcond)
   {
     DRT::Condition* thiscond= mypbcs[numcond];
-      
+
     // see whether we have a slave condition
     const string* mymasterslavetoggle
       = thiscond->Get<string>("Is slave periodic boundary condition");
-              
+
     if(!(*mymasterslavetoggle=="Master"))
     {
 
       const vector <int>* pbcids;
       pbcids = (*thiscond).Nodes();
-      
+
       for(vector<int>::const_iterator iter=pbcids->begin();iter!=pbcids->end();++iter)
       {
         slaveset.insert(*iter);
-      }    
-    }   
+      }
+    }
   }
 
   //build dofrowmap
@@ -280,7 +280,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
       (*idxcolnodes_)[newlid] = dofs[0];
 
       // slave-dofs must not enter the dofrowset (if master&slave are on different procs)
-      std::set<int>::iterator curr=slaveset.find(newnode->Id());        
+      std::set<int>::iterator curr=slaveset.find(newnode->Id());
 
       if(curr==slaveset.end())
       {
@@ -355,7 +355,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
   for(map<int,vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
   {
-    
+
     const int lid = sourcedis_->NodeRowMap()->LID(curr->first);
 
     if (lid>-1)
@@ -386,7 +386,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::PackLocalSourceDofs(
   map<int,vector<int> >   & gid_to_dofs  ,
-  vector<char>            & sblock       
+  vector<char>            & sblock
   )
 {
   sblock.clear();
@@ -414,7 +414,7 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
   gid_to_dofs.clear();
 
   return;
-} 
+}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -428,15 +428,15 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::UnpackLocalSourceDofs(
   map<int,vector<int> >   & gid_to_dofs  ,
-  vector<char>            & rblock       
+  vector<char>            & rblock
   )
 {
   gid_to_dofs.clear();
-   
+
   // position to extract
   vector<char>::size_type position = 0;
 
-  // extract size 
+  // extract size
   int size=0;
   DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
 
@@ -483,7 +483,7 @@ void DRT::TransparentDofSet::ReceiveBlock(
 {
 
   // necessary variables
-  
+
   int         length =-1;
   int         frompid=(myrank+numproc-1)%numproc;
   int         tag    =frompid;
@@ -494,17 +494,17 @@ void DRT::TransparentDofSet::ReceiveBlock(
   {
     dserror("rblock not empty");
   }
-  
+
   // receive from predecessor
   exporter.ReceiveAny(frompid,tag,rblock,length);
-  
+
   if(tag!=(myrank+numproc-1)%numproc)
   {
     dserror("received wrong message (ReceiveAny)");
   }
-  
+
   exporter.Wait(request);
-  
+
   // for safety
   exporter.Comm().Barrier();
 
@@ -536,12 +536,12 @@ void DRT::TransparentDofSet::SendBlock(
   int         tag    =myrank;
   int         frompid=myrank;
   int         topid  =(myrank+1)%numproc;
-  
+
   exporter.ISend(frompid,topid,
                  &(sblock[0]),sblock.size(),
                  tag,request);
 
-  
+
   // for safety
   exporter.Comm().Barrier();
 
