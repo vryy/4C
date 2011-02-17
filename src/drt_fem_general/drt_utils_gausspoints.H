@@ -93,7 +93,11 @@ class GaussIntegration
 {
 public:
 
-  /// internal iterator
+  /// Very simple internal gauss point iterator.
+  ///
+  /// With this iterator our gauss point loop looks familiar. Furthermore, we
+  /// store a raw pointer and avoid the rcp indirection. This is the gauss
+  /// loop, after all!
   class GaussPointIterator
   {
   public:
@@ -103,21 +107,43 @@ public:
         point_( point )
     {}
 
+    /// increment iterator
     void operator++()
     {
       point_ += 1;
     }
 
-    std::pair<const double*, double> operator*()
+    /// point coordinates
+    const double * Point() const
     {
-      return std::make_pair( gp_->Point( point_ ), gp_->Weight( point_ ) );
+      return gp_->Point( point_ );
     }
 
+    /// gauss weight at point
+    double Weight() const
+    {
+      return gp_->Weight( point_ );
+    }
+
+    /// actual point we are at
+    int operator*() const
+    {
+      return point_;
+    }
+
+    /// actual point we are at
+    int operator->() const
+    {
+      return point_;
+    }
+
+    /// compare
     bool operator==( const GaussPointIterator & other ) const
     {
       return gp_==other.gp_ and point_==other.point_;
     }
 
+    /// compare
     bool operator!=( const GaussPointIterator & other ) const
     {
       return gp_!=other.gp_ or point_!=other.point_;
@@ -129,18 +155,24 @@ public:
   };
 
   typedef GaussPointIterator iterator;
-  typedef const GaussPointIterator const_iterator;
+  typedef GaussPointIterator const_iterator;
 
+  /// construct the optimal (normal) rule for a given element shape
   GaussIntegration( DRT::Element::DiscretizationType distype );
 
+  /// construct with a known set of gauss points
   explicit GaussIntegration( Teuchos::RCP<GaussPoints> gp )
     : gp_( gp )
   {
   }
 
-  GaussPointIterator begin() { return GaussPointIterator( &*gp_, 0 ); }
+  iterator begin() { return GaussPointIterator( &*gp_, 0 ); }
 
-  GaussPointIterator end() { return GaussPointIterator( &*gp_, gp_->NumPoints() ); }
+  const_iterator begin() const { return GaussPointIterator( &*gp_, 0 ); }
+
+  iterator end() { return GaussPointIterator( &*gp_, gp_->NumPoints() ); }
+
+  const_iterator end() const { return GaussPointIterator( &*gp_, gp_->NumPoints() ); }
 
   /// number of gauss points
   int NumPoints() const { return gp_->NumPoints(); }

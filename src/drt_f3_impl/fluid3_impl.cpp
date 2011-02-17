@@ -225,7 +225,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
   LINALG::Matrix<numdofpernode_*nen_,    1> vector(elevec1.A(),true);
 
   // get Gaussrule
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::GaussIntegration intpoints( distype );
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -260,9 +261,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
 
-  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
 
     for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
     {
@@ -310,12 +312,14 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   double * sveln = NULL;
   double * svelnp = NULL;
 
+  DRT::UTILS::GaussIntegration intpoints( distype );
+
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
   if ( f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent )
   {
-    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-    ele->ActivateTDS( intpoints.IP().nquad, nsd_, &saccn, &sveln, &svelnp );
+    //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
   }
 
   // ---------------------------------------------------------------------
@@ -448,7 +452,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     ele->CsDeltaSq(),
     saccn,
     sveln,
-    svelnp);
+    svelnp,
+    intpoints);
 
   // rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
@@ -486,7 +491,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   double CsDeltaSq,
   double * saccn,
   double * sveln,
-  double * svelnp)
+  double * svelnp,
+  const DRT::UTILS::GaussIntegration & intpoints )
 {
   // flag for higher order elements
   is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -550,7 +556,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          isale,
          saccn,
          sveln,
-         svelnp);
+         svelnp,
+         intpoints);
 
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
@@ -614,7 +621,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   bool                                          isale,
   double * saccn,
   double * sveln,
-  double * svelnp
+  double * svelnp,
+  const DRT::UTILS::GaussIntegration & intpoints
   )
 {
   //------------------------------------------------------------------------
@@ -675,15 +683,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
 
   // get Gaussian integration points
   //const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  //for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,eid);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
 
     //----------------------------------------------------------------------
     //  evaluation of various values at integration point:
@@ -914,7 +924,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                            fac2,
                            fac3,
                            facMtau,
-                           iquad,
+                           *iquad,
                            saccn,
                            sveln,
                            svelnp);
@@ -1671,13 +1681,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtEleCenter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,		// integration points
-    const int                              iquad,				// actual integration point
+    DRT::UTILS::GaussIntegration::iterator & iquad,				// actual integration point
     const int                              eleid				// element ID
 )
 {
   // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  const double* gpcoord = iquad.Point();
   for (int idim=0;idim<nsd_;idim++)
   {
      xsi_(idim) = gpcoord[idim];
@@ -1740,7 +1749,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
 
   // compute integration factor
-  fac_ = intpoints.IP().qwgt[iquad]*det_;
+  fac_ = iquad.Weight()*det_;
 
   // compute global first derivates
   derxy_.Multiply(xji_,deriv_);
@@ -3162,7 +3171,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
     double &        fac2,
     double &        fac3,
     double &        facMtau,
-    int    &        iquad,
+    int             iquad,
     double *        saccn,
     double *        sveln,
     double *        svelnp
@@ -6282,14 +6291,17 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   double eps_pspg        = 0.0;
 
   // gaussian points
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::GaussIntegration intpoints( distype );
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+  //for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    //EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
 
 
     // get velocity at integration point

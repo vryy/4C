@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_interface.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 namespace DRT
 {
@@ -141,7 +142,8 @@ namespace ELEMENTS
                  double CsDeltaSq,
                  double * saccn,
                  double * sveln,
-                 double * svelnp);
+                 double * svelnp,
+                 const DRT::UTILS::GaussIntegration & intpoints);
 
     virtual int CalcDissipation(Fluid3*                    ele,
                                 ParameterList&             params,
@@ -220,7 +222,8 @@ namespace ELEMENTS
                 bool                                           isale,
                 double * saccn,
                 double * sveln,
-                double * svelnp);
+                double * svelnp,
+                const DRT::UTILS::GaussIntegration & intpoints);
 
     /*!
       \brief FD-check for debugging
@@ -279,9 +282,8 @@ namespace ELEMENTS
 
     //! brief evaluate shape functions and their derivatives at integration point
     void EvalShapeFuncAndDerivsAtIntPoint(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,   ///< integration points
-        const int                              iquad,             ///< actual integration point
-        const int                              eleid              ///< element ID
+        DRT::UTILS::GaussIntegration::iterator & iquad,             ///< actual integration point
+        const int                                eleid              ///< element ID
         );
 
 
@@ -346,7 +348,7 @@ namespace ELEMENTS
         double &      fac2,         ///< factor for old subgrid accelerations
         double &      fac3,         ///< factor for residual in current subgrid velocities
         double &      facMtau,      ///< facMtau = modified tau_M (see code)
-        int &         iquad,        ///< actual integration point
+        int           iquad,        ///< actual integration point
         double *        saccn,      ///< subgrid acceleration at time n+alpha_a / n
         double *        sveln,      ///< subgrid velocity at time n+alpha_a / n
         double *        svelnp      ///< subgrid velocity at time n+alpha_f / n+1
