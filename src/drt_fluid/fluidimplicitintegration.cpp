@@ -1263,7 +1263,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
           {
             discret_->SetState("u and p (trial)",velaf_);
-            discret_->SetState("velaf",velaf_);
           }
           else discret_->SetState("u and p (trial)",velnp_);
 
