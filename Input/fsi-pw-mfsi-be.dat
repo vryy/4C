@@ -86,6 +86,14 @@ UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
+STRUCTPCITER                    1 1 1            // Number of Richardson iterations on structural block in MFSI block preconditioner
+FLUIDPCITER                     1 1 1            // Number of Richardson iterations on fluid block in MFSI block preconditioner
+ALEPCITER                       1 1 1            // Number of Richardson iterations on structural block in MFSI block preconditioner
+PCITER                          1 1 1            // Number of Richardson iterations on whole MFSI block preconditioner
+STRUCTPCOMEGA                   1.00 1.00 1.00    // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
+FLUIDPCOMEGA                    1.00 1.00 1.00    // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
+ALEPCOMEGA                      1.00 1.00 1.00   // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
+PCOMEGA                         1.00 1.00 1.00    // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
 PREDICTOR                       d(n)
 CONVCRIT                        ||g(i)||:sqrt(neq)
 ENERGYCHECK                     no
