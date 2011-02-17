@@ -387,7 +387,6 @@ void BoundaryGPToParentGP(
     }
     else if(distype==DRT::Element::nurbs3 && pdistype==DRT::Element::nurbs9)
     {
-#if 0
       switch(beleid)
       {
       case 0:
@@ -402,9 +401,9 @@ void BoundaryGPToParentGP(
         0   1   2             0   1   2
 
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)=-1.0;
         }
         break;
@@ -424,10 +423,10 @@ void BoundaryGPToParentGP(
            +                     +
           2                     0
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints(iquad,0);
         }
         break;
       }
@@ -444,9 +443,9 @@ void BoundaryGPToParentGP(
 
         */
 
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)= 1.0;
         }
         break;
@@ -466,30 +465,27 @@ void BoundaryGPToParentGP(
           +                            +
          0                            0
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)=-1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints(iquad,0);
         }
         break;
       }
       default:
         dserror("invalid number of lines, unable to determine intpoint in parent");
       }
-#endif
     }
     else
     {
       dserror("only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
     }
-
   }
   else if(NSD==3)
   {
-#if 0
 
     // resize output array
-    pqxg.Shape(intpoints.IP().nquad,3);
+    pqxg.Shape(intpoints.M(),3);
 
     if(distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
     {
@@ -512,10 +508,10 @@ void BoundaryGPToParentGP(
              0         3           0         1
         */
 
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][1];
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,1);
+          pqxg(iquad,1)= intpoints(iquad,0);
           pqxg(iquad,2)=-1.0;
         }
         break;
@@ -535,11 +531,11 @@ void BoundaryGPToParentGP(
               +-------+             +-------+
              0         1           0         1
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)=-1.0;
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -559,11 +555,11 @@ void BoundaryGPToParentGP(
               +-------+             +-------+
              1         2           0         1
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -583,11 +579,11 @@ void BoundaryGPToParentGP(
               +-------+             +-------+
              2         3           0         1
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)=-intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)=-intpoints(iquad,0);
           pqxg(iquad,1)= 1.0;
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -607,11 +603,11 @@ void BoundaryGPToParentGP(
               +-------+             +-------+
              0         4           0         1
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)=-1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,1)= intpoints(iquad,1);
+          pqxg(iquad,2)= intpoints(iquad,0);
         }
         break;
       }
@@ -631,10 +627,10 @@ void BoundaryGPToParentGP(
               +-------+             +-------+
              4         5           0         1
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,0)= intpoints(iquad,0);
+          pqxg(iquad,1)= intpoints(iquad,1);
           pqxg(iquad,2)= 1.0;
         }
         break;
@@ -662,10 +658,10 @@ void BoundaryGPToParentGP(
               +---+---+             +---+---+
              0   1   2             0   1   2
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,0)= intpoints(iquad,0);
+          pqxg(iquad,1)= intpoints(iquad,1);
           pqxg(iquad,2)=-1.0;
         }
         break;
@@ -685,10 +681,10 @@ void BoundaryGPToParentGP(
               +---+---+             +---+---+
             18  19  20             0   1   2
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,0)= intpoints(iquad,0);
+          pqxg(iquad,1)= intpoints(iquad,1);
           pqxg(iquad,2)= 1.0;
         }
         break;
@@ -709,11 +705,11 @@ void BoundaryGPToParentGP(
              0   1   2             0   1   2
         */
 
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)=-1.0;
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -732,11 +728,11 @@ void BoundaryGPToParentGP(
               +---+---+             +---+---+
              6   7   8             0   1   2
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
-          pqxg(iquad,0)= intpoints.IP().qxg[iquad][0];
+          pqxg(iquad,0)= intpoints(iquad,0);
           pqxg(iquad,1)= 1.0;
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -755,11 +751,11 @@ void BoundaryGPToParentGP(
               +---+---+             +---+---+
              2   5   8             0   1   2
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -778,11 +774,11 @@ void BoundaryGPToParentGP(
               +---+---+             +---+---+
              0   3   6             0   1   2
         */
-        for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
+        for (int iquad=0;iquad<intpoints.M();++iquad)
         {
           pqxg(iquad,0)=-1.0;
-          pqxg(iquad,1)= intpoints.IP().qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.IP().qxg[iquad][1];
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= intpoints(iquad,1);
         }
         break;
       }
@@ -794,7 +790,6 @@ void BoundaryGPToParentGP(
     {
       dserror("only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
     }
-#endif
   }
 
   return;
