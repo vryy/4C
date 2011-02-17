@@ -2038,8 +2038,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
 
           // Newton step:  Delta pot = - Residual / (-Jacobian)
-          if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
-            potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
+          potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
 
           // print additional information
           if (myrank_==0)
@@ -2055,7 +2054,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         }
 
         // safety check
-        if (abs(currtangent)<EPS14)
+        if (abs(currtangent)<EPS13)
           dserror("Tangent in galvanostatic control is near zero: %lf",currtangent);
 
         // Newton step:  Jacobian * \Delta pot = - Residual
