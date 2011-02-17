@@ -361,12 +361,14 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
 
     // extract local (element level) G-function values from global vector
     // only if element is intersected, only adjacent nodal values are calculated
-    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
-    {
+//    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
+//    {
+      //TODO @Florian ich brauche hier alle angereicherten Elemente, die geschnittenen sind nicht genug,
+      //      weil ich die normalen Ansatzfunktionen auch fuer partiell angereicherte Elemente brauche
       if (gradphinp == Teuchos::null)
         dserror("No gradient of phi computed!");
       DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
-    }
+//    }
   }
 }
 
