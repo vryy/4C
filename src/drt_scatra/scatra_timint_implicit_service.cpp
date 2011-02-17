@@ -1954,15 +1954,6 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
     discret_->GetCondition("ElectrodeKinetics",cond);
     if (!cond.empty())
     {
-      const double potold = cond[0]->GetDouble("pot");
-      double potnew = potold;
-      double actualcurrent(0.0);
-      double currtangent(0.0);
-      double currresidual(0.0);
-      double electrodesurface(0.0);
-      //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
-      double newtonrhs(0.0);
-
       const unsigned condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
       const unsigned condid_anode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_ANODE");
       int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
@@ -1970,6 +1961,15 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
       const double tol = extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCONVTOL");
       const double effective_length = extraparams_->sublist("ELCH CONTROL").get<double>("GSTAT_LENGTH_CURRENTPATH");
+
+      const double potold = cond[condid_cathode]->GetDouble("pot");
+      double potnew = potold;
+      double actualcurrent(0.0);
+      double currtangent(0.0);
+      double currresidual(0.0);
+      double electrodesurface(0.0);
+      //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
+      double newtonrhs(0.0);
 
       // for all time integration schemes, compute the current value for phidtnp
       // this is needed for evaluating charging currents due to double-layer capacity
@@ -1989,11 +1989,8 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         currtangent = 0.0;
         currresidual = 0.0;
 
-        // note: only the potential at the boundary with id 0 will be adjusted up to now!!
+        // note: only the potential at the boundary with id condid_cathode will be adjusted!
         OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
-
-        // DEBUG: (write intermediated steps also to file and screen)
-        // OutputSingleElectrodeInfo(cond[0],0,true,true,actualcurrent,pottangent);
 
         double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
         double timefac = 1.0/ResidualScaling();
@@ -2045,11 +2042,8 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           {
             cout<< "  area                          =" << electrodesurface << endl;
             cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
-            if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
-            {
-              cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
-              cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
-            }
+            cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
+            cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
           }
         }
 
