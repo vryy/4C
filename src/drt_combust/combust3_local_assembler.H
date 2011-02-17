@@ -24,6 +24,11 @@ Maintainer: Florian Henke
 #include <Epetra_SerialDenseVector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include "../drt_combust/combust_defines.H"
+#include "../drt_xfem/xfem_element_utils.H"
+
+namespace COMBUST
+{
 
 const static std::size_t errorCheckValue = 77777777;
 
@@ -135,7 +140,9 @@ public:
         const std::size_t numparamtrial = trialdof.size();
 
         bool found_template = true;
-        // this is a short cut for diagonal blocks (?)
+        //------------------------------
+        // short cut for diagonal blocks
+        //------------------------------
         if (numparamtest == numparamtrial) // diagonal blocks
         {
           switch (numparamtest)
@@ -151,21 +158,23 @@ public:
           found_template = false;
         }
 
+        //----------------------
         // this the regular path
+        //----------------------
         if (not found_template)
         {
           // this loop does the same thing as the one below, but it is slower
-//          cout << numparamtest << "   " << numparamtrial << endl;
-//          for (std::size_t ui=0; ui<numparamtrial; ++ui)
-//          {
-//              const std::size_t trialpos = trialdof[ui];
-//              const double multiply = fac * trialshape(ui);
-//              for (std::size_t vi=0; vi<numparamtest; ++vi)
-//              {
-//                  const std::size_t testpos = testdof[vi];
-//                  estif_(testpos, trialpos) += testshape(vi)*multiply ;
-//              }
-//          }
+          //cout << numparamtest << "   " << numparamtrial << endl;
+          //for (std::size_t ui=0; ui<numparamtrial; ++ui)
+          //{
+          //  const std::size_t trialpos = trialdof[ui];
+          //  const double multiply = fac * trialshape(ui);
+          //  for (std::size_t vi=0; vi<numparamtest; ++vi)
+          //  {
+          //    const std::size_t testpos = testdof[vi];
+          //    estif_(testpos, trialpos) += testshape(vi)*multiply ;
+          //  }
+          //}
         // this loop does the same thing as the one above (commented), but it is faster
         std::size_t ui = 0;
         for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
@@ -180,6 +189,72 @@ public:
             ++ui;
         }
       }
+    }
+
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              size_t shpVecSize>
+    void MatrixSN(
+        const LINALG::Matrix<shpVecSize,1>& testshape,
+        const double&                       fac,
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
+    ) const
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Matrix<testfield,trialfield>         (testshape, fac, trialshape.s);
+      Matrix<testfield,XFEM::PHYSICS::Veln>(testshape, fac, trialshape.n);
+    }
+
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              size_t shpVecSize>
+    void MatrixNS(
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+        const double&                       fac,
+        const LINALG::Matrix<shpVecSize,1>& trialshape
+    ) const
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Matrix<testfield          ,trialfield> (testshape.s, fac, trialshape);
+      Matrix<XFEM::PHYSICS::Veln,trialfield> (testshape.n, fac, trialshape);
+    }
+
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield>
+    void MatrixNN(
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+        const double& fac,
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
+    ) const
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      //if(numparamtest != numparamtrial) dserror("so nicht");
+
+      //cout << physVarToString(testfield) << endl;
+
+      //for (int i=0;i<numparamtest;i++)
+      //{
+      //  cout << "testparam " << i << " " << testdof[i] << endl;
+      //}
+      //cout << physVarToString(trialfield) << endl;
+      //for (int i=0;i<numparamtrial;i++)
+      //{
+      //  cout << "trialparam " << i << " " << trialdof[i] << endl;
+      //}
+
+      Matrix<testfield          ,trialfield>         (testshape.s, fac, trialshape.s);
+      Matrix<testfield          ,XFEM::PHYSICS::Veln>(testshape.s, fac, trialshape.n);
+      Matrix<XFEM::PHYSICS::Veln,trialfield>         (testshape.n, fac, trialshape.s);
+      Matrix<XFEM::PHYSICS::Veln,XFEM::PHYSICS::Veln>(testshape.n, fac, trialshape.n);
     }
 
     //! assemble one expression for the element rhs for a given test field
@@ -201,12 +276,13 @@ public:
           case  8: this->template IntegrateVector< 8>(testshape,testdof,fac); break;
           default: found_template = false;
         }
-//
-//        for (std::size_t vi=0; vi<numparamtest; ++vi)
-//        {
-//            const int testpos = testdof[vi];
-//            eforce_(testpos) += fac*testshape(vi);
-//        }
+
+        //for (std::size_t vi=0; vi<numparamtest; ++vi)
+        //{
+        //  const int testpos = testdof[vi];
+        //  eforce_(testpos) += fac*testshape(vi);
+        //}
+        // this loop does the same thing as the one above (commented), but it is faster
         if (not found_template)
         {
         std::size_t vi = 0;
@@ -216,6 +292,21 @@ public:
             vi++;
         }
         }
+    }
+
+    //! assemble one expression for the element rhs for a given test field
+    template <XFEM::PHYSICS::Field testfield>
+    void VectorN(
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+        const double& fac
+    ) const
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+
+      Vector<testfield>          (testshape.s, fac);
+      Vector<XFEM::PHYSICS::Veln>(testshape.n, fac);
     }
 
 private:
@@ -233,7 +324,7 @@ private:
  *
  * specialization for standard assembly
  */
-template <DRT::Element::DiscretizationType DISTYPE, int NUMDOF>
+template <DRT::Element::DiscretizationType DISTYPE, std::size_t NUMDOF>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly, NUMDOF>
 {
 public:
@@ -292,6 +383,53 @@ public:
         }
     }
 
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              size_t shpVecSize>
+    void MatrixNS(
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+        const double& fac,
+        const LINALG::Matrix<shpVecSize,1>& trialshape
+    )
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Matrix<testfield,trialfield>(testshape.s,fac,trialshape);
+    }
+
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield,
+              size_t shpVecSize>
+    void MatrixSN(
+        const LINALG::Matrix<shpVecSize,1>& testshape,
+        const double& fac,
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
+    )
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Matrix<testfield,trialfield>(testshape,fac,trialshape.s);
+    }
+
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              XFEM::PHYSICS::Field trialfield>
+    void MatrixNN(
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+        const double& fac,
+        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
+    )
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Matrix<testfield,trialfield>(testshape.s,fac,trialshape.s);
+    }
+
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
               class V1>
@@ -312,6 +450,19 @@ public:
         }
     }
 
+    //! assemble one expression for the element rhs for a given test field
+    template <XFEM::PHYSICS::Field testfield>
+    void VectorN(
+            const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
+            const double& fac
+            )
+    {
+#ifndef COMBUST_NORMAL_ENRICHMENT
+      dserror("wrong function!");
+#endif
+      Vector<testfield>(testshape.s,fac);
+    }
+
 private:
     // don't want = operator and cctor
     LocalAssembler operator = (const LocalAssembler& old);
@@ -321,7 +472,7 @@ private:
     LINALG::Matrix<NUMDOF*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement,1> eforce_;
 };
 
+}
 
 #endif
-
 #endif

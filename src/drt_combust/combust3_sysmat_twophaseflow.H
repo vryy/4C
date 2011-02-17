@@ -74,7 +74,7 @@ void SysmatTwoPhaseFlow(
     const bool                          cstab,         ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,       ///< stabilization parameter definition
     const bool                          instationary,  ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
     double&                        ele_meas_plus,      ///< set measure of element in plus domain
     double&                        ele_meas_minus      ///< set measure of element in minus domain
 )
@@ -456,8 +456,11 @@ void SysmatTwoPhaseFlow(
         }
       }
       //compute divergence; test
-      //double vdiv = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
-
+      //if (ele->Id()==1216)
+      //{
+      //  const double vdiv = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
+      //  cout << "element " << ele->Id() << "GP " << iquad << " " << vdiv << endl;
+      //}
       //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
 
       // calculate 2nd velocity derivatives at integration point
@@ -517,15 +520,15 @@ void SysmatTwoPhaseFlow(
       // compute stabilization parameters (3 taus)
       // compute velocity norm
       const double vel_norm = gpvelnp.Norm2();
-      const double strle = FLD::UTILS::Streamlength(shpvel.dx, shpvel.dy, shpvel.dz, gpvelnp, vel_norm, numparamvelx);
+      //const double strle = FLD::UTILS::Streamlength(shpvel.dx, shpvel.dy, shpvel.dz, gpvelnp, vel_norm, numparamvelx);
       double tau_stab_M = 0.0;
       double tau_stab_Mp = 0.0;
       double tau_stab_C  = 0.0;
-      // compute stabilization parameters
-      // remark: 'dynvisc' stands for the dynamic viscosity here
+      // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computes based on
+      //         'hk' instead of using the streamlength for 'tau_stab_Mu'
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt, INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen,
-          tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_frey_wall
+          instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt, tautype,
+          tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_wall
 
       // modify stabilization
       // TODO: does this have to be modified with respect to the density, as it was before?
@@ -652,7 +655,7 @@ void SysmatTwoPhaseFlow(
       //            const bool epsilonele_unknowns_present = false;
       //
                     // build stiffness matrix standard entries
-      //            COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
+      //            COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
       //                assembler, shpvel, shp_epsilon, fac, timefac, timefacfac, densaf, dynvisc,
       //                gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, epsilon,
       //                enr_conv_c_, enr_viscs2,
@@ -973,12 +976,12 @@ void SysmatTwoPhaseFlow(
         assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*dynvisc*ttimetauMp, enr_viscs2.xy);
         assembler.template Matrix<Pres,Velz>(shppres.dx, -2.0*dynvisc*ttimetauMp, enr_viscs2.xz);
 
-        assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*dynvisc*ttimetauMp, enr_viscs2.xy);
+        assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*dynvisc*ttimetauMp, enr_viscs2.yx);
         assembler.template Matrix<Pres,Vely>(shppres.dy, -2.0*dynvisc*ttimetauMp, enr_viscs2.yy);
         assembler.template Matrix<Pres,Velz>(shppres.dy, -2.0*dynvisc*ttimetauMp, enr_viscs2.yz);
 
-        assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*dynvisc*ttimetauMp, enr_viscs2.xz);
-        assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*dynvisc*ttimetauMp, enr_viscs2.yz);
+        assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*dynvisc*ttimetauMp, enr_viscs2.zx);
+        assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*dynvisc*ttimetauMp, enr_viscs2.zy);
         assembler.template Matrix<Pres,Velz>(shppres.dz, -2.0*dynvisc*ttimetauMp, enr_viscs2.zz);
 
         /* pressure stabilisation: pressure( L_pres_p) */

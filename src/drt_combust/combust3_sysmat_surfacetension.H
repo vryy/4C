@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file combust3_sysmat_TPF_surfacetension.H
+\file combust3_sysmat_surfacetension.H
 
 \brief system matrix formulation for surface tension boundary integrals / 3D combustion element
 
@@ -62,7 +62,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
     const double&                              timefac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 )
 {
   // additional 1D surface tension integrals get assembled
@@ -444,7 +444,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
     const double&                              timefac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 )
 {
   // additional 1D surface tension integrals get assembled
@@ -908,7 +908,7 @@ void CalcCurvature(
 //    const double&                              timefac,
 //    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
 //    const double                               surftenscoeff,   ///<
-//    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
+//    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 //)
 //{
 //	  // additional 1D surface tension integrals get assembled
@@ -1183,7 +1183,7 @@ void CalcCurvature(
 //    const double&                              timefac,
 //    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
 //    const double                               surftenscoeff,   ///<
-//    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
+//    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 //)
 //{
 //  // additional 1D surface tension integrals get assembled
@@ -1586,7 +1586,7 @@ void RHS_SurfaceTension2DIntegrals(
     const double&                              timefacfac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
 )
 {
   // number space dimensions for 3d combustion element
@@ -1759,7 +1759,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
     const double&                     jt,
     const double&                       timefac,
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const double&                        kappa_plus,    /// weights of average in plus domain
     const double&                        kappa_minus,    /// weights of average in minus domain
     const size_t&                              numparamvelx,
@@ -2115,7 +2115,7 @@ void SysmatBoundarySurfaceTension(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const double                      flamespeed,
     const double                      nitschevel,
     const double                      nitschepres,

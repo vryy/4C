@@ -21,7 +21,9 @@ Maintainer: Florian Henke
 
 #include "combust3_sysmat.H"
 #include "combust3_sysmat_premixed_nitsche.H"
+#include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
+#include "combust3_sysmat_premixed_stress_normal.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_local_assembler.H"
@@ -45,7 +47,8 @@ Maintainer: Florian Henke
 
 using namespace XFEM::PHYSICS;
 
-
+namespace COMBUST
+{
 //! fill a number of (local) element arrays with unknown values from the (global) unknown vector given by the discretization
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
@@ -76,18 +79,31 @@ void fillElementUnknownsArrays(
 #else
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
-  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
-  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
-  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-  dsassert((numparamvelx == 8) and (numparamvely == 8) and (numparamvelz == 8) and (numparamveln == 8), "assumption violation");
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velx);
+  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Vely);
+  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velz);
+  const size_t numparamveln = XFEM::NumParam<0,ASSTYPE>::get(dofman,XFEM::PHYSICS::Veln);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Pres);
+  dsassert((numparamvelx == 8) and (numparamvely == 8) and (numparamvelz == 8), "assumption violation");
 #endif
-  const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*numnode;
+#ifndef COMBUST_NORMAL_ENRICHMENT
+  const size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*numnode;
   if (numparamvelx > shpVecSize)
   {
     dserror("increase SizeFac for nodal unknowns");
   }
+#else
+  const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*numnode;
+  if (numparamvelx > shpVecSizeVel)
+  {
+    dserror("increase SizeFac for nodal unknowns for velocity");
+  }
+  const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*numnode;
+  if (numparampres > shpVecSizePres)
+  {
+    dserror("increase SizeFac for nodal unknowns for pressure");
+  }
+#endif
 
 #ifndef COMBUST_NORMAL_ENRICHMENT
   const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
@@ -135,12 +151,13 @@ void fillElementUnknownsArrays(
 #ifdef COMBUST_NORMAL_ENRICHMENT
   for (size_t iparam=0; iparam<numparamveln; ++iparam)
   {
-    evelnp(0,iparam) = mystate.velnp_[velndof[iparam]];
+    evelnp(3,iparam) = mystate.velnp_[velndof[iparam]];
     if (mystate.instationary_)
     {
-      eveln( 0,iparam) = mystate.veln_[ velndof[iparam]];
-      evelnm(0,iparam) = mystate.velnm_[velndof[iparam]];
-      eaccn( 0,iparam) = mystate.accn_[ velndof[iparam]];
+      eveln( 3,iparam) = mystate.veln_[ velndof[iparam]];
+      evelnm(3,iparam) = mystate.velnm_[velndof[iparam]];
+      // TODO@Florian ist das richtig, mit der Beschleunigung?
+      eaccn( 3,iparam) = mystate.accn_[ velndof[iparam]];
     }
   }
 #endif
@@ -152,7 +169,7 @@ void fillElementUnknownsArrays(
   {
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Epsilonxx);
+    const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman,XFEM::PHYSICS::Epsilonxx);
     const size_t numparamepsilonyy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonyy, 1);
     const size_t numparamepsilonzz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonzz, 1);
     const size_t numparamepsilonxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxy, 1);
@@ -182,7 +199,7 @@ void fillElementUnknownsArrays(
   {
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
-    const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
+    const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman,XFEM::PHYSICS::Sigmaxx);
     const size_t numparamsigmayy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmayy, 1);
     const size_t numparamsigmazz = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmazz, 1);
     const size_t numparamsigmaxy = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxy, 1);
@@ -210,7 +227,7 @@ void fillElementUnknownsArrays(
   const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
   if (discpres_unknowns_present)
   {
-    const size_t numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::DiscPres);
+    const size_t numparamdiscpres = XFEM::NumParam<1,ASSTYPE>::get(dofman,XFEM::PHYSICS::DiscPres);
     const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
     const size_t shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
     if (numparamdiscpres > shpVecSizeDiscPres)
@@ -222,12 +239,14 @@ void fillElementUnknownsArrays(
   }
 
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
-  // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
+  // remark: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
     ephi(iparam) = mystate.phinp_[iparam];
 }
+}
 
-
+namespace COMBUST
+{
 //! fill a number of (local) element arrays
 template <DRT::Element::DiscretizationType DISTYPE,
           class M>
@@ -245,6 +264,7 @@ void fillElementGradPhi(
     egradphi(1, iparam) = mystate.gradphinp_[ipos+1];
     egradphi(2, iparam) = mystate.gradphinp_[ipos+2];
   }
+}
 }
 
 
@@ -393,7 +413,6 @@ void COMBUST::GetMaterialParams(
   return;
 }
 
-
 /*------------------------------------------------------------------------------------------------*
  | get surface tension coefficient                                               rasthofer  12/10 |
  *------------------------------------------------------------------------------------------------*/
@@ -456,7 +475,8 @@ void COMBUST::GetMaterialParams(
   return;
 }
 
-
+namespace COMBUST
+{
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
@@ -496,25 +516,36 @@ void Sysmat(
 
   const int NUMDOF = 4;
 
-  LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
+  COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
 
   // split velocity and pressure (and stress)
-  const int shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
   const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
   const int shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
   const int shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
-  LINALG::Matrix<shpVecSize,1> eprenp;
-  LINALG::Matrix<3,shpVecSize> evelnp;
-  LINALG::Matrix<3,shpVecSize> eveln;
-  LINALG::Matrix<3,shpVecSize> evelnm;
-  LINALG::Matrix<3,shpVecSize> eaccn;
-  LINALG::Matrix<numnode,1> ephi;
-  LINALG::Matrix<6,shpVecSizeStress> etensor;
-  LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres;
 
-  fillElementUnknownsArrays<DISTYPE,ASSTYPE>(
+  #ifdef COMBUST_NORMAL_ENRICHMENT
+  const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  LINALG::Matrix<4,shpVecSizeVel> evelnp(true);
+  LINALG::Matrix<4,shpVecSizeVel> eveln(true);
+  LINALG::Matrix<4,shpVecSizeVel> evelnm(true);
+  LINALG::Matrix<4,shpVecSizeVel> eaccn(true);
+  LINALG::Matrix<shpVecSizePres,1> eprenp(true);
+#else
+  const int shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  LINALG::Matrix<3,shpVecSize> evelnp(true);
+  LINALG::Matrix<3,shpVecSize> eveln(true);
+  LINALG::Matrix<3,shpVecSize> evelnm(true);
+  LINALG::Matrix<3,shpVecSize> eaccn(true);
+  LINALG::Matrix<shpVecSize,1> eprenp(true);
+#endif
+  LINALG::Matrix<numnode,1> ephi(true);
+  LINALG::Matrix<6,shpVecSizeStress> etensor(true);
+  LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres(true);
+
+  COMBUST::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(
       dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres);
 
   switch(combusttype)
@@ -525,21 +556,51 @@ void Sysmat(
 
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
-
+#ifndef COMBUST_NORMAL_ENRICHMENT
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
         ele_meas_plus, ele_meas_minus);
+#else
+        LINALG::Matrix<3,numnode> egradphi(true);
+     // boundary integrals are only added for intersected elements (fully enriched elements)
+//    if (ele->Intersected() == true)
+//    {
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+//    }
+    COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, egradphi,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele_meas_plus, ele_meas_minus);
+#endif
 #endif
 #ifdef COMBUST_EPSPRES_BASED
+#ifdef COMBUST_NORMAL_ENRICHMENT
+    // get smoothed gradient of phi for surface tension applications
+    LINALG::Matrix<3,numnode> egradphi(true);
+     // boundary integrals are only added for intersected elements (fully enriched elements)
+//    if (ele->Intersected() == true)
+//    {
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+//    }
+
+//cout << "phi gradient danach" << ele->Id() << " " << egradphi << endl;
+
+    COMBUST::SysmatDomainStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, egradphi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+
+#else
+    COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
+        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+#ifdef COMBUST_SIGMA_BASED
+    // TODO: der aufruf ist doch der gleiche wie der darueber? -> COMBUST_SIGMA_BASED raus?
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
         material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
 #endif
-#ifdef COMBUST_SIGMA_BASED
-    COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+#endif
 #endif
 
 #ifndef COMBUST_DECOUPLEDXFEM
@@ -551,23 +612,35 @@ void Sysmat(
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
       fillElementGradPhi<DISTYPE>(mystate, egradphi);
-
+#ifndef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
+#else
+      COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
+          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
+          surftensapprox, connected_interface, veljumptype,
+          fluxjumptype, smoothed_boundary_integration);
+#endif
     }
 #endif
-#ifdef COMBUST_STRESS_BASED
     // boundary integrals are only added for intersected elements (fully enriched elements)
     if (ele->Intersected() == true)
     {
+#ifdef COMBUST_STRESS_BASED
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
-      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
 #ifdef COMBUST_EPSPRES_BASED
+#ifdef COMBUST_NORMAL_ENRICHMENT
+      COMBUST::SysmatBoundaryStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          theta, assembler, flamespeed);
+#else
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, assembler, flamespeed);
@@ -577,10 +650,10 @@ void Sysmat(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, assembler, flamespeed);
 #endif
+#endif
+#endif // COMBUST_STRESS_BASED
     }
-#endif
-
-#endif
+#endif //COMBUST_DECOUPLEDXFEM
   }
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
@@ -610,10 +683,10 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
-      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
       COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi,egradphi, etensor,
+          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor,
           material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
@@ -637,7 +710,7 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
-      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelnp, eprenp, ephi, egradphi,
@@ -676,6 +749,7 @@ void Sysmat(
 //  //dserror("STOP after first element matrix");
 
 }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -713,32 +787,32 @@ void COMBUST::callSysmat(
     switch (ele->Shape())
     {
     case DRT::Element::hex8:
-      Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
+      COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
-//      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::hex27:
-//      Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
-//      Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
-//      Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
@@ -752,32 +826,32 @@ void COMBUST::callSysmat(
     switch (ele->Shape())
     {
     case DRT::Element::hex8:
-      Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
+      COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
-//      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::hex27:
-//      Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
-//      Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
-//      Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
@@ -789,6 +863,8 @@ void COMBUST::callSysmat(
 }
 
 
+namespace COMBUST
+{
 /*!
   Calculate Nitsche errors for Nitsche problem formulation
                                                                    schott Jun 15, 2010
@@ -822,10 +898,10 @@ void NitscheErrors(
 
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
-  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
-  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velx);
+  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Vely);
+  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velz);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Pres);
   dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz) and (numparamvelx == numparampres), "assumption violation");
 
   if ((int)numparamvelx > shpVecSize)
@@ -869,13 +945,14 @@ void NitscheErrors(
   {
     LINALG::Matrix<3,numnode> egradphi;
     egradphi.Clear();
-    fillElementGradPhi<DISTYPE>(mystate, egradphi);
+    COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 
     COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
         eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
   }
 
   return;
+}
 }
 
 
@@ -898,29 +975,29 @@ void COMBUST::callNitscheErrors(
     switch (ele->Shape())
     {
     case DRT::Element::hex8:
-      NitscheErrors<DRT::Element::hex8,XFEM::standard_assembly>(
+      COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::standard_assembly>(
           eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
-//      Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::hex27:
-//      Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet4:
-//      Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet10:
-//      Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
@@ -934,29 +1011,29 @@ void COMBUST::callNitscheErrors(
     switch (ele->Shape())
     {
     case DRT::Element::hex8:
-      NitscheErrors<DRT::Element::hex8,XFEM::xfem_assembly>(
+      COMBUST::NitscheErrors<DRT::Element::hex8,XFEM::xfem_assembly>(
           eleparams, NitscheErrorType, ele, ih, eleDofManager, mystate, material,smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex20:
-//      Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::hex27:
-//      Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet4:
-//      Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet10:
-//      Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
+//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
 //          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);

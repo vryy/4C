@@ -23,9 +23,9 @@ Maintainer: Florian Henke
 // combustion algorithm options
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
-//#define COMBUST_NITSCHE      // turn on/off Nitsche method for interface conditions
-#define COMBUST_STRESS_BASED   // turn on/off stress-based method for interface conditions
-#define COMBUST_EPSPRES_BASED  // turn on/off epsilon stress-based method
+#define COMBUST_NITSCHE      // turn on/off Nitsche method for interface conditions
+//#define COMBUST_STRESS_BASED   // turn on/off stress-based method for interface conditions
+//#define COMBUST_EPSPRES_BASED  // turn on/off epsilon stress-based method
 //#define COMBUST_SIGMA_BASED  // turn on/off sigma stress-based method
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //------------------------------------------
@@ -64,7 +64,7 @@ Maintainer: Florian Henke
 //#define COMBUST_NITSCHE_PRESCONSISTJUMP // turn on/off
 #define COMBUST_NITSCHE_FLUXJUMP          // turn on/off flux jump RHS term
 #define COMBUST_NITSCHE_NITSCHEVEL        // turn on/off Nitsche velocity stabilization term
-#define COMBUST_NITSCHE_CONVSTAB          // turn on/off Nitsche convection stabilization
+//#define COMBUST_NITSCHE_CONVSTAB          // turn on/off Nitsche convection stabilization
 //#define COMBUST_NITSCHE_NITSCHEPRES     // turn on/off Nitsche pressure stabilization term
 
 //----------------------------------------------------------
@@ -132,7 +132,7 @@ Maintainer: Florian Henke
 //----------------------
 //#define COMBUSTCONVTOL 1.0e-12 // just an example
 #define COMBUST_GMSH_NORMALFIELD
-//#define COMBUST_GMSH_SMOOTHED_NORMALFIELD
+//#define COMBUST_GMSH_REF_FIELDS
 
 //--------------------------
 // multiscale two-phase flow
@@ -146,7 +146,6 @@ Maintainer: Florian Henke
 //#define ENR_FULL
 //#define ENR_VEL_JUMP_SCALAR
 //#define SET_FEW_ENR_VALUES
-//#define NO_BACK_TRACKING
 
 
 #endif // #ifndef COMBUST_DEFINES_H

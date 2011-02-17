@@ -57,7 +57,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSizeStress,
           size_t shpVecSizeDiscPres>
 void BuildDomainIntegralsStress(
-    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
     const XFEM::ApproxFunc<2,shpVecSize>& shp,                  // shape functions and derivatives
     const XFEM::ApproxFunc<0,shpVecSizeStress>& shp_epsilon,        // shape functions for stresses
     const XFEM::ApproxFunc<0,shpVecSizeDiscPres>& shp_discpres, // shape functions for disc. pressure
@@ -264,7 +264,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSizeStress,
           size_t shpVecSizeDiscPres>
 void BuildDomainIntegralsSigma(
-    LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
     const XFEM::ApproxFunc<2,shpVecSize>& shp,                  // shape functions and derivatives
     const XFEM::ApproxFunc<0,shpVecSizeStress>& shp_sigma,      // shape functions for stresses
     const double& fac,                                          // factor for integration in space
@@ -366,7 +366,7 @@ void SysmatDomainStress(
     const bool                          cstab,        ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,      ///< stabilization parameter definition
     const bool                          instationary, ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
@@ -417,17 +417,17 @@ void SysmatDomainStress(
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
-#endif
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert(numparamvelx == numparampres, "assumption violation");
 
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, numparam is determined by the dofmanager
   const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Epsilonxx);
+// TODO @Florian clarify
+//cout << "standard element: numparamepsilonxx " << numparamepsilonxx << endl;
 //cout << "epsilonele_unknowns_present " << epsilonele_unknowns_present << endl;
   const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
+//cout << "standard element: numparamdiscpres " << numparamdiscpres << endl;
 //cout << "discpres_unknowns_present " <<  discpres_unknowns_present << endl;
   const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
 //cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << endl;
@@ -799,14 +799,15 @@ void SysmatDomainStress(
       // compute stabilization parameters (3 taus)
       //------------------------------------------
       const double vel_norm = gpvelnp.Norm2();
-      const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
+      //const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
       double tau_stab_Mu = 0.0;
       double tau_stab_Mp = 0.0;
       double tau_stab_C  = 0.0;
+      // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
+      //         'hk' instead of using the streamlength for 'tau_stab_Mu'
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
-          INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
-          tau_stab_Mu, tau_stab_Mp, tau_stab_C);
+          instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
+          tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       //------------------------------------------------------------------------
       // build RHS vector at integration point (scaled with timefac and density)
@@ -922,7 +923,7 @@ void SysmatDomainStress(
       //----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
-      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
+      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
           assembler, shp, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
@@ -970,7 +971,7 @@ void SysmatBoundaryStress(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
     const double&                     dt,                     ///< delta t (time step size)
     const double&                     theta,                  ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
     const double                      flamespeed              ///< flame speed
 )
 {
@@ -992,6 +993,7 @@ void SysmatBoundaryStress(
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
+  xyze.Clear();
   GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
   //---------------------------------------------------------------------------
@@ -1037,9 +1039,6 @@ void SysmatBoundaryStress(
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  const size_t numparamveln = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
-#endif
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
   dsassert(numparamvelx == numparampres, "assumption violation");
 
@@ -1352,16 +1351,16 @@ void SysmatBoundaryStress(
       enrderxy2_minus.Clear();
 
       // shape functions for nodal parameters (dofs) on plus and minus side
-      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_plus, enrderxy_plus, enrderxy2_plus);
-      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+      enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(XFEM::PHYSICS::Velx, funct, derxy, derxy2,
           enrfunct_minus, enrderxy_minus, enrderxy2_minus);
 
-      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(Epsilonxx, funct_stress, enrfunct_stress_plus);
-      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(Epsilonxx, funct_stress, enrfunct_stress_minus);
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Epsilonxx, funct_stress, enrfunct_stress_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::Epsilonxx, funct_stress, enrfunct_stress_minus);
 
-      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_plus);
-      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(DiscPres, funct_discpres, enrfunct_discpres_minus);
+      enrvals_plus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::DiscPres, funct_discpres, enrfunct_discpres_plus);
+      enrvals_minus.ComputeShiftedEnrichedElementShapefunction(XFEM::PHYSICS::DiscPres, funct_discpres, enrfunct_discpres_minus);
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<0,shpVecSize> shp_jump;
@@ -1376,33 +1375,6 @@ void SysmatBoundaryStress(
         //cout << "shp_jump.d0: " << shp_jump.d0(iparam) << endl;
         shp_mean.d0(iparam) = 0.5*(enrfunct_plus(iparam) + enrfunct_minus(iparam));
         //cout << "shp_mean.d0: " << shp_mean.d0(iparam) << endl;
-        shp_mean_visc.d0(iparam) = 0.5*(dynvisc_plus*enrfunct_plus(iparam) + dynvisc_minus*enrfunct_minus(iparam));
-        shp_mean_visc.dx(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(0,iparam) + dynvisc_minus*enrderxy_minus(0,iparam));
-        shp_mean_visc.dy(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(1,iparam) + dynvisc_minus*enrderxy_minus(1,iparam));
-        shp_mean_visc.dz(iparam) = 0.5*(dynvisc_plus*enrderxy_plus(2,iparam) + dynvisc_minus*enrderxy_minus(2,iparam));
-        shp_mean_visc.dxdx(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(0,iparam) + dynvisc_minus*enrderxy2_minus(0,iparam));
-        shp_mean_visc.dxdy(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(3,iparam) + dynvisc_minus*enrderxy2_minus(3,iparam));
-        shp_mean_visc.dxdz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(4,iparam) + dynvisc_minus*enrderxy2_minus(4,iparam));
-        shp_mean_visc.dydx(iparam) = shp_mean_visc.dxdy(iparam);
-        shp_mean_visc.dydy(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(1,iparam) + dynvisc_minus*enrderxy2_minus(1,iparam));
-        shp_mean_visc.dydz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(5,iparam) + dynvisc_minus*enrderxy2_minus(5,iparam));
-        shp_mean_visc.dzdx(iparam) = shp_mean_visc.dxdz(iparam);
-        shp_mean_visc.dzdy(iparam) = shp_mean_visc.dydz(iparam);
-        shp_mean_visc.dzdz(iparam) = 0.5*(dynvisc_plus*enrderxy2_plus(2,iparam) + dynvisc_minus*enrderxy2_minus(2,iparam));
-
-        shp_jump_visc.d0(iparam) = dynvisc_minus*enrfunct_minus(iparam) - dynvisc_plus*enrfunct_plus(iparam);
-        shp_jump_visc.dx(iparam) = dynvisc_minus*enrderxy_minus(0,iparam) - dynvisc_plus*enrderxy_plus(0,iparam);
-        shp_jump_visc.dy(iparam) = dynvisc_minus*enrderxy_minus(1,iparam) - dynvisc_plus*enrderxy_plus(1,iparam);
-        shp_jump_visc.dz(iparam) = dynvisc_minus*enrderxy_minus(2,iparam) - dynvisc_plus*enrderxy_plus(2,iparam);
-        shp_jump_visc.dxdx(iparam) = dynvisc_minus*enrderxy2_minus(0,iparam) - dynvisc_plus*enrderxy2_plus(0,iparam);
-        shp_jump_visc.dxdy(iparam) = dynvisc_minus*enrderxy2_minus(3,iparam) - dynvisc_plus*enrderxy2_plus(3,iparam);
-        shp_jump_visc.dxdz(iparam) = dynvisc_minus*enrderxy2_minus(4,iparam) - dynvisc_plus*enrderxy2_plus(4,iparam);
-        shp_jump_visc.dydx(iparam) = shp_jump_visc.dxdy(iparam);
-        shp_jump_visc.dydy(iparam) = dynvisc_minus*enrderxy2_minus(1,iparam) - dynvisc_plus*enrderxy2_plus(1,iparam);
-        shp_jump_visc.dydz(iparam) = dynvisc_minus*enrderxy2_minus(5,iparam) - dynvisc_plus*enrderxy2_plus(5,iparam);
-        shp_jump_visc.dzdx(iparam) = shp_jump_visc.dxdz(iparam);
-        shp_jump_visc.dzdy(iparam) = shp_jump_visc.dydz(iparam);
-        shp_jump_visc.dzdz(iparam) = dynvisc_minus*enrderxy2_minus(2,iparam) - dynvisc_plus*enrderxy2_plus(2,iparam);
       }
 
       //static XFEM::ApproxFunc<0,shpVecSizeStress> shp_epsilon_jump;
@@ -1740,8 +1712,8 @@ void SysmatBoundaryStress(
       //     |                        |
       // remark: the sign of this term is not clear, yet
       assembler.template Vector<DiscPres>(shp_discpres_mean.d0, -timefacfac*(veljump(0)*normal(0)
-                                                                           +veljump(1)*normal(1)
-                                                                           +veljump(2)*normal(2)));
+                                                                            +veljump(1)*normal(1)
+                                                                            +veljump(2)*normal(2)));
 
       //--------------------------------------      |                  |
       // pressure adjoint consistency term RHS  +/- |  < q^e >, j_u n  |
@@ -1749,8 +1721,8 @@ void SysmatBoundaryStress(
       // remark: the sign of this term is not clear, yet
 //       assembler.template Vector<DiscPres>(shp_discpres_mean.d0, -timefacfac*ju);
        assembler.template Vector<DiscPres>(shp_discpres_mean.d0, timefacfac*(ju(0)*normal(0)
-                                                                             +ju(1)*normal(1)
-                                                                             +ju(2)*normal(2)));
+                                                                            +ju(1)*normal(1)
+                                                                            +ju(2)*normal(2)));
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_NEUMANN_INFLOW
@@ -1918,7 +1890,7 @@ void SysmatBoundarySigma(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
     const double&                     dt,                     ///< delta t (time step size)
     const double&                     theta,                  ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
     const double                      flamespeed              ///< flame speed
 )
 {
@@ -2086,7 +2058,9 @@ void SysmatBoundarySigma(
       }
       normal.Scale(-1.0);
 #endif
+#ifdef COMBUST_2D
       normal(2) = 0.0;
+#endif
       double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
       if (norm == 0.0) dserror("norm of normal vector is zero!");
       normal.Scale(1.0/norm);
@@ -2657,7 +2631,7 @@ void SysmatBoundaryStressDoubleOneSided(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const double                      flamespeed
 )
 {
@@ -2969,7 +2943,6 @@ void SysmatBoundaryStressDoubleOneSided(
         shp_minus.d0(iparam) = enrfunct_minus(iparam);
       }
 
-      // TODO: extend struct XFEM::ApproxFunc
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_epsilon_plus;
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_epsilon_minus;
       for (std::size_t iparam = 0; iparam < numparamepsilonxx; ++iparam)

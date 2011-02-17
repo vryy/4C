@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 #define COMBUST3_SYSMAT_H
 
 #include "combust3.H"
+#include "combust_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_xfem/xfem_enums.H"
@@ -39,6 +40,7 @@ namespace COMBUST
   ///
   /// to allow fixed size arrays for a unknown number of unknowns, we make them bigger than necessary
   /// this factor is multiplied times numnode(distype) to get the size of many arrays
+
   template<XFEM::AssemblyType ASSTYPE>
   struct SizeFac {};
   /// specialization of SizeFac for XFEM::standard_assembly
@@ -46,6 +48,19 @@ namespace COMBUST
   /// specialization of SizeFac for XFEM::xfem_assembly
   template<> struct SizeFac<XFEM::xfem_assembly>     {static const std::size_t fac = 2;};
 
+  template<XFEM::AssemblyType ASSTYPE>
+  struct SizeFacVel {};
+  /// specialization of SizeFac for XFEM::standard_assembly
+  template<> struct SizeFacVel<XFEM::standard_assembly> {static const std::size_t fac = 1;};
+  /// specialization of SizeFac for XFEM::xfem_assembly
+  template<> struct SizeFacVel<XFEM::xfem_assembly>     {static const std::size_t fac = 1;};
+
+  template<XFEM::AssemblyType ASSTYPE>
+  struct SizeFacPres {};
+  /// specialization of SizeFac for XFEM::standard_assembly
+  template<> struct SizeFacPres<XFEM::standard_assembly> {static const std::size_t fac = 1;};
+  /// specialization of SizeFac for XFEM::xfem_assembly
+  template<> struct SizeFacPres<XFEM::xfem_assembly>     {static const std::size_t fac = 2;};
 
   /*!
    * \brief entry point for Sysmat call

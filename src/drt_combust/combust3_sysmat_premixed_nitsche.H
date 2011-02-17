@@ -73,7 +73,7 @@ void SysmatDomainNitsche(
     const bool                     cstab,        ///< turn on/off BV   stabilization
     const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
     const bool                     instationary, ///< switch between stationary and instationary formulation
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     double&                        ele_meas_plus,      // set measure of element in plus domain
     double&                        ele_meas_minus      // set measure of element in minus domain
 )
@@ -99,8 +99,6 @@ void SysmatDomainNitsche(
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
-
-  const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
 
   // get number of parameters (dofs) for each field
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
@@ -218,7 +216,6 @@ void SysmatDomainNitsche(
       // rearrange (enriched) shape functions and derivatives as approximation functions
       //--------------------------------------------------------------------------------
       const size_t shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-      const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
 
       // (enriched) shape functions = approximation functions (P = N * \Psi)
       static XFEM::ApproxFunc<2,shpVecSize> shp;
@@ -355,13 +352,14 @@ void SysmatDomainNitsche(
       // compute stabilization parameters (3 taus)
       //------------------------------------------
       const double vel_norm = gpvelnp.Norm2();
-      const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
+      //const double strle = FLD::UTILS::Streamlength(shp.dx, shp.dy, shp.dz, gpvelnp, vel_norm, numparamvelx);
       double tau_stab_Mu = 0.0;
       double tau_stab_Mp = 0.0;
       double tau_stab_C  = 0.0;
-
+      // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
+      //         'hk' instead of using the streamlength for 'tau_stab_Mu'
       FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
-          instationary, dynvisc, densaf, vel_norm, strle, hk, mk, timefac, dt,
+          instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
           tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       //------------------------------------------------------------------------
@@ -433,13 +431,13 @@ void SysmatDomainNitsche(
       for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
       {
         enr_viscs2.xx(iparam) = 0.5 * (2.0 * shp.dxdx(iparam) + shp.dydy(iparam) + shp.dzdz(iparam));
-        enr_viscs2.xy(iparam) = 0.5 *  shp.dxdy(iparam);
-        enr_viscs2.xz(iparam) = 0.5 *  shp.dxdz(iparam);
-        enr_viscs2.yx(iparam) = 0.5 *  shp.dydx(iparam);
+        enr_viscs2.xy(iparam) = 0.5 *  shp.dydx(iparam);
+        enr_viscs2.xz(iparam) = 0.5 *  shp.dzdx(iparam);
+        enr_viscs2.yx(iparam) = 0.5 *  shp.dxdy(iparam);
         enr_viscs2.yy(iparam) = 0.5 * (shp.dxdx(iparam) + 2.0 * shp.dydy(iparam) + shp.dzdz(iparam));
-        enr_viscs2.yz(iparam) = 0.5 *  shp.dydz(iparam);
-        enr_viscs2.zx(iparam) = 0.5 *  shp.dzdx(iparam);
-        enr_viscs2.zy(iparam) = 0.5 *  shp.dzdy(iparam);
+        enr_viscs2.yz(iparam) = 0.5 *  shp.dzdy(iparam);
+        enr_viscs2.zx(iparam) = 0.5 *  shp.dxdz(iparam);
+        enr_viscs2.zy(iparam) = 0.5 *  shp.dydz(iparam);
         enr_viscs2.zz(iparam) = 0.5 * (shp.dxdx(iparam) + shp.dydy(iparam) + 2.0 * shp.dzdz(iparam));
       }
 
@@ -477,10 +475,106 @@ void SysmatDomainNitsche(
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
-      //----------------------------------------
+      if (ASSTYPE== XFEM::xfem_assembly)
+      {
+        if(ele->Intersected())
+        {
+//          cout << "funct" << funct << endl;
+//          cout << "evelnp " << evelnp << endl;
+//          cout << "eprenp " << eprenp << endl;
+//          cout << "shp" << endl;
+//          for(size_t iparam=0;iparam<shpVecSize;++iparam)
+//          {
+//            cout << " " << shp.d0(iparam);
+//          } cout << endl;
+//          cout << "gpvelnp" << gpvelnp << endl;
+//          cout << "vderxy " << vderxy << endl;
+//          cout << "vderxy2" << vderxy2 << endl;
+//          cout << "pres " << pres << endl;
+//          cout << "gradp " << gradp << endl;
+//          cout << "visc_old " << visc_old << endl;
+//          cout << "enr_conv_c" << endl;
+          //enr_conv_c.Print();
+
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xx " << enr_viscs2.xx.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xx " << enr_viscs2.xx.n(iparam);
+//          }
+//          cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xy " << enr_viscs2.xy.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xy " << enr_viscs2.xy.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xz " << enr_viscs2.xz.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.xz " << enr_viscs2.xz.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yx " << enr_viscs2.yx.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yx " << enr_viscs2.yx.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yy " << enr_viscs2.yy.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yy " << enr_viscs2.yy.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yz " << enr_viscs2.yz.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.yz " << enr_viscs2.yz.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zx " << enr_viscs2.zx.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zx " << enr_viscs2.zx.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zy " << enr_viscs2.zy.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zy " << enr_viscs2.zy.n(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zz " << enr_viscs2.zz.s(iparam);
+//          } cout << endl;
+//          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
+//          {
+//            cout << "enr_viscs2.zz " << enr_viscs2.zz.n(iparam);
+//          } cout << endl;
+        }
+      }
+//----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
-      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize,shpVecSizeStress>(
+      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
           assembler, shp, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
@@ -513,7 +607,7 @@ void Nitsche_SysmatBoundaryCell(
     const double&                     ju_n,
     const double&                     jflux_n,
     const double&                       timefac,
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
     const XFEM::ElementEnrichmentValues&       enrvals_minus,
     const double&                        kappa_plus,    /// weights of average in plus domain
@@ -673,7 +767,6 @@ void Nitsche_SysmatBoundaryCell(
       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
       normal.Clear();
-
       // loop over nodes
       for(size_t i = 0; i< numnode; i++)
       {
@@ -694,6 +787,21 @@ void Nitsche_SysmatBoundaryCell(
       if (norm == 0.0) dserror("norm of normal vector is zero!");
       normal.Scale(-1.0/norm);
     }
+#ifdef COLLAPSE_FLAME
+      normal.Clear();
+      // get shape functions at gaussian point
+      static LINALG::Matrix<numnode,1> funct_gp;
+      funct_gp.Clear();
+      DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      for (unsigned i=0;i<numnode;i++)
+      {
+        normal(0) += funct_gp(i)*xyze(0,i);
+        normal(1) += funct_gp(i)*xyze(1,i);
+      }
+      const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+      if (norm == 0.0) dserror("norm of normal vector is zero!");
+      normal.Scale(-1.0/norm);
+#endif
 
     // jump in velocity
     LINALG::Matrix<nsd,1> ju(true);
@@ -756,7 +864,7 @@ void Nitsche_SysmatBoundaryCell(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux_n << endl;
+      //cout << "jflux " << jflux << endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -1202,8 +1310,8 @@ void Nitsche_SysmatBoundaryCell(
     //--------------------------------------    |                |
 
     assembler.template Vector<Pres>(shp_mean.d0, timefacfac*(ju(0)*normal(0)
-        +ju(1)*normal(1)
-        +ju(2)*normal(2)));
+                                                            +ju(1)*normal(1)
+                                                            +ju(2)*normal(2)));
     //assembler.template Vector<Pres>(shp_mean.d0, timefacfac*ju_n);
 
     //      assembler.template Vector<Pres>(shp_presproj_mean, +timefacfac*(jump_vel(0,0)*normal(0)
@@ -1268,12 +1376,12 @@ void Nitsche_SysmatBoundaryCell(
     // Nitsche term (velocity) RHS  + |  \alpha_u || v ||, j_u  |
     //----------------------------    |                         |
 
-    //      assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
-    //      assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
-    //      assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
-    assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*normal(0)*ju_n);
-    assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*normal(1)*ju_n);
-    assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*normal(2)*ju_n);
+    assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*ju(0));
+    assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*ju(1));
+    assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*ju(2));
+    //assembler.template Vector<Velx>(shp_jump.d0, alphau*timefacfac*normal(0)*ju_n);
+    //assembler.template Vector<Vely>(shp_jump.d0, alphau*timefacfac*normal(1)*ju_n);
+    //assembler.template Vector<Velz>(shp_jump.d0, alphau*timefacfac*normal(2)*ju_n);
 #endif
 
 #ifdef COMBUST_NITSCHE_CONVSTAB
@@ -1372,7 +1480,7 @@ void SysmatBoundaryNitsche(
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
     const double&                              theta,          ///< factor for one step theta scheme
-    LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
     const double                               flamespeed,     ///<
     const double                               nitschevel,     ///<
     const double                               nitschepres,    ///<
