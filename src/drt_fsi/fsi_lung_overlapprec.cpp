@@ -162,15 +162,14 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
 
       // Structure
       {
-        StructConOp.Multiply(false,*cy,*tmpsx);
-        sx->Update(-1.0, *tmpsx, 1.0);
-
         if (run>0 or outerrun>0)
         {
           StructInnerOp.Multiply(false,*sy,*tmpsx);
           sx->Update(-1.0,*tmpsx,1.0);
           StructBoundOp.Multiply(false,*fy,*tmpsx);
           sx->Update(-1.0,*tmpsx,1.0);
+          StructConOp.Multiply(false,*cy,*tmpsx);
+          sx->Update(-1.0, *tmpsx, 1.0);
         }
 
         // Solve structure equations for sy with the rhs sx
@@ -241,14 +240,14 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
         {
           FluidInnerOp.Multiply(false,*fy,*tmpfx);
           fx->Update(-1.0,*tmpfx,1.0);
+          FluidConOp.Multiply(false,*cy,*tmpfx);
+          fx->Update(-1.0, *tmpfx, 1.0);
         }
 
         FluidBoundOp.Multiply(false,*sy,*tmpfx);
         fx->Update(-1.0,*tmpfx,1.0);
         FluidMeshOp.Multiply(false,*ay,*tmpfx);
         fx->Update(-1.0,*tmpfx,1.0);
-        FluidConOp.Multiply(false,*cy, *tmpfx);
-        fx->Update(-1.0, *tmpfx, 1.0);
 
         fluidsolver_->Solve(FluidInnerOp.EpetraMatrix(),fz,fx,true);
 
@@ -267,6 +266,7 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
       // ----------------------------------------------------------------
       // the symmetric part of the pc can be skipped
 
+#if 0
       if (symmetric_)
       {
         sx = DomainExtractor().ExtractVector(x,0);
@@ -335,6 +335,7 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
           sy->Update(omega_,*sz,1.0);
         }
       }
+#endif
     }
 
     // -----------------------------------------------------------------------
@@ -426,7 +427,10 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     // update of all dofs
     // -------------------------------------------------------------------
 
-    cy->Update(alpha_, *interconsol, 1.0);
+    if (outerrun > 0)
+      cy->Update(alpha_, *interconsol, 1.0);
+    else
+      cy->Update(alpha_, *interconsol, 0.0);
 
     Teuchos::RCP<Epetra_Vector> temp1;
     Teuchos::RCP<Epetra_Vector> temp2;
