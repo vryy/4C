@@ -16,6 +16,7 @@ Maintainer: Thomas Kloeppel
 #define TRANSPARENTDOFSET_H
 
 
+#include "drt_exporter.H"
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_discret.H"
 using namespace std;
@@ -41,7 +42,7 @@ namespace DRT
     \brief Standard Constructor
 
     */
-    explicit TransparentDofSet(RCP<DRT::Discretization> sourcedis);
+    explicit TransparentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel=false);
 
     /*!
     \brief Destructor
@@ -65,10 +66,57 @@ namespace DRT
             const int                  start         ///< offset for dof numbering (obsolete)
             );
 
+
+    /// Assign dof numbers for new discretization using dof numbering from source discretization.
+    /// for this version, newdis is allowed to be distributed completely different; the 
+    /// communication  of the dofs is done internally.
+    void ParallelTransferDegreesOfFreedom(
+            const DRT::Discretization& sourcedis,    ///< source discret
+            const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
+            const int                  start         ///< offset for dof numbering (obsolete)
+            );
+
+    /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
+    /// generate the current map node gid -> its dofs
+    void UnpackLocalSourceDofs(
+      map<int,vector<int> >   & gid_to_dofs  ,
+      vector<char>            & rblock       
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom; pack the current map 
+    /// node gid -> its dofs into a send block
+    void PackLocalSourceDofs(
+      map<int,vector<int> >   & gid_to_dofs  ,
+      vector<char>            & sblock       
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom; add processor local information
+    /// to the map unpack the received block to the current map node gid -> its dofs
+    void SetSourceDofsAvailableOnThisProc(
+      map<int,vector<int> >   & gid_to_dofs
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
+    void SendBlock(
+      int             numproc ,
+      int             myrank  ,
+      vector<char>  & sblock  ,
+      DRT::Exporter & exporter,
+      MPI_Request   & request );
+
+    /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
+    void ReceiveBlock(
+      int             numproc ,
+      int             myrank  ,
+      vector<char>   & rblock,
+      DRT::Exporter  & exporter,
+      MPI_Request    & request);
+
   private:
 
     RCP<DRT::Discretization> sourcedis_; ///< source discretization
 
+    bool parallel_; ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
 
   }; // class TransparentDofSet
 } //namespace
