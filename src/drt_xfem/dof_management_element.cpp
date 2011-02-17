@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_combust/combust_defines.H"
 
 
 
@@ -41,7 +42,7 @@ XFEM::ElementDofManager::ElementDofManager(
   nodalDofSet_(nodalDofSet),
   DisTypePerElementField_(element_ansatz)
 {
-  ComputeDependentInfo(ele, nodalDofSet, enrfieldset, element_ansatz);
+  ComputeDependentInfo(ele, nodalDofSet_, enrfieldset, element_ansatz);
 
   return;
 }
@@ -81,6 +82,11 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     const std::set<XFEM::FieldEnr>& enrfieldset,                   ///< element dofs
     const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz)
 {
+#ifdef COMBUST_NORMAL_ENRICHMENT
+  //numParamsPerField_[XFEM::PHYSICS::Veln] = 0;
+  paramsLocalEntries_[XFEM::PHYSICS::Veln] = vector<int>();
+#endif
+
   // count number of dofs for each node
 //   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
 //        tmp != nodalDofSet.end();
@@ -91,33 +97,33 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
 //   }
 
   // set number of parameters per field to zero
-//   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
-//        tmp != nodalDofSet.end();
-//        ++tmp)
-//   {
-//     const std::set<XFEM::FieldEnr> & lenrfieldset = tmp->second;
-//     for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
-//          enrfield != lenrfieldset.end();
-//          ++enrfield)
-//     {
-//       const XFEM::PHYSICS::Field field = enrfield->getField();
-//       //numParamsPerField_[field] = 0;
-//       paramsLocalEntries_[field] = vector<int>();
-//     }
-//   }
-//   for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin();
-//        enrfield != enrfieldset.end();
-//        ++enrfield)
-//   {
-//     const XFEM::PHYSICS::Field field = enrfield->getField();
-//     //numParamsPerField_[field] = 0;
-//     paramsLocalEntries_[field] = vector<int>();
-//   }
-
+  // for nodal dofs
+  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
+       tmp != nodalDofSet.end();
+       ++tmp)
+  {
+    const std::set<XFEM::FieldEnr> lenrfieldset = tmp->second;
+    for (set<XFEM::FieldEnr>::const_iterator enrfield = lenrfieldset.begin();
+         enrfield != lenrfieldset.end();
+         ++enrfield)
+    {
+      const XFEM::PHYSICS::Field field = enrfield->getField();
+      //numParamsPerField_[field] = 0;
+      paramsLocalEntries_[field] = vector<int>();
+    }
+  }
+  // for element dofs
+  for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin();
+       enrfield != enrfieldset.end();
+       ++enrfield)
+  {
+    const XFEM::PHYSICS::Field field = enrfield->getField();
+    //numParamsPerField_[field] = 0;
+    paramsLocalEntries_[field] = vector<int>();
+  }
 
   unique_enrichments_.clear();
 
-  // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
   std::size_t dofcounter = 0;
   std::size_t numnode = ele.NumNode();
@@ -125,7 +131,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   for (std::size_t inode=0; inode<numnode; ++inode)
   {
     const int nodegid = nodeids[inode];
-    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
+    map<int, const set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet.find(nodegid);
     if (entry == nodalDofSet.end())
       dserror("impossible");
     const std::set<XFEM::FieldEnr> & lenrfieldset = entry->second;
