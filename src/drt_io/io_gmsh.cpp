@@ -263,6 +263,49 @@ void IO::GMSH::ScalarToStream(
   s << "};";
 }
 
+void IO::GMSH::ScalarToStream(
+    const LINALG::Matrix<3,1>& pointXYZ,    ///< coordinates of point
+    const double               scalarvalue, ///< scalar value at this point
+    std::ostream&              s            ///< stream
+)
+{
+  s.setf(ios::scientific,ios::floatfield);
+  s.precision(12);
+
+  s << "SP("; // scalar field indicator
+  s << pointXYZ(0) << ",";
+  s << pointXYZ(1) << ",";
+  s << pointXYZ(2) << ")";
+
+  s << "{"
+      <<        scalarvalue
+      << "};";
+  s << "\n";
+};
+
+void IO::GMSH::VectorToStream(
+    const LINALG::Matrix<3,1>& pointXYZ,    ///< coordinates of point
+    const LINALG::Matrix<3,1>& vectorvalue, ///< vector at this point
+    std::ostream&              s            ///< stream
+)
+{
+  s.setf(ios::scientific,ios::floatfield);
+  s.precision(12);
+
+  s << "VP("; // vector field indicator
+  s << pointXYZ(0) << ",";
+  s << pointXYZ(1) << ",";
+  s << pointXYZ(2) << ")";
+
+  s << "{";
+  s <<        vectorvalue(0);
+  s << "," << vectorvalue(1);
+  s << "," << vectorvalue(2);
+  s << "};"; //<< endl;
+  s << "\n";
+
+};
+
 void IO::GMSH::elementAtInitialPositionToStream(
     const double scalar,
     const DRT::Element* ele,

@@ -97,6 +97,20 @@ namespace IO
         std::ostream&                          s
     );
 
+    //! take a scalar value at a point and translate it into Gmsh postprocessing format
+    void ScalarToStream(
+        const LINALG::Matrix<3,1>& pointXYZ,    ///< coordinates of point
+        const double               scalarvalue, ///< scalar value at this point
+        std::ostream&              s            ///< stream
+    );
+
+    //! take a scalar value at a point and translate it into Gmsh postprocessing format
+    void VectorToStream(
+        const LINALG::Matrix<3,1>& pointXYZ,    ///< coordinates of point
+        const LINALG::Matrix<3,1>& vectorvalue, ///< vector at this point
+        std::ostream&              s            ///< stream
+    );
+
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry
     template<class V> void ScalarFieldToStream(
         const V&                               scalarfield,
