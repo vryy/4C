@@ -34,6 +34,7 @@ its parameters and conditions.
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "../drt_lib/drt_elementdefinition.H"
+#include "../drt_lib/drt_parobjectregister.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_writedat.H"
@@ -72,6 +73,8 @@ int main(
   string headfile;
   string datfile;
   string cline;
+
+  int printparobjecttypes = 0;
 
   // related to solid shell extrusion
   double soshthickness = 0.0;
@@ -120,6 +123,9 @@ int main(
   // check for quad->tri conversion
   My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");
 
+  // print parobject types (needed for making automatic object registration working)
+  My_CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
+
   // create a problem instance
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
@@ -131,11 +137,23 @@ int main(
 
   if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
   {
-    exit(0);
+    // free the global problem instance
+    problem->Done();
+    return 0;
   }
   if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     dserror("CommandLineProcessor reported an error");
+  }
+
+  if (printparobjecttypes)
+  {
+    // hack so that the parobject types are registered!!!
+    PrintParObjectList();
+
+    // free the global problem instance
+    problem->Done();
+    return 0;
   }
 
   // create error files
@@ -162,9 +180,8 @@ int main(
     }
     else
     {
-      cout<<"No Exodus II file was found"<<endl;
       My_CLP.printHelpMessage(argv[0],cout);
-      exit(1);
+      dserror("No Exodus II file was found");
     }
   }
 
@@ -348,6 +365,10 @@ int main(
                 << "\n"
                 << line
                 << "\n" << std::endl;
+
+      // free the global problem instance
+      problem->Done();
+
 #ifdef DSERROR_DUMP
       abort();
 #endif
@@ -457,7 +478,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
   DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
 
-  // print valid element lines as proposal
+  // print valid element lines as proposal (parobjects have to be registered for doing this!)
   defaultbc << endl << endl;
   DRT::INPUT::ElementDefinition ed;
   ed.PrintElementDatHeaderToStream(defaultbc);
