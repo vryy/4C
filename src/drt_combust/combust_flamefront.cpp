@@ -2320,8 +2320,6 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   }
   //-----------------------------------------------------------------------------------------
   // decompose hexahedral elements into 6 tetrahedra first to create domain integration cells
-  // TODO @Florian update comment
-  // Semesterarbeit Markus Sons ab September 2010                                 08/10 henke
   //-----------------------------------------------------------------------------------------
   case INPAR::COMBUST::xfemintegration_tetrahedra:
   {
@@ -2641,7 +2639,7 @@ void COMBUST::FlameFront::projectMidpoint2D(
     }
   }
   if(!((point1[thirddim] > -1.0-1.0E-8) and (point1[thirddim] < -1.0+1.0E-8) and
-      (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8)))
+       (point2[thirddim] > -1.0-1.0E-8) and (point2[thirddim] < -1.0+1.0E-8)))
     dserror("2D midpoint projection algorithm failed");
 
   // add frontside and backside mid point to list of points
@@ -2696,7 +2694,7 @@ void COMBUST::FlameFront::projectMidpoint2D(
   {
     std::vector<int> points = iter->second;
     if(((points[0]==polypoints[first_id]) or (points[1] == polypoints[first_id])) and
-        ((points[0]==polypoints[second_id]) or (points[1] == polypoints[second_id])))
+       ((points[0]==polypoints[second_id]) or (points[1] == polypoints[second_id])))
     {
       segid = iter->first;
     }

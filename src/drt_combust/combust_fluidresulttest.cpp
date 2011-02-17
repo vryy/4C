@@ -33,9 +33,16 @@ FLD::CombustFluidResultTest::CombustFluidResultTest(CombustFluidImplicitTimeInt&
 {
   fluiddis_ = fluid.discret_;
   fluidstddofset_ = fluid.standarddofset_;
+
+  std::set<XFEM::PHYSICS::Field> outputfields;
+  outputfields.insert(XFEM::PHYSICS::Velx);
+  outputfields.insert(XFEM::PHYSICS::Vely);
+  outputfields.insert(XFEM::PHYSICS::Velz);
+  outputfields.insert(XFEM::PHYSICS::Pres);
+
   // transform XFEM velnp vector to (standard FEM) velnp vector
   Teuchos::RCP<Epetra_Vector> velnp_std = fluid.dofmanagerForOutput_->transformXFEMtoStandardVector(
-      *fluid.state_.velnp_, *fluid.standarddofset_, fluid.state_.nodalDofDistributionMap_, fluid.physprob_.xfemfieldset_);
+      *fluid.state_.velnp_, *fluid.standarddofset_, fluid.state_.nodalDofDistributionMap_, outputfields);
   mysol_ = velnp_std;
 
 }

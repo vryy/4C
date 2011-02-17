@@ -424,8 +424,9 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
   normal(0) = (edge1(1)*edge2(2) - edge1(2)*edge2(1));
   normal(1) = (edge1(2)*edge2(0) - edge1(0)*edge2(2));
   normal(2) = (edge1(0)*edge2(1) - edge1(1)*edge2(0));
-  // TODO remove restriction to 2D
-  //normal(2) = 0.0;
+#ifdef COMBUST_2D
+  normal(2) = 0.0;
+#endif
 
 //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
 //  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;

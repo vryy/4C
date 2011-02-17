@@ -250,7 +250,7 @@ namespace COMBUST
             const std::vector<double>&              gfuncvalues_ele,
             const DRT::Element::DiscretizationType  xfem_distype,
             const DRT::Element::DiscretizationType  cell_distype
-            );
+    );
 
     /// decide which domain an integration cell belongs to
     bool GetIntCellDomain(
