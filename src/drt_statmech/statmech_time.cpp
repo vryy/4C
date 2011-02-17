@@ -882,9 +882,17 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   timer.ResetStartTime();
   bool print_unconv = true;
 
+  //parameters to make sure that in last iteration step botch PTC parameters have reached zero
+  double ctransptcold = ctransptc;
+  double crotptcold   = crotptc;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
+  while ( (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) || ctransptcold > 0.0 || crotptcold > 0.0) and numiter<=maxiter  )
   {
+
+    //save PTC parameters of the so far last iteration step
+    ctransptcold = ctransptc;
+    crotptcold   = crotptc;
+
     // debug cout
   	Epetra_Vector discol(*discret_.DofColMap(), true);
 

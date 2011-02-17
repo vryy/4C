@@ -909,42 +909,59 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	// NODAL TRIAD UPDATE
 	//first get triads at all row nodes
 	Epetra_MultiVector nodaltriadsrow(noderowmap, 4);
-	nodaltriadsrow.PutScalar(0);
-
-	//update nodaltriads_
-	for (int i=0; i<noderowmap.NumMyElements(); i++)
-	{
-		//lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
-		int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
-		int lowestidele(0);
-		for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
-			if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
-			{
-				lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
-				lowestidele = j;
-			}
-
-		//check whether filaments are discretized with beam3ii elements (otherwise no orientation triads at nodes available)
-		DRT::ELEMENTS::Beam3ii* filele = NULL;
-		DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
-		if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-			filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
-		else
-			dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
-
-		//check whether crosslinker is connected to first or second node of that element
-		int nodenumber = 0;
-		if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
-			nodenumber = 1;
-
-		//save nodal triad of this node in nodaltriadrow
-		for(int j=0; j<4; j++)
-			nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
-	}
-	//export nodaltriadsrow to col map variable
 	Epetra_MultiVector nodaltriadscol(nodecolmap,4,true);
 	Epetra_Import importer(nodecolmap,noderowmap);
-	nodaltriadscol.Import(nodaltriadsrow,importer,Insert); // NODAL TRIAD UPDATE
+	nodaltriadsrow.PutScalar(0);
+
+	if (Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
+	{
+    //update nodaltriads_
+    for (int i=0; i<noderowmap.NumMyElements(); i++)
+    {
+      //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+      int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
+      int lowestidele(0);
+      for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
+        if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
+        {
+          lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
+          lowestidele = j;
+        }
+
+      //check type of element (orientation triads are not for all elements available in the same way
+      DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+      //if element is of type beam3ii get nodal triad
+      if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+      {
+        DRT::ELEMENTS::Beam3ii* filele = NULL;
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+
+        //check whether crosslinker is connected to first or second node of that element
+        int nodenumber = 0;
+        if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+          nodenumber = 1;
+
+        //save nodal triad of this node in nodaltriadrow
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+      }
+      else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+      {
+        DRT::ELEMENTS::Beam3* filele = NULL;
+        filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+
+        //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
+        for(int j=0; j<4; j++)
+          nodaltriadsrow[j][i] = (filele->Qnew_[0])(j);
+      }
+      else
+        dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+
+
+    }
+    //export nodaltriadsrow to col map variable
+    nodaltriadscol.Import(nodaltriadsrow,importer,Insert); // NODAL TRIAD UPDATE
+	}
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
@@ -2154,8 +2171,8 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 
 
   //pPhi = 0.0 if DeltaPhi is outside allowed range
-  if(Phi < statmechparams_.get<double>("PHI0",0.0) - statmechparams_.get<double>("PHI0DEV",6.28) ||
-     Phi > statmechparams_.get<double>("PHI0",0.0) + statmechparams_.get<double>("PHI0DEV",6.28))
+  if(Phi < statmechparams_.get<double>("PHI0",0.0) - 0.5*statmechparams_.get<double>("PHI0DEV",6.28) ||
+     Phi > statmechparams_.get<double>("PHI0",0.0) + 0.5*statmechparams_.get<double>("PHI0DEV",6.28))
      pPhi = 0.0;
 
   //crosslinker has to pass three probability checks with respect to orientation
