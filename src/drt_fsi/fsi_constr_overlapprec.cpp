@@ -229,14 +229,16 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
         {
           FluidInnerOp.Multiply(false,*fy,*tmpfx);
           fx->Update(-1.0,*tmpfx,1.0);
+
+          FluidConOp.Multiply(false,*cy, *tmpfx);
+          fx->Update(-1.0, *tmpfx, 1.0);
         }
 
         FluidBoundOp.Multiply(false,*sy,*tmpfx);
         fx->Update(-1.0,*tmpfx,1.0);
         FluidMeshOp.Multiply(false,*ay,*tmpfx);
         fx->Update(-1.0,*tmpfx,1.0);
-        FluidConOp.Multiply(false,*cy, *tmpfx);
-        fx->Update(-1.0, *tmpfx, 1.0);
+
 
         fluidsolver_->Solve(FluidInnerOp.EpetraMatrix(),fz,fx,true);
 
@@ -417,7 +419,10 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
     // update of all dofs
     // -------------------------------------------------------------------
 
-    cy->Update(alpha_, *interconsol, 1.0);
+    if (outerun > 0)
+      cy->Update(alpha_, *interconsol, 1.0);
+    else
+      cy->Update(alpha_, *interconsol, 0.0);
 
     Teuchos::RCP<Epetra_Vector> temp1;
     Teuchos::RCP<Epetra_Vector> temp2;
