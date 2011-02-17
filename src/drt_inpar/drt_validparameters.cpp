@@ -3033,26 +3033,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
                   "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner",
                   &fsidyn);
-  setNumericStringParameter("STRUCTPCITER","0 0 0 0",
+  setNumericStringParameter("STRUCTPCITER","1 1 1 1",
                "Number of Richardson iterations on structural block in MFSI block preconditioner",
                &fsidyn);
   setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
                   "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner",
                   &fsidyn);
-  setNumericStringParameter("FLUIDPCITER","0 0 0 0",
+  setNumericStringParameter("FLUIDPCITER","1 1 1 1",
                "Number of Richardson iterations on fluid block in MFSI block preconditioner",
                &fsidyn);
   setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
                   "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner",
                   &fsidyn);
-  setNumericStringParameter("ALEPCITER","0 0 0 0",
+  setNumericStringParameter("ALEPCITER","1 1 1 1",
                "Number of Richardson iterations on ale block in MFSI block preconditioner",
                &fsidyn);
 
   setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
                             "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
                             &fsidyn);
-  setNumericStringParameter("PCITER","1 1 3",
+  setNumericStringParameter("PCITER","1 1 1",
                             "Number of Richardson iterations on whole MFSI block preconditioner",
                             &fsidyn);
 
