@@ -79,7 +79,7 @@ public:
   \return void
 
   */
-  PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> dis);
+  PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> dis, bool verbose=true);
 
   /*!
   \brief Destructor
@@ -335,7 +335,9 @@ protected:
   //       master node -> list of his slave node(s)
   RefCountPtr<map<int,vector<int> > > allcoupledcolnodes_;
 
-
+  //!\brief a flag controlling the verboisty, ie the amount of output
+  // displayed on the screen
+  bool verbose_;
 
   //!\brief time measurement (total)
   RefCountPtr<Time> timepbctot_     ;

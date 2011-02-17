@@ -33,8 +33,10 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 PeriodicBoundaryConditions::PeriodicBoundaryConditions
-  (RefCountPtr<DRT::Discretization> actdis)
-  : discret_(actdis)
+(RefCountPtr<DRT::Discretization> actdis,
+ bool                             verbose)
+  : discret_(actdis),
+    verbose_(verbose)
 {
   // get periodic surface boundary conditions
   discret_->GetCondition("SurfacePeriodic",mysurfpbcs_);
@@ -96,7 +98,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     // time measurement --- start TimeMonitor tm0
     tm0_ref_        = rcp(new TimeMonitor(*timepbctot_ ));
 
-    if(discret_->Comm().MyPID()==0)
+    if(discret_->Comm().MyPID()==0 && verbose_)
     {
       cout << "Generate new dofset for discretization "<<discret_->Name();
       cout<<endl<<endl;
@@ -108,7 +110,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(discret_->Comm().NumProc()>1)
     {
-      if(discret_->Comm().MyPID()==0)
+      if(discret_->Comm().MyPID()==0 && verbose_)
       {
         cout << "\n---------------------------------------------\n";
         cout << "Call METIS \n";
@@ -124,13 +126,17 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     //                                              (call of destructor)
     tm0_ref_ = null;
 
-    if(discret_->Comm().MyPID()==0)
+    if(discret_->Comm().MyPID()==0 && verbose_)
     {
       cout<<endl<<endl;
     }
-    TimeMonitor::summarize();
+    
+    if(verbose_)
+    {
+      TimeMonitor::summarize();
+    }
 
-    if(discret_->Comm().MyPID()==0)
+    if(discret_->Comm().MyPID()==0 && verbose_)
     {
       cout<<endl<<endl;
     }
@@ -180,7 +186,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       discret_->Comm().SumAll(&my_n_ghostele[0],&n_ghostele[0],numprocs);
       discret_->Comm().SumAll(&my_n_dof[0]     ,&n_dof[0]     ,numprocs);
 
-      if(discret_->Comm().MyPID()==0)
+      if(discret_->Comm().MyPID()==0 && verbose_)
       {
 	printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
 	printf("   | PID |    n_nodes    |   n_master   |   n_slave   |    n_elements   |   n_ghostele   |      n_dof      |\n");
@@ -485,7 +491,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // slavenodeids --- it belongs to this master slave pair!!!
       midtosid.clear();
 
-      if (discret_->Comm().MyPID() == 0)
+      if (discret_->Comm().MyPID() == 0 && verbose_)
       {
         cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane << " direction ... ";
         fflush(stdout);
@@ -534,7 +540,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         }
       }
 
-      if (discret_->Comm().MyPID() == 0)
+      if (discret_->Comm().MyPID() == 0 && verbose_)
       {
         cout << "adding connectivity to previous pbcs ... ";
         fflush(stdout);
@@ -555,9 +561,9 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       // time measurement --- this causes the TimeMonitor tm4 to stop here
       tm4_ref_ = null;
 
-      if (discret_->Comm().MyPID() == 0)
+      if (discret_->Comm().MyPID() == 0 && verbose_)
       {
-        cout << " done\n";
+        cout << "done.\n";
         fflush(stdout);
       }
 
@@ -573,17 +579,17 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
   tm5_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
 
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0 && verbose_)
   {
-    cout << "Redistributing ... ";
+    cout << "Redistributing: \n";
     fflush(stdout);
   }
 
   RedistributeAndCreateDofCoupling();
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->Comm().MyPID() == 0 && verbose_)
   {
-    cout << " done\n";
+    cout << "... done\n";
     fflush(stdout);
   }
 
@@ -1050,9 +1056,13 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     discret_->Comm().SumAll(&myerase,&numerase,1);
     discret_->Comm().SumAll(&mycerase,&numcerase,1);
-    if(discret_->Comm().MyPID()==0)  
+    if(discret_->Comm().MyPID()==0 && verbose_)  
     {  
-      cout << "Erased " << numerase << " from nodeset and " << numcerase << " from the map of all coupled rownodes\n";
+      cout << " Erased " << numerase  << " slaves from nodeset.\n";
+      cout << " Erased " << numcerase << " from the map of all ";
+      cout << "coupled rownodes.\n";
+      cout << "        (we want a master->slaves map, so all entries ";
+      cout << "slave->... are deleted)\n";
     }
 
     nodesonthisproc.clear();
@@ -1082,9 +1092,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     }
 
     discret_->Comm().SumAll(&mynumappend,&numappend,1); 
-    if(discret_->Comm().MyPID()==0)   
+    if(discret_->Comm().MyPID()==0 && verbose_)   
       {   
-	cout << "Appended " << numappend << " slavenodeids to the list of the nodes on the single procs\n"; 
+	cout << " Appended " << numappend << " ids which belong to slave ";
+        cout << "nodes that are coupled to a master\n";
+        cout << "        node. They will be fetched to the master's ";
+        cout << "procs, an their total \n";
+        cout << "        number has to equal the number of slaves ";
+        cout << "erased from the nodeset.\n";
       } 
  
 
@@ -1117,9 +1132,11 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       discret_->Comm().MaxAll(&mymax,&max,1);
       discret_->Comm().MinAll(&mymin,&min,1);
        
-      if(discret_->Comm().MyPID()==0) 
+      if(discret_->Comm().MyPID()==0 && verbose_) 
 	{ 
- 	  cout << allcouplednodes << " masternodes coupled to up to at least " << min << " and up to "<< max << " slavenodes\n";  
+ 	  cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";  
+        cout << "        all master/slave couples are sent to the same proc.\n";  
+
 	} 
     }
 
@@ -1129,13 +1146,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       int gn=0;
 
       discret_->Comm().SumAll(&myn,&gn,1);
-
-      if(discret_->Comm().MyPID()==0)
-      {
-
-	cout << "nodes in redistributed map " << gn << "\n";
-        cout << "nodes in discretisation " << discret_->NumGlobalNodes() << "\n"; 
-      } 
 
       if(gn!=discret_->NumGlobalNodes())
       {
@@ -1729,7 +1739,10 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         // The number of vertices in the graph.
         int nummyele = tmap.NumMyElements();
 
-        cout << "proc " <<  myrank << " repartition graph using metis\n";
+        if(verbose_)
+        {
+          cout << "proc " <<  myrank << " repartition graph using metis\n";
+        }
         if (numproc<8) // better for smaller no. of partitions
         {
 #ifdef PARALLEL
@@ -1745,8 +1758,11 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
                                    &edgecut,
                                    &part[0]);
 
+        if(verbose_)
+        {
           cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << "\n";
           fflush(stdout);
+        }
 #endif
         }
         else
@@ -1812,7 +1828,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       discret_->Redistribute(newnoderowmap,newnodecolmap,false,true,true);
 
 
-      if(discret_->Comm().MyPID()==0)
+      if(discret_->Comm().MyPID()==0 && verbose_)
       {
         cout << "---------------------------------------------\n";
         cout << "Repair Master->Slave connection, generate final dofset";
