@@ -17,6 +17,7 @@ Maintainer: Andreas Ehrl
 #define FLUID3_INTERFACE_H
 
 #include "../drt_f3/fluid3.H"
+#include "../drt_lib/drt_elementimpl.H"
 
 namespace DRT
 {
@@ -30,15 +31,12 @@ namespace ELEMENTS
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of Fluid3Impl.
    */
-  class Fluid3ImplInterface
+  class Fluid3ImplInterface : public ElementImpl
   {
   public:
 
     /// Empty constructor
     Fluid3ImplInterface() {}
-
-    /// Empty destructor
-    virtual ~Fluid3ImplInterface() {}
 
     /// Evaluate the element
     /*!

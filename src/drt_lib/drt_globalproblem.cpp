@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_conditiondefinition.H"
 #include "drt_materialdefinition.H"
 #include "drt_function.H"
+#include "drt_elementimpl.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
@@ -66,18 +67,6 @@ and the type is in partition.h
 extern struct _PAR   par;
 
 
-
-
-/*----------------------------------------------------------------------*/
-// Lena said: do it the easy way.
-/*----------------------------------------------------------------------*/
-extern "C"
-void drt_problem_done()
-{
-  DRT::Problem::Done();
-}
-
-
 /*----------------------------------------------------------------------*/
 // the instances
 /*----------------------------------------------------------------------*/
@@ -108,6 +97,18 @@ void DRT::Problem::Done()
   //
   // There is a whole lot going on here...
   instances_.clear();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::Problem::~Problem()
+{
+  for (vector<DRT::ELEMENTS::ElementImpl *>::iterator i=elementimpls_.begin(); i!=elementimpls_.end(); ++i)
+  {
+    DRT::ELEMENTS::ElementImpl * ei = *i;
+    ei->Done();
+  }
 }
 
 
@@ -1258,3 +1259,4 @@ DRT::UTILS::TimeCurve& DRT::Problem::Curve(int num)
 
 
 #endif
+

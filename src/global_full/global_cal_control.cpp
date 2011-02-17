@@ -30,26 +30,11 @@ Maintainer: Michael Gee
 
 #include "../drt_stk/stk_adaptive_main.H"
 
-namespace
-{
-  /// helper that causes the removal of any pending problem instances upon destruction
-  class DRTCleanupHelper
-  {
-  public:
-    ~DRTCleanupHelper()
-    {
-      drt_problem_done();
-    }
-  };
-}
-
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
 void ntacal()
 {
-  DRTCleanupHelper cleanup_helper;
-
   if ( genprob.adaptive )
   {
     adaptive_main();

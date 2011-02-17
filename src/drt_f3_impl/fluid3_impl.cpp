@@ -125,12 +125,32 @@ DRT::ELEMENTS::Fluid3ImplInterface* DRT::ELEMENTS::Fluid3ImplInterface::Impl(DRT
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Fluid3Impl<distype> * DRT::ELEMENTS::Fluid3Impl<distype>::Instance()
+DRT::ELEMENTS::Fluid3Impl<distype> * DRT::ELEMENTS::Fluid3Impl<distype>::Instance( bool create )
 {
   static Fluid3Impl<distype> * instance;
-  if ( instance==NULL )
-    instance = new Fluid3Impl<distype>();
+  if ( create )
+  {
+    if ( instance==NULL )
+      instance = new Fluid3Impl<distype>();
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
   return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
 }
 
 
@@ -199,7 +219,8 @@ DRT::ELEMENTS::Fluid3Impl<distype>::Fluid3Impl()
     rotsymmpbc_(NULL),
     is_higher_order_ele_(false),
     weights_(true),
-    myknots_(nsd_)
+    myknots_(nsd_),
+    intpoints_( distype )
 {
   rotsymmpbc_= new FLD::RotationallySymmetricPeriodicBC<distype>();
 
@@ -226,7 +247,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
 
   // get Gaussrule
   //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-  DRT::UTILS::GaussIntegration intpoints( distype );
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -261,7 +281,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::IntegrateShapeFunction(
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
 
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
@@ -312,14 +332,12 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   double * sveln = NULL;
   double * svelnp = NULL;
 
-  DRT::UTILS::GaussIntegration intpoints( distype );
-
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
   if ( f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent )
   {
     //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
+    ele->ActivateTDS( intpoints_.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
   }
 
   // ---------------------------------------------------------------------
@@ -453,7 +471,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     saccn,
     sveln,
     svelnp,
-    intpoints);
+    intpoints_);
 
   // rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
@@ -6292,12 +6310,12 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
 
   // gaussian points
   //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-  DRT::UTILS::GaussIntegration intpoints( distype );
+  //DRT::UTILS::GaussIntegration intpoints( distype );
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
   //for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
     //EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());

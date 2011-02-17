@@ -50,6 +50,11 @@ namespace DRT
 {
 class Discretization;
 
+namespace ELEMENTS
+{
+class ElementImpl;
+}
+
 namespace INPUT
 {
 class DatFileReader;
@@ -157,6 +162,8 @@ public:
   static void Done();
 
   //@}
+
+  ~Problem();
 
   /// @name Input
 
@@ -322,6 +329,14 @@ public:
 
   //@}
 
+  /// @name Element implementation
+  /// keep a list of all active element implementations
+
+  /// register newly created implementation object
+  void Register(DRT::ELEMENTS::ElementImpl * elementimpl) { elementimpls_.push_back(elementimpl); }
+
+  //@}
+
 private:
 
   /// private default constructor to disallow creation of instances
@@ -338,6 +353,9 @@ private:
 
   /// discretizations of this problem
   vector<vector<RCP<Discretization> > > discretizations_;
+
+  /// keep a list of all active element implementations
+  vector<DRT::ELEMENTS::ElementImpl *> elementimpls_;
 
   /// material bundle
   Teuchos::RCP<MAT::PAR::Bundle> materials_;

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include <../headers/compile_settings.h>
 #include "../drt_inpar/drt_validparameters.H"
@@ -209,6 +210,8 @@ int main(int argc, char *argv[])
     }
     catch ( std::runtime_error & err )
     {
+      DRT::Problem::Done();
+
       char line[] = "=========================================================================\n";
       std::cout << "\n\n"
                 << line
@@ -226,6 +229,8 @@ int main(int argc, char *argv[])
 #endif
 /*----------------------------------------------------------------------*/
   }
+
+  DRT::Problem::Done();
 
 #ifdef PARALLEL
   MPI_Barrier(MPI_COMM_WORLD);

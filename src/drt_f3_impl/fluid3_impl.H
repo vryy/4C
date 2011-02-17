@@ -79,7 +79,7 @@ namespace ELEMENTS
     virtual ~Fluid3Impl() {}
 
     /// Singleton access method
-    static Fluid3Impl<distype> * Instance();
+    static Fluid3Impl<distype> * Instance( bool create=true );
 
     //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
     static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -89,6 +89,8 @@ namespace ELEMENTS
 
     static const int numdofpernode_ = nsd_+1;
 
+    /// called upon destruction
+    virtual void Done();
 
     virtual int IntegrateShapeFunction(
         DRT::ELEMENTS::Fluid3*    ele,
@@ -802,6 +804,8 @@ namespace ELEMENTS
     LINALG::Matrix<nen_,1> weights_;
     //! knot vector for nurbs elements
     std::vector<Epetra_SerialDenseVector> myknots_;
+
+    DRT::UTILS::GaussIntegration intpoints_;
   };
 }
 }
