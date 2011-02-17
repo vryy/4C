@@ -37,6 +37,8 @@ Maintainer: Shadan Shahmiri
 #include "../drt_io/io_ostream0.H"
 #include "../drt_io/io.H"
 
+#include "../drt_cut/cut_boundingbox.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -142,6 +144,8 @@ public:
    */
   void TimeUpdate();
 
+  void CalculateAcceleration();
+
   /*!
   \brief lift'n'drag forces, statistics time sample and
            output of solution and statistics
@@ -168,8 +172,9 @@ public:
   \brief set initial flow field for analytical test problems
   */
   void SetInitialFlowField(
-      const INPAR::FLUID::InitialField initfield,
-      const int startfuncno
+    const Teuchos::RCP<DRT::Discretization> cutterdiscret,
+    const INPAR::FLUID::InitialField initfield,
+    const int startfuncno
       );
 
    /*!
@@ -275,6 +280,8 @@ public:
   void PrepareFluidXFluidBoundaryDis(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
 
   void PrepareFluidXFluidBoundaryDofset(const Teuchos::RCP<DRT::Discretization>  cutterdiscret);
+
+  void CreatePatchBoxes(std::map<int,GEO::CUT::BoundingBox>& patchboxes) const;
 
   protected:
 
@@ -519,6 +526,9 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
 
   // state of fluid
+  // NOTE: the dispnp is at the first iteration not zero and is equal the the
+  // displacment of the fluid, which occurs in the second time step. But
+  // currentpositionnp_ is the position of patch at the current time step
   struct FluidState
   {
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
@@ -539,11 +549,14 @@ public:
     RCP<Epetra_Vector>    scaam_;
     //@}
 
-    //! @name displacemets at time n+1, n and n-1
+    //! @name displacements at time n+1, n and n-1
     RCP<Epetra_Vector>    dispnp_;
     RCP<Epetra_Vector>    dispn_;
     RCP<Epetra_Vector>    dispnm_;
     //@}
+
+    // displacements at n-2, needed for Gmsh
+    RCP<Epetra_Vector>    dispnmm_;
   } fluidstate_;
   //@}
 
@@ -588,6 +601,9 @@ public:
     Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
     Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
+
+    std::map<int,int>    nodelabelnp_;  // label of every node at time n+1
+    std::map<int,int>    nodelabeln_;    // label of every node at time n
   } xfluidstate_;
 
   // state of fluidxfluid
