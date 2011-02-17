@@ -1835,13 +1835,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   break;
   case INPAR::SCATRA::calcerror_cylinder:
   {
-    //------------------------------------------------- Choi,1993
     //   Reference:
-    //   Kwok, Yue-Kuen and Wu, Charles C. K.
-    //   "Fractional step algorithm for solving a multi-dimensional
-    //   diffusion-migration equation"
-    //   Numerical Methods for Partial Differential Equations
-    //   1995, Vol 11, 389-397
+    //   G. Bauer, V. Gravemeier, W.A. Wall, A 3D finite element approach for the coupled
+    //   numerical simulation of electrochemical systems and fluid flow,
+    //   International Journal for Numerical Methods in Engineering, 2011
 
     // create the parameters for the discretization
     ParameterList p;
@@ -1949,7 +1946,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
   // we reach the desired value for the electric current.
 
   // leave method, if there's nothing to do!
-  if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc) return true;
+  if (extraparams_->isSublist("ELCH CONTROL") == false) return true;
 
   if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
@@ -1966,6 +1963,8 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
       double newtonrhs(0.0);
 
+      const unsigned condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+      const unsigned condid_anode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_ANODE");
       int gstatitemax = (extraparams_->sublist("ELCH CONTROL").get<int>("GSTATITEMAX"));
       double gstatcurrenttol = (extraparams_->sublist("ELCH CONTROL").get<double>("GSTATCURTOL"));
       const int curvenum = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCURVENO");
@@ -1979,9 +1978,13 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       ComputeTimeDerivative();
 
       // loop over all BV
-      // degenerated to a loop over 2 BV conditions
+      // degenerated to a loop over 2 (user-specified) BV conditions
       for (unsigned int icond = 0; icond < cond.size(); icond++)
       {
+        // consider only the specified electrode kinetics boundaries!
+        if ((icond != condid_cathode)and((icond != condid_anode)))
+            continue;
+
         actualcurrent = 0.0;
         currtangent = 0.0;
         currresidual = 0.0;
@@ -1995,9 +1998,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
         double timefac = 1.0/ResidualScaling();
 
-        if (icond > 1)
-          dserror("More than 2 Butler-Volmer conditions. All these conditions cannot be connected in series anymore!");
-        else if (icond==0)
+        if (icond==condid_cathode)
         {
           //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
           // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
@@ -2037,44 +2038,52 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
 
           // Newton step:  Delta pot = - Residual / (-Jacobian)
-          potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
+          if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+            potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
 
           // print additional information
           if (myrank_==0)
           {
             cout<< "  area                          =" << electrodesurface << endl;
             cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
-            cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
-            cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
+            if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+            {
+              cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
+              cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
+            }
           }
         }
+
+        // safety check
+        if (abs(currtangent)<EPS14)
+          dserror("Tangent in galvanostatic control is near zero: %lf",currtangent);
 
         // Newton step:  Jacobian * \Delta pot = - Residual
         gstatincrement_ = newtonrhs/currtangent;
         // update electric potential
         potnew += gstatincrement_;
         // print potential drop due to surface overpotential
-        if (myrank_==0) cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
+        if (myrank_==0)
+          cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
       }
       // end loop over electrode kinetics
 
       // Apply new electrode potential
-      if (abs(currtangent)<EPS12)
-        dserror("Tangent in galvanostatic control is near zero: %f",currtangent);
-
       if (myrank_==0)
       {
         cout<< endl;
         cout<< "  old electrode potential = "<<potold<<endl;
-        cout<< "  new electrode potential = "<<potnew<<endl<<endl;
+        cout<< "  new electrode potential = "<<potnew<<endl;
+        cout<< "  (at boundary with condition id "<<condid_cathode<<")"<<endl<<endl;
       }
       // replace potential value of the boundary condition (on all processors)
-      cond[0]->Add("pot",potnew);
+      cond[condid_cathode]->Add("pot",potnew);
       gstatnumite_++;
       return false; // not yet converged -> continue Newton iteration with updated potential
     }
   }
-  return true;
+  return true; //default
+
 } // end ApplyGalvanostaticControl()
 
 

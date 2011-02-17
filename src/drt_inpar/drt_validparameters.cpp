@@ -2626,6 +2626,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
+  IntParameter("GSTATCONDID_CATHODE",0,"condition id of electrode kinetics for cathode",&elchcontrol);
+  IntParameter("GSTATCONDID_ANODE",1,"condition id of electrode kinetics for anode",&elchcontrol);
   DoubleParameter("GSTATCONVTOL",1.e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTATCURTOL",1.e-15,"Current Tolerance",&elchcontrol);
   IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);

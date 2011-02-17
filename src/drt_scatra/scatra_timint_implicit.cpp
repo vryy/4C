@@ -387,22 +387,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     // a safety check for the solver type
     if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
-        dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
+      dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
     frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
-    // conductivity must be stored for the galvanostatic condition in global variable
-    sigma_ = ComputeConductivity(); // every processor has to do this call
     if (myrank_==0)
     {
       cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
       cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<endl;
       cout<<"Constant F/RT                    = "<<frt_<<endl;
-      for (int k=0;k < numscal_;k++)
-      {
-        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma_[k]<<endl;
-      }
-      cout<<"Electrolyte conductivity (all species) = "<<sigma_[numscal_]<<endl<<endl;
     }
 
     // setup of magnetic field (always three(!) components per node)
@@ -414,7 +407,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       // fill it with values
       SetMagneticField(magnetfuncno);
     }
-
+  }
+  if(extraparams_->isSublist("ELCH CONTROL")) // did we get the elch sublist?
+  {
+    // conductivity must be stored for the galvanostatic condition in a global variable
+    sigma_ = ComputeConductivity(); // every processor has to do this call
+    if (myrank_==0)
+    {
+      for (int k=0;k < numscal_;k++)
+      {
+        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma_[k]<<endl;
+      }
+      cout<<"Electrolyte conductivity (all species) = "<<sigma_[numscal_]<<endl<<endl;
+    }
   }
 
   // sysmat might be singular (some modes are defined only up to a constant)
