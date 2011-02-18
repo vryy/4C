@@ -32,7 +32,7 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
     params_(params),
     output_(output)
 {
-  
+
   interface_.Setup(*fluiddis);
   fluid_.SetSurfaceSplitter(&interface_);
 
@@ -44,13 +44,13 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
   maps.push_back(interface_.OtherMap());
   maps.push_back(dbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
-  
+
   if (dirichletcond)
   {
     // mark all interface velocities as dirichlet values
     fluid_.AddDirichCond(interface_.FSICondMap());
   }
-  
+
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
   fluidxfluidboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(fluiddis_, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
@@ -58,7 +58,7 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
   {
     cout << "Empty fluidxfluidboundary discretization detected!" << endl;
   }
-  
+
   // Note: The nodal structure doesn't change, so we'll create the nodal maps in the constructor.
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map ffnoderowmap = *fluidxfluidboundarydis_->NodeRowMap();
@@ -75,15 +75,15 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
 
   const int err =  fluidxfluidboundarydis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
-  
+
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(fluiddis_, fluidxfluidboundarydis_);
   fluiddis_->Redistribute(*(fluiddis_->NodeRowMap()), *newcolnodemap);
-  
+
   DRT::UTILS::PrintParallelDistribution(*fluidxfluidboundarydis_);
 
   fluidxfluidboundaryoutput_ = rcp(new IO::DiscretizationWriter(fluidxfluidboundarydis_));
-  
-  // create fluid-xfluid-interface DOF vectors 
+
+  // create fluid-xfluid-interface DOF vectors
   fxfidispnp_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
   fxfivelnp_     = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true); // physical fluid velocity
   fxfitrueresnp_ = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
@@ -92,12 +92,12 @@ ADAPTER::FluidXFluidImpl::FluidXFluidImpl(
   fxfivelnm_   = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
   fxfiaccnp_   = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
   fxfiaccn_    = LINALG::CreateVector(*fluidxfluidboundarydis_->DofRowMap(),true);
-  
+
   PrepareFluidXFluidBoundaryDis();
   fluid_.PrepareFluidXFluidBoundaryDofset(fluidxfluidboundarydis_);
   fluid_.PrepareFluidXFluidBoundaryDis(fluidxfluidboundarydis_);
   fluid_.PrepareTimeLoop(fluidxfluidboundarydis_);
- 
+
 }
 
 
@@ -232,6 +232,7 @@ void ADAPTER::FluidXFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFluidImpl::NonlinearSolve()
 {
+  cout << "ADAPTER::FluidXFluidImpl::NonlinearSolve()" << endl;
   fluid_.NonlinearSolve(fluidxfluidboundarydis_);
 }
 
@@ -366,7 +367,7 @@ void ADAPTER::FluidXFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vect
 void ADAPTER::FluidXFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
-  
+
   // new grid velocity
   fluid_.UpdateGridv();
 }
@@ -453,7 +454,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidXFluidImpl::ExtractVelocityPart(
 ///*----------------------------------------------------------------------*/
 void ADAPTER::FluidXFluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno)
 {
-  fluid_.SetInitialFlowField(initfield,startfuncno);
+  fluid_.SetInitialFlowField(fluidxfluidboundarydis_,initfield,startfuncno);
   return;
 }
 
