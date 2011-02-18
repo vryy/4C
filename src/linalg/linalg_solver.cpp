@@ -1181,6 +1181,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       // override the default sweeps=2 with a default sweeps=1
       // individual level sweeps are set below
       mllist.set("smoother: sweeps",1);
+      // save memory if this is an issue, make ML use single precision
+      //mllist.set("low memory usage",true);
       switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
       {
         case 0:  mllist.set("aggregation: type","Uncoupled");  break;
