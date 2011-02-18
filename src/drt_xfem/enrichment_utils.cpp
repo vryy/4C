@@ -201,8 +201,8 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
   // compute enrichment values based on a level set field 'phi'
   const XFEM::ElementEnrichmentValues enrvals(ele, dofman, cell, phi);
 
-  LINALG::SerialDenseVector enr_funct(numparam);
-  LINALG::SerialDenseVector funct(numnode);
+  LINALG::SerialDenseVector enr_funct(numparam,true);
+  LINALG::SerialDenseVector funct(numnode,true);
 
   cellvalues.Zero();
   for (int ivertex = 0; ivertex < cell.NumNode(); ++ivertex)
@@ -232,10 +232,10 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
 #endif
 
     // shape functions and derivatives for nodal parameters (dofs)
-    enrvals.ComputeNormalShapeFunction(funct, gradphi,
-#ifdef COLLAPSE_FLAME
+    enrvals.ComputeNormalShapeFunction(funct,gradphi,
+//#ifdef COLLAPSE_FLAME
         normal,
-#endif
+//#endif
         shp);
 
     switch (field)

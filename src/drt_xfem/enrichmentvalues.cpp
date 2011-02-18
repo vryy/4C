@@ -187,7 +187,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
   const int nsd = 3; // dimension
   const int numnode = 8; // number of element nodes
 
-#ifndef SCALAR_ENR // TODO Name ändern
+#ifndef COMBUST_NORMAL_ENRICHMENT
 #ifndef ENR_VEL_JUMP_SCALAR
   if (interfacehandle_old_->ElementBisected(ele)) // compute jump and kink in bisected ele
   {
@@ -746,7 +746,7 @@ void XFEM::Enrichmentvalues::computeJumpEnrichmentValues(
 
       for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
       {
-#ifndef SCALAR_ENR // TODO name ändern
+#ifndef COMBUST_NORMAL_ENRICHMENT
 #ifndef ENR_VEL_JUMP_SCALAR
         for (int entry=0;entry<nsd+1;entry++)
           finalEnrichmentValues[ivector](entry) +=

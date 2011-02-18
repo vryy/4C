@@ -716,14 +716,13 @@ namespace XFEM
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
 
-
     template<class V, class M1, size_t numdof>
-    inline void ComputeNormalShapeFunction(
+    void ComputeNormalShapeFunction(
         const V& funct,
         const M1& egradphi,
-#ifdef COLLAPSE_FLAME
+//#ifdef COLLAPSE_FLAME
         const LINALG::Matrix<3,1>& normal,
-#endif
+//#endif
         XFEM::ApproxFuncNormalVector<0,numdof>& shp
     ) const
     {
@@ -817,15 +816,15 @@ namespace XFEM
     * 3. the enriched normal shape functions are computed
     */
     template<class V, class M1, class M2, size_t numdof>
-    inline void ComputeNormalShapeFunction(
+    void ComputeNormalShapeFunction(
         const V& funct,
         const M1& derxy,
         const M2& derxy2,
         const M1& egradphi,
-#ifdef COLLAPSE_FLAME
+//#ifdef COLLAPSE_FLAME
         const LINALG::Matrix<3,1>& normal,
         const LINALG::Matrix<3,1>& point,
-#endif
+//#endif
         XFEM::ApproxFuncNormalVector<2,numdof>& shp
     ) const
     {
