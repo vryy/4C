@@ -377,13 +377,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ExtractTempnp()
  | apply current displacements and velocities needed in TSI  dano 05/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::ApplyStructVariables(
-  Teuchos::RCP<Epetra_Vector> disp,
-  Teuchos::RCP<Epetra_Vector> vel
+  Teuchos::RCP<const Epetra_Vector> disp,
+  Teuchos::RCP<const Epetra_Vector> vel
   )
 {
   // pass current displacements and velocities to the thermo field
   thermo_->ApplyStructVariables(disp,vel);
 }
+
 
 /*----------------------------------------------------------------------*
  | evaluate the residual forces, use the last converged      dano 12/10 |

@@ -393,7 +393,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVelnp()
 /*----------------------------------------------------------------------*/
 /* apply current temperatures (FSI like)                     dano 03/10 */
 void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> temp
+  Teuchos::RCP<const Epetra_Vector> temp
   )
 {
   dserror("not implemented");

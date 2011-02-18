@@ -286,7 +286,7 @@ namespace ADAPTER {
     ///
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(
-      Teuchos::RCP<Epetra_Vector> temp
+      Teuchos::RCP<const Epetra_Vector> temp
       );
 
     //! specific method for iterative staggered partitioned TSI

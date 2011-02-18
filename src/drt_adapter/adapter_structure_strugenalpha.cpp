@@ -621,7 +621,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
  | Apply current temperature  (for TSI)                      dano 03/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::StructureGenAlpha::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> temp
+  Teuchos::RCP<const Epetra_Vector> temp
   )
 {
   // Play it save. In the first iteration everything is already set up

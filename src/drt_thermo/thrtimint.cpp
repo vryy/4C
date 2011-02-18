@@ -765,6 +765,11 @@ void THR::TimInt::ApplyForceExternalConv(
   // get load vector
   // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
+
+#ifdef CaroDebug
+  cout << "Prozessor Nummer: " << Comm().MyPID() << endl;
+#endif // CaroDebug
+
   discret_->EvaluateCondition(p,tang,Teuchos::null,fext,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 
@@ -907,8 +912,8 @@ void THR::TimInt::ApplyForceInternal(
  |  structure discretization                                            |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyStructVariables(
-  Teuchos::RCP<Epetra_Vector> disp,  ///< the current velocities
-  Teuchos::RCP<Epetra_Vector> vel  ///< the current velocities
+  Teuchos::RCP<const Epetra_Vector> disp,  ///< the current displacements
+  Teuchos::RCP<const Epetra_Vector> vel  ///< the current velocities
   )
 {
   disn_ = disp;

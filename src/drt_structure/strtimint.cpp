@@ -330,7 +330,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
            << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
 #endif // #ifdef CONTACTPSEUDO2D
-      
+
       if (probtype!="tsi")
         cout << RED << "WARNING: Contact and Meshtying are still experimental "
              << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
@@ -1197,7 +1197,7 @@ void STR::TimInt::Integrate()
 /*----------------------------------------------------------------------*/
 /* get the temperature from the temperature discretization   dano 03/10 */
 void STR::TimInt::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> temp  ///< the current temperature
+  Teuchos::RCP<const Epetra_Vector> temp  ///< the current temperature
   )
 {
   tempn_ = temp;

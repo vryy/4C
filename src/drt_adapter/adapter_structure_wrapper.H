@@ -105,7 +105,7 @@ namespace ADAPTER
                                           Teuchos::RCP<Epetra_Vector> ifluidvel)
     {  structure_->ApplyInterfaceRobinValue(iforce,ifluidvel); }
 
-    virtual void ApplyTemperatures(Teuchos::RCP<Epetra_Vector> temp)
+    virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp)
     { structure_->ApplyTemperatures(temp); }
     virtual void PreparePartitionStep()
     { structure_->PreparePartitionStep(); }

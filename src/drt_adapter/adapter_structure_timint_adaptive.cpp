@@ -361,7 +361,7 @@ void ADAPTER::StructureTimIntAda::Integrate()
 /*----------------------------------------------------------------------*/
 /* apply the current temperatures (FSI like)                 dano 03/10 */
 void ADAPTER::StructureTimIntAda::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> temp
+  Teuchos::RCP<const Epetra_Vector> temp
 )
 {
   dserror("not implemented");

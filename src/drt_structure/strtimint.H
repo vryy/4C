@@ -363,7 +363,7 @@ namespace STR
     //! Apply the current temperatures to the structure problem
     void ApplyTemperatures
     (
-      Teuchos::RCP<Epetra_Vector> temp  //!< current temperatures
+      Teuchos::RCP<const Epetra_Vector> temp  //!< current temperatures
     );
     //@}
 
@@ -658,7 +658,7 @@ namespace STR
                                         //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     // global coupling variables of the thermo field
-    Teuchos::RCP<Epetra_Vector> tempn_; //!< global temperatures
+    Teuchos::RCP<const Epetra_Vector> tempn_; //!< global temperatures
                                         //!< \f${T}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     //@}

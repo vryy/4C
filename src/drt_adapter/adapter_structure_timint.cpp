@@ -512,7 +512,7 @@ void ADAPTER::StructureTimIntImpl::Integrate()
 /*----------------------------------------------------------------------*/
 /* apply current temperatures (FSI like)                     dano 03/10 */
 void ADAPTER::StructureTimIntImpl::ApplyTemperatures(
-  Teuchos::RCP<Epetra_Vector> temp
+  Teuchos::RCP<const Epetra_Vector> temp
   )
 {
 /*

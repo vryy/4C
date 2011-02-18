@@ -300,11 +300,11 @@ namespace THR
     //! @name Thermo-structure-interaction specific methods
     //@{
     //! Apply current displacements and velocities to the thermo problem
-    void ApplyStructVariables
-    (
-      Teuchos::RCP<Epetra_Vector> disp,  //!< current displacements
-      Teuchos::RCP<Epetra_Vector> vel  //!< current velocities
-    );
+    void ApplyStructVariables(
+      Teuchos::RCP<const Epetra_Vector> disp,  //!< current displacements
+      Teuchos::RCP<const Epetra_Vector> vel  //!< current velocities
+      );
+
     //@}
 
     //! @name Attributes
