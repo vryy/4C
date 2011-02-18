@@ -31,7 +31,7 @@ void ShiftPointer(
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
 void *CCAMALLOC(
-    INT   size);
+    unsigned   size);
 
 /*----------------------------------------------------------------------*
  | redefinition of calloc DEBUG version                   m.gee 2/02    |

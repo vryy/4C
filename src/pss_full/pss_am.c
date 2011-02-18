@@ -88,7 +88,7 @@ if compiled with DEBUG define, it counts the allocated memory
 
 *----------------------------------------------------------------------*/
 #if defined(DEBUG) || defined(MEMDEBUG)
-void *CCAMALLOC(INT size)
+void *CCAMALLOC(unsigned size)
 {
 char *buf;
 
