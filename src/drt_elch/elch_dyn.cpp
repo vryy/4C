@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_ale/ale_resulttest.H"
 #if 0
 #include "../drt_io/io_gmsh.H"
@@ -69,6 +70,9 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& elchcontrol = DRT::Problem::Instance()->ELCHControlParams();
+
+  // print default parameters to screen
+  DRT::INPUT::PrintDefaultParameters(std::cout, elchcontrol);
 
   // access the scalar transport parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
