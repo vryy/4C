@@ -21,9 +21,9 @@ Maintainer: Florian Henke
 
 #include "combust3_sysmat.H"
 #include "combust3_sysmat_premixed_nitsche.H"
-#include "combust3_sysmat_premixed_nitsche_normal.H"
+//#include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
-#include "combust3_sysmat_premixed_stress_normal.H"
+//#include "combust3_sysmat_premixed_stress_normal.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_local_assembler.H"
