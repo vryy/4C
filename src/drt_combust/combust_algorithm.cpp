@@ -950,6 +950,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   // TODO just a first ordinary nonparallel error estimator
   // implement this parallel and for velocity if fgi-iter > 1 is used
 
+#if 0
 /* at the moment only the convergence of the g-function field is checked
  * to check the convergence of the fluid field, uncomment the corresponding lines
  */
@@ -1029,6 +1030,11 @@ bool COMBUST::Algorithm::NotConvergedFGI()
       }
     }
   }
+#endif
+
+  if (fgiter_ >= fgitermax_)
+    notconverged = false;
+
   return notconverged;
 }
 

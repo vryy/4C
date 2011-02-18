@@ -70,9 +70,6 @@ namespace COMBUST
 
   protected:
 
-    /// FG iteration number
-    int FGiter() const { return fgiter_; }
-
     /// reinitialize G-function
     void ReinitializeGfunc();
 

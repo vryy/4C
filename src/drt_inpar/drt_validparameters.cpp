@@ -2642,7 +2642,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",10.0,"Total simulation time",&combustcontrol);
   IntParameter("NUMSTEP",100,"Total number of timesteps",&combustcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&combustcontrol);
-  IntParameter("ITEMAX",10,"Total number of FG iterations",&combustcontrol);
+  IntParameter("ITEMAX",1,"Total number of FG iterations",&combustcontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
