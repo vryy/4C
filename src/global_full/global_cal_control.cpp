@@ -76,7 +76,7 @@ void ntacal()
 
     case prb_fluid_pm:
     case prb_fluid:
-      dyn_fluid_drt();
+      dyn_fluid_drt(genprob.restart);
       break;
     case prb_scatra:
       scatra_dyn(genprob.numff,genprob.numscatra,genprob.restart);

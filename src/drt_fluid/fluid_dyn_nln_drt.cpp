@@ -45,7 +45,7 @@ Maintainer: Peter Gamnitzer
  *        o stationary
  *
  *----------------------------------------------------------------------*/
-void dyn_fluid_drt()
+void dyn_fluid_drt(const int restart)
 {
   // create a communicator
 #ifdef PARALLEL
@@ -55,14 +55,13 @@ void dyn_fluid_drt()
 #endif
 
   // access to some parameter lists
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // create instance of fluid basis algorithm
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
   // read the restart information, set vectors and variables
-  const int restart = probtype.get<int>("RESTART");
   if (restart) fluidalgo->FluidField().ReadRestart(restart);
 
   // run the simulation
