@@ -96,10 +96,10 @@ void dyn_ale_drt()
   //int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
   ALE::AleLinear ale(actdis, solver, params, output, false, true);
 
-  if (probtype.get<int>("RESTART"))
+  if (genprob.restart)
   {
     // read the restart information, set vectors and variables
-    ale.ReadRestart(probtype.get<int>("RESTART"));
+    ale.ReadRestart(genprob.restart);
   }
 
   ale.BuildSystemMatrix();
