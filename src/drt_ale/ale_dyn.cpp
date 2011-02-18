@@ -76,7 +76,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
 
   // -------------------------------------------------------------------

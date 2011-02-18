@@ -920,6 +920,14 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     phinp_    ->Norm2(&connorm_L2);
   }
 
+  if (std::isnan(incconnorm_L2) or
+      std::isnan(incpotnorm_L2) or
+      std::isnan(connorm_L2) or
+      std::isnan(potnorm_L2) or
+      std::isnan(conresnorm) or
+      std::isnan(potresnorm))
+    dserror("calculated vector norm is NaN.");
+
   // care for the case that nothing really happens in the concentration
   // or potential field
   if (connorm_L2 < 1e-5)
