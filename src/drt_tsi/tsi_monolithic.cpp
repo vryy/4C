@@ -57,10 +57,6 @@ TSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
     dserror("unexpected dof sets in thermo field");
   if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
     dserror("unexpected dof sets in structure field");
-
-  // now build the matrices again and consider dependencies to 2nd field
-  ThermoField().TSIMatrix();
-  StructureField().TSIMatrix();
 }
 
 
@@ -134,7 +130,7 @@ void TSI::MonolithicBase::Output()
   output->WriteVector("temperature",temp);
 
   ThermoField().Output();
-}
+} // MonolithicBase::Output()
 
 
 
@@ -155,6 +151,14 @@ TSI::Monolithic::Monolithic(Epetra_Comm& comm)
     = Teuchos::rcp(new Teuchos::ParameterList());
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   errfile_ = xparams->get<FILE*>("err file");
+
+  // if structure field is quasi-static --> CalcVelocity
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+  // major switch to different time integrators
+  quasistatic_
+    = Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")
+        ==INPAR::STR::dyna_statics;
 }
 
 /*----------------------------------------------------------------------*
@@ -169,45 +173,15 @@ void TSI::Monolithic::TimeLoop()
   // time loop
   while (NotFinished())
   {
-    // counter and print header
-    // predict solution of both field (call the adapter)
-    PrepareTimeStep();
-
     // calculate initial linear system at current position
     // This initializes the field algorithms and creates the first linear
     // systems.
+    // coupling parameters must be passed to the fields
     Evaluate(Teuchos::null); // pass null vector as unknown increments
 
-    // get initial guess
-    // The initial system is there, so we can happily extract the
-    // initial guess. (The Dirichlet conditions are already build in!)
-    // create full monolithic stepinc vector
-    Teuchos::RCP<Epetra_Vector> initial_guess
-      = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
-    InitialGuess(initial_guess);
-
-    // create the linear system
-    // \f$J(x_i) \Delta x_i = - R(x_i)\f$
-    // create the systemmatrix
-    SetupSystemMatrix();
-
-    // create full monolithic rhs vector
-    SetupRHS();
-
-    // incremental solution vector with length of all TSI dofs
-    timestepincn_ = LINALG::CreateVector(*DofRowMap(), true);
-    iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-
-    // create the solver
-    // get UMFPACK...
-    Teuchos::ParameterList solverparams = DRT::Problem::Instance()->ThermalSolverParams();
-
-    solver_ = rcp(new LINALG::Solver(
-                        solverparams,
-                        Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle()
-                        )
-                    );
+    // counter and print header
+    // predict solution of both field (call the adapter)
+    PrepareTimeStep();
 
     // Newton-Raphson iteration
     NewtonFull();
@@ -218,123 +192,13 @@ void TSI::Monolithic::TimeLoop()
     // write output to screen and files
     Output();
 
-  } // time loop
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate the single fields                                dano 11/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
-
-  // displacement and temperature incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> tx;
-
-  // if an increment vector exists
-  if (x!=Teuchos::null)
-  {
-    // extract displacement sx and temperature tx incremental vector of global
-    // unknown incremental vector x
-    ExtractFieldVectors(x,sx,tx);
-  }
-  // else(x=Teuchos::null): initialize the system
-
-  // call all elements and assemble rhs and matrices
-  cout << "\nEvaluate elements\n" << endl;
-
-  // structure Evaluate (builds tangent, residual and applies DBC)
-  {
-    Epetra_Time timerstructure(Comm());
-    // Monolithic TSI accesses the linearised structure problem:
-    //   UpdaterIterIncrementally(sx),
-    //   EvaluateForceStiffResidual()
-    //   PrepareSystemForNewtonSolve()
-    StructureField().Evaluate(sx);
-    cout << "structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
-  }
-
-  // thermo Evaluate (builds tangent, residual and applies DBC)
-  {
-    Epetra_Time timerthermo(Comm());
-    // monolithic TSI accesses the linearised thermo problem
-    //   UpdateIterIncrementally(tx),
-    //   EvaluateRhsTangResidual() and
-    //   PrepareSystemForNewtonSolve()
-    ThermoField().Evaluate(tx);
-    cout << "thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
-
-    // apply current displacement increments to thermo
-    if (sx!=Teuchos::null)
-    {
-//      Teuchos::RCP<const Epetra_Vector> veln = CalcVelocity(sx);
-//      cout << "veln" << *veln << endl;
-//      ThermoField().ApplyStructVariables(sx,veln);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | extract field vectors for calling Evaluate() of the       dano 11/10 |
- | single fields                                                        |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::ExtractFieldVectors(
-  Teuchos::RCP<const Epetra_Vector> x,
-  Teuchos::RCP<const Epetra_Vector>& sx,
-  Teuchos::RCP<const Epetra_Vector>& tx
-  )
-{
-  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::ExtractFieldVectors");
-
-  // process structure unknowns of the first field
-  sx = Extractor().ExtractVector(x,0);
-
-  // process thermo unknowns of the second field
-  tx = Extractor().ExtractVector(x,1);
-
-}
-
-
-/*----------------------------------------------------------------------*
- | initial guess of the displacements/temperatures           dano 11/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::InitialGuess");
-
-  // InitalGuess() is called of the single fields and results are put in TSI
-  // increment vector ig
-  SetupVector(
-    *ig,
-    StructureField().InitialGuess(),
-    ThermoField().InitialGuess()
-    );
-}
-
-
-/*----------------------------------------------------------------------*
- | setup vector of the structure and thermo field            dano 11/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::SetupVector(
-  Epetra_Vector &f,
-  Teuchos::RCP<const Epetra_Vector> sv,
-  Teuchos::RCP<const Epetra_Vector> tv
-  )
-{
-  // extract dofs of the two fields
-  // and put the structural/thermal field vector into the global vector f
-  // noticing the block number
-  Extractor().InsertVector(*sv,0,f);
-  Extractor().InsertVector(*tv,1,f);
+  }  // timeloop
 }
 
 
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration               dano 10/10 |
- | in tsi_algorithm: NewtonFull()                               |
+ | in tsi_algorithm: NewtonFull()                                       |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::NewtonFull()
 {
@@ -344,12 +208,6 @@ void TSI::Monolithic::NewtonFull()
   // the specific time integration has set the following
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
-
-  // check whether we have a sanely filled tangent matrix
-  if (not systemmatrix_->Filled())
-  {
-    dserror("Effective tangent matrix must be filled here");
-  }
 
   // time parameters
   // call the TSI parameter list
@@ -370,14 +228,50 @@ void TSI::Monolithic::NewtonFull()
 
   // initialise equilibrium loop
   iter_ = 1;
-  rhs_->Norm2(&normrhs_);
-  iterinc_->Norm2(&norminc_);
   Epetra_Time timerthermo(Comm());
   timerthermo.ResetStartTime();
+
+  // incremental solution vector with length of all TSI dofs
+  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
 
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
+    // compute residual forces #rhs_ and tangent #tang_
+    // whose components are globally oriented
+    // build linear system stiffness matrix and rhs/force residual for each
+    // field, here e.g. for structure field: field want the iteration increment
+    // 1.) Update(iterinc_),
+    // 2.) EvaluateForceStiffResidual(),
+    // 3.) PrepareSystemForNewtonSolve()
+    Evaluate(iterinc_);
+
+    // create the linear system
+    // \f$J(x_i) \Delta x_i = - R(x_i)\f$
+    // create the systemmatrix
+    SetupSystemMatrix();
+
+    // check whether we have a sanely filled tangent matrix
+    if (not systemmatrix_->Filled())
+    {
+      dserror("Effective tangent matrix must be filled here");
+    }
+
+    // create full monolithic rhs vector
+    SetupRHS();
+
+    // create the solver
+    // get UMFPACK...
+    Teuchos::ParameterList solverparams
+      = DRT::Problem::Instance()->ThermalSolverParams();
+
+    solver_ = rcp(new LINALG::Solver(
+                        solverparams,
+                        Comm(),
+                        DRT::Problem::Instance()->ErrorFile()->Handle()
+                        )
+                  );
+
     // make negative residual not necessary: rhs_ is yet TSI negative
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
 
@@ -401,45 +295,20 @@ void TSI::Monolithic::NewtonFull()
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
-    // mere blockmatrix to SparseMatrix and solve --> very expensive, but ok for
-    // development of new code 29.11.10
+    // mere blockmatrix to SparseMatrix and solve
+    // --> very expensive, but ok for development of new code 29.11.10
     Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
 
     // standard solver call
     solver_->Solve(m->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
+    cout << " solved" << endl;
+
     // reset solver tolerance
     solver_->ResetTolerance();
 
     //-------------------------------------- update configuration values
-    // update end-point temperatures etc
-    NewtonUpdate();
-
-    // compute residual forces #rhs_ and tangent #tang_
-    // whose components are globally oriented
-    // build linear system stiffness matrix and rhs/force residual for each
-    // field, here e.g. for structure field
-    // 1.) Update(timestepincn_),
-    // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve()
-    Evaluate(timestepincn_);
-
-//    // blank residual at DOFs on Dirichlet BC,
-//    // rhs_ does not contain values on dof with DBC
-//    // like in FSI XFem
-//    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*DofRowMap(), true);
-//    // iterinc_: increment vector of unknowns,
-//    // tmp: rhs,
-//    // zeros_: prescribe zeros,
-//    // CombinedDBCMap(): unique map of all dofs that should be constrained:
-//    // --> constrain the dof with DBC
-//    LINALG::ApplyDirichlettoSystem(iterinc_, tmp, zeros_, *CombinedDBCMap());
-
-//    // extract reaction forces
-//    // reactions are negative to balance residual on DBC
-//    freact_->Update(-1.0, *rhs_, 0.0);
-//    blockrowdofmap_.InsertOtherVector(blockrowdofmap_.ExtractOtherVector(zeros_), freact_);
-//
-//    blockrowdofmap_.InsertCondVector(blockrowdofmap_.ExtractCondVector(zeros_), rhs_);
+    // update end-point temperatures etc.
+//    NewtonUpdate();
 
     // build residual force norm
     // for now use for simplicity only L2/Euclidian norm
@@ -472,7 +341,121 @@ void TSI::Monolithic::NewtonFull()
     PrintNewtonConv();
   }
 
-}  // NewtonFull
+}  // NewtonFull()
+
+
+/*----------------------------------------------------------------------*
+ | evaluate the single fields                                dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
+
+  // displacement and temperature incremental vector
+  Teuchos::RCP<const Epetra_Vector> sx;
+  Teuchos::RCP<const Epetra_Vector> tx;
+
+  // if an increment vector exists
+  if (x!=Teuchos::null)
+  {
+    // extract displacement sx and temperature tx incremental vector of global
+    // unknown incremental vector x
+    ExtractFieldVectors(x,sx,tx);
+  }
+  // else(x=Teuchos::null): initialize the system
+
+  // call all elements and assemble rhs and matrices
+  cout << "\nEvaluate elements\n" << endl;
+
+  // structure Evaluate (builds tangent, residual and applies DBC)
+  {
+    Epetra_Time timerstructure(Comm());
+
+    // apply current temperature increments to structure
+    StructureField().ApplyTemperatures(ThermoField().Tempnp());
+
+#ifdef TSIASOUTPUT
+    cout << "T_n+1 inserted in STR field\n" << *(ThermoField().Tempnp()) << endl;
+#endif // TSIASOUTPUT
+
+    // Monolithic TSI accesses the linearised structure problem:
+    //   UpdaterIterIncrementally(sx),
+    //   EvaluateForceStiffResidual()
+    //   PrepareSystemForNewtonSolve()
+    StructureField().Evaluate(sx);
+    cout << "structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  }
+
+  // thermo Evaluate (builds tangent, residual and applies DBC)
+  {
+    Epetra_Time timerthermo(Comm());
+
+    // apply current displacements and velocities to the thermo field
+    Teuchos::RCP<const Epetra_Vector> velnp;
+    if (quasistatic_)
+    {
+      // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
+      velnp = CalcVelocity(StructureField().Dispnp());
+    }
+    else
+    {
+      velnp = StructureField().ExtractVelnp();
+    }
+    // pass the structural values to the thermo field
+    ThermoField().ApplyStructVariables(StructureField().Dispnp(),velnp);
+
+#ifdef TSIASOUTPUT
+    cout << "d_n+1 inserted in THR field\n" << *(StructureField().Dispnp()) << endl;
+    cout << "v_n+1\n" << *velnp << endl;
+#endif // TSIASOUTPUT
+
+    // monolithic TSI accesses the linearised thermo problem
+    //   UpdateIterIncrementally(tx),
+    //   EvaluateRhsTangResidual() and
+    //   PrepareSystemForNewtonSolve()
+    ThermoField().Evaluate(tx);
+    cout << "thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+  }
+}  // Evaluate()
+
+
+/*----------------------------------------------------------------------*
+ | extract field vectors for calling Evaluate() of the       dano 11/10 |
+ | single fields                                                        |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::ExtractFieldVectors(
+  Teuchos::RCP<const Epetra_Vector> x,
+  Teuchos::RCP<const Epetra_Vector>& sx,
+  Teuchos::RCP<const Epetra_Vector>& tx
+  )
+{
+  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::ExtractFieldVectors");
+
+  // process structure unknowns of the first field
+  sx = Extractor().ExtractVector(x,0);
+
+  // process thermo unknowns of the second field
+  tx = Extractor().ExtractVector(x,1);
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate velocities                                      dano 12/10 |
+ | like InterfaceVelocity(disp) in FSI::DirichletNeumann                |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> TSI::Monolithic::CalcVelocity(
+  Teuchos::RCP<const Epetra_Vector> sx
+  )
+{
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  // copy D_n onto V_n+1
+  vel = rcp(new Epetra_Vector( *(StructureField().ExtractDispn()) ) );
+  // calculate velocity with timestep Dt()
+  //  V_n+1^k = (D_n+1^k - D_n) / Dt
+  vel->Update(1./Dt(), *sx, -1./Dt());
+
+  return vel;
+}  // CalcVelocity()
 
 
 /*----------------------------------------------------------------------*
@@ -495,7 +478,7 @@ void TSI::Monolithic::SetupSystem()
 
   SetDofRowMaps(vecSpaces);
 
-} // SetupSystem()
+}  // SetupSystem()
 
 
 /*----------------------------------------------------------------------*
@@ -507,27 +490,6 @@ void TSI::Monolithic::SetDofRowMaps(
 {
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap,maps);
-}
-
-
-/*----------------------------------------------------------------------*
- | setup RHS (like fsimon)                                   dano 11/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::SetupRHS()
-{
-  cout << "TSI::Monolithic::SetupRHS()" << endl;
-  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
-
-  // create full monolithic rhs vector
-  rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
-
-  // fill the TSI rhs vector rhs_ with the single field rhss
-  SetupVector(
-    *rhs_,
-    StructureField().RHS(),
-    ThermoField().RHS()
-    );
-
 }
 
 
@@ -591,6 +553,62 @@ void TSI::Monolithic::SetupSystemMatrix()
 
 
 /*----------------------------------------------------------------------*
+ | setup RHS (like fsimon)                                   dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::SetupRHS()
+{
+  cout << "TSI::Monolithic::SetupRHS()" << endl;
+  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
+
+  // create full monolithic rhs vector
+  rhs_ = rcp(new Epetra_Vector(*DofRowMap(), true));
+
+  // fill the TSI rhs vector rhs_ with the single field rhss
+  SetupVector(
+    *rhs_,
+    StructureField().RHS(),
+    ThermoField().RHS()
+    );
+}  // SetupRHS()
+
+
+/*----------------------------------------------------------------------*
+ | initial guess of the displacements/temperatures           dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::InitialGuess");
+
+  // InitalGuess() is called of the single fields and results are put in TSI
+  // increment vector ig
+  SetupVector(
+    *ig,
+    // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
+    StructureField().InitialGuess(),
+    // returns residual temperatures or iterative thermal increment - tempi_
+    ThermoField().InitialGuess()
+    );
+} // InitialGuess()
+
+
+/*----------------------------------------------------------------------*
+ | setup vector of the structure and thermo field            dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::SetupVector(
+  Epetra_Vector &f,
+  Teuchos::RCP<const Epetra_Vector> sv,
+  Teuchos::RCP<const Epetra_Vector> tv
+  )
+{
+  // extract dofs of the two fields
+  // and put the structural/thermal field vector into the global vector f
+  // noticing the block number
+  Extractor().InsertVector(*sv,0,f);
+  Extractor().InsertVector(*tv,1,f);
+}
+
+
+/*----------------------------------------------------------------------*
  | check convergence of Newton iteration (public)            dano 11/10 |
  *----------------------------------------------------------------------*/
 bool TSI::Monolithic::Converged()
@@ -629,27 +647,7 @@ bool TSI::Monolithic::Converged()
   // return things
   return conv;
 
-} // Converged()
-
-
-/*----------------------------------------------------------------------*
- | combined DBC map                                          dano 11/10 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
-{
-  // the field condmaps contain the dofs with prescribed DBCs
-  // structural DBCs
-  const Teuchos::RCP<const Epetra_Map >& strcondmap
-    = StructureField().GetDBCMapExtractor()->CondMap();
-  // thermal DBCs
-  const Teuchos::RCP<const Epetra_Map >& thrcondmap
-    = ThermoField().GetDBCMapExtractor()->CondMap();
-
-  // condmap is TSI map containing all dofs with prescribes DBCs
-  Teuchos::RCP<Epetra_Map> condmap
-    = LINALG::MergeMap(strcondmap, thrcondmap, false);
-  return condmap;
-}
+}  // Converged()
 
 
 /*----------------------------------------------------------------------*
@@ -658,12 +656,12 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::NewtonUpdate()
 {
-  //! new end-point temperatures
-  //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
-  timestepincn_->Update(1.0, *iterinc_, 1.0);
-
-  //! bye
-  return;
+//  //! new end-point temperatures
+//  //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
+//  timestepincn_->Update(1.0, *iterinc_, 1.0);
+//
+//  //! bye
+//  return;
 }
 
 
@@ -692,7 +690,7 @@ void TSI::Monolithic::PrintNewtonIter()
 
   // see you
   return;
-}
+}  // PrintNewtonIter()
 
 
 /*----------------------------------------------------------------------*
@@ -743,7 +741,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}
+}  // PrintNewtonIterHeader()
 
 
 /*----------------------------------------------------------------------*
@@ -808,26 +806,6 @@ void TSI::Monolithic::PrintNewtonConv()
 {
   // somebody did the door
   return;
-}
-
-// TODO: Check in TSI Partitioned declared as const.!
-/*----------------------------------------------------------------------*
- | calculate velocities                                      dano 12/10 |
- | like InterfaceVelocity(disp) in FSI::DirichletNeumann                |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> TSI::Monolithic::CalcVelocity(
-  Teuchos::RCP<const Epetra_Vector> dispnp
-  )
-{
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
-  // copy D_n onto V_n+1
-  vel = rcp(new Epetra_Vector( *(StructureField().ExtractDispn()) ) );
-
-  // calculate velocity with timestep Dt()
-  //  V_n+1 = (D_n+1 - D_n) / Dt
-  vel->Update(1./Dt(), *dispnp, -1./Dt());
-
-  return vel;
 }
 
 

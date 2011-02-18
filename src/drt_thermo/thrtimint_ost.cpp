@@ -264,6 +264,7 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
   tempn_->Update(1.0, *tempi_, 1.0);
 
   // new end-point temperature rates
+  // aux = 1/(theta . Dt) T_n+1^k+1 - 1/(theta . Dt) T_n+1^k - (1-theta)/theta T'_n+1^k
   aux->Update(1.0/(theta_*(*dt_)[0]), *tempn_,
                -1.0/(theta_*(*dt_)[0]), *(*temp_)(0),
                0.0);

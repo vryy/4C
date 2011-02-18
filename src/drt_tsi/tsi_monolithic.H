@@ -114,7 +114,6 @@ namespace TSI
   public:
     explicit Monolithic(Epetra_Comm& comm);
 
-    ///
     /*! do the setup for the monolithic system
 
     <pre>
@@ -147,46 +146,47 @@ namespace TSI
 
     //@}
 
-    /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
+    /// evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
       Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
       );
 
-    /// Extract initial guess from fields
+    /// extract initial guess from fields
+    //! returns \f$\Delta x_{n+1}^{<k>}\f$
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
-    //! Is convergence reached of iterative solution technique?
-    //! Keep your fingers crossed...
+    //! is convergence reached of iterative solution technique?
+    //! keep your fingers crossed...
     //! \author lw  \date 12/07
     bool Converged();
 
-    /// Outer Iteration loop
+    /// outer iteration loop
     void NewtonFull();
 
     //! @name Updates
     //@{
 
-    //! Update iteration
+    //! update iteration
     void NewtonUpdate();
 
     //@}
 
     //! @name Output
 
-    //! Print to screen information about residual forces and displacements
+    //! print to screen information about residual forces and displacements
     //! \author lw (originally) \date 12/07
     void PrintNewtonIter();
 
-    //! Contains text to PrintNewtonIter
+    //! contains text to PrintNewtonIter
     //! \author lw (originally) \date 12/07
     void PrintNewtonIterText(
       FILE* ofile  //!< output file handle
       );
 
-    //! Contains header to PrintNewtonIter
+    //! contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
     void PrintNewtonIterHeader(
       FILE* ofile  //!< output file handle
@@ -231,9 +231,6 @@ namespace TSI
     {
       return blockrowdofmap_.FullMap();
     }
-
-    /// combined DBC map
-    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     /// set full monolithic dof row map
     /*!
@@ -311,12 +308,12 @@ namespace TSI
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
-    Teuchos::RCP<Epetra_Vector> timestepincn_;  //!< increment between timestep n and n+1,
-                                                //!< tempn_ in THR, the new solution
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
-
     //@}
+
+    /// quasi-static solution of the mechancial equation
+    bool quasistatic_;
 
   }; // Monolithic
 

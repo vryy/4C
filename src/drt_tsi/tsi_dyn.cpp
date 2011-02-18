@@ -120,7 +120,7 @@ void tsi_dyn_drt()
       tsi->ReadRestart(genprob.restart);
     }
 
-    // now do the coupling setup an create the combined dofmap
+    // now do the coupling setup and create the combined dofmap
     tsi->SetupSystem();
 
     // solve the whole tsi problem

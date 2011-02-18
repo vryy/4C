@@ -40,6 +40,8 @@ Maintainer: Caroline Danowski
 //#define VISUALIZE_ELEMENT_DATA
 #include "thermo_element.H" // only for visualization of element data
 
+#include "../drt_tsi/tsi_defines.H"
+
 /*----------------------------------------------------------------------*
  | general problem data                                     m.gee 06/01 |
  | global variable GENPROB genprob is defined in global_control.c       |
@@ -706,6 +708,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
   }
 
+#ifdef TSIASOUTPUT
+  cout << "etang end of Evaluate thermo_ele_impl\n" << etang << endl;
+  cout << "efint end of Evaluate thermo_ele_impl\n" << efint << endl;
+  cout << "etemp_ end of Evaluate thermo_ele_impl\n" << etemp_ << endl;
+#endif // TSIASOUTPUT
+
   return 0;
 } // Evaluate for multiple dofsets
 
@@ -864,6 +872,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     /* =======================================================================*/
    }/* ================================================== end of Loop over GP */
     /* =======================================================================*/
+
+#ifdef TSIASOUTPUT
+  cout << "etemp_\n" << etemp_ <<  endl;
+  if (eheatflux != NULL)
+  {
+    cout << "eheatflux\n" << eheatflux << *eheatflux<< endl;
+  }
+#endif // TSIASOUTPUT
+
+
 } // CalculateFintCondCapa
 
 
@@ -890,6 +908,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
   // START OF COUPLING
   LINALG::Matrix<6,1> ctemp(true);
+#ifdef COUPLEINITTEMPERATURE
+  double thetainit;
+#endif // COUPLEINITTEMPERATURE
+
   {
     // access the structure discretization, needed later for calling the solid
     // material and getting its tangent
@@ -913,6 +935,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
         = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
 
       thrstvk->SetupCthermo(ctemp);
+
+      //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
+#ifdef COUPLEINITTEMPERATURE
+      thetainit = thrstvk->InitTemp();
+#endif // COUPLEINITTEMPERATURE
     }
   }
   // END OF COUPLING
@@ -928,6 +955,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
     edisp(i,0) = disp[i+0];
     evel(i,0) = vel[i+0];
   }
+
+#ifdef TSIASOUTPUT
+  cout << "CouplCalculate evel\n" << evel << endl;
+  cout << "edisp\n" << edisp << endl;
+#endif // TSIASOUTPUT
 
   // build the deformation gradient w.r.t material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(true);
@@ -1018,14 +1050,27 @@ void DRT::ELEMENTS::TemperImpl<distype>::CouplCalculateFintCondCapa(
 
       // build the product of the shapefunctions and element temperatures
       LINALG::Matrix<1,1> nt(false);
+
+#ifdef COUPLEINITTEMPERATURE
+      // for TSI validation/verification: change nt to Theta_0 here!!!! 14.01.11
+      if (ele->Id()==0)
+      {
+        cout << "ele Id= " << ele->Id() << endl;
+        cout << "coupling term in thermo field with T_0" << endl;
+      }
+      nt.Scale(thetainit);
+#endif // #ifdef COUPLEINITTEMPERATURE
+#ifndef COUPLEINITTEMPERATURE
       nt.MultiplyTN(funct_,etemp_);
+#endif // #ifndef COUPLEINITTEMPERATURE
 
       // update of the internal "force" vector
       efint->Multiply(fac_,ncBv,nt,1.0);
 
       // update conductivity matrix (with displacement dependent term)
-      // k^e = k^e + ( N^T . (-m * I) . (B_d . d') . N ) * detJ * w(gp)
+      // k^e = k^e - ( N^T . (-m * I) . (B_d . d') . N ) * detJ * w(gp)
       // with C_mat = (-k)*I
+      // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
       etang->MultiplyNT(fac_,ncBv,funct_,1.0);
     }
 
@@ -1281,10 +1326,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   }
 
   // extrapolation
-  LINALG::Matrix<nquad_,nsd_> ndheatflux;  //!<  objective nodal heatflux
-  LINALG::Matrix<nquad_,nsd_> gpheatflux2(gpheatflux);  //!< copy the heatflux at the Gauss point
+  LINALG::Matrix<nquad_,nsd_> ndheatflux;  //  objective nodal heatflux
+  LINALG::Matrix<nquad_,nsd_> gpheatflux2(gpheatflux);  // copy the heatflux at the Gauss point
   {
-    LINALG::FixedSizeSerialDenseSolver<nquad_,nquad_,nsd_> solver;  //!< must be quadratic
+    LINALG::FixedSizeSerialDenseSolver<nquad_,nquad_,nsd_> solver;  // must be quadratic
     solver.SetMatrix(shpfctatgps);
     solver.SetVectors(ndheatflux,gpheatflux2);
     solver.Solve();

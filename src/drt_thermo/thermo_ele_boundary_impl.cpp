@@ -35,6 +35,8 @@ Maintainer: Caroline Danowski
 
 #include "../drt_inpar/inpar_thermo.H"
 
+#include "../drt_tsi/tsi_defines.H"
+
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
@@ -251,14 +253,18 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     else
       dserror("Unknown type of convection boundary condition");
 
-# if 0
+#ifdef TSIASOUTPUT
+    if (ele->Id()==0)
+    {
+      cout << "ele Id= " << ele->Id() << endl;
       // print all parameters read from the current condition
       cout<<"type of boundary condition  = "<<*tempstate<<endl;
       cout<<"heat convection coefficient = "<<coeff<<endl;
       cout<<"surrounding temperature     = "<<surtemp<<endl;
       cout<<"time curve                  = "<<curvenum<<endl;
       cout<<"total time                  = "<<time<<endl;
-#endif
+    }
+#endif // TSIASOUTPUT
 
     // and now check if there is a convection heat transfer boundary condition
     EvaluateThermoConvection(
@@ -374,6 +380,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
   }
+  // surface heat convection boundary condition
   else if (action == "calc_thermo_fextconvection")
   {
     dserror("EvaluateCondition is used with the location vector lm");

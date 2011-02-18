@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
+#include "tsi_defines.H"
 #include "../drt_inpar/inpar_tsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -117,22 +118,20 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
       dserror("unexpected dof sets in thermo field");
     if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
       dserror("unexpected dof sets in structure field");
-
-    // now build the matrices again and consider dependencies to 2nd field
-    ThermoField().TSIMatrix();
-    StructureField().TSIMatrix();
   }
 
-//    // now check if the two dofmaps are available and then bye bye
-//    cout << "structure dofmap" << endl;
-//    cout << *StructureField().DofRowMap(0) << endl;
-//    cout << "thermo dofmap" << endl;
-//    cout << *StructureField().DofRowMap(1) << endl;
-//    cout << "thermo dofmap" << endl;
-//    cout << *ThermoField().DofRowMap(0) << endl;
-//    cout << "structure dofmap" << endl;
-//    cout << *ThermoField().DofRowMap(1) << endl;
+#ifdef TSIASOUTPUT
+    // now check if the two dofmaps are available and then bye bye
+    cout << "structure dofmap" << endl;
+    cout << *StructureField().DofRowMap(0) << endl;
+    cout << "thermo dofmap" << endl;
+    cout << *StructureField().DofRowMap(1) << endl;
+    cout << "thermo dofmap" << endl;
+    cout << *ThermoField().DofRowMap(0) << endl;
+    cout << "structure dofmap" << endl;
+    cout << *ThermoField().DofRowMap(1) << endl;
 //    exit(0);
+#endif // TSIASOUTPUT
 
 }
 
@@ -451,6 +450,7 @@ void TSI::Algorithm::TimeLoopOneWay()
   }  // temperature coupling
 
 }  // TSI::Algorithm::TimeLoopOneWay()
+
 
 /*----------------------------------------------------------------------*
  | One-way coupling between the fields                       dano 09/10 |
