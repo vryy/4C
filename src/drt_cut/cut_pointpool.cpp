@@ -4,10 +4,10 @@
 
 GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {
-  Teuchos::RCP<Point> p = GetPoint( x, cut_edge, cut_side, tolerance );
-  if ( p==Teuchos::null )
+  Point * p = GetPoint( x, cut_edge, cut_side, tolerance );
+  if ( p==NULL )
   {
-    p = CreatePoint( points_.size(), x, cut_edge, cut_side );
+    p = &*CreatePoint( points_.size(), x, cut_edge, cut_side );
 #if 1
     if ( points_.size()%1000 == 0 )
     {
@@ -15,17 +15,17 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_e
     }
 #endif
   }
-  return &*p;
+  return p;
 }
 
-Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
+GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {
   if ( not IsLeaf() )
   {
     for ( int i=0; i<8; ++i )
     {
-      Teuchos::RCP<Point> p = nodes_[i]->GetPoint( x, cut_edge, cut_side, tolerance );
-      if ( p!=Teuchos::null )
+      Point * p = nodes_[i]->GetPoint( x, cut_edge, cut_side, tolerance );
+      if ( p!=NULL )
       {
         return p;
       }
@@ -54,11 +54,11 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::GetPoint( const double * x,
         {
           p->AddSide( cut_side );
         }
-        return *i;
+        return p;
       }
     }
   }
-  return Teuchos::null;
+  return NULL;
 }
 
 Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side )

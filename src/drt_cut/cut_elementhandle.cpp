@@ -6,16 +6,134 @@
 #include "cut_mesh.H"
 #include "cut_node.H"
 #include "cut_position.H"
+#include "cut_integrationcell.H"
+#include "cut_volumecell.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+
+template <DRT::Element::DiscretizationType distype>
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
+{
+  const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  LINALG::Matrix<3, nen> xyze( ic->Coordinates().A(), true );
+  LINALG::Matrix<3, nen> xie;
+
+  const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
+  if ( cpoints.size() != nen )
+    throw std::runtime_error( "non-matching number of points" );
+
+  for ( unsigned i=0; i<nen; ++i )
+  {
+    GEO::CUT::Point * p = cpoints[i];
+    const LINALG::Matrix<3,1> & xi = LocalCoordinates( p );
+    std::copy( xi.A(), xi.A()+3, &xie( 0, i ) );
+  }
+
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
+    DRT::UTILS::GaussIntegration::CreateProjected<distype>( xyze, xie, ic->CubatureDegree( Shape() ) );
+  return gp;
+}
+
+void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::vector<DRT::UTILS::GaussIntegration> & intpoints )
+{
+  std::set<GEO::CUT::VolumeCell*> cells;
+  GetVolumeCells( cells );
+
+  intpoints.clear();
+  intpoints.reserve( cells.size() );
+
+  for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::VolumeCell * vc = *i;
+
+    const std::set<GEO::CUT::IntegrationCell*> & cells = vc->IntegrationCells();
+    for ( std::set<GEO::CUT::IntegrationCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::CUT::IntegrationCell * ic = *i;
+      switch ( ic->Shape() )
+      {
+      case DRT::Element::hex8:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      case DRT::Element::wedge6:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( ic );
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( ic );
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      default:
+        throw std::runtime_error( "unsupported integration cell type" );
+      }
+    }
+  }
+
+#if 1
+
+  // assume normal integration of element
+  DRT::UTILS::GaussIntegration element_intpoints( Shape() );
+
+  // see if we benefit from a "negative" integartion
+  int numgps = element_intpoints.NumPoints();
+  for ( std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin(); i!=intpoints.end(); ++i )
+  {
+    const DRT::UTILS::GaussIntegration & gi = *i;
+    numgps += gi.NumPoints();
+  }
+
+  for ( std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin(); i!=intpoints.end(); ++i )
+  {
+    DRT::UTILS::GaussIntegration & gi = *i;
+    if ( gi.NumPoints() > numgps / 2 )
+    {
+      // Here we have the expensive bastard.
+      // Exchange gauss points. Use all other points instead.
+
+      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( intpoints.size() ) );
+
+      gpc->Append( element_intpoints.Points() );
+
+      for ( std::vector<DRT::UTILS::GaussIntegration>::iterator j=intpoints.begin(); j!=intpoints.end(); ++j )
+      {
+        const DRT::UTILS::GaussIntegration & gi = *j;
+        if ( i!=j )
+        {
+          gpc->Append( gi.Points() );
+        }
+      }
+
+      gi.SetPoints( gpc );
+
+      break;
+    }
+  }
+#endif
+}
 
 void GEO::CUT::LinearElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )
 {
   const std::set<VolumeCell*> & cs = element_->VolumeCells();
   std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
 }
+
 
 bool GEO::CUT::QuadraticElementHandle::IsCut()
 {
@@ -55,6 +173,16 @@ void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( std::set<GEO::CUT::Boun
   {
     Element * e = *i;
     e->GetBoundaryCells( bcells );
+  }
+}
+
+void GEO::CUT::QuadraticElementHandle::VolumeCells( std::set<VolumeCell*> & cells ) const
+{
+  for ( std::vector<Element*>::const_iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    const std::set<VolumeCell*> & ecells = e->VolumeCells();
+    std::copy( ecells.begin(), ecells.end(), std::inserter( cells, cells.begin() ) );
   }
 }
 
@@ -437,3 +565,4 @@ void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
   }
   rst = pos.LocalCoordinates();
 }
+

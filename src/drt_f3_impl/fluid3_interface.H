@@ -17,7 +17,7 @@ Maintainer: Andreas Ehrl
 #define FLUID3_INTERFACE_H
 
 #include "../drt_f3/fluid3.H"
-#include "../drt_lib/drt_elementimpl.H"
+#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
@@ -31,7 +31,7 @@ namespace ELEMENTS
     this class actually defines is Impl, which returns a pointer to
     the appropriate version of Fluid3Impl.
    */
-  class Fluid3ImplInterface : public ElementImpl
+  class Fluid3ImplInterface : public DRT::SingletonDestruction
   {
   public:
 

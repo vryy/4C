@@ -49,11 +49,7 @@ class Bundle;
 namespace DRT
 {
 class Discretization;
-
-namespace ELEMENTS
-{
-class ElementImpl;
-}
+class SingletonDestruction;
 
 namespace INPUT
 {
@@ -160,6 +156,9 @@ public:
     require proper cleanup. Make sure we always do it.
    */
   static void Done();
+
+  /// register singleton objects that need explicit destruction
+  void Register(DRT::SingletonDestruction * sd) { sds_.push_back(sd); }
 
   //@}
 
@@ -329,14 +328,6 @@ public:
 
   //@}
 
-  /// @name Element implementation
-  /// keep a list of all active element implementations
-
-  /// register newly created implementation object
-  void Register(DRT::ELEMENTS::ElementImpl * elementimpl) { elementimpls_.push_back(elementimpl); }
-
-  //@}
-
 private:
 
   /// private default constructor to disallow creation of instances
@@ -355,7 +346,7 @@ private:
   vector<vector<RCP<Discretization> > > discretizations_;
 
   /// keep a list of all active element implementations
-  vector<DRT::ELEMENTS::ElementImpl *> elementimpls_;
+  vector<DRT::SingletonDestruction *> sds_;
 
   /// material bundle
   Teuchos::RCP<MAT::PAR::Bundle> materials_;

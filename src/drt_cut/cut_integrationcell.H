@@ -11,6 +11,8 @@
 #include "cut_element.H"
 #include "cut_boundingbox.H"
 
+//#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+
 namespace GEO
 {
 namespace CUT
@@ -34,9 +36,13 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
+
   virtual void DumpGmsh( std::ofstream & file ) = 0;
 
   double Volume() const;
+
+  const std::vector<Point*> & Points() const { return points_; }
 
   Point::PointPosition Position() const { return position_; }
 
@@ -66,6 +72,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
@@ -86,6 +94,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
 
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
@@ -105,6 +115,8 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
@@ -122,6 +134,8 @@ public:
   static Pyramid5IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
 
   virtual void DumpGmsh( std::ofstream & file );
 

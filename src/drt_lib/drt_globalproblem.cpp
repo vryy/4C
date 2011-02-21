@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_conditiondefinition.H"
 #include "drt_materialdefinition.H"
 #include "drt_function.H"
-#include "drt_elementimpl.H"
+#include "drt_singletondestruction.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
@@ -104,10 +104,10 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 DRT::Problem::~Problem()
 {
-  for (vector<DRT::ELEMENTS::ElementImpl *>::iterator i=elementimpls_.begin(); i!=elementimpls_.end(); ++i)
+  for (vector<DRT::SingletonDestruction *>::iterator i=sds_.begin(); i!=sds_.end(); ++i)
   {
-    DRT::ELEMENTS::ElementImpl * ei = *i;
-    ei->Done();
+    DRT::SingletonDestruction * sd = *i;
+    sd->Done();
   }
 }
 

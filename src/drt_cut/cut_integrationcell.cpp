@@ -796,3 +796,47 @@ double GEO::CUT::IntegrationCell::Volume() const
 {
   return GEO::ElementVolume( Shape(), xyz_ );
 }
+
+int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+{
+  switch ( elementshape )
+  {
+  case DRT::Element::hex8:
+    return 3;
+  case DRT::Element::hex20:
+    return 4;
+  case DRT::Element::hex27:
+    return 4;
+  default:
+    throw std::runtime_error( "no rule defined for this element type" );
+  }
+}
+
+int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+{
+  switch ( elementshape )
+  {
+  case DRT::Element::hex8:
+    return 5;
+  case DRT::Element::hex20:
+    return 6;
+  case DRT::Element::hex27:
+    return 7;
+  case DRT::Element::tet4:
+    return 2;
+  case DRT::Element::tet10:
+    return 4;
+  default:
+    throw std::runtime_error( "no rule defined for this element type" );
+  }
+}
+
+int GEO::CUT::Wedge6IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+{
+  return 4;
+}
+
+int GEO::CUT::Pyramid5IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+{
+  return 4;
+}

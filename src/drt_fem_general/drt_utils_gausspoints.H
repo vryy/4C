@@ -4,8 +4,12 @@
 #include <iostream>
 
 #include <vector>
+#include <map>
 
-#include "../../src/drt_lib/drt_element.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_singletondestruction.H"
+#include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 namespace DRT
 {
@@ -35,7 +39,6 @@ public:
   virtual void Print() const = 0;
 };
 
-
 /// specific collected gauss points for xfem usage
 class CollectedGaussPoints : public GaussPoints
 {
@@ -48,7 +51,13 @@ public:
 
   void Append( double x, double y, double z, double w )
   {
-    gp_.push_back( Entry( x,y,z,w ) );
+    if ( w > 1e-15 )
+      gp_.push_back( Entry( x,y,z,w ) );
+  }
+
+  void IncreaseReserved( int size )
+  {
+    gp_.reserve( gp_.size() + size );
   }
 
   virtual int NumPoints() const { return gp_.size(); }
@@ -87,6 +96,119 @@ private:
   std::vector<Entry> gp_;
 };
 
+/// specific collected gauss points for xfem usage
+///
+/// This is meant to be an inverted collection, where the first set of gauss
+/// points integrates a whole element and all following sets substract from
+/// the element.
+class GaussPointsComposite : public GaussPoints
+{
+public:
+
+  explicit GaussPointsComposite( int size )
+  {
+    gp_.reserve( size );
+  }
+
+  void Append( Teuchos::RCP<GaussPoints> gp )
+  {
+    gp_.push_back( gp );
+  }
+
+  /// number of gauss points
+  virtual int NumPoints() const
+  {
+    int numpoints = 0;
+    for ( std::vector<Teuchos::RCP<GaussPoints> >::const_iterator i=gp_.begin();
+          i!=gp_.end();
+          ++i )
+    {
+      Teuchos::RCP<GaussPoints> gp = *i;
+      numpoints += gp->NumPoints();
+    }
+    return numpoints;
+  }
+
+  /// spacial dimension
+  virtual int NumDimension() const
+  {
+    return gp_[0]->NumDimension();
+  }
+
+  /// gauss point coordinates
+  virtual const double * Point( int point ) const
+  {
+    Teuchos::RCP<GaussPoints> gp = Find( point );
+    return gp->Point( point );
+  }
+
+  /// gauss weight
+  virtual double Weight( int point ) const
+  {
+    Teuchos::RCP<GaussPoints> gp = Find( point );
+    if ( gp_[0]==gp )
+    {
+      return gp->Weight( point );
+    }
+    else
+    {
+      return -1. * gp->Weight( point );
+    }
+  }
+
+  /// debug print
+  virtual void Print() const
+  {
+    for ( std::vector<Teuchos::RCP<GaussPoints> >::const_iterator i=gp_.begin();
+          i!=gp_.end();
+          ++i )
+    {
+      Teuchos::RCP<GaussPoints> gp = *i;
+      gp->Print();
+    }
+  }
+
+private:
+
+  Teuchos::RCP<GaussPoints> Find( int & point ) const
+  {
+    for ( std::vector<Teuchos::RCP<GaussPoints> >::const_iterator i=gp_.begin();
+          i!=gp_.end();
+          ++i )
+    {
+      Teuchos::RCP<GaussPoints> gp = *i;
+      int numpoints = gp->NumPoints();
+      if ( numpoints > point )
+      {
+        return gp;
+      }
+      point -= numpoints;
+    }
+    throw std::runtime_error( "gauss point not available" );
+  }
+
+  std::vector<Teuchos::RCP<GaussPoints> > gp_;
+};
+
+/// remember calculated gauss points so we do not need to calculate again
+class GaussPointCache : public DRT::SingletonDestruction
+{
+public:
+
+  static GaussPointCache & Instance();
+
+  /// cleanup
+  void Done();
+
+  Teuchos::RCP<GaussPoints> Create( DRT::Element::DiscretizationType distype, int degree );
+
+private:
+
+  static GaussPointCache * instance_;
+
+  /// cache of already created gauss rules
+  std::map<std::pair<DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints> > gp_cache_;
+};
 
 /// gauss integration interface
 class GaussIntegration
@@ -160,6 +282,9 @@ public:
   /// construct the optimal (normal) rule for a given element shape
   GaussIntegration( DRT::Element::DiscretizationType distype );
 
+  /// construct rule for a given element shape
+  GaussIntegration( DRT::Element::DiscretizationType distype, int degree );
+
   /// construct with a known set of gauss points
   explicit GaussIntegration( Teuchos::RCP<GaussPoints> gp )
     : gp_( gp )
@@ -188,6 +313,53 @@ public:
 
   /// debug print
   void Print() const { gp_->Print(); }
+
+  Teuchos::RCP<GaussPoints> Points() const { return gp_; }
+
+  void SetPoints( Teuchos::RCP<GaussPoints> gp ) { gp_ = gp; }
+
+  /// create projected gauss points
+  template <DRT::Element::DiscretizationType distype>
+  static Teuchos::RCP<GaussPoints> CreateProjected(
+    const LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xyze,
+    const LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+    int degree )
+  {
+    Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create( distype, degree );
+    Teuchos::RCP<CollectedGaussPoints> cgp = Teuchos::rcp( new CollectedGaussPoints( gp->NumPoints() ) );
+
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    LINALG::Matrix<nen,1> funct;
+    LINALG::Matrix<3,nen> deriv;
+
+    LINALG::Matrix<3,3> xjm;
+    LINALG::Matrix<3,1> xi;
+
+    GaussIntegration intpoints( gp );
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
+          iquad!=intpoints.end();
+          ++iquad )
+    {
+      const double * eta = iquad.Point();
+
+      // cell shape functions and their first derivatives
+      DRT::UTILS::shape_function_3D(funct,eta[0],eta[1],eta[2],distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,eta[0],eta[1],eta[2],distype);
+
+      // local coordinates of gauss point
+      xi.Multiply( xie, funct );
+
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      xjm.MultiplyNT( deriv, xyze );
+
+      double det = xjm.Determinant();
+
+      cgp->Append( xi( 0 ), xi( 1 ), xi( 2 ), iquad.Weight()*det );
+    }
+    return cgp;
+  }
 
 private:
 

@@ -397,7 +397,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset_proxy.cpp
   src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_element.cpp
-  src/drt_lib/drt_elementimpl.cpp
+  src/drt_lib/drt_singletondestruction.cpp
   src/drt_lib/drt_function.cpp
   src/drt_lib/drt_globalproblem.cpp
   src/drt_lib/drt_locsys.cpp

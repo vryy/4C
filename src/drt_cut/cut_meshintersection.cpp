@@ -24,6 +24,12 @@ void GEO::CUT::MeshIntersection::AddElement( int eid,
       for ( int i=0; i<numnode; ++i )
       {
         NormalMesh().GetNode( nids[i], &xyz( 0, i ) );
+//         if ( n==NULL )
+//         {
+//           // if there is no node with that id but a node at the given
+//           // location, the element is illegal and cannot be created
+//           return;
+//         }
       }
 
       // create element
@@ -57,11 +63,24 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
     throw std::runtime_error( "node coordiante number mismatch" );
   }
 
+//   std::set<Point*> nodalpoints;
+
   // make sure all nodes are there
   for ( int i=0; i<numnode; ++i )
   {
     cut_mesh.GetNode( nids[i], &xyz( 0, i ) );
+//     nodalpoints.insert( n->point() );
+//     if ( n==NULL )
+//     {
+//       // if there is no node with that id but a node at the given location,
+//       // the side is illegal and cannot be created
+//       return;
+//     }
   }
+
+//   // do not create degenerated cut sides
+//   if ( nodalpoints.size() < nids.size() )
+//     return;
 
   // create side
   cut_mesh_[mi]->CreateSide( sid, nids, distype );

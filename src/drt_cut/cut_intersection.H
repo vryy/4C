@@ -476,7 +476,8 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
 
     dx = 0;
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
-    if ( fabs( det ) < LINSOLVETOL )
+    //if ( fabs( det ) < LINSOLVETOL )
+    if ( det==0 )
     {
       throw std::runtime_error( "no side-point distance?" );
     }

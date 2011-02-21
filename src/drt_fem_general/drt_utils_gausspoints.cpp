@@ -19,12 +19,12 @@ namespace
 {
 
 /// wrapper to intrepid gauss point implementation
-template <class topology, int cubDegree>
+template <class topology>
 class IntrepidGaussPoints : public GaussPoints
 {
 public:
 
-  IntrepidGaussPoints()
+  explicit IntrepidGaussPoints( int cubDegree )
   {
     // cell type: tetrahedron
     shards::CellTopology cellType = shards::getCellTopologyData< topology >();
@@ -80,11 +80,11 @@ private:
 
 /// special case that is not (yet) supported by intrepid
 template <>
-class IntrepidGaussPoints<shards::Pyramid<5>, 3> : public GaussPoints
+class IntrepidGaussPoints<shards::Pyramid<5> > : public GaussPoints
 {
 public:
 
-  IntrepidGaussPoints<shards::Pyramid<5>, 3>()
+  explicit IntrepidGaussPoints<shards::Pyramid<5> >( int cubDegree )
   {
     cub_points_.resize(8, 3);
     cub_weights_.resize(8);
@@ -152,7 +152,6 @@ private:
   Intrepid::FieldContainer<double> cub_weights_;
 };
 
-
 }
 }
 }
@@ -161,22 +160,78 @@ DRT::UTILS::GaussIntegration::GaussIntegration( DRT::Element::DiscretizationType
 {
   switch ( distype )
   {
-  case DRT::Element::quad4:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<4>, 3 >() ); break;
-  case DRT::Element::quad8:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<8>, 4 >() ); break;
-  case DRT::Element::quad9:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<9>, 4 >() ); break;
-  case DRT::Element::tri3:     gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Triangle<3>     , 3 >() ); break;
-  case DRT::Element::tri6:     gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Triangle<6>     , 4 >() ); break;
-  case DRT::Element::hex8:     gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<8>   , 3 >() ); break;
-  case DRT::Element::hex20:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<20>  , 4 >() ); break;
-  case DRT::Element::hex27:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<27>  , 4 >() ); break;
-  case DRT::Element::tet4:     gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Tetrahedron<4>  , 3 >() ); break;
-  case DRT::Element::tet10:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Tetrahedron<10> , 4 >() ); break;
-  case DRT::Element::wedge6:   gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Wedge<6>        , 3 >() ); break;
-  case DRT::Element::wedge15:  gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Wedge<15>       , 4 >() ); break;
-  case DRT::Element::pyramid5: gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Pyramid<5>      , 3 >() ); break;
-  case DRT::Element::line2:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Line<2>         , 3 >() ); break;
-  case DRT::Element::line3:    gp_ = Teuchos::rcp( new IntrepidGaussPoints< shards::Line<3>         , 4 >() ); break;
+  case DRT::Element::quad4:    gp_ = GaussPointCache::Instance().Create( DRT::Element::quad4,    3 ); break;
+  case DRT::Element::quad8:    gp_ = GaussPointCache::Instance().Create( DRT::Element::quad8,    4 ); break;
+  case DRT::Element::quad9:    gp_ = GaussPointCache::Instance().Create( DRT::Element::quad9,    4 ); break;
+  case DRT::Element::tri3:     gp_ = GaussPointCache::Instance().Create( DRT::Element::tri3,     3 ); break;
+  case DRT::Element::tri6:     gp_ = GaussPointCache::Instance().Create( DRT::Element::tri6,     4 ); break;
+  case DRT::Element::hex8:     gp_ = GaussPointCache::Instance().Create( DRT::Element::hex8,     3 ); break;
+  case DRT::Element::hex20:    gp_ = GaussPointCache::Instance().Create( DRT::Element::hex20,    4 ); break;
+  case DRT::Element::hex27:    gp_ = GaussPointCache::Instance().Create( DRT::Element::hex27,    4 ); break;
+  case DRT::Element::tet4:     gp_ = GaussPointCache::Instance().Create( DRT::Element::tet4,     3 ); break;
+  case DRT::Element::tet10:    gp_ = GaussPointCache::Instance().Create( DRT::Element::tet10,    4 ); break;
+  case DRT::Element::wedge6:   gp_ = GaussPointCache::Instance().Create( DRT::Element::wedge6,   3 ); break;
+  case DRT::Element::wedge15:  gp_ = GaussPointCache::Instance().Create( DRT::Element::wedge15,  4 ); break;
+  case DRT::Element::pyramid5: gp_ = GaussPointCache::Instance().Create( DRT::Element::pyramid5, 3 ); break;
+  case DRT::Element::line2:    gp_ = GaussPointCache::Instance().Create( DRT::Element::line2,    3 ); break;
+  case DRT::Element::line3:    gp_ = GaussPointCache::Instance().Create( DRT::Element::line3,    4 ); break;
   default:
     throw std::runtime_error( "unsupported element shape" );
   }
+}
+
+DRT::UTILS::GaussIntegration::GaussIntegration( DRT::Element::DiscretizationType distype, int degree )
+{
+  gp_ = GaussPointCache::Instance().Create( distype, degree );
+}
+
+DRT::UTILS::GaussPointCache * DRT::UTILS::GaussPointCache::instance_;
+
+DRT::UTILS::GaussPointCache & DRT::UTILS::GaussPointCache::Instance()
+{
+  if ( instance_==NULL )
+    instance_ = new GaussPointCache;
+  return *instance_;
+}
+
+void DRT::UTILS::GaussPointCache::Done()
+{
+  gp_cache_.clear();
+}
+
+Teuchos::RCP<DRT::UTILS::GaussPoints> DRT::UTILS::GaussPointCache::Create( DRT::Element::DiscretizationType distype, int degree )
+{
+  std::map<std::pair<DRT::Element::DiscretizationType, int>, Teuchos::RCP<GaussPoints> >::iterator
+    i = gp_cache_.find( std::make_pair( distype, degree ) );
+  if ( i!=gp_cache_.end() )
+  {
+    return i->second;
+  }
+
+  // this is expensive and should not be done too often
+  Teuchos::RCP<GaussPoints> gp;
+
+  switch ( distype )
+  {
+  case DRT::Element::quad4:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<4> >( degree ) ); break;
+  case DRT::Element::quad8:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<8> >( degree ) ); break;
+  case DRT::Element::quad9:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Quadrilateral<9> >( degree ) ); break;
+  case DRT::Element::tri3:     gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Triangle<3>      >( degree ) ); break;
+  case DRT::Element::tri6:     gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Triangle<6>      >( degree ) ); break;
+  case DRT::Element::hex8:     gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<8>    >( degree ) ); break;
+  case DRT::Element::hex20:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<20>   >( degree ) ); break;
+  case DRT::Element::hex27:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Hexahedron<27>   >( degree ) ); break;
+  case DRT::Element::tet4:     gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Tetrahedron<4>   >( degree ) ); break;
+  case DRT::Element::tet10:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Tetrahedron<10>  >( degree ) ); break;
+  case DRT::Element::wedge6:   gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Wedge<6>         >( degree ) ); break;
+  case DRT::Element::wedge15:  gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Wedge<15>        >( degree ) ); break;
+  case DRT::Element::pyramid5: gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Pyramid<5>       >( degree ) ); break;
+  case DRT::Element::line2:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Line<2>          >( degree ) ); break;
+  case DRT::Element::line3:    gp = Teuchos::rcp( new IntrepidGaussPoints< shards::Line<3>          >( degree ) ); break;
+  default:
+    throw std::runtime_error( "unsupported element shape" );
+  }
+
+  gp_cache_[std::make_pair( distype, degree )] = gp;
+  return gp;
 }

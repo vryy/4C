@@ -169,6 +169,9 @@ double GEO::CUT::Point::t( Edge* edge )
     Point * p1 = edge->BeginNode()->point();
     Point * p2 = edge->EndNode()->point();
 
+    if ( p1==p2 )
+      return 0;
+
     LINALG::Matrix<3, 1> x;
     LINALG::Matrix<3, 1> x1;
     LINALG::Matrix<3, 1> x2;

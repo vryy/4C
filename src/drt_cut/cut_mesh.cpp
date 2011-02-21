@@ -133,6 +133,23 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv
   if ( xyz==NULL )
     throw std::runtime_error( "cannot create node without coordinates" );
 
+//   Point * p = pp_->GetPoint( xyz, NULL, NULL, MINIMALTOL );
+//   if ( p!=NULL )
+//   {
+//     // We already have a point at this location. See if there is a node to
+//     // it. If so, that's the one.
+//     for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+//           i!=nodes_.end();
+//           ++i )
+//     {
+//       Teuchos::RCP<Node> n = i->second;
+//       if ( n->point()==p )
+//       {
+//         nodes_[nid] = n;
+//         return NULL;
+//       }
+//     }
+//   }
   Point * p = NewPoint( xyz, NULL, NULL );
   Node * n = new Node( nid, p, lsv );
   nodes_[nid] = Teuchos::rcp( n );
@@ -158,6 +175,9 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const std::set<int> & nids, const doubl
 
 GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( Node* begin, Node* end )
 {
+  if ( begin->point()==end->point() )
+    throw std::runtime_error( "edge between same point" );
+
   std::set<int> nids;
   nids.insert( begin->Id() );
   nids.insert( end->Id() );
@@ -180,6 +200,8 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const std::set<int> & nids, const std::
   switch ( edge_topology.key )
   {
   case shards::Line<2>::key :
+//     if ( nodes[0]->point()==nodes[1]->point() )
+//       throw std::runtime_error( "edge between same point" );
     e = new Edge( nodes );
     break;
   default:
