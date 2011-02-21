@@ -316,9 +316,9 @@ void DRT::Exporter::ConstructExporter()
   RecvPlan().resize(NumProc());
 
   // allocate a send buffer for ParObject packs
-  SendBuff().resize(SourceMap().NumMyElements());
-  SendSize().resize(SourceMap().NumMyElements());
-  std::fill(SendSize().begin(),SendSize().end(),0);
+//   SendBuff().resize(SourceMap().NumMyElements());
+//   SendSize().resize(SourceMap().NumMyElements());
+//   std::fill(SendSize().begin(),SendSize().end(),0);
 
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
