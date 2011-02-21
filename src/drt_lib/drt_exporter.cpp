@@ -306,19 +306,19 @@ void DRT::Exporter::ConstructExporter()
   // SendPlan()(lid,proc)    = 1 for data with local id lid needs sending to proc
   // SendPlan()(lid,proc)    = 0 otherwise
   // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
-  SendPlan().Shape(SourceMap().NumMyElements(),NumProc());
+  SendPlan().resize(NumProc());
 
   // allocate a receive plan
   // RecvPlan():
   // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
   // RecvPlan()(lid,proc) = 0 otherwise
   // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
-  RecvPlan().Shape(TargetMap().NumMyElements(),NumProc());
+  RecvPlan().resize(NumProc());
 
   // allocate a send buffer for ParObject packs
   SendBuff().resize(SourceMap().NumMyElements());
   SendSize().resize(SourceMap().NumMyElements());
-  for (int i=0; i<(int)SendSize().size(); ++i) SendSize()[i] = 0;
+  std::fill(SendSize().begin(),SendSize().end(),0);
 
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
@@ -326,11 +326,14 @@ void DRT::Exporter::ConstructExporter()
   sizes[0] = SourceMap().NumMyElements();
   sizes[1] = TargetMap().NumMyElements();
   const int sendsize = sizes[0]+sizes[1];
-  vector<int> sendbuff(sendsize);
-  for (int i=0; i<sizes[0]; ++i)
-    sendbuff[i] = SourceMap().MyGlobalElements()[i];
-  for (int i=0; i<sizes[1]; ++i)
-    sendbuff[i+sizes[0]] = TargetMap().MyGlobalElements()[i];
+  vector<int> sendbuff;
+  sendbuff.reserve(sendsize);
+  std::copy(SourceMap().MyGlobalElements(),
+            SourceMap().MyGlobalElements()+SourceMap().NumMyElements(),
+            std::back_inserter(sendbuff));
+  std::copy(TargetMap().MyGlobalElements(),
+            TargetMap().MyGlobalElements()+TargetMap().NumMyElements(),
+            std::back_inserter(sendbuff));
 
   for (int proc=0; proc<NumProc(); ++proc)
   {
@@ -341,7 +344,7 @@ void DRT::Exporter::ConstructExporter()
     const int recvsize = recvsizes[0]+recvsizes[1];
     vector<int> recvbuff(recvsize);
     if (proc==MyPID())
-      for (int i=0; i<recvsize; ++i) recvbuff[i] = sendbuff[i];
+      std::copy(sendbuff.begin(),sendbuff.end(),&recvbuff[0]);
     Comm().Broadcast(&recvbuff[0],recvsize,proc);
     const int* have = &recvbuff[0];            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]]; // this is what proc needs
@@ -355,7 +358,7 @@ void DRT::Exporter::ConstructExporter()
         if (TargetMap().MyGID(gid))
         {
           const int lid = TargetMap().LID(gid);
-          RecvPlan()(lid,proc) = 1;
+          RecvPlan()[proc].insert(lid);
         }
       }
 
@@ -367,7 +370,7 @@ void DRT::Exporter::ConstructExporter()
         if (SourceMap().MyGID(gid))
         {
           const int lid = SourceMap().LID(gid);
-          SendPlan()(lid,proc) = 1;
+          SendPlan()[proc].insert(lid);
         }
       }
     Comm().Barrier();
@@ -418,7 +421,7 @@ void DRT::Exporter::ConstructExporter()
  *----------------------------------------------------------------------*/
 void DRT::Exporter::GenericExport(ExporterHelper& helper)
 {
-  if (SendPlan().N()==0) return;
+  if (SendPlan().size()==0) return;
   //if (SourceMap().SameAs(TargetMap())) return;
 
   helper.PreExportTest(this);
@@ -444,7 +447,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     for (int i=0; i<SourceMap().NumMyElements(); ++i)
     {
       const int lid = i;
-      if (SendPlan()(lid,tproc)!=1) continue;
+      if (SendPlan()[tproc].count(lid)==0) continue;
       const int gid = SourceMap().GID(lid);
       if (helper.PackObject(gid,sendblock))
         sendgid.push_back(gid);

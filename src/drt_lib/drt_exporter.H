@@ -42,15 +42,15 @@ Maintainer: Michael Gee
 #ifndef EXPORTER_H
 #define EXPORTER_H
 
-#include "vector"
-#include "map"
-#include "Epetra_Map.h"
-#include "Epetra_Comm.h"
+#include <vector>
+#include <map>
+#include <set>
+#include <Epetra_Map.h>
+#include <Epetra_Comm.h>
 #ifdef PARALLEL
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #endif
-#include "Epetra_SerialDenseMatrix.h"
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 #include "drt_node.H"
 #include "drt_utils.H"
@@ -429,12 +429,12 @@ private:
   /*!
   \brief Get sendplan_
   */
-  inline Epetra_SerialDenseMatrix& SendPlan() { return sendplan_; }
+  inline vector<set<int> > & SendPlan() { return sendplan_; }
 
   /*!
   \brief Get recvplan_
   */
-  inline Epetra_SerialDenseMatrix& RecvPlan() { return recvplan_; }
+  inline vector<set<int> > & RecvPlan() { return recvplan_; }
 
   /*!
   \brief Get sendbuff_
@@ -466,9 +466,9 @@ private:
   //! no. of processors
   int                      numproc_;
   //! sending information
-  Epetra_SerialDenseMatrix sendplan_;
+  vector<set<int> >        sendplan_;
   //! receiving information
-  Epetra_SerialDenseMatrix recvplan_;
+  vector<set<int> >        recvplan_;
   //! a sendbuffer
   vector<vector<char> >    sendbuff_;
   //! sendsize_[i] is length of vector sendbuff_[i]
