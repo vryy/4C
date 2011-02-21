@@ -88,7 +88,7 @@ fsisurface_(NULL)
       break;
       case INPAR::STR::control_arc1:
       break;
-      default: dserror("Unknown type of control method (load, disp or arc1 implemented)");
+      default: dserror("Unknown type of control method (load, disp implemented)");
       break;
     }
 
@@ -142,8 +142,8 @@ fsisurface_(NULL)
   // create empty matrices
   // -------------------------------------------------------------------
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
-  mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
-  if (damping) damp_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  if (!dynkindstat) mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  if (damping)      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
   if (loadlin)
   {
     fextlin_    = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
@@ -284,6 +284,8 @@ fsisurface_(NULL)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiffmass");
+    if (dynkindstat)
+      p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -296,9 +298,8 @@ fsisurface_(NULL)
     discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
   }
-
   // close mass matrix
-  mass_->Complete();
+  if (!dynkindstat) mass_->Complete();
 
 
   // build damping matrix if desired
@@ -315,7 +316,7 @@ fsisurface_(NULL)
   if (!dynkindstat)
   {
 
-    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+    RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
     if (damping)
       damp_->Multiply(false,*vel_,*rhs);
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
@@ -1308,7 +1309,8 @@ void StruGenAlpha::FullNewton()
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -1609,8 +1611,13 @@ void StruGenAlpha::FullNewton()
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
+  if (maxiter==0)
   {
+    if (!myrank_) printf("ASSUMING LINEAR ELASTIC SOLUTION, CONTINUE...\n");
+  }
+  else if (numiter>=maxiter)
+  {
+     printf("maxiter %d\n",maxiter);
      dserror("Newton unconverged in %d iterations",numiter);
   }
   else
@@ -2512,7 +2519,7 @@ void StruGenAlpha::PTC()
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   // hard wired ptc parameters
-  double ptcdt = 1.0e-03;
+  double ptcdt = 1.0e-01;
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
