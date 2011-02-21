@@ -103,7 +103,7 @@ return (void*)(buf+DWORD);
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
 #else
-void *CCAMALLOC(INT size)
+void *CCAMALLOC(unsigned size)
 {
 void *buf;
 /*assert(size>0);*/
