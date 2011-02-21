@@ -219,8 +219,8 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
       shp.velz.d0.s(iparam) = funct(iparam);
     }
 
-#ifdef COLLAPSE_FLAME
     LINALG::Matrix<3,1> normal(true);
+#ifdef COLLAPSE_FLAME
     // get coordinates of cell vertices
     const LINALG::SerialDenseMatrix& nodalPosXYZ(cell.CellNodalPosXYZ());
     normal(0) = nodalPosXYZ(0,ivertex);
