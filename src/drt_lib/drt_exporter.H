@@ -431,20 +431,12 @@ private:
   */
   inline vector<set<int> > & SendPlan() { return sendplan_; }
 
+#if 0
   /*!
   \brief Get recvplan_
   */
   inline vector<set<int> > & RecvPlan() { return recvplan_; }
-
-//   /*!
-//   \brief Get sendbuff_
-//   */
-//   inline vector<vector<char> >& SendBuff() { return sendbuff_; }
-
-//   /*!
-//   \brief Get sendsize_
-//   */
-//   inline vector<int>& SendSize() { return sendsize_; }
+#endif
 
   /*!
   \brief generic export algorithm that delegates the specific pack/unpack to a helper
@@ -467,14 +459,10 @@ private:
   int                      numproc_;
   //! sending information
   vector<set<int> >        sendplan_;
+#if 0
   //! receiving information
   vector<set<int> >        recvplan_;
-//   //! a sendbuffer
-//   vector<vector<char> >    sendbuff_;
-//   //! sendsize_[i] is length of vector sendbuff_[i]
-//   vector<int>              sendsize_;
-
-
+#endif
 
   /// Internal helper class for Exporter that encapsulates packing and unpacking
   /*!

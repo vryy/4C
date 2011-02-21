@@ -92,8 +92,10 @@ tomap_(old.tomap_),
 comm_(old.comm_),
 myrank_(old.myrank_),
 numproc_(old.numproc_),
-sendplan_(old.sendplan_),
+sendplan_(old.sendplan_)
+#if 0
 recvplan_(old.recvplan_)
+#endif
 {
   return;
 }
@@ -308,17 +310,14 @@ void DRT::Exporter::ConstructExporter()
   // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
   SendPlan().resize(NumProc());
 
+#if 0
   // allocate a receive plan
   // RecvPlan():
   // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
   // RecvPlan()(lid,proc) = 0 otherwise
   // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
   RecvPlan().resize(NumProc());
-
-  // allocate a send buffer for ParObject packs
-//   SendBuff().resize(SourceMap().NumMyElements());
-//   SendSize().resize(SourceMap().NumMyElements());
-//   std::fill(SendSize().begin(),SendSize().end(),0);
+#endif
 
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
@@ -346,9 +345,10 @@ void DRT::Exporter::ConstructExporter()
     if (proc==MyPID())
       std::copy(sendbuff.begin(),sendbuff.end(),&recvbuff[0]);
     Comm().Broadcast(&recvbuff[0],recvsize,proc);
-    const int* have = &recvbuff[0];            // this is what proc has
+    //const int* have = &recvbuff[0];            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]]; // this is what proc needs
 
+#if 0
     // Loop what proc has and what I need (RecvPlan)
     // (I do not receive from myself)
     if (proc != MyPID())
@@ -361,6 +361,7 @@ void DRT::Exporter::ConstructExporter()
           RecvPlan()[proc].insert(lid);
         }
       }
+#endif
 
     // Loop what proc wants and what I have (SendPlan)
     if (proc != MyPID())
