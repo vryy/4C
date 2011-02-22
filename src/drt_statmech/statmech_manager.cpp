@@ -2347,6 +2347,9 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		ddcorrcolmap_ = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
 		// create processor-specific density-density-correlation-function map
 		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
+		// create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions
+		if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+			trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
 	}
 
 	double upperbound = 0.0;

@@ -2661,9 +2661,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 	if(numcrossele != 0)
 		cog->Scale(1.0/(double)numcrossele);
 
-	// create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions
-	trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
-
   // calculations done by Proc 0 only
   if(discret_.Comm().MyPID()==0)
   {
@@ -2726,7 +2723,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 					startiterindex = i;
 				}
 				// Scale normed vectors to unit length
-				normedvectors[i].Scale(1/normedvectors[i].Norm2());
+				normedvectors[i].Scale(1.0/normedvectors[i].Norm2());
 				cout<<i<<": "<<normedvectors[i](0)<<" "<<normedvectors[i](1)<<" "<<normedvectors[i](2)<<endl;
 			}
 
@@ -2786,6 +2783,14 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						cout<<"Cluster2: ";
 						DDCorrIterateVector(discol, &clusterlayervecs[1], maxiterations);
 
+						// cross product n_1 x n_2, plane normal
+						LINALG::Matrix<3,1> normal;
+						normal(0) = clusterlayervecs[0](1)*clusterlayervecs[1](2) - clusterlayervecs[0](2)*clusterlayervecs[1](1);
+						normal(1) = clusterlayervecs[0](2)*clusterlayervecs[1](0) - clusterlayervecs[0](0)*clusterlayervecs[1](2);
+						normal(2) = clusterlayervecs[0](0)*clusterlayervecs[1](1) - clusterlayervecs[0](1)*clusterlayervecs[1](0);
+						normal.Scale(1.0/normal.Norm2());
+						clusterlayervecs.push_back(normal);
+
 						// loop as long as pr has not yet reached pthresh
 						// flag indicating convergence (set to false, if max no. of iterations is reached)
 						bool converged = true;
@@ -2836,7 +2841,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						// store characteristic length and test sphere volume
 						if(converged)
 						{
-							characlength[i] = radius;
+							// store cluster diameter
+							characlength[i] = 2.0*radius;
 							volumes[i] = 4/3 * M_PI * pow(radius, 3.0);
 						}
 					}
@@ -2953,7 +2959,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						}
 						if(converged)
 						{
-							characlength[i] = radius;
+							// store bundle diameter
+							characlength[i] = 2.0*radius;
 							volumes[i] = M_PI*radius*radius*cyllength;
 						}
 					}
@@ -3005,6 +3012,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 						normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
 						normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
 						normal.Scale(1.0/normal.Norm2());
+						layervectors.push_back(normal);
 
 						// crosslinkerpositions which are considered to be within the cuboid
 						std::vector<LINALG::Matrix<3,1> > crosslinkswithinvolume;
@@ -3114,23 +3122,56 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 															}
 												}
 							}
+
 							//second step: Approximate the base area of the volume/prism
 							// calculate and store unit direction vectors corners-COG
 							std::vector<LINALG::Matrix<3,1> > itercoords = interseccoords;
 							std::vector<LINALG::Matrix<3,1> > dirvecs;
 							std::vector<double> initdistances;
+							//cout<<"initdist = ";
 							for(int j=0; j<(int)interseccoords.size(); j++)
 							{
+								// directional vectors pointing from center of gravity towards the corners
 								LINALG::Matrix<3,1> dirvec = interseccoords[j];
 								dirvec -= *cog;
 								initdistances.push_back(dirvec.Norm2());
+								//cout<<dirvec.Norm2()<<" ";
 								dirvec.Scale(1.0/dirvec.Norm2());
 								dirvecs.push_back(dirvec);
 							}
+							//cout<<endl;
+
+							// calculate crosslinker projection positions in layer plane
+							std::vector<LINALG::Matrix<3,1> > crossprojections;
+							for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
+							{
+								// calculate projection of crosslinker onto layer plane
+								LINALG::Matrix<3,1> projection = crosslinkswithinvolume[j];
+								LINALG::Matrix<3,1> diffvec = normal;
+								// line paramater
+								double mu = (interseccoords[0].Dot(normal) - crosslinkswithinvolume[j].Dot(normal)) / (normal.Dot(normal));
+								diffvec.Scale(mu);
+								projection += diffvec;
+								crossprojections.push_back(projection);
+							}
+
+							// calculate edge directions of the layer poygon
+							std::vector<LINALG::Matrix<3,1> > edgedirs;
+							for(int j=0; j<(int)interseccoords.size(); j++)
+								for(int k=0; k<(int)interseccoords.size(); k++)
+									if(k>j)
+										for(int l=0; l<(int)interseccoords[j].M(); l++)
+											if(fabs((interseccoords[j])(l)-(interseccoords[k])(l))<1e-7)
+											{
+												LINALG::Matrix<3,1> jdir = interseccoords[k];
+												jdir -= interseccoords[j];
+												jdir.Scale(1.0/jdir.Norm2());
+												edgedirs.push_back(jdir);
+											}
 
 							// iterate as long as layer volume contains 90-95% of the crosslinks
 							leaveloop = false;
-							int numiter = 25;
+							int numiter = 30;
 							int iter = 0;
 							int rcount = 0;
 							double uplim = 0.01;
@@ -3144,12 +3185,19 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								{
 									if(crossfrac<threshold-lowlim || crossfrac>threshold+uplim)
 									{
+										/*cout<<"\niter"<<iter<<" = [";
+										for(int k=0; k<(int)itercoords.size(); k++)
+										{
+											for(int l=0; l<(int)itercoords[k].M(); l++)
+												cout<<itercoords[k](l)<<" ";
+											cout<<endl;
+										}
+										cout<<"];"<<endl;*/
 										//calculate new set of layer corner coordinates
 										for(int j=0; j<(int)itercoords.size(); j++)
 										{
 											LINALG::Matrix<3,1> deltaj = dirvecs[j];
-											// the "pow()"-term found heuristically (hm, for now, we go with 1.5)
-											deltaj.Scale(initdistances[j]/pow(1.5,(double)(iter+1)));
+											deltaj.Scale(initdistances[j]/pow(1.4,(double)(iter+1)));
 											// depending on crossfrac, choose in which direction the triangle grows:
 											if(crossfrac>threshold)
 												itercoords[j] -= deltaj;
@@ -3162,63 +3210,63 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 										rcount = 0;
 										for(int j=0; j<(int)crosslinkswithinvolume.size(); j++)
 										{
-											// calculate projection of crosslinker onto layer plane
-											LINALG::Matrix<3,1> crossproj = crosslinkswithinvolume[j];
-											LINALG::Matrix<3,1> diffvec = normal;
-											// line paramater
-											double mu = (interseccoords[0].Dot(normal) - crosslinkswithinvolume[j].Dot(normal)) / (normal.Dot(normal));
-											diffvec.Scale(mu);
-											crossproj += diffvec;
-											// determine distances
-											std::vector<int> sortedindices;
-											std::vector<double> distcrosstocorner;
-											for(int k=0; k<(int)interseccoords.size(); k++)
+											// distance of crosslinker projection to center of gravity
+											LINALG::Matrix<3,1> crosstocog = crossprojections[j];
+											crosstocog -= *cog;
+											double dcrosstocog = crosstocog.Norm2();
+											crosstocog.Scale(1.0/dcrosstocog);
+
+											// calculate shortest positive distance for intersections of the line (cog->crosslinker) with the layer polygon from the center of gravity
+											double dclosestisec = 10*periodlength;
+											for(int k=0; k<(int)edgedirs.size(); k++)
 											{
-												LINALG::Matrix<3,1> dist = crossproj;
-												dist -= itercoords[k];
-												distcrosstocorner.push_back(dist.Norm2());
-												sortedindices.push_back(k);
+												// line paramete (=length)
+												double numerator = edgedirs[k](1)*(itercoords[k](0)-(*cog)(0)) - edgedirs[k](0)*(itercoords[k](1)-(*cog)(1));
+												double denominator = crosstocog(0)*edgedirs[k](1) - crosstocog(1)*edgedirs[k](0);
+												// lambda either positive (i.e. intersection lies in the direction of the crosslinker) or negative
+												double lambda = numerator/denominator;
+												// in case of parallel directional vectors, lambda takes big value (does not matter anyway as this case is not important for the coming calculations)
+												if(fabs(denominator) < 1e-8)
+													lambda = 1e8;
+												// save smallest positive lambda. It marks the closest intersection of the (cog->crosslinker)-line with an edge
+												if(lambda>0.0 && lambda<dclosestisec)
+													dclosestisec = lambda;
 											}
-											//sort distances in ascending order
-											for(int k=0; k<(int)distcrosstocorner.size(); k++)
-												for(int l=0; l<k; l++)
-													if(distcrosstocorner[k]<distcrosstocorner[l])
-													{
-														int tmpindex = sortedindices[l];
-														sortedindices[l] = sortedindices[k];
-														sortedindices[k] = tmpindex;
-														double dtmp = distcrosstocorner[l];
-														distcrosstocorner[l] = distcrosstocorner[k];
-														distcrosstocorner[k] = dtmp;
-													}
-											// compare second and third smallest crosslinker-corner distances to respective corner-corner distances
-											int numofconditionsmet = 0;
-											for(int k=1; k<3; k++)
-											{
-												// get the corner closest to the crosslinker
-												LINALG::Matrix<3,1> distcornertocorner = itercoords[sortedindices[0]];
-												// calculate distance to the two next closest corner
-												distcornertocorner -= itercoords[sortedindices[k]];
-												if(distcrosstocorner[k]<distcornertocorner.Norm2())
-													numofconditionsmet++;
-											}
-											// if crosslinker lies within the new volume
-											if(numofconditionsmet==2)
+											// if the distance to the closest intersection is bigger than the distance between crosslinker and center of gravity,
+											// the linker in question lies within the iterated volume
+											if(dclosestisec>=dcrosstocog)
 												rcount++;
 										}
 										//new crosslinker fraction in volume
 										crossfrac = double(rcount)/double(crosslinkswithinvolume.size());
+										//cout<<"i="<<iter<<", crossfrac = "<<crossfrac<<", rcount = "<<rcount<<"/"<<crosslinkswithinvolume.size()<<endl;
 										iter++;
 									}
 									else
 									{
+										// set itercoords as new interseccoords
+										/*cout<<"iter"<<iter<<" = [";
+										for(int k=0; k<(int)itercoords.size(); k++)
+										{
+											for(int l=0; l<(int)itercoords[k].M(); l++)
+												cout<<itercoords[k](l)<<" ";
+											cout<<endl;
+										}
+										cout<<"];"<<endl;*/
+										interseccoords = itercoords;
+										crosslinksinvolume[i] = rcount;
+										crossfraction[i] *= pr;
 										cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
 										leaveloop = true;
 									}
 								}
 								else
 								{
-									cout<<"-> adjusted volume after "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
+									// set itercoords as new interseccoords
+									interseccoords = itercoords;
+									crosslinksinvolume[i] = rcount;
+									crossfraction[i] *= pr;
+									cout<<"-> adjusted volume after maxiter = "<<iter<<" iterations with "<<rcount<<"/"<<crosslinkswithinvolume.size()<<"( p="<<crossfrac<<" )"<<endl;
 									leaveloop = true;
 								}
 							}
@@ -3244,6 +3292,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 									// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
 									volumes[i] = cl*h*thickness;
+									//cout<<"layer volume_tri = "<<volumes[i]<<endl;
 								}
 								break;
 								// square/rectangle/trapezoid
@@ -3267,6 +3316,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									double h = dl * sin(alpha);
 
 									volumes[i] = (al+cl) * h * thickness;
+									//cout<<"layer volume_rec = "<<volumes[i]<<endl;
 								}
 								break;
 								// hexahedron
@@ -3297,6 +3347,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 														hexvolume += cl*h*thickness;
 													}
 									volumes[i] = hexvolume;
+									//cout<<"layer volume_hex = "<<volumes[i]<<endl;
 								}
 								break;
 							}
@@ -3346,39 +3397,29 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			characlength_ = characlength[structurenumber];
 
   			// calculate the trafo_ matrix (as if we had a layer)
-				// cross product n_1 x n_2, plane normal
-				LINALG::Matrix<3,1> normal;
-				normal(0) = clusterlayervecs[0](1)*clusterlayervecs[1](2) - clusterlayervecs[0](2)*clusterlayervecs[1](1);
-				normal(1) = clusterlayervecs[0](2)*clusterlayervecs[1](0) - clusterlayervecs[0](0)*clusterlayervecs[1](2);
-				normal(2) = clusterlayervecs[0](0)*clusterlayervecs[1](1) - clusterlayervecs[0](1)*clusterlayervecs[1](0);
-				normal.Scale(1.0/normal.Norm2());
 
 				// calculate second plane vector (which is now exactly orthogonal to vec1)
 			  LINALG::SerialDenseMatrix RotMat(3, 3);
-			  // build the matrix of rotation
-			  for (int j=0; j<3; j++)
-			    RotMat(j, j) = cos(M_PI/2.0) + normal(j) * normal(j) * (1 - cos(M_PI/2.0));
-			  RotMat(0, 1) = normal(0) * normal(1) * (1 - cos(M_PI/2.0)) - normal(2) * sin(M_PI/2.0);
-			  RotMat(0, 2) = normal(0) * normal(2) * (1 - cos(M_PI/2.0)) + normal(1) * sin(M_PI/2.0);
-			  RotMat(1, 0) = normal(1) * normal(0) * (1 - cos(M_PI/2.0)) + normal(2) * sin(M_PI/2.0);
-			  RotMat(1, 2) = normal(1) * normal(2) * (1 - cos(M_PI/2.0)) - normal(0) * sin(M_PI/2.0);
-			  RotMat(2, 0) = normal(2) * normal(0) * (1 - cos(M_PI/2.0)) - normal(1) * sin(M_PI/2.0);
-			  RotMat(2, 1) = normal(2) * normal(1) * (1 - cos(M_PI/2.0)) + normal(0) * sin(M_PI/2.0);
+			  // build the matrix of rotation for rotation about layervectors[2] = plane normal.
+			  for (int i=0; i<3; i++)
+			    RotMat(i, i) = cos(M_PI/2.0) + clusterlayervecs[2](i) * clusterlayervecs[2](i) * (1 - cos(M_PI/2.0));
+			  RotMat(0, 1) = clusterlayervecs[2](0) * clusterlayervecs[2](1) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](2) * sin(M_PI/2.0);
+			  RotMat(0, 2) = clusterlayervecs[2](0) * clusterlayervecs[2](2) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](1) * sin(M_PI/2.0);
+			  RotMat(1, 0) = clusterlayervecs[2](1) * clusterlayervecs[2](0) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](2) * sin(M_PI/2.0);
+			  RotMat(1, 2) = clusterlayervecs[2](1) * clusterlayervecs[2](2) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](0) * sin(M_PI/2.0);
+			  RotMat(2, 0) = clusterlayervecs[2](2) * clusterlayervecs[2](0) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](1) * sin(M_PI/2.0);
+			  RotMat(2, 1) = clusterlayervecs[2](2) * clusterlayervecs[2](1) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](0) * sin(M_PI/2.0);
 
-			  // rotate the first layer vector
-			  LINALG::Matrix<3,1> rotated;
-			  for (int j=0; j<3; j++)
-			    for (int k=0; k<3; k++)
-			    	rotated(j) += RotMat(j, k) * layervectors[0](k);
-			  rotated.Scale(1/rotated.Norm2());
+			  // rotate the first layer vector and overwrite the second layer vector
+			  for (int i=0; i<3; i++)
+			    for (int j=0; j<3; j++)
+			    	clusterlayervecs[1](i) += RotMat(i, j) * clusterlayervecs[0](j);
+			  clusterlayervecs[1].Scale(1/clusterlayervecs[1].Norm2()); // hm, not necessary
 
 			  // build the base
-			  for(int j=0; j<trafo_->M(); j++)
-			  {
-			  	(*trafo_)(j,0) = clusterlayervecs[0](j);
-			  	(*trafo_)(j,1) = rotated(j);
-			  	(*trafo_)(j,2) = normal(j);
-			  }
+			  for(int i=0; i<trafo_->M(); i++)
+			  	for(int j=0; j<trafo_->N(); j++)
+						(*trafo_)(i,j) = clusterlayervecs[j](i);
   		}
   		break;
   		// bundle
@@ -3420,7 +3461,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			switch(int(interseccoords.size()))
   			{
   				case 3: cout<<"triangular shape )"; break;
-  				case 4: cout<<"recangular shape )"; break;
+  				case 4: cout<<"rectangular shape )"; break;
   				case 6: cout<<"haxagonal shape )"; break;
   			}
   			cout<<endl;
@@ -3430,39 +3471,36 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			for(int i=0; i<(int)interseccoords.size(); i++)
   				testvolumepos_.push_back(interseccoords[i]);
 
-			/// save trafo matrix for later use in DDCorrFunction()
-				// cross product n_1 x n_2, plane normal
-				LINALG::Matrix<3,1> normal;
-				normal(0) = layervectors[0](1)*layervectors[1](2) - layervectors[0](2)*layervectors[1](1);
-				normal(1) = layervectors[0](2)*layervectors[1](0) - layervectors[0](0)*layervectors[1](2);
-				normal(2) = layervectors[0](0)*layervectors[1](1) - layervectors[0](1)*layervectors[1](0);
+  			/*/cout
+  			for(int i=0; i<(int)interseccoords.size(); i++)
+  			{
+  				for(int j=0; j<(int)interseccoords[i].M();j++)
+  					cout<<interseccoords[i](j)<<" ";
+  				cout<<endl;
+  			}*/
 
-				// calculate second plane vector (which is now exactly orthogonal to vec1)
-			  LINALG::SerialDenseMatrix RotMat(3, 3);
-			  // build the matrix of rotation
-			  for (int j=0; j<3; j++)
-			    RotMat(j, j) = cos(M_PI/2.0) + normal(j) * normal(j) * (1 - cos(M_PI/2.0));
-			  RotMat(0, 1) = normal(0) * normal(1) * (1 - cos(M_PI/2.0)) - normal(2) * sin(M_PI/2.0);
-			  RotMat(0, 2) = normal(0) * normal(2) * (1 - cos(M_PI/2.0)) + normal(1) * sin(M_PI/2.0);
-			  RotMat(1, 0) = normal(1) * normal(0) * (1 - cos(M_PI/2.0)) + normal(2) * sin(M_PI/2.0);
-			  RotMat(1, 2) = normal(1) * normal(2) * (1 - cos(M_PI/2.0)) - normal(0) * sin(M_PI/2.0);
-			  RotMat(2, 0) = normal(2) * normal(0) * (1 - cos(M_PI/2.0)) - normal(1) * sin(M_PI/2.0);
-			  RotMat(2, 1) = normal(2) * normal(1) * (1 - cos(M_PI/2.0)) + normal(0) * sin(M_PI/2.0);
+  			// calculate second plane vector (which is now exactly orthogonal to vec1)
+				LINALG::SerialDenseMatrix RotMat(3, 3);
+				// build the matrix of rotation for rotation about layervectors[2] = plane normal.
+				for (int i=0; i<3; i++)
+					RotMat(i, i) = cos(M_PI/2.0) + layervectors[2](i) * layervectors[2](i) * (1 - cos(M_PI/2.0));
+				RotMat(0, 1) = layervectors[2](0) * layervectors[2](1) * (1 - cos(M_PI/2.0)) - layervectors[2](2) * sin(M_PI/2.0);
+				RotMat(0, 2) = layervectors[2](0) * layervectors[2](2) * (1 - cos(M_PI/2.0)) + layervectors[2](1) * sin(M_PI/2.0);
+				RotMat(1, 0) = layervectors[2](1) * layervectors[2](0) * (1 - cos(M_PI/2.0)) + layervectors[2](2) * sin(M_PI/2.0);
+				RotMat(1, 2) = layervectors[2](1) * layervectors[2](2) * (1 - cos(M_PI/2.0)) - layervectors[2](0) * sin(M_PI/2.0);
+				RotMat(2, 0) = layervectors[2](2) * layervectors[2](0) * (1 - cos(M_PI/2.0)) - layervectors[2](1) * sin(M_PI/2.0);
+				RotMat(2, 1) = layervectors[2](2) * layervectors[2](1) * (1 - cos(M_PI/2.0)) + layervectors[2](0) * sin(M_PI/2.0);
 
-			  // rotate the first layer vector
-			  LINALG::Matrix<3,1> rotated;
-			  for (int j=0; j<3; j++)
-			    for (int k=0; k<3; k++)
-			    	rotated(j) += RotMat(j, k) * layervectors[0](k);
-			  rotated.Scale(1/rotated.Norm2());
+				// rotate the first layer vector and overwrite the second layer vector
+				for (int i=0; i<3; i++)
+					for (int j=0; j<3; j++)
+						layervectors[1](i) += RotMat(i, j) * layervectors[0](j);
+				layervectors[1].Scale(1/layervectors[1].Norm2()); // hm, not necessary
 
 			  // build the base
-			  for(int j=0; j<trafo_->M(); j++)
-			  {
-			  	(*trafo_)(j,0) = layervectors[0](j);
-			  	(*trafo_)(j,1) = rotated(j);
-			  	(*trafo_)(j,2) = normal(j);
-			  }
+			  for(int i=0; i<trafo_->M(); i++)
+			  	for(int j=0; j<trafo_->N(); j++)
+						(*trafo_)(i,j) = layervectors[j](i);
   		}
   		break;
   		// homogeneous
