@@ -445,6 +445,16 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     // gather all objects to be send
     vector<char> sendblock;
     vector<int> sendgid;
+#if 1
+    sendgid.reserve(SendPlan()[tproc].size());
+    for (set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
+    {
+      const int lid = *i;
+      const int gid = SourceMap().GID(lid);
+      if (helper.PackObject(gid,sendblock))
+        sendgid.push_back(gid);
+    }
+#else
     for (int i=0; i<SourceMap().NumMyElements(); ++i)
     {
       const int lid = i;
@@ -453,7 +463,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
       if (helper.PackObject(gid,sendblock))
         sendgid.push_back(gid);
     }
-
+#endif
     // send tproc no. of chars tproc must receive
     vector<int> snmessages(2);
     snmessages[0] = sendblock.size();
