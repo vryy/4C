@@ -394,3 +394,90 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
       or alphaF_ < 0.0 or alphaM_ < 0.0)
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
 }
+
+//----------------------------------------------------------------------*/
+// print fluid parameter to screen (AE 01-11)
+//----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3ImplParameter::PrintFluidParameter()
+{
+    cout << endl << "|-----------------------------------------------------------------------------" << endl;
+    cout << "|  General Fluid parameter: " << endl;
+    cout << "|-----------------------------------------------------------------------------" << endl;
+    cout << "|    method SetElmentGeneralFluidParameter was called:    " << set_general_fluid_parameter_ << endl;
+    cout << "|    generalized alpha time integration active:   " << is_genalpha_ << endl;
+    cout << "|    conservative formulation:    " << is_conservative_ << endl;
+    //! flag to (de)activate stationary formulation
+    cout << "|    steady state:   " << is_stationary_ << endl;
+    //! flag to (de)activate Newton linearization
+    cout << "|    Newton linearization:   " << is_newton_ << endl;
+    //! flag to (de)activate second derivatives
+    cout << "|    use inconsistent:  " << is_inconsistent_ << endl;
+    //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
+    cout << "|    physical type:    "<< physicaltype_ << endl;
+    //! Flag to (de)activate time-dependent subgrid stabilization
+    cout << "|    time-dependent subgrid stabilization:   " << tds_ << endl;
+    //! Flag to (de)activate time-dependent term in large-scale momentum equation
+    cout << "|    time dependent term:    " << transient_ << endl;
+    //! Flag to (de)activate PSPG stabilization
+    cout << "|    PSPG:   " << pspg_ << endl;
+    //! Flag to (de)activate SUPG stabilization
+    cout << "|    SUPG:   " << supg_<< endl ;
+    //! Flag to (de)activate viscous term in residual-based stabilization
+    cout << "|    VSTAB:    " << vstab_ << endl;
+    //! Flag to (de)activate least-squares stabilization of continuity equation
+    cout << "|    Grad-Div-Stab:    " << cstab_ << endl ;
+    //! Flag to (de)activate cross-stress term -> residual-based VMM
+    cout << "|    cross-stress term:    " << cross_ << endl;
+    //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
+    cout << "|    Reynolds-stress term:   " << reynolds_ << endl;
+    //! Flag to define tau
+    cout << "|    Definition of stabilization parameter:    " << whichtau_ << endl;
+    //! flag to (de)activate fine-scale subgrid viscosity
+    cout << "|    fine-scale subgrid viscosity::    " << fssgv_ << endl;
+    //! flag for material evaluation at Gaussian integration points
+    cout << "|    material evaluation at Gaussian integration points:   " << mat_gp_ << endl;
+    //! flag for stabilization parameter evaluation at Gaussian integration points
+    cout << "|    stabilization parameter evaluation at Gaussian integration points:  " << tau_gp_ << endl;
+    cout << "|---------------------------------------------------------------------------" << endl;
+
+    cout << endl << "|---------------------------------------------------------------------------" << endl;
+    cout << "|  Time parameter: " << endl;
+    cout << "|---------------------------------------------------------------------------" << endl;
+    //! time algorithm
+    cout << "|    time algorithm:   " << timealgo_ << endl;
+    //! actual time to evaluate the body BC
+    cout << "|    time:    " << time_ << endl;
+    //! time-step length
+    cout << "|    time step:   " << dt_ << endl;
+    //! timefac = dt_ * ("pseudo"-)theta_
+    cout << "|    time factor:   " << timefac_ << endl;
+    //! factor for left-hand side due to one-step-theta time-integration scheme
+    cout << "|    theta:   " << theta_ << endl;
+    //! factor for right-hand side due to one-step-theta time-integration scheme
+    cout << "|    (1-theta):   " << omtheta_ << endl;
+    //! generalised-alpha parameter (connecting velocity and acceleration)
+    cout << "|    gamma:   " << gamma_ << endl;
+    //! generalised-alpha parameter (velocity)
+    cout << "|    alpha_F:   " << alphaF_ << endl;
+    //! generalised-alpha parameter (acceleration)
+    cout << "|    alpha_M:   " << alphaM_ << endl;
+    //! generalised-alpha parameter, alphaF_*gamma_*dt_
+    cout << "|    time factor mat_u:    " << afgdt_ << endl;
+    //! time integration factor for the right hand side (boundary elements)
+    cout << "|    time factor rhs:   " << timefacrhs_ << endl;
+    //! time integration factor for the left hand side (pressure)
+    cout << "|    time factor mat_p:   " << timefacmat_p_ << endl;
+    cout << "|---------------------------------------------------------------------------" << endl;
+
+    cout << endl << "|---------------------------------------------------------------------------" << endl;
+    cout << "|  Turbulence parameter: " << endl;
+    cout << "|---------------------------------------------------------------------------" << endl;
+    //! flag to define turbulence model
+    cout << "|    turbulence model:   " << turb_mod_action_ << endl;
+    //! smagorinsky constant
+    cout << "|    smagorinsky constant:   " << Cs_ << endl;
+    //! channel length to normalize the normal wall distance
+    cout << "|    channel length to normalize the normal wall distance:   " << l_tau_ << endl;
+    cout << "|---------------------------------------------------------------------------" << endl;
+
+}

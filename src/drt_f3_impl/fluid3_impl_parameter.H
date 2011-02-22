@@ -45,6 +45,9 @@ public:
   void SetElementTimeParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
+  //! print parameter to screen
+  void PrintFluidParameter();
+
   //! Flag SetGeneralParameter was called
   bool set_general_fluid_parameter_;
   /// Flags to switch on/off the different fluid formulations
