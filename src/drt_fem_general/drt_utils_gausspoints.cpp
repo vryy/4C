@@ -175,6 +175,12 @@ DRT::UTILS::GaussIntegration::GaussIntegration( DRT::Element::DiscretizationType
   case DRT::Element::pyramid5: gp_ = GaussPointCache::Instance().Create( DRT::Element::pyramid5, 3 ); break;
   case DRT::Element::line2:    gp_ = GaussPointCache::Instance().Create( DRT::Element::line2,    3 ); break;
   case DRT::Element::line3:    gp_ = GaussPointCache::Instance().Create( DRT::Element::line3,    4 ); break;
+  case DRT::Element::nurbs2:   gp_ = GaussPointCache::Instance().Create( DRT::Element::line2,    3 ); break;
+  case DRT::Element::nurbs3:   gp_ = GaussPointCache::Instance().Create( DRT::Element::line3,    4 ); break;
+  case DRT::Element::nurbs4:   gp_ = GaussPointCache::Instance().Create( DRT::Element::quad4,    3 ); break;
+  case DRT::Element::nurbs8:   gp_ = GaussPointCache::Instance().Create( DRT::Element::hex8,     3 ); break;
+  case DRT::Element::nurbs9:   gp_ = GaussPointCache::Instance().Create( DRT::Element::quad9,    4 ); break;
+  case DRT::Element::nurbs27:  gp_ = GaussPointCache::Instance().Create( DRT::Element::hex27,    4 ); break;
   default:
     throw std::runtime_error( "unsupported element shape" );
   }
