@@ -210,8 +210,6 @@ int main(int argc, char *argv[])
     }
     catch ( std::runtime_error & err )
     {
-      DRT::Problem::Done();
-
       char line[] = "=========================================================================\n";
       std::cout << "\n\n"
                 << line
@@ -219,6 +217,8 @@ int main(int argc, char *argv[])
                 << "\n"
                 << line
                 << "\n" << std::endl;
+
+      DRT::Problem::Done();
 
 #ifdef PARALLEL
       MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
