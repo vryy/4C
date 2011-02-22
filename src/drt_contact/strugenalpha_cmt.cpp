@@ -1294,7 +1294,8 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
   // (here you can note the procedural change compared to standard
   // Gen-alpha, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -1716,7 +1717,8 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
   // (here you can note the procedural change compared to Gen-alpha
   // without contact, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -2306,7 +2308,8 @@ void CONTACT::CmtStruGenAlpha::PTC()
   // (here you can note the procedural change compared to standard
   // Gen-alpha, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
