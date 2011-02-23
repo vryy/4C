@@ -43,13 +43,13 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
   discret_->GetCondition("SurfaceStress", surfstresscond);
   if (surfstresscond.size())
   {
-    switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP"))
+    switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP"))
     {
     case INPAR::STR::dyna_gen_alfa:
       alphaf_ = sdynparams.get<double>("ALPHA_F");
       break;
     case INPAR::STR::dyna_genalpha:
-      if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"), "GENAVG")
+      if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"), "GENAVG")
              != INPAR::STR::midavg_imrlike)
         dserror("Surface stresses are only implemented for imr-like generalized alpha");
       alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");

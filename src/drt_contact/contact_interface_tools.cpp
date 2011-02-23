@@ -3233,7 +3233,7 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound = IParams().get<double>("FRBOUND");
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
@@ -4243,7 +4243,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     Epetra_SerialDenseMatrix lmuzawatan(dim,1);
     lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
-    if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
     {
       for (int j=0;j<dim;j++)
       {
@@ -4395,7 +4395,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim,1);
       lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
-      if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
       {
         for (int j=0;j<dim;j++)
         {
@@ -4596,7 +4596,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       Epetra_SerialDenseMatrix lmuzawatan(dim,1);
       lmuzawatan.Multiply('N','N',1,tanplane,lmuzawa,0.0);
 
-      if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
       {
         for (int j=0;j<dim;j++)
         {

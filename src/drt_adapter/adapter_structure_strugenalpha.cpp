@@ -56,7 +56,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
   double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time   = structure_->GetTime();
@@ -92,7 +92,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
   double dt = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -122,7 +122,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
   double time = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -148,7 +148,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
   double time = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -415,7 +415,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispn()
   double time = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -443,7 +443,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
   double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -485,7 +485,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
   double dt   = 0.0;
   double pstime = -1.0;
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = structure_->GetTime();
@@ -496,7 +496,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RCP<Epetra_Vector> idis;
 
-  switch (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR"))
+  switch (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR"))
   {
   case 1:
   {

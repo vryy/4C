@@ -87,7 +87,7 @@ FSI::RobinNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
 Teuchos::RCP<Epetra_Vector> FSI::RobinNeumann::InitialGuess()
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  if (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR")!=1)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR")!=1)
   {
     dserror("unknown interface force predictor '%s'",
             fsidyn.get<string>("PREDICTOR").c_str());

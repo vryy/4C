@@ -106,7 +106,7 @@ void UTILS::ConstraintSolver::Setup
   {
     // for STR::TimIntImpl
     isadapttol_ = true;
-    isadapttol_ = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
+    isadapttol_ = (DRT::INPUT::IntegralValue<int>(params,"ADAPTCONV") == 1);
   }
 
   // simple parameters

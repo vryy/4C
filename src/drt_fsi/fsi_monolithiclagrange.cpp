@@ -24,7 +24,7 @@ void FSI::MonolithicLagrange::SetupSystem()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   SetDefaultParameters(fsidyn,NOXParameterList());
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   // right now we use matching meshes at the interface
 
@@ -138,7 +138,7 @@ void FSI::MonolithicLagrange::SetupSystem()
                                                          StructureField(),
                                                          FluidField(),
                                                          AleField(),
-                                                         Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                         DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                           pcomega[0],
                                                           pciter[0],
                                                           spcomega[0],

@@ -95,7 +95,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   // compute smoothed gradient of G-function field
   // remark: must be called after ProcessFlameFront, since it relies on the new interface position
 
-  const INPAR::COMBUST::SmoothGradPhi smoothgradphi = Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>
+  const INPAR::COMBUST::SmoothGradPhi smoothgradphi = DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>
   (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
   if(smoothgradphi!=INPAR::COMBUST::smooth_grad_phi_none)
     CallSmoothGradPhi(combustdyn);
@@ -130,7 +130,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
   myboundaryintcells_.clear();
 
   // get type of integrationcells
-  xfeminttype_ = Teuchos::getIntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
+  xfeminttype_ = DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
 
   // loop over fluid (combustion) column elements
   // remark: loop over row elements would be sufficient, but enrichment is done in column loop
@@ -151,7 +151,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
     const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
 
     // refinement strategy is turned on
-    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    if (DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
     {
       //std::cout << "starting refinement ..." << std::endl;
       maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
@@ -175,7 +175,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // should not be necessary
 #if 0
     // delete all refinement cells of root cell
-    if (Teuchos::getIntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    if (DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
     {
       rootcell->Clear();
     }
@@ -796,7 +796,7 @@ template <const size_t nsd_real>
 void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& combustdyn)
 {
   // get type of reconstruction
-  const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>
+  const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>
   (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
 
   // number space dimensions for 3d combustion element
@@ -1611,7 +1611,7 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
     std::cout << "\n---  smoothing gradient of phi (G-function) around the interface for surface tension applications ... " << std::flush;
 
   // get type of reconstruction
-  const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>
+  const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>
   (combustdyn.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI");
 
 

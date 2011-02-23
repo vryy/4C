@@ -88,7 +88,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     bool ActiveSetSemiSmoothConverged()
     {
-      bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
       if (semismooth) return activesetssconv_;
       else            return true;
     }
@@ -105,7 +105,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     bool ActiveSetConverged()
     {
-      bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
       if (!semismooth) return activesetconv_;
       else             return true;
     }

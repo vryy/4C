@@ -47,7 +47,7 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   // ELCH with natural convection
   if (prbtype_ == "elch")
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
       // density at time n
       elchdensn_  = LINALG::CreateVector(*dofrowmap,true);
@@ -444,7 +444,7 @@ void SCATRA::TimIntBDF2::OutputRestart()
   // write electrode potential of the first, galvanostatic electro kinetic condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electro kinetic BC
       vector<DRT::Condition*> cond;
@@ -491,7 +491,7 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
@@ -537,7 +537,7 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
 {
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
@@ -568,7 +568,7 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
 {
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);

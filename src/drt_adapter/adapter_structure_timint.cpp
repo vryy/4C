@@ -341,7 +341,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::PredictInterfaceDispnp
 
   Teuchos::RCP<Epetra_Vector> idis;
 
-  switch (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR"))
+  switch (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR"))
   {
   case 1:
   {

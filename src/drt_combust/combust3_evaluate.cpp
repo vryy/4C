@@ -296,7 +296,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool supg  = true;
       const bool cstab = true;
       // stabilization parameters
-      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
+      const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
             tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
@@ -427,7 +427,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool supg  = true;
       const bool cstab = true;
       // stabilization parameters
-      const INPAR::FLUID::TauType tautype = Teuchos::getIntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
+      const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
             tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or

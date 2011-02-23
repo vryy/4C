@@ -52,7 +52,7 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // ELCH with natural convection
   if (prbtype_ == "elch")
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
       // density at time n
       elchdensn_ = LINALG::CreateVector(*dofrowmap,true);
@@ -438,7 +438,7 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   // write additional restart data for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
@@ -491,7 +491,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
@@ -551,7 +551,7 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate(const bool init)
 {
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
@@ -600,7 +600,7 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsSetOldPartOfRHS()
 {
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);

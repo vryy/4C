@@ -129,7 +129,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     RCP<Epetra_Vector> LagrMultUzawa()
     {
-      INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+      INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
       if (soltype != INPAR::CONTACT::solution_auglag) dserror("LagrMultUzawa() only defined for augmented strategy");
       return zuzawa_;
     }  
@@ -161,7 +161,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     bool ParRedist()
     {
-      INPAR::MORTAR::ParRedist partype = Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
+      INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
       if (partype!=INPAR::MORTAR::parredist_none) return true;
       else return false;
     }

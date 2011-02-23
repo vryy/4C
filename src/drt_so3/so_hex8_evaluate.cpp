@@ -389,7 +389,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
@@ -470,7 +470,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||

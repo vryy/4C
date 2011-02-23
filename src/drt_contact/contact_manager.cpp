@@ -293,7 +293,7 @@ discret_(discret)
         }
 
         // create CoNode object or FriNode object in the frictional case
-        INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(cparams,"FRICTION");
+        INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams,"FRICTION");
 
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time
@@ -381,7 +381,7 @@ discret_(discret)
     fflush(stdout);
   }
   INPAR::CONTACT::SolvingStrategy stype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
     strategy_ = rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
@@ -426,82 +426,82 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // this is mortar contact
   // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarcontact)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(input,"APPLICATION") != INPAR::CONTACT::app_mortarcontact)
     dserror("You should not be here...");
 
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
-         Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
+         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                               input.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                  input.get<double>("PENALTYPARAM") <= 0.0)
     dserror("Penalty parameter eps = 0, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
-         Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                               input.get<double>("PENALTYPARAMTAN") <= 0.0)
     dserror("Tangential penalty parameter eps = 0, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                    input.get<int>("UZAWAMAXSTEPS") < 2)
     dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_auglag &&
                                                input.get<double>("UZAWACONSTRTOL") <= 0.0)
     dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                             input.get<double>("SEMI_SMOOTH_CT") == 0.0)
     dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                    input.get<double>("FRBOUND") <= 0.0)
     dserror("No valid Tresca friction bound provided, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_coulomb &&
                                                    input.get<double>("FRCOEFF") <= 0.0)
     dserror("No valid Coulomb friction coefficient provided, must be greater than 0");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(input,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(input,"SYSTEM") == INPAR::CONTACT::system_condensed)
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
                                                      input.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
   
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
                                                      input.get<double>("MAX_BALANCE") <  1.0)
     dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
   
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_tresca &&
                                                                             dim == 3)
     dserror("3D frictional contact with Tresca's law not yet implemented");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
-                     Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON") != 1 &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+                     DRT::INPUT::IntegralValue<int>(input,"SEMI_SMOOTH_NEWTON") != 1 &&
                                                                             dim == 3)
     dserror("3D frictional contact only implemented with Semi-smooth Newton");
 
 #ifndef CONTACTCOMPHUEBER
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none &&
                                                                             dim == 3)
     dserror("3D frictional contact without flag CONTACTCOMPHUEBER not yet implemented");
 #endif
 
-  if (Teuchos::getIntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
+  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true && dim == 3)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   // check for self contact
@@ -516,7 +516,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
 
   if (self == true &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
   
   // *********************************************************************
@@ -524,49 +524,49 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   
   if (problemtype=="tsi" &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
-      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==false)
     dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
 
   if (problemtype=="tsi" &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==true)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
+      DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==true)
     dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // no parallel redistribution in for thermal-structure-interaction
   if (problemtype=="tsi" && 
-      Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
   // *********************************************************************
   // contact with wear
   // *********************************************************************
   
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") == INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") == INPAR::CONTACT::wear_none &&
       input.get<double>("WEARCOEFF") != 0.0)
     dserror("ERROR: Wear coefficient only necessary in the context of wear.");
   
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
-      Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") == INPAR::CONTACT::friction_none &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none)
     dserror("ERROR: Wear models only applicable to frictional contact.");
 
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(input,"WEAR") != INPAR::CONTACT::wear_none &&
       input.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if ((Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
-       Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
     dserror("No Petrov-Galerkin approach (for LM) implemented for 3D quadratic contact with STANDARD shape fct.");
 
-  if ((Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
-      Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin ||
-      Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
-      Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
-      Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Only quadratic/quadratic approach (for LM) implemented for 3D quadratic contact with DUAL shape fct.");
 
   // *********************************************************************

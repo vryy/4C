@@ -112,7 +112,7 @@ void STR::strudyn_direct()
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
   Teuchos::RCP<ADAPTER::Structure> asti = Teuchos::null;
-  if ((bool) Teuchos::getIntegralValue<int>(sdyn,"ADAPTERDRIVE"))
+  if ((bool) DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTERDRIVE"))
   {
     asti = Teuchos::rcp(new ADAPTER::StructureTimInt(Teuchos::rcp(new Teuchos::ParameterList(ioflags)),
                                                      Teuchos::rcp(new Teuchos::ParameterList(sdyn)),
@@ -203,9 +203,9 @@ void STR::MultiScaleCheck()
     Teuchos::RCP<MAT::PAR::Material> mat = i->second;
     if (mat->Type() == INPAR::MAT::m_struct_multiscale)
     {
-      if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
         dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-      else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
+      else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
         dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
       break;
     }

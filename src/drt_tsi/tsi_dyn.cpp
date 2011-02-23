@@ -104,7 +104,7 @@ void tsi_dyn_drt()
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  const INPAR::TSI::SolutionSchemeOverFields coupling  = Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  const INPAR::TSI::SolutionSchemeOverFields coupling  = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // choose algorithm depending on solution type
   switch (coupling)

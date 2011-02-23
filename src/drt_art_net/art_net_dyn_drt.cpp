@@ -134,10 +134,10 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
 
   // flag for writing the hemodynamic physiological results
-  //arterytimeparams.set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
+  //arterytimeparams.set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the
   //                       arteries.
-  //  int init = Teuchos::getIntegralValue<int> (artdyn,"INITIALFIELD");
+  //  int init = DRT::INPUT::IntegralValue<int> (artdyn,"INITIALFIELD");
 
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time

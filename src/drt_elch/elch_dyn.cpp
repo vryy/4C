@@ -77,7 +77,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
   // access the scalar transport parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   const INPAR::SCATRA::VelocityField veltype
-    = Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
   switch (veltype)
@@ -145,7 +145,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
-    const int withale = Teuchos::getIntegralValue<int>(elchcontrol,"MOVINGBOUNDARY");
+    const int withale = DRT::INPUT::IntegralValue<int>(elchcontrol,"MOVINGBOUNDARY");
 
     if (withale==1)
     {

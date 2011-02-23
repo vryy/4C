@@ -78,7 +78,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
   case INPAR::STR::dyna_centr_diff :
     dserror("no central differences in DRT");
@@ -161,7 +161,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   genalphaparams->set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
 
-  INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
+  INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
   genalphaparams->set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
   {
     vector<int> controlnode;
@@ -177,7 +177,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   {
     // use linearization of follower loads in Newton
-    int loadlin = Teuchos::getIntegralValue<int>(sdyn,"LOADLIN");
+    int loadlin = DRT::INPUT::IntegralValue<int>(sdyn,"LOADLIN");
     genalphaparams->set<bool>("LOADLIN",loadlin!=0);
   }
 
@@ -212,20 +212,20 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
   genalphaparams->set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
-  genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+  genalphaparams->set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
 
   genalphaparams->set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
   genalphaparams->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
-  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   genalphaparams->set<INPAR::STR::StressType>("io structural stress", iostress);
   genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   genalphaparams->set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
-  genalphaparams->set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
+  genalphaparams->set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
 
   genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
   genalphaparams->set<int>   ("write restart every",prbdyn.get<int>("RESTARTEVRY"));
@@ -234,7 +234,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<bool>  ("print to err",true);
   genalphaparams->set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
-  switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
   {
   case INPAR::STR::soltech_newtonfull:
     genalphaparams->set<string>("equilibrium iteration","full newton");
@@ -263,7 +263,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // set predictor (takes values "constant" "consistent")
-  switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
   {
   case INPAR::STR::pred_vague:
     dserror("You have to define the predictor");
@@ -283,7 +283,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // test for patient specific needs
-  if (Teuchos::getIntegralValue<int>(patspec,"PATSPEC"))
+  if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
     PATSPEC::PatientSpecificGeometry(*actdis);
   }
@@ -295,13 +295,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
     // robin flags
     INPAR::FSI::PartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     genalphaparams->set<bool>  ("structrobin",
                                 method==INPAR::FSI::DirichletRobin or method==INPAR::FSI::RobinRobin);
 
     genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
 
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
@@ -312,8 +312,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
         coupling == fsi_iter_mortar_monolithicfluidsplit or
         coupling == fsi_iter_mortar_monolithicstructuresplit)
     {
-      if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
-          and (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT") != INPAR::STR::pred_constdisvelaccpres))
+      if ((DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
+          and (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT") != INPAR::STR::pred_constdisvelaccpres))
         dserror("only constant structure predictor with monolithic FSI possible");
 
 #if 0
@@ -331,7 +331,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   bool mortarmeshtying = false;
   bool beamcontact = false;
   INPAR::CONTACT::ApplicationType apptype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   switch (apptype)
   {
     case INPAR::CONTACT::app_none:
@@ -353,7 +353,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   // detect whether thermal bath is present
   bool thermalbath = false;
-  switch (Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
   {
     case INPAR::STATMECH::thermalbath_none:
       thermalbath = false;
@@ -396,7 +396,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   else
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_lung_monolithicstructuresplit or
         coupling == fsi_iter_lung_monolithicfluidsplit)
       structure_ = rcp(new StructureLung(
@@ -465,7 +465,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
     // Robin flags
     INPAR::FSI::PartitionedCouplingMethod method
-      = Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      = DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     xparams->set<bool>("structrobin",
                        ( (method==INPAR::FSI::DirichletRobin)
                          or (method==INPAR::FSI::RobinRobin) ));
@@ -474,7 +474,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     xparams->set<double>("alpha s", fsidyn.get<double>("ALPHA_S"));
 
     // check if predictor fits to FSI algo
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if ( (coupling == fsi_iter_monolithicfluidsplit)
          or (coupling == fsi_iter_monolithiclagrange)
          or (coupling == fsi_iter_monolithicstructuresplit)
@@ -485,9 +485,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_mortar_monolithicfluidsplit)
          or (coupling == fsi_iter_mortar_monolithicstructuresplit))
     {
-      if ((Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
+      if ((DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
           != INPAR::STR::pred_constdisvelacc) and
-          (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
+          (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
           != INPAR::STR::pred_constdisvelaccpres))
       {
         dserror("only constant structure predictor with monolithic FSI possible");
@@ -517,9 +517,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       Teuchos::RCP<MAT::PAR::Material> mat = i->second;
       if (mat->Type() == INPAR::MAT::m_struct_multiscale)
       {
-        if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
+        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
+        else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
         break;
       }
@@ -573,7 +573,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
         genprob.probtyp == prb_fsi_xfem)
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
       Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
       if ((actdis->Comm()).MyPID()==0) cout << "Using StructureNOXCorrectionWrapper()..." << endl;

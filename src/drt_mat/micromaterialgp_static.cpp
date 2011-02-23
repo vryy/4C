@@ -107,7 +107,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn_macro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_macro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;

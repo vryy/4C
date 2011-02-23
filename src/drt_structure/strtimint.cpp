@@ -73,7 +73,7 @@ STR::TimInt::TimInt
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
-  solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   output_(output),
@@ -83,15 +83,15 @@ STR::TimInt::TimInt
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
-  writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
+  writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
   writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
   writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
-  writestress_(Teuchos::getIntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
-  writestrain_(Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
+  writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
+  writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
-  writesurfactant_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
+  writesurfactant_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
   energyfile_(NULL),
-  damping_(Teuchos::getIntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
+  damping_(DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
@@ -277,10 +277,10 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 {
   // some parameters
   const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  INPAR::CONTACT::ApplicationType apptype  = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-  INPAR::MORTAR::ShapeFcn         shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");
-  INPAR::CONTACT::SolvingStrategy soltype  = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
-  bool semismooth = Teuchos::getIntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
+  INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  INPAR::MORTAR::ShapeFcn         shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(scontact,"SHAPEFCN");
+  INPAR::CONTACT::SolvingStrategy soltype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
 
   // check contact conditions
   vector<DRT::Condition*> contactconditions(0);
@@ -292,9 +292,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // store integration parameter alphaf into cmtman_ as well
     // (for all cases except GenAlpha and GEMM this is zero)
     double alphaf = 0.0;
-    if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
       alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
       alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
 
     // decide whether this is meshtying or contact and create manager

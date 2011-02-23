@@ -42,7 +42,7 @@ StruGenAlpha(params,dis,solver,output)
   // -------------------------------------------------------------------
   // Check for beam contact
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
     beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
   else
     dserror("ERROR: How did you arrive here...???");
@@ -1191,7 +1191,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
   
   // decide which solving strategy
   INPAR::CONTACT::SolvingStrategy soltype =
- Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+ DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
   
   //**********************************************************************
   // solving strategy using regularization with penalty method

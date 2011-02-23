@@ -87,7 +87,7 @@ Teuchos::RCP<THR::TimIntImpl> ADAPTER::ThermoTimInt::Create(
   Teuchos::RCP<THR::TimIntImpl> tti = Teuchos::null;
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
     // Static analysis
     case INPAR::THR::dyna_statics :

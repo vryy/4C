@@ -61,7 +61,7 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
 
   // decide if one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields method =
-    Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   // coupling variable
   displacementcoupling_
     = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -74,7 +74,7 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
   quasistatic_
-    = Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statics;
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statics;
 
   if (method == INPAR::TSI::OneWay)
   {
@@ -215,7 +215,7 @@ void TSI::Algorithm::TimeLoop()
 
   // decide if apply one-way coupling or full coupling
   INPAR::TSI::SolutionSchemeOverFields method =
-    Teuchos::getIntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // get active nodes from structural contact simulation
   RCP<MORTAR::ManagerBase> cmtman = StructureField().ContactManager();

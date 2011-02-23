@@ -81,12 +81,12 @@ wear_(false)
   if (selfcontact) isselfcontact_=true;
 
   // set frictional contact status
-  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+  INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
   
   // set wear contact status
-  INPAR::CONTACT::WearType wtype = Teuchos::getIntegralValue<INPAR::CONTACT::WearType>(Params(),"WEAR");
+  INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(Params(),"WEAR");
   if (wtype != INPAR::CONTACT::wear_none)
     wear_ = true;
 
@@ -456,7 +456,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // {d}, we have to apply the transformation matrix T and vice versa
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
     for (int i=0; i<(int)interface_.size(); ++i)
       dualquadslave3d_ += interface_[i]->Quadslave3d();
@@ -1548,7 +1548,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // only for Augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
-  INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
   if (st == INPAR::CONTACT::solution_auglag)
   {
     zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1628,7 +1628,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
 
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
   
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;

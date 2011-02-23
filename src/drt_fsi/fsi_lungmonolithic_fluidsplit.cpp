@@ -110,7 +110,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystem()
                                                                 FluidField(),
                                                                 AleField(),
                                                                 false,
-                                                                Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                                DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
                                                                 pciter[0],
                                                                 spcomega[0],

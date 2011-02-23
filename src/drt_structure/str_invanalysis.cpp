@@ -94,7 +94,7 @@ void STR::invanalysis()
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  switch(Teuchos::getIntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
+  switch(DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
   {
     case INPAR::STR::inv_lung:
     {

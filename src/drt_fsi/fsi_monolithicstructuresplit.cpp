@@ -27,7 +27,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
 void FSI::MonolithicStructureSplit::SetupSystem()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
@@ -163,7 +163,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   }
 
   // enable debugging
-  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
   {
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
@@ -179,7 +179,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           FluidField(),
                                                           AleField(),
                                                           true,
-                                                          Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                          DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                           pcomega,
                                                           pciter,
                                                           spcomega,
@@ -188,7 +188,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           fpciter,
                                                           apcomega,
                                                           apciter,
-                                                          Teuchos::getIntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+                                                          DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
                                                           linearsolverstrategy_,
                                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
   break;
@@ -201,7 +201,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           FluidField(),
                                                           AleField(),
                                                           true,
-                                                          Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                          DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                           pcomega[0],
                                                           pciter[0],
                                                           spcomega[0],

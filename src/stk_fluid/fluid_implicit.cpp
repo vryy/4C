@@ -125,15 +125,15 @@ STK::FLD::Fluid::Fluid( STK::Discretization & dis, Teuchos::RCP<LINALG::Solver> 
 {
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
-  physicaltype_ = Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
-  timealgo_     = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+  physicaltype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE");
+  timealgo_     = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
   stepmax_      = fdyn.get<int>("NUMSTEP");
   maxtime_      = fdyn.get<double>("MAXTIME");
   dta_          = fdyn.get<double>("TIMESTEP");
   dtp_          = dta_;
   theta_        = fdyn.get<double>("THETA");
   alefluid_     = false;
-  newton_       = Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER");
+  newton_       = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER");
   convform_     = fdyn.get<string>("CONVFORM");
 
   refinestep_   = 1;

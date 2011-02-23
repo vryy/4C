@@ -30,7 +30,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     )
 {
     const Teuchos::ParameterList& list = DRT::Problem::Instance()->ProblemTypeParams();
-    const PROBLEM_TYP probtyp = Teuchos::getIntegralValue<PROBLEM_TYP>(list,"PROBLEMTYP");
+    const PROBLEM_TYP probtyp = DRT::INPUT::IntegralValue<PROBLEM_TYP>(list,"PROBLEMTYP");
 
     // switch between moving domain fluid implementations
     switch (probtyp)

@@ -148,7 +148,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
 {
   if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
   {
-    if (Teuchos::getIntegralValue<int>(*params_,"INITPOTCALC"))
+    if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC"))
     {
       // time measurement:
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
@@ -685,7 +685,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
   // only required for ELCH with natural convection
   if (prbtype_ == "elch")
   {
-    if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
     {
       // allocate denselch_ with *dofrowmap and initialize it
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -1948,7 +1948,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
   // leave method, if there's nothing to do!
   if (extraparams_->isSublist("ELCH CONTROL") == false) return true;
 
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
     vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);

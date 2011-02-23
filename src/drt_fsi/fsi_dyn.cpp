@@ -172,7 +172,7 @@ void fluid_freesurf_drt()
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
   case fsi_iter_monolithicfluidsplit:
@@ -180,7 +180,7 @@ void fluid_freesurf_drt()
   case fsi_iter_monolithiclagrange:
   {
 
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
     if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
         linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
@@ -262,7 +262,7 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
 
-  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
   case fsi_pseudo_structureale:
@@ -295,7 +295,7 @@ void fsi_ale_drt()
   {
     Teuchos::RCP<FSI::Monolithic> fsi;
 
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
     // call constructor to initialise the base class
     if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
@@ -370,7 +370,7 @@ void fsi_ale_drt()
     Teuchos::RCP<FSI::Partitioned> fsi;
 
     INPAR::FSI::PartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumannSlideale)
     {
@@ -448,12 +448,12 @@ void xfsi_drt()
 
 #endif
 
-  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
   case fsi_iter_monolithicxfem:
   {
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
     if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
       dserror("Only Newton-Krylov scheme with XFEM fluid");
@@ -489,7 +489,7 @@ void xfsi_drt()
     Teuchos::RCP<FSI::Partitioned> fsi;
 
     INPAR::FSI::PartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumann)
     {

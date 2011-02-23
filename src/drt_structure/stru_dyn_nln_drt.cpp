@@ -59,7 +59,7 @@ void caldyn_drt()
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
   // do we want to do inverse analysis?
-  if (Teuchos::getIntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
+  if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
       != INPAR::STR::inv_none)
   {
     STR::invanalysis();
@@ -70,7 +70,7 @@ void caldyn_drt()
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
     // major switch to different time integrators
-    switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+    switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
     case INPAR::STR::dyna_centr_diff:
       dserror("no central differences in DRT");
@@ -179,7 +179,7 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
     //==================================================================
     // Generalized alpha time integration
@@ -192,7 +192,7 @@ void dyn_nlnstructural_drt()
 
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
 
-      INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
+      INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
       genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
       {
         vector<int> controlnode;
@@ -208,7 +208,7 @@ void dyn_nlnstructural_drt()
 
       {
         // use linearization of follower loads in Newton
-        int loadlin = Teuchos::getIntegralValue<int>(sdyn,"LOADLIN");
+        int loadlin = DRT::INPUT::IntegralValue<int>(sdyn,"LOADLIN");
         genalphaparams.set<bool>("LOADLIN",loadlin!=0);
       }
 
@@ -245,21 +245,21 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
       genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
       genalphaparams.set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
-      genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+      genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 
       genalphaparams.set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
       genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
-      INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+      INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
       genalphaparams.set<INPAR::STR::StressType>("io structural stress", iostress);
 
       genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-      INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+      INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
       genalphaparams.set<INPAR::STR::StrainType>("io structural strain", iostrain);
 
-      genalphaparams.set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
+      genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
 
       genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
       genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
@@ -269,7 +269,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
       // non-linear solution technique
-      switch (Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
+      switch (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn,"NLNSOL"))
       {
         case INPAR::STR::soltech_newtonfull:
           genalphaparams.set<string>("equilibrium iteration","full newton");
@@ -301,7 +301,7 @@ void dyn_nlnstructural_drt()
       }
 
       // set predictor (takes values "constant" "consistent")
-      switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
+      switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
       {
         case INPAR::STR::pred_vague:
           dserror("You have to define the predictor");
@@ -325,7 +325,7 @@ void dyn_nlnstructural_drt()
       bool mortarmeshtying = false;
       bool beamcontact = false;
       INPAR::CONTACT::ApplicationType ctype =
-        Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
       switch (ctype)
       {
         case INPAR::CONTACT::app_none:
@@ -346,7 +346,7 @@ void dyn_nlnstructural_drt()
 
       // detect whether thermal bath is present
       bool thermalbath = false;
-      switch (Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
+      switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmech,"THERMALBATH"))
       {
         case INPAR::STATMECH::thermalbath_none:
           thermalbath = false;

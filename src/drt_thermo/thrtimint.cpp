@@ -56,7 +56,7 @@ THR::TimInt::TimInt(
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
-  solveradapttol_(Teuchos::getIntegralValue<int>(tdynparams,"ADAPTCONV")==1),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   output_(output),
@@ -66,11 +66,11 @@ THR::TimInt::TimInt(
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
-  writeglob_((bool) Teuchos::getIntegralValue<int>(ioparams,"THERM_TEMPERATURE")),
+  writeglob_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"THERM_TEMPERATURE")),
   writeglobevery_(tdynparams.get<int>("RESEVRYGLOB")),
   writeelemevery_(tdynparams.get<int>("RESEVRYELEM")),
-  writeheatflux_(Teuchos::getIntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
-  writetempgrad_(Teuchos::getIntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
+  writeheatflux_(DRT::INPUT::IntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
+  writetempgrad_(DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
   writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
   time_(Teuchos::null),
@@ -142,7 +142,7 @@ THR::TimInt::TimInt(
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
   SetInitialField(
-    Teuchos::getIntegralValue<INPAR::THR::InitialField>(tdynparams,"INITIALFIELD"),
+    DRT::INPUT::IntegralValue<INPAR::THR::InitialField>(tdynparams,"INITIALFIELD"),
     startfuncno
     );
 

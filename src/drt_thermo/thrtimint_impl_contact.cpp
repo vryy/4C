@@ -96,7 +96,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   mmatrix->Complete(*mdofs,*sdofs);
 
   // now the choice, with or without lagrange multipliers
-  bool thermolagmult = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"THERMOLAGMULT");
+  bool thermolagmult = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"THERMOLAGMULT");
 
   if(thermolagmult == false)
   {

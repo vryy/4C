@@ -542,7 +542,7 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
   : BlockMonolithicFS(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
@@ -638,7 +638,7 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
                                    FluidField(),
                                    AleField(),
                                    true,
-                                   Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                   DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                    pcomega[0],
                                    pciter[0],
                                    fpcomega[0],

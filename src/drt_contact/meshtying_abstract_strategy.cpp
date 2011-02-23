@@ -232,7 +232,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // {d}, we have to apply the transformation matrix T and vice versa
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
     for (int i=0; i<(int)interface_.size(); ++i)
       dualquadslave3d_ += interface_[i]->Quadslave3d();
@@ -765,7 +765,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
   
   // only for Augmented strategy
-  INPAR::CONTACT::SolvingStrategy st = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
   if (st == INPAR::CONTACT::solution_auglag)
   {
     zuzawa_ = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -789,7 +789,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
   
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;

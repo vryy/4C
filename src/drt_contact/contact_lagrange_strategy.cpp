@@ -111,7 +111,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // input parameters
-  bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
+  bool fulllin = DRT::INPUT::IntegralValue<int>(Params(),"FULL_LINEARIZATION");
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -180,8 +180,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(RCP<LINALG::SparseOperator>& 
   }
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   
   //**********************************************************************
   //**********************************************************************
@@ -1068,7 +1068,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // input parameters
-  bool fulllin = Teuchos::getIntegralValue<int>(Params(),"FULL_LINEARIZATION");
+  bool fulllin = DRT::INPUT::IntegralValue<int>(Params(),"FULL_LINEARIZATION");
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -1130,8 +1130,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
   }
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   
   //**********************************************************************
   //**********************************************************************
@@ -2462,7 +2462,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
                   int numiter)
 {
   // get system type
-  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   // check if contact contributions are present,
   // if not we make a standard solver call to speed things up
@@ -2822,8 +2822,8 @@ void CONTACT::CoLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
  
   //**********************************************************************
   //**********************************************************************
@@ -2949,7 +2949,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 {
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -3263,12 +3263,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // FIXME: Here we do not consider zig-zagging yet!
 
   // get out gof here if not in the semi-smooth Newton case
-  bool semismooth = Teuchos::getIntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
   if (!semismooth) return;
   
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
   
   // read weighting factor cn
   // (this is necessary in semi-smooth Newton case, as the search for the

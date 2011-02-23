@@ -61,7 +61,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
 
   // exclude old names
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // old style time integrators
     case INPAR::STR::dyna_gen_alfa :
@@ -105,7 +105,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   Teuchos::RCP<STR::TimIntImpl> sti = Teuchos::null;
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Static analysis
     case INPAR::STR::dyna_statics :
@@ -166,7 +166,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;
 
   // create specific time integrator
-  switch (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Adams-Bashforth 2nd order (AB2) time integration
     case INPAR::STR::dyna_ab2 :

@@ -75,7 +75,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
   const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
   // parameters for interaction potential
   
-  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
+  switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
   {
     case INPAR::POTENTIAL::potential_surface:
       params_.set<string>("potential type","Surface");
@@ -101,7 +101,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
   }
  
   // set approximation method for volume potentials
-  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
+  switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
   {
     case INPAR::POTENTIAL::approximation_none:
       params_.set<string>("approximation type","None");
@@ -118,7 +118,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
   }
   
   // check if analytical solution should be computed
-  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
+  switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
   {
     case INPAR::POTENTIAL::solution_none:
       params_.set<string>("solution type","None");
@@ -146,7 +146,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
   // parameters for search tree
   const Teuchos::ParameterList& search_tree   = DRT::Problem::Instance()->SearchtreeParams();
 
-  switch(Teuchos::getIntegralValue<INPAR::GEO::TreeType>(search_tree,"TREE_TYPE"))
+  switch(DRT::INPUT::IntegralValue<INPAR::GEO::TreeType>(search_tree,"TREE_TYPE"))
   {
     case INPAR::GEO::Octree3D:
       treetype_ = GEO::OCTTREE;
@@ -208,7 +208,7 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
   p.set("thickness", thickness);
   
   const Teuchos::ParameterList& intpot   = DRT::Problem::Instance()->InteractionPotentialParams();
-  switch(Teuchos::getIntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
+  switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
   {
     case INPAR::POTENTIAL::solution_none:
       p.set<string>("solution type","None");

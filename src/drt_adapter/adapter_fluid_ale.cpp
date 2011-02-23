@@ -120,7 +120,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   {
     // if we have values at the interface we need to apply them
     AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField().ApplyInterfaceVelocities(ivel);
     }
@@ -143,7 +143,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute
-  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField().NonlinearSolve();
   }

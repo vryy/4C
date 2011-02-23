@@ -172,7 +172,7 @@ NOX::FSI::LinearPartitioned::InterfaceVelocity(Teuchos::RCP<const Epetra_Vector>
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
   double dt = algorithm_.Dt();
 
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER") == 1)
   {
     ivel = rcp(new Epetra_Vector(*iveln_));
     ivel->Update(2./dt, *idispnp, -2./dt, *idispn_, -1.);

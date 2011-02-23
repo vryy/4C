@@ -81,7 +81,7 @@ StruGenAlpha(params,dis,solver,output)
 
     // decide whether this is meshtying or contact
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-    INPAR::CONTACT::ApplicationType apptype = Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+    INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
     if (apptype==INPAR::CONTACT::app_mortarmeshtying)
       cmtmanager_ = rcp(new CONTACT::MtManager(discret_,alphaf));
     else if (apptype==INPAR::CONTACT::app_mortarcontact)
@@ -155,11 +155,11 @@ StruGenAlpha(params,dis,solver,output)
   {
     // strategy type
     INPAR::CONTACT::SolvingStrategy soltype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
 
     // shape function type
     INPAR::MORTAR::ShapeFcn shapefcn =
-    Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
 
     // output
     if (discret_.Comm().MyPID() == 0)
@@ -1039,9 +1039,9 @@ void CONTACT::CmtStruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 
   // this is for monolithic FSI with meshtying or contact
   // (only works for penalty and dual Lagrange multiplier / semi-smooth Newton strategy)
-  INPAR::MORTAR::ShapeFcn shapefcn        = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
-  INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-  bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  INPAR::MORTAR::ShapeFcn shapefcn        = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(cmtmanager_->GetStrategy().Params(),"SHAPEFCN");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
     dserror("ERROR: Monolithic FSI with LM strategy for meshtying/contact only for dual+semismooth case!");
@@ -3054,7 +3054,7 @@ void CONTACT::CmtStruGenAlpha::OutputEnergyMomentum()
 {
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::EmOutputType>(cmtmanager_->GetStrategy().Params(),"EMOUTPUT");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(cmtmanager_->GetStrategy().Params(),"EMOUTPUT");
 
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;
@@ -3251,14 +3251,14 @@ void CONTACT::CmtStruGenAlpha::CmtNonlinearSolve()
   //********************************************************************
   // application type
   INPAR::CONTACT::ApplicationType apptype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtmanager_->GetStrategy().Params(),"APPLICATION");
 
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth = Teuchos::getIntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtmanager_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   // iteration type
   string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -3472,8 +3472,8 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   if (isadapttol && numiter) solver_.AdaptTolerance(wanted,worst,adaptolbetter);
 
   // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-  INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
 
   //**********************************************************************
   // Solving a saddle point system

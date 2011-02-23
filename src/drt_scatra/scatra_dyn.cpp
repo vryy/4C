@@ -63,7 +63,7 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
 
   // set velocity field
   const INPAR::SCATRA::VelocityField veltype
-    = Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
   switch (veltype)
   {
     case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)

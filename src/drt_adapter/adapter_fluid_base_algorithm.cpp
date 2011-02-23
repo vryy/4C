@@ -155,8 +155,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // --------------------provide info about periodic boundary conditions
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
-  fluidtimeparams->set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
-  fluidtimeparams->set<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner",Teuchos::getIntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
+  fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
+  fluidtimeparams->set<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -164,7 +164,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<INPAR::FLUID::PhysicalType>("Physical Type",
-      Teuchos::getIntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
 
   // -------------------------------------------------- time integration
@@ -199,10 +199,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // type of predictor
   fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
-  fluidtimeparams->set<INPAR::FLUID::LinearisationAction>("Linearisation", Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
+  fluidtimeparams->set<INPAR::FLUID::LinearisationAction>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // set bool flag "Newton true or false" for combustion formulation and XFEM
   //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-  //                           Teuchos::getIntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
+  //                           DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
   // maximum number of nonlinear iteration steps
   fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // maximum number of nonlinear iteration steps for initial stationary solution
@@ -221,15 +221,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // solution output
   fluidtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
   // flag for writing stresses
-  fluidtimeparams->set ("write stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  fluidtimeparams->set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
   // flag for writing wall shear stress
-  fluidtimeparams->set ("write wall shear stresses"  ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
+  fluidtimeparams->set ("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
 
   // ---------------------------------------------------- lift and drag
-  fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
+  fluidtimeparams->set<int>("liftdrag",DRT::INPUT::IntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
-  INPAR::FLUID::InitialField initfield = Teuchos::getIntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
   fluidtimeparams->set ("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
@@ -240,7 +240,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("Mesh Tying",
-      Teuchos::getIntegralValue<int>(fdyn,"MESHTYING"));
+      DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
 
   // ---------------------------- fine-scale subgrid viscosity approach
   fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
@@ -257,7 +257,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (genprob.probtyp == prb_fsi)
   {
     INPAR::FSI::PartitionedCouplingMethod method =
-      Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(prbdyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(prbdyn,"PARTITIONED");
     fluidtimeparams->set<bool>("fluidrobin",
                                method==INPAR::FSI::RobinNeumann or method==INPAR::FSI::RobinRobin);
     fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
@@ -296,7 +296,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  INPAR::FLUID::TimeIntegrationScheme timeint = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+  INPAR::FLUID::TimeIntegrationScheme timeint = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
@@ -307,11 +307,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
-    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",
-                               Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
+                               DRT::INPUT::IntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
-    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
@@ -334,11 +334,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
-    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",
-                               Teuchos::getIntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
+                               DRT::INPUT::IntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
-    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
@@ -352,9 +352,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp == prb_fluid_xfem)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
 
-    const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit)
@@ -372,7 +372,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (genprob.probtyp == prb_elch)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
 
   // -------------------------------------------------------------------
@@ -407,7 +407,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      const int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithiclagrange or
           coupling == fsi_iter_monolithicstructuresplit or
@@ -423,7 +423,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       else
       {
         const INPAR::FSI::PartitionedCouplingMethod method =
-          Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+          DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
         if (method==INPAR::FSI::RobinNeumann or
             method==INPAR::FSI::RobinRobin)
           dirichletcond = false;
@@ -450,7 +450,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     else
     {
       RCP<Fluid> tmpfluid;
-      int fluidsolver = Teuchos::getIntegralValue<int>(fdyn,"FLUID_SOLVER");
+      int fluidsolver = DRT::INPUT::IntegralValue<int>(fdyn,"FLUID_SOLVER");
       switch(fluidsolver)
       {
       case fluid_solver_implicit:

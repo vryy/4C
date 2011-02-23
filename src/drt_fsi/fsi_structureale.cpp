@@ -38,7 +38,7 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
-  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),

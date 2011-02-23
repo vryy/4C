@@ -189,7 +189,7 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
-  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
@@ -278,7 +278,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
     double dt = 0.0;
     double pstime = -1.0;
     const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
       time   = StructureField().GetTime();

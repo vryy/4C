@@ -54,19 +54,19 @@ STR::TimIntImpl::TimIntImpl
     output
   ),
   fsisurface_(NULL),
-  pred_(Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
-  itertype_(Teuchos::getIntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
-  normtypedisi_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),
-  normtypefres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
-  normtypepres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
-  normtypepfres_(Teuchos::getIntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_INCO")),
-  combdispre_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
-  combfrespfres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
-  combdisifres_(Teuchos::getIntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
-  iternorm_(Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
+  pred_(DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams,"PREDICT")),
+  itertype_(DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL")),
+  normtypedisi_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),
+  normtypefres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
+  normtypepres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
+  normtypepfres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_INCO")),
+  combdispre_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
+  combfrespfres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
+  combdisifres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
+  iternorm_(DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
   itermin_(sdynparams.get<int>("MINITER")),
-  iterdivercont_(Teuchos::getIntegralValue<int>(sdynparams,"DIVERCONT")==1),
+  iterdivercont_(DRT::INPUT::IntegralValue<int>(sdynparams,"DIVERCONT")==1),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
   tolpfres_(sdynparams.get<double>("TOLINCO")),
@@ -84,16 +84,16 @@ STR::TimIntImpl::TimIntImpl
   fres_(Teuchos::null),
   freact_(Teuchos::null),
   fifc_(Teuchos::null),
-  stcscale_(Teuchos::getIntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
+  stcscale_(DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
   stclayer_(sdynparams.get<int>("STC_LAYER"))
 {
   // verify: Old-style convergence check has to be 'vague' to
-  if (Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK") != INPAR::STR::convcheck_vague)
   {
     if (pressure_ != Teuchos::null)
       dserror("For new structural time integration and pressure formulation, please choose CONV_CHECK = None");
     else
-      ConvertConvCheck(Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));
+      ConvertConvCheck(DRT::INPUT::IntegralValue<INPAR::STR::ConvCheck>(sdynparams,"CONV_CHECK"));
   }
 
   // verify: if system has constraints implemented with Lagrange multipliers,
@@ -658,10 +658,10 @@ bool STR::TimIntImpl::Converged()
   {
     // check which case (application, strategy) we are in
     INPAR::CONTACT::ApplicationType apptype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
     INPAR::CONTACT::SolvingStrategy stype =
-      Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-    bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
@@ -1194,14 +1194,14 @@ void STR::TimIntImpl::CmtNonlinearSolve()
   //********************************************************************
   // application type
   INPAR::CONTACT::ApplicationType apptype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
 
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth = Teuchos::getIntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonfull)
@@ -1328,8 +1328,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
 void STR::TimIntImpl::CmtLinearSolve()
 {
   // strategy and system setup types
-  INPAR::CONTACT::SolvingStrategy soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
-  INPAR::CONTACT::SystemType      systype = Teuchos::getIntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
 
   //**********************************************************************
   // Solving a saddle point system

@@ -111,7 +111,7 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   mu_  = 1.;
   tol_mu_ = tol_;
 
-  multi_ = Teuchos::getIntegralValue<int>(iap,"INV_MULTI_OUT");
+  multi_ = DRT::INPUT::IntegralValue<int>(iap,"INV_MULTI_OUT");
 
   // list of materials for each problem instance that should be fitted
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)

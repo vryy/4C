@@ -36,9 +36,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
   if (notsetup_)
   {
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    linearsolverstrategy_ = Teuchos::getIntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
   
-    aleproj_ = Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
+    aleproj_ = DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
     
     SetDefaultParameters(fsidyn,NOXParameterList());
   
@@ -154,7 +154,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     }
   
     // enable debugging
-    if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -170,7 +170,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      FluidField(),
                                      AleField(),
                                      false,
-                                     Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                     DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                      pcomega,
                                      pciter,
                                      spcomega,
@@ -179,7 +179,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      fpciter,
                                      apcomega,
                                      apciter,
-                                     Teuchos::getIntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+                                     DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
                                      linearsolverstrategy_,
                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
@@ -192,7 +192,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      FluidField(),
                                      AleField(),
                                      false,
-                                     Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                     DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                      pcomega[0],
                                      pciter[0],
                                      spcomega[0],

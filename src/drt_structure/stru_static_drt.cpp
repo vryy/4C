@@ -206,8 +206,8 @@ void stru_static_drt()
 
   //---------------------------------------------- do "stress" calculation
   int mod_stress = istep % resevry_stress;
-  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
 
   if (!mod_stress && iostress!=INPAR::STR::stress_none)
   {
@@ -446,7 +446,7 @@ void stru_static_drt()
 
     //----------------------------------------------------- output results
     int mod_disp   = istep % resevry_disp;
-    if (!mod_disp && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP")==1 && !isdatawritten)
+    if (!mod_disp && DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP")==1 && !isdatawritten)
     {
       output.NewStep(istep, time);
       output.WriteVector("displacement", dis);
@@ -456,8 +456,8 @@ void stru_static_drt()
 
     //---------------------------------------------- do stress calculation
     int mod_stress = istep % resevry_stress;
-    INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-    INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+    INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+    INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
 
     if (!mod_stress && iostress!=INPAR::STR::stress_none)
     {

@@ -69,19 +69,19 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   output_ (rcp(new IO::DiscretizationWriter(actdis))), // so ist es bei Axel
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
-  combusttype_(Teuchos::getIntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
-  veljumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
-  fluxjumptype_(Teuchos::getIntegralValue<INPAR::COMBUST::FluxJumpType>(params_.sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
-  start_val_semilagrange_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE")),
-  start_val_enrichment_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT")),
+  combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
+  veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
+  fluxjumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::FluxJumpType>(params_.sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
+  start_val_semilagrange_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE")),
+  start_val_enrichment_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
-  surftensapprox_(Teuchos::getIntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
-  connected_interface_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
-  smoothed_boundary_integration_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
-  smoothgradphi_(Teuchos::getIntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
+  surftensapprox_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
+  connected_interface_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
+  smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
+  smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   step_(0),
   time_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
@@ -91,7 +91,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   timealgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
   //startalgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("start time int algo")),
   theta_   (params_.get<double>("theta")),
-  initstatsol_(Teuchos::getIntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
+  initstatsol_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
   itemax_(params_.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get("do explicit predictor",false)),
   uprestart_(params.get("write restart every", -1)),
@@ -1396,7 +1396,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   //--------------------
   // compute error norms // schott Aug 6, 2010
   //--------------------
-  INPAR::COMBUST::NitscheError errortype = Teuchos::getIntegralValue<INPAR::COMBUST::NitscheError>(params_.sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
+  INPAR::COMBUST::NitscheError errortype = DRT::INPUT::IntegralValue<INPAR::COMBUST::NitscheError>(params_.sublist("COMBUSTION FLUID"),"NITSCHE_ERROR");
   if(errortype != INPAR::COMBUST::nitsche_error_none)
     FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nitsche(errortype);
 

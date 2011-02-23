@@ -157,7 +157,7 @@ TSI::Monolithic::Monolithic(Epetra_Comm& comm)
     = DRT::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
   quasistatic_
-    = Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")
         ==INPAR::STR::dyna_statics;
 }
 
@@ -217,11 +217,11 @@ void TSI::Monolithic::NewtonFull()
   itermax_ = tsidyn.get<int>("ITEMAX");
   itermin_ = tsidyn.get<int>("ITEMIN");
   normtypeinc_
-    = Teuchos::getIntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
   normtypefres_
-    = Teuchos::getIntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
   combincfres_
-    = Teuchos::getIntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
   // FIRST STEP: to test the residual and the increments use the same tolerance
   tolinc_ =  tsidyn.get<double>("CONVTOL");
   tolfres_ = tsidyn.get<double>("CONVTOL");
@@ -287,7 +287,7 @@ void TSI::Monolithic::NewtonFull()
     // call the thermo parameter list
     const Teuchos::ParameterList& tdynparams
       = DRT::Problem::Instance()->ThermalDynamicParams();
-    solveradapttol_ = Teuchos::getIntegralValue<int>(tdynparams,"ADAPTCONV")==1;
+    solveradapttol_ = DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV")==1;
     solveradaptolbetter_ = tdynparams.get<double>("ADAPTCONV_BETTER");
     if (solveradapttol_ and (iter_ > 1))
     {

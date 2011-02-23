@@ -353,7 +353,7 @@ void CONTACT::MtPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   // (only for Augmented Lagrange strategy)
   //********************************************************************
   INPAR::CONTACT::SolvingStrategy soltype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
   
   if (soltype==INPAR::CONTACT::solution_auglag)
   {

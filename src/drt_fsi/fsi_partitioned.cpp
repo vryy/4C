@@ -51,7 +51,7 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
-  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
@@ -73,7 +73,7 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
   }
 
   // enable debugging
-  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
 
 #if 0
@@ -117,7 +117,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
   // search step.
   //
 
-  switch (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO"))
+  switch (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO"))
   {
   case fsi_iter_stagg_fixed_rel_param:
   {
@@ -456,7 +456,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
    
   	//In case of sliding ALE interfaces, 'remesh' fluid field 
   	INPAR::FSI::PartitionedCouplingMethod usedmethod =
-       	Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+       	DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
   	if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
     {
@@ -810,7 +810,7 @@ FSI::Partitioned::InterfaceVelocity(Teuchos::RCP<const Epetra_Vector> idispnp) c
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
 
-  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER") == 1)
   {
     ivel = rcp(new Epetra_Vector(*iveln_));
     ivel->Update(2./Dt(), *idispnp, -2./Dt(), *idispn_, -1.);

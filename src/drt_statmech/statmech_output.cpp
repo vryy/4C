@@ -69,7 +69,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 
   double starttime = statmechparams_.get<double>("STARTTIMEOUT",0.0);
 
-  switch (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:
     {
@@ -453,7 +453,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     break;
   }
   // handling gmsh output seperately
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 1) == 0) )
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 1) == 0) )
 	{
 		/*construct unique filename for gmsh output with two indices: the first one marking the time step number
 		 * and the second one marking the newton iteration number, where numbers are written with zeros in the front
@@ -1600,7 +1600,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
  *----------------------------------------------------------------------*/
 void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+	if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 	{
 		double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 		// plot the test volume determined by DDCorrCurrentStructure()
@@ -2044,7 +2044,7 @@ void StatMechManager::InitOutput(const int ndim, const double& dt)
 {
   //initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
 
-  switch (Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT"))
   {
     case INPAR::STATMECH::statout_endtoendlog:
     {

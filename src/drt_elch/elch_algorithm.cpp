@@ -31,7 +31,7 @@ ELCH::Algorithm::Algorithm(
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false),
-   natconv_(Teuchos::getIntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
+   natconv_(DRT::INPUT::IntegralValue<int>(prbdyn,"NATURAL_CONVECTION")),
    itmax_ (prbdyn.get<int>("ITEMAX")),
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),

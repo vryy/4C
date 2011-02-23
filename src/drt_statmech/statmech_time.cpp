@@ -126,10 +126,10 @@ uzawaiter_(0)
   dis.Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
 
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
-  if( Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendlog ||
-      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendconst ||
-      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_orientationcorrelation ||
-      Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_anisotropic)
+  if( DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendlog ||
+      DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_endtoendconst ||
+      DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_orientationcorrelation ||
+      DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_anisotropic)
   {
     params_.set("print to screen",false);
     std::cout<<"\n\nPay Attention: from no on regular output to screen suppressed !!!\n\n";
@@ -137,11 +137,11 @@ uzawaiter_(0)
 
 
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
-  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
     //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-    if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
       beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
     else
       dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list MESHTYING AND CONTACT!!!");
@@ -175,8 +175,8 @@ void StatMechTime::Integrate()
 
   //defining solution strategz for beam contact
 	INPAR::CONTACT::SolvingStrategy soltype;
-  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-    soltype = Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
 
   for (int i=step; i<nstep; ++i)
   {
@@ -186,7 +186,7 @@ void StatMechTime::Integrate()
     {
       statmechmanager_->InitOutput(ndim,dt);
       // handling gmsh output seperately
-      if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
+      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
     	{
     		std::ostringstream filename;
     			filename << "./GmshOutput/networkInit.pos";
@@ -250,7 +250,7 @@ void StatMechTime::Integrate()
 
 
       //in case that beam contact is activated special solution strategies are required
-      if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       {
         switch (soltype)
         {
@@ -349,7 +349,7 @@ void StatMechTime::Integrate()
     //**********************************************************************
     //**********************************************************************
     // update beam contact-specific quantities
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
       beamcmanager_->Update(*dis_,params_.get<int>("step",0),99,99);
       // output reaction forces and moments
@@ -430,16 +430,16 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
     // determine evaluation mode
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 &&
-    	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    	 DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	dserror("Set PeriodLength > 0.0 if periodic DBCs are to be applied");
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
-    	 Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
+    	 DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
     	dserror("Set PeriodLength to Zero if conventional DBCs are to be applied");
     // in case of activated periodic boundary conditions
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	statmechmanager_->EvaluateDirichletPeriodic(p, disn_, dirichtoggle_, invtoggle_);
 		// "common" case without periodic boundary conditions
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC") )
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC") )
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
 
 
@@ -507,8 +507,8 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-    p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-    p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+    p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+    p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     p.set("RandomNumbers",randomnumbers);
     p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
     p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
@@ -540,7 +540,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
 
   //**********************************************************************
   //**********************************************************************
-  if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
     // evaluate beam contact
     beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
@@ -693,8 +693,8 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
@@ -740,7 +740,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
 
@@ -916,8 +916,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
@@ -982,8 +982,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-      p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
@@ -1030,7 +1030,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
 
@@ -1200,7 +1200,7 @@ void StatMechTime::InitializeNewtonUzawa()
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
-    if(Teuchos::getIntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
     //**********************************************************************
     //**********************************************************************

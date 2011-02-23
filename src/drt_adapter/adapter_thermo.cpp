@@ -67,7 +67,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
 
   // major switch to different time integrators
-  switch (Teuchos::getIntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP"))
   {
   case INPAR::THR::dyna_statics :
   case INPAR::THR::dyna_onesteptheta :

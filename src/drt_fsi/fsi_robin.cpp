@@ -15,7 +15,7 @@ FSI::Robin::Robin(Epetra_Comm& comm)
    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
    INPAR::FSI::PartitionedCouplingMethod method =
-     Teuchos::getIntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+     DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
    fluidrobin_  = method==INPAR::FSI::RobinNeumann   or method==INPAR::FSI::RobinRobin;
    structrobin_ = method==INPAR::FSI::DirichletRobin or method==INPAR::FSI::RobinRobin;

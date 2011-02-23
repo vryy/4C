@@ -378,23 +378,23 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
   genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
   genalphaparams.set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
-  genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+  genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
   genalphaparams.set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
   genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
-  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   genalphaparams.set<INPAR::STR::StressType>("io structural stress", iostress);
   genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   genalphaparams.set<INPAR::STR::StrainType>("io structural strain", iostrain);
-  genalphaparams.set<bool>  ("io surfactant",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
+  genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
   genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
   genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
   genalphaparams.set<bool>  ("print to screen",false);
   genalphaparams.set<bool>  ("print to err",true);
   genalphaparams.set<FILE*> ("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
   genalphaparams.set<bool>  ("LOADLIN",false);
-  INPAR::STR::ControlType controltype = Teuchos::getIntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
+  INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
   genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
   {
     vector<int> controlnode;
@@ -408,7 +408,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     genalphaparams.set("CONTROLCURVE",controlnode[2]);
   }
   genalphaparams.set<string>("equilibrium iteration","full newton");
-  switch (Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT"))
   {
     case INPAR::STR::pred_vague:
       dserror("You have to define the predictor");

@@ -2988,7 +2988,7 @@ void StruGenAlpha::Update()
   if (!errfile) printerr = false;
 
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   double pstime = pslist.get<double>("PRESTRESSTIME");
 
   //----------------------------------------------- update time and step
@@ -3137,7 +3137,7 @@ void StruGenAlpha::UpdateElement()
 #endif
 
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   double pstime = pslist.get<double>("PRESTRESSTIME");
 
   // if this is the first step of poststress using id tell the elements
@@ -3200,7 +3200,7 @@ void StruGenAlpha::Output()
 
 /*
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   double pstime = pslist.get<double>("PRESTRESSTIME");
 */
 
@@ -3649,7 +3649,7 @@ void StruGenAlpha::ReadRestart(int step)
   if (rstep != step) dserror("Time step on file not equal to given step");
 
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   double pstime = pslist.get<double>("PRESTRESSTIME");
 
   bool control = false;

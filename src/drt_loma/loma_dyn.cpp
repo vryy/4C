@@ -66,7 +66,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
   // access the scalar transport parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   const INPAR::SCATRA::VelocityField veltype
-    = Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
   switch (veltype)

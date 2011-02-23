@@ -179,7 +179,7 @@ public:
 
   */
   virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg()
-  {return Teuchos::getIntegralValue<INPAR::MORTAR::SearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
+  {return DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
 
   /*!
   \brief Get search algorithm parameter

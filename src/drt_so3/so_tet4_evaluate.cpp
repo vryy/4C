@@ -348,7 +348,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       RCP<MAT::Material> mat = Material();
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
@@ -369,7 +369,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = Teuchos::getIntegralValue<int>(patspec,"REMODEL");
+      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       RCP<MAT::Material> mat = Material();
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||

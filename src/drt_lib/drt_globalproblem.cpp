@@ -229,8 +229,8 @@ void DRT::Problem::InputControl()
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
 
-  genprob.probtyp        = Teuchos::getIntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
-  genprob.timetyp        = Teuchos::getIntegralValue<TIME_TYP>(type,"TIMETYP");
+  genprob.probtyp        = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
+  genprob.timetyp        = DRT::INPUT::IntegralValue<TIME_TYP>(type,"TIMETYP");
 
   // If there is a restart flag on the command line, ignore the input file.
   if ( genprob.restart==0 )
@@ -238,7 +238,7 @@ void DRT::Problem::InputControl()
 
 
   // If we have an adaptive mesh, things are totally different.
-  genprob.adaptive       = Teuchos::getIntegralValue<int>(type,"ADAPTIVE");
+  genprob.adaptive       = DRT::INPUT::IntegralValue<int>(type,"ADAPTIVE");
 
   // set field numbers depending on problem type and numfld
   switch (genprob.probtyp)

@@ -139,7 +139,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   // get electrode potential of the first, galvanostatic ButlerVolmer condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
     // define a vector with all electro kinetic BC
     vector<DRT::Condition*> cond;
@@ -189,7 +189,7 @@ void SCATRA::TimIntStationary::OutputRestart()
   // write electrode potential of the first, galvanostatic electro kinetic condition
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (Teuchos::getIntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
     // define a vector with all electro kinetic BC
     vector<DRT::Condition*> cond;

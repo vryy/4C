@@ -68,7 +68,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     solver,
     output
   ),
-  midavg_(Teuchos::getIntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"),"GENAVG")),
+  midavg_(DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"),"GENAVG")),
   /* iterupditer_(false), */
   beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),

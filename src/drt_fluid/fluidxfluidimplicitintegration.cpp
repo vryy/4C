@@ -2825,7 +2825,7 @@ void FLD::FluidXFluidImplicitTimeInt::ComputeFluidXFluidInterfaceAccelerationsAn
   #ifdef COMPUTE_VEL_AND_ACCNP_VIA_BETA_NEWMARK
     double beta;
     double gamma;
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER") == 1)
     {
       if (Step() == 1)
       {
@@ -2856,7 +2856,7 @@ void FLD::FluidXFluidImplicitTimeInt::ComputeFluidXFluidInterfaceAccelerationsAn
 
     double theta_vel = 0.5;
     double theta_acc = 0.66;
-    if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER") == 1)
     {
       if (Step() == 1)
       {

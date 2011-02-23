@@ -1994,7 +1994,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   if(tsi)
   {
     const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
-    if (Teuchos::getIntegralValue<int>(input,"THERMOLAGMULT")==false)
+    if (DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==false)
       thermolagmult = false;
   }
   

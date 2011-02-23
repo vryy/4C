@@ -79,27 +79,27 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   time_   (0.0),
   step_   (0),
   prbtype_  (extraparams_->get<string>("problem type")),
-  solvtype_ (Teuchos::getIntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
+  solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   isale_    (extraparams_->get<bool>("isale")),
-  scatratype_  (Teuchos::getIntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
+  scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   reinitaction_(INPAR::SCATRA::reinitaction_none),
   masscalc_    (INPAR::SCATRA::masscalc_none),
   reinitswitch_(false),
   stepmax_  (params_->get<int>("NUMSTEP")),
   maxtime_  (params_->get<double>("MAXTIME")),
-  timealgo_ (Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
+  timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   upres_    (params_->get<int>("UPRES")),
   uprestart_(params_->get<int>("RESTARTEVRY")),
-  writeflux_(Teuchos::getIntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
-  outmean_  (Teuchos::getIntegralValue<int>(*params,"OUTMEAN")),
-  outputgmsh_(Teuchos::getIntegralValue<int>(*params,"OUTPUT_GMSH")),
+  writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
+  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
+  outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   dta_      (params_->get<double>("TIMESTEP")),
   dtp_      (params_->get<double>("TIMESTEP")),
-  cdvel_    (Teuchos::getIntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
-  convform_ (Teuchos::getIntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
-  neumanninflow_(Teuchos::getIntegralValue<int>(*params,"NEUMANNINFLOW")),
-  skipinitder_(Teuchos::getIntegralValue<int>(*params,"SKIPINITDER")),
-  fssgd_    (Teuchos::getIntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
+  cdvel_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  convform_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
+  neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
+  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
+  fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   frt_      (0.0),
   tpn_      (1.0),
   errfile_  (extraparams_->get<FILE*>("err file")),
@@ -192,11 +192,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
 //  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
 //  {
-//    reinitaction_ = Teuchos::getIntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSETDONOTUSE"),"REINITIALIZATION");
-//    masscalc_     = Teuchos::getIntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSETDONOTUSE"),"MASSCALCULATION");
+//    reinitaction_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReinitializationAction>(params_->sublist("LEVELSETDONOTUSE"),"REINITIALIZATION");
+//    masscalc_     = DRT::INPUT::IntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSETDONOTUSE"),"MASSCALCULATION");
 //  }
 
-  if (Teuchos::getIntegralValue<int>(*params_,"BLOCKPRECOND"))
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
   {
     // we need a block sparse matrix here
     if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc)
@@ -376,7 +376,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  SetInitialField(Teuchos::getIntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
+  SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
       params_->get<int>("INITFUNCNO"));
 
   // initializes variables for natural convection (ELCH) if necessary
@@ -1209,7 +1209,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // DO THIS AT VERY FIRST!!!
   // compute reconstructed diffusive fluxes for better consistency
   const enum INPAR::SCATRA::Consistency consistency
-  = Teuchos::getIntegralValue<INPAR::SCATRA::Consistency>(params_->sublist("STABILIZATION"),"CONSISTENCY");
+  = DRT::INPUT::IntegralValue<INPAR::SCATRA::Consistency>(params_->sublist("STABILIZATION"),"CONSISTENCY");
   if (consistency == INPAR::SCATRA::consistency_l2_projection_lumped)
   {
     // compute flux approximation and add it to the parameter list

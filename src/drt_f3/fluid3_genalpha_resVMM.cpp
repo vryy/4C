@@ -252,14 +252,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // specify which residual based stabilisation terms
   // will be used
-  INPAR::FLUID::SubscalesTD             tds = Teuchos::getIntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
-  INPAR::FLUID::Transient       inertia = Teuchos::getIntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-  INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
-  INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
-  INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
-  INPAR::FLUID::CStab           cstab = Teuchos::getIntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
-  INPAR::FLUID::CrossStress     cross = Teuchos::getIntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
-  INPAR::FLUID::ReynoldsStress  reynolds = Teuchos::getIntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+  INPAR::FLUID::SubscalesTD             tds = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+  INPAR::FLUID::Transient       inertia = DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
+  INPAR::FLUID::PSPG            pspg = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
+  INPAR::FLUID::SUPG            supg = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+  INPAR::FLUID::VStab           vstab = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+  INPAR::FLUID::CStab           cstab = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+  INPAR::FLUID::CrossStress     cross = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+  INPAR::FLUID::ReynoldsStress  reynolds = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
   // select tau definition
   INPAR::FLUID::TauType_genalpha whichtau = INPAR::FLUID::tautype_not_defined;
@@ -10515,14 +10515,14 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
 
   // specify which residual based stabilisation terms
   // will be used
-  INPAR::FLUID::SubscalesTD             tds = Teuchos::getIntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
-  INPAR::FLUID::Transient       inertia = Teuchos::getIntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-  INPAR::FLUID::PSPG            pspg = Teuchos::getIntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
-  INPAR::FLUID::SUPG            supg = Teuchos::getIntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
-  INPAR::FLUID::VStab           vstab = Teuchos::getIntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
-  INPAR::FLUID::CStab           cstab = Teuchos::getIntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
-  INPAR::FLUID::CrossStress     cross = Teuchos::getIntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
-  INPAR::FLUID::ReynoldsStress  reynolds = Teuchos::getIntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+  INPAR::FLUID::SubscalesTD             tds = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+  INPAR::FLUID::Transient       inertia = DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
+  INPAR::FLUID::PSPG            pspg = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
+  INPAR::FLUID::SUPG            supg = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+  INPAR::FLUID::VStab           vstab = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+  INPAR::FLUID::CStab           cstab = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+  INPAR::FLUID::CrossStress     cross = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+  INPAR::FLUID::ReynoldsStress  reynolds = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
 
   // flag conservative form on/off

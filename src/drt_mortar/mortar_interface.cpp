@@ -76,7 +76,7 @@ maxdofglobal_(-1)
   idiscret_ = rcp(new DRT::Discretization((string)"mortar interface",com));
 
   // overwrite shape function type
-  INPAR::MORTAR::ShapeFcn shapefcn = Teuchos::getIntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual)
    shapefcn_ = INPAR::MORTAR::shape_dual;
   else if (shapefcn == INPAR::MORTAR::shape_standard)
@@ -256,7 +256,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 
   //**********************************************************************
   // check whether crosspoints / edge nodes shall be considered or not
-  bool crosspoints = Teuchos::getIntegralValue<int>(IParams(),"CROSSPOINTS");
+  bool crosspoints = DRT::INPUT::IntegralValue<int>(IParams(),"CROSSPOINTS");
 
   // modify crosspoints / edge nodes
   if (crosspoints)
@@ -311,7 +311,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
 
   //**********************************************************************
   // check for linear interpolation of 3D quadratic Lagrange multipliers
-  bool lagmultlin = (Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D")
+  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D")
                      == INPAR::MORTAR::lagmult_lin_lin);
 
   // modify crosspoints / edge nodes
@@ -573,7 +573,7 @@ void MORTAR::MortarInterface::Redistribute()
 #endif
 
   // make sure we are supposed to be here
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
     dserror("ERROR: You are not supposed to be here...");
   
   // some local variables
@@ -1812,7 +1812,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
-    bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
+    bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
     // ************************************************** quadratic 3D ***
     if (sele.IsQuad3d() || mele.IsQuad3d())
@@ -1825,7 +1825,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
 
       // get LM interpolation and testing type
       INPAR::MORTAR::LagMultQuad3D lmtype =
-        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
 
       // loop over all IntElement pairs for coupling
       for (int i=0;i<(int)sauxelements.size();++i)

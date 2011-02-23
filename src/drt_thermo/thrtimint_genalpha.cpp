@@ -72,7 +72,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha
     solver,
     output
   ),
-  midavg_(Teuchos::getIntegralValue<INPAR::THR::MidAverageEnum>(tdynparams.sublist("GENALPHA"),"GENAVG")),
+  midavg_(DRT::INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(tdynparams.sublist("GENALPHA"),"GENAVG")),
   /* iterupditer_(false), */
   beta_(tdynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),

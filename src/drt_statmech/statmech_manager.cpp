@@ -277,7 +277,7 @@ void StatMechManager::SeedRandomGenerators(const int seedparameter)
   /*if input flag FIXEDSEED == YES: use same random numbers in each program start;
    *to this end compute seedvariable from given parameter FIXEDSEED and some other
    *deterministic parameter seedparameter given to this method at runtime*/
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"FIXEDSEED"))
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FIXEDSEED"))
   {
     seedvariable = (statmechparams_.get<int>("INITIALSEED", 0) + seedparameter)*(discret_.Comm().MyPID() + 1);
 
@@ -315,7 +315,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 	 * periodic boundary conditions, i.e. no node lies outside a cube of edge length PeriodLength*/
 
 	//if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
-	if (Teuchos::getIntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
+	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "DYN_CROSSLINKERS"))
 	{
 		// crosslink molecule diffusion
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
@@ -407,7 +407,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 		cout << "\n***\nadministration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
 
-	}//if(Teuchos::getIntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
+	}//if(DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
 #ifdef MEASURETIME
 	const double Delta_t = Teuchos::Time::wallTime()-t_start;
@@ -913,7 +913,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	Epetra_Import importer(nodecolmap,noderowmap);
 	nodaltriadsrow.PutScalar(0);
 
-	if (Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
+	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
 	{
     //update nodaltriads_
     for (int i=0; i<noderowmap.NumMyElements(); i++)
@@ -2101,8 +2101,8 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
   //add statistical vector to parameter list for statistical forces and damping matrix computation
   p.set("delta time",dt);
   p.set("ETA",statmechparams_.get<double>("ETA",0.0));
-  p.set("THERMALBATH",Teuchos::getIntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
-  p.set("FRICTION_MODEL",Teuchos::getIntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
+  p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
+  p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
   p.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
   p.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   p.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
@@ -2130,7 +2130,7 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
 {
 
   //if orientation is not to be checked explicitly, this function always returns true
-  if (!Teuchos::getIntegralValue<int>(statmechparams_, "CHECKORIENT"))
+  if (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
     return true;
 
   //triads on filaments at the two nodes connected by crosslinkers
@@ -2338,8 +2338,8 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	transfermap_    = rcp(new Epetra_Map(ncrosslink, 0, discret_.Comm()));
 
 	// create density-density-correlation-function map with
-	if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
-		 Teuchos::getIntegralValue<int>(statmechparams_, "GMSHOUTPUT"))
+	if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
+		 DRT::INPUT::IntegralValue<int>(statmechparams_, "GMSHOUTPUT"))
 	{
 		std::vector<int> bins;
 		for(int i=0; i<discret_.Comm().NumProc()*numbins; i++)
@@ -2348,7 +2348,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		// create processor-specific density-density-correlation-function map
 		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
 		// create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions
-		if(Teuchos::getIntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+		if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 			trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
 	}
 
@@ -2605,7 +2605,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	}
 
 //---------check/set force sensors anew for each time step
-  if(Teuchos::getIntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
   	// add DOF LID where a force sensor is to be set
   	UpdateForceSensors(oscillnodes, oscdir);
   //cout<<"\n=========================================="<<endl;

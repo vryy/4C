@@ -945,7 +945,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
   Teuchos::ParameterList outparams;
 
   // switch type of solver
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
+  switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
   {
 #ifdef PARALLEL
   case INPAR::SOLVER::superlu://============================== superlu solver (parallel only)
@@ -979,7 +979,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     outparams.set("symmetric",false);
     ParameterList& azlist = outparams.sublist("Aztec Parameters");
     //--------------------------------- set scaling of linear problem
-    const int azscal = Teuchos::getIntegralValue<int>(inparams,"AZSCAL");
+    const int azscal = DRT::INPUT::IntegralValue<int>(inparams,"AZSCAL");
     if (azscal==1)
       azlist.set("scaling","symmetric");
     else if (azscal==2)
@@ -987,7 +987,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     else
       azlist.set("scaling","none");
     //--------------------------------------------- set type of solver
-    switch (Teuchos::getIntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
+    switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
     {
     case INPAR::SOLVER::azsolv_CG:       azlist.set("AZ_solver",AZ_cg);       break;
     case INPAR::SOLVER::azsolv_GMRES:    azlist.set("AZ_solver",AZ_gmres);    break;
@@ -998,7 +998,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     default: dserror("Unknown solver for AztecOO");            break;
     }
     //------------------------------------- set type of preconditioner
-    const int azprectyp = Teuchos::getIntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
+    const int azprectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
     switch (azprectyp)
     {
     case INPAR::SOLVER::azprec_none:
@@ -1083,7 +1083,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     else
       azlist.set("AZ_output",azoutput);
     azlist.set("AZ_diagnostics",inparams.get<int>("AZBDIAG"));          // AZ_none AZ_all
-    azlist.set("AZ_conv",Teuchos::getIntegralValue<int>(inparams,"AZCONV"));
+    azlist.set("AZ_conv",DRT::INPUT::IntegralValue<int>(inparams,"AZCONV"));
     azlist.set("AZ_tol",inparams.get<double>("AZTOL"));
     azlist.set("AZ_drop",inparams.get<double>("AZDROP"));
     azlist.set("AZ_scaling",AZ_none);
@@ -1183,7 +1183,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       mllist.set("smoother: sweeps",1);
       // save memory if this is an issue, make ML use single precision
       //mllist.set("low memory usage",true);
-      switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
+      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
       {
         case 0:  mllist.set("aggregation: type","Uncoupled");  break;
         case 1:  mllist.set("aggregation: type","METIS");      break;
@@ -1216,17 +1216,17 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         double damp;
         if (i==0)
         {
-          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERFINE");
+          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERFINE");
           damp = inparams.get<double>("ML_DAMPFINE");
         }
         else if (i < mlmaxlevel-1)
         {
-          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERMED");
+          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERMED");
           damp = inparams.get<double>("ML_DAMPMED");
         }
         else
         {
-          type = Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
+          type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
           damp = inparams.get<double>("ML_DAMPCOARSE");
         }
         switch (type)
@@ -1294,7 +1294,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
 
       // set coarse grid solver
       const int coarse = mlmaxlevel-1;
-      switch (Teuchos::getIntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
+      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE"))
       {
         case 0:
           mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
@@ -1386,7 +1386,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       // override the default sweeps=2 with a default sweeps=1
       // individual level sweeps are set below
       amglist.set("smoother: sweeps",1);
-      switch (Teuchos::getIntegralValue<int>(inparams,"ML_COARSEN"))
+      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
       {
         case 0:  amglist.set("aggregation: type","Uncoupled");  break;
         case 1:  amglist.set("aggregation: type","METIS");      break;
@@ -1458,7 +1458,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
           smolevelsublist.set("pressure correction approx: type"      ,"ILU");   // TODO choose Umfpack, KLU, ILU, Jacobi, Gauss-Seidel, symmetric Gauss-Seidel
           smolevelsublist.set("Ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
 
-          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
+          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
           {
             case 0:
             {
@@ -1528,7 +1528,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
             default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
           } // switch (azvar->mlsmotype_coarse)
 
-          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
+          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
           {
             case 0:
             {
@@ -1598,7 +1598,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
             default: dserror("Unknown type of medium level solver for pressure correction equation"); break;
           }
 
-          switch (Teuchos::getIntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
+          switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
           {
             case 0:
             {

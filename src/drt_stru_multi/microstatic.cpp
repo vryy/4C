@@ -81,7 +81,7 @@ V0_(V0)
   // -------------------------------------------------------------------
   // new time intgration implementation -> generalized alpha
   // parameters are located in a sublist
-  if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
   {
     const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA");
     beta_ = genalpha.get<double>("BETA");
@@ -90,7 +90,7 @@ V0_(V0)
     alphaf_ = genalpha.get<double>("ALPHA_F");
   }
   // old time integration implementation
-  else if (Teuchos::getIntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_gen_alfa)
+  else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_gen_alfa)
   {
     beta_ = sdyn_macro.get<double>("BETA");
     gamma_ = sdyn_macro.get<double>("GAMMA");
@@ -100,12 +100,12 @@ V0_(V0)
   else
     dserror("multi-scale problems are only implemented for imr-like generalized alpha time integration schemes");
 
-  INPAR::STR::PredEnum pred = Teuchos::getIntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
+  INPAR::STR::PredEnum pred = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
 
-  INPAR::STR::ConvCheck convcheck = Teuchos::getIntegralValue<INPAR::STR::ConvCheck>(sdyn_micro, "CONV_CHECK");
+  INPAR::STR::ConvCheck convcheck = DRT::INPUT::IntegralValue<INPAR::STR::ConvCheck>(sdyn_micro, "CONV_CHECK");
   convcheck_ = convcheck;
-  INPAR::STR::VectorNorm iternorm = Teuchos::getIntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
+  INPAR::STR::VectorNorm iternorm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
   iternorm_ = iternorm;
 
   time_ = 0.0;
@@ -121,14 +121,14 @@ V0_(V0)
 
   restart_ = probtype.get<int>("RESTART");
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
-  iodisp_ = Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP");
+  iodisp_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESEVRYDISP");
-  INPAR::STR::StressType iostress = Teuchos::getIntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
+  INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESEVRYSTRS");
-  INPAR::STR::StrainType iostrain = Teuchos::getIntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   iostrain_ = iostrain;
-  iosurfactant_ = Teuchos::getIntegralValue<int>(ioflags,"STRUCT_SURFACTANT");
+  iosurfactant_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT");
 
   isadapttol_ = (getIntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");

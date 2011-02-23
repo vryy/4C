@@ -143,7 +143,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     extraparams->sublist("ELCH CONTROL")=prbdyn;
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (Teuchos::getIntegralValue<int>(scatradyn,"BLOCKPRECOND"))
+    if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
     {
       // switch to the SIMPLE(R) algorithms
       solver->PutSolverParamsToSubParams("SIMPLER",
@@ -160,7 +160,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // respective time-integration (or stationary) scheme
   // -------------------------------------------------------------------
    INPAR::SCATRA::TimeIntegrationScheme timintscheme =
-     Teuchos::getIntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
    switch(timintscheme)
    {

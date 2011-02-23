@@ -117,7 +117,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
                                                                 FluidField(),
                                                                 AleField(),
                                                                 true,
-                                                                Teuchos::getIntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                                DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
                                                                 pciter[0],
                                                                 spcomega[0],

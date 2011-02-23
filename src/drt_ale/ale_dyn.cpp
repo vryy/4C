@@ -93,7 +93,7 @@ void dyn_ale_drt()
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
-  //int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
+  //int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
   ALE::AleLinear ale(actdis, solver, params, output, false, true);
 
   if (genprob.restart)

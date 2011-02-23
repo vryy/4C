@@ -151,7 +151,7 @@ pdiscret_(discret)
   scontact_ = DRT::Problem::Instance()->MeshtyingAndContactParams();
   
   // check input parameters
-  if (Teuchos::getIntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
    dserror("ERROR: The given input parameters are not for beam contact");
   if (scontact_.get<double>("PENALTYPARAM") <= 0.0)
    dserror("ERROR: The penalty parameter has to be positive.");  
@@ -981,7 +981,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
 	// (only possible for AUGMENTED LAGRANGE strategy)
 	bool updatepp = false;
   INPAR::CONTACT::SolvingStrategy soltype =
-  Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
+  DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
   
   if (soltype==INPAR::CONTACT::solution_auglag)
     updatepp = UpdateCurrentpp(globnorm,uzawaiter);

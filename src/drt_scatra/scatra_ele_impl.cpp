@@ -352,7 +352,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // get definition for stabilization parameter tau
-    INPAR::SCATRA::TauType whichtau = Teuchos::getIntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+    INPAR::SCATRA::TauType whichtau = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
     // set correct stationary definition for stabilization parameter automatically
     // and ensure that exact stabilization parameter is only used in stationary case
@@ -376,7 +376,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set (sign) factor for diffusive and reactive stabilization terms
     // (factor is zero for SUPG) and overwrite tau definition when there
     // is no stabilization
-    const INPAR::SCATRA::StabType stabinp = Teuchos::getIntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
+    const INPAR::SCATRA::StabType stabinp = DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
     switch(stabinp)
     {
       case INPAR::SCATRA::stabtype_no_stabilization:
@@ -397,18 +397,18 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
     // (default: "false" for both flags)
-    const bool sgvel(Teuchos::getIntegralValue<int>(stablist,"SUGRVEL"));
+    const bool sgvel(DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL"));
     sgvel_ = sgvel;
-    const bool assgd(Teuchos::getIntegralValue<int>(stablist,"ASSUGRDIFF"));
+    const bool assgd(DRT::INPUT::IntegralValue<int>(stablist,"ASSUGRDIFF"));
 
     // select type of all-scale subgrid diffusivity if included
     const INPAR::SCATRA::AssgdType whichassgd
-    = Teuchos::getIntegralValue<INPAR::SCATRA::AssgdType>(stablist,"DEFINITION_ASSGD");
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(stablist,"DEFINITION_ASSGD");
 
     // set flags for potential evaluation of tau and material law at int. point
-    const INPAR::SCATRA::EvalTau tauloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
+    const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
     tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
-    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     // set flag for fine-scale subgrid diffusivity and perform some checks
@@ -534,7 +534,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       frt = params.get<double>("frt");
 
       const INPAR::SCATRA::Consistency consistency
-        = Teuchos::getIntegralValue<INPAR::SCATRA::Consistency>(stablist,"CONSISTENCY");
+        = DRT::INPUT::IntegralValue<INPAR::SCATRA::Consistency>(stablist,"CONSISTENCY");
       betterconsistency_=(consistency==INPAR::SCATRA::consistency_l2_projection_lumped);
 
       for (int k=0; k < numscal_; k++)
@@ -694,7 +694,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // set flags for potential evaluation of material law at int. point
-    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     double frt(0.0);
@@ -717,7 +717,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // GetMaterialParams
     is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
     is_incremental_ = params.get<bool>("incremental solver");
-    sgvel_ = Teuchos::getIntegralValue<int>(stablist,"SUGRVEL");
+    sgvel_ = DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL");
 
     // calculate matrix and rhs
     InitialTimeDerivative(
@@ -784,7 +784,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flag for potential evaluation of material law at int. point
     ParameterList& stablist = params.sublist("STABILIZATION");
-    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     // initialize frt for ELCH
@@ -979,7 +979,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     ParameterList& stablist = params.sublist("STABILIZATION");
 
     // select tau definition
-    INPAR::SCATRA::TauType whichtau = Teuchos::getIntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+    INPAR::SCATRA::TauType whichtau = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
 
     // get time-step length
     const double dt   = params.get<double>("time-step length");
@@ -1002,7 +1002,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
 
     // set flags for potential evaluation of material law at int. point
-    const INPAR::SCATRA::EvalMat matloc = Teuchos::getIntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+    const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     epotnp_.Clear();

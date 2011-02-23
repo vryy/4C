@@ -114,7 +114,7 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes
   //------------------------------------------------------------------------------------------------
-  INPAR::FLUID::TimeIntegrationScheme timeintscheme = Teuchos::getIntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
+  INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
 
   if (timeintscheme == INPAR::FLUID::timeint_one_step_theta or
       timeintscheme == INPAR::FLUID::timeint_gen_alpha)

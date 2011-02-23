@@ -71,7 +71,7 @@ selfcontact_(selfcontact),
 friction_(false)
 {
   // set frictional contact status
-  INPAR::CONTACT::FrictionType ftype = Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
+  INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
 
@@ -139,7 +139,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 #endif
 
   // make sure we are supposed to be here
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
     dserror("ERROR: You are not supposed to be here...");
   
   // some local variables
@@ -1179,7 +1179,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
-    bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
+    bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
     // ************************************************** quadratic 3D ***
     if (sele.IsQuad3d() || mele.IsQuad3d())
@@ -1195,7 +1195,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
 
       // get LM interpolation and testing type
       INPAR::MORTAR::LagMultQuad3D lmtype =
-        Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
             
       // loop over all IntElement pairs for coupling
       for (int i=0;i<(int)sauxelements.size();++i)
@@ -1249,7 +1249,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   }
 
   // check for auxiliary plane 3D version
-  bool auxplane = Teuchos::getIntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
+  bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
   // ************************************************** quadratic 3D ***
   if (Dim()==3 && sele.IsQuad3d())
@@ -1259,7 +1259,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 
     // get LM interpolation and testing type
     INPAR::MORTAR::LagMultQuad3D lmtype =
-      Teuchos::getIntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
           
     // build linear integration elements from quadratic CElements
     vector<RCP<MORTAR::IntElement> > sauxelements(0);
@@ -1373,21 +1373,21 @@ void CONTACT::CoInterface::EvaluateRelMov(const RCP<Epetra_Vector> xsmod,
     // this value isn't needed.
     bool activeinfuture = false;
 
-    if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_penalty)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_lagmult and
-             Teuchos::getIntegralValue<int>(IParams(),"SEMI_SMOOTH_NEWTON")!=1)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_lagmult and
+             DRT::INPUT::IntegralValue<int>(IParams(),"SEMI_SMOOTH_NEWTON")!=1)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_lagmult and
-             Teuchos::getIntegralValue<int>(IParams(),"SEMI_SMOOTH_NEWTON")==1)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_lagmult and
+             DRT::INPUT::IntegralValue<int>(IParams(),"SEMI_SMOOTH_NEWTON")==1)
     {
       if((nz - cn*gap > 0) or cnode->Active()) activeinfuture = true;
     }
-    else if (Teuchos::getIntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_auglag)
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(IParams(),"STRATEGY")== INPAR::CONTACT::solution_auglag)
     {
       if(lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
@@ -1973,7 +1973,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
   double frcoeff = IParams().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -2323,7 +2323,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
   double frcoeff = IParams().get<double>("FRCOEFF");
 
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i=0; i<SlaveRowNodes()->NumMyElements(); ++i)
@@ -3769,12 +3769,12 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-    Teuchos::getIntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound = IParams().get<double>("FRBOUND");
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-  bool fulllin = Teuchos::getIntegralValue<int>(IParams(),"FULL_LINEARIZATION");
+  bool fulllin = DRT::INPUT::IntegralValue<int>(IParams(),"FULL_LINEARIZATION");
 
   // Coulomb Friction
   if (ftype == INPAR::CONTACT::friction_coulomb)

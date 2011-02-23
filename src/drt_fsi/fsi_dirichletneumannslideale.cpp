@@ -85,7 +85,7 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 	idispstep->Update(-1.0, *idispn, 1.0);
 	
   INPAR::FSI::SlideALEProj aletype = 
-      Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
+      DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 	
 
 
@@ -192,7 +192,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 	else
 	{
 		const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-		if (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR")!=1)
+		if (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR")!=1)
 		{
 			dserror("unknown interface force predictor '%s'",
 					fsidyn.get<string>("PREDICTOR").c_str());
