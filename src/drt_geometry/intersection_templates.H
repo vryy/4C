@@ -189,7 +189,7 @@ namespace GEO
       }
     }
 
-
+#if 0
     /*!
     \brief solves a singular system of equations
     \return true if resulting system is singular , false otherwise
@@ -235,8 +235,9 @@ namespace GEO
       }
       return true;
     }
+#endif
 
-
+#if 0
     /*!
     \brief computes an interseticon point between a curve and a surface - templated part
 
@@ -303,9 +304,9 @@ namespace GEO
       //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
       return intersectionPointInElements<surftype>(xsi, upLimit, loLimit);
     }
+#endif
 
-
-
+#if 0
     /*!
     \brief computes an interseticon point between a curve and a surface
 
@@ -373,7 +374,7 @@ namespace GEO
       }
       return true;
     }
-
+#endif
 
 
 
@@ -543,7 +544,7 @@ namespace GEO
   	}
 	
 	
-	
+#if 0
     /*!
     \brief solves a singular system of equations
 
@@ -588,10 +589,10 @@ namespace GEO
       }
       return true;
     }
+#endif
 
 
-
-
+#if 0
 	/*----------------------------------------------------------------------*
 	 |  RCI:    computes the intersection between a              u.may 08/07|
 	 |          line and a surface                                          |
@@ -647,10 +648,10 @@ namespace GEO
 	    }
 	    return intersectionPointInElementsRCI<surftype>(xsi);
 	}
+#endif
 
 
-
-
+#if 0
     /*!
     \brief  computes the recovery of the curved interface
             for one xfem element after a Contrained Delaunay
@@ -691,7 +692,7 @@ namespace GEO
 
       return true;
     }
-
+#endif
 
 
 

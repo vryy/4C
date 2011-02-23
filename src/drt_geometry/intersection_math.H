@@ -128,7 +128,7 @@ namespace GEO
         );
 
 
-
+#if 0
     /*!
     \brief  Given a matrix A[1..m][1..n], this method computes its
             singular value decomposition, A =U ·W ·V T .
@@ -402,7 +402,8 @@ namespace GEO
             }
         }
     }
-    
+#endif
+  
 /*-------------------------------------------------------------------*
 | 	VON MIR GESCHRIEBEN                                             |
 *--------------------------------------------------------------------*/
@@ -427,7 +428,7 @@ namespace GEO
      Epetra_SerialDenseMatrix&  W,
      Epetra_SerialDenseMatrix&  V
          );
-
+#if 0
     /*!
   \brief  Solves a linear system of equations with help of
           a singular value decomposition. The system matrix
@@ -500,7 +501,8 @@ namespace GEO
       */
       return nonsingular;
   }
-
+#endif
+  
   /*!
   \brief  Tests the singular value decomposition
 
