@@ -69,26 +69,25 @@ namespace DRT
         return instance_;
       }
 
-      static void Done()
-      {
-        delete instance_;
-        instance_ = NULL;
-      }
-
       void Register( ParObjectType * parobjecttype )
       {
         types_.push_back( parobjecttype );
       }
 
-      void Finalize()
+      static void Finalize()
       {
-        for ( std::vector<ParObjectType*>::iterator i=types_.begin(); i!=types_.end(); ++i )
+        if ( instance_!=NULL )
         {
-          ParObjectType * parobjecttype = *i;
-          //DRT::ParObjectFactory::Instance().Register( parobjecttype );
-          parobjecttype->UniqueParObjectId();
+          std::vector<ParObjectType*> & types = instance_->types_;
+          for ( std::vector<ParObjectType*>::iterator i=types.begin(); i!=types.end(); ++i )
+          {
+            ParObjectType * parobjecttype = *i;
+            //DRT::ParObjectFactory::Instance().Register( parobjecttype );
+            parobjecttype->UniqueParObjectId();
+          }
+          delete instance_;
+          instance_ = NULL;
         }
-        types_.clear();
       }
 
     private:
@@ -241,7 +240,7 @@ void DRT::ParObjectFactory::Register( ParObjectType* object_type )
 
 void DRT::ParObjectFactory::FinalizeRegistration()
 {
-  ParObjectPreRegister::Instance()->Finalize();
+  ParObjectPreRegister::Finalize();
 }
 
 
