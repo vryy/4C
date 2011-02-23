@@ -3200,9 +3200,13 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 }
 
 
-/// return system matrix down-casted as sparse matrix
+/*----------------------------------------------------------------------*
+ | return system matrix downcasted as sparse matrix           gjb 02/11 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
-  { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+}
 
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as block sparse matrix     gjb 06/10 |
