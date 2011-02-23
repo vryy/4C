@@ -554,6 +554,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_fsi.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+  src/drt_geometry/geo_intersection.cpp
 )
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
@@ -706,7 +707,6 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
   src/drt_geometry/intersection_service.cpp
-  src/drt_geometry/geo_intersection.cpp
   src/drt_geometry/position_array.cpp
   src/drt_geometry/searchtree.cpp
   src/drt_geometry/searchtree_geometry_service.cpp
