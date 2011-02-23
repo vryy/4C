@@ -18,6 +18,8 @@ Maintainer: Caroline Danowski
 
 #ifdef __cplusplus /* stuff which is c++ specific */
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 06/09 |
  *----------------------------------------------------------------------*/

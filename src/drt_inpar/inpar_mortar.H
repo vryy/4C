@@ -40,6 +40,8 @@ Maintainer: Alexander Popp
 #ifndef INPAR_MORTAR_H
 #define INPAR_MORTAR_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

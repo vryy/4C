@@ -14,6 +14,8 @@ Maintainer: Michael Gee
 #ifndef INPAR_INVANALYSIS_H
 #define INPAR_INVANALYSIS_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

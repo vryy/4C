@@ -14,6 +14,8 @@ Maintainer: Georg Bauer
 #ifndef INPAR_ELCH_H
 #define INPAR_ELCH_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

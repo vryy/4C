@@ -14,6 +14,8 @@ Maintainer: Ursula Mayer
 #ifndef INPAR_POTENTIAL_H
 #define INPAR_POTENTIAL_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

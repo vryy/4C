@@ -14,6 +14,8 @@ Maintainer: Axel Gerstenberger
 #ifndef INPAR_XFEM_H
 #define INPAR_XFEM_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

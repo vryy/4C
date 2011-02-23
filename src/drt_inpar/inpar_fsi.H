@@ -14,6 +14,8 @@ Maintainer: Ulrich Kuettler
 #ifndef INPAR_FSI_H
 #define INPAR_FSI_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

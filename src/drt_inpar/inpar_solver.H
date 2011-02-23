@@ -17,6 +17,8 @@ Maintainer: Michael Gee
 
 #ifdef __cplusplus /* stuff which is c++ specific */
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

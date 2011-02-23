@@ -16,6 +16,8 @@ Maintainer: Florian Henke
 #ifndef INPAR_COMBUST_H
 #define INPAR_COMBUST_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

@@ -14,6 +14,8 @@ Maintainer: Christian Cyron
 #ifndef INPAR_STATMECH_H
 #define INPAR_STATMECH_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

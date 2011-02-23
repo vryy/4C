@@ -17,6 +17,8 @@ Maintainer: Burkhard Bornemann
 
 #ifdef __cplusplus /* stuff which is c++ specific */
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_lib/drt_dserror.H"

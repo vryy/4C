@@ -19,6 +19,8 @@ Maintainer: Caroline Danowski
 #ifndef INPAR_TSI_H
 #define INPAR_TSI_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |
  *----------------------------------------------------------------------*/

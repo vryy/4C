@@ -14,6 +14,8 @@ Maintainer: Georg Bauer
 #ifndef INPAR_SCATRA_H
 #define INPAR_SCATRA_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

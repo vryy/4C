@@ -68,14 +68,6 @@ namespace INPUT {
                        std::string const& docString,
                        Teuchos::ParameterList* paramList);
 
-  /// cast internal integer to enum type
-  template <class T>
-  T IntegralValue( const Teuchos::ParameterList & params, const std::string & name )
-  {
-    int value = Teuchos::getIntegralValue<int>( params, name );
-    return static_cast<T>( value );
-  }
-  
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 

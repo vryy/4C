@@ -14,6 +14,8 @@ Maintainer: Ursula Mayer
 #ifndef INPAR_SEARCHTREE_H_
 #define INPAR_SEARCHTREE_H_
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

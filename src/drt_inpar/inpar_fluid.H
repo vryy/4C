@@ -16,6 +16,8 @@ Maintainer: Florian Henke
 #ifndef INPAR_FLUID_H
 #define INPAR_FLUID_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {

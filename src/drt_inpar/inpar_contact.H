@@ -40,6 +40,8 @@ Maintainer: Alexander Popp
 #ifndef INPAR_CONTACT_H
 #define INPAR_CONTACT_H
 
+#include "inpar_parameterlist_utils.H"
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
