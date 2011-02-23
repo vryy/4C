@@ -54,6 +54,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
+#include "drt_singletondestruction.H"
+
 namespace LINALG
 {
   class SparseOperator;
@@ -85,7 +87,7 @@ class Discretization;
   \author u.kue
   \date 06/10
  */
-class ParObjectType
+class ParObjectType : public SingletonDestruction
 {
   friend class ParObjectFactory;
 public:

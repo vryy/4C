@@ -1463,6 +1463,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_surfstress
   drt_lib_potential
   drt_lib_intersection
+  drt_lib_cut
   drt_lib_inpar
   drt_lib_io
   drt_lib_nurbs 
@@ -1543,7 +1544,6 @@ target_link_libraries (${baciname}
   ${SUPPORT_LIBRARIES}
   drt_micromat drt_mat
   drt_lib_utils
-  drt_lib_cut
   linalg
   ${LIBRARIES})
 
@@ -1554,7 +1554,6 @@ set(FILTER_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
-  drt_lib_cut
   linalg
   filter_common
   ${LIBRARIES})
