@@ -2909,8 +2909,8 @@ void CONTACT::CmtStruGenAlpha::Output()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    p.set("iostress", iostress);
-    p.set("iostrain", iostrain);
+    p.set<int>("iostress", iostress);
+    p.set<int>("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);

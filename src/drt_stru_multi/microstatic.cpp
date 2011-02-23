@@ -761,8 +761,8 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    p.set("iostress", iostress_);
-    p.set("iostrain", iostrain_);
+    p.set<int>("iostress", iostress_);
+    p.set<int>("iostrain", iostrain_);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);

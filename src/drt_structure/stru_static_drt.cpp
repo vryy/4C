@@ -222,8 +222,8 @@ void stru_static_drt()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
-    p.set("iostress", iostress);
-    p.set("iostrain", iostrain);
+    p.set<int>("iostress", iostress);
+    p.set<int>("iostrain", iostrain);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -472,8 +472,8 @@ void stru_static_drt()
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
-      p.set("iostress", iostress);
-      p.set("iostrain", iostrain);
+      p.set<int>("iostress", iostress);
+      p.set<int>("iostrain", iostrain);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);

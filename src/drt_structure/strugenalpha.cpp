@@ -3277,9 +3277,9 @@ void StruGenAlpha::Output()
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
-    p.set("iostress", iostress);
+    p.set<int>("iostress", iostress);
     p.set("strain", strain);
-    p.set("iostrain", iostrain);
+    p.set<int>("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);

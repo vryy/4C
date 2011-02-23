@@ -878,12 +878,12 @@ void STR::TimInt::OutputStressStrain
   Teuchos::RCP<std::vector<char> > stressdata
     = Teuchos::rcp(new std::vector<char>());
   p.set("stress", stressdata);
-  p.set("iostress", writestress_);
+  p.set<int>("iostress", writestress_);
 
   Teuchos::RCP<std::vector<char> > straindata
     = Teuchos::rcp(new std::vector<char>());
   p.set("strain", straindata);
-  p.set("iostrain", writestrain_);
+  p.set<int>("iostrain", writestrain_);
 
   // set vector values needed by elements
   discret_->ClearState();
