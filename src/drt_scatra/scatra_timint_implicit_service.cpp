@@ -1804,7 +1804,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
-    p.set("calcerrorflag",calcerr);
+    p.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     p.set("isale",isale_);
     if (isale_)
@@ -1848,7 +1848,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
-    p.set("calcerrorflag",calcerr);
+    p.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     p.set("isale",isale_);
     if (isale_)
