@@ -76,7 +76,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   step_(0),
   stepmax_(params.get<int>   ("max number timesteps")),
   maxtime_(params.get<double>("total time")),
-  timealgo_(params.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
+  timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "time int algo")),
   itemax_(params.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get<bool>("do explicit predictor")),
   uprestart_(params.get<int>("write restart every")),
@@ -240,7 +240,7 @@ FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     physprob_.fieldset_.insert(XFEM::PHYSICS::Vely);
     physprob_.fieldset_.insert(XFEM::PHYSICS::Velz);
     physprob_.fieldset_.insert(XFEM::PHYSICS::Pres);
-    switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+    switch (DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"))
     {
     case INPAR::XFEM::BoundaryTypeSigma:
       physprob_.elementAnsatz_  = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
@@ -557,7 +557,7 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
   step_ += 1;
   time_ += dta_;
 
-  if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_stationary)
+  if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_stationary)
   {
     timealgo_ = INPAR::FLUID::timeint_stationary;
     theta_ = 1.0;
@@ -572,7 +572,7 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
     }
     else
     {
-      timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+      timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
       theta_ = params_.get<double>("theta");
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
@@ -673,7 +673,7 @@ void FLD::XFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
-  eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
+  eleparams.set<int>("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
   eleparams.set("interfacehandle",ih);
   discret_->Evaluate(eleparams);
 }
@@ -1161,13 +1161,13 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       // set general element parameters
       //eleparams.set("total time",time_);
       //eleparams.set("thsl",theta_*dta_);
-      eleparams.set("timealgo",timealgo_);
+      eleparams.set<int>("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
       //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
-      if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+      if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
         eleparams.set("include reactive terms for linearisation",true);
-      else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+      else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
         dserror("LinearisationAction minimal is not defined in the XFEM formulation");
       else
         eleparams.set("include reactive terms for linearisation",false);
@@ -1212,7 +1212,7 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
 //      eleparams.set("INCOMP_PROJECTION",xparams_.get<bool>("INCOMP_PROJECTION"));
       eleparams.set("monolithic_FSI",false);
-      eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
+      eleparams.set<int>("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1672,14 +1672,14 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   // set general element parameters
   //eleparams.set("total time",time_);
   //eleparams.set("thsl",theta_*dta_);
-  eleparams.set("timealgo",timealgo_);
+  eleparams.set<int>("timealgo",timealgo_);
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);
   eleparams.set("interface second order", params_.get<bool>("interface second order"));
   //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
-  if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+  if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
     eleparams.set("include reactive terms for linearisation",true);
-  else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+  else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
     dserror("LinearisationAction minimal is not defined in the XFEM formulation");
   else
     eleparams.set("include reactive terms for linearisation",false);
@@ -1709,7 +1709,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
   eleparams.set("monolithic_FSI",true);
-  eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
+  eleparams.set("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
 
   // call loop over elements
   //discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
@@ -2239,7 +2239,7 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     XFEM::PHYSICS::Field fieldxy = XFEM::PHYSICS::Sigmaxy;
     XFEM::PHYSICS::Field fieldxz = XFEM::PHYSICS::Sigmaxz;
     XFEM::PHYSICS::Field fieldyz = XFEM::PHYSICS::Sigmayz;
-    switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+    switch (DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"))
     {
     case INPAR::XFEM::BoundaryTypeSigma:
       fieldxx = XFEM::PHYSICS::Sigmaxx;
@@ -2771,7 +2771,7 @@ void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

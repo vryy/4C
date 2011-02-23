@@ -216,8 +216,8 @@ void DRT::ELEMENTS::PtetType::PreEvaluate(DRT::Discretization& dis,
     }
     else
     {
-      INPAR::STR::StressType iostress = p.get<INPAR::STR::StressType>("iostress",INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain = p.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
+      INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress",INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain",INPAR::STR::strain_none);
       vector<double> nodalstress(6);
       vector<double> nodalstrain(6);
       NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,iostress,iostrain);

@@ -221,20 +221,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
 
   // --------------------------------------------------
   // set parameters for nonlinear treatment
-  INPAR::FLUID::LinearisationAction newton = INPAR::FLUID::no_linearisation;
-
-  if(params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
-  {
-    newton=INPAR::FLUID::Newton;
-  }
-  else if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::fixed_point_like)
-  {
-    newton=INPAR::FLUID::fixed_point_like;
-  }
-  else if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::minimal)
-  {
-    newton=INPAR::FLUID::minimal;
-  }
+  INPAR::FLUID::LinearisationAction newton = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation");
 
   // --------------------------------------------------
   // get flag for fine-scale subgrid-viscosity approach

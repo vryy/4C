@@ -188,8 +188,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         if (stressdata==null) dserror("Cannot get stress 'data'");
         if (straindata==null) dserror("Cannot get strain 'data'");
-        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress",INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain",INPAR::STR::strain_none);
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress",INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain",INPAR::STR::strain_none);
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");

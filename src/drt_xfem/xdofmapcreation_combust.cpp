@@ -467,7 +467,7 @@ void XFEM::createDofMapCombust(
       if (ih.ElementBisected(xfemele))
       {
         //std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
-        const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+        const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {
@@ -522,7 +522,7 @@ void XFEM::createDofMapCombust(
           ih.ElementTouchedMinus(xfemele)   )
       {
         std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
-        const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
+        const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {

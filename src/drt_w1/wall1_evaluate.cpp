@@ -265,8 +265,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
         Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
-        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         w1_nlnstiffmass(lm,mydisp,myres,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);

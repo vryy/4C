@@ -162,7 +162,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
       Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz;
-      switch (params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+      switch (DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"))
       {
       case INPAR::XFEM::BoundaryTypeSigma:
         elementAnsatz = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
@@ -260,7 +260,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
 
       // extract local values from the global vectors
       const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
@@ -300,7 +300,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+        XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2,fluidfluidmatrices_);
 
@@ -400,7 +400,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+        XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
 
@@ -540,7 +540,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
@@ -572,7 +572,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             *eleDofManager_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+        XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
 
@@ -632,7 +632,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                            *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
         // calculate element coefficient matrix and rhs
-        XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+        XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
             mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
 
@@ -675,7 +675,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           double L2 = params.get<double>("L2");
 
           // time integration factors
-          const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+          const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
           const double            dt       = params.get<double>("dt");
           const double            theta    = params.get<double>("theta");
 
@@ -707,7 +707,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                 *eleDofManager_, NumNode(), NodeIds());
 
             // calculate element coefficient matrix and rhs
-            XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+            XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
 
@@ -767,7 +767,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
             // calculate element coefficient matrix and rhs
-            XFLUID::callSysmat(params.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"), params, assembly_type,
+            XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
                 mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
 

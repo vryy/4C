@@ -196,8 +196,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
 
-        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
         if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){

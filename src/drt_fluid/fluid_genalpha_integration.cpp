@@ -129,12 +129,12 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // parameter for linearisation scheme (fixed point like or newton like)
-  newton_    = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
+  newton_    = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
 
   itenum_    = 0;
   itemax_    = params_.get<int>   ("max nonlin iter steps");
 
-  physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   //--------------------------------------------------------------------
   // init some class variables (algorithm)
@@ -1357,7 +1357,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
-  eleparams.set("Linearisation",newton_);
+  eleparams.set<int>("Linearisation",newton_);
 
   // parameters for usage of conservative/convective form
   eleparams.set("CONVFORM",params_.get<string>("form of convective term"));
@@ -2108,7 +2108,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   }
 
   // parameters for nonlinear treatment (linearisation) and low-Mach-number solver
-  eleparams.set("Linearisation",newton_);
+  eleparams.set<int>("Linearisation",newton_);
 
   // parameters for stabilisation
   {
@@ -2498,7 +2498,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
@@ -2632,7 +2632,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
         // linearisation
 	cout << "Linearisation (1=fixed_point; 2=Newton; 3=minimal): ";
-	cout << params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
+	cout << DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
         cout << endl;
 
         // predictor
@@ -3301,8 +3301,8 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
   // set general element parameters
   eleparams.set("form of convective term","convective");
   eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -3311,7 +3311,7 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   // timealgorithm is gen_alpha
-  eleparams.set("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
+  eleparams.set<int>("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

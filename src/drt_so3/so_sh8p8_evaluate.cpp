@@ -298,9 +298,9 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         LINALG::Matrix<NUMGPT_,NUMSTR_> stress;
         LINALG::Matrix<NUMGPT_,NUMSTR_> strain;
         INPAR::STR::StressType iostress
-          = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+          = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain
-          = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+          = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,NULL,NULL,NULL,NULL,NULL,NULL,
                        &stress,&strain,NULL,params,iostress,iostrain);
@@ -526,7 +526,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     break;
     case calc_stc_matrix:
     {
-      const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
+      const INPAR::STR::STC_Scale stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
       else

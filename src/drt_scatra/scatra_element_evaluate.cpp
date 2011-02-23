@@ -33,7 +33,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
   // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 

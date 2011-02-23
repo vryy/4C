@@ -493,7 +493,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
-      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+      = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
     {
       case INPAR::THR::dyna_statics :
@@ -539,9 +539,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nquad_,nsd_> etempgrad; // (n_GPx DIM)
     // specific choice of heat flux / temperature gradient
     //const INPAR::THR::HeatFluxType ioheatflux
-    //   = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
+    //   = DRT::INPUT::get<INPAR::THR::HeatFluxType>(params,"ioheatflux");
     //const INPAR::THR::TempGradType iotempgrad
-    //   = params.get<INPAR::THR::TempGradType>("iotempgrad");
+    //   = DRT::INPUT::get<INPAR::THR::TempGradType>(params,"iotempgrad");
     //
     CalculateFintCondCapa(
       ele,
@@ -1448,7 +1448,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
 //    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
 //    // check the time integrator
 //    const INPAR::THR::DynamicType timint
-//      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+//      = DRT::INPUT::get<INPAR::THR::DynamicType>(params,"time integrator",INPAR::THR::dyna_undefined);
 //    switch (timint) {
 //    case INPAR::THR::dyna_statics :
 //    {
@@ -1488,8 +1488,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
 //    LINALG::Matrix<nquad_,nsd_> eheatflux;
 //    LINALG::Matrix<nquad_,nsd_> etempgrad;
 //    // specific choice of heat flux / temperature gradient
-//    //const INPAR::THR::HeatFluxType ioheatflux = params.get<INPAR::THR::HeatFluxType>("ioheatflux");
-//    //const INPAR::THR::TempGradType iotempgrad = params.get<INPAR::THR::TempGradType>("iotempgrad");
+//    //const INPAR::THR::HeatFluxType ioheatflux = DRT::INPUT::get<INPAR::THR::HeatFluxType>(params,"ioheatflux");
+//    //const INPAR::THR::TempGradType iotempgrad = DRT::INPUT::get<INPAR::THR::TempGradType>(params,"iotempgrad");
 //    //
 //    CalculateFintCondCapa(
 //      ele,

@@ -1410,7 +1410,7 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(ParameterList& params,  //
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -1508,7 +1508,7 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(ParameterList& params, 
   LINALG::Matrix<ndim,1> evaluationpoint;
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -1605,7 +1605,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(ParameterList& params,  //!
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -1688,7 +1688,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(ParameterList& params,  //
 {
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);

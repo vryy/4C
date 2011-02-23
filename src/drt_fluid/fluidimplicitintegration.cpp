@@ -99,9 +99,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-  physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
   // type of time-integration
-  timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
   // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
   // maximum number of timesteps
@@ -134,7 +134,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
+  newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
 
   // use of specific predictor
   // (might be used for af-generalized-alpha, but not yet activated)
@@ -666,7 +666,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // get gas constant
     ParameterList eleparams;
     eleparams.set("action","get_gas_constant");
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Physical Type", physicaltype_);
     discret_->Evaluate(eleparams,null,null,null,null,null);
     gasconstant_ = eleparams.get("gas constant", 1.0);
     // potential check here -> currently not executed
@@ -680,7 +680,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // get constant density variable for incompressible flow
     ParameterList eleparams;
     eleparams.set("action","get_density");
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Physical Type", physicaltype_);
     discret_->Evaluate(eleparams,null,null,null,null,null);
     density_ = eleparams.get("density", 1.0);
     if (density_ < EPS15) dserror("received zero or negative density value");
@@ -3929,7 +3929,7 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
@@ -3954,7 +3954,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     // actual time for elements
     eleparams.set("total time",time_);
 
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Physical Type", physicaltype_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -4665,8 +4665,8 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   // set general element parameters
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -4675,7 +4675,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   //set time integration scheme
-  eleparams.set("TimeIntegrationScheme", timealgo_);
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

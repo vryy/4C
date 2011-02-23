@@ -1113,7 +1113,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(ParameterList& params,  
 
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   vector<double> jacobi(jacobimass_);
@@ -1224,7 +1224,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(ParameterList& params
   LINALG::Matrix<ndim,1> evaluationpoint;
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -1321,7 +1321,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(ParameterList& params,  /
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
@@ -1412,7 +1412,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(ParameterList& params,  
   LINALG::Matrix<3,3> auxmatrix;
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   vector<double> jacobi(jacobimass_);
@@ -1486,7 +1486,7 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
    *these are identical to the nnode nodes and then the basis functions are no longer the one also required
    *for the mass matrix, but rather their values at the integration points are given by a Kronecker-Delta function*/
   IntegrationType dampingintrule(gaussexactintegration);
-  if(Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     dampingintrule = lobattointegration;
 
   DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,dampingintrule));
@@ -1495,7 +1495,7 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
   vector<LINALG::Matrix<4,1> > Qconvdamping(Qconvmass_);
   vector<LINALG::Matrix<4,1> > Qnewdamping(Qnewmass_);
 
-  if(Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
   {
     //in case of Lobatto integration nodal triads are triads at Gauss points
     Qconvdamping = Qconv_;

@@ -100,7 +100,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
 //----------------------------------------------------------------------
 
   // set flag, time integration scheme
-  timealgo_ = params.get<INPAR::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
   if (timealgo_==INPAR::FLUID::timeint_stationary)
@@ -126,9 +126,9 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //std::string newtonstr   = params.get<std::string>("Linearisation");
-  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::Newton)
+  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
     is_newton_       = true;
-  if (params.get<INPAR::FLUID::LinearisationAction>("Linearisation")==INPAR::FLUID::minimal)
+  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::minimal)
     dserror("There is no LinearisationAction minimal in the fluid formulation");
 
   // set flags for formuation of the convective velocity term (conservative or convective)
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   if (convformstr =="conservative") is_conservative_ = true;
 
   // set flag for physical type of fluid flow
-  physicaltype_ = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
   if (((physicaltype_ != INPAR::FLUID::boussinesq) and (physicaltype_ != INPAR::FLUID::incompressible))
       and (is_stationary_ == true))
     dserror("physical type is not supported in stationary FLUID implementation.");

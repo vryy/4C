@@ -279,7 +279,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
     const INPAR::THR::DynamicType timint
-      = params.get<INPAR::THR::DynamicType>("time integrator",INPAR::THR::dyna_undefined);
+      = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
     {
       case INPAR::THR::dyna_statics :

@@ -88,7 +88,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   maxtime_ (params_.get<double>("total time")),
   dta_     (params_.get<double> ("time step size")),
   dtp_     (params_.get<double> ("time step size")),
-  timealgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo")),
+  timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo")),
   //startalgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("start time int algo")),
   theta_   (params_.get<double>("theta")),
   initstatsol_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
@@ -310,7 +310,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
   dta_      = params_.get<double> ("time step size");
   dtp_      = params_.get<double> ("time step size");
   theta_    = params_.get<double>("theta");
-  timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
   itemax_   = params_.get<int>("max nonlin iter steps");
 
   step_ += 1;
@@ -949,7 +949,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
       //eleparams.set("thsl",theta_*dta_);
-      eleparams.set("timealgo",timealgo_);
+      eleparams.set<int>("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
 
@@ -959,9 +959,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
       //type of linearisation: include reactive terms for linearisation
-      if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+      if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
         eleparams.set("include reactive terms for linearisation",true);
-      else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+      else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
         dserror("LinearisationAction minimal is not defined in the combustion formulation");
       else
         eleparams.set("include reactive terms for linearisation",false);
@@ -3503,7 +3503,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
 
   // a new ActionType in combust3.H:	"calc_nitsche_error"
   eleparams.set("action", "calc_nitsche_error");
-  eleparams.set("Nitsche_Compare_Analyt", NitscheErrorType);
+  eleparams.set<int>("Nitsche_Compare_Analyt", NitscheErrorType);
   // switch different test cases -> set "flowproblem" for elements
 
   // smoothed normal vectors for boundary integration terms
@@ -3596,7 +3596,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = params_.get<INPAR::FLUID::InitialField>("eval err for analyt sol");
+  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

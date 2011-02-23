@@ -206,7 +206,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 
@@ -312,7 +312,7 @@ int DRT::ELEMENTS::XDiff3::Evaluate(ParameterList& params,
       double L2 = params.get<double>("L2");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       const double            dt       = 1.0;
       const double            theta    = 1.0;
 

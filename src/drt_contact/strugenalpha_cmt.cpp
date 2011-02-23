@@ -2836,9 +2836,9 @@ void CONTACT::CmtStruGenAlpha::Output()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
+  INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  INPAR::STR::StrainType iostrain = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural strain",INPAR::STR::strain_none);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 

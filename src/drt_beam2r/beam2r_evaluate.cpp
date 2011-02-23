@@ -900,7 +900,7 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(ParameterList& params,
   LINALG::Matrix<ndim,1> evaluationpoint;
   
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);
@@ -998,7 +998,7 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(ParameterList& params,  //
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = Teuchos::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   vector<double> jacobi(jacobimass_);

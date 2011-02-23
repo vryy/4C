@@ -52,7 +52,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  const INPAR::FLUID::PhysicalType physicaltype = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  const INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors

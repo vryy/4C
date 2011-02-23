@@ -750,7 +750,7 @@ namespace FLD
           map<string,RCP<Epetra_Vector> > statevecs;
           map<string,RCP<Epetra_MultiVector> > statetenss;
 
-          if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_gen_alpha)
+          if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_gen_alpha)
           {
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+1      ,trial)",myvelnp_));
             statevecs.insert(pair<string,RCP<Epetra_Vector> >("u and p (n+alpha_F,trial)",myvelaf_));
@@ -766,12 +766,12 @@ namespace FLD
           }
           else
           {
-            if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_afgenalpha)
+            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha)
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelaf_));
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccam_));
             }
-            else if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_one_step_theta)
+            else if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_one_step_theta)
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("vel",myvelnp_));
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("acc",myaccnp_));

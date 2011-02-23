@@ -267,10 +267,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
-      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
-      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = params.get<INPAR::COMBUST::SmoothGradPhi>("smoothgradphi");
+      const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
+      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
 
       // instationary formulation
       const bool instationary = true;
@@ -311,7 +311,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         dserror("unknown type of stabilization parameter definition");
 
       // time integration parameters
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       const double            dt       = params.get<double>("dt");
       const double            theta    = params.get<double>("theta");
 #ifdef SUGRVEL_OUTPUT
@@ -320,7 +320,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
-      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
@@ -392,10 +392,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (lm.empty())
         break;
 
-      const INPAR::COMBUST::CombustionType combusttype = params.get<INPAR::COMBUST::CombustionType>("combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = params.get<INPAR::COMBUST::VelocityJumpType>("veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = params.get<INPAR::COMBUST::FluxJumpType>("fluxjumptype");
-      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = params.get<INPAR::COMBUST::SmoothGradPhi>("smoothgradphi");
+      const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
+      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
 
       // stationary formulation
       const bool instationary = false;
@@ -418,7 +418,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // parameters for two-phase flow problems with surface tension
       // type of surface tension approximation
-      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = params.get<INPAR::COMBUST::SurfaceTensionApprox>("surftensapprox");
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
@@ -442,7 +442,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         dserror("unknown type of stabilization parameter definition");
 
       // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = params.get<INPAR::FLUID::TimeIntegrationScheme>("timealgo");
+      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
       dsassert(timealgo == INPAR::FLUID::timeint_stationary, "must be stationary!");
       const double            dt       = 1.0;
       const double            theta    = 1.0;
@@ -638,7 +638,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // smoothed gradient of phi required (surface tension application)
         const bool gradphi = true;
         const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
-        const INPAR::COMBUST::NitscheError NitscheErrorType = params.get<INPAR::COMBUST::NitscheError>("Nitsche_Compare_Analyt");
+        const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
         DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);

@@ -16,6 +16,20 @@ namespace DRT
       int value = Teuchos::getIntegralValue<int>( params, name );
       return static_cast<T>( value );
     }
+
+    template <class T>
+    T get( const Teuchos::ParameterList & params, const std::string & name )
+    {
+      int value = params.get<int>( name );
+      return static_cast<T>( value );
+    }
+
+    template <class T>
+    T get( Teuchos::ParameterList & params, const std::string & name, T default_value )
+    {
+      int value = params.get<int>( name, default_value );
+      return static_cast<T>( value );
+    }
   }
 }
 

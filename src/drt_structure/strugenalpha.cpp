@@ -79,7 +79,7 @@ fsisurface_(NULL)
       dserror("It's static: alphas must be 0 (in words: zero).");
     if (damping)
       dserror("Sorry dude, no damping in statics.");
-    INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+    INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
     switch (controltype)
     {
       case INPAR::STR::control_load:
@@ -3182,9 +3182,9 @@ void StruGenAlpha::Output()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  INPAR::STR::StressType iostress = params_.get<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
+  INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  INPAR::STR::StrainType iostrain      = params_.get<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  INPAR::STR::StrainType iostrain      = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural strain",INPAR::STR::strain_none);
   bool   iosurfactant  = params_.get<bool>  ("io surfactant"          ,false);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
@@ -3195,7 +3195,7 @@ void StruGenAlpha::Output()
   if (!errfile) printerr = false;
 
   bool control = false;
-  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
 
 /*
@@ -3389,7 +3389,7 @@ void StruGenAlpha::Integrate()
   double maxtime = params_.get<double>("max time",0.0);
   bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
   // check for disp or arclength control
-  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   bool control = false;
   if (dynkindstat)
     control = (controltype != INPAR::STR::control_load);
@@ -3653,7 +3653,7 @@ void StruGenAlpha::ReadRestart(int step)
   double pstime = pslist.get<double>("PRESTRESSTIME");
 
   bool control = false;
-  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (controltype!=INPAR::STR::control_load) control=true;
 
   reader.ReadVector(dis_, "displacement");

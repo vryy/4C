@@ -45,7 +45,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = params.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -2989,7 +2989,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
       (*log_res) << " (dt " << params_.get<double>("time step size") <<")\n";
 
-      if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_gen_alpha)
+      if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_gen_alpha)
       {
         (*log_res) << "#       y    ";
         (*log_res) << "    res_x   ";

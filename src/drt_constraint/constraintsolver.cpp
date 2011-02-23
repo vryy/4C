@@ -88,7 +88,7 @@ void UTILS::ConstraintSolver::Setup
   try
   {
     // for StruGenAlpha
-    algochoice_ = params.get<INPAR::STR::ConSolveAlgo>("UZAWAALGO");
+    algochoice_ = static_cast<INPAR::STR::ConSolveAlgo>( params.get<int>("UZAWAALGO") );
   }
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {

@@ -49,7 +49,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
-  INPAR::FLUID::PhysicalType physicaltype = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors

@@ -208,9 +208,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
       INPAR::STR::StressType iostress
-        = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
+        = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain
-        = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
       // call the well-known soh8_nlnstiffmass for the normal structure solution
       soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
                         iostress,iostrain);

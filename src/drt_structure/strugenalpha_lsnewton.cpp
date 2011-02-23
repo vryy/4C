@@ -832,7 +832,7 @@ void StruGenAlpha::ControlledConstantPredictor()
   bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   //int controldof     = params_.get<int>("CONTROLDOF",-1);
   //int controlcurve   = params_.get<int>("CONTROLCURVE",-1);
-  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (!dynkindstat || controltype==INPAR::STR::control_load)
     dserror("this predictor only for static with control other than load control");
 
@@ -1021,7 +1021,7 @@ void StruGenAlpha::ControlledFullNewton()
   int controldof     = params_.get<int>("CONTROLDOF",-1);
   int controlcurve   = params_.get<int>("CONTROLCURVE",-1);
   int controlowner   = params_.get<int>("CONTROLOWNER",-1);
-  INPAR::STR::ControlType controltype = params_.get<INPAR::STR::ControlType>("CONTROLTYPE",INPAR::STR::control_load);
+  INPAR::STR::ControlType controltype = DRT::INPUT::get<INPAR::STR::ControlType>(params_, "CONTROLTYPE",INPAR::STR::control_load);
   if (!dynkindstat || controltype==INPAR::STR::control_load)
     dserror("ControlledFullNewton only for static with control other than load control");
   //------------------------------ turn adaptive solver tolerance on/off

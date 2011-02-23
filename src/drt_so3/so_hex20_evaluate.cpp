@@ -168,8 +168,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> stress;
         LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> strain;
-        INPAR::STR::StressType iostress = params.get<INPAR::STR::StressType>("iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = params.get<INPAR::STR::StrainType>("iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         soh20_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         AddtoPack(*stressdata, stress);
         AddtoPack(*straindata, strain);

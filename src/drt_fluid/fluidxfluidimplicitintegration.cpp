@@ -93,9 +93,9 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   // -------------------------------------------------------------------
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-  physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
   // type of time-integration
-  timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
   // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
   // maximum number of timesteps
@@ -135,7 +135,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   }
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
+  newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
 
   // use of specific predictor
   // (might be used for af-generalized-alpha, but not yet activated)
@@ -281,7 +281,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   // get constant density variable for incompressible flow
   ParameterList eleparams;
   eleparams.set("action","get_density");
-  eleparams.set("Physical Type", physicaltype_);
+  eleparams.set<int>("Physical Type", physicaltype_);
   fluiddis_->Evaluate(eleparams,null,null,null,null,null);
   density_ = eleparams.get("density", 1.0);
   if (density_ < EPS15) dserror("received zero or negative density value");
@@ -344,7 +344,7 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   physprob_.fieldset_.insert(XFEM::PHYSICS::Vely);
   physprob_.fieldset_.insert(XFEM::PHYSICS::Velz);
   physprob_.fieldset_.insert(XFEM::PHYSICS::Pres);
-  switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+  switch (DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"))
   {
   case INPAR::XFEM::BoundaryTypeSigma:
     physprob_.elementAnsatz_  = rcp<XFLUID::FluidElementAnsatz>(new XFLUID::FluidElementAnsatz());
@@ -578,7 +578,7 @@ void FLD::FluidXFluidImplicitTimeInt::PrepareTimeStep()
   step_ += 1;
   time_ += dta_;
 
-  if (params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo") == INPAR::FLUID::timeint_stationary)
+  if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo") == INPAR::FLUID::timeint_stationary)
   {
     timealgo_ = INPAR::FLUID::timeint_stationary;
     theta_ = 1.0;
@@ -593,7 +593,7 @@ void FLD::FluidXFluidImplicitTimeInt::PrepareTimeStep()
     }
     else
     {
-      timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+      timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
       theta_ = params_.get<double>("theta");
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
@@ -870,8 +870,8 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("omtheta",omtheta_);
       eleparams.set("form of convective term",convform_);
       eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("Linearisation",newton_);
-      eleparams.set("Physical Type", physicaltype_);
+      eleparams.set<int>("Linearisation",newton_);
+      eleparams.set<int>("Physical Type", physicaltype_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -894,10 +894,10 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
       fluiddis_->SetState("velnm",fluidstate_.velnm_);
       fluiddis_->SetState("accn" ,fluidstate_.accn_);
 
-      eleparams.set("timealgo",timealgo_);
-      if(params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::Newton)
+      eleparams.set<int>("timealgo",timealgo_);
+      if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
         eleparams.set("include reactive terms for linearisation",true);
-      else if (params_.get<INPAR::FLUID::LinearisationAction>("Linearisation") == INPAR::FLUID::minimal)
+      else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
         dserror("LinearisationAction minimal is not defined in the XFEM formulation");
       else
         eleparams.set("include reactive terms for linearisation",false);
@@ -959,7 +959,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
         eleparams.set("L2",L2);
         eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
         eleparams.set("monolithic_FSI",false);
-        eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
+        eleparams.set<int>("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
         fluidxfluidboundarydis->SetState("interface nodal iterinc", fxfiincvel_);
 
         eleparams.set("action","fluidxfluidCoupling");
@@ -2642,7 +2642,7 @@ void FLD::FluidXFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
-  eleparams.set("EMBEDDED_BOUNDARY",xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"));
+  eleparams.set<int>("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
   eleparams.set("interfacehandle",ih);
   xfluiddis_->Evaluate(eleparams);
 }
@@ -3103,7 +3103,7 @@ void FLD::FluidXFluidImplicitTimeInt::OutputToGmsh(
     XFEM::PHYSICS::Field fieldxy = XFEM::PHYSICS::Sigmaxy;
     XFEM::PHYSICS::Field fieldxz = XFEM::PHYSICS::Sigmaxz;
     XFEM::PHYSICS::Field fieldyz = XFEM::PHYSICS::Sigmayz;
-    switch (xparams_.get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY"))
+    switch (DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"))
     {
     case INPAR::XFEM::BoundaryTypeSigma:
       fieldxx = XFEM::PHYSICS::Sigmaxx;
@@ -3710,8 +3710,8 @@ void FLD::FluidXFluidImplicitTimeInt::SetElementGeneralFluidParameter()
   // set general element parameters
   eleparams.set("form of convective term",convform_);
   eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("Linearisation",newton_);
-  eleparams.set("Physical Type", physicaltype_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -3720,7 +3720,7 @@ void FLD::FluidXFluidImplicitTimeInt::SetElementGeneralFluidParameter()
   eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   //set time integration scheme
-  eleparams.set("TimeIntegrationScheme", timealgo_);
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
   fluiddis_->Evaluate(eleparams,null,null,null,null,null);

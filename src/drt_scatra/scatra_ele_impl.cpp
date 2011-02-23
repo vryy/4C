@@ -288,7 +288,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   } // Nurbs specific stuff
 
   // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = params.get<INPAR::SCATRA::ScaTraType>("scatratype");
+  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Set parameter SCATRATYPE in your input file!");
 
@@ -342,7 +342,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flag for conservative form
     const INPAR::SCATRA::ConvForm convform =
-    params.get<INPAR::SCATRA::ConvForm>("form of convective term");
+      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
     conservative_ = false;
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
@@ -413,7 +413,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flag for fine-scale subgrid diffusivity and perform some checks
     bool fssgd = false; //default
-    const INPAR::SCATRA::FSSUGRDIFF whichfssgd = params.get<INPAR::SCATRA::FSSUGRDIFF>("fs subgrid diffusivity");
+    const INPAR::SCATRA::FSSUGRDIFF whichfssgd = DRT::INPUT::get<INPAR::SCATRA::FSSUGRDIFF>(params, "fs subgrid diffusivity");
     if (whichfssgd == INPAR::SCATRA::fssugrdiff_artificial)
     {
       fssgd = true;
@@ -656,7 +656,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     // set flag for conservative form
     const INPAR::SCATRA::ConvForm convform =
-      params.get<INPAR::SCATRA::ConvForm>("form of convective term");
+      DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
     conservative_ = false;
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
@@ -780,7 +780,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     } // for i
 
     // access control parameter for flux calculation
-    INPAR::SCATRA::FluxType fluxtype = params.get<INPAR::SCATRA::FluxType>("fluxtype");
+    INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
 
     // set flag for potential evaluation of material law at int. point
     ParameterList& stablist = params.sublist("STABILIZATION");
@@ -951,7 +951,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     reaction_ = false;
 
     // set flag for conservative form
-    const INPAR::SCATRA::ConvForm convform = params.get<INPAR::SCATRA::ConvForm>("form of convective term");
+    const INPAR::SCATRA::ConvForm convform = DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
     conservative_ = false;
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
@@ -5104,7 +5104,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype = params.get<INPAR::SCATRA::CalcError>("calcerrorflag");
+  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
   switch(errortype)
   {
   case INPAR::SCATRA::calcerror_Kwok_Wu:

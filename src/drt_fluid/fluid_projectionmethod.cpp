@@ -56,7 +56,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     // get basic parameters first
 
     // type of time-integration
-    timealgo_ = params_.get<INPAR::FLUID::TimeIntegrationScheme>("time int algo");
+    timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
     // time-step size
     dtp_ = dta_ = params_.get<double>("time step size");
     // maximum number of timesteps
@@ -72,7 +72,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     gamma_    = params_.get<double>("gamma");
 
     // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-    physicaltype_ = params_.get<INPAR::FLUID::PhysicalType>("Physical Type");
+    physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
 
     // number of steps for starting algorithm
     numstasteps_ = params_.get<int> ("number of start steps");
@@ -89,7 +89,7 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     }
 
     // parameter for linearization scheme (fixed-point-like or Newton)
-    newton_ = params_.get<INPAR::FLUID::LinearisationAction>("Linearisation");
+    newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
 
     // ensure that degrees of freedom in the discretization have been set
     if(!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
@@ -793,8 +793,8 @@ void FLD::FluidProjectionMethod::SolveImpulseEqn()
         eleparams.set("thsl",theta_*dta_);
         eleparams.set("dt",dta_);
         eleparams.set("fs subgrid viscosity","no");
-        eleparams.set("Linearisation",newton_);
-        eleparams.set("Physical Type", physicaltype_);
+        eleparams.set<int>("Linearisation",newton_);
+        eleparams.set<int>("Physical Type", physicaltype_);
         eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
         eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
@@ -1062,8 +1062,8 @@ void FLD::FluidProjectionMethod::SolveImpulseEqnSemi()
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("dt",dta_);
     eleparams.set("fs subgrid viscosity","no");
-    eleparams.set("Linearisation",newton_);
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Linearisation",newton_);
+    eleparams.set<int>("Physical Type", physicaltype_);
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
@@ -1261,8 +1261,8 @@ void FLD::FluidProjectionMethod::CalcResidual()
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("dt",dta_);
     eleparams.set("fs subgrid viscosity","no");
-    eleparams.set("Linearisation",newton_);
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Linearisation",newton_);
+    eleparams.set<int>("Physical Type", physicaltype_);
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
