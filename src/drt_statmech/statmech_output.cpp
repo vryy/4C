@@ -3764,7 +3764,8 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 			DRT::Node* node1 = discret_.lRowNode(lid1);
 
 			// calculate directional vector between nodes
-			LINALG::Matrix<3, 1> dirvec;
+			double dirlength = 0.0;
+			Epetra_SerialDenseMatrix dirvec(3,1);
 			for(int dof=0; dof<3; dof++)
 			{
 				int dofgid0 = discret_.Dof(node0)[dof];
@@ -3777,14 +3778,17 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 				else if (fabs(poscomponent1 + periodlength - poscomponent0) < fabs(poscomponent1 - poscomponent0))
 					poscomponent1 += periodlength;
 
-				dirvec(dof) = poscomponent1-poscomponent0;
+				dirvec(dof,0) = poscomponent1-poscomponent0;
+				dirlength += dirvec(dof,0)*dirvec(dof,0);
 			}
 			// normed directional vector
-			dirvec.Scale(1/dirvec.Norm2());
+			dirvec.Scale(1.0/dirlength);
+			Epetra_SerialDenseMatrix dirvecrot(3,1);
+			trafo_->Multiply(false,dirvec,dirvecrot);
 
 			// transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
-			double phi = atan2(dirvec(1),dirvec(0)) + M_PI;
-			double theta = acos(dirvec(2));
+			double phi = atan2(dirvec(1,0),dirvec(0,0)) + M_PI;
+			double theta = acos(dirvec(2,0));
 
 			int phibin = (int)floor(phi/(2*M_PI)*numbins);
 			int thetabin = (int)floor(theta/M_PI*numbins);
