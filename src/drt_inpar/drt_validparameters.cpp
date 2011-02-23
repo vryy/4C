@@ -304,32 +304,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
   {
-  Teuchos::Tuple<std::string,17> name;
-  Teuchos::Tuple<PROBLEM_TYP,17> label;
-  name[ 0] = "Structure";                                   label[ 0] = prb_structure;
-  name[ 1] = "Fluid";                                       label[ 1] = prb_fluid;
-  name[ 2] = "Fluid_XFEM";                                  label[ 2] = prb_fluid_xfem;
-  name[ 3] = "Fluid_Ale";                                   label[ 3] = prb_fluid_ale;
-  name[ 4] = "Fluid_Freesurface";                           label[ 4] = prb_freesurf;
-  name[ 5] = "Scalar_Transport";                            label[ 5] = prb_scatra;
-  name[ 6] = "Fluid_Structure_Interaction";                 label[ 6] = prb_fsi;
-  name[ 7] = "Fluid_Structure_Interaction_XFEM";            label[ 7] = prb_fsi_xfem;
-  name[ 8] = "Ale";                                         label[ 8] = prb_ale;
-  name[ 9] = "Thermo_Structure_Interaction";                label[ 9] = prb_tsi;
-  name[10] = "Thermo";                                      label[10] = prb_thermo;
-  name[11] = "Low_Mach_Number_Flow";                        label[11] = prb_loma;
-  name[12] = "Electrochemistry";                            label[12] = prb_elch;
-  name[13] = "Combustion";                                  label[13] = prb_combust;
-  name[14] = "ArterialNetwork";                             label[14] = prb_art_net;
-  name[15] = "Fluid_Structure_Interaction_Lung";            label[15] = prb_fsi_lung;
-  name[16] = "ReducedDimensionalAirWays";                   label[16] = prb_red_airways;
-  setStringToIntegralParameter<PROBLEM_TYP>(
-                               "PROBLEMTYP",
-                               "Fluid_Structure_Interaction",
-                               "",
-                               name,
-                               label,
-                               &type);
+    Teuchos::Array<std::string> name;
+    Teuchos::Array<PROBLEM_TYP> label;
+    name.push_back("Structure");                                   label.push_back(prb_structure);
+    name.push_back("Fluid");                                       label.push_back(prb_fluid);
+    name.push_back("Fluid_XFEM");                                  label.push_back(prb_fluid_xfem);
+    name.push_back("Fluid_Ale");                                   label.push_back(prb_fluid_ale);
+    name.push_back("Fluid_Freesurface");                           label.push_back(prb_freesurf);
+    name.push_back("Scalar_Transport");                            label.push_back(prb_scatra);
+    name.push_back("Fluid_Structure_Interaction");                 label.push_back(prb_fsi);
+    name.push_back("Fluid_Structure_Interaction_XFEM");            label.push_back(prb_fsi_xfem);
+    name.push_back("Ale");                                         label.push_back(prb_ale);
+    name.push_back("Thermo_Structure_Interaction");                label.push_back(prb_tsi);
+    name.push_back("Thermo");                                      label.push_back(prb_thermo);
+    name.push_back("Low_Mach_Number_Flow");                        label.push_back(prb_loma);
+    name.push_back("Electrochemistry");                            label.push_back(prb_elch);
+    name.push_back("Combustion");                                  label.push_back(prb_combust);
+    name.push_back("ArterialNetwork");                             label.push_back(prb_art_net);
+    name.push_back("Fluid_Structure_Interaction_Lung");            label.push_back(prb_fsi_lung);
+    name.push_back("ReducedDimensionalAirWays");                   label.push_back(prb_red_airways);
+    setStringToIntegralParameter<PROBLEM_TYP>(
+      "PROBLEMTYP",
+      "Fluid_Structure_Interaction",
+      "",
+      name,
+      label,
+      &type);
   }
 
   IntParameter("NUMFIELD",1,"",&type);
