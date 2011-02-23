@@ -717,7 +717,7 @@ void PostProblem::read_meshes()
       if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
           (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
       {
-        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+        PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.UpdateDofsForPeriodicBoundaryConditions();
       }
 
