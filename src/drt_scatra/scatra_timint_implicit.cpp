@@ -718,7 +718,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
+  const bool   isadapttol    = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
   const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
   const double abstolres = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
   double       actresidual(0.0);
@@ -728,7 +728,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   bool  stopnonliniter = false;
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
-  const bool explpredictor = (getIntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
+  const bool explpredictor = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
   if (explpredictor)
     ExplicitPredictor();
 
@@ -1269,7 +1269,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     mhdbcparams.set("incremental solver",incremental_);
     mhdbcparams.set("isale",isale_);
 
-    mhdbcparams.set<INPAR::SCATRA::ScaTraType>("scatratype",INPAR::SCATRA::scatratype_condif);
+    mhdbcparams.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     AddMultiVectorToParameterList(mhdbcparams,"velocity field",convel_);
     AddSpecificTimeIntegrationParameters(mhdbcparams);

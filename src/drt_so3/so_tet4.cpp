@@ -106,7 +106,7 @@ time_(0.0)
   if (DRT::Problem::NumInstances() > 0)
   {
     const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-    pstype_ = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
     pstime_ = pslist.get<double>("PRESTRESSTIME");
   }
 

@@ -790,7 +790,7 @@ void THR::TimInt::ApplyForceTangInternal(
   )
 {
   // type of calling time integrator
-  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
+  p.set<int>("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_fintcond";
   p.set("action", action);
@@ -834,7 +834,7 @@ void THR::TimInt::ApplyForceTangInternal(
   )
 {
   // type of calling time integrator
-  p.set<INPAR::THR::DynamicType>("time integrator", MethodName());
+  p.set<int>("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_finttang";
   p.set("action", action);

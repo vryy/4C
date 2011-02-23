@@ -550,7 +550,7 @@ void FSI::MortarMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> i
 void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -601,7 +601,7 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase&
 void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {

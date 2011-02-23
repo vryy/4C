@@ -692,8 +692,8 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
   // before and after this function, it's ok to do that
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
@@ -1961,7 +1961,7 @@ void FLD::XFluidImplicitTimeInt::ReadRestart(
   cout0_ << MAGENTA << "FLD::XFluidImplicitTimeInt::ReadRestart" << END_COLOR << endl;
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const int output_test_step = 999999;
 
@@ -2038,8 +2038,8 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   // get a copy on columnmn parallel distribution
   Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
@@ -2421,8 +2421,8 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 {
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
@@ -3815,8 +3815,8 @@ void FLD::XFluidImplicitTimeInt::PrintFluidFluidBoundaryVectorField(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   if (gmshdebugout)
   {
@@ -3880,8 +3880,8 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
    }
 
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
   PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
 

@@ -130,7 +130,7 @@ V0_(V0)
   iostrain_ = iostrain;
   iosurfactant_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT");
 
-  isadapttol_ = (getIntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
+  isadapttol_ = (DRT::INPUT::IntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // -------------------------------------------------------------------

@@ -595,8 +595,8 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
-  const bool screen_out = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 5, screen_out, boundarydis_->Comm().MyPID());

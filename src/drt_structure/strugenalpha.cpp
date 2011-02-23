@@ -55,7 +55,7 @@ fsisurface_(NULL)
 
   // check for prestressing compatibility
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   if (pstype==INPAR::STR::prestress_mulf || pstype==INPAR::STR::prestress_id)
   {
 #ifdef STRUGENALPHA_BE
@@ -3618,9 +3618,9 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<double>("tolerance displacements",1.0e-07);
   params.set<bool>  ("io structural disp"     ,false);
   params.set<int>   ("io disp every nstep"    ,10);
-  params.set<INPAR::STR::StressType>("io structural stress",INPAR::STR::stress_none);
+  params.set<int>("io structural stress",INPAR::STR::stress_none);
   params.set<int>   ("io disp every nstep"    ,10);
-  params.set<INPAR::STR::StrainType>("io structural strain",INPAR::STR::strain_none);
+  params.set<int>("io structural strain",INPAR::STR::strain_none);
   params.set<bool>  ("io surfactant",false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);

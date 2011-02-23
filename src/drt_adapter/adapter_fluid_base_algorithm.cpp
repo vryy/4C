@@ -141,7 +141,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // create a second solver for SIMPLER preconditioner if chosen from input
   // -------------------------------------------------------------------
-  if (getIntegralValue<int>(fdyn,"SIMPLER"))
+  if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
     solver->PutSolverParamsToSubParams("SIMPLER",
                                        DRT::Problem::Instance()->FluidPressureSolverParams());
@@ -156,14 +156,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
-  fluidtimeparams->set<INPAR::SOLVER::AzPrecType>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
+  fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
   fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
-  fluidtimeparams->set<INPAR::FLUID::PhysicalType>("Physical Type",
+  fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
 
 
@@ -199,7 +199,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // type of predictor
   fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
   // set linearisation scheme
-  fluidtimeparams->set<INPAR::FLUID::LinearisationAction>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
+  fluidtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // set bool flag "Newton true or false" for combustion formulation and XFEM
   //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
   //                           DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
@@ -212,7 +212,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // set convergence check
   fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
   // set adaptoive linear solver tolerance
-  fluidtimeparams->set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
+  fluidtimeparams->set<bool>            ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
 
   // ----------------------------------------------- restart and output
@@ -273,12 +273,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ----------------------------------------------- XFEM related stuff
   {
     const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-    fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", getIntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
-    fluidtimeparams->sublist("XFEM").set<bool>("INCOMP_PROJECTION", getIntegralValue<int>(xdyn,"INCOMP_PROJECTION")==1 );
-    fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", getIntegralValue<int>(xdyn,"CONDEST")==1 );
+    fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xdyn,"DLM_CONDENSATION")==1 );
+    fluidtimeparams->sublist("XFEM").set<bool>("INCOMP_PROJECTION", DRT::INPUT::IntegralValue<int>(xdyn,"INCOMP_PROJECTION")==1 );
+    fluidtimeparams->sublist("XFEM").set<bool>("CONDEST", DRT::INPUT::IntegralValue<int>(xdyn,"CONDEST")==1 );
     fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
-    fluidtimeparams->sublist("XFEM").set<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY", getIntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
+    fluidtimeparams->sublist("XFEM").set<int>("EMBEDDED_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
   }
 
   // --------------------------sublist for combustion-specific fluid parameters
@@ -288,8 +288,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
-    fluidtimeparams->sublist("XFEM").set<INPAR::COMBUST::CombustionType>("combusttype",
-        getIntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
+    fluidtimeparams->sublist("XFEM").set<int>("combusttype",
+        DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
   }
 
   // -------------------------------------------------------------------
@@ -390,7 +390,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
-    fluidtimeparams->set<INPAR::FLUID::TimeIntegrationScheme>("time int algo",timeint);
+    fluidtimeparams->set<int>("time int algo",timeint);
     // parameter theta for time-integration schemes
     fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // number of steps for potential start algorithm

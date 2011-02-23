@@ -193,7 +193,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
 
       INPAR::STR::ControlType controltype = DRT::INPUT::IntegralValue<INPAR::STR::ControlType>(sdyn,"CONTROLTYPE");
-      genalphaparams.set<INPAR::STR::ControlType>("CONTROLTYPE",controltype);
+      genalphaparams.set<int>("CONTROLTYPE",controltype);
       {
         vector<int> controlnode;
         std::istringstream contnode(Teuchos::getNumericStringParameter(sdyn,"CONTROLNODE"));
@@ -244,20 +244,20 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("UZAWAPARAM",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<double>("UZAWATOL",sdyn.get<double>("UZAWATOL"));
       genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
-      genalphaparams.set<INPAR::STR::ConSolveAlgo>("UZAWAALGO",getIntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
+      genalphaparams.set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
       genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 
-      genalphaparams.set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
+      genalphaparams.set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
       genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
       INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
-      genalphaparams.set<INPAR::STR::StressType>("io structural stress", iostress);
+      genalphaparams.set<int>("io structural stress", iostress);
 
       genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
       INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
-      genalphaparams.set<INPAR::STR::StrainType>("io structural strain", iostrain);
+      genalphaparams.set<int>("io structural strain", iostrain);
 
       genalphaparams.set<bool>  ("io surfactant",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT"));
 

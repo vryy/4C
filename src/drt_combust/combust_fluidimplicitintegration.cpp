@@ -1903,7 +1903,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool gmshdebugout = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = true;
 
@@ -2469,7 +2469,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
+  const bool gmshdebugout = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = true;
 

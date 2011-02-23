@@ -99,7 +99,7 @@ COMBUST::InterfaceHandleCombust::~InterfaceHandleCombust()
 void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
 
   const bool screen_out = true;
 

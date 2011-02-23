@@ -701,7 +701,7 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
 
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern
-  if (getIntegralValue<int>(*params_,"BLOCKPRECOND"))
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
     BlockSystemMatrix()->Reset();
   else
     SystemMatrix()->Reset();

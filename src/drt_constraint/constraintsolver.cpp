@@ -93,7 +93,7 @@ void UTILS::ConstraintSolver::Setup
   catch (const Teuchos::Exceptions::InvalidParameterType)
   {
     // for STR::TimIntImpl
-    algochoice_ = getIntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
+    algochoice_ = DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(params,"UZAWAALGO");
   }
 
   // different setup for #adapttol_

@@ -42,7 +42,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
                                                       Epetra_SerialDenseMatrix* elemat1)
 {
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  INPAR::STR::PreStress pstype = getIntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
   double pstime = pslist.get<double>("PRESTRESSTIME");
 
   // get type of condition

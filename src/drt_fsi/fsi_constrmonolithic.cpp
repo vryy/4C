@@ -129,7 +129,7 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
 {
   //should we scale the system?
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -182,7 +182,7 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
 void FSI::ConstrMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)getIntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
