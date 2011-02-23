@@ -2660,6 +2660,9 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 	if(numcrossele != 0)
 		cog->Scale(1.0/(double)numcrossele);
 
+	// zero out for new run
+	trafo_->Zero();
+
   // calculations done by Proc 0 only
   if(discret_.Comm().MyPID()==0)
   {
