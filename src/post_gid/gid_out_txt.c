@@ -473,7 +473,7 @@ static int GiD_ClosePostMeshFile()
  *    Start a mesh block
  */
 
-int GiD_BeginMesh(char* MeshName,
+int GiD_BeginMesh(const char* MeshName,
                   GiD_Dimension Dim,
                   GiD_ElementType EType,
                   int NNode)
@@ -686,7 +686,7 @@ int GiD_ClosePostResultFile()
  *  Begin Gauss Points definition
  */
 
-int GiD_BeginGaussPoint( char * name, GiD_ElementType EType, char * MeshName,
+int GiD_BeginGaussPoint( const char * name, GiD_ElementType EType, const char * MeshName,
 			 int GP_number, int NodesIncluded, int InternalCoord )
 {
   char line[LINE_SIZE];
@@ -879,10 +879,10 @@ int GiD_WriteMaxRange( double min, char * name )
  *  Begin Result Block
  */
 
-int GiD_BeginResult(const char * Result, char * Analysis, double step,
+int GiD_BeginResult(const char * Result, const char * Analysis, double step,
 		    GiD_ResultType Type, GiD_ResultLocation Where,
-		    char * GaussPointsName, char * RangeTable,
-		    int compc, char * compv[])
+		    const char * GaussPointsName, const char * RangeTable,
+		    int compc, const char * compv[])
 {
   char line[LINE_SIZE];
   const char * loc;
@@ -923,9 +923,9 @@ int GiD_BeginResult(const char * Result, char * Analysis, double step,
   return gid_begin_values(&ResultFile);
 }
 
-int GiD_BeginResultHeader(char * Result, char * Analysis, double step,
+int GiD_BeginResultHeader(const char * Result, const char * Analysis, double step,
 			  GiD_ResultType Type, GiD_ResultLocation Where,
-			  char * GaussPointsName)
+			  const char * GaussPointsName)
 {
   char line[LINE_SIZE];
   const char * loc;
@@ -1019,8 +1019,8 @@ int GiD_ResultUnit(char * UnitName)
   return 1;
 }
 
-int GiD_BeginResultGroup(char * Analysis, double step, GiD_ResultLocation Where,
-			 char * GaussPointsName)
+int GiD_BeginResultGroup(const char * Analysis, double step, GiD_ResultLocation Where,
+			 const char * GaussPointsName)
 {
   char line[LINE_SIZE];
   const char * loc;
@@ -1062,7 +1062,7 @@ static int CheckStateDesc()
   return 0;
 }
 
-int GiD_ResultDescription(char * Result, GiD_ResultType Type)
+int GiD_ResultDescription(const char * Result, GiD_ResultType Type)
 {
   char line[LINE_SIZE];
 

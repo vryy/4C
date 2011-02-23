@@ -35,7 +35,7 @@ const int MAXNODHARDCODED = 1000;
 /*----------------------------------------------------------------------*/
 void write_vector_result(string result_name, PostField* field, PostResult* result)
 {
-  char* componentnames[] = { "x", "y", "z" };
+  const char* componentnames[] = { "x", "y", "z" };
 
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
@@ -46,7 +46,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
 
-  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Vector,
+  GiD_BeginResult(buf.str().c_str(), "ccarat", step, GiD_Vector,
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
 
@@ -91,9 +91,9 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
   const Epetra_BlockMap& datamap = data->Map();
 
   const char* name = result_name.c_str();
-  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Scalar,
+  GiD_BeginResult(buf.str().c_str(), "ccarat", step, GiD_Scalar,
                   GiD_OnNodes, NULL, NULL, 1,
-                  const_cast<char**>(&name));
+                  &name);
 
   // determine offset of dofs in case of multiple discretizations in
   // separate files (e.g. multi-scale problems). during calculation,
@@ -124,8 +124,8 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
-  char* gaussname = "";
-  char* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
+  const char* gaussname = "";
+  const char* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
   int numdim = 0;
   int numstress = 0;
 
@@ -217,7 +217,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   else if (numdim==2) numstress=3;
   else dserror("Stress output only supported for 2D and 3D problems");
 
-  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
+  GiD_BeginResult(buf.str().c_str(), "ccarat", step, GiD_Matrix,
                       GiD_OnGaussPoints, gaussname, NULL, 6, componentnames);
 
   vector<double> v(numstress,0.0);

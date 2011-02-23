@@ -59,7 +59,7 @@ typedef enum { GiD_2D = 2, GiD_3D = 3 } GiD_Dimension;
  *  of size given in the paramenter NNode.
  */
 
-int GiD_BeginMesh( char * MeshName,
+int GiD_BeginMesh( const char * MeshName,
                    GiD_Dimension Dim, GiD_ElementType EType, int NNode );
 
 /*
@@ -153,7 +153,7 @@ int GiD_ClosePostResultFile();
  *  dimension of the element type.
  */
 
-int GiD_BeginGaussPoint( char * name, GiD_ElementType EType, char * MeshName,
+int GiD_BeginGaussPoint( const char * name, GiD_ElementType EType, const char * MeshName,
 			 int GP_number, int NodesIncluded, int InternalCoord );
 
 /*
@@ -218,10 +218,10 @@ typedef enum { GiD_OnNodes, GiD_OnGaussPoints } GiD_ResultLocation;
  *  done implicitly.
  */
 
-int GiD_BeginResult(const char * Result, char * Analysis, double step,
+int GiD_BeginResult(const char * Result, const char * Analysis, double step,
 		    GiD_ResultType Type, GiD_ResultLocation Where,
-		    char * GaussPointsName, char * RangeTable,
-		    int compc, char * compv[]);
+		    const char * GaussPointsName, const char * RangeTable,
+		    int compc, const char * compv[]);
 
 /*
  *  Begin Result Block. This function open a result block. Only the result,
@@ -230,9 +230,9 @@ int GiD_BeginResult(const char * Result, char * Analysis, double step,
  *  separated function calls.
  */
 
-int GiD_BeginResultHeader(char * Result, char * Analysis, double step,
+int GiD_BeginResultHeader(const char * Result, const char * Analysis, double step,
 			  GiD_ResultType Type, GiD_ResultLocation Where,
-			  char * GaussPointsName);
+			  const char * GaussPointsName);
 
 /*
  *  Define the range table associated to the current result, either a single
@@ -261,14 +261,14 @@ int GiD_ResultComponents(int compc, char* compv[]);
  *  result location and location name is provided.
  */
 
-int GiD_BeginResultGroup(char * Analysis, double step, GiD_ResultLocation Where,
-			 char * GaussPointsName);
+int GiD_BeginResultGroup(const char * Analysis, double step, GiD_ResultLocation Where,
+			 const char * GaussPointsName);
 
 /*
  *  Define a result member of a result group given the name and result type.
  */
 
-int GiD_ResultDescription(char * Result, GiD_ResultType Type);
+int GiD_ResultDescription(const char * Result, GiD_ResultType Type);
 
 /*
  *  Mark the starting point for writing the values of the current result either
