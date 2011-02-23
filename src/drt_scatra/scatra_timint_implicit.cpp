@@ -1043,12 +1043,12 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       std::isnan(potresnorm))
     dserror("calculated vector norm is NaN.");
 
-  if (std::isinf(incconnorm_L2) or
-      std::isinf(incpotnorm_L2) or
-      std::isinf(connorm_L2) or
-      std::isinf(potnorm_L2) or
-      std::isinf(conresnorm) or
-      std::isinf(potresnorm))
+  if (abs(std::isinf(incconnorm_L2)) or
+      abs(std::isinf(incpotnorm_L2))  or
+      abs(std::isinf(connorm_L2))  or
+      abs(std::isinf(potnorm_L2))  or
+      abs(std::isinf(conresnorm))  or
+      abs(std::isinf(potresnorm)) )
     dserror("calculated vector norm is INF.");
 
   return false;
