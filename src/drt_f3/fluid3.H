@@ -1001,7 +1001,6 @@ public:
 
   //@}
 
-private:
 
   enum ActionType
   {
@@ -1022,6 +1021,8 @@ private:
     integ_pressure_calc,
     center_of_mass_calc
   };
+  
+private:
 
   // don't want = operator
   Fluid3Boundary& operator = (const Fluid3Boundary& old);
