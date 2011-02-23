@@ -65,7 +65,7 @@ GEO::Intersection::~Intersection()
     return;
 }
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  MAIN:   computes the interface between the xfem          u.may 06/07|
  |          discretization and the cutter discretization.               |
@@ -236,7 +236,7 @@ void GEO::Intersection::computeIntersection(
   std::cout << endl;
   flush(cout);
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  INIT:   initializes the private members of the           u.may 08/07|
@@ -527,7 +527,7 @@ void GEO::Intersection::setIntersectionPointBoundaryStatus(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  CLI:    collects all intersection points of a line and   u.may 06/07|
  |          and a surface                                               |
@@ -622,7 +622,7 @@ bool GEO::Intersection::collectIntersectionPoints(
   }
   return intersected;
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -722,7 +722,7 @@ bool GEO::Intersection::checkLineSurfaceXAABBs(
 }
 
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  CLI:    computes a new starting point for the            u.may 06/07|
  |          Newton-method in order to find all intersection points      |
@@ -766,7 +766,7 @@ void GEO::Intersection::computeNewStartingPoint(
 
   return;
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
