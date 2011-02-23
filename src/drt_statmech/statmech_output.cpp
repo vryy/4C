@@ -385,7 +385,6 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
       if ((istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
       {
-      	cout<<params.get<double>("max time",5)<<endl;
 #ifdef DEBUG
         if (forcesensor_ == null)
           dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
@@ -3157,6 +3156,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 							// calculate edge directions of the layer poygon
 							std::vector<LINALG::Matrix<3,1> > edgedirs;
+							std::vector<int> neworder;
 							for(int j=0; j<(int)interseccoords.size(); j++)
 								for(int k=0; k<(int)interseccoords.size(); k++)
 									if(k>j)
@@ -3167,6 +3167,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 												jdir -= interseccoords[j];
 												jdir.Scale(1.0/jdir.Norm2());
 												edgedirs.push_back(jdir);
+												neworder.push_back(j);
 											}
 
 							// iterate as long as layer volume contains 90-95% of the crosslinks
@@ -3221,7 +3222,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 											for(int k=0; k<(int)edgedirs.size(); k++)
 											{
 												// line paramete (=length)
-												double numerator = edgedirs[k](1)*(itercoords[k](0)-(*cog)(0)) - edgedirs[k](0)*(itercoords[k](1)-(*cog)(1));
+												double numerator = edgedirs[k](1)*(itercoords[neworder[k]](0)-(*cog)(0)) - edgedirs[k](0)*(itercoords[neworder[k]](1)-(*cog)(1));
 												double denominator = crosstocog(0)*edgedirs[k](1) - crosstocog(1)*edgedirs[k](0);
 												// lambda either positive (i.e. intersection lies in the direction of the crosslinker) or negative
 												double lambda = numerator/denominator;
