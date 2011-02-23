@@ -920,14 +920,6 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     phinp_    ->Norm2(&connorm_L2);
   }
 
-  if (std::isnan(incconnorm_L2) or
-      std::isnan(incpotnorm_L2) or
-      std::isnan(connorm_L2) or
-      std::isnan(potnorm_L2) or
-      std::isnan(conresnorm) or
-      std::isnan(potresnorm))
-    dserror("calculated vector norm is NaN.");
-
   // care for the case that nothing really happens in the concentration
   // or potential field
   if (connorm_L2 < 1e-5)
@@ -1041,6 +1033,23 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   actresidual = max(conresnorm,potresnorm);
   actresidual = max(actresidual,incconnorm_L2/connorm_L2);
   actresidual = max(actresidual,incpotnorm_L2/potnorm_L2);
+
+  // check for INF's and NaN's before going on...
+  if (std::isnan(incconnorm_L2) or
+      std::isnan(incpotnorm_L2) or
+      std::isnan(connorm_L2) or
+      std::isnan(potnorm_L2) or
+      std::isnan(conresnorm) or
+      std::isnan(potresnorm))
+    dserror("calculated vector norm is NaN.");
+
+  if (std::isinf(incconnorm_L2) or
+      std::isinf(incpotnorm_L2) or
+      std::isinf(connorm_L2) or
+      std::isinf(potnorm_L2) or
+      std::isinf(conresnorm) or
+      std::isinf(potresnorm))
+    dserror("calculated vector norm is INF.");
 
   return false;
 }
