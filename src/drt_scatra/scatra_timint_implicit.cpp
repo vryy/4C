@@ -654,7 +654,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // depending on time-integration scheme
   ParameterList p;
   SetTimeForNeumannEvaluation(p);
-  p.set("scatratype",scatratype_);
+  p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
 
   discret_->ClearState();
@@ -1217,7 +1217,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   }
 
   // set type of scalar transport problem
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
 
   // other parameters that might be needed by the elements
   eleparams.set("time-step length",dta_);
@@ -3048,7 +3048,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 
           // set parameters for elements
           mode_params.set("action","integrate_shape_functions");
-          mode_params.set("scatratype",scatratype_);
+          mode_params.set<int>("scatratype",scatratype_);
           mode_params.set("dofids",dofids);
 
           mode_params.set("isale",isale_);

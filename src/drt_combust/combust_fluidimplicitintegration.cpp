@@ -930,9 +930,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // flag for type of combustion problem
-      eleparams.set("combusttype",combusttype_);
-      eleparams.set("veljumptype",veljumptype_);
-      eleparams.set("fluxjumptype",fluxjumptype_);
+      eleparams.set<int>("combusttype",combusttype_);
+      eleparams.set<int>("veljumptype",veljumptype_);
+      eleparams.set<int>("fluxjumptype",fluxjumptype_);
       eleparams.set("flamespeed",flamespeed_);
       eleparams.set("nitschevel",nitschevel_);
       eleparams.set("nitschepres",nitschepres_);

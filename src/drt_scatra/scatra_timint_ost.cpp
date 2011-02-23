@@ -237,7 +237,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
   eleparams.set("total time",time_);
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -528,7 +528,7 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   neumann_loads_->PutScalar(0.0);
   ParameterList p;
   p.set("total time",time_);
-  p.set("scatratype",scatratype_);
+  p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
   discret_->ClearState();
   discret_->EvaluateNeumann(p,*neumann_loads_);
@@ -656,7 +656,7 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
     eleparams.set("action","calc_time_deriv_reinit");
 
     // set type of scalar transport problem
-    eleparams.set("scatratype",scatratype_);
+    eleparams.set<int>("scatratype",scatratype_);
 
     // other parameters that are needed by the elements
     eleparams.set("incremental solver",incremental_);

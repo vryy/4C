@@ -367,7 +367,7 @@ void STK::Fluid::PrepareTimeStep()
 
 #if 0
     // set all parameters and states required for Neumann conditions
-    eleparams.set("Physical Type",physicaltype_);
+    eleparams.set<int>("Physical Type",physicaltype_);
     eleparams.set("thermpress at n+1",thermpressaf_);
     if (timealgo_==timeint_afgenalpha)
     {
@@ -485,8 +485,8 @@ void STK::Fluid::NonlinearSolve()
 //     eleparams.set("omtheta",omtheta_);
     eleparams.set("form of convective term",convform_);
 //     eleparams.set("fs subgrid viscosity",fssgv_);
-    eleparams.set("Linearisation", newton_);
-    eleparams.set("Physical Type", physicaltype_);
+    eleparams.set<int>("Linearisation", newton_);
+    eleparams.set<int>("Physical Type", physicaltype_);
 //     eleparams.set("mixed_formulation", params_.get<bool>("mixed_formulation", false));
 
     // parameters for stabilization

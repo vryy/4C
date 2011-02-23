@@ -73,7 +73,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     eleparams.set("action","calc_initial_time_deriv");
 
     // set type of scalar transport problem
-    eleparams.set("scatratype",scatratype_);
+    eleparams.set<int>("scatratype",scatratype_);
 
     // add additional parameters
     AddSpecificTimeIntegrationParameters(eleparams);
@@ -182,7 +182,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
         eleparams.set("action","calc_initial_potential_field");
 
         // set type of scalar transport problem
-        eleparams.set("scatratype",scatratype_);
+        eleparams.set<int>("scatratype",scatratype_);
 
         // factor F/RT
         eleparams.set("frt",frt_);
@@ -249,7 +249,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
 
   // action for elements
   condparams.set("action","calc_elch_electrode_kinetics");
-  condparams.set("scatratype",scatratype_);
+  condparams.set<int>("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
   condparams.set("isale",isale_);
   if (isale_)   //provide displacement field in case of ALE
@@ -281,7 +281,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // action for elements
   condparams.set("action","calc_Neumann_inflow");
-  condparams.set("scatratype",scatratype_);
+  condparams.set<int>("scatratype",scatratype_);
   condparams.set("incremental solver",incremental_);
 
   // provide velocity field and potentially acceleration/pressure field
@@ -341,7 +341,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   eleparams.set("action","calc_subgrid_diffusivity_matrix");
 
   // set type of scalar transport problem
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -471,7 +471,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   // (if no temperature equation, zero values are returned)
   ParameterList eleparams;
   eleparams.set("action","get_material_parameters");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("isale",isale_);
   discret_->Evaluate(eleparams,null,null,null,null,null);
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
@@ -523,7 +523,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 
   // set parameters for element evaluation
   eleparams.set("action","calc_domain_and_bodyforce");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("total time",0.0);
 
   // variables for integrals of domain and bodyforce
@@ -598,7 +598,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -640,7 +640,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -701,7 +701,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
       // set action for elements
       ParameterList eleparams;
       eleparams.set("action","calc_mean_scalars");
-      eleparams.set("scatratype",scatratype_);
+      eleparams.set<int>("scatratype",scatratype_);
       eleparams.set("inverting",false);
 
       //provide displacement field in case of ALE
@@ -952,7 +952,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
   ParameterList eleparams;
   eleparams.set("action","calc_mean_scalars");
   eleparams.set("inverting",false);
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -1125,7 +1125,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_elch_electrode_kinetics");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
   eleparams.set("frt",frt_);
 
@@ -1355,7 +1355,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   {
     ParameterList eleparams;
     eleparams.set("action","integrate_shape_functions");
-    eleparams.set("scatratype",scatratype_);
+    eleparams.set<int>("scatratype",scatratype_);
     // we integrate shape functions for the first numscal_ dofs per node!!
     Epetra_IntSerialDenseVector dofids(7); // make it big enough!
     for(int rr=0;rr < numscal_;rr++)
@@ -1378,9 +1378,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   // set action for elements
   ParameterList params;
   params.set("action","calc_condif_flux");
-  params.set("scatratype",scatratype_);
+  params.set<int>("scatratype",scatratype_);
   params.set("frt",frt_);
-  params.set("fluxtype",fluxtype);
+  params.set<int>("fluxtype",fluxtype);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -1477,7 +1477,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // other parameters that might be needed by the elements
     eleparams.set("time-step length",dta_);
-    eleparams.set("scatratype",scatratype_);
+    eleparams.set<int>("scatratype",scatratype_);
     eleparams.set("incremental solver",true); // say yes and you get the residual!!
     eleparams.set("form of convective term",convform_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
@@ -1561,7 +1561,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);
       params.set("action","integrate_shape_functions");
-      params.set("scatratype",scatratype_);
+      params.set<int>("scatratype",scatratype_);
 
       //provide displacement field in case of ALE
       params.set("isale",isale_);
@@ -1733,7 +1733,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_normal_vectors");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
 
   //provide displacement field in case of ALE
@@ -1801,7 +1801,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     // parameters for the elements
     p.set("action","calc_error");
-    p.set("scatratype",scatratype_);
+    p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
     p.set("calcerrorflag",calcerr);
@@ -1845,7 +1845,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     // parameters for the elements
     p.set("action","calc_error");
-    p.set("scatratype",scatratype_);
+    p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
     p.set("frt",frt_);
     p.set("calcerrorflag",calcerr);
@@ -1895,7 +1895,7 @@ Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   // create the parameters for the elements
   ParameterList p;
   p.set("action","calc_elch_conductivity");
-  p.set("scatratype",scatratype_);
+  p.set<int>("scatratype",scatratype_);
   p.set("frt",frt_);
 
   //provide displacement field in case of ALE

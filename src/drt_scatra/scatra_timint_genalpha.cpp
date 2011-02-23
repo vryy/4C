@@ -277,7 +277,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
 
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
-  eleparams.set("scatratype",scatratype_);
+  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("total time",time_-(1-alphaF_)*dta_);
 
   // variables for integrals of domain and bodyforce
@@ -521,7 +521,7 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   neumann_loads_->PutScalar(0.0);
   ParameterList p;
   p.set("total time",time_);
-  p.set("scatratype",scatratype_);
+  p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
   discret_->ClearState();
   discret_->EvaluateNeumann(p,*neumann_loads_);
