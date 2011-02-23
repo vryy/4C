@@ -383,7 +383,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     case INPAR::STATMECH::statout_viscoelasticity:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-      if ((istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0 || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || istep==params.get<int>("nstep",5)-1 || fabs(time-starttime)<1e-8)
       {
 #ifdef DEBUG
         if (forcesensor_ == null)
@@ -453,7 +453,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     break;
   }
   // handling gmsh output seperately
-  if(Teuchos::getIntegralValue<int>(statmechparams_,"GMSHOUTPUT") && istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
+  if(Teuchos::getIntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 1) == 0) )
 	{
 		/*construct unique filename for gmsh output with two indices: the first one marking the time step number
 		 * and the second one marking the newton iteration number, where numbers are written with zeros in the front
@@ -3716,8 +3716,8 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 					// new coordinates
 					for(int m=0; m<cboxrot.M(); m++)
 					{
-						cboxrot(m,0) += cog_(m,0);
-						surrboxrot(m,0) += cog_(m,0);
+						cboxrot(m,0) += cog_(m);
+						surrboxrot(m,0) += cog_(m);
 					}
 
 					// determine bin for rotated fixed system coordinates
