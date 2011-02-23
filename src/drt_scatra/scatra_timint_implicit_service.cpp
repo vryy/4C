@@ -80,7 +80,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 
     // other parameters that are needed by the elements
     eleparams.set("incremental solver",incremental_);
-    eleparams.set("form of convective term",convform_);
+    eleparams.set<int>("form of convective term",convform_);
     if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
       eleparams.set("frt",frt_); // factor F/RT
     else if (scatratype_==INPAR::SCATRA::scatratype_loma)
@@ -1479,8 +1479,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     eleparams.set("time-step length",dta_);
     eleparams.set<int>("scatratype",scatratype_);
     eleparams.set("incremental solver",true); // say yes and you get the residual!!
-    eleparams.set("form of convective term",convform_);
-    eleparams.set("fs subgrid diffusivity",fssgd_);
+    eleparams.set<int>("form of convective term",convform_);
+    eleparams.set<int>("fs subgrid diffusivity",fssgd_);
     eleparams.set("turbulence model",turbmodel_);
     eleparams.set("frt",frt_);
 

@@ -483,7 +483,7 @@ void STK::Fluid::NonlinearSolve()
     eleparams.set("dt",dta_);
     eleparams.set("theta",theta_);
 //     eleparams.set("omtheta",omtheta_);
-    eleparams.set("form of convective term",convform_);
+    eleparams.set<int>("form of convective term",convform_);
 //     eleparams.set("fs subgrid viscosity",fssgv_);
     eleparams.set<int>("Linearisation", newton_);
     eleparams.set<int>("Physical Type", physicaltype_);

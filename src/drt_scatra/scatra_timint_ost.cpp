@@ -660,7 +660,7 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
 
     // other parameters that are needed by the elements
     eleparams.set("incremental solver",incremental_);
-    eleparams.set("form of convective term",convform_);
+    eleparams.set<int>("form of convective term",convform_);
 
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)

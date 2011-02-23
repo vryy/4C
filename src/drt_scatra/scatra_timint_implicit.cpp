@@ -1222,8 +1222,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // other parameters that might be needed by the elements
   eleparams.set("time-step length",dta_);
   eleparams.set("incremental solver",incremental_);
-  eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid diffusivity",fssgd_);
+  eleparams.set<int>("form of convective term",convform_);
+  eleparams.set<int>("fs subgrid diffusivity",fssgd_);
   eleparams.set("turbulence model",turbmodel_);
   eleparams.set("Smagorinsky constant",Cs_);
   eleparams.set("turbulent Prandtl number",tpn_);

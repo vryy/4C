@@ -939,12 +939,12 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("DLM_condensation",condensation_);
 
       // parameters for two-phase flow problems with surface tension
-      eleparams.set("surftensapprox",surftensapprox_);
+      eleparams.set<int>("surftensapprox",surftensapprox_);
       eleparams.set("connected_interface",connected_interface_);
 
       // smoothed normal vectors for boundary integration
       eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
-      eleparams.set("smoothgradphi",smoothgradphi_);
+      eleparams.set<int>("smoothgradphi",smoothgradphi_);
 
       // other parameters that might be needed by the elements
       //eleparams.set("total time",time_);
