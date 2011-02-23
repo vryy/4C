@@ -90,6 +90,18 @@ RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::Done()
 {
+  // destroy singleton objects when the problem object is still alive
+  for ( vector<RCP<Problem> >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
+  {
+    Problem * p = &**i;
+    for (vector<DRT::SingletonDestruction *>::iterator i=p->sds_.begin(); i!=p->sds_.end(); ++i)
+    {
+      DRT::SingletonDestruction * sd = *i;
+      sd->Done();
+    }
+    p->sds_.clear();
+  }
+  
   // This is called at the very end of a baci run.
   //
   // It removes all global problem objects. Therefore all
@@ -104,11 +116,6 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 DRT::Problem::~Problem()
 {
-  for (vector<DRT::SingletonDestruction *>::iterator i=sds_.begin(); i!=sds_.end(); ++i)
-  {
-    DRT::SingletonDestruction * sd = *i;
-    sd->Done();
-  }
 }
 
 

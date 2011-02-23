@@ -87,7 +87,7 @@ class Discretization;
   \author u.kue
   \date 06/10
  */
-class ParObjectType : public SingletonDestruction
+class ParObjectType
 {
   friend class ParObjectFactory;
 public:
@@ -128,7 +128,7 @@ private:
   \author u.kue
   \date 06/10
  */
-class ParObjectFactory
+class ParObjectFactory : public SingletonDestruction
 {
   friend class ParObjectType;
 public:

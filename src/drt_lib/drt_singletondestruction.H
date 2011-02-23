@@ -9,6 +9,13 @@ namespace DRT
   /// There is a cleanup phase when DRT::Problem goes down. Some singleton
   /// object need to do cleanup work for themselves. Thus these classes can
   /// register with DRT::Problem via this callback.
+  ///
+  /// This class is only meant for lazy initialization singletons. This is
+  /// singletons that have a proper Instance() method that creates the
+  /// instance at its first call. Do not use this class for static objects,
+  /// since the creation order of static objects is arbitrary and the
+  /// SingletonDestruction constructor needs to access the DRT::Problem
+  /// instance.
   class SingletonDestruction
   {
   public:

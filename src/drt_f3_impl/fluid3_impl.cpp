@@ -131,7 +131,9 @@ DRT::ELEMENTS::Fluid3Impl<distype> * DRT::ELEMENTS::Fluid3Impl<distype>::Instanc
   if ( create )
   {
     if ( instance==NULL )
+    {
       instance = new Fluid3Impl<distype>();
+    }
   }
   else
   {

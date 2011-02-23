@@ -196,7 +196,9 @@ DRT::UTILS::GaussPointCache * DRT::UTILS::GaussPointCache::instance_;
 DRT::UTILS::GaussPointCache & DRT::UTILS::GaussPointCache::Instance()
 {
   if ( instance_==NULL )
+  {
     instance_ = new GaussPointCache;
+  }
   return *instance_;
 }
 
