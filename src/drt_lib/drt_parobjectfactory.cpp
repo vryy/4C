@@ -52,14 +52,61 @@ Maintainer: Ulrich Kuettler
 #include "drt_elementtype.H"
 #include "../linalg/linalg_utils.H"
 
+namespace DRT
+{
+  namespace
+  {
+    class ParObjectPreRegister
+    {
+    public:
+
+      static ParObjectPreRegister * Instance()
+      {
+        if ( instance_==NULL )
+        {
+          instance_ = new ParObjectPreRegister;
+        }
+        return instance_;
+      }
+
+      static void Done()
+      {
+        delete instance_;
+        instance_ = NULL;
+      }
+
+      void Register( ParObjectType * parobjecttype )
+      {
+        types_.push_back( parobjecttype );
+      }
+
+      void Finalize()
+      {
+        for ( std::vector<ParObjectType*>::iterator i=types_.begin(); i!=types_.end(); ++i )
+        {
+          ParObjectType * parobjecttype = *i;
+          //DRT::ParObjectFactory::Instance().Register( parobjecttype );
+          parobjecttype->UniqueParObjectId();
+        }
+        types_.clear();
+      }
+
+    private:
+
+      static ParObjectPreRegister * instance_;
+      
+      /// preregistered types
+      std::vector<ParObjectType*> types_;
+    };
+
+    ParObjectPreRegister * ParObjectPreRegister::instance_;
+  }
+}
 
 DRT::ParObjectType::ParObjectType()
-  : objectid_( -1 )
+  : objectid_( 0 )
 {
-  // Register object with incomplete type information. The derived class is
-  // not yet known at this point. Thus ParObjectFactory needs to do a lazy
-  // registration.
-  DRT::ParObjectFactory::Instance().Register( this );
+  ParObjectPreRegister::Instance()->Register( this );
 }
 
 
@@ -67,7 +114,8 @@ int DRT::ParObjectType::UniqueParObjectId()
 {
   if ( objectid_==0 )
   {
-    ParObjectFactory::Instance().FinalizeRegistration();
+    DRT::ParObjectFactory::Instance().Register( this );
+    //ParObjectFactory::Instance().FinalizeRegistration();
   }
   return objectid_;
 }
@@ -78,7 +126,6 @@ DRT::ParObjectFactory * DRT::ParObjectFactory::instance_;
 
 DRT::ParObjectFactory::ParObjectFactory()
 {
-
 }
 
 
@@ -160,55 +207,41 @@ Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const string eletype,
 
 void DRT::ParObjectFactory::Register( ParObjectType* object_type )
 {
-  // Lazy registration. Just remember the pointer here.
-  types_.push_back( object_type );
+  std::string name = object_type->Name();
+  const unsigned char* str = reinterpret_cast<const unsigned char*>( name.c_str() );
+
+  // simple hash
+  // see http://www.cse.yorku.ca/~oz/hash.html
+  int hash = 5381;
+  for ( int c = 0; ( c = *str ); ++str )
+  {
+    hash = ((hash << 5) + hash) ^ c; /* hash * 33 ^ c */
+  }
+
+  // assume no collisions for now
+
+  std::map<int, ParObjectType*>::iterator i = type_map_.find( hash );
+  if ( i!=type_map_.end() )
+  {
+    dserror( "object (%s,%d) already defined: (%s,%d)",
+             name.c_str(), hash, i->second->Name().c_str(), i->first );
+  }
+
+  if ( hash==0 )
+  {
+    dserror( "illegal hash value" );
+  }
+
+  //std::cout << "register type object: '" << name << "': " << hash << "\n";
+
+  type_map_[hash] = object_type;
+  object_type->objectid_ = hash;
 }
 
 
 void DRT::ParObjectFactory::FinalizeRegistration()
 {
-  // This is called during program execution. All types are fully
-  // constructed. On first call we need to create object ids.
-
-  if ( type_map_.size()==0 and types_.size()>0 )
-  {
-    for ( std::vector<ParObjectType*>::iterator iter=types_.begin();
-          iter!=types_.end();
-          ++iter )
-    {
-      ParObjectType* object_type = *iter;
-
-      std::string name = object_type->Name();
-      const unsigned char* str = reinterpret_cast<const unsigned char*>( name.c_str() );
-
-      // simple hash
-      // see http://www.cse.yorku.ca/~oz/hash.html
-      int hash = 5381;
-      for ( int c = 0; ( c = *str ); ++str )
-      {
-        hash = ((hash << 5) + hash) ^ c; /* hash * 33 ^ c */
-      }
-
-      // assume no collisions for now
-
-      std::map<int, ParObjectType*>::iterator i = type_map_.find( hash );
-      if ( i!=type_map_.end() )
-      {
-        dserror( "object (%s,%d) already defined: (%s,%d)",
-                 name.c_str(), hash, i->second->Name().c_str(), i->first );
-      }
-
-      if ( hash==0 )
-      {
-        dserror( "illegal hash value" );
-      }
-
-      //std::cout << "register type object: '" << name << "': " << hash << "\n";
-
-      type_map_[hash] = object_type;
-      object_type->objectid_ = hash;
-    }
-  }
+  ParObjectPreRegister::Instance()->Finalize();
 }
 
 
