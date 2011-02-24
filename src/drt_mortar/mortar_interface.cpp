@@ -54,7 +54,7 @@ Maintainer: Alexander Popp
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
-
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -1330,12 +1330,19 @@ void MORTAR::MortarInterface::Evaluate()
   if (!Filled() && Comm().MyPID()==0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
 
+  //Comm().Barrier();
+  //const double t_start = Teuchos::Time::wallTime();
+
   //**********************************************************************
   // search algorithm
   //**********************************************************************
   if (SearchAlg()==INPAR::MORTAR::search_bfele)           EvaluateSearchBruteForce(SearchParam());
   else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
   else                                                    dserror("ERROR: Invalid search algorithm");
+
+  //Comm().Barrier();
+  //const double t_end = Teuchos::Time::wallTime()-t_start;
+  //if (Comm().MyPID()==0) cout << "*** Search:\t" << t_end << " seconds\n";
 
   // get out of here if not participating in interface
   if (!lComm()) return;
