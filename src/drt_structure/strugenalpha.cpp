@@ -1714,7 +1714,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -1951,6 +1952,8 @@ void StruGenAlpha::ModifiedNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1958,7 +1961,8 @@ void StruGenAlpha::ModifiedNewton()
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -2193,6 +2197,7 @@ void StruGenAlpha::NonlinearCG()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // get ml stuff from input file
   bool hasml = solver_.Params().isSublist("ML Parameters");
@@ -2205,7 +2210,8 @@ void StruGenAlpha::NonlinearCG()
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
   if (stiff_==null)     dserror("stiffness matrix = null");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
@@ -2514,7 +2520,8 @@ void StruGenAlpha::PTC()
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 

@@ -60,7 +60,8 @@ void StruGenAlpha::LineSearchNewton()
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (!dynkindstat)
+    if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
