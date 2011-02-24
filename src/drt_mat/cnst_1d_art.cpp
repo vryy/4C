@@ -99,8 +99,7 @@ void MAT::Cnst_1d_art::Unpack(const vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position,data,matid);
-  // in post-process mode we do not have any instance of DRT::Problem
-  if (DRT::Problem::NumInstances() > 0)
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
     MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);

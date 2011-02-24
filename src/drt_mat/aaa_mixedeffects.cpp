@@ -30,7 +30,7 @@ MAT::PAR::AAA_mixedeffects::AAA_mixedeffects(
 : Parameter(matdata),
   nue_(matdata->GetDouble("NUE")),
   age_(matdata->GetDouble("AGE")),
-  refdia_(matdata->GetDouble("REFDIA")),	
+  refdia_(matdata->GetDouble("REFDIA")),
   density_(matdata->GetDouble("DENS"))
 {
 }
@@ -100,8 +100,7 @@ void MAT::AAA_mixedeffects::Unpack(const vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position,data,matid);
-  // in post-process mode we do not have any instance of DRT::Problem
-  if (DRT::Problem::NumInstances() > 0)
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
     const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
     MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
