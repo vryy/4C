@@ -149,8 +149,8 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 
 {
 	int i,k;
-	double energy, energy_constr, delta1, delta2;
-	double epsilonPen_soll, W_soll;						//for adapted penalty parameter
+	double energy(0.0), energy_constr(0.0), delta1(0.0), delta2(0.0);
+	double epsilonPen_soll(0.0), W_soll(0.0);						//for adapted penalty parameter
 
 	// get material parameters
  	double alpha = params_->alpha_;			//parameter
