@@ -3423,7 +3423,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			  // build the base
 			  for(int i=0; i<trafo_->M(); i++)
 			  	for(int j=0; j<trafo_->N(); j++)
-						(*trafo_)(i,j) = clusterlayervecs[j](i);
+						(*trafo_)(i,j) = clusterlayervecs[i](j);
   		}
   		break;
   		// bundle
@@ -3450,11 +3450,11 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				raddir2.Scale(1.0/raddir2.Norm2());
 
 			  // build the base
-			  for(int j=0; j<trafo_->M(); j++)
+			  for(int j=0; j<trafo_->N(); j++)
 			  {
-			  	(*trafo_)(j,0) = cylvec(j);
-			  	(*trafo_)(j,1) = raddir1(j);
-			  	(*trafo_)(j,2) = raddir2(j);
+			  	(*trafo_)(0,j) = cylvec(j);
+			  	(*trafo_)(1,j) = raddir1(j);
+			  	(*trafo_)(2,j)= raddir2(j);
 			  }
   		}
   		break;
@@ -3504,7 +3504,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			  // build the base
 			  for(int i=0; i<trafo_->M(); i++)
 			  	for(int j=0; j<trafo_->N(); j++)
-						(*trafo_)(i,j) = layervectors[j](i);
+						(*trafo_)(i,j) = layervectors[i](j);
   		}
   		break;
   		// homogeneous
@@ -3657,6 +3657,12 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
+	Epetra_SerialDenseMatrix cog(3,1);
+	Epetra_SerialDenseMatrix cogrot(3,1);
+	for(int i=0; i<cog.M(); i++)
+		cog(i,0) = cog_(i);
+	trafo_->Multiply(false,cog,cogrot);
+
 	//parallel brute force from here on
 	// transfer map loop
 	int surrcount = 0;
@@ -3716,8 +3722,8 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 					// new coordinates
 					for(int m=0; m<cboxrot.M(); m++)
 					{
-						cboxrot(m,0) += cog_(m);
-						surrboxrot(m,0) += cog_(m);
+						cboxrot(m,0) -= cogrot(m,0);
+						surrboxrot(m,0) -= cogrot(m,0);
 					}
 
 					// determine bin for rotated fixed system coordinates
