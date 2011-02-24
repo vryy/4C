@@ -117,9 +117,13 @@ time_(0.0)
 
   if (DRT::Problem::NumInstances() > 0)
   {
+    Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+    if (params!=Teuchos::null)
+    {
     const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
     pstime_ = pslist.get<double>("PRESTRESSTIME");
+    }
   }
 
   if (pstype_==INPAR::STR::prestress_mulf)
