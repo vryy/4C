@@ -1228,7 +1228,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   // compute global values for the center of gravity and potential force
   std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
-  const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  //const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
   cout << "force sphere 1"  << endl;
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 
@@ -1326,7 +1327,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
   std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
   cout << "force sphere 0"  << endl;
-  const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  //const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
+  computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
   cout << "force sphere 1"  << endl;
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 

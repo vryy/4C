@@ -951,7 +951,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            LINALG::Matrix<3,3>  potderiv2;
            LINALG::Matrix<3,1>  radius_unit(true);
 
-           bool validContribution = false;           
+           //bool validContribution = false;
            // if contact
 /*           if(fabs(cond->GetDouble("exvollength")) > 1e-7)
            {

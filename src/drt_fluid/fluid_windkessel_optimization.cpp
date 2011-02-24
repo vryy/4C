@@ -320,7 +320,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
       {
         dserror("[Can't optimise]:Flowrates and pressures have two different dimensions");
       }
-      else if (pressures->size()*optwkmap_.size() != dN_du_->RowDim())
+      else if ((int) (pressures->size()*optwkmap_.size()) != dN_du_->RowDim())
       {
         dserror("[Can't optimise]: Pressures (%d) and state-variables (%d) size don't match",pressures->size(),dN_du_->RowDim()/optwkmap_.size());
       }
