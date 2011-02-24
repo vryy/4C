@@ -2102,7 +2102,7 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
   p.set("delta time",dt);
   p.set("ETA",statmechparams_.get<double>("ETA",0.0));
   p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
-  p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
+  p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
   p.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
   p.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   p.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
