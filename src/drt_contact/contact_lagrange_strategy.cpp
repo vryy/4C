@@ -2486,7 +2486,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
       
   // initialize merged system (matrix, rhs, sol)
   RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(problemrowmap_,glmdofrowmap_,false);
-  RCP<LINALG::SparseMatrix> mergedmt    = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
+  RCP<LINALG::SparseMatrix> mergedmt    = Teuchos::null;
   RCP<Epetra_Vector>        mergedrhs   = LINALG::CreateVector(*mergedmap);
   RCP<Epetra_Vector>        mergedsol   = LINALG::CreateVector(*mergedmap);
   RCP<Epetra_Vector>        mergedzeros = LINALG::CreateVector(*mergedmap);
@@ -2716,7 +2716,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   if (systype==INPAR::CONTACT::system_spcoupled)
   {
-    // build merged matrix    
+    // build merged matrix
+    mergedmt = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
     mergedmt->Add(*stiffmt,false,1.0,1.0);
     mergedmt->Add(*trkdz,false,1.0,1.0);
     mergedmt->Add(*trkzd,false,1.0,1.0);
@@ -2777,14 +2778,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*constrrhs,*constrexp);
     mergedrhs->Update(1.0,*constrexp,1.0);
     
-    // we need a dummy merged matrix here in order to be able
-    // to apply Dirichlet B.C. to mergedrhs and mergedsol
-    mergedmt->Complete();
-    
-    // adapt dirichtoggle vector and apply DBC
+    // apply Dirichlet B.C. to mergedrhs and mergedsol
     RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
+    LINALG::ApplyDirichlettoSystem(mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
     
     // SIMPLER preconditioning solver call
     solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
