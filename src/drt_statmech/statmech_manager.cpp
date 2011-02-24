@@ -1801,11 +1801,12 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
    * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
 
 	//note: Using WriteVector and ReadMultiVector requires unique map of MultiVector thus export/import for restart to/from row map
-	const Epetra_Map noderowmap = *(discret_.NodeRowMap());
-	const Epetra_Map nodecolmap = *(discret_.NodeColMap());
+	const Epetra_Map noderowmap = *discret_.NodeRowMap();
+	const Epetra_Map nodecolmap = *discret_.NodeColMap();
+
 	Epetra_Export exporter(nodecolmap,noderowmap);
-	RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap));
-	numcrossnodesrow->Export(*numcrossnodes_,exporter,Add);
+	RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap,true));
+	numcrossnodesrow->Export(*numcrossnodes_,exporter,Insert);
 	output.WriteVector("numcrossnodes",numcrossnodesrow,IO::DiscretizationWriter::nodevector);
 
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
@@ -1868,8 +1869,8 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
   const Epetra_Map noderowmap = *(discret_.NodeRowMap());
   const Epetra_Map nodecolmap = *(discret_.NodeColMap());
   Epetra_Import importer(nodecolmap,noderowmap);
-  RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap));
-  reader.ReadMultiVector(numcrossnodesrow,"numcrossnodes");
+  RCP<Epetra_Vector> numcrossnodesrow = rcp(new Epetra_Vector(noderowmap),true);
+  reader.ReadVector(numcrossnodesrow,"numcrossnodes");
   numcrossnodes_->Import(*numcrossnodesrow,importer,Insert);
 
 
