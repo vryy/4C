@@ -3787,8 +3787,8 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 			trafo_->Multiply(false,dirvec,dirvecrot);
 
 			// transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
-			double phi = atan2(dirvec(1,0),dirvec(0,0)) + M_PI;
-			double theta = acos(dirvec(2,0));
+			double phi = atan2(dirvecrot(1,0),dirvecrot(0,0)) + M_PI;
+			double theta = acos(dirvecrot(2,0));
 
 			int phibin = (int)floor(phi/(2*M_PI)*numbins);
 			int thetabin = (int)floor(theta/M_PI*numbins);
