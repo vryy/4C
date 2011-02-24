@@ -240,7 +240,7 @@ void ADAPTER::ThermoTimInt::PrepareTimeStep()
 
 
 /*----------------------------------------------------------------------*
- | build linear system tangent matrix and rhs/force residual bborn 08/09 |
+ | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
@@ -250,29 +250,78 @@ void ADAPTER::ThermoTimInt::Evaluate(Teuchos::RCP<const Epetra_Vector> temp)
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  if (temp != Teuchos::null)
-  {
-    // residual temperatures (or iteration increments or iteratively
-    // incremental temperatures)
-    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
-    tempi->Update(-1.0, *tempinc_, 1.0);
+//  if (temp != Teuchos::null)
+//  {
+//    // residual temperatures (or iteration increments or iteratively
+//    // incremental temperatures)
+//    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
+//    tempi->Update(-1.0, *tempinc_, 1.0);
+//
+//    // update incremental temperature member to provided step increments
+//    // shortly: tempinc_^<i> := temp^<i+1>
+//    tempinc_->Update(1.0, *temp, 0.0);
+//
+//    // do thermal update with provided residual temperatures
+//    // recent increment: tempi == tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
+//    thermo_->UpdateIterIncrementally(tempi);
+//  }
+//  else
+//  {
+//    thermo_->UpdateIterIncrementally(Teuchos::null);
+//  }
 
-    // update incremental temperature member to provided step increments
-    // shortly: tempinc_^<i> := temp^<i+1>
-    tempinc_->Update(1.0, *temp, 0.0);
-
-    // do thermal update with provided residual temperatures
-    thermo_->UpdateIterIncrementally(tempi);
-  }
-  else
-  {
-    thermo_->UpdateIterIncrementally(Teuchos::null);
-  }
+  // TSI does not use NOX --> the Newton increment is passed to the field solver
+  thermo_->UpdateIterIncrementally(temp);
 
   // builds tangent, residual and applies DBC
   thermo_->EvaluateRhsTangResidual();
   thermo_->PrepareSystemForNewtonSolve();
 }
+
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix, rhs/force residual    dano 02/11 |
+ | Monolithic TSI accesses the linearised thermo problem                |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::Evaluate()
+{
+  // builds tangent, residual and applies DBC
+  thermo_->EvaluateRhsTangResidual();
+  thermo_->PrepareSystemForNewtonSolve();
+}
+
+
+/*----------------------------------------------------------------------*
+ | update Newton step                                        dano 02/11 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+//  if (temp != Teuchos::null)
+//  {
+//    // residual temperatures (or iteration increments or iteratively
+//    // incremental temperatures)
+//    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
+//    tempi->Update(-1.0, *tempinc_, 1.0);
+//
+//    // update incremental temperature member to provided step increments
+//    // shortly: tempinc_^<i> := temp^<i+1>
+//    tempinc_->Update(1.0, *temp, 0.0);
+//
+//    // do thermal update with provided residual temperatures
+//    thermo_->UpdateIterIncrementally(tempi);
+//  }
+//  else
+//  {
+//    thermo_->UpdateIterIncrementally(Teuchos::null);
+//  }
+    thermo_->UpdateIterIncrementally(temp);
+
+}
+
 
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |

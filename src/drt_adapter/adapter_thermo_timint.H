@@ -123,14 +123,24 @@ namespace ADAPTER
     /// start new time step
     void PrepareTimeStep();
 
-    /// evaluate elements with given temperature
+    /// evaluate element with given temperature increment
     void Evaluate(
       Teuchos::RCP<const Epetra_Vector> temp  ///< current state
       );
 
+    /// evaluate element with given temperature increment
+    void Evaluate();
+
     /// Set contact manager
-    void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                          Teuchos::RCP<DRT::Discretization> discretstruct);
+    void SetStructContact(
+      Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+      Teuchos::RCP<DRT::Discretization> discretstruct
+      );
+
+    /// update temperature increment after Newton step
+    void UpdateNewton(
+      Teuchos::RCP<const Epetra_Vector> temp  ///< current temperature increment
+      );
 
     /// update at time step end
     void Update();

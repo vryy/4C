@@ -153,8 +153,14 @@ namespace ADAPTER
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 
-    /// evaluate residual at given temperature (?)
+    /// evaluate residual at given temperature increment
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> temp) = 0;
+
+    /// evaluate residual at given temperature increment
+    virtual void Evaluate() = 0;
+
+    /// update temperature increment after Newton step
+    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> temp) = 0;
 
     /// update at time step end
     virtual void Update() = 0;

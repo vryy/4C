@@ -27,6 +27,8 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
 #include "tsi_monolithic.H"
+#include "tsi_defines.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton
 #include <sstream>
@@ -158,7 +160,7 @@ TSI::Monolithic::Monolithic(Epetra_Comm& comm)
   // major switch to different time integrators
   quasistatic_
     = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")
-        ==INPAR::STR::dyna_statics;
+      ==INPAR::STR::dyna_statics;
 }
 
 /*----------------------------------------------------------------------*
@@ -287,7 +289,7 @@ void TSI::Monolithic::NewtonFull()
     // call the thermo parameter list
     const Teuchos::ParameterList& tdynparams
       = DRT::Problem::Instance()->ThermalDynamicParams();
-    solveradapttol_ = DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV")==1;
+    solveradapttol_ = Teuchos::getIntegralValue<int>(tdynparams,"ADAPTCONV")==1;
     solveradaptolbetter_ = tdynparams.get<double>("ADAPTCONV_BETTER");
     if (solveradapttol_ and (iter_ > 1))
     {
@@ -301,7 +303,7 @@ void TSI::Monolithic::NewtonFull()
 
     // standard solver call
     solver_->Solve(m->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
-    cout << " solved" << endl;
+    cout << " Solved" << endl;
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -361,61 +363,94 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     // extract displacement sx and temperature tx incremental vector of global
     // unknown incremental vector x
     ExtractFieldVectors(x,sx,tx);
+
+#ifdef TSIASOUTPUT
+    cout << "Recent thermal increment DT_n+1^i\n" << *(tx) << endl;
+    cout << "Recent structural increment Dd_n+1^i\n" << *(sx) << endl;
+
+    cout << "Until here only old solution of Newton step. No update applied\n" << *(ThermoField().Tempnp()) << endl;
+#endif // TSIASOUTPUT
   }
   // else(x=Teuchos::null): initialize the system
 
+#ifdef TSIASOUTPUT
+  cout << "Tempnp vor UpdateNewton\n" << *(ThermoField().Tempnp()) << endl;
+#endif // TSIASOUTPUT
+  // Newton update of the thermo field
+  // update temperature before passed to the structural field
+  //   UpdateIterIncrementally(tx),
+  ThermoField().UpdateNewton(tx);
+
+#ifdef TSIASOUTPUT
+  cout << "Tempnp nach UpdateNewton\n" << *(ThermoField().Tempnp()) << endl;
+#endif // TSIASOUTPUT
+
   // call all elements and assemble rhs and matrices
-  cout << "\nEvaluate elements\n" << endl;
+  cout << " \nEvaluate elements\n" << endl;
+
+
+  /// structural field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
-  {
-    Epetra_Time timerstructure(Comm());
+  Epetra_Time timerstructure(Comm());
 
-    // apply current temperature increments to structure
-    StructureField().ApplyTemperatures(ThermoField().Tempnp());
+  // apply current temperature to structure
+  StructureField().ApplyTemperatures(ThermoField().Tempnp());
 
-#ifdef TSIASOUTPUT
-    cout << "T_n+1 inserted in STR field\n" << *(ThermoField().Tempnp()) << endl;
-#endif // TSIASOUTPUT
-
-    // Monolithic TSI accesses the linearised structure problem:
-    //   UpdaterIterIncrementally(sx),
-    //   EvaluateForceStiffResidual()
-    //   PrepareSystemForNewtonSolve()
-    StructureField().Evaluate(sx);
-    cout << "structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
-  }
-
-  // thermo Evaluate (builds tangent, residual and applies DBC)
-  {
-    Epetra_Time timerthermo(Comm());
-
-    // apply current displacements and velocities to the thermo field
-    Teuchos::RCP<const Epetra_Vector> velnp;
-    if (quasistatic_)
-    {
-      // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
-      velnp = CalcVelocity(StructureField().Dispnp());
-    }
-    else
-    {
-      velnp = StructureField().ExtractVelnp();
-    }
-    // pass the structural values to the thermo field
-    ThermoField().ApplyStructVariables(StructureField().Dispnp(),velnp);
+#ifdef TSIPARALLEL
+  cout << Comm().MyPID() << " nach ApplyTemp!!" << endl;
+#endif // TSIPARALLEL
 
 #ifdef TSIASOUTPUT
-    cout << "d_n+1 inserted in THR field\n" << *(StructureField().Dispnp()) << endl;
-    cout << "v_n+1\n" << *velnp << endl;
+//    Teuchos::RCP<Epetra_Vector> tempera = rcp(new Epetra_Vector(ThermoField().Tempn()->Map(),true));
+//    if (ThermoField().Tempnp() != Teuchos::null)
+//      tempera->Update(1.0, *ThermoField().Tempnp(), 0.0);
+//    StructureField().ApplyTemperatures(tempera);
+//    StructureField().ApplyTemperatures(ThermoField().Tempn());
 #endif // TSIASOUTPUT
 
-    // monolithic TSI accesses the linearised thermo problem
-    //   UpdateIterIncrementally(tx),
-    //   EvaluateRhsTangResidual() and
-    //   PrepareSystemForNewtonSolve()
-    ThermoField().Evaluate(tx);
-    cout << "thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+  // Monolithic TSI accesses the linearised structure problem:
+  //   UpdaterIterIncrementally(sx),
+  //   EvaluateForceStiffResidual()
+  //   PrepareSystemForNewtonSolve()
+  StructureField().Evaluate(sx);
+  cout << " structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+
+#ifdef TSIASOUTPUT
+  cout << "STR fres_" << *StructureField().RHS() << endl;
+#endif // TSIASOUTPUT
+
+  /// thermal field
+
+  // thermo Evaluate
+  // (builds tangent, residual and applies DBC and recent coupling values)
+  Epetra_Time timerthermo(Comm());
+
+  // apply current displacements and velocities to the thermo field
+  Teuchos::RCP<const Epetra_Vector> velnp;
+  if (quasistatic_)
+  {
+    // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
+    velnp = CalcVelocity(StructureField().Dispnp());
   }
+  else
+  {
+    velnp = StructureField().ExtractVelnp();
+  }
+  // pass the structural values to the thermo field
+  ThermoField().ApplyStructVariables(StructureField().Dispnp(),velnp);
+
+#ifdef TSIASOUTPUT
+  cout << "d_n+1 inserted in THR field\n" << *(StructureField().Dispnp()) << endl;
+  cout << "v_n+1\n" << *velnp << endl;
+#endif // TSIASOUTPUT
+
+  // monolithic TSI accesses the linearised thermo problem
+  //   EvaluateRhsTangResidual() and
+  //   PrepareSystemForNewtonSolve()
+  ThermoField().Evaluate();
+  cout << " thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+
 }  // Evaluate()
 
 
@@ -463,11 +498,18 @@ Teuchos::RCP<Epetra_Vector> TSI::Monolithic::CalcVelocity(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystem()
 {
-  cout << "TSI::Monolithic::SetupSystem()" << endl;
+  cout << " TSI::Monolithic::SetupSystem()" << endl;
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   // use its own DofRowMap, that is the 0th map of the discretization
+#ifdef TSIPARALLEL
+  cout << Comm().MyPID() << " :PID" << endl;
+  cout << "structure dofmap" << endl;
+  cout << *StructureField().DofRowMap(0) << endl;
+  cout << "thermo dofmap" << endl;
+  cout << *StructureField().DofRowMap(1) << endl;
+#endif // TSIPARALLEL
   vecSpaces.push_back(StructureField().DofRowMap(0));
   vecSpaces.push_back(ThermoField().DofRowMap(0));
 
@@ -498,7 +540,7 @@ void TSI::Monolithic::SetDofRowMaps(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystemMatrix()
 {
-  cout << "TSI::Monolithic::SetupSystemMatrix()" << endl;
+  cout << " TSI::Monolithic::SetupSystemMatrix()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
@@ -557,7 +599,7 @@ void TSI::Monolithic::SetupSystemMatrix()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupRHS()
 {
-  cout << "TSI::Monolithic::SetupRHS()" << endl;
+  cout << " TSI::Monolithic::SetupRHS()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
