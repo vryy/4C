@@ -131,7 +131,7 @@ void ElementReader::Partition()
     if (!reader_.MyOutputFlag())
     {
       cout << "Entering jumbo reading mode for " << name_ << " discretization ...\n"
-           << "Read, create and partition elements      in....";
+           << "Read, create and partition elements      in....\n";
       fflush(stdout);
     }
 
@@ -224,7 +224,7 @@ void ElementReader::Partition()
   // the code sometimes hangs during ExportRowElements call for the
   // second block (block 1).
   // Therefore an upper limit of 200000 for bsize is ensured below.
-  int maxblocksize = 200000;
+  int maxblocksize = 100000; // 200000;
 
   if (bsize > maxblocksize)
   {
@@ -264,10 +264,18 @@ void ElementReader::Partition()
   DRT::INPUT::ElementDefinition ed;
   ed.SetupValidElementLines();
 
+  if (!myrank)
+  {
+    printf("numele %d nblock %d bsize %d\n",numele,nblock,bsize); 
+    fflush(stdout);
+  }
+  Epetra_Time timer(*comm_);
+
   // note that the last block is special....
   for (int block=0; block<nblock; ++block)
   {
-    if (not endofsection and 0==myrank)
+    double t1 = timer.ElapsedTime();
+    if (!endofsection && 0==myrank)
     {
       int bcount=0;
       for (;getline(file, line); ++filecount)
@@ -275,7 +283,7 @@ void ElementReader::Partition()
         if (line.find("--")==0)
         {
           // If we have an empty element section (or fewer elements
-          // that processors) we cannot read on. But we cannot exit
+          // than processors) we cannot read on. But we cannot exit
           // the block loop beforehand either because the other
           // processors need to syncronize nblock times.
           endofsection = true;
@@ -354,9 +362,23 @@ void ElementReader::Partition()
       } // for (;getline(file, line); ++filecount)
     } // if (0==myrank)
 
+    double t2 = timer.ElapsedTime();
+    if (!myrank) 
+    {
+      printf("ele block %d reading time %10.5e secs\n",block,t2-t1);
+      fflush(stdout);
+    }
+
     // export junk of elements to other processors as reflected in the linear
     // map roweles
     dis_->ExportRowElements(*roweles_);
+
+    double t3 = timer.ElapsedTime();
+    if (!myrank) 
+    {                  
+      printf("ele block %d distrib time %10.5e secs\n",block,t3-t2);
+      fflush(stdout);
+    }
 
   } // end loop blocks
 
@@ -382,14 +404,20 @@ void ElementReader::Partition()
   {
 #if defined(PARALLEL) && defined(PARMETIS)
 
+#if 0 // Peter version (has memory size issues due to redundant stuff)
     // Simply allreduce the node ids --- the vector is ordered according
-    // to the < operator from the set which was used to constuct it
+    // to the < operator from the set which was used to construct it
     comm_->Broadcast(&numnodes,1,0);
     nids.resize(numnodes);
     comm_->Broadcast(&nids[0],numnodes,0);
-
     DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,nids,nblock,
-                                  numproc,comm_,time,not reader_.MyOutputFlag());
+                                  numproc,comm_,time,!reader_.MyOutputFlag());
+#else // Michael version (no redundant stuff at all, also faster)
+    rownodes_ = null;
+    colnodes_ = null;
+    nids.clear();
+    DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,comm_);
+#endif                                  
 
 #else
     nids.clear();
@@ -414,9 +442,10 @@ void ElementReader::Partition()
   // export to the column map / create ghosting of elements
   dis_->ExportColumnElements(*coleles_);
 
-  if (comm_->MyPID()==0 && reader_.MyOutputFlag() == 0)
+  if (!myrank && reader_.MyOutputFlag() == 0)
   {
-    cout << time.ElapsedTime() << " secs\n";
+    printf("............................................... %10.5e secs\n",time.ElapsedTime());
+    //cout << time.ElapsedTime() << " secs\n";
     fflush(stdout);
   }
 

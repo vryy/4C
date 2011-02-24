@@ -128,6 +128,12 @@ namespace UTILS
                          RCP<Epetra_Comm> comm,
                          Epetra_Time& time,
                          bool outflag);
+
+  void PartUsingParMetis(RCP<DRT::Discretization> dis,
+                         RCP<Epetra_Map> roweles,
+                         RCP<Epetra_Map>& rownodes,
+                         RCP<Epetra_Map>& colnodes,
+                         RCP<Epetra_Comm> comm);
 #else
 
   /// redistribute a discretization using metis

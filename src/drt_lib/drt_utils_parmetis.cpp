@@ -9,6 +9,8 @@
 #include "standardtypes_cpp.H"
 
 #include <Epetra_Time.h>
+#include <Isorropia_EpetraPartitioner.hpp>
+
 #include <iterator>
 
 namespace DRT {
@@ -143,6 +145,15 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    Epetra_Time& time,
                                    bool outflag)
 {
+    const int myrank = comm->MyPID();
+    const int numproc = comm->NumProc();
+    Epetra_Time timer(dis->Comm());
+    double t1 = timer.ElapsedTime();
+    if (!myrank) 
+    {                  
+      printf("parmetis:\n");
+      fflush(stdout);
+    }
     // construct reverse lookup from gids to vertex ids. Again,
     // this is a global, fully redundant map!
     // We need this lookup for the construction of the parmetis
@@ -162,19 +173,19 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       gidtoidx[nids[i]]=i;
     }
 
-    int myrank = comm->MyPID();
-    int numproc = comm->NumProc();
 
+#if 0 // don't need this anymore
     if (myrank==0)
     {
-      time.ResetStartTime();
-
+      // Should definitely not modify the time object that came in from outside!
+      //time.ResetStartTime();
       if (outflag)
       {
-        cout << "Build initial node graph, call PARMETIS  in....";
+        cout << "Build initial node graph, call PARMETIS  in....\n";
         fflush(stdout);
       }
     }
+#endif      
 
     // --------------------------------------------------
     // - define distributed nodal row map
@@ -217,6 +228,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //                                                    +---+
     //
 
+    // nblock is not neccessarily equal to number of processors
+    nblock = numproc;
     // number of node id junks
     int nbsize = numnodes/nblock;
 
@@ -338,7 +351,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     {
 #ifdef PARALLEL
-      // create an exporter for point to point comunication
+      // create an exporter for point to point communication
       DRT::Exporter exporter(dis->Comm());
 
       // necessary variables
@@ -513,14 +526,16 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       xadj[idx+1] = count;
     }
 
+#if 0
     // define a vector of nodeweights
-    vector<int> vwgt(lin_noderowmap->NumMyElements());
-
     // at the moment, we use a constant weight distribution at this point
+    vector<int> vwgt(lin_noderowmap->NumMyElements(),1);
+
     for (int i=0; i<lin_noderowmap->NumMyElements(); ++i)
     {
       vwgt[i] = 1;
     }
+#endif
 
     /*
       This is used to indicate if the graph is weighted.
@@ -530,7 +545,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       2  Weights on the vertices only (adjwgt is NULL).
       3  Weights on both the vertices and edges.
     */
-    int wgtflag=2;
+    int wgtflag = 0; // int wgtflag=2;
     /*
       This is used to indicate the numbering scheme that
       is used for the vtxdist, xadj, adjncy, and part
@@ -610,11 +625,18 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     */
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
 
+    double t2 = timer.ElapsedTime();
+    if (!myrank) 
+    {                  
+      printf("parmetis setup    %10.5e secs\n",t2-t1);
+      fflush(stdout);
+    }
+
     ParMETIS_V3_PartKway(
       &(vtxdist[0]),
       &(xadj   [0]),
       &(adjncy [0]),
-      &(vwgt   [0]),
+      NULL, // &(vwgt   [0]), no weights, because they are 1 anyway
       NULL         ,
       &wgtflag     ,
       &numflag     ,
@@ -626,6 +648,13 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       &edgecut     ,
       &(part[0])   ,
       &mpicomm);
+
+    double t3 = timer.ElapsedTime();
+    if (!myrank) 
+    {                  
+      printf("parmetis call     %10.5e secs\n",t3-t2);
+      fflush(stdout);
+    }
 
     // for each vertex j, the proc number to which this vertex
     // belongs was written to part[j]. Note that PARMETIS does
@@ -704,7 +733,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     Epetra_Map newmap(globalpart.size(),count,&part[0],0,*comm);
 
     // create the output graph and export to it
-    RefCountPtr<Epetra_CrsGraph> outgraph =
+    RCP<Epetra_CrsGraph> outgraph =
       rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
     Epetra_Export exporter(graph->RowMap(),newmap);
     int err = outgraph->Export(*graph,exporter,Add);
@@ -731,7 +760,366 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    bcol.MyGlobalElements(),
                                    0,
                                    *comm));
+
+    double t4 = timer.ElapsedTime();
+    if (!myrank) 
+    {                  
+      printf("parmetis cleanup  %10.5e secs\n",t4-t3);
+      fflush(stdout);
+    }
+
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
+                                   RCP<Epetra_Map> roweles,
+                                   RCP<Epetra_Map>& rownodes,
+                                   RCP<Epetra_Map>& colnodes,
+                                   RCP<Epetra_Comm> comm)
+{
+  const int myrank = comm->MyPID();
+  const int numproc = comm->NumProc();
+  Epetra_Time timer(dis->Comm());
+  double t1 = timer.ElapsedTime();
+  if (!myrank) 
+  {                  
+    printf("parmetis:\n");
+    fflush(stdout);
+  }
+
+  // create a set of all nodes that I have
+  set<int> mynodes;
+  for (int lid=0;lid<roweles->NumMyElements();++lid)
+  {
+    DRT::Element* ele=dis->gElement(roweles->GID(lid));
+    const int  numnode = ele->NumNode();
+    const int* nodeids = ele->NodeIds();
+    copy(nodeids,nodeids+numnode,inserter(mynodes,mynodes.begin()));
+  }
+  
+  // build a unique row map from the overlapping sets
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    int size = 0;
+    vector<int> recvnodes;
+    if (proc==myrank)
+    {
+      recvnodes.clear();
+      set<int>::iterator fool;
+      for (fool = mynodes.begin(); fool != mynodes.end(); ++fool)
+        recvnodes.push_back(*fool);
+      size=(int)recvnodes.size();
+    }
+    comm->Broadcast(&size,1,proc);
+    if (proc!=myrank) recvnodes.resize(size);
+    comm->Broadcast(&recvnodes[0],size,proc);
+    if (proc!=myrank)
+    {
+      for (int i=0; i<size; ++i)
+      {
+        set<int>::iterator fool = mynodes.find(recvnodes[i]);
+        if (fool==mynodes.end()) continue;
+        else                     mynodes.erase(fool);
+      }
+    }
+    comm->Barrier();
+  } 
+
+
+  // copy the set to a vector
+  {
+    vector<int> nodes;
+    set<int>::iterator fool;
+    for (fool = mynodes.begin(); fool != mynodes.end(); ++fool)
+      nodes.push_back(*fool);
+    mynodes.clear();
+    // create a non-overlapping row map
+    rownodes = rcp(new Epetra_Map(-1,(int)nodes.size(),&nodes[0],0,*comm));
+  }
+
+  
+  // start building the graph object
+  map<int,set<int> > locals;
+  map<int,set<int> > remotes;
+  for (int lid=0;lid<roweles->NumMyElements();++lid)
+  {
+    DRT::Element* ele=dis->gElement(roweles->GID(lid));
+    const int  numnode = ele->NumNode();
+    const int* nodeids = ele->NodeIds();
+    for (int i=0; i<numnode; ++i)
+    {
+      const int lid = rownodes->LID(nodeids[i]); // am I owner of this gid?
+      map<int,set<int> >* insertmap = NULL;
+      if (lid != -1) insertmap = &locals;
+      else           insertmap = &remotes;
+      // see whether we already have an entry for nodeids[i]
+      map<int,set<int> >::iterator fool = (*insertmap).find(nodeids[i]);
+      if (fool==(*insertmap).end()) // no entry in that row yet
+      {
+        set<int> tmp;
+        copy(nodeids,nodeids+numnode,inserter(tmp,tmp.begin()));
+        (*insertmap)[nodeids[i]] = tmp;
+      }
+      else
+      {
+        set<int>& imap = fool->second;
+        copy(nodeids,nodeids+numnode,inserter(imap,imap.begin()));
+      }
+    } // for (int i=0; i<numnode; ++i)
+  } // for (int lid=0;lid<roweles->NumMyElements();++lid)
+  // run through locals and remotes to find the max bandwith
+  int maxband = 0;
+  {
+    int smaxband = 0;
+    map<int,set<int> >::iterator fool;
+    for (fool = locals.begin(); fool != locals.end(); ++fool)
+      if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
+    for (fool = remotes.begin(); fool != remotes.end(); ++fool)
+      if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
+    comm->MaxAll(&smaxband,&maxband,1);
+  }
+  if (!myrank) 
+  {                  
+    printf("parmetis max nodal bandwith %d\n",maxband);
+    fflush(stdout);
+  }
+  
+  Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,maxband,false));
+
+
+  // fill all local entries into the graph
+  {
+    map<int,set<int> >::iterator fool = locals.begin();
+    for (; fool != locals.end(); ++fool)
+    {
+      const int grid = fool->first;
+      vector<int> cols(0,0);
+      set<int>::iterator setfool = fool->second.begin();
+      for (; setfool != fool->second.end(); ++setfool) cols.push_back(*setfool);
+      int err = graph->InsertGlobalIndices(grid,(int)cols.size(),&cols[0]);
+      if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d",err,grid);
+    }
+    locals.clear();
+  }
+  
+
+  // now we need to communicate and add the remote entries
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    vector<int> recvnodes;
+    int size = 0;
+    if (proc==myrank)
+    {
+      recvnodes.clear();
+      map<int,set<int> >::iterator mapfool = remotes.begin();
+      for (; mapfool != remotes.end(); ++mapfool)
+      {
+        recvnodes.push_back((int)mapfool->second.size()+1); // length of this entry
+        recvnodes.push_back(mapfool->first); // global row id
+        set<int>::iterator fool = mapfool->second.begin();
+        for (; fool!=mapfool->second.end(); ++fool) // global col ids
+          recvnodes.push_back(*fool);
+      }
+      size = (int)recvnodes.size();
+    }
+    comm->Broadcast(&size,1,proc);
+    if (proc!=myrank) recvnodes.resize(size);
+    comm->Broadcast(&recvnodes[0],size,proc);
+    if (proc!=myrank && size)
+    {
+      int* ptr = &recvnodes[0];
+      while (ptr < &recvnodes[size-1])
+      {
+        int num  = *ptr; 
+        int grid = *(ptr+1);
+        // see whether I have grid in my row map
+        if (rownodes->LID(grid) != -1) // I have it, put stuff in my graph
+        {
+          int err = graph->InsertGlobalIndices(grid,num-1,(ptr+2));
+          if (err<0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d",err);
+          ptr += (num+1);
+        }
+        else // I don't have it so I don't care for entries of this row, goto next row
+          ptr += (num+1);
+      }
+    }
+    comm->Barrier();
+  } //  for (int proc=0; proc<numproc; ++proc)
+  remotes.clear();
+  
+  // finish graph
+  graph->FillComplete();
+  graph->OptimizeStorage();
+
+  // prepare parmetis input and call parmetis to partition the graph
+  vector<int> vtxdist(numproc+1,0);
+  vector<int> xadj(graph->RowMap().NumMyElements()+1);
+  vector<int> adjncy(0,0);
+  {
+    Epetra_IntVector ridtoidx(graph->RowMap(),false);
+    Epetra_IntVector cidtoidx(graph->ColMap(),false);
+    
+    xadj[0] = 0;
+    
+    // create vtxdist
+    vector<int> svtxdist(numproc+1,0);
+    svtxdist[myrank+1] = graph->RowMap().NumMyElements();
+    comm->SumAll(&svtxdist[0],&vtxdist[0],numproc+1);
+    for (int i=0; i<numproc; ++i) vtxdist[i+1] += vtxdist[i];
+
+    // create a Epetra_IntVector in rowmap with new numbering starting from zero and being linear
+    for (int i=0; i<ridtoidx.Map().NumMyElements(); ++i) ridtoidx[i] = i + vtxdist[myrank];
+    Epetra_Import importer(graph->ColMap(),graph->RowMap());
+    int err = cidtoidx.Import(ridtoidx,importer,Insert);
+    if (err) dserror("Import using importer returned %d",err);
+    
+    // create xadj and adjncy;
+    for (int lrid=0; lrid<graph->RowMap().NumMyElements(); ++lrid)
+    {
+      int metisrid = ridtoidx[lrid];
+      int  numindices;
+      int* indices;
+      int err = graph->ExtractMyRowView(lrid,numindices,indices);
+      if (err) dserror("Epetra_CrsGraph::GetMyRowView returned %d",err);
+      // switch column indices to parmetis indices and add to vector of columns
+      vector<int> metisindices(0);
+      for (int i=0; i<numindices; ++i) 
+      {
+        if (metisrid == cidtoidx[indices[i]]) continue; // must not contain main diagonal entry
+        metisindices.push_back(cidtoidx[indices[i]]);
+      }
+      //sort(metisindices.begin(),metisindices.end());
+      // beginning of new row
+      xadj[lrid+1] = xadj[lrid] + (int)metisindices.size();
+      for (int i=0; i<(int)metisindices.size(); ++i) 
+        adjncy.push_back(metisindices[i]);
+    }
+  }
+  
+  double t2 = timer.ElapsedTime();
+  if (!myrank) 
+  {                  
+    printf("parmetis setup    %10.5e secs\n",t2-t1);
+    fflush(stdout);
+  }
+
+  vector<int> part(graph->RowMap().NumMyElements()); // output
+  {
+    int wgtflag = 0;             // graph is not weighted
+    int numflag = 0;             // numbering start from zero
+    int ncon = 1;                // number of weights on each node
+    int npart = numproc;         // number of partitions desired
+    int options[3] = { 0,0,15 }; // use default metis parameters
+    int edgecut = 0;             // output, number of edges cut in partitioning
+    float ubvec = 1.05;
+    vector<float> tpwgts(npart,1.0/(double)npart);
+    MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
+    
+    ParMETIS_V3_PartKway(&(vtxdist[0]),&(xadj[0]),&(adjncy[0]),
+                         NULL,NULL,&wgtflag,&numflag,&ncon,&npart,&(tpwgts[0]),&ubvec,
+                         &(options[0]),&edgecut,&(part[0]),&mpicomm);
+    
+  }
+  
+  double t3 = timer.ElapsedTime();
+  if (!myrank) 
+  {                  
+    printf("parmetis call     %10.5e secs\n",t3-t2);
+    fflush(stdout);
+  }
+
+#if 0  
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (myrank==proc)
+    {
+      for (int i=0; i<graph->RowMap().NumMyElements(); ++i)
+        printf("Proc %d part[%4d] = %d\n",myrank,i,part[i]);
+      fflush(stdout);
+    }
+    comm->Barrier();
+  }
+#endif
+
+  // build new row map according to part
+  {
+    vector<int> mygids;
+    for (int proc=0; proc<numproc; ++proc)
+    {
+      int size = 0;
+      vector<int> sendpart;
+      vector<int> sendgid;
+      if (proc==myrank)
+      {
+        sendpart = part;
+        size = (int)sendpart.size();
+        sendgid.resize(size);
+        for (int i=0; i<(int)sendgid.size(); ++i) sendgid[i] = graph->RowMap().GID(i);
+      }
+      comm->Broadcast(&size,1,proc);
+      if (proc!=myrank) 
+      {
+        sendpart.resize(size);
+        sendgid.resize(size);
+      }
+      comm->Broadcast(&sendpart[0],size,proc);
+      comm->Broadcast(&sendgid[0],size,proc);
+      for (int i=0; i<(int)sendpart.size(); ++i)
+      {
+        if (sendpart[i] != myrank) continue;
+        mygids.push_back(sendgid[i]);
+      }
+      comm->Barrier();
+    }
+    rownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm)); 
+  }
+
+  // export the graph to the new row map to obtain the new column map
+  {
+    int bandwith = graph->GlobalMaxNumNonzeros();
+    Epetra_CrsGraph finalgraph(Copy,*rownodes,bandwith,false);
+    Epetra_Export exporter(graph->RowMap(),*rownodes);
+    int err = finalgraph.Export(*graph,exporter,Insert);
+    if (err<0) dserror("Graph export returned err=%d",err);
+    graph = null;
+    finalgraph.FillComplete();
+    finalgraph.OptimizeStorage();
+    colnodes = rcp(new Epetra_Map(-1,//finalgraph.ColMap().NumGlobalElements(),
+                                  finalgraph.ColMap().NumMyElements(),
+                                  finalgraph.ColMap().MyGlobalElements(),0,*comm));
+  }
+
+
+  double t4 = timer.ElapsedTime();
+  if (!myrank) 
+  {                  
+    printf("parmetis cleanup  %10.5e secs\n",t4-t3);
+    fflush(stdout);
+  }
+
+
+  return;
+}
 #endif
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
