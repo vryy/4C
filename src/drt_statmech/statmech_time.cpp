@@ -508,7 +508,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     //passing statistical mechanics parameters to elements
     p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
     p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-    p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+    p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
     p.set("RandomNumbers",randomnumbers);
     p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
     p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
@@ -694,7 +694,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
@@ -917,7 +917,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       //add statistical vector to parameter list for statistical forces and damping matrix computation
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
@@ -983,7 +983,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
       //passing statistical mechanics parameters to elements
       p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
       p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-      p.set("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
       p.set("RandomNumbers",randomnumbers);
       p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
       p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));

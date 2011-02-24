@@ -3766,7 +3766,7 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 			// calculate directional vector between nodes
 			double dirlength = 0.0;
 			Epetra_SerialDenseMatrix dirvec(3,1);
-			for(int dof=0; dof<3; dof++)
+			for(int dof=0; dof<dirvec.M(); dof++)
 			{
 				int dofgid0 = discret_.Dof(node0)[dof];
 				int dofgid1 = discret_.Dof(node1)[dof];
@@ -3781,9 +3781,11 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 				dirvec(dof,0) = poscomponent1-poscomponent0;
 				dirlength += dirvec(dof,0)*dirvec(dof,0);
 			}
+			dirlength = sqrt(dirlength);
 			// normed directional vector
 			dirvec.Scale(1.0/dirlength);
-			Epetra_SerialDenseMatrix dirvecrot(3,1);
+
+			Epetra_SerialDenseMatrix dirvecrot(3,1,true);
 			trafo_->Multiply(false,dirvec,dirvecrot);
 
 			// transform into spherical coordinates (phi E [-pi;pi], theta E [0; pi]) and sort into appropriate bin
