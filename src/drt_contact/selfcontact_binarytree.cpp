@@ -45,7 +45,8 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-
+#include "../linalg/linalg_utils.H"
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|
@@ -2121,6 +2122,9 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   // reset contact pairs from last iteration
   contactpairs_.clear();
 
+  //lComm()->Barrier();
+  //const double t_start1 = Teuchos::Time::wallTime();
+
   //**********************************************************************
   // STEP 1: update geometry (DOPs and sample vectors) bottom-up
   //**********************************************************************
@@ -2132,29 +2136,70 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   }
   UpdateNormals();
 
-  //**********************************************************************
-  // STEP 2a: search for self contact starting at root nodes
-  //**********************************************************************
-  for (int k=0;k<(int)roots_.size();++k)
-  {
-    //cout << "Self search for root node " << k << endl;
-    SearchSelfContactSeparate(roots_[k]);
-  }
+  //lComm()->Barrier();
+  //const double t_end1 = Teuchos::Time::wallTime()-t_start1;
+  //if (lComm()->MyPID()==0) cout << "********* Update:\t" << t_end1 << " seconds\n";
 
   //**********************************************************************
-  // STEP 2b: search for two-body contact between different roots
+  // STEP 2: distribute roots among all processors
   //**********************************************************************
-  for (int k=0;k<(int)roots_.size();++k)
+  // introduce some parallelization for multibody contact
+  vector<int> myroots(0);
+  int nproc = lComm()->NumProc();
+  int nroot = (int)roots_.size();
+  int ratio = nroot / nproc;
+  int rest  = nroot % nproc;
+
+  // give 'ratio+1' roots to the first 'rest' procs
+  if (lComm()->MyPID() < rest)
+    for (int k=0;k<ratio+1;++k)
+      myroots.push_back(lComm()->MyPID()*(ratio+1) + k);
+
+  // give 'ratio' roots to the remaining procs
+  else /*(lComm()->MyPID() >= rest)*/
+    for (int k=0;k<ratio;++k)
+      myroots.push_back(rest*(ratio+1) + (lComm()->MyPID()-rest)*ratio + k);
+
+  //lComm()->Barrier();
+  //const double t_start2 = Teuchos::Time::wallTime();
+
+  //**********************************************************************
+  // STEP 3: search for self contact starting at root nodes
+  //**********************************************************************
+  for (int k=0;k<(int)myroots.size();++k)
   {
-    for (int m=k+1;m<(int)roots_.size();++m)
+    //cout << "Self search for root node " << myroots[k] << endl;
+    SearchSelfContactSeparate(roots_[myroots[k]]);
+  }
+
+  //lComm()->Barrier();
+  //const double t_end2 = Teuchos::Time::wallTime()-t_start2;
+  //if (lComm()->MyPID()==0) cout << "********* SelfSe:\t" << t_end2 << " seconds\n";
+
+  //lComm()->Barrier();
+  //const double t_start3 = Teuchos::Time::wallTime();
+
+  //**********************************************************************
+  // STEP 4: search for two-body contact between different roots
+  //**********************************************************************
+  for (int k=0;k<(int)myroots.size();++k)
+  {
+    for (int m=myroots[k]+1;m<(int)roots_.size();++m)
     {
-      //cout << "-> Root search for pair " << k << " " << m << endl;
-      SearchRootContactSeparate(roots_[k],roots_[m]);
+      //cout << "-> Root search for pair " << myroots[k] << " " << m << endl;
+      SearchRootContactSeparate(roots_[myroots[k]],roots_[m]);
     }
   }
 
+  //lComm()->Barrier();
+  //const double t_end3 = Teuchos::Time::wallTime()-t_start3;
+  //if (lComm()->MyPID()==0) cout << "********* RootSe:\t" << t_end3 << " seconds\n";
+
+  //lComm()->Barrier();
+  //const double t_start4 = Teuchos::Time::wallTime();
+
   //**********************************************************************
-  // STEP 3: slave and master facet sorting
+  // STEP 5: slave and master facet sorting
   //**********************************************************************
   map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter = leafsmap_.begin();
   map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter_end = leafsmap_.end();
@@ -2184,6 +2229,33 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     ++leafiter;
   }
 
+  //lComm()->Barrier();
+  //const double t_end4 = Teuchos::Time::wallTime()-t_start4;
+  //if (lComm()->MyPID()==0) cout << "********* ResetE:\t" << t_end4 << " seconds\n";
+
+  //lComm()->Barrier();
+  //const double t_start5 = Teuchos::Time::wallTime();
+
+  // make contactpairs information redundant on all procs
+  vector<int> locdata;
+  for (int i=0; i<elements_->NumMyElements();++i)
+  {
+    int gid = elements_->GID(i);
+    if (contactpairs_.find(gid)!=contactpairs_.end())
+      locdata.push_back(gid);
+  }
+  RCP<Epetra_Map> mymap  = rcp(new Epetra_Map(-1,(int)locdata.size(),&locdata[0],0,*lComm()));
+  RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
+  DRT::Exporter ex(*mymap,*redmap,*lComm());
+  ex.Export(contactpairs_);
+
+  //lComm()->Barrier();
+  //const double t_end5 = Teuchos::Time::wallTime()-t_start5;
+  //if (lComm()->MyPID()==0) cout << "********* Commun:\t" << t_end5 << " seconds\n";
+
+  //lComm()->Barrier();
+  //const double t_start6 = Teuchos::Time::wallTime();
+
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
@@ -2192,8 +2264,15 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
     MasterSlaveSorting(contactpairs_.begin()->first,celement->IsSlave());
   }
 
+  //lComm()->Barrier();
+  //const double t_end6 = Teuchos::Time::wallTime()-t_start6;
+  //if (lComm()->MyPID()==0) cout << "********* SortSM:\t" << t_end6 << " seconds\n";
+
+  //lComm()->Barrier();
+  //const double t_start7 = Teuchos::Time::wallTime();
+
   //**********************************************************************
-  // STEP 3: check consistency of slave and master facet sorting
+  // STEP 6: check consistency of slave and master facet sorting
   //**********************************************************************
   for (int i=0; i<elements_->NumMyElements();++i)
   {
@@ -2221,6 +2300,10 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
         dserror("ERROR: Slave / master inconsistency in self contact");
     }
   }
+
+  //lComm()->Barrier();
+  //const double t_end7 = Teuchos::Time::wallTime()-t_start7;
+  //if (lComm()->MyPID()==0) cout << "********* CheckE:\t" << t_end7 << " seconds\n";
 
   return;
 }
@@ -2251,28 +2334,48 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   UpdateNormals();
 
   //**********************************************************************
-  // STEP 2a: search for self contact starting at root nodes
+  // STEP 2: distribute roots among all processors
   //**********************************************************************
-  for (int k=0;k<(int)roots_.size();++k)
+  // introduce some parallelization for multibody contact
+  vector<int> myroots(0);
+  int nproc = lComm()->NumProc();
+  int nroot = (int)roots_.size();
+  int ratio = nroot / nproc;
+  int rest  = nroot % nproc;
+
+  // give 'ratio+1' roots to the first 'rest' procs
+  if (lComm()->MyPID() < rest)
+    for (int k=0;k<ratio+1;++k)
+      myroots.push_back(lComm()->MyPID()*(ratio+1) + k);
+
+  // give 'ratio' roots to the remaining procs
+  else /*(lComm()->MyPID() >= rest)*/
+    for (int k=0;k<ratio;++k)
+      myroots.push_back(rest*(ratio+1) + (lComm()->MyPID()-rest)*ratio + k);
+
+  //**********************************************************************
+  // STEP 3: search for self contact starting at root nodes
+  //**********************************************************************
+  for (int k=0;k<(int)myroots.size();++k)
   {
-    //cout << "Self search for root node " << k << endl;
-    SearchSelfContactCombined(roots_[k]);
+    //cout << "Self search for root node " << myroots[k] << endl;
+    SearchSelfContactSeparate(roots_[myroots[k]]);
   }
 
   //**********************************************************************
-  // STEP 2b: search for two-body contact between different roots
+  // STEP 4: search for two-body contact between different roots
   //**********************************************************************
-  for (int k=0;k<(int)roots_.size();++k)
+  for (int k=0;k<(int)myroots.size();++k)
   {
-    for (int m=k+1;m<(int)roots_.size();++m)
+    for (int m=myroots[k]+1;m<(int)roots_.size();++m)
     {
-      //cout << "-> Root search for pair " << k << " " << m << endl;
-      SearchRootContactCombined(roots_[k],roots_[m]);
+      //cout << "-> Root search for pair " << myroots[k] << " " << m << endl;
+      SearchRootContactSeparate(roots_[myroots[k]],roots_[m]);
     }
   }
 
   //**********************************************************************
-  // STEP 3: slave and master facet sorting
+  // STEP 5: slave and master facet sorting
   //**********************************************************************
   map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter = leafsmap_.begin();
   map<int, RCP<SelfBinaryTreeNode> > ::iterator leafiter_end = leafsmap_.end();
@@ -2302,6 +2405,19 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
     ++leafiter;
   }
 
+  // make contactpairs information redundant on all procs
+  vector<int> locdata;
+  for (int i=0; i<elements_->NumMyElements();++i)
+  {
+    int gid = elements_->GID(i);
+    if (contactpairs_.find(gid)!=contactpairs_.end())
+      locdata.push_back(gid);
+  }
+  RCP<Epetra_Map> mymap  = rcp(new Epetra_Map(-1,(int)locdata.size(),&locdata[0],0,*lComm()));
+  RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
+  DRT::Exporter ex(*mymap,*redmap,*lComm());
+  ex.Export(contactpairs_);
+
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
@@ -2311,7 +2427,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   }
 
   //**********************************************************************
-  // STEP 3: check consistency of slave and master facet sorting
+  // STEP 6: check consistency of slave and master facet sorting
   //**********************************************************************
   for (int i=0; i<elements_->NumMyElements();++i)
   {

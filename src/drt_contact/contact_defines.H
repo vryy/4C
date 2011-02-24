@@ -54,7 +54,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-//#define CONTACTASOUTPUT             /* flag for detailed active set output */
+//#define CONTACTASOUTPUT           /* flag for detailed active set output */
 //#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
