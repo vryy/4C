@@ -253,7 +253,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     else
       dserror("Unknown type of convection boundary condition");
 
-#ifdef TSIASOUTPUT
+#ifdef THRASOUTPUT
     if (ele->Id()==0)
     {
       cout << "ele Id= " << ele->Id() << endl;
@@ -264,7 +264,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       cout<<"time curve                  = "<<curvenum<<endl;
       cout<<"total time                  = "<<time<<endl;
     }
-#endif // TSIASOUTPUT
+#endif // THRASOUTPUT
 
     // and now check if there is a convection heat transfer boundary condition
     EvaluateThermoConvection(

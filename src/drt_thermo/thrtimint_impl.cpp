@@ -593,6 +593,7 @@ void THR::TimIntImpl::UpdateIterIncrementally(
 {
   // select residual temperatures
   if (tempi != Teuchos::null)
+    // tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
     tempi_->Update(1.0, *tempi, 0.0);  // set the new solution we just got
   else
     tempi_->PutScalar(0.0);
@@ -887,7 +888,7 @@ void THR::TimIntImpl::TSIMatrix()
     // set action for elements depending on time integrator
 //    p.set("action", "calc_thermo_fintcond");
     // type of calling time integrator
-    p.set("time integrator", MethodName());
+    p.set<int>("time integrator", MethodName());
     if (MethodName()== INPAR::THR::dyna_onesteptheta)
     {
       p.set("action", "calc_thermo_fintcapa");

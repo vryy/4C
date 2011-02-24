@@ -180,7 +180,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // action for elements
     p.set("action", "calc_thermo_fintcapa");
     // type of calling time integrator
-    p.set("time integrator", MethodName());
+    p.set<int>("time integrator", MethodName());
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
@@ -721,7 +721,7 @@ void THR::TimInt::ApplyForceExternal(
   const std::string action = "calc_thermo_fext";
   p.set("action", action);
   // type of calling time integrator
-  p.set("time integrator", MethodName());
+  p.set<int>("time integrator", MethodName());
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -754,7 +754,7 @@ void THR::TimInt::ApplyForceExternalConv(
   const std::string action = "calc_thermo_fextconvection";
   p.set("action", action);
   // type of calling time integrator
-  p.set("time integrator", MethodName());
+  p.set<int>("time integrator", MethodName());
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -876,7 +876,7 @@ void THR::TimInt::ApplyForceInternal(
   )
 {
   // type of calling time integrator
-  p.set("time integrator", MethodName());
+  p.set<int>("time integrator", MethodName());
   // action for elements
   const std::string action = "calc_thermo_fint";
   p.set("action", action);
