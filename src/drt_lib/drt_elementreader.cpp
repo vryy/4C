@@ -385,22 +385,27 @@ void ElementReader::Partition()
   // global node ids --- this will be a fully redundant vector!
   int numnodes=0;
   vector<int> nids;
-
+  numnodes = (int)nodes_.size();
+  comm_->Broadcast(&numnodes,1,0);
+  
+#if 0
   if (myrank==0)
   {
     numnodes = (int)nodes_.size();
-
     // copy set content into nids vector
     nids.reserve(numnodes);
     copy(nodes_.begin(), nodes_.end(), back_inserter(nids));
   }
+#endif
 
+#if 0
   // create preliminary node row map
   rownodes_ = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
+#endif
 
   // We want to be able to read empty fields. If we have such a beast
   // just skip the partitioning.
-  if (rownodes_->NumGlobalElements()>0)
+  if (numnodes)
   {
 #if defined(PARALLEL) && defined(PARMETIS)
 
@@ -428,7 +433,9 @@ void ElementReader::Partition()
   else
   {
     // We are empty. Just a proper initialization.
-    colnodes_ = rownodes_;
+    int zero = 0;
+    colnodes_ = rcp(new Epetra_Map(-1,zero,&zero,0,*comm_));
+    rownodes_ = colnodes_;
   }
 
   // now we have all elements in a linear map roweles

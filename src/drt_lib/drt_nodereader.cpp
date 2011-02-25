@@ -64,11 +64,11 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Read, create and partition nodes " << flush;
+    cout << "Read, create and partition nodes\n" << flush;
 #if defined(PARALLEL) && defined(PARMETIS)
-    cout << "block " << flush;
+//    cout << "block " << flush;
 #else
-    cout << "        " << flush;
+//    cout << "        " << flush;
 #endif
   }
 
@@ -79,7 +79,7 @@ void NodeReader::Read()
   int bsize = max(numnodes/nblock, 1);
 
   // an upper limit for bsize
-  int maxblocksize = 500000;
+  int maxblocksize = 200000;
 
   if (bsize > maxblocksize)
   {
@@ -100,26 +100,23 @@ void NodeReader::Read()
   }
   string tmp;
 
+  if (!myrank && !reader_.MyOutputFlag())
+  {
+    printf("numnode %d nblock %d bsize %d\n",numnodes,nblock,bsize);
+    fflush(stdout);
+  }
+
+
   // note that the last block is special....
   int filecount=0;
   for (int block=0; block<nblock; ++block)
   {
+    double t1 = time.ElapsedTime();
     if (0==myrank)
     {
 #if defined(PARALLEL) && defined(PARMETIS)
       if (!reader_.MyOutputFlag())
-      {
-        printf("%d",block);
-        if(block != nblock-1)
-        {
-          printf(",");
-        }
-        else
-        {
-          printf(" ");
-        }
-        fflush(stdout);
-      }
+        printf("block %d ",block);
 #endif
 
       int bcount=0;
@@ -133,17 +130,13 @@ void NodeReader::Read()
           int nodeid;
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
           nodeid--;
-          //          if (nodeid != filecount)
-          //            dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
-          if (tmp!="COORD")
-            dserror("failed to read node %d",nodeid);
+          if (tmp!="COORD") dserror("failed to read node %d",nodeid);
           std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
           for (unsigned i=0; i<diss.size(); ++i)
           {
-            Teuchos::RCP<DRT::Discretization> dis = diss[i];
             // create node and add to discretization
             Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
-            dis->AddNode(node);
+            diss[i]->AddNode(node);
           }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
@@ -189,6 +182,9 @@ void NodeReader::Read()
       } // for (filecount; file; ++filecount)
     } // if (0==myrank)
 
+    double t2 = time.ElapsedTime();
+    if (!myrank && !reader_.MyOutputFlag())
+      printf("reading %10.5e secs",t2-t1); 
 
     // export block of nodes to other processors as reflected in rownodes,
     // changes ownership of nodes
@@ -196,6 +192,14 @@ void NodeReader::Read()
     {
       ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
     }
+
+    double t3 = time.ElapsedTime();
+    if (!myrank && !reader_.MyOutputFlag())
+    {
+      printf(" / distrib %10.5e secs\n",t3-t2); 
+      fflush(stdout);
+    }
+
   } // for (int block=0; block<nblock; ++block)
 
   // last thing to do here is to produce nodal ghosting/overlap
@@ -205,9 +209,7 @@ void NodeReader::Read()
   }
 
   if (!myrank && !reader_.MyOutputFlag())
-  {
-    cout << "in...." << time.ElapsedTime() << " secs\n" << endl;
-  }
+    printf("in............................................. %10.5e secs\n",time.ElapsedTime());
 
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
