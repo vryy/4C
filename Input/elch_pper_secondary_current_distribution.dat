@@ -323,6 +323,10 @@ DSURF  0
 DSURF   0
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE  0
+----------------------------------SCATRA FLUX CALC SURF CONDITIONS
+DSURF 2
+E 1 - default // for flux calculation on this boundary
+E 2 - default // for flux calculation on this boundary
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
