@@ -416,7 +416,8 @@ void ElementReader::Partition()
     rownodes_ = null;
     colnodes_ = null;
     nids.clear();
-    DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,comm_);
+    DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,
+                                  comm_,!reader_.MyOutputFlag());
 #endif                                  
 
 #else

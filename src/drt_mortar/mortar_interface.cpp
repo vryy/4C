@@ -635,7 +635,10 @@ void MORTAR::MortarInterface::Redistribute()
   //**********************************************************************
   // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,sproc,comm,time,false);
+  // old version
+  //DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,sproc,comm,time,false);
+  // new version
+  DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,comm,false);
 #endif
   //**********************************************************************
 
@@ -656,7 +659,10 @@ void MORTAR::MortarInterface::Redistribute()
   //**********************************************************************
   // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
+  // old version
+  //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
+  // new version
+  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false);
 #endif
   //**********************************************************************
 

@@ -317,7 +317,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
+  // old version
+  //DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
+  // new version
+  DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,comm,false);
 #endif
   //**********************************************************************
 
@@ -340,7 +343,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
+  // old version
+  //DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
+  // new version
+  DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,comm,false);
 #endif
   //**********************************************************************
 
@@ -361,7 +367,10 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
+  // old version
+  //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
+  // new version
+  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false);
 #endif
   //**********************************************************************
 

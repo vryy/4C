@@ -149,7 +149,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     const int numproc = comm->NumProc();
     Epetra_Time timer(dis->Comm());
     double t1 = timer.ElapsedTime();
-    if (!myrank) 
+    if (!myrank && outflag)
     {                  
       printf("parmetis:\n");
       fflush(stdout);
@@ -626,7 +626,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
 
     double t2 = timer.ElapsedTime();
-    if (!myrank) 
+    if (!myrank && outflag)
     {                  
       printf("parmetis setup    %10.5e secs\n",t2-t1);
       fflush(stdout);
@@ -650,7 +650,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       &mpicomm);
 
     double t3 = timer.ElapsedTime();
-    if (!myrank) 
+    if (!myrank && outflag)
     {                  
       printf("parmetis call     %10.5e secs\n",t3-t2);
       fflush(stdout);
@@ -762,7 +762,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    *comm));
 
     double t4 = timer.ElapsedTime();
-    if (!myrank) 
+    if (!myrank && outflag)
     {                  
       printf("parmetis cleanup  %10.5e secs\n",t4-t3);
       fflush(stdout);
@@ -777,13 +777,14 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    RCP<Epetra_Map> roweles,
                                    RCP<Epetra_Map>& rownodes,
                                    RCP<Epetra_Map>& colnodes,
-                                   RCP<Epetra_Comm> comm)
+                                   RCP<Epetra_Comm> comm,
+                                   bool outflag)
 {
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
   Epetra_Time timer(dis->Comm());
   double t1 = timer.ElapsedTime();
-  if (!myrank) 
+  if (!myrank && outflag)
   {                  
     printf("parmetis:\n");
     fflush(stdout);
@@ -880,7 +881,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     comm->MaxAll(&smaxband,&maxband,1);
   }
-  if (!myrank) 
+  if (!myrank && outflag)
   {                  
     printf("parmetis max nodal bandwith %d\n",maxband);
     fflush(stdout);
@@ -999,7 +1000,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   }
   
   double t2 = timer.ElapsedTime();
-  if (!myrank) 
+  if (!myrank && outflag)
   {                  
     printf("parmetis setup    %10.5e secs\n",t2-t1);
     fflush(stdout);
@@ -1024,7 +1025,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   }
   
   double t3 = timer.ElapsedTime();
-  if (!myrank) 
+  if (!myrank && outflag)
   {                  
     printf("parmetis call     %10.5e secs\n",t3-t2);
     fflush(stdout);
@@ -1093,7 +1094,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
 
   double t4 = timer.ElapsedTime();
-  if (!myrank) 
+  if (!myrank && outflag)
   {                  
     printf("parmetis cleanup  %10.5e secs\n",t4-t3);
     fflush(stdout);

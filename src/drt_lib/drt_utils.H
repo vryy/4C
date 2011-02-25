@@ -133,7 +133,8 @@ namespace UTILS
                          RCP<Epetra_Map> roweles,
                          RCP<Epetra_Map>& rownodes,
                          RCP<Epetra_Map>& colnodes,
-                         RCP<Epetra_Comm> comm);
+                         RCP<Epetra_Comm> comm,
+                         bool outflag);
 #else
 
   /// redistribute a discretization using metis
