@@ -178,6 +178,9 @@ public:
   /// set up micro-scale discretizations in case of structure multi-scale simulations
   void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
 
+  /// set up multilvel discetizations for mulit level monte carlo simulations
+  void ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader);
+
   /// input of materials
   void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
 
@@ -244,6 +247,7 @@ public:
   const Teuchos::ParameterList& StaticParams() const { return getParameterList()->sublist("STATIC"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
   const Teuchos::ParameterList& InverseAnalysisParams() const { return getParameterList()->sublist("INVERSE ANALYSIS"); }
+  const Teuchos::ParameterList& MultiLevelMonteCarloParams() const { return getParameterList()->sublist("MULTI LEVEL MONTE CARLO"); }
   const Teuchos::ParameterList& MeshtyingAndContactParams() const { return getParameterList()->sublist("MESHTYING AND CONTACT"); }
   const Teuchos::ParameterList& InteractionPotentialParams() const { return getParameterList()->sublist("INTERACTION POTENTIAL"); }
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }

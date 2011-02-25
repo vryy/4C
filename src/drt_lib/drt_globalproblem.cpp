@@ -40,6 +40,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_io/io_control.H"
 
+
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #endif
@@ -160,6 +161,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GEMM", *list);
   reader.ReadGidSection("--INVERSE ANALYSIS", *list);
+  reader.ReadGidSection("--MULTI LEVEL MONTE CARLO", *list);
   reader.ReadGidSection("--MESHTYING AND CONTACT", *list);
   reader.ReadGidSection("--INTERACTION POTENTIAL", *list);
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
@@ -1005,6 +1007,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // (in case of multi-scale material models)
     ReadMicroFields(reader);
 
+    // Read in another discretization for MultiLevel Monte Carlo use
+    ReadMultiLevelDiscretization(reader);
+
     break;
   } // end of else if (genprob.probtyp==prb_structure)
 
@@ -1177,8 +1182,67 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
   materials_->ResetReadFromProblem();
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader)
+{
+  // check whether multilvel monte carlo is on
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
+  {
+    // get the number of levels
+    int num_levels = mlmcp.get<int>("NUMLEVELS");
+    //loop over all levels and read in a discretization for each
+    for (int i = 0; i < num_levels ;i++)
+    {
+      int dislevelnum = i+1;
+      RCP<DRT::Problem> multilevel_problem = DRT::Problem::Instance(dislevelnum);
+      #ifdef PARALLEL
+            RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+      #else
+            RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+      #endif
+      // assemble multilevel file name
+      std::stringstream stream_multi_level_appendix;
+      stream_multi_level_appendix << "_level_" << dislevelnum;
+      string multi_level_appendix = stream_multi_level_appendix.str();
 
+      // Get inputfile name
+      string multilevel_inputfile_name= reader.MyInputfileName();
+      // assembly
+      multilevel_inputfile_name.insert(multilevel_inputfile_name.end()-4,multi_level_appendix.begin(),multi_level_appendix.end());
 
+      // Read in other level
+      DRT::INPUT::DatFileReader multilevel_reader(multilevel_inputfile_name, serialcomm, 1);
+
+      RCP<DRT::Discretization> structdis_multilevel = rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
+
+      multilevel_problem->AddDis(genprob.numsf, structdis_multilevel);
+      multilevel_problem->ReadParameter(multilevel_reader);
+      /* input of not mesh or time based problem data  */
+      //multilevel_problem->InputControl();
+      // Read in Materials
+      DRT::Problem::Instance()->materials_->SetReadFromProblem(dislevelnum);
+      multilevel_problem->ReadMaterials(multilevel_reader);
+      // Read in Nodes and Elements
+      DRT::INPUT::NodeReader multilevelnodereader(multilevel_reader, "--NODE COORDS");
+      multilevelnodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_multilevel, multilevel_reader, "--STRUCTURE ELEMENTS")));
+      multilevelnodereader.Read();
+
+      // read conditions of other levels
+      // -> note that no time curves and spatial functions can be read!
+      multilevel_problem->ReadConditions(multilevel_reader);
+
+      // At this point, everything for the other levels is read,
+      // subsequent reading is only for level 0
+      structdis_multilevel->FillComplete();
+
+      // set the problem number from which to call materials again to zero
+      materials_->SetReadFromProblem(0);
+    }
+    materials_->ResetReadFromProblem();
+  }
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::Problem::setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList)
