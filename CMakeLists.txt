@@ -127,16 +127,6 @@ if (QHULL)
      MESSAGE(FATAL_ERROR "QHull not found")
   endif ()
 
-  find_package(Tetgen REQUIRED)
-  if (TETGEN_FOUND)
-    include_directories(${TETGEN_INCLUDE_DIRS})
-    link_directories(${TETGEN_LIBRARY_DIRS})
-    set(LIBRARIES
-      ${LIBRARIES}
-      ${TETGEN_LIBRARIES}
-      )
-  endif (TETGEN_FOUND)
-
   add_definitions("-DQHULL")
 endif(QHULL)
 
@@ -1582,7 +1572,7 @@ include(CTest)
 if (QHULL)
   add_executable(cut_test ${OBJS_CUT_TEST})
   #target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
-  target_link_libraries(cut_test drt_lib_cut ${TETGEN_LIBRARIES} ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
+  target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
   add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 endif (QHULL)
 
