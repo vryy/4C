@@ -230,7 +230,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   // -----------evaluate error for test flows with analytical solutions
   INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
-  fluidtimeparams->set ("eval err for analyt sol", initfield);
+  fluidtimeparams->set<int>("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
   fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
@@ -241,6 +241,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("Mesh Tying",
       DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
+
+  //--------------------------------------analytical error evaluation
+  //fluidtimeparams->set<int>("calculate error",
+  //    Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
   // ---------------------------- fine-scale subgrid viscosity approach
   fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
