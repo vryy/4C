@@ -38,6 +38,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_mlmc.H"
+
 
 #include "../headers/fluid.h"
 #include "../headers/dynamic.h"
@@ -1171,6 +1173,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     yesnotuple,yesnovalue,&iap);
 
   /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",false,"");
+
+   setStringToIntegralParameter<int>("MLMC","no",
+                                     "perform multi level monte carlo analysis",
+                                     yesnotuple,yesnovalue,&mlmcp);
+   IntParameter("NUMRUNS",200,"Number of Monte Carlo runs",&mlmcp);
+
+   IntParameter("NUMLEVELS",2,"Number of levels",&mlmcp);
+   // NUMLEVEL additional inputfiles are read name must be standard_inputfilename+_level_i.dat
+   //setNumericStringParameter("INPUTFILE_LEVEL_2","filename.dat",
+   //                         "filename of.dat file which contains level2 discretization",
+   //                       &mlmcp);
+;
+
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
