@@ -36,10 +36,13 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_invanalysis.H"
+#include "../drt_inpar/inpar_mlmc.H"
 #include "stru_resulttest.H"
 
 #include "str_invanalysis.H"
 #include "../drt_inv_analysis/inv_analysis.H"
+#include "str_mlmc.H"
+#include "../drt_mlmc/mlmc.H"
 
 #include "../drt_statmech/statmech_time.H"
 
@@ -57,12 +60,19 @@ void caldyn_drt()
 {
   // get input lists
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  //get list for multi level monte carlo
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   // do we want to do inverse analysis?
   if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
       != INPAR::STR::inv_none)
   {
     STR::invanalysis();
+  }
+  //do we want multi level monte carlo
+  else if (Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
+  {
+    STR::mlmc();
   }
   else
   {

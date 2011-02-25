@@ -933,6 +933,10 @@ set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/gen_inv_analysis.cpp
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
+)  
+set(OBJS_MLMC
+  src/drt_mlmc/mlmc.cpp
+  src/drt_structure/str_mlmc.cpp  
 )
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
@@ -1378,6 +1382,7 @@ add_library(alg_combust ${OBJS_DRT_COMBUST})
 add_library(alg_contact ${OBJS_DRT_CONTACT} ${OBJS_DRT_BEAMCONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
+add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
@@ -1398,6 +1403,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_statmech
   alg_structure
   alg_invanalysis
+  alg_mlmc
   alg_thermo
   alg_stk_structure
   alg_stk_fluid
