@@ -567,6 +567,9 @@ protected:
   /// flag for writing the flux vector fields
   INPAR::SCATRA::FluxType writeflux_;
 
+  /// ids of scalars for which flux vectors are written (starting with 1)
+  vector<int> writefluxids_;
+
   /// flag for printing out mean values of scalars
   const bool outmean_;
 

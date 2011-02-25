@@ -314,6 +314,34 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
+  // get desired scalar id's for flux output
+  {
+    int    word1;
+    std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
+    while (mystream >> word1)
+      writefluxids_.push_back(word1);
+
+    if (writefluxids_[0]==(-1)) //default is to perform flux output for ALL scalars
+    {
+      writefluxids_.resize(numscal_);
+      for(int k=0;k<numscal_;++k)
+        writefluxids_[k]=k+1;
+    }
+
+    if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
+    {
+      cout<<"Flux output is performed for scalars: ";
+      for (unsigned int i=0; i < writefluxids_.size();i++)
+      {
+        const int id = writefluxids_[i];
+        cout<<writefluxids_[i]<<" ";
+        if ((id<1) or (id > numscal_)) // check validity of these numbers as well !
+          dserror("Received illegal scalar id for flux output: %d",id);
+      }
+      cout<<endl;
+    }
+  }
+
   // -------------------------------------------------------------------
   // necessary only for AVM3 approach:
   // initialize subgrid-diffusivity matrix + respective ouptput

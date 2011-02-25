@@ -1258,8 +1258,10 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for(int k=1;k<=numscal_;++k)
+  for (vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
   {
+    int k=(*it);
+
     ostringstream temp;
     temp << k;
     string name = "flux_phi_"+temp.str();
@@ -1312,12 +1314,12 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   case INPAR::SCATRA::flux_total_boundary:
   case INPAR::SCATRA::flux_diffusive_boundary:
   {
-    // calculate normal flux vector field only for these boundary conditions:
+    // calculate normal flux vector field only for the user-defined boundary conditions:
     vector<std::string> condnames;
     condnames.push_back("ScaTraFluxCalc");
-    condnames.push_back("ElectrodeKinetics");
-    condnames.push_back("LineNeumann");
-    condnames.push_back("SurfaceNeumann");
+    //condnames.push_back("ElectrodeKinetics");
+    //condnames.push_back("LineNeumann");
+    //condnames.push_back("SurfaceNeumann");
 
     return CalcFluxAtBoundary(condnames, writetofile);
     break;

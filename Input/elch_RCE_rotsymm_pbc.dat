@@ -100,6 +100,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
+WRITEFLUX_IDS                   1 2 // do flux output only for scalar field 1 and 2, omit field 3!!
 UPRES                           1
 BLOCKPRECOND                    No //Yes
 MATID                           5
@@ -477,6 +478,9 @@ DPOINT 0
 DPOINT 0
 -----------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
 DPOINT 0
+--------------------------SCATRA FLUX CALC SURF CONDITIONS                                                    
+DSURF 1
+E 7 - //flux calculation at inner cylinder
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    122 DNODE 1

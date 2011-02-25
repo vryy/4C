@@ -2581,6 +2581,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::flux_diffusive_boundary),
                                &scatradyn);
 
+  setNumericStringParameter("WRITEFLUX_IDS","-1",
+      "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",
+      &scatradyn);
+
   BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 
