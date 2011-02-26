@@ -1709,7 +1709,7 @@ void FLD::XFluidImplicitTimeInt::Evaluate(
   eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("volumeRatioLimit",xparams_.get<double>("volumeRatioLimit"));
   eleparams.set("monolithic_FSI",true);
-  eleparams.set("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
+  eleparams.set<int>("EMBEDDED_BOUNDARY",DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(xparams_, "EMBEDDED_BOUNDARY"));
 
   // call loop over elements
   //discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
