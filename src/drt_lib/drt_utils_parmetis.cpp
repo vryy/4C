@@ -762,7 +762,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    *comm));
 
     double t4 = timer.ElapsedTime();
-    if (!myrank && outflag)
+    if (!myrank) 
     {                  
       printf("parmetis cleanup  %10.5e secs\n",t4-t3);
       fflush(stdout);
@@ -784,7 +784,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   const int numproc = comm->NumProc();
   Epetra_Time timer(dis->Comm());
   double t1 = timer.ElapsedTime();
-  if (!myrank && outflag)
+  if (!myrank) 
   {                  
     printf("parmetis:\n");
     fflush(stdout);
@@ -889,6 +889,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   
   Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,maxband,false));
 
+  comm->Barrier();
 
   // fill all local entries into the graph
   {
@@ -904,6 +905,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     }
     locals.clear();
   }
+  
+  comm->Barrier();
   
 
   // now we need to communicate and add the remote entries
@@ -949,10 +952,14 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     comm->Barrier();
   } //  for (int proc=0; proc<numproc; ++proc)
   remotes.clear();
+
+  comm->Barrier();
   
   // finish graph
   graph->FillComplete();
   graph->OptimizeStorage();
+
+  comm->Barrier();
 
   // prepare parmetis input and call parmetis to partition the graph
   vector<int> vtxdist(numproc+1,0);
@@ -999,6 +1006,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     }
   }
   
+  comm->Barrier();
+  
   double t2 = timer.ElapsedTime();
   if (!myrank && outflag)
   {                  
@@ -1030,19 +1039,6 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     printf("parmetis call     %10.5e secs\n",t3-t2);
     fflush(stdout);
   }
-
-#if 0  
-  for (int proc=0; proc<numproc; ++proc)
-  {
-    if (myrank==proc)
-    {
-      for (int i=0; i<graph->RowMap().NumMyElements(); ++i)
-        printf("Proc %d part[%4d] = %d\n",myrank,i,part[i]);
-      fflush(stdout);
-    }
-    comm->Barrier();
-  }
-#endif
 
   // build new row map according to part
   {
