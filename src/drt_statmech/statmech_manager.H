@@ -405,7 +405,9 @@ protected:
   RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
   RCP<Epetra_Vector> searchforneighboursconv_;
 
-  // store test volume visualization data for Gmsh Output
+  // \brief structure type
+  int structuretype_;
+  // \brief store test volume visualization data for Gmsh Output
   std::vector<LINALG::Matrix<3,1> > testvolumepos_;
   // \brief characteristic length (radii, thickness) of the detected structure
   double characlength_;

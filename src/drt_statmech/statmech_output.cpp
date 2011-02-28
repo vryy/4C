@@ -453,7 +453,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
     break;
   }
   // handling gmsh output seperately
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 1) == 0) )
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT") && (time>=starttime && (istep-istart_) % statmechparams_.get<int> ("GMSHOUTINTERVALS", 100) == 0) )
 	{
 		/*construct unique filename for gmsh output with two indices: the first one marking the time step number
 		 * and the second one marking the newton iteration number, where numbers are written with zeros in the front
@@ -1603,11 +1603,9 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 	if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
 	{
 		double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-		// plot the test volume determined by DDCorrCurrentStructure()
-		int numpositions = (int)testvolumepos_.size();
 
 		cout<<"Visualizing test volume: ";
-		switch(numpositions)
+		switch(structuretype_)
 		{
 			// either cluster or homogeneous network
 			case 0:
@@ -1728,7 +1726,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			}
 			break;
 			// bundle network
-			case 2:
+			case 1:
 			{
 				cout<<"Bundle"<<endl;
 
@@ -1861,7 +1859,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			}
 			break;
 			// layer
-			default:
+			case 2:
 			{
               cout<<"Layer ("<<testvolumepos_.size()<<"-noded)"<<endl;
               double halfthick = characlength_/2.0;
@@ -1930,6 +1928,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                         gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                       }
 			}
+			break;
 		}
 		// clear the vector
 		testvolumepos_.clear();
@@ -3399,6 +3398,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		{
   			cout<<"\nNetwork structure: Cluster"<<endl;
   			characlength_ = characlength[structurenumber];
+  			structuretype_ = 0;
 
   			// calculate the trafo_ matrix (as if we had a layer)
 
@@ -3431,6 +3431,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		{
   			cout<<"\nNetwork structure: Bundle"<<endl;
   			cout<<"axis vector: "<<cylvec(0)<<" "<<cylvec(1)<<" "<<cylvec(2)<<endl;
+  			structuretype_ = 1;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)intersections.size(); i++)
   				testvolumepos_.push_back(intersections[i]);
@@ -3471,6 +3472,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			cout<<endl;
   			for(int i=0; i<(int)layervectors.size(); i++)
   				cout<<"layer vector "<<i+1<<": "<<layervectors[i](0)<<" "<<layervectors[i](1)<<" "<<layervectors[i](2)<<endl;
+  			structuretype_ = 2;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)interseccoords.size(); i++)
   				testvolumepos_.push_back(interseccoords[i]);
@@ -3511,6 +3513,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		case 3:
   		{
   			cout<<"\nNetwork structure: Homogeneous network"<<endl;
+  			structuretype_ = 3;
   			characlength_ = characlength[0];
 
   			// save trafo matrix for later use in DDCorrFunction()
