@@ -174,7 +174,7 @@ void StatMechTime::Integrate()
 	Epetra_Vector discol(*discret_.DofColMap(), true);
 
   //defining solution strategz for beam contact
-	INPAR::CONTACT::SolvingStrategy soltype;
+	INPAR::CONTACT::SolvingStrategy soltype(INPAR::CONTACT::solution_penalty);
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
 
