@@ -33,7 +33,9 @@ namespace DRT
   public:
 
     /// Construct with allocated global objects or Teuchos::null.
-    AssembleStrategy( Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    AssembleStrategy( int firstdofset,
+                      int seconddofset,
+                      Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                       Teuchos::RCP<Epetra_Vector>          systemvector1,
                       Teuchos::RCP<Epetra_Vector>          systemvector2,
@@ -41,6 +43,10 @@ namespace DRT
 
     /// Destruct
     virtual ~AssembleStrategy();
+
+    int FirstDofSet() const { return firstdofset_; }
+
+    int SecondDofSet() const { return seconddofset_; }
 
     /// Create matrix graph to create a filled matrix
     /*!
@@ -90,31 +96,33 @@ namespace DRT
     virtual void Complete();
 
     /// zero element memory
-    void ClearElementStorage( int eledim );
+    void ClearElementStorage( int rdim, int cdim );
 
     //! @name Specific Assembly Methods
 
     /// Asseble to matrix 1
     void AssembleMatrix1(int eid,
-                         const std::vector<int>& lm,
+                         const std::vector<int>& rlm,
+                         const std::vector<int>& clm,
                          const std::vector<int>& lmowner,
                          const std::vector<int>& lmstride)
     {
       if ( Assemblemat1() )
       {
-        Assemble( *systemmatrix1_, eid, lmstride, elematrix1_, lm, lmowner );
+        Assemble( *systemmatrix1_, eid, lmstride, elematrix1_, rlm, lmowner, clm );
       }
     }
 
     /// Asseble to matrix 2
     void AssembleMatrix2(int eid,
-                         const std::vector<int>& lm,
+                         const std::vector<int>& rlm,
+                         const std::vector<int>& clm,
                          const std::vector<int>& lmowner,
                          const std::vector<int>& lmstride)
     {
       if ( Assemblemat2() )
       {
-        Assemble( *systemmatrix2_, eid, lmstride, elematrix2_, lm, lmowner );
+        Assemble( *systemmatrix2_, eid, lmstride, elematrix2_, rlm, lmowner, clm );
       }
     }
 
@@ -157,15 +165,14 @@ namespace DRT
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner);
 
-#if 0
     /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat,
                           int eid,
+                          const std::vector<int>& lmstride,
                           const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lmrow,
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol);
-#endif
 
     /// Assemble to given matrix
     virtual void Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
@@ -181,6 +188,9 @@ namespace DRT
     //@}
 
   private:
+
+    int firstdofset_;
+    int seconddofset_;
 
     //! @name Global Objects
 

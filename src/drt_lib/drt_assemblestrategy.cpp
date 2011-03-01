@@ -5,12 +5,16 @@
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_utils.H"
 
-DRT::AssembleStrategy::AssembleStrategy( Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+DRT::AssembleStrategy::AssembleStrategy( int firstdofset,
+                                         int seconddofset,
+                                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                                          Teuchos::RCP<Epetra_Vector> systemvector1,
                                          Teuchos::RCP<Epetra_Vector> systemvector2,
                                          Teuchos::RCP<Epetra_Vector> systemvector3 )
-  : systemmatrix1_( systemmatrix1 ),
+  : firstdofset_( firstdofset ),
+    seconddofset_( seconddofset ),
+    systemmatrix1_( systemmatrix1 ),
     systemmatrix2_( systemmatrix2 ),
     systemvector1_( systemvector1 ),
     systemvector2_( systemvector2 ),
@@ -151,42 +155,42 @@ void DRT::AssembleStrategy::Complete()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::AssembleStrategy::ClearElementStorage( int eledim )
+void DRT::AssembleStrategy::ClearElementStorage( int rdim, int cdim )
 {
   if (Assemblemat1())
   {
-    if (elematrix1_.M()!=eledim or elematrix1_.N()!=eledim)
-      elematrix1_.Shape(eledim,eledim);
+    if (elematrix1_.M()!=rdim or elematrix1_.N()!=cdim)
+      elematrix1_.Shape(rdim,cdim);
     else
-      memset(elematrix1_.A(),0,eledim*eledim*sizeof(double));
+      memset(elematrix1_.A(),0,rdim*cdim*sizeof(double));
   }
   if (Assemblemat2())
   {
-    if (elematrix2_.M()!=eledim or elematrix2_.N()!=eledim)
-      elematrix2_.Shape(eledim,eledim);
+    if (elematrix2_.M()!=rdim or elematrix2_.N()!=cdim)
+      elematrix2_.Shape(rdim,cdim);
     else
-      memset(elematrix2_.A(),0,eledim*eledim*sizeof(double));
+      memset(elematrix2_.A(),0,rdim*cdim*sizeof(double));
   }
   if (Assemblevec1())
   {
-    if (elevector1_.Length()!=eledim)
-      elevector1_.Size(eledim);
+    if (elevector1_.Length()!=rdim)
+      elevector1_.Size(rdim);
     else
-      memset(elevector1_.Values(),0,eledim*sizeof(double));
+      memset(elevector1_.Values(),0,rdim*sizeof(double));
   }
   if (Assemblevec2())
   {
-    if (elevector2_.Length()!=eledim)
-      elevector2_.Size(eledim);
+    if (elevector2_.Length()!=rdim)
+      elevector2_.Size(rdim);
     else
-      memset(elevector2_.Values(),0,eledim*sizeof(double));
+      memset(elevector2_.Values(),0,rdim*sizeof(double));
   }
   if (Assemblevec3())
   {
-    if (elevector3_.Length()!=eledim)
-      elevector3_.Size(eledim);
+    if (elevector3_.Length()!=rdim)
+      elevector3_.Size(rdim);
     else
-      memset(elevector3_.Values(),0,eledim*sizeof(double));
+      memset(elevector3_.Values(),0,rdim*sizeof(double));
   }
 }
 
@@ -203,19 +207,20 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat,
   sysmat.Assemble( eid, lmstride, Aele, lm, lmowner);
 }
 
-#if 0
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat,
                                      int eid,
+                                     const std::vector<int>& lmstride,
                                      const Epetra_SerialDenseMatrix& Aele,
                                      const std::vector<int>& lmrow,
                                      const std::vector<int>& lmrowowner,
                                      const std::vector<int>& lmcol)
 {
-  sysmat.Assemble( eid, Aele, lmrow, lmrowowner, lmcol );
+  sysmat.Assemble( eid, lmstride, Aele, lmrow, lmrowowner, lmcol );
 }
-#endif
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

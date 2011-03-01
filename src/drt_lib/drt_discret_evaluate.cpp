@@ -68,7 +68,7 @@ void DRT::Discretization::Evaluate(
                         Teuchos::RCP<Epetra_Vector>          systemvector2,
                         Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
-  DRT::AssembleStrategy strategy( systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
+  DRT::AssembleStrategy strategy( 0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
   Evaluate( params, strategy );
 }
 
@@ -83,6 +83,8 @@ void DRT::Discretization::Evaluate(
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
+  int row = strategy.FirstDofSet();
+  int col = strategy.SecondDofSet();
 
   // call the element's register class preevaluation method
   // for each type of element
@@ -117,8 +119,7 @@ void DRT::Discretization::Evaluate(
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
-    const int eledim = la[0].Size();
-    strategy.ClearElementStorage( eledim );
+    strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
     }
 
     {
@@ -136,11 +137,11 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();
-      strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
-      strategy.AssembleMatrix2(eid,la[0].lm_,la[0].lmowner_,la[0].stride_);
-      strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
-      strategy.AssembleVector2(la[0].lm_,la[0].lmowner_);
-      strategy.AssembleVector3(la[0].lm_,la[0].lmowner_);
+      strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[row].stride_ );
+      strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[row].stride_ );
+      strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
+      strategy.AssembleVector2( la[row].lm_, la[row].lmowner_ );
+      strategy.AssembleVector3( la[row].lm_, la[row].lmowner_ );
     }
 
   } // for (int i=0; i<numcolele; ++i)
