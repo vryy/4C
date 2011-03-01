@@ -442,6 +442,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   Epetra_SerialDenseVector cvector;
   if (!myrank) cvector.Size(nmp_);
 
+  if (outputtofile) output_->WriteMesh(0,0.0);
+
   // load controled Newton only
   for (int i=step; i<nstep; ++i)
   {
