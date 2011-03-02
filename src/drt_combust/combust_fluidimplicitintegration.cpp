@@ -604,7 +604,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     if (step_ == 0)
     {
       //cout << "/!\\ set enrichment field"<< endl;
-      SetEnrichmentField(dofmanager,newdofrowmap);
+      //SetEnrichmentField(dofmanager,newdofrowmap);
     }
 
     if (step_ > 0)
@@ -1113,7 +1113,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
         }
-#if 1//#ifdef COMBUST_2D
+#if 0//#ifdef COMBUST_2D
         // for 2-dimensional problems errors occur because of pseudo 3D code!
         // These error shall get smaller with the following modifications
         const int dim = 2; // z-direction is assumed to be the pseudo-dimension
@@ -1234,7 +1234,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       }
 
       // TODO @Martin Ist das nicht das Gleiche wie oben?
-#if 1//#ifdef COMBUST_2D
+#if 0//#ifdef COMBUST_2D
       // for 2-dimensional problems errors occur because of pseudo 3D code!
       // These error shall be removed with the following modifications
       const int dim = 2; // z-direction is assumed to be the pseudo-dimension
@@ -1518,7 +1518,6 @@ void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
 void FLD::CombustFluidImplicitTimeInt::Output()
 {
 
-
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
 
@@ -1569,7 +1568,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     // write domain decomposition for visualization
     output_->WriteElementData();
 
-#if 1
+#if 0
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor local node
@@ -2017,6 +2016,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
         gmshfilecontent << "View \" " << "Pressure Jump \" {\n";
+        double presjumpnorm = 0.0;
+
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
           const DRT::Element* ele = discret_->lRowElement(iele);
@@ -2124,11 +2125,94 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                 }
 
                 // write data to Gmsh file
-                //IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
+                IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
+
+                // compute average pressure jump
+                {
+                  // here, a triangular boundary integration cell is assumed (numvertices = 3)
+                  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                  LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
+                  const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
+
+                  const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
+
+                  // jacobian for coupled transformation
+                  // get derivatives dxi_3D/deta_2D
+                  static LINALG::Matrix<2,numvertices> deriv_eta2D;
+                  DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),DRT::Element::tri3);
+
+                  // calculate dxi3Ddeta2D
+                  static LINALG::Matrix<3,2> dXi3Ddeta2D;
+                  dXi3Ddeta2D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 2; j++) // derivatives
+                      for (int k = 0; k < (int)numvertices; k++)
+                        dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+
+                  // transform Gauss point to xi3D space (element parameter space)
+                  static LINALG::Matrix<3,1> gpinXi3D;
+                  gpinXi3D.Clear();
+                  // coordinates of this integration point in element coordinates \xi^domain
+                  GEO::mapEtaBToXiD(*cell, gpinEta2D, gpinXi3D);
+
+                  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                  static LINALG::Matrix<3,numnode> deriv_xi3D;
+                  DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DRT::Element::hex8);
+
+
+                  // calculate dx3Ddxi3D
+                  static LINALG::Matrix<3,3> dX3DdXi3D;
+                  dX3DdXi3D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 3; j++) // derivatives
+                      for (int k = 0; k < (int)numnode; k++)
+                        dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+                  // get the coupled Jacobian dx3Ddeta2D
+                  static LINALG::Matrix<3,2> dx3Ddeta2D;
+                  dx3Ddeta2D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 2; j++) // derivatives
+                      for (int k = 0; k < 3; k++)
+                        dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+                  // get deformation factor
+                  static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+                  Jac_tmp.Clear();
+                  Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+                  if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+
+                  const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+                  const double fac = intpoints.qwgt[iquad]*deform_factor;
+                  //cout << "fac " << fac << endl;
+                  presjumpnorm += fac*presjump*presjump;
+                }
+
               }
             }
           }
         }
+#ifdef COLLAPSE_FLAME
+        cout << endl;
+        // get the processor local node
+        DRT::Node* lnode = discret_->lRowNode(0);
+
+        LINALG::Matrix<3,1> nodecoord(true);
+        // get physical coordinates of this node
+        nodecoord(0) = lnode->X()[0];
+        nodecoord(1) = lnode->X()[1];
+        nodecoord(2) = lnode->X()[2];
+
+        const double zcoord = nodecoord(2);
+        const double deltaz = 2.*abs(zcoord);
+        cout << "Netz " << 1./deltaz << endl;
+        const double pi = atan(1.)*4.;
+        const double area = pi*2.*0.25*deltaz;
+        const double avpresjump = sqrt(presjumpnorm/area);
+        cout << "avpresjump " << avpresjump << endl;
+#endif
       }
       gmshfilecontent << "};\n";
     }
@@ -2614,6 +2698,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
+        double veljumpnormsquare = 0.0;
+
         gmshfilecontent << "View \" " << "Velocity Jump \" {\n";
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
@@ -2768,22 +2854,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 if (norm == 0.0) dserror("norm of normal vector is zero!");
                 normal.Scale(-1.0/norm);
 #endif
-//if (ele->Id()==116)
-////  or
-////    ele->Id()==226 or
-////    ele->Id()==326 or
-////    ele->Id()==216)
-//{
-//  cout << "Normalenvektor Post processing Viertelposition" << normal << endl;
-//}
-//if (ele->Id()==141)
-////  or
-////    ele->Id()==308 or
-////    ele->Id()==201 or
-////    ele->Id()==133)
-//{
-//  cout << "Normalenvektor Post processing Achtelposition" << normal << endl;
-//}
                 // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
                 XFEM::ApproxFuncNormalVector<0,8> enrfunct_plus(true);
                 XFEM::ApproxFuncNormalVector<0,8> enrfunct_minus(true);
@@ -2799,6 +2869,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #endif
                     enrfunct_minus);
 
+                // remark: initialization is essentiual here, since standard shape functions must be zero!
                 XFEM::ApproxFuncNormalVector<0,8> shp_jump(true);     // [[ ]] notation
                 for (size_t iparam = 0; iparam < numparamveln; ++iparam)
                 {
@@ -2812,7 +2883,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #endif
 
                 // norm of velocity jump
-                //const double veljumpnorm = veljump.Norm2();
+                const double veljumpnorm = veljump.Norm2();
 
                 LINALG::Matrix<3,1> posXYZDomain(true);
                 for (size_t inode=0;inode<numnode;++inode)
@@ -2823,12 +2894,95 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 }
 
                 // write data to Gmsh file
-                IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
-                //IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
+                //IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
+                IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
+
+                // compute average velocity jump
+                {
+                  // here, a triangular boundary integration cell is assumed (numvertices = 3)
+                  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                  LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
+                  const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
+
+                  const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
+
+                  // jacobian for coupled transformation
+                  // get derivatives dxi_3D/deta_2D
+                  static LINALG::Matrix<2,numvertices> deriv_eta2D;
+                  DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),DRT::Element::tri3);
+
+                  // calculate dxi3Ddeta2D
+                  static LINALG::Matrix<3,2> dXi3Ddeta2D;
+                  dXi3Ddeta2D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 2; j++) // derivatives
+                      for (int k = 0; k < (int)numvertices; k++)
+                        dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+
+                  // transform Gauss point to xi3D space (element parameter space)
+                  static LINALG::Matrix<3,1> gpinXi3D;
+                  gpinXi3D.Clear();
+                  // coordinates of this integration point in element coordinates \xi^domain
+                  GEO::mapEtaBToXiD(*cell, gpinEta2D, gpinXi3D);
+
+                  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                  static LINALG::Matrix<3,numnode> deriv_xi3D;
+                  DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DRT::Element::hex8);
+
+
+                  // calculate dx3Ddxi3D
+                  static LINALG::Matrix<3,3> dX3DdXi3D;
+                  dX3DdXi3D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 3; j++) // derivatives
+                      for (int k = 0; k < (int)numnode; k++)
+                        dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+                  // get the coupled Jacobian dx3Ddeta2D
+                  static LINALG::Matrix<3,2> dx3Ddeta2D;
+                  dx3Ddeta2D.Clear();
+                  for (int i = 0; i < 3; i++)   // dimensions
+                    for (int j = 0; j < 2; j++) // derivatives
+                      for (int k = 0; k < 3; k++)
+                        dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+                  // get deformation factor
+                  static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+                  Jac_tmp.Clear();
+                  Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+                  if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+
+                  const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+                  const double fac = intpoints.qwgt[iquad]*deform_factor;
+
+                  veljumpnormsquare += fac*veljumpnorm;
+                }
+
               }
             }
           }
         }
+#ifdef COLLAPSE_FLAME
+        cout << endl;
+        // get the processor local node
+        DRT::Node* lnode = discret_->lRowNode(0);
+
+        LINALG::Matrix<3,1> nodecoord(true);
+        // get physical coordinates of this node
+        nodecoord(0) = lnode->X()[0];
+        nodecoord(1) = lnode->X()[1];
+        nodecoord(2) = lnode->X()[2];
+
+        const double zcoord = nodecoord(2);
+        const double deltaz = 2.*abs(zcoord);
+        cout << "Netz " << 1./deltaz << endl;
+        const double pi = atan(1.)*4.;
+        const double area = pi*2.*0.25*deltaz;
+        const double avveljump = sqrt(veljumpnormsquare/area);
+        cout << "avveljump " << avveljump << endl;
+#endif
       }
       gmshfilecontent << "};\n";
 #endif
@@ -3306,13 +3460,16 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 #ifndef COMBUST_NORMAL_ENRICHMENT
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm; // half jump height of 1.0
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm;
+          //(*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm; // half jump height of 1.0
+          //(*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*coords(0)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(0)/coordsnorm; // half jump height of 1.0
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(0)/coordsnorm;
+
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*coords(1)/coordsnorm;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*coords(1)/coordsnorm;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(1)/coordsnorm; // half jump height of 1.0
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = (0.5*1.0 - 0.5*gfuncval*4.0)*coords(1)/coordsnorm;
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
         {
@@ -3320,31 +3477,18 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
         }
 #else
-//        -normal(entry)*((-0.5)*averageJumpsAndKinks[ivector](0,0) // -0.5*jump
-//                   +0.5*dist*averageJumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
-
         if (fieldenr->getField() == XFEM::PHYSICS::Veln)
         {
-          // halbe Sprunghoehe von 1.0
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5;
+          // -0.5 *jump + 0.5*dist*kink
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*1.0 + 0.5*gfuncval*4.0;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*1.0 + 0.5*gfuncval*4.0;
         }
 #endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
-          //if(gfuncval>=0.0) // outside circle
-          //{
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0);
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0);
-
-//                           -0.5*averageJumpsAndKinks[ivector](0,1) // -0.5*jump
-//                 +0.5*dist*averageJumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
-          //}
-          //else // inside circle
-          //{
-          //  (*state_.veln_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
-          //  (*state_.velnp_)[newdofrowmap.LID(newdofpos)] = 0.5*(-6.0);
-          //}
+          // -0.5 *jump + 0.5*dist*kink
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0;
         }
       } // end if jump enrichment
       else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
@@ -3481,7 +3625,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     } // end loop over fieldenr
   } // end loop over element nodes
 #endif
-//  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
 }
 
 

@@ -21,9 +21,9 @@ Maintainer: Florian Henke
 
 #include "combust3_sysmat.H"
 #include "combust3_sysmat_premixed_nitsche.H"
-//#include "combust3_sysmat_premixed_nitsche_normal.H"
+#include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
-//#include "combust3_sysmat_premixed_stress_normal.H"
+#include "combust3_sysmat_premixed_stress_normal.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_local_assembler.H"
@@ -525,7 +525,7 @@ void Sysmat(
   const int shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
   const int shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
 
-  #ifdef COMBUST_NORMAL_ENRICHMENT
+#ifdef COMBUST_NORMAL_ENRICHMENT
   const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   LINALG::Matrix<4,shpVecSizeVel> evelnp(true);
@@ -729,24 +729,34 @@ void Sysmat(
   // symmetry check for element matrix
   // TODO: remove symmetry check
   //----------------------------------
+//if(ele->Id()==2)
+//{
 //  //cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
+//  bool sym = true;
 //  int counter = 0;
 //  for (int row=0; row<estif.M(); ++row)
 //  {
 //    for (int col=0; col<estif.N(); ++col)
 //    {
 //      //    cout << estif(row,col);
+//      cout << " " << setw(4)<< std::setprecision(1) << estif(row,col);
 //      double diff = estif(row,col)-estif(col,row);
 //      if (!((diff>-1.0E-9) and (diff<+1.0E-9)))
 //      {
-//        //cout << counter << " difference of entry " << estif(row,col) << " is not 0.0, but " << diff << endl;
-//        //cout << "stiffness matrix entry " << estif(row,col) << " transpose " << estif(col,row) << endl;
-//      }
+//        cout << endl << counter << " difference of entry " << "Zeile "<< row << "Spalte " << col << " is not 0.0, but " << diff << endl;
+//        sym = false;
+//      }//std::setw(18) <<  << std::scientific
 //      counter++;
 //    }
+//    cout << endl;
 //  }
-//  //cout << "counter " << counter << endl;
-//  //dserror("STOP after first element matrix");
+//  cout << "counter " << counter << endl;
+//  if (sym==false) cout << "nicht symmetrisch"<<endl;
+//  if (sym==true) cout << "symmetrisch"<<endl;
+//  //dserror("STOP after middle element matrix");
+//}
+
+
 
 }
 }

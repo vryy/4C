@@ -755,7 +755,7 @@ void BuildStandardDomainIntegralsNormal(
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
-  // cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
+  //cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
   // solenoidality term - continuity equation
   /*
                  /              \
