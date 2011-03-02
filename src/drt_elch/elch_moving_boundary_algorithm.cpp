@@ -167,13 +167,24 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     cout<<"************************\n";
   }
 
-  // transfer actual velocity fields
-  ScaTraField().SetVelocityField(
-      FluidField().ConvectiveVel(), // = velnp - grid velocity
-      FluidField().Hist(),
-      Teuchos::null,
-      FluidField().Discretization()
-  );
+  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  {
+    dserror("ConvectiveVel() not implemented for Gen.Alpha");
+  }
+  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+  {
+    dserror("ConvectiveVel() not implemented for AfGen.Alpha");
+  }
+  else
+  {
+    // transfer convective velocity = fluid velocity - grid velocity
+    ScaTraField().SetVelocityField(
+        FluidField().ConvectiveVel(), // = velnp - grid velocity
+        FluidField().Hist(),
+        Teuchos::null,
+        FluidField().Discretization()
+    );
+  }
 
   // transfer moving mesh data
   ScaTraField().ApplyMeshMovement(
