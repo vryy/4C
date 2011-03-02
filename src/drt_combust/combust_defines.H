@@ -71,9 +71,9 @@ Maintainer: Florian Henke
 // combustion domain integral terms stress-based formulation
 //----------------------------------------------------------
 #define COMBUST_EPSPRES_BASED_STRAIN_COUPLING
-//#define COMBUST_EPSPRES_BASED_PRESSURE_COUPLING
-//#define COMBUST_EPSPRES_BASED_ZERO_TRACE
-#define COMBUST_EPSPRES_BASED_FORTHTERM
+#define COMBUST_EPSPRES_BASED_PRESSURE_COUPLING
+#define COMBUST_EPSPRES_BASED_ZERO_TRACE
+//#define COMBUST_EPSPRES_BASED_FORTHTERM
 //------------------------------------------------
 // combustion stress-based boundary integral terms
 //------------------------------------------------
