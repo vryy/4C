@@ -110,17 +110,13 @@ DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
  |  Pack data                                                  (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_hex8fbar::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class So_hex8 Element
-  vector<char> basedata(0);
-  DRT::ELEMENTS::So_hex8::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::ELEMENTS::So_hex8::Pack(data);
 
   return;
 }

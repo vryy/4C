@@ -126,18 +126,14 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Artery::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // Gaussrule
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_

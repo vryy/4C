@@ -95,7 +95,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralLine::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Pack(vector<char>& data) const
+void DRT::ELEMENTS::StructuralLine::Pack(DRT::PackBuffer& data) const
 {
   dserror("StructuralLine element does not support communication");
   return;

@@ -50,9 +50,8 @@ MAT::PROTEIN::PROTEIN(MAT::PAR::PROTEIN* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PROTEIN::Pack(vector<char>& data) const {
-    data.resize(0);
-
+void MAT::PROTEIN::Pack(DRT::PackBuffer& data) const
+{
     // pack type of this instance of ParObject
     int type = UniqueParObjectId();
     AddtoPack(data, type);

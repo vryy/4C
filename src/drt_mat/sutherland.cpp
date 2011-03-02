@@ -70,10 +70,8 @@ MAT::Sutherland::Sutherland(MAT::PAR::Sutherland* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Sutherland::Pack(vector<char>& data) const
+void MAT::Sutherland::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

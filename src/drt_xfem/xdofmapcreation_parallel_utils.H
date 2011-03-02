@@ -44,7 +44,7 @@ namespace XFEM
    */
   void packDofKeys(
       const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
-      vector<char>&                               dataSend
+      DRT::PackBuffer&                            dataSend
       );
 
 

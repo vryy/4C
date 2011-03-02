@@ -708,7 +708,11 @@ void XFEM::DofDistributionSwitcher::projectEmbeddedtoBackgroundfluid(
       GmshOutput(step,patchdis,mapforoutput);
 
       // Pack UnknownFieldEnr and state_vector into block to send
-      PackValuestoSend(xfluidstate_vector_n,unknownFieldEnr_,sblock);
+      DRT::PackBuffer data;
+      PackValuestoSend(xfluidstate_vector_n,unknownFieldEnr_,data);
+      data.StartPacking();
+      PackValuestoSend(xfluidstate_vector_n,unknownFieldEnr_,data);
+      swap( sblock, data() );
 
 #ifdef PARALLEL
       SendBlock(sblock,exporter,request);
@@ -815,11 +819,9 @@ bool XFEM::DofDistributionSwitcher::ComputeSpacialToElementCoordAndProject(
 void XFEM::DofDistributionSwitcher::PackValuestoSend(
   const RCP<Epetra_Vector>                      state_vector,
   std::map<int, set<XFEM::FieldEnr> >           unknownFieldEnr,
-  vector<char>                               &  sblock
+  DRT::PackBuffer                            &  sblock
   ) const
 {
-  sblock.clear();
-
   // Pack UnknownFieldEnr
   int numentries = (int)unknownFieldEnr.size();
 
@@ -854,11 +856,6 @@ void XFEM::DofDistributionSwitcher::PackValuestoSend(
   DRT::ParObject::AddtoPack<int>(sblock,numstatevectorentries);
 
   DRT::ParObject::AddtoPack(sblock,state_vector_cp,numstatevectorentries);
-
-  if(sblock.empty() == true)
-  {
-    dserror("the packed sblock is empty");
-  }
 }
 
 #ifdef PARALLEL
@@ -1051,7 +1048,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
   else
   {
 #ifdef DEBUG
-    bool completely_unchanged = true;
+//     bool completely_unchanged = true;
 #endif
     const RCP<Epetra_Vector> oldVector = vector;
     const Epetra_BlockMap& oldmap = oldVector->Map();

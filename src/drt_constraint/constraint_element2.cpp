@@ -84,22 +84,16 @@ DRT::Element* DRT::ELEMENTS::ConstraintElement2::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::ConstraintElement2::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 
   // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }

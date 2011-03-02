@@ -137,9 +137,8 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
       virtual int UniqueParObjectId() const { return DofKeyType<doftype>::Instance().UniqueParObjectId(); }
 
       //! pack all content to char array
-      virtual void Pack(vector<char>& data) const
+      virtual void Pack(DRT::PackBuffer& data) const
       {
-        data.resize(0);
         AddtoPack(data,UniqueParObjectId());
         AddtoPack(data,gid_);
         AddtoPack(data,fieldenr_.getField());

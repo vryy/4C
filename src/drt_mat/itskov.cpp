@@ -83,10 +83,8 @@ MAT::Itskov::Itskov(MAT::PAR::Itskov* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Itskov::Pack(vector<char>& data) const
+void MAT::Itskov::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

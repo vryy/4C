@@ -139,17 +139,13 @@ DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
  |  Pack data                                                  (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_Hex8P1J1::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class So_hex8 Element
-  vector<char> basedata(0);
-  DRT::ELEMENTS::So_hex8::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::ELEMENTS::So_hex8::Pack(data);
 
   return;
 }

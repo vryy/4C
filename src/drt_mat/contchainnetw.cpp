@@ -95,10 +95,8 @@ MAT::ContChainNetw::ContChainNetw(MAT::PAR::ContChainNetw* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         06/08|
  *----------------------------------------------------------------------*/
-void MAT::ContChainNetw::Pack(vector<char>& data) const
+void MAT::ContChainNetw::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

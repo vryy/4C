@@ -215,17 +215,13 @@ void DRT::Condition::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Condition::Pack(vector<char>& data) const
+void DRT::Condition::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class container
-  vector<char> basedata;
-  Container::Pack(basedata);
-  AddtoPack(data,basedata);
+  Container::Pack(data);
   // id_
   AddtoPack(data,id_);
   // buildgeometry_

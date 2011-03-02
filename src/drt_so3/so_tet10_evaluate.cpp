@@ -46,7 +46,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec2(elevec2_epetra.A(),true);
-  
+
   // start with "none"
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
 
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
-      
+
       so_tet10_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true); 
+      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true);
       so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
@@ -170,8 +170,20 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-        AddtoPack(*stressdata, stress);
-        AddtoPack(*straindata, strain);
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          swap( *stressdata, data() );
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          swap( *straindata, data() );
+        }
       }
     }
     break;
@@ -198,22 +210,22 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
         if (poststress==Teuchos::null)
           dserror("No element stress/strain vector available");
 
-        if (stresstype=="ndxyz") 
+        if (stresstype=="ndxyz")
         {
           // extrapolate stresses/strains at Gauss points to nodes
           so_tet10_expol(gpstress,*poststress);
         }
-        else if (stresstype=="cxyz") 
+        else if (stresstype=="cxyz")
         {
           const Epetra_BlockMap elemap = poststress->Map();
           int lid = elemap.LID(Id());
-          if (lid!=-1) 
+          if (lid!=-1)
           {
-            for (int i = 0; i < NUMSTR_SOTET10; ++i) 
+            for (int i = 0; i < NUMSTR_SOTET10; ++i)
             {
               double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
               s = 0.;
-              for (int j = 0; j < NUMGPT_SOTET10; ++j) 
+              for (int j = 0; j < NUMGPT_SOTET10; ++j)
               {
                 s += gpstress(j,i);
               }
@@ -221,7 +233,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
             }
           }
         }
-        else 
+        else
         {
           dserror("unknown type of stress/strain output on element level");
         }
@@ -237,7 +249,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: 
+    case calc_struct_update_istep:
     {
       ;// there is nothing to do here at the moment
     }
@@ -597,8 +609,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
   const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_4gp = so_tet10_4gp_derivs();
   const static vector<double> gpweights_4gp = so_tet10_4gp_weights();
 /* ============================================================================*/
-  double density; 
-  
+  double density;
+
   // update element geometry
   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xcurr;  // current  coord. of element

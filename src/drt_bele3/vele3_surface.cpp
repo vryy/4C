@@ -80,9 +80,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Surface::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Vele3Surface::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this Vele3Surface element does not support communication");
   return;
 }

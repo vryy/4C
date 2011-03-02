@@ -602,24 +602,43 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 
       //--------------------------------------------------
       // Pack block to send
-      sblock.clear();
+      DRT::PackBuffer data;
 
       // size
       int size=x.size();
-      DRT::ParObject::AddtoPack(sblock,size);
+      DRT::ParObject::AddtoPack(data,size);
 
       // x and y
-      DRT::ParObject::AddtoPack(sblock,x);
-      DRT::ParObject::AddtoPack(sblock,y);
+      DRT::ParObject::AddtoPack(data,x);
+      DRT::ParObject::AddtoPack(data,y);
 
       // counters
-      DRT::ParObject::AddtoPack(sblock,count);
+      DRT::ParObject::AddtoPack(data,count);
 
       // avgs
-      DRT::ParObject::AddtoPack(sblock,avg_u);
-      DRT::ParObject::AddtoPack(sblock,avg_v);
-      DRT::ParObject::AddtoPack(sblock,avg_w);
-      DRT::ParObject::AddtoPack(sblock,avg_p);
+      DRT::ParObject::AddtoPack(data,avg_u);
+      DRT::ParObject::AddtoPack(data,avg_v);
+      DRT::ParObject::AddtoPack(data,avg_w);
+      DRT::ParObject::AddtoPack(data,avg_p);
+
+      data.StartPacking();
+
+      DRT::ParObject::AddtoPack(data,size);
+
+      // x and y
+      DRT::ParObject::AddtoPack(data,x);
+      DRT::ParObject::AddtoPack(data,y);
+
+      // counters
+      DRT::ParObject::AddtoPack(data,count);
+
+      // avgs
+      DRT::ParObject::AddtoPack(data,avg_u);
+      DRT::ParObject::AddtoPack(data,avg_v);
+      DRT::ParObject::AddtoPack(data,avg_w);
+      DRT::ParObject::AddtoPack(data,avg_p);
+
+      swap( sblock, data() );
 
 #ifdef PARALLEL
       //--------------------------------------------------
@@ -846,7 +865,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 
 	  // the set of degrees of freedom associated with the node
 	  vector<int> nodedofset = discret_->Dof(lnode);
-	
+
 	  int err=0;
 
 	  // u velocity
@@ -886,24 +905,44 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     {
       //--------------------------------------------------
       // Pack block to send
-      sblock.clear();
+      DRT::PackBuffer data;
 
       // size
       int size=x.size();
-      DRT::ParObject::AddtoPack(sblock,size);
+
+      DRT::ParObject::AddtoPack(data,size);
 
       // x and y
-      DRT::ParObject::AddtoPack(sblock,x);
-      DRT::ParObject::AddtoPack(sblock,y);
+      DRT::ParObject::AddtoPack(data,x);
+      DRT::ParObject::AddtoPack(data,y);
 
       // counters
-      DRT::ParObject::AddtoPack(sblock,count);
+      DRT::ParObject::AddtoPack(data,count);
 
       // avgs
-      DRT::ParObject::AddtoPack(sblock,avg_u);
-      DRT::ParObject::AddtoPack(sblock,avg_v);
-      DRT::ParObject::AddtoPack(sblock,avg_w);
-      DRT::ParObject::AddtoPack(sblock,avg_p);
+      DRT::ParObject::AddtoPack(data,avg_u);
+      DRT::ParObject::AddtoPack(data,avg_v);
+      DRT::ParObject::AddtoPack(data,avg_w);
+      DRT::ParObject::AddtoPack(data,avg_p);
+
+      data.StartPacking();
+
+      DRT::ParObject::AddtoPack(data,size);
+
+      // x and y
+      DRT::ParObject::AddtoPack(data,x);
+      DRT::ParObject::AddtoPack(data,y);
+
+      // counters
+      DRT::ParObject::AddtoPack(data,count);
+
+      // avgs
+      DRT::ParObject::AddtoPack(data,avg_u);
+      DRT::ParObject::AddtoPack(data,avg_v);
+      DRT::ParObject::AddtoPack(data,avg_w);
+      DRT::ParObject::AddtoPack(data,avg_p);
+
+      swap( sblock, data() );
 
 #ifdef PARALLEL
       //--------------------------------------------------

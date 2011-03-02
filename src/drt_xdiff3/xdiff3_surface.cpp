@@ -87,7 +87,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XDiff3Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XDiff3Surface::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("this XDiff3Surface element does not support communication");
 
   return;

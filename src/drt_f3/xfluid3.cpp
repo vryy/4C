@@ -201,17 +201,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3::Shape() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3::Pack(std::vector<char>& data) const
+void DRT::ELEMENTS::XFluid3::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 
   AddtoPack(data,output_mode_);
 

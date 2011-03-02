@@ -226,8 +226,20 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         else
           so_tet4_nlnstiffmass(params,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 
-        AddtoPack(*stressdata, stress);
-        AddtoPack(*straindata, strain);
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          swap( *stressdata, data() );
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          swap( *straindata, data() );
+        }
       }
     }
     break;

@@ -77,7 +77,7 @@ kappa_(1.0)
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNodeDataContainer::Pack(vector<char>& data) const
+void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add txi_
   DRT::ParObject::AddtoPack(data,txi_,3*sizeof(double));
@@ -176,18 +176,14 @@ void CONTACT::CoNode::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Pack(vector<char>& data) const
+void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
   // add base class MORTAR::MortarNode
-  vector<char> basedata(0);
-  MORTAR::MortarNode::Pack(basedata);
-  AddtoPack(data,basedata);
+  MORTAR::MortarNode::Pack(data);
 
   // add active_
   AddtoPack(data,active_);

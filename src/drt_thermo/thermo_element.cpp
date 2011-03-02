@@ -219,24 +219,18 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
  |  Pack data                                                  (public) |
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Thermo::Pack(std::vector<char>& data) const
+void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  std::vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // distype
   AddtoPack(data,distype_);
 
   // data_
-  std::vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }
@@ -483,7 +477,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("This ThermoBoundary element does not support communication");
 
   return;

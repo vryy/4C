@@ -87,7 +87,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3Surface::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("this XFluid3Surface element does not support communication");
 
   return;

@@ -103,7 +103,7 @@ public:
   virtual vector<RCP<DRT::Element> > Lines();
   virtual vector<RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Bele2Type::Instance().UniqueParObjectId(); }
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const vector<char>& data);
 
   /*!

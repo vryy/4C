@@ -75,10 +75,8 @@ MAT::LungOgden::LungOgden(MAT::PAR::LungOgden* params)
 /*----------------------------------------------------------------------*
  |  Pack                                             (public)  lw 04/08 |
  *----------------------------------------------------------------------*/
-void MAT::LungOgden::Pack(vector<char>& data) const
+void MAT::LungOgden::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

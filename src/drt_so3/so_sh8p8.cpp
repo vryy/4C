@@ -155,17 +155,13 @@ DRT::Element* DRT::ELEMENTS::So_sh8p8::Clone() const
  |  Pack data                                                  (public) |
  |                                                          bborn 03/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8p8::Pack(std::vector<char>& data) const
+void DRT::ELEMENTS::So_sh8p8::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class So_sh8 Element
-  std::vector<char> basedata(0);
-  DRT::ELEMENTS::So_sh8::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::ELEMENTS::So_sh8::Pack(data);
   // techniques
   AddtoPack(data,stab_);
   AddtoPack(data,ans_);

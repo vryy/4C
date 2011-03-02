@@ -94,7 +94,7 @@ namespace COMBUST
     /// pack boundary integration cells from set into char array
     void packBoundaryIntCells(
         const std::map<int, GEO::BoundaryIntCells>& dofkeyset,
-        vector<char>&                               dataSend
+        DRT::PackBuffer&                            dataSend
     );
 
     /// unpack boundary integration cells from char array

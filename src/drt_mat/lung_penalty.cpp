@@ -75,10 +75,8 @@ MAT::LungPenalty::LungPenalty(MAT::PAR::LungPenalty* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-void MAT::LungPenalty::Pack(vector<char>& data) const
+void MAT::LungPenalty::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

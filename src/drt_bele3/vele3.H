@@ -176,7 +176,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -371,7 +371,7 @@ public:
   virtual vector<RCP<DRT::Element> > Lines();
   virtual vector<RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Vele3SurfaceType::Instance().UniqueParObjectId(); }
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -534,7 +534,7 @@ public:
   DRT::Element* Clone() const;
   virtual DiscretizationType Shape() const;
   virtual int UniqueParObjectId() const { return Vele3LineType::Instance().UniqueParObjectId(); }
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const vector<char>& data);
 
   /*!

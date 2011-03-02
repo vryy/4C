@@ -125,9 +125,8 @@ ostream& operator << (ostream& os, const DRT::Container& cont)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Pack(vector<char>& data) const
+void DRT::Container::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   // no. of objects in maps
   const int indatasize = intdata_.size();
   const int doubledatasize = doubledata_.size();

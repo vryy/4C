@@ -157,7 +157,7 @@ private:
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(vector<char>& data) const;
+    virtual void Pack(DRT::PackBuffer& data) const;
 
     /// \brief Unpack data from a char vector into this class
     ///

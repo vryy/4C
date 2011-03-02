@@ -510,7 +510,12 @@ void EnsightWriter::WriteNodeConnectivityPar(
 
   // pack my node ids into sendbuffer
   sblock.clear();
-  DRT::ParObject::AddtoPack(sblock,nodevector);
+
+  DRT::PackBuffer data;
+  DRT::ParObject::AddtoPack(data,nodevector);
+  data.StartPacking();
+  DRT::ParObject::AddtoPack(data,nodevector);
+  swap( sblock, data() );
 
   // now we start the communication
   for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
@@ -727,7 +732,12 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
-    DRT::ParObject::AddtoPack(sblock,eleGidPerDisType[iterator->first]);
+
+    DRT::PackBuffer data;
+    DRT::ParObject::AddtoPack(data,eleGidPerDisType[iterator->first]);
+    data.StartPacking();
+    DRT::ParObject::AddtoPack(data,eleGidPerDisType[iterator->first]);
+    swap( sblock, data() );
 
     // now we start the communication
     for (int pid=0;pid<(dis->Comm()).NumProc();++pid)

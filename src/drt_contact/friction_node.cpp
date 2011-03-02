@@ -80,7 +80,7 @@ deltawear_(0.0)
  |  Pack data                                                  (public) |
  |                                                            mgit 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
+void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add jump_
   DRT::ParObject::AddtoPack(data,jump_,3*sizeof(double));
@@ -92,17 +92,17 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
   DRT::ParObject::AddtoPack(data,traction_,3*sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data,tractionold_,3*sizeof(double));
-  
-  // add drowsold_,mrowsold_,mnodesold_ 
-  int hasdata = drowsold_.size(); 
+
+  // add drowsold_,mrowsold_,mnodesold_
+  int hasdata = drowsold_.size();
   // check the sizes of vector/sets
   if(hasdata != (int) mrowsold_.size() or (hasdata == 0 and mnodesold_.size()!=0))
-    dserror("Something wrong with sizes of vector/sets!"); 
-  
+    dserror("Something wrong with sizes of vector/sets!");
+
   DRT::ParObject::AddtoPack(data,hasdata);
-    
+
   if(hasdata!=0)
-  {    
+  {
     for (int i=0;i<hasdata;i++)
     {
       DRT::ParObject::AddtoPack(data,(drowsold_[i]));
@@ -112,15 +112,15 @@ void CONTACT::FriNodeDataContainer::Pack(vector<char>& data) const
   }
 
   // add derivjump
-  int hasdataderivjump = derivjump_.size(); 
+  int hasdataderivjump = derivjump_.size();
   DRT::ParObject::AddtoPack(data,hasdataderivjump);
 
   if (hasdataderivjump!=0)
-  {  
+  {
     for (int i=0;i<hasdataderivjump;i++)
       DRT::ParObject::AddtoPack(data,(derivjump_[i]));
   }
-  
+
   return;
 }
 
@@ -141,10 +141,10 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   // tractionold_
   DRT::ParObject::ExtractfromPack(position,data,tractionold_,3*sizeof(double));
 
-  //drowsold_,mrowsold_,mnodesold_ 
+  //drowsold_,mrowsold_,mnodesold_
   int hasdata;
   DRT::ParObject::ExtractfromPack(position,data,hasdata);
-  
+
   if(hasdata!=0)
   {
     drowsold_.resize(hasdata);
@@ -156,11 +156,11 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
     }
     DRT::ParObject::ExtractfromPack(position,data,mnodesold_);
   }
-  
+
   //and derivjump_
   int hasdataderivjump;
   DRT::ParObject::ExtractfromPack(position,data,hasdataderivjump);
-  
+
   if(hasdataderivjump!=0)
   {
     derivjump_.resize(hasdataderivjump);
@@ -169,7 +169,7 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
       DRT::ParObject::ExtractfromPack(position,data,derivjump_[i]);
     }
   }
-  
+
   return;
 }
 
@@ -236,18 +236,14 @@ void CONTACT::FriNode::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Pack(vector<char>& data) const
+void CONTACT::FriNode::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
   // add base class MORTAR::MortarNode
-  vector<char> basedata(0);
-  CONTACT::CoNode::Pack(basedata);
-  AddtoPack(data,basedata);
+  CONTACT::CoNode::Pack(data);
 
   // add data_
   bool hasdata = (fridata_!=Teuchos::null);

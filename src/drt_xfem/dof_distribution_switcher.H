@@ -165,7 +165,7 @@ namespace XFEM
     void PackValuestoSend(
       const RCP<Epetra_Vector>                   state_vector,
       std::map<int, set<XFEM::FieldEnr> >        unknownFieldEnr,
-      vector<char>                             & sblock
+      DRT::PackBuffer                          & sblock
     ) const;
 
     void UnpackValues(

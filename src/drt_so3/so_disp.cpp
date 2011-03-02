@@ -224,17 +224,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoDisp::Pack(vector<char>& data) const
+void DRT::ELEMENTS::SoDisp::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 
   AddtoPack(data,stresstype_);
   AddtoPack(data,kintype_);

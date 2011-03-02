@@ -109,17 +109,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Bele3::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 
   return;
 }

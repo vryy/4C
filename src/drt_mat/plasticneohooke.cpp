@@ -113,10 +113,8 @@ MAT::PlasticNeoHooke::PlasticNeoHooke(MAT::PAR::PlasticNeoHooke* params)
 /*----------------------------------------------------------------------*
  |  Pack (public)                                                 12/09 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNeoHooke::Pack(vector<char>& data) const
+void MAT::PlasticNeoHooke::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

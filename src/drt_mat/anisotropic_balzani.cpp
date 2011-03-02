@@ -86,10 +86,8 @@ MAT::AnisotropicBalzani::AnisotropicBalzani(MAT::PAR::AnisotropicBalzani* params
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-void MAT::AnisotropicBalzani::Pack(vector<char>& data) const
+void MAT::AnisotropicBalzani::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

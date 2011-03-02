@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_turbulent_inflow.H
 
-\brief Methods to transfer a turbulent inflow profile a from a master 
+\brief Methods to transfer a turbulent inflow profile a from a master
 boundary to a slave boundary on a seperate domain.
 The slave boundary must have an additional Dirichlet condition, the
-master boundary will usually be a periodic boundary (but is not required 
-to) 
+master boundary will usually be a periodic boundary (but is not required
+to)
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -44,12 +44,12 @@ public:
   virtual ~TransferTurbulentInflowCondition();
 
   /*!
-  \brief Transfer process copying values from master boundary to slave 
+  \brief Transfer process copying values from master boundary to slave
          boundary (slave must be of Dirichlet type, otherwise this
          operation doesn't make to mauch sense)
 
          Intended to be called after ApplyDirichlet, overwriting the
-         dummy Dirichlet values on the slave boundary by the values 
+         dummy Dirichlet values on the slave boundary by the values
          of the last time step on the master boundary
   */
   void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
@@ -57,7 +57,7 @@ public:
 
 private:
 
-  //! there are two types of tranfer conditions. values are transferred  
+  //! there are two types of tranfer conditions. values are transferred
   //! from master to slave conditions
   enum ToggleType
   {
@@ -87,14 +87,14 @@ private:
   void UnpackLocalMasterValues(
     vector<int>             & mymasters    ,
     vector<vector<double> > & mymasters_vel,
-    vector<char>            & rblock       
+    vector<char>            & rblock
     );
 
   //! pack all master values into a send block
   void PackLocalMasterValues(
     vector<int>             & mymasters    ,
     vector<vector<double> > & mymasters_vel,
-    vector<char>            & sblock       
+    DRT::PackBuffer         & sblock
     );
 
   //! for all values avaible on the processor, do the final setting of the value

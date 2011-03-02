@@ -72,10 +72,8 @@ MAT::AAA_mixedeffects::AAA_mixedeffects(MAT::PAR::AAA_mixedeffects* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAA_mixedeffects::Pack(vector<char>& data) const
+void MAT::AAA_mixedeffects::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

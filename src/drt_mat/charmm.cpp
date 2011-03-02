@@ -90,9 +90,8 @@ MAT::CHARMM::CHARMM(MAT::PAR::CHARMM* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CHARMM::Pack(vector<char>& data) const {
-    data.resize(0);
-
+void MAT::CHARMM::Pack(DRT::PackBuffer& data) const
+{
     // pack type of this instance of ParObject
     int type = UniqueParObjectId();
     AddtoPack(data, type);

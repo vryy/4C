@@ -64,9 +64,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3Surface::Shape() const
 }
 
 
-void DRT::ELEMENTS::Ale3Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale3Surface::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this Ale3Surface element does not support communication");
 }
 

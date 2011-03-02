@@ -260,26 +260,20 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Transport::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // numdofpernode
   AddtoPack(data,numdofpernode_);
   // distype
   AddtoPack(data,distype_);
 
   // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }
@@ -565,9 +559,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportBoundary::Pack(vector<char>& data) const
+void DRT::ELEMENTS::TransportBoundary::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("This TransportBoundary element does not support communication");
 
   return;

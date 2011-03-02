@@ -70,7 +70,7 @@ XFEM::Startvalues::Startvalues(
   // discretization so no mapping from node col id to phi dof col id is needed
   phinpi_ = flamefront->Phin(); // last phi vector in column map
   phinpip_ = flamefront->Phinp(); // current phi vector in column map
-  
+
   const int nsd = 3;
 
   basic_ = rcp(new vector<StartpointData>);
@@ -169,7 +169,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
 #ifdef PARALLEL
   int counter = 0; // loop counter to avoid infinite loops
   bool procfinished = false; // true if movNodes is empty
-  
+
   // loop over nodes which still don't have and may get a good startvalue
   while (true)
   {
@@ -182,7 +182,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
     {
       procfinished = false; // processor has still nodes to examine
 #endif
-      
+
       // loop over all nodes which changed interface side
       // remark: negative loop so that deleted elements don't influence other elements position
       for (size_t nodeid=0;nodeid<curr_->size();nodeid++)
@@ -191,7 +191,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
 
 //        cout << "on proc " << myrank_ << " iteration starts for\n" <<
 //            curr.movNode_ << " with changed " << curr.changed_ << endl;
-        
+
         // if no startpoint found, interface is too far away from point
         // so that lagrangian point of view is senseless
         if (curr.changed_)
@@ -205,11 +205,11 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
           bool ihSide = true;             // true if point lies on correct side
           bool stdBackTracking = true; // true if standard back-tracking shall be done
           double deltaT1; // at t^n + deltaT1 the lagrangian point crosses the interface
-          
+
           // search for an element where the current startpoint lies in
           // if found, give out all data at the startpoint
           elementAndLocalCoords(fittingele,curr.startpoint_,xi,vel,phin,elefound);
-          
+
           // if element is not found, look at another processor and so add all
           // according data to the vectors which will be sent to the next processor
           if (!elefound)
@@ -245,7 +245,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
               cout << "WARNING! Lagrangian start point not in domain!" << endl;
             }
           } // end if elefound
-          
+
           // if element is found, the newton iteration to find a better startpoint can start
           else
           {
@@ -273,12 +273,12 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
               ihSide = true;
               NewtonLoop(fittingele,curr,xi,vel,phin,elefound,ihSide,stdBackTracking,deltaT1);
             }
-            
+
             // if iteration can go on (that is when startpoint is on
             // correct interface side and iter < max_iter)
             if (ihSide && curr.iter_<max_iter_)
             {
-              
+
               // if element is not found in a newton step, look at another processor and so add
               // all according data to the vectors which will be sent to the next processor
               if (!elefound)
@@ -296,7 +296,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
                     curr.startGid_,
                     curr.startOwner_));
               }
-              
+
               // newton iteration converged to a good startpoint and so the data can be used to go on
               else
               {
@@ -304,12 +304,12 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
                     fittingele,curr,xi,stdBackTracking,deltaT1);
               }
             } // end if ihSide
-            
+
             // if startpoint lies on wrong side at any time, this algorithm has to stop
             //for the searched node which is done by setting changed = false
             if (!ihSide)
               curr.changed_ = false;
-            
+
             if (curr.iter_ == max_iter_) // maximum number of iterations reached
             {
               cout << "WARNING: start value set somehow sensible\n"
@@ -344,7 +344,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
             curr.startOwner_));
       }
     }
-    
+
 #ifdef PARALLEL
     // export nodes and according data for which the startpoint isn't still found (next_ vector) to next proc
 //    cout << "on proc " << myrank_ << " before exporting next size is " << next_->size() <<
@@ -352,7 +352,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
     exportIterData(procfinished);
 //    cout << "on proc " << myrank_ << " after exporting next size is " << next_->size() <<
 //        ", curr size is " << curr_->size() << " and failed size is " << failed_->size() << endl;
-    
+
     // convergencecheck: procfinished == 1 just if all procs have finished
     if (procfinished)
       break;
@@ -368,7 +368,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
  * second part: get sensible startvalues for nodes where the algorithm failed, *
  * using another algorithm, and combine the "Done" and the "Failed" - vectors  *
  *-----------------------------------------------------------------------------*/
-  
+
   // nodes which are still in curr-vector, ran into an infinite loop
   // and so have to be set otherwise (this should not happen!)
   if (!procfinished)
@@ -387,7 +387,7 @@ void XFEM::Startvalues::semiLagrangeBackTracking(
       cout << "WARNING! Node ran into infinite loop in startvalues.cpp!" << endl;
     }
   }
-  
+
   (*curr_).clear(); // no more needed
 //  cout << "failed size before exporting on proc " << myrank_ << " is " << failed_->size() << endl;
 #ifdef PARALLEL
@@ -445,7 +445,7 @@ void XFEM::Startvalues::startpoints()
       {
         DRT::Node* lnodeold = discret_->gNode(*enrnode);//elenodeids[elenode]);  // node near interface
         LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
-        
+
         // just look for points on the same interface side
         if (interfaceSideCompareCombust(basic.phiValue_,(*phinpi_)[lnodeold->LID()]))
         {
@@ -462,7 +462,7 @@ void XFEM::Startvalues::startpoints()
             {
               const DofKey<onNode> olddofkey(*enrnode,*fieldenr);
               const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
-              
+
               if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
               {
                 if (fieldenr->getField() == XFEM::PHYSICS::Velx)
@@ -473,7 +473,7 @@ void XFEM::Startvalues::startpoints()
                   nodevel(2) = (*veln_)[olddofcolmap_.LID(olddofpos)];
               }
             } // end loop over fieldenr
-            
+
             LINALG::Matrix<1,1> arc(true); // cosinus of angle between dist and vel(x_n+1)*diff.Norm2()
             arc.MultiplyTN(1.0/nodevel.Norm2(),diff,nodevel);
             double dist = diff.Norm2() + 2*(diff.Norm2()-arc.Norm2());
@@ -496,9 +496,9 @@ void XFEM::Startvalues::startpoints()
 #ifdef PARALLEL
     exportStartData();
 #endif
-    
+
   } // end loop over processors
-  
+
   // test loop over all nodes which changed interface side
   for (size_t nodeid=0; nodeid<basic_->size(); nodeid++)
   {//cout << (*basic_)[nodeid].movNode_ << " has startpoint " << (*basic_)[nodeid].startpoint_ << endl;
@@ -526,17 +526,17 @@ void XFEM::Startvalues::getDataForNotConvergedNodes(
   for (size_t inode=0;inode<failed_->size();inode++)
   {
     StartpointData failed = (*failed_)[inode]; // data of node where sl approach failed
-    
+
     DRT::Node* node = discret_->gNode(failed.startGid_); // failed node
     DRT::Element* nodesElement = node->Elements()[0]; // element of failed node
     failed.startpoint_=LINALG::Matrix<nsd,1>(node->X());
-    
+
     LINALG::Matrix<nsd,1> x(node->X()); // coordinates of failed node
     LINALG::Matrix<nsd,1> xi(true); // local coordinates of failed node
     LINALG::Matrix<nsd,1> vel(true); // velocity at pseudo-Lagrangian origin
     double phi = 0;
     bool elefound = false;
-    
+
 /*------------------------------------------*
  * element data at pseudo-Lagrangian origin *
  * remark: an element must be found since   *
@@ -868,22 +868,22 @@ void XFEM::Startvalues::elementAndLocalCoords(
 
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
-  
+
   // Initialization of what every following Newton loop will need
   DRT::Element* currele = NULL;                 // pointer to the currently viewed element
   LINALG::Matrix<nsd,numnode> nodecoords(true);  // node coordinates of the element
-  
+
   LINALG::Matrix<nsd,1> incr(true);        // increment of newton iteration
   LINALG::Matrix<nsd,1> residuum(true);    //residuum of newton iteration
-  
+
   LINALG::Matrix<numnode,1> shapeFcn(true);               // shape functions
   LINALG::Matrix<nsd,numnode> shapeXiDeriv1(true);        // derivation of shape functions
-  
+
   LINALG::Matrix<nsd,nsd> xjm(true);        //jacobian at start vector
   LINALG::Matrix<nsd,nsd> xji(true);        // invers of jacobian
-  
+
   int iter = 0;   // iteration counter
-  
+
   const int max_iter = 10;   // maximum number of iterations
   const double relTolRes = 1e-10;   // relative tolerance for residual
   const double relTolIncr = 1e-10;   // relaltive tolerance for increment
@@ -900,7 +900,7 @@ void XFEM::Startvalues::elementAndLocalCoords(
     }
     else
       currele = discret_->lRowElement(ieleid);
-    
+
     // Initialization
     for (int elenodeid=0;elenodeid<currele->NumNode();elenodeid++)
     {
@@ -908,63 +908,63 @@ void XFEM::Startvalues::elementAndLocalCoords(
       for (size_t i=0;i<nsd;i++)
         nodecoords(i,elenodeid) = currnode->X()[i];
     }
-    
+
     iter = 0;   // iteration counter
-    
+
     // evaluate shape functions at xi
     DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE);
     // evaluate derivative of shape functions at xi
     DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE);
-    
+
     xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian
     xji.Invert(xjm);       // jacobian inverted
-    
+
     residuum.Clear();
     residuum.Multiply(nodecoords, shapeFcn); //x_i
     residuum -= x;               // x_i - x
     residuum.Scale(-1.0);        // negative residuum -> RHS for Newton iteration
-    
+
     // Newton loop to find local coordinates
     while(iter < max_iter)
     {
       iter += 1;
-      
+
       //solve Newton iteration
       incr.Clear();
       incr.MultiplyTN(xji,residuum); // J^(-T)*residuum
-      
+
       // update iteration
       for (size_t i=0;i<nsd;i++)
         xi(i) += incr(i);
-      
+
       //=============== update residuum================
       //new shape functions and derivatives
       DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE);
       DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE);
-      
+
       // reset residual
       residuum.Clear();
       residuum.Multiply(nodecoords, shapeFcn); // x_i
       residuum -= x;               // x_i - x
       residuum.Scale(-1.0);        // negative residuum -> RHS for Newton iteration (new step)
-      
+
       // convergence criterion
       if (incr.Norm2()/xi.Norm2() < relTolIncr && residuum.Norm2()/xi.Norm2() < relTolRes)
         break;
-      
+
       // stop if point is too far away from element
       if (xi.Norm2()>3)
         break;
-      
+
       // update jacobian and inverted jacobian
       xjm.MultiplyNT(shapeXiDeriv1,nodecoords);
       xji.Invert(xjm);
     } // end Newton loop
-    
+
     // did newton iteration converge?
     if(iter == max_iter)
       cout << "WARNING: Newton iteration for finding local coordinates didn't converge!" << endl;
-    
+
     // point near the element? (very high tolerance because of computational error)
     if (xi(0)<=1.0+XiTol && xi(1)<=1.0+XiTol && xi(2)<=1.0+XiTol
         && xi(0)>=-1.0-XiTol && xi(1)>=-1.0-XiTol && xi(2)>=-1.0-XiTol)
@@ -974,14 +974,14 @@ void XFEM::Startvalues::elementAndLocalCoords(
       break;
     } // end if near the element
   } // end loop over processor elements
-  
+
   if (fittingele != NULL) // fittingele found
   {
     LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
     LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true); // dummy
     LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true); // dummy
     LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true); // dummy
-    
+
     // evaluate data for the given point
     pointdataXFEM<nsd,numnode,DISTYPE>(
         fittingele,
@@ -995,20 +995,20 @@ void XFEM::Startvalues::elementAndLocalCoords(
         phinpi_,
         olddofman_
     );
-    
+
     const int* elenodeids = fittingele->NodeIds();  // nodeids of element
 
     LINALG::Matrix<numnode,1> nodephi(true); // nodal phivalues
     for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
       nodephi(nodeid,0) = (*phinpi_)[discret_->gNode(elenodeids[nodeid])->LID()];
-    
+
     // get phivalue of point
     phi = nodephi.Dot(shapeFcn);
-    
+
     // initialize nodal vectors
     LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
     LINALG::Matrix<1,2*numnode> nodepres(true); // node pressures, just for function call
-    
+
     elementsNodalData<nsd,numnode>(
         fittingele,
         veln_,
@@ -1017,10 +1017,10 @@ void XFEM::Startvalues::elementAndLocalCoords(
         oldNodalDofColDistrib_,
         nodevel,
         nodepres); // nodal data of the element
-    
+
     // interpolate velocity and pressure values at starting point
     vel.Multiply(nodevel, enrShapeFcnVel);
-    
+
 //    cout << "element in which startpoint lies in is:\n" << *fittingele;
 //    cout << "nodal velocities  are " << nodevel;
 //    cout << "startpoint approximation: " << x;
@@ -1050,11 +1050,11 @@ void XFEM::Startvalues::NewtonLoop(
 {
   const size_t numnode = 8;  // 8 nodes for hex8
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
-    
+
   const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8; // only hex8 implemented
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
-  
+
   stdBackTracking = true; // standard Newton loop -> standard back tracking
 
   // Initialization
@@ -1116,19 +1116,19 @@ void XFEM::Startvalues::NewtonLoop(
         sysmat(i,i) += 1.0; // I + dt*v_nodes*dN/dx
       sysmat.Invert();
     } // invers system Matrix built
-    
+
     //solve Newton iteration
     incr.Clear();
     incr.Multiply(-1.0,sysmat,residuum); // incr = -Systemmatrix^-1 * residuum
-    
+
     // update iteration
     for (size_t i=0;i<nsd;i++)
       curr.startpoint_(i) += incr(i);
 //      cout << "in newton loop approximate startvalue is " << curr.startpoint_ << endl;
-    
+
     //=============== update residuum================
     elementAndLocalCoords(fittingele, curr.startpoint_, xi, vel, phi, elefound);
-    
+
     if (elefound) // element of curr.startpoint_ at this processor
     {
       if (interfaceSideCompareCombust(curr.phiValue_,phi) == false)
@@ -1195,23 +1195,23 @@ void XFEM::Startvalues::backTracking(
   const int numnode = 8;
   const int nsd = 3;
   const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
-  
+
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
-  
+
 //  cout << node << "has lagrange origin " << x << "\nwith xi-coordinates "
 //      << xi << "\n in element " << *fittingele << endl;
   const int* elenodeids = fittingele->NodeIds();  // nodeids of element
 
   LINALG::Matrix<nsd,nsd> xji(true); // invers of jacobian
   LINALG::Matrix<numnode,1> shapeFcn(true); // shape function
-  
+
   // enriched shape functions and there derivatives in local coordinates (N * \Psi)
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
   LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true);
   LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
   LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true);
-  
+
   // data for the final back-tracking
   LINALG::Matrix<nsd,1> vel(true); // velocity data
   LINALG::Matrix<nsd,nsd> velnDeriv1(true); // first derivation of velocity data
@@ -1244,7 +1244,7 @@ void XFEM::Startvalues::backTracking(
   LINALG::Matrix<numnode,1> nodephi(true);
   for (int nodeid=0;nodeid<fittingele->NumNode();nodeid++) // loop over element nodes
     nodephi(nodeid,0) = (*phinpi_)[discret_->gNode(elenodeids[nodeid])->LID()];
-  
+
   int dofcounterVelx = 0;
   int dofcounterVely = 0;
   int dofcounterVelz = 0;
@@ -1311,7 +1311,7 @@ void XFEM::Startvalues::backTracking(
       } // end switch enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
-  
+
   transportVeln.Multiply(nodevel, enrShapeFcnVel);
   LINALG::Matrix<1,1> phinpi;
   phinpi.MultiplyTN(shapeFcn,nodephi);
@@ -1323,16 +1323,16 @@ void XFEM::Startvalues::backTracking(
   {
     LINALG::Matrix<nsd,1> diff(data.movNode_.X());
     diff -= data.startpoint_; // diff = x_Node - x_Appr
-    
+
     double numerator = transportVeln.Dot(diff); // numerator = v^T*(x_Node-x_Appr)
     double denominator = transportVeln.Dot(transportVeln); // denominator = v^T*v
-    
+
     if (denominator>1e-15) deltaT = numerator/denominator; // else deltaT = 0 as initialized
   }
 
   vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
   vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
-  
+
   // interpolate velocity and pressure gradients for all fields at starting point and get final values
   for (size_t index=0;index<oldVectors_.size();index++)
   {
@@ -1380,7 +1380,7 @@ void XFEM::Startvalues::backTracking(
 //          ". it was " << pres << endl;
     }
   }
-  
+
   done_->push_back(StartpointData(
       data.movNode_,
       data.startpoint_,
@@ -1405,9 +1405,9 @@ void XFEM::Startvalues::setFinalData(
   {
     vector<LINALG::Matrix<nsd,1> > velValues((*done_)[inode].velValues_); // velocities of the node
     vector<double> presValues((*done_)[inode].presValues_); // pressures of the node
-    
+
     const int gnodeid = (*done_)[inode].movNode_.Id(); // global node id
-    
+
     // set nodal velocities and pressures with help of the field set of node
     const std::set<XFEM::FieldEnr>& fieldenrset(dofman_->getNodeDofSet(gnodeid));
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -1415,7 +1415,7 @@ void XFEM::Startvalues::setFinalData(
     {
       const DofKey<onNode> newdofkey(gnodeid, *fieldenr);
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
-      
+
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
@@ -1504,14 +1504,14 @@ void XFEM::Startvalues::elementsNodalData(
 {
   nodevel.Clear();
   nodepres.Clear();
-  
+
   const int* elenodeids = element->NodeIds();  // nodegids of element nodes
-  
+
   int dofcounterVelx = 0;
   int dofcounterVely = 0;
   int dofcounterVelz = 0;
   int dofcounterPres = 0;
-  
+
   for (int nodeid=0;nodeid<element->NumNode();nodeid++) // loop over element nodes
   {
     // get nodal velocities and pressures with help of the field set of node
@@ -1588,17 +1588,17 @@ void XFEM::Startvalues::pointdataXFEM(
 ) const
 {
   const int* elenodeids = element->NodeIds();  // nodeids of element
-  
+
   if (DISTYPE != DRT::Element::hex8)
     dserror("element type not implemented until now!");
-  
+
   // clear data that should be filled
   shapeFcn.Clear();
   enrShapeFcnVel.Clear();
   enrShapeXYVelDeriv1.Clear();
   enrShapeFcnPres.Clear();
   enrShapeXYPresDeriv1.Clear();
-  
+
   LINALG::Matrix<nsd,numnode> nodecoords(true); // node coordinates of the element
   for (size_t nodeid=0;nodeid<numnode;nodeid++)
   {
@@ -1606,41 +1606,41 @@ void XFEM::Startvalues::pointdataXFEM(
     for (size_t i=0;i<nsd;i++)
       nodecoords(i,nodeid) = currnode->X()[i];
   }
-  
+
   LINALG::Matrix<nsd,numnode> shapeXiDeriv1(true);
   // evaluate shape functions at xi
   DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE);
   // evaluate derivative of shape functions at xi
   DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE);
-  
+
   LINALG::Matrix<nsd,nsd> xjm(true);
   xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian J = (dx/dxi)^T
   xji.Invert(xjm);       // jacobian inverted J^(-1) = dxi/dx
-  
+
   LINALG::Matrix<nsd,numnode> shapeXYDeriv1(true); // first derivation of global shape functions
   shapeXYDeriv1.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
 //  cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
-  
+
   // second  derivative of (enriched) shape function in local and global coordinates
   LINALG::Matrix<2*nsd,numnode> shapeXYDeriv2(true); // just needed for function call
   LINALG::Matrix<2*nsd,2*numnode> enrShapeXYDeriv2(true); // just needed for function call so just one for vel and pres
-  
+
   // nodal phivalues
   LINALG::Matrix<numnode,1> nodephi(true);
   for (int nodeid=0;nodeid<element->NumNode();nodeid++) // loop over element nodes
     nodephi(nodeid,0) = (*phi)[discret_->gNode(elenodeids[nodeid])->LID()];
-    
+
   // create an element dof manager
   const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
   Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
-  
+
   // the enrichment functions may depend on the point
   // therefore the computation of the enrichment functions is called here
   // the gauss point is contained in shapeFcn!
   const XFEM::ElementEnrichmentValues enrvals(
       *element,*eleDofManager,nodephi,
       shapeFcn,shapeXYDeriv1,shapeXYDeriv2);
-    
+
   // enriched shape functions and derivatives for nodal parameters (dofs)
   enrvals.ComputeModifiedEnrichedNodalShapefunction(
       XFEM::PHYSICS::Velx,shapeFcn,shapeXYDeriv1,shapeXYDeriv2,
@@ -1807,15 +1807,14 @@ void XFEM::Startvalues::exportStartData()
   int dest = myrank_+1;
   if(myrank_ == (numproc_-1))
     dest = 0;
-  
+
   // source proc (the "last" one)
   int source = myrank_-1;
   if(myrank_ == 0)
     source = numproc_-1;
-  
-  // vector including all data that has to be send to the next proc
-  vector<char> dataSend;
-  
+
+  DRT::PackBuffer dataSend;
+
   // packing the data
   DRT::ParObject::AddtoPack(dataSend,basic_->size());
   for (size_t ipoint=0;ipoint<basic_->size();ipoint++)
@@ -1837,15 +1836,38 @@ void XFEM::Startvalues::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,basic.startOwner_);
     DRT::ParObject::AddtoPack(dataSend,basic.dMin_);
   }
-  
+
+  dataSend.StartPacking();
+
+  DRT::ParObject::AddtoPack(dataSend,basic_->size());
+  for (size_t ipoint=0;ipoint<basic_->size();ipoint++)
+  {
+    StartpointData& basic = (*basic_)[ipoint];
+
+    DRT::ParObject::AddtoPack(dataSend,basic.movNode_.Id());
+    DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(basic.movNode_.X()));
+    DRT::ParObject::AddtoPack(dataSend,basic.movNode_.Owner());
+    DRT::ParObject::AddtoPack(dataSend,basic.vel_);
+    DRT::ParObject::AddtoPack(dataSend,basic.velDeriv_);
+    DRT::ParObject::AddtoPack(dataSend,basic.presDeriv_);
+    DRT::ParObject::AddtoPack(dataSend,basic.startpoint_);
+    DRT::ParObject::AddtoPack(dataSend,basic.changed_);
+    DRT::ParObject::AddtoPack(dataSend,basic.phiValue_);
+    DRT::ParObject::AddtoPack(dataSend,basic.searchedProcs_);
+    DRT::ParObject::AddtoPack(dataSend,basic.iter_);
+    DRT::ParObject::AddtoPack(dataSend,basic.startGid_);
+    DRT::ParObject::AddtoPack(dataSend,basic.startOwner_);
+    DRT::ParObject::AddtoPack(dataSend,basic.dMin_);
+  }
+
   vector<int> lengthSend(1,0);
-  lengthSend[0] = dataSend.size();
+  lengthSend[0] = dataSend().size();
   int size_one = 1;
-  
+
 #ifdef DEBUG
   cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
 #endif
-  
+
   // send length of the data to be received ...
   MPI_Request req_length_data;
   int length_tag = 0;
@@ -1858,25 +1880,25 @@ void XFEM::Startvalues::exportStartData()
   // send actual data ...
   int data_tag = 4;
   MPI_Request req_data;
-  exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+  exporter_.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
   // ... and receive data
   vector<char> dataRecv(lengthRecv[0]);
   exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
   exporter_.Wait(req_data);
-  
+
 #ifdef DEBUG
   cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
 #endif
-  
+
   // pointer to current position of group of cells in global string (counts bytes)
   size_t posinData = 0;
-  
+
   // initialize temporary vectors that should be filled
   size_t numberOfNodes = 0;
-  
+
   // clear vector that should be filled
   basic_->clear();
-  
+
   // unpack received data
   DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
   for (size_t inode=0;inode<numberOfNodes;inode++)
@@ -1895,7 +1917,7 @@ void XFEM::Startvalues::exportStartData()
     int startGid;
     int startOwner;
     double dMin;
-    
+
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
@@ -1910,10 +1932,10 @@ void XFEM::Startvalues::exportStartData()
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,dMin);
-    
+
     double coordinates[nsd];
     for (size_t dim=0;dim<nsd;dim++) coordinates[dim] = coords(dim);
-    
+
     DRT::Node movNode(gid,coordinates,owner);
 
     basic_->push_back(StartpointData(
@@ -1945,40 +1967,38 @@ void XFEM::Startvalues::exportAlternativAlgoData()
   // array of vectors which stores data for
   // every processor in one vector
   vector<vector<StartpointData> > failedVec(numproc_);
-  
+
   // fill vectors with the data
   for (size_t inode=0;inode<failed_->size();inode++)
   {
     failedVec[(*failed_)[inode].startOwner_].push_back((*failed_)[inode]);
   }
-  
+
   (*failed_).clear(); // clear final failed vector
   (*failed_) = failedVec[myrank_]; // set entries of own proc
   failedVec[myrank_].clear(); // clear the set data from the vector
-  
+
   // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest higher neighbour...)
   for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
   {
     // Initialization of sending
-    vector<char> dataSend; // vector including all data that has to be send to dest proc
+    DRT::PackBuffer dataSend; // vector including all data that has to be send to dest proc
     vector<int> lengthSend(1,0);
     int size_one = 1;
-    
+
     // Initialization
     int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
     if (source<0)
       source+=numproc_;
     else if (source>=numproc_)
       source -=numproc_;
-    
-    dataSend.clear();
-    
+
     // pack data to be sent
     DRT::ParObject::AddtoPack(dataSend,failedVec[dest].size());
     for (size_t inode=0;inode<failedVec[dest].size();inode++)
     {
       StartpointData failed = failedVec[dest][inode];
-      
+
       DRT::ParObject::AddtoPack(dataSend,failed.movNode_.Id());
       DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(failed.movNode_.X()));
       DRT::ParObject::AddtoPack(dataSend,failed.movNode_.Owner());
@@ -1989,16 +2009,34 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       DRT::ParObject::AddtoPack(dataSend,failed.phiValue_);
       DRT::ParObject::AddtoPack(dataSend,failed.startGid_);
     }
-    
+
+    dataSend.StartPacking();
+
+    DRT::ParObject::AddtoPack(dataSend,failedVec[dest].size());
+    for (size_t inode=0;inode<failedVec[dest].size();inode++)
+    {
+      StartpointData failed = failedVec[dest][inode];
+
+      DRT::ParObject::AddtoPack(dataSend,failed.movNode_.Id());
+      DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(failed.movNode_.X()));
+      DRT::ParObject::AddtoPack(dataSend,failed.movNode_.Owner());
+      DRT::ParObject::AddtoPack(dataSend,failed.vel_);
+      DRT::ParObject::AddtoPack(dataSend,failed.velDeriv_);
+      DRT::ParObject::AddtoPack(dataSend,failed.presDeriv_);
+      DRT::ParObject::AddtoPack(dataSend,failed.startpoint_);
+      DRT::ParObject::AddtoPack(dataSend,failed.phiValue_);
+      DRT::ParObject::AddtoPack(dataSend,failed.startGid_);
+    }
+
     // clear the no more needed data
     failedVec[dest].clear();
-    
-    lengthSend[0] = dataSend.size();
-    
+
+    lengthSend[0] = dataSend().size();
+
 #ifdef DEBUG
     cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
 # endif
-    
+
     // send length of the data to be received ...
     MPI_Request req_length_data;
     int length_tag = 0;
@@ -2007,23 +2045,23 @@ void XFEM::Startvalues::exportAlternativAlgoData()
     vector<int> lengthRecv(1,0);
     exporter_.Receive(source, length_tag, lengthRecv, size_one);
     exporter_.Wait(req_length_data);
-    
+
     // send actual data ...
     int data_tag = 4;
     MPI_Request req_data;
-    exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    exporter_.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter_.Wait(req_data);
-    
+
 #ifdef DEBUG
     cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
 #endif
 
     // pointer to current position of group of cells in global string (counts bytes)
     size_t posinData = 0;
-    
+
     // unpack received data
     size_t numberOfNodes;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
@@ -2038,7 +2076,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       LINALG::Matrix<nsd,1> startpoint;
       double phiValue;
       int startGid;
-      
+
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
@@ -2048,11 +2086,11 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
-      
+
       double coordinates[nsd];
       for (size_t dim=0;dim<nsd;dim++)
         coordinates[dim] = coords(dim);
-      
+
       DRT::Node movNode(gid,coordinates,owner);
 
       failed_->push_back(StartpointData(
@@ -2082,7 +2120,6 @@ void XFEM::Startvalues::exportIterData(
 {
   const size_t nsd = 3; // 3 dimensions for a 3d fluid element
 
-  vector<char> dataSend; // vector including all data that has to be send to the next proc
   vector<int> lengthSend(1,0);
   int size_one = 1;
 
@@ -2103,10 +2140,13 @@ void XFEM::Startvalues::exportIterData(
  *-------------------------------------------*/
   for (int iproc=0;iproc<numproc_-1;iproc++)
   {
-    dataSend.clear();
+    DRT::PackBuffer dataSend;
 
     DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procfinished));
-    lengthSend[0] = dataSend.size();
+    dataSend.StartPacking();
+    DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procfinished));
+
+    lengthSend[0] = dataSend().size();
 
     // send length of the data to be received ...
     int length_tag = 0;
@@ -2120,7 +2160,7 @@ void XFEM::Startvalues::exportIterData(
     // send actual data ...
     int data_tag = 4;
     MPI_Request req_data;
-    exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    exporter_.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
@@ -2141,7 +2181,7 @@ void XFEM::Startvalues::exportIterData(
     // processors wait for each other
     discret_->Comm().Barrier();
   }
-  
+
 
 
 /*--------------------------------------*
@@ -2150,14 +2190,14 @@ void XFEM::Startvalues::exportIterData(
  *--------------------------------------*/
   if (!procfinished)
   {
-    dataSend.clear();
-    
+    DRT::PackBuffer dataSend;
+
     // packing the data
     DRT::ParObject::AddtoPack(dataSend,next_->size());
     for (size_t ipoint=0;ipoint<next_->size();ipoint++)
     {
       StartpointData next = (*next_)[ipoint];
-      
+
       DRT::ParObject::AddtoPack(dataSend,next.movNode_.Id());
       DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(next.movNode_.X()));
       DRT::ParObject::AddtoPack(dataSend,next.movNode_.Owner());
@@ -2172,13 +2212,35 @@ void XFEM::Startvalues::exportIterData(
       DRT::ParObject::AddtoPack(dataSend,next.startGid_);
       DRT::ParObject::AddtoPack(dataSend,next.startOwner_);
     }
-    
-    lengthSend[0] = dataSend.size();
-    
+
+    dataSend.StartPacking();
+
+    DRT::ParObject::AddtoPack(dataSend,next_->size());
+    for (size_t ipoint=0;ipoint<next_->size();ipoint++)
+    {
+      StartpointData next = (*next_)[ipoint];
+
+      DRT::ParObject::AddtoPack(dataSend,next.movNode_.Id());
+      DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(next.movNode_.X()));
+      DRT::ParObject::AddtoPack(dataSend,next.movNode_.Owner());
+      DRT::ParObject::AddtoPack(dataSend,next.vel_);
+      DRT::ParObject::AddtoPack(dataSend,next.velDeriv_);
+      DRT::ParObject::AddtoPack(dataSend,next.presDeriv_);
+      DRT::ParObject::AddtoPack(dataSend,next.startpoint_);
+      DRT::ParObject::AddtoPack(dataSend,next.changed_);
+      DRT::ParObject::AddtoPack(dataSend,next.phiValue_);
+      DRT::ParObject::AddtoPack(dataSend,next.searchedProcs_);
+      DRT::ParObject::AddtoPack(dataSend,next.iter_);
+      DRT::ParObject::AddtoPack(dataSend,next.startGid_);
+      DRT::ParObject::AddtoPack(dataSend,next.startOwner_);
+    }
+
+    lengthSend[0] = dataSend().size();
+
 #ifdef DEBUG
     cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
 #endif
-    
+
     // send length of the data to be received ...
     int length_tag = 0;
     MPI_Request req_length_data;
@@ -2191,29 +2253,29 @@ void XFEM::Startvalues::exportIterData(
     // send actual data ...
     int data_tag = 4;
     MPI_Request req_data;
-    exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    exporter_.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter_.Wait(req_data);
-    
+
 #ifdef DEBUG
     cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
 #endif
-    
-    
+
+
     // pointer to current position of group of cells in global string (counts bytes)
     size_t posinData = 0;
-    
+
     // number of points sent
     size_t numberOfNodes = 0;
-    
+
     // clear next_-vector so it can be filled with new values
     next_->clear();
-    
+
     //unpack received data
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
-    
+
     for (size_t inode=0;inode<numberOfNodes;inode++) // loop over number of nodes to get
     {
       int gid;
@@ -2229,7 +2291,7 @@ void XFEM::Startvalues::exportIterData(
       int iter;
       int startGid;
       int startOwner;
-      
+
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
@@ -2243,13 +2305,13 @@ void XFEM::Startvalues::exportIterData(
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,iter);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
-      
+
       double coordinates[nsd];
       for (size_t dim=0;dim<nsd;dim++)
         coordinates[dim] = coords(dim);
-      
+
       DRT::Node movNode(gid,coordinates,owner);
-      
+
       next_->push_back(StartpointData(
           movNode,
           vel,
@@ -2281,40 +2343,39 @@ void XFEM::Startvalues::exportFinalData()
   // array of vectors which stores data for
   // every processor in one vector
   vector<vector<StartpointData> > doneVec(numproc_);
-  
+
   // fill vectors with the data
   for (size_t inode=0;inode<done_->size();inode++)
   {
     doneVec[(*done_)[inode].movNode_.Owner()].push_back((*done_)[inode]);
   }
-  
+
   (*done_).clear(); // clear final vectors
   (*done_) = doneVec[myrank_]; // set final data of own processor
   doneVec[myrank_].clear(); // clear data about current proc
-  
+
   // send data to the processor where the point lies (1. nearest higher neighbour 2. 2nd nearest higher neighbour...)
   for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
   {
     // Initialization of sending
-    vector<char> dataSend; // vector including all data that has to be send to dest proc
     vector<int> lengthSend(1,0);
     int size_one = 1;
-    
+
     // Initialization
     int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
     if (source<0)
       source+=numproc_;
     else if (source>=numproc_)
       source -=numproc_;
-    
-    dataSend.clear();
-    
+
+    DRT::PackBuffer dataSend;
+
     // pack data to be sent
     DRT::ParObject::AddtoPack(dataSend,doneVec[dest].size());
     for (size_t inode=0;inode<doneVec[dest].size();inode++) // loop over number of nodes to be sent
     {
       StartpointData done = doneVec[dest][inode];
-      
+
       DRT::ParObject::AddtoPack(dataSend,done.movNode_.Id());
       DRT::ParObject::AddtoPack(dataSend,done.startpoint_);
       DRT::ParObject::AddtoPack(dataSend,done.phiValue_);
@@ -2323,16 +2384,32 @@ void XFEM::Startvalues::exportFinalData()
       DRT::ParObject::AddtoPack(dataSend,done.velValues_);
       DRT::ParObject::AddtoPack(dataSend,done.presValues_);
     }
-    
+
+    dataSend.StartPacking();
+
+    DRT::ParObject::AddtoPack(dataSend,doneVec[dest].size());
+    for (size_t inode=0;inode<doneVec[dest].size();inode++) // loop over number of nodes to be sent
+    {
+      StartpointData done = doneVec[dest][inode];
+
+      DRT::ParObject::AddtoPack(dataSend,done.movNode_.Id());
+      DRT::ParObject::AddtoPack(dataSend,done.startpoint_);
+      DRT::ParObject::AddtoPack(dataSend,done.phiValue_);
+      DRT::ParObject::AddtoPack(dataSend,done.startGid_);
+      DRT::ParObject::AddtoPack(dataSend,done.startOwner_);
+      DRT::ParObject::AddtoPack(dataSend,done.velValues_);
+      DRT::ParObject::AddtoPack(dataSend,done.presValues_);
+    }
+
     // clear the no more needed data
     doneVec[dest].clear();
-    
-    lengthSend[0] = dataSend.size();
-    
+
+    lengthSend[0] = dataSend().size();
+
 #ifdef DEBUG
     cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
 # endif
-    
+
     // send length of the data to be received ...
     MPI_Request req_length_data;
     int length_tag = 0;
@@ -2341,27 +2418,27 @@ void XFEM::Startvalues::exportFinalData()
     vector<int> lengthRecv(1,0);
     exporter_.Receive(source, length_tag, lengthRecv, size_one);
     exporter_.Wait(req_length_data);
-    
+
     // send actual data ...
     int data_tag = 4;
     MPI_Request req_data;
-    exporter_.ISend(myrank_, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
+    exporter_.ISend(myrank_, dest, &(dataSend()[0]), lengthSend[0], data_tag, req_data);
     // ... and receive data
     vector<char> dataRecv(lengthRecv[0]);
     exporter_.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter_.Wait(req_data);
-    
+
 #ifdef DEBUG
     cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
 #endif
-    
+
     // pointer to current position of group of cells in global string (counts bytes)
     size_t posinData = 0;
-    
+
     // unpack received data
     size_t numberOfNodes;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
-    
+
     for (size_t inode=0;inode<numberOfNodes;inode++) // loop over number of nodes to get
     {
       int gid;
@@ -2371,7 +2448,7 @@ void XFEM::Startvalues::exportFinalData()
       int startOwner;
       vector<LINALG::Matrix<nsd,1> > velValues;
       vector<double> presValues;
-      
+
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);

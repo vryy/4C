@@ -136,18 +136,14 @@ void CONTACT::CoElement::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Pack(vector<char>& data) const
+void CONTACT::CoElement::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
   // add base class MORTAR::MortarElement
-  vector<char> basedata(0);
-  MORTAR::MortarElement::Pack(basedata);
-  AddtoPack(data,basedata);
+  MORTAR::MortarElement::Pack(data);
 
   return;
 }

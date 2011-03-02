@@ -62,10 +62,8 @@ MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMat::Pack(vector<char>& data) const
+void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

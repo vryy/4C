@@ -16,7 +16,7 @@
 namespace DRT {
 namespace UTILS {
 
-void PackLocalConnectivity(map<int,set<int> >& lcon, vector<char>& sblock);
+void PackLocalConnectivity(map<int,set<int> >& lcon, DRT::PackBuffer& sblock);
 void UnpackLocalConnectivity(map<int,set<int> >& lcon, vector<char>& rblock);
 
 }
@@ -36,13 +36,12 @@ extern "C"
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PackLocalConnectivity(
   map<int,set<int> > & lcon,
-  vector<char>       & sblock
+  DRT::PackBuffer    & sblock
   )
 {
   map<int,set<int> >::iterator gidinlcon;
   set<int>::iterator           adjacentgid;
 
-  sblock.clear();
   // size (number of nodes we have a connectivity for)
   int size=lcon.size();
   DRT::ParObject::AddtoPack(sblock,size);
@@ -150,7 +149,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     Epetra_Time timer(dis->Comm());
     double t1 = timer.ElapsedTime();
     if (!myrank && outflag)
-    {                  
+    {
       printf("parmetis:\n");
       fflush(stdout);
     }
@@ -185,7 +184,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
         fflush(stdout);
       }
     }
-#endif      
+#endif
 
     // --------------------------------------------------
     // - define distributed nodal row map
@@ -434,7 +433,11 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
         {
           //-------------------------
           // Pack local graph into block to send
-          PackLocalConnectivity(lcon,sblock);
+          DRT::PackBuffer data;
+          PackLocalConnectivity(lcon,data);
+          data.StartPacking();
+          PackLocalConnectivity(lcon,data);
+          swap( sblock, data() );
 
 #ifdef PARALLEL
           // Send block to next proc.
@@ -627,7 +630,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     double t2 = timer.ElapsedTime();
     if (!myrank && outflag)
-    {                  
+    {
       printf("parmetis setup    %10.5e secs\n",t2-t1);
       fflush(stdout);
     }
@@ -651,7 +654,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     double t3 = timer.ElapsedTime();
     if (!myrank && outflag)
-    {                  
+    {
       printf("parmetis call     %10.5e secs\n",t3-t2);
       fflush(stdout);
     }
@@ -762,8 +765,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    *comm));
 
     double t4 = timer.ElapsedTime();
-    if (!myrank) 
-    {                  
+    if (!myrank)
+    {
       printf("parmetis cleanup  %10.5e secs\n",t4-t3);
       fflush(stdout);
     }
@@ -784,8 +787,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   const int numproc = comm->NumProc();
   Epetra_Time timer(dis->Comm());
   double t1 = timer.ElapsedTime();
-  if (!myrank) 
-  {                  
+  if (!myrank)
+  {
     printf("parmetis:\n");
     fflush(stdout);
   }
@@ -799,7 +802,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     const int* nodeids = ele->NodeIds();
     copy(nodeids,nodeids+numnode,inserter(mynodes,mynodes.begin()));
   }
-  
+
   // build a unique row map from the overlapping sets
   for (int proc=0; proc<numproc; ++proc)
   {
@@ -826,7 +829,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       }
     }
     comm->Barrier();
-  } 
+  }
 
 
   // copy the set to a vector
@@ -840,7 +843,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     rownodes = rcp(new Epetra_Map(-1,(int)nodes.size(),&nodes[0],0,*comm));
   }
 
-  
+
   // start building the graph object
   map<int,set<int> > locals;
   map<int,set<int> > remotes;
@@ -882,11 +885,11 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     comm->MaxAll(&smaxband,&maxband,1);
   }
   if (!myrank && outflag)
-  {                  
+  {
     printf("parmetis max nodal bandwith %d\n",maxband);
     fflush(stdout);
   }
-  
+
   Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,maxband,false));
 
   comm->Barrier();
@@ -905,9 +908,9 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     }
     locals.clear();
   }
-  
+
   comm->Barrier();
-  
+
 
   // now we need to communicate and add the remote entries
   for (int proc=0; proc<numproc; ++proc)
@@ -936,7 +939,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       int* ptr = &recvnodes[0];
       while (ptr < &recvnodes[size-1])
       {
-        int num  = *ptr; 
+        int num  = *ptr;
         int grid = *(ptr+1);
         // see whether I have grid in my row map
         if (rownodes->LID(grid) != -1) // I have it, put stuff in my graph
@@ -954,7 +957,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   remotes.clear();
 
   comm->Barrier();
-  
+
   // finish graph
   graph->FillComplete();
   graph->OptimizeStorage();
@@ -968,9 +971,9 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   {
     Epetra_IntVector ridtoidx(graph->RowMap(),false);
     Epetra_IntVector cidtoidx(graph->ColMap(),false);
-    
+
     xadj[0] = 0;
-    
+
     // create vtxdist
     vector<int> svtxdist(numproc+1,0);
     svtxdist[myrank+1] = graph->RowMap().NumMyElements();
@@ -982,7 +985,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     Epetra_Import importer(graph->ColMap(),graph->RowMap());
     int err = cidtoidx.Import(ridtoidx,importer,Insert);
     if (err) dserror("Import using importer returned %d",err);
-    
+
     // create xadj and adjncy;
     for (int lrid=0; lrid<graph->RowMap().NumMyElements(); ++lrid)
     {
@@ -993,7 +996,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       if (err) dserror("Epetra_CrsGraph::GetMyRowView returned %d",err);
       // switch column indices to parmetis indices and add to vector of columns
       vector<int> metisindices(0);
-      for (int i=0; i<numindices; ++i) 
+      for (int i=0; i<numindices; ++i)
       {
         if (metisrid == cidtoidx[indices[i]]) continue; // must not contain main diagonal entry
         metisindices.push_back(cidtoidx[indices[i]]);
@@ -1001,16 +1004,16 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       //sort(metisindices.begin(),metisindices.end());
       // beginning of new row
       xadj[lrid+1] = xadj[lrid] + (int)metisindices.size();
-      for (int i=0; i<(int)metisindices.size(); ++i) 
+      for (int i=0; i<(int)metisindices.size(); ++i)
         adjncy.push_back(metisindices[i]);
     }
   }
-  
+
   comm->Barrier();
-  
+
   double t2 = timer.ElapsedTime();
   if (!myrank && outflag)
-  {                  
+  {
     printf("parmetis setup    %10.5e secs\n",t2-t1);
     fflush(stdout);
   }
@@ -1026,16 +1029,16 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     float ubvec = 1.05;
     vector<float> tpwgts(npart,1.0/(double)npart);
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
-    
+
     ParMETIS_V3_PartKway(&(vtxdist[0]),&(xadj[0]),&(adjncy[0]),
                          NULL,NULL,&wgtflag,&numflag,&ncon,&npart,&(tpwgts[0]),&ubvec,
                          &(options[0]),&edgecut,&(part[0]),&mpicomm);
-    
+
   }
-  
+
   double t3 = timer.ElapsedTime();
   if (!myrank && outflag)
-  {                  
+  {
     printf("parmetis call     %10.5e secs\n",t3-t2);
     fflush(stdout);
   }
@@ -1056,7 +1059,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
         for (int i=0; i<(int)sendgid.size(); ++i) sendgid[i] = graph->RowMap().GID(i);
       }
       comm->Broadcast(&size,1,proc);
-      if (proc!=myrank) 
+      if (proc!=myrank)
       {
         sendpart.resize(size);
         sendgid.resize(size);
@@ -1070,7 +1073,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       }
       comm->Barrier();
     }
-    rownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm)); 
+    rownodes = rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm));
   }
 
   // export the graph to the new row map to obtain the new column map
@@ -1091,7 +1094,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   double t4 = timer.ElapsedTime();
   if (!myrank && outflag)
-  {                  
+  {
     printf("parmetis cleanup  %10.5e secs\n",t4-t3);
     fflush(stdout);
   }

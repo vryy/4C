@@ -228,17 +228,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // material_
   AddtoPack(data,material_);
   //thickness
@@ -256,9 +252,7 @@ void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
 //  //tsi
 //  AddtoPack(data,tsi_couptyp_);
   //data
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }

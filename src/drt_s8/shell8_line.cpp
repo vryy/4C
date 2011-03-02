@@ -82,10 +82,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Shell8Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Shell8Line::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   dserror("this Shell8Line element does not support communication");
 
   return;

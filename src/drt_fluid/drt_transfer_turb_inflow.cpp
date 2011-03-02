@@ -1,8 +1,8 @@
 /*!----------------------------------------------------------------------
 \file drt_turbulent_inflow.H
 
-\brief Methods to transfer a turbulent inflow profile from a (usually 
-periodic boundary condition) separate domain to a name Dirichlet 
+\brief Methods to transfer a turbulent inflow profile from a (usually
+periodic boundary condition) separate domain to a name Dirichlet
 boundary of the actual domain
 
 <pre>
@@ -44,7 +44,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
   dis_->GetCondition("TransferTurbulentInflow",nodecloudstocouple);
 
   if(not nodecloudstocouple.empty())
-  {    
+  {
     // activate
     active_=true;
 
@@ -59,7 +59,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     // the (at the moment) one and only direction to couple
     int dir=-1;
 
-    // loop all conditions and check whether they are of master or slave 
+    // loop all conditions and check whether they are of master or slave
     // type
     for(vector<DRT::Condition*>::iterator cond=nodecloudstocouple.begin();
         cond!=nodecloudstocouple.end();
@@ -70,7 +70,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       int        direction=-1;
       ToggleType toggle   =none;
 
-      GetData(id,direction,toggle,*cond);    
+      GetData(id,direction,toggle,*cond);
 
       if(dir==-1)
       {
@@ -128,7 +128,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       default :
         dserror("toggle non master or slave");
       }
-      
+
     }
 
     //--------------------------------------------------
@@ -142,7 +142,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     {
       masternodeids.push_back(*appendednode);
     }
-    
+
     for(std::set<int>::iterator appendednode = slaveset.begin();
         appendednode != slaveset.end();
         ++appendednode)
@@ -183,7 +183,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
         rotangle,
         midtosid_
     );
-    // sanity check 
+    // sanity check
     for (std::map<int,vector<int> >::iterator pair=midtosid_.begin();
          pair!=midtosid_.end();
          ++pair)
@@ -213,7 +213,7 @@ void TransferTurbulentInflowCondition::Transfer(
   Teuchos::RCP<Epetra_Vector>       velnp)
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
-  
+
   vector<int>             mymasters;
   vector<vector<double> > mymasters_vel(3);
 
@@ -225,19 +225,19 @@ void TransferTurbulentInflowCondition::Transfer(
          ++pair)
     {
       int gid=pair->first;
-      
+
       if(dis_->HaveGlobalNode(gid))
       {
         mymasters.push_back(gid);
-        
+
         DRT::Node* master=dis_->gNode(gid);
 
         vector<int> masterdofs=dis_->Dof(master);
-        
+
         for(int rr=0;rr<3;++rr)
         {
           int lid = dofrowmap->LID(masterdofs[rr]);
-          
+
           (mymasters_vel[rr]).push_back((*veln)[lid]);
         }
       }
@@ -246,19 +246,19 @@ void TransferTurbulentInflowCondition::Transfer(
 	dserror("master %d in midtosid but not on proc. This was unexpected",gid);
       }
     }
-    
+
 #ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(dis_->Comm());
-    
+
     // necessary variables
     MPI_Request request;
 #endif
-  
+
     // define send and receive blocks
     vector<char> sblock;
     vector<char> rblock;
-  
+
     // get number of processors and the current processors id
     int numproc=dis_->Comm().NumProc();
 
@@ -288,7 +288,11 @@ void TransferTurbulentInflowCondition::Transfer(
 	SetValuesAvailableOnThisProc(mymasters,mymasters_vel,velnp);
 
         // Pack info into block to send
-        PackLocalMasterValues(mymasters,mymasters_vel,sblock);
+        DRT::PackBuffer data;
+        PackLocalMasterValues(mymasters,mymasters_vel,data);
+        data.StartPacking();
+        PackLocalMasterValues(mymasters,mymasters_vel,data);
+        swap( sblock, data() );
 
 #ifdef PARALLEL
         SendBlock(sblock,exporter,request);
@@ -363,7 +367,7 @@ void TransferTurbulentInflowCondition::GetData(
   {
     dserror("expecting either master or slave");
   }
-  
+
   return;
 }
 
@@ -389,7 +393,7 @@ void TransferTurbulentInflowCondition::ReceiveBlock(
   int myrank =dis_->Comm().MyPID();
 
   // necessary variables
-  
+
   int         length =-1;
   int         frompid=(myrank+numproc-1)%numproc;
   int         tag    =frompid;
@@ -400,17 +404,17 @@ void TransferTurbulentInflowCondition::ReceiveBlock(
   {
     dserror("rblock not empty");
   }
-  
+
   // receive from predecessor
   exporter.ReceiveAny(frompid,tag,rblock,length);
-  
+
   if(tag!=(myrank+numproc-1)%numproc)
   {
     dserror("received wrong message (ReceiveAny)");
   }
-  
+
   exporter.Wait(request);
-  
+
   // for safety
   exporter.Comm().Barrier();
 
@@ -444,12 +448,12 @@ void TransferTurbulentInflowCondition::SendBlock(
   int         tag    =myrank;
   int         frompid=myrank;
   int         topid  =(myrank+1)%numproc;
-  
+
   exporter.ISend(frompid,topid,
                  &(sblock[0]),sblock.size(),
                  tag,request);
 
-  
+
   // for safety
   exporter.Comm().Barrier();
 
@@ -472,13 +476,13 @@ void TransferTurbulentInflowCondition::SendBlock(
 void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   vector<int>             & mymasters    ,
   vector<vector<double> > & mymasters_vel,
-  vector<char>            & rblock       
+  vector<char>            & rblock
   )
 {
   mymasters.clear();
 
   midtosid_.clear();
-   
+
   if((int)mymasters_vel.size()!=3)
   {
     dserror("expecting three spatial dimensions in mymasters_vel to unpack into");
@@ -492,7 +496,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   // position to extract
   vector<char>::size_type position = 0;
 
-  // extract size 
+  // extract size
   int size=0;
   DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
 
@@ -525,7 +529,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 
     for(int ll=0;ll<slavesize;++ll)
     {
-      int sid; 
+      int sid;
       DRT::ParObject::ExtractfromPack<int>(position,rblock,sid);
 
       map<int,vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
@@ -552,7 +556,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
     for(int rr=0;rr<size;++rr)
     {
       double value;
-      
+
       DRT::ParObject::ExtractfromPack<double>(position,rblock,value);
 
       (mymasters_vel[mm]).push_back(value);
@@ -578,13 +582,11 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 void TransferTurbulentInflowCondition::PackLocalMasterValues(
     vector<int>             & mymasters    ,
     vector<vector<double> > & mymasters_vel,
-    vector<char>            & sblock       
+    DRT::PackBuffer         & sblock
     )
 {
-  sblock.clear();
-
   int size=mymasters.size();
-  
+
   if(mymasters_vel.size()!=3)
   {
     dserror("expecting three spatial dimensions in mymasters_vel to pack");
@@ -619,9 +621,9 @@ void TransferTurbulentInflowCondition::PackLocalMasterValues(
     else
     {
       vector<int> slaves=iter->second;
-      
+
       int slavesize=(int)slaves.size();
-      
+
       DRT::ParObject::AddtoPack<int>(sblock,slavesize);
       for(int ll=0;ll<slavesize;++ll)
       {
@@ -659,7 +661,7 @@ void TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
     vector<vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp)
 {
-  const Teuchos::RCP<const Epetra_Map> activedbcdofs=dbcmaps_->CondMap();  
+  const Teuchos::RCP<const Epetra_Map> activedbcdofs=dbcmaps_->CondMap();
 
   for(unsigned nn=0;nn<mymasters.size();++nn)
   {
@@ -675,10 +677,10 @@ void TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
         if(dis_->NodeRowMap()->MyGID(*sid))
         {
           DRT::Node* slave=dis_->gNode(*sid);
-        
+
           // get dofs
           vector<int> slavedofs=dis_->Dof(slave);
-          
+
 	  for(int rr=0;rr<3;++rr)
           {
             int gid = slavedofs[rr];

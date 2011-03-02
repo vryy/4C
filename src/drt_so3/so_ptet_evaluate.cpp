@@ -205,8 +205,20 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
             strain(i,j) = nstrain[j];
           }
         }
-        AddtoPack(*stressdata, stress);
-        AddtoPack(*straindata, strain);
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          swap( *stressdata, data() );
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          swap( *straindata, data() );
+        }
       }
     }
     break;

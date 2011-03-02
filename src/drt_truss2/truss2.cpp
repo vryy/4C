@@ -160,17 +160,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Truss2::Shape() const
  |  Pack data                                                  (public) |
  |                                                          cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Truss2::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   //whether element has already been initialized
   AddtoPack(data,isinit_);
   //nodal reference coordinates
@@ -185,9 +181,7 @@ void DRT::ELEMENTS::Truss2::Pack(vector<char>& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   //kinematic type
   AddtoPack(data,kintype_);
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }

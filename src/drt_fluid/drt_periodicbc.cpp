@@ -130,7 +130,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     {
       cout<<endl<<endl;
     }
-    
+
     if(verbose_)
     {
       TimeMonitor::summarize();
@@ -406,7 +406,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
             // set tolerance for octree
             const double tol = (mysurfpbcs_[numcond])->GetDouble("Tolerance for nodematching in octree");
-            
+
             if(!tol_set)
             {
               abs_tol = tol;
@@ -438,7 +438,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
       //   slave                      master
       //
       //
-      
+
       // we transform the three strings "xy", "xz", "yz" into integer
       // values dofsforpbcplanename
       vector<int> dofsforpbcplane(2);
@@ -823,11 +823,19 @@ void PeriodicBoundaryConditions::AddConnectivity(
         for (int np=0;np<numprocs;np++)
         {
           // pack multiple couplings
-          sblock.clear();
+          DRT::PackBuffer data;
+
           for(unsigned rr=0;rr<multiplecouplings.size();++rr)
           {
-            DRT::ParObject::AddtoPack(sblock,multiplecouplings[rr]);
+            DRT::ParObject::AddtoPack(data,multiplecouplings[rr]);
           }
+          data.StartPacking();
+          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+          {
+            DRT::ParObject::AddtoPack(data,multiplecouplings[rr]);
+          }
+          swap( sblock, data() );
+
 #ifdef PARALLEL
           MPI_Request request;
           int         tag    =myrank;
@@ -1004,10 +1012,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     }
 
     int myerase=0;
-    int numerase=0; 
+    int numerase=0;
 
     int mycerase=0;
-    int numcerase=0; 
+    int numcerase=0;
 
     for (unsigned numcond=0;numcond<thiscond.size();++numcond)
     {
@@ -1031,7 +1039,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
             allcoupledrownodes_->erase(*idtodel);
 
 	    DRT::Node*  actnode = discret_->gNode(*idtodel);
-	    
+
 	    // check for row nodesactnodes ??????????????????
 	    if(actnode->Owner()!=discret_->Comm().MyPID())
 	      {
@@ -1056,8 +1064,8 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     discret_->Comm().SumAll(&myerase,&numerase,1);
     discret_->Comm().SumAll(&mycerase,&numcerase,1);
-    if(discret_->Comm().MyPID()==0 && verbose_)  
-    {  
+    if(discret_->Comm().MyPID()==0 && verbose_)
+    {
       cout << " Erased " << numerase  << " slaves from nodeset.\n";
       cout << " Erased " << numcerase << " from the map of all ";
       cout << "coupled rownodes.\n";
@@ -1091,17 +1099,17 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       }
     }
 
-    discret_->Comm().SumAll(&mynumappend,&numappend,1); 
-    if(discret_->Comm().MyPID()==0 && verbose_)   
-      {   
+    discret_->Comm().SumAll(&mynumappend,&numappend,1);
+    if(discret_->Comm().MyPID()==0 && verbose_)
+      {
 	cout << " Appended " << numappend << " ids which belong to slave ";
         cout << "nodes that are coupled to a master\n";
         cout << "        node. They will be fetched to the master's ";
         cout << "procs, an their total \n";
         cout << "        number has to equal the number of slaves ";
         cout << "erased from the nodeset.\n";
-      } 
- 
+      }
+
 
 
     {
@@ -1113,10 +1121,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       int myallcouplednodes=allcoupledrownodes_->size();
       int allcouplednodes=0;
 
-      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin(); 
-          curr != allcoupledrownodes_->end(); 
-          ++curr ) 
-	{ 
+      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin();
+          curr != allcoupledrownodes_->end();
+          ++curr )
+	{
 	  if((int)curr->second.size()>mymax)
 	    {
 	      mymax=curr->second.size();
@@ -1128,16 +1136,16 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
 	}
 
-      discret_->Comm().SumAll(&myallcouplednodes,&allcouplednodes,1); 
+      discret_->Comm().SumAll(&myallcouplednodes,&allcouplednodes,1);
       discret_->Comm().MaxAll(&mymax,&max,1);
       discret_->Comm().MinAll(&mymin,&min,1);
-       
-      if(discret_->Comm().MyPID()==0 && verbose_) 
-	{ 
- 	  cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";  
-        cout << "        all master/slave couples are sent to the same proc.\n";  
 
-	} 
+      if(discret_->Comm().MyPID()==0 && verbose_)
+	{
+ 	  cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";
+        cout << "        all master/slave couples are sent to the same proc.\n";
+
+	}
     }
 
 
@@ -1151,7 +1159,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       {
 	dserror("Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor will crash.\n");
       }
-    } 
+    }
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes

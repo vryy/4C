@@ -207,15 +207,23 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       for (int np=0;np<numprocs;++np)
       {
-	// export set to sendbuffer
-	sblock.clear();
+        DRT::PackBuffer data;
 
 	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
 	     plane!=availablecoords.end();
 	     ++plane)
 	{
-	  DRT::ParObject::AddtoPack(sblock,*plane);
+	  DRT::ParObject::AddtoPack(data,*plane);
 	}
+        data.StartPacking();
+	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+	     plane!=availablecoords.end();
+	     ++plane)
+	{
+	  DRT::ParObject::AddtoPack(data,*plane);
+	}
+        swap( sblock, data() );
+
 #ifdef PARALLEL
 	MPI_Request request;
 	int         tag    =myrank;

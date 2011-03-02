@@ -71,10 +71,8 @@ MAT::Yeoh::Yeoh(MAT::PAR::Yeoh* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)      tk 01/09|
  *----------------------------------------------------------------------*/
-void MAT::Yeoh::Pack(vector<char>& data) const
+void MAT::Yeoh::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

@@ -715,25 +715,38 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     if (surf_stress_man_->HaveSurfStress())
       surf_stress_man_->WriteRestart(istep, time);
 
-    RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
+    //RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
+
+    RCP<Epetra_SerialDenseMatrix> emptyalpha = rcp(new Epetra_SerialDenseMatrix(1, 1));
+
+    DRT::PackBuffer data;
 
     // note that the microstructure is (currently) serial only i.e. we
     // can use the GLOBAL number of elements!
     for (int i=0;i<discret_->NumGlobalElements();++i)
     {
-      RCP<Epetra_SerialDenseMatrix> lastalpha;
-
       if ((*lastalpha_)[i]!=null)
       {
-        lastalpha = (*lastalpha_)[i];
+        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        lastalpha = rcp(new Epetra_SerialDenseMatrix(1, 1));
+        DRT::ParObject::AddtoPack(data, emptyalpha);
       }
-      DRT::ParObject::AddtoPack(*lastalphadata, *lastalpha);
     }
-    output->WriteVector("alpha", *lastalphadata, *discret_->ElementColMap());
+    data.StartPacking();
+    for (int i=0;i<discret_->NumGlobalElements();++i)
+    {
+      if ((*lastalpha_)[i]!=null)
+      {
+        DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+      }
+      else
+      {
+        DRT::ParObject::AddtoPack(data, emptyalpha);
+      }
+    }
+    output->WriteVector("alpha", data(), *discret_->ElementColMap());
   }
 
   //----------------------------------------------------- output results

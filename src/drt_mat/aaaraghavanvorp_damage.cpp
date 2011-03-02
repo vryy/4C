@@ -90,10 +90,8 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Pack(vector<char>& data) const
+void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
 {
-  cout << "PACK \n";
-  data.resize(0);
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -105,18 +103,18 @@ void MAT::AAAraghavanvorp_damage::Pack(vector<char>& data) const
   //  pack history data
   int histsize;
   if (!Initialized())
-    {
-     histsize=0;
-    }
+  {
+    histsize=0;
+  }
   else
-    {
-     histsize = histglast_->size();
-   }
+  {
+    histsize = histglast_->size();
+  }
   AddtoPack(data,histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
-    {
-     AddtoPack(data,histglast_->at(var));
-    }
+  {
+    AddtoPack(data,histglast_->at(var));
+  }
   return;
 }
 

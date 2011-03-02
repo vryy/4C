@@ -784,10 +784,8 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
  |  Pack data                                                  (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::NURBS::Knotvector::Pack(vector<char>& data) const
+void DRT::NURBS::Knotvector::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

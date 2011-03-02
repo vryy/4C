@@ -115,9 +115,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralSurface::Shape() const
  |  Pack data                                                  (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::StructuralSurface::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this StructuralSurface element does not support communication");
 
   return;

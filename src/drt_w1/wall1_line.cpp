@@ -80,10 +80,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Wall1Line::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   dserror("this Wall1Line element does not support communication");
 
   return;

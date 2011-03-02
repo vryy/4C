@@ -81,10 +81,8 @@ MAT::CompOgden::CompOgden(MAT::PAR::CompOgden* params)
 
 /*----------------------------------------------------------------------*/
 /*---------------------------------------------------------------------*/
-void MAT::CompOgden::Pack(vector<char>& data) const
+void MAT::CompOgden::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

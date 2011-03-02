@@ -73,10 +73,8 @@ MAT::MatList::MatList(MAT::PAR::MatList* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Pack(vector<char>& data) const
+void MAT::MatList::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

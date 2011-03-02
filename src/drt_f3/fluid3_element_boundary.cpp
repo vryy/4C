@@ -71,9 +71,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3Boundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Boundary::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid3Boundary::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this Fluid3Boundary element does not support communication");
 
   return;

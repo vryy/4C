@@ -187,17 +187,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // kintype_
   AddtoPack(data,kintype_);
   // eastype_
@@ -205,9 +201,7 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   // neas_
   AddtoPack(data,neas_);
   // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   // prestress_
   AddtoPack(data,pstype_);
@@ -215,17 +209,13 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    vector<char> tmpprestress(0);
-    prestress_->Pack(tmpprestress);
-    AddtoPack(data,tmpprestress);
+    prestress_->Pack(data);
   }
 
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
-    vector<char> tmpinvdesign(0);
-    invdesign_->Pack(tmpinvdesign);
-    AddtoPack(data,tmpinvdesign);
+    invdesign_->Pack(data);
   }
 
   // detJ_

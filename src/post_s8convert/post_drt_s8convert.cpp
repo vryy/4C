@@ -210,8 +210,9 @@ void Converter::write_element_result(string result_name,
   RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > s8data =
     result->read_result_serialdensematrix(result_name);
 
-  RCP<std::vector<char> > h8data = rcp(new std::vector<char>());
   const Epetra_Map* h8map = h8dis_->ElementRowMap();
+
+  DRT::PackBuffer h8data;
   for (int i=0; i<h8map->NumMyElements(); ++i)
   {
     int gid = h8map->GID(i);
@@ -219,9 +220,22 @@ void Converter::write_element_result(string result_name,
       dserror("gid %d not in s8data", gid);
     if ((*s8data)[gid]==Teuchos::null)
       dserror("null matrix in s8data");
-    DRT::ParObject::AddtoPack(*h8data, *(*s8data)[gid]);
+    DRT::ParObject::AddtoPack(h8data, *(*s8data)[gid]);
   }
-  writer_->WriteVector(result_name, *h8data, *h8map);
+
+  h8data.StartPacking();
+
+  for (int i=0; i<h8map->NumMyElements(); ++i)
+  {
+    int gid = h8map->GID(i);
+    if (s8data->find(gid)==s8data->end())
+      dserror("gid %d not in s8data", gid);
+    if ((*s8data)[gid]==Teuchos::null)
+      dserror("null matrix in s8data");
+    DRT::ParObject::AddtoPack(h8data, *(*s8data)[gid]);
+  }
+
+  writer_->WriteVector(result_name, h8data(), *h8map);
 }
 
 #endif

@@ -95,10 +95,8 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         02/10|
  *----------------------------------------------------------------------*/
-void MAT::Growth::Pack(vector<char>& data) const
+void MAT::Growth::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -126,11 +124,9 @@ void MAT::Growth::Pack(vector<char>& data) const
   }
 
   // Pack data of elastic material
-  vector<char> dataelastic;
   if (matelastic_!=Teuchos::null) {
-    matelastic_->Pack(dataelastic);
+    matelastic_->Pack(data);
   }
-  AddtoPack(data,dataelastic);
 
   return;
 }

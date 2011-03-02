@@ -304,8 +304,20 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         ForceStiffMass(lm,mydisp,mypres,mydispi,mypresi,
                        NULL,NULL,NULL,NULL,NULL,NULL,NULL,
                        &stress,&strain,NULL,params,iostress,iostrain);
-        AddtoPack(*stressdata, stress);
-        AddtoPack(*straindata, strain);
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          swap( *stressdata, data() );
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          swap( *straindata, data() );
+        }
       }
     }
     break;
@@ -2319,7 +2331,7 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
   {
     stc_fact = sosh8_calcaspectratio();
   }
- 
+
   if (stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
   {
     dserror("STC in material configuration in Sosh8p8 not implemented!");

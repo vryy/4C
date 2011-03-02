@@ -443,10 +443,23 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     //------------------------------------------------ do sending to tproc
     // gather all objects to be send
-    vector<char> sendblock;
+    DRT::PackBuffer sendblock;
     vector<int> sendgid;
-#if 1
     sendgid.reserve(SendPlan()[tproc].size());
+
+    // count
+
+    for (set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
+    {
+      const int lid = *i;
+      const int gid = SourceMap().GID(lid);
+      helper.PackObject(gid,sendblock);
+    }
+
+    // pack
+
+    sendblock.StartPacking();
+
     for (set<int>::iterator i=SendPlan()[tproc].begin(); i!=SendPlan()[tproc].end(); ++i)
     {
       const int lid = *i;
@@ -454,19 +467,10 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
       if (helper.PackObject(gid,sendblock))
         sendgid.push_back(gid);
     }
-#else
-    for (int i=0; i<SourceMap().NumMyElements(); ++i)
-    {
-      const int lid = i;
-      if (SendPlan()[tproc].count(lid)==0) continue;
-      const int gid = SourceMap().GID(lid);
-      if (helper.PackObject(gid,sendblock))
-        sendgid.push_back(gid);
-    }
-#endif
+
     // send tproc no. of chars tproc must receive
     vector<int> snmessages(2);
-    snmessages[0] = sendblock.size();
+    snmessages[0] = sendblock().size();
     snmessages[1] = sendgid.size();
 
     MPI_Request sizerequest;
@@ -474,7 +478,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     // do the sending of the objects
     MPI_Request sendrequest;
-    ISend(MyPID(),tproc,&sendblock[0],sendblock.size(),2,sendrequest);
+    ISend(MyPID(),tproc,&sendblock()[0],sendblock().size(),2,sendrequest);
 
     MPI_Request sendgidrequest;
     ISend(MyPID(),tproc,&sendgid[0],sendgid.size(),3,sendgidrequest);

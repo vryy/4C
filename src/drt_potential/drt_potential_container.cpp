@@ -101,7 +101,7 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
  |  Pack data                                                  (public) |
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
-void POTENTIAL::PotentialElementContainer::Pack(vector<char>& data) const
+void POTENTIAL::PotentialElementContainer::Pack(DRT::PackBuffer& data) const
 {
   // global id gid_
   AddtoPack(data, gid_);

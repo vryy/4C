@@ -145,7 +145,7 @@ private:
 
       virtual int UniqueParObjectId() const { return XFluid3Type::Instance().UniqueParObjectId(); }
 
-        virtual void Pack(std::vector<char>& data) const;
+        virtual void Pack(DRT::PackBuffer& data) const;
 
         virtual void Unpack(const std::vector<char>& data);
 

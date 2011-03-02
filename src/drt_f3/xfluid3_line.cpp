@@ -86,7 +86,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3Line::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("this XFluid3Line element does not support communication");
 
   return;

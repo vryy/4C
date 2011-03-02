@@ -4402,11 +4402,16 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   std::cout << "proc " << myrank << " number of flame front pieces available before export " << myflamefront.size() << std::endl;
 #endif
 
+  DRT::PackBuffer data;
+  COMBUST::FlameFront::packBoundaryIntCells(myflamefront, data);
+  data.StartPacking();
+  COMBUST::FlameFront::packBoundaryIntCells(myflamefront, data);
+
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send
   //-----------------------------------------------------------------
   vector<char> dataSend;
-  COMBUST::FlameFront::packBoundaryIntCells(myflamefront, dataSend);
+  swap( dataSend, data() );
 
   //-----------------------------------------------
   // send data around in a circle to all processors
@@ -4495,44 +4500,39 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
  *----------------------------------------------------------------------*/
 void COMBUST::FlameFront::packBoundaryIntCells(
     const std::map<int, GEO::BoundaryIntCells>& intcellmap,
-    vector<char>&                               dataSend)
+    DRT::PackBuffer&                            dataSend)
 {
   // pack data on all processors
   // loop entries of map (groups of boundary integration cells)
   for(std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup=intcellmap.begin(); cellgroup != intcellmap.end(); ++cellgroup)
   {
-    vector<char> data;
-    data.resize(0);
 
     // pack data of all boundary integrations cells belonging to an element
     const int elegid = cellgroup->first;
-    DRT::ParObject::AddtoPack(data,elegid);
+    DRT::ParObject::AddtoPack(dataSend,elegid);
 
     const int numcells = (cellgroup->second).size();
-    DRT::ParObject::AddtoPack(data,numcells);
+    DRT::ParObject::AddtoPack(dataSend,numcells);
 
     for (int icell=0; icell<numcells; ++icell)
     {
       GEO::BoundaryIntCell cell = cellgroup->second[icell];
       // get all member variables from a single boundary integration cell
       const DRT::Element::DiscretizationType distype = cell.Shape();
-      DRT::ParObject::AddtoPack(data,distype);
+      DRT::ParObject::AddtoPack(dataSend,distype);
 
       // coordinates of cell vertices in (fluid) element parameter space
       //      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       //      const LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       const LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
-      DRT::ParObject::AddtoPack(data,vertices_xi);
+      DRT::ParObject::AddtoPack(dataSend,vertices_xi);
 
       // coordinates of cell vertices in physical space
       //      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       //      const LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       const LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
-      DRT::ParObject::AddtoPack(data,vertices_xyz);
+      DRT::ParObject::AddtoPack(dataSend,vertices_xyz);
     }
-
-    // write packed boundary integration cell to dataSend
-    DRT::ParObject::AddtoPack(dataSend,data);
   }
 }
 

@@ -145,23 +145,17 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion2::Shape() const
  |  Pack data                                                  (public) |
  |                                                          cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Torsion2::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   AddtoPack(data,isinit_);
    AddtoPack(data,theta_);
   AddtoPack(data,springconstant_);
   AddtoPack(data,bendingpotential_);
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
 
   return;
 }

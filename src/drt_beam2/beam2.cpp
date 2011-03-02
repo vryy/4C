@@ -181,17 +181,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam2::Shape() const
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Beam2::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 
   AddtoPack(data,isinit_);
   AddtoPack(data,lrefe_);

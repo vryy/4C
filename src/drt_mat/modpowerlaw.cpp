@@ -65,10 +65,8 @@ MAT::ModPowerLaw::ModPowerLaw(MAT::PAR::ModPowerLaw* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ModPowerLaw::Pack(vector<char>& data) const
+void MAT::ModPowerLaw::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

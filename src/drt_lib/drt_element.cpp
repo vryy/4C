@@ -239,9 +239,8 @@ void DRT::Element::SetMaterial(int matnum)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Pack(vector<char>& data) const
+void DRT::Element::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -252,12 +251,10 @@ void DRT::Element::Pack(vector<char>& data) const
   // add vector nodeid_
   AddtoPack(data,nodeid_);
   // add material
-  vector<char> tmp;
   if (mat_!=Teuchos::null)
   {
-    mat_->Pack(tmp);
+    mat_->Pack(data);
   }
-  AddtoPack(data,tmp);
 
   return;
 }
@@ -429,7 +426,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
         }
       }
     }
-    
+
     // fill the vector with element dofs
     const int owner = Owner();
     vector<int> dof = dis.Dof(dofset,this);
@@ -548,7 +545,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, 
+void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm,
                                   vector<int>& lmowner, vector<int>& lmstride) const
 {
   const int numnode = NumNode();

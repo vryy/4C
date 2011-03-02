@@ -202,7 +202,7 @@ namespace ELEMENTS
 
     //! \brief Pack this class so it can be communicated
     //! \ref Pack and \ref Unpack are used to communicate this element
-    virtual void Pack(std::vector<char>& data) const;
+    virtual void Pack(DRT::PackBuffer& data) const;
 
     //! \brief Unpack data from a char vector into this class
     //!

@@ -139,23 +139,19 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
 }
 
 
-void DRT::ELEMENTS::Ale2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
 }
 
 
 void DRT::ELEMENTS::Ale2::Unpack(const vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

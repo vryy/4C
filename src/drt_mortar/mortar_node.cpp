@@ -78,7 +78,7 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
  |  Pack data                                                  (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNodeDataContainer::Pack(vector<char>& data) const
+void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add n_
   DRT::ParObject::AddtoPack(data,n_,3*sizeof(double));
@@ -203,17 +203,13 @@ void MORTAR::MortarNode::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Pack(vector<char>& data) const
+void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class DRT::Node
-  vector<char> basedata(0);
-  DRT::Node::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::Node::Pack(data);
   // add isslave_
   AddtoPack(data,isslave_);
   // add istiedslave_

@@ -43,14 +43,14 @@ POTENTIAL::VolumePotential::VolumePotential(
   DRT::UTILS::CollectElementsByConditionLabel(*discretRCP_, elementsByLabel_,"Potential" );
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
   InvertElementsPerLabel(elementsByLabel_,labelByElement_);
-  
+
   const Epetra_Map* dofcolmap = discretRCP_->DofColMap();
   disp_col_ = LINALG::CreateVector(*dofcolmap, true);
-  
+
   std::cout << "Volume potential constructor done" << endl;
 }
 
-    
+
 
 /*-------------------------------------------------------------------*
 | (public)                                                 umay 06/08|
@@ -69,7 +69,7 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
   discret_.ClearState();
   discret_.SetState("displacement",disp);
   disp_col_ = discret_.GetState("displacement");
-  
+
   // update displacement for volume discretization discretRCP
   UpdateDisplacementsOfPotentialDiscretization(disp_col_);
 
@@ -100,7 +100,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time < 0.0) usetime = false;
-  
+
   if(time < 0.0)
     cout <<  "no time curve set " << endl;
 
@@ -109,22 +109,22 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   const bool assemblevec1 = systemvector1!=Teuchos::null;
   const bool assemblevec2 = systemvector2!=Teuchos::null;
   const bool assemblevec3 = systemvector3!=Teuchos::null;
-    
-   // get conditions 
+
+   // get conditions
    vector<DRT::Condition*> potentialcond;
    discret_.GetCondition(condstring, potentialcond);
-  
+
    int num_local_ele = 0;
    for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
      map<int,RefCountPtr<DRT::Element> >& geom = (*condIter)->Geometry();
      num_local_ele += (int) geom.size();
    }
-   
+
    int num_max_ele = 0;
    discret_.Comm().MaxAll(&num_local_ele,&num_max_ele,1 );
    int num_dummy_ele = num_max_ele - num_local_ele;
-   
+
   //----------------------------------------------------------------------
   // loop through potential conditions and evaluate them
   //----------------------------------------------------------------------
@@ -167,7 +167,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 
        // tree search has to be called before evaluate for each element
        TreeSearch((curr->second).get(), (*condIter)->GetDouble("cutOff"), (*condIter)->GetInt("label"));
-       
+
        // Reshape element matrices and vectors and init to zero in element->evaluate
        // call the element specific evaluate method
        int err = curr->second->Evaluate( params,discret_,lm, elematrix1,elematrix2,
@@ -206,13 +206,13 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
        if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lmrow,lmrowowner);
        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmrowowner);
        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmrowowner);
-     } 
+     }
    } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
 
    // tree search over dummy elements to allow for send_recv
    for(int i_dummy = 0; i_dummy < num_dummy_ele; i_dummy++)
      TreeSearchDummy();
-  
+
   return;
 } // end of EvaluateVolumePotentialCondition
 
@@ -239,9 +239,9 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
 
-  // tree search is performed in evaluate potential and 
+  // tree search is performed in evaluate potential and
   // local and nonlocal pecs are filled
-  
+
   // compute internal force and stiffness matrix
   ComputeFandK(element, gaussrule, lm, K_stiff, F_int, cond, curvefac);
   return;
@@ -267,7 +267,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
   RefCountPtr<DRT::Condition> cond      = params.get<RefCountPtr<DRT::Condition> >("condition",null);
 
   // initialize time variables
-  double curvefac = GetTimeCurveFactor(params);  
+  double curvefac = GetTimeCurveFactor(params);
 
   // compute internal force and stiffness matrix
   ComputeFandK(element, gaussrule, lm, K_stiff, F_int, cond, curvefac);
@@ -295,7 +295,7 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
     lm.reserve(3);
     // extract global dof ids
     discretRCP_->Dof(node, lm);
- 
+
     vector<double> mydisp(3);
     LINALG::Matrix<3,1> currpos;
     DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);
@@ -308,7 +308,7 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
   // reinitialize search tree
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*discretRCP_, currentpositions_);
   searchTree_->initializeTree(rootBox, elementsByLabel_, treetype_);
-  
+
   //build boxes around every element
   for (int lid = 0; lid < discretRCP_->NumMyColElements(); ++lid)
   {
@@ -316,7 +316,7 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
   	const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element,currentpositions_));
 	  GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
 	  GEO::checkRoughGeoType(element, xyze, eleGeoType);
-	  elemXAABBList_[element->Id()]=GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType);	
+	  elemXAABBList_[element->Id()]=GEO::computeFastXAABB(element->Shape(), xyze, eleGeoType);
   }
   return;
 }
@@ -339,12 +339,12 @@ void POTENTIAL::VolumePotential::TreeSearch(
      eleXAABB(dim,0) = eleXAABB(dim,0) - radius;
      eleXAABB(dim,1) = eleXAABB(dim,1) + radius;
    }
-   
+
    // local ids and nonlocal pecs
    TreeSearchElement(eleXAABB, label, false);
- 
+
    return;
-} 
+}
 
 
 
@@ -356,11 +356,11 @@ void POTENTIAL::VolumePotential::TreeSearchDummy()
 {
    // create dummy ele XAABB
    LINALG::Matrix<3,2> eleXAABB(true);
-   
+
    // local ids and nonlocal pecs
    TreeSearchElement(eleXAABB, -1, true);
    return;
-} 
+}
 
 
 
@@ -377,28 +377,28 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
   localEleIds_.clear();
   if(label != -1) // dummy
     searchTree_->queryPotentialElements(elemXAABBList_, eleXAABB, localEleIds_, label);
-  
+
   const int numprocs = discret_.Comm().NumProc();
   // if only one processor is running no parallel search has to be performed
   if(numprocs==1)
     return;
-  
+
 #ifdef PARALLEL
-  
+
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(discret_.Comm()));
-  
+
   std::set<int> pecIds;
   for(std::map<int, std::set<int> >::const_iterator labelIter = localEleIds_.begin(); labelIter != localEleIds_.end(); labelIter++)
     for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
       pecIds.insert(*eleIter);
-  
+
   // parallel search
   const int myrank = discret_.Comm().MyPID();
   int forward = 0;
   int backward = 0;
   int tag_send = myrank+1;
   int tag_recv = myrank;
-  
+
   //where is my destination and source
   if (myrank==0)              //first processor
   {
@@ -418,8 +418,8 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
   }
   else
     dserror("something is wrong with myrank and numprocs");
-  
-  
+
+
   // enlarge box by cut off radius
   std::vector<double> eleXAABB_send(6,0.0);
   std::vector<double> eleXAABB_recv(6,0.0);
@@ -428,7 +428,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     eleXAABB_send[dim] = eleXAABB(dim,0);
     eleXAABB_send[dim+3] = eleXAABB(dim,1);
   }
-   
+
   // initialize with dummy character in case that no elements are found on one proc
   int numEle_send = 0;
   int numEle_recv = 0;
@@ -440,22 +440,22 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
 
   // send XAABB to other procs and collect pecs
   for(int i_proc = 0; i_proc < (numprocs-1); i_proc++)
-  {  
-    // send XAABB 
-    int err = MPI_Sendrecv( &eleXAABB_send[0], 6, MPI_DOUBLE, forward,   tag_send, 
-                            &eleXAABB_recv[0], 6, MPI_DOUBLE, backward,  tag_recv, 
+  {
+    // send XAABB
+    int err = MPI_Sendrecv( &eleXAABB_send[0], 6, MPI_DOUBLE, forward,   tag_send,
+                            &eleXAABB_recv[0], 6, MPI_DOUBLE, backward,  tag_recv,
                             comm->Comm(), &status);
-    
+
     if (err != 0)
       dserror("mpi sendrecv error %d", err);
     eleXAABB_send = eleXAABB_recv;
 
 
-    MPI_Sendrecv( &label_send, 1, MPI_INT, forward,   tag_send, 
-                  &label_recv, 1, MPI_INT, backward,  tag_recv, 
+    MPI_Sendrecv( &label_send, 1, MPI_INT, forward,   tag_send,
+                  &label_recv, 1, MPI_INT, backward,  tag_recv,
                   comm->Comm(), &status);
     label_send = label_recv;
-  
+
 
     // search for gids of potential elements on the current proc
     LINALG::Matrix<3,2> eleXAABB_LG;
@@ -464,11 +464,13 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
       eleXAABB_LG(dim, 0) = eleXAABB_recv[dim];
       eleXAABB_LG(dim, 1) = eleXAABB_recv[dim+3];
     }
-    
+
     std::map<int,std::set<int> > potEleGids;
     if(label_recv != -1)
       searchTree_->queryPotentialElements(elemXAABBList_, eleXAABB_LG, potEleGids, label_recv);
- 
+
+    std::vector<RCP<PotentialElementContainer> > vpec;
+
     // loop over labelIter->first
     for(std::map<int, std::set<int> >::const_iterator labelIter = potEleGids.begin(); labelIter != potEleGids.end(); labelIter++)
       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
@@ -479,7 +481,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
         vector<int> lmstride;
         element->LocationVector(*discretRCP_,lm,lmowner,lmstride);
         const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
-        
+
         RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer(
             element->Id(),
             element->Shape(),
@@ -489,35 +491,50 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
             ReferenceConfiguration(element, prob_dim_),
             lm));
 
-        pec->Pack(data_send);
+        //pec->Pack(data_send);
+        vpec.push_back( pec );
         numEle_send++;
       }
-    
+
+    DRT::PackBuffer data;
+    for ( std::vector<RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
+    {
+      RCP<PotentialElementContainer> pec = *i;
+      pec->Pack( data );
+    }
+    data.StartPacking();
+    for ( std::vector<RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
+    {
+      RCP<PotentialElementContainer> pec = *i;
+      pec->Pack( data );
+    }
+    swap( data_send, data() );
+
     // send number of elements
-    MPI_Sendrecv( &numEle_send, 1, MPI_INT, forward,  tag_send, 
-                  &numEle_recv, 1, MPI_INT, backward, tag_recv, 
+    MPI_Sendrecv( &numEle_send, 1, MPI_INT, forward,  tag_send,
+                  &numEle_recv, 1, MPI_INT, backward, tag_recv,
                   comm->Comm(), &status);
     numEle_send = numEle_recv;
-    
+
     // let the next proc now about the data size he will receive
     int data_size_send =  (int) data_send.size();
     int data_size_recv = 0;
-    MPI_Sendrecv(&data_size_send, 1, MPI_INT, forward,  tag_send, 
-                 &data_size_recv, 1, MPI_INT, backward, tag_recv, 
+    MPI_Sendrecv(&data_size_send, 1, MPI_INT, forward,  tag_send,
+                 &data_size_recv, 1, MPI_INT, backward, tag_recv,
                  comm->Comm(), &status);
-    
+
     data_recv.clear();
     data_recv.resize(data_size_recv);
-    
+
     // 2. Send data to the next processor and receive incoming data from previous processor
-    MPI_Sendrecv(&data_send[0], data_size_send, MPI_CHAR, forward, tag_send, 
-                 &data_recv[0], data_size_recv, MPI_CHAR, backward,tag_recv, 
+    MPI_Sendrecv(&data_send[0], data_size_send, MPI_CHAR, forward, tag_send,
+                 &data_recv[0], data_size_recv, MPI_CHAR, backward,tag_recv,
                  comm->Comm(), &status);
-    
+
     data_send = data_recv;
   } // loop over numprocs
 
-  
+
   // unpack elements after returning to the starting processor
   if(label == -1 && numEle_send != 0)
     dserror("dummy element obtained potential elements");
@@ -537,16 +554,16 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
       pecIds.insert(pec->Id());
     }
   }
- 
+
   if(position != data_send.size())
     dserror("something is wrong with the data vector on proc %d", myrank);
-  
+
   if(((label == -1) && (int) nonlocalPecs_.size() != 0) )//|| (label != label_recv))
     dserror("something is wrong with the dummy search %d", myrank);
-  
+
 
 #endif
-  
+
   return;
 }
 
@@ -576,13 +593,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   const int ndofcol    = lm.size();
   F_int.Size(ndofrow);
   K_stiff.Shape(ndofrow, ndofcol);
-  
+
   if(localEleIds_.empty() && nonlocalPecs_.empty())
    return;
-  
+
   // number of atoms (~0.2 nm) per surface area in reference configuration
   // here equal for all bodies in n/µm^2
-  const double beta   = cond->GetDouble("beta");	
+  const double beta   = cond->GetDouble("beta");
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
   //----------------------------------------------------------------------
@@ -635,14 +652,14 @@ void POTENTIAL::VolumePotential::ComputeFandK(
            LINALG::Matrix<3,3>  potderiv2;
 
            EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-           
+
            const int numdof = 3;
-	
+
            // computation of internal forces (possibly with non-local values)
            for (int inode = 0; inode < numnode; inode++)
              for(int dim = 0; dim < 3; dim++)
 			     F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
-	
+
 	         // computation of stiffness matrix (possibly with non-local values)
 	         for (int inode = 0;inode < numnode; ++inode)
 	           for(int dim = 0; dim < 3; dim++)
@@ -652,27 +669,27 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
 	                 K_stiff(inode*numdof+dim, jnode*numdof+dim_pot) +=
 	                   funct(inode)*beta*fac*(beta_pot*potderiv2(dim,dim_pot)*funct(jnode)*fac_pot);
-	
+
 	             // k,ij
 	             for (int jnode = 0;jnode < numnode_pot; ++jnode)
 	               for(int dim_pot = 0; dim_pot < 3; dim_pot++)
 	                 K_stiff(inode*numdof+dim, GetLocalIndex(lm,lmpot[jnode*numdof+dim_pot]) ) +=
 	                    funct(inode)*beta*fac*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot);
-	
+
 	            }
 	         } // loop over all gauss points of the potential element
       } // loop over all potential elements
-     
+
 
     //----------------------------------------------------------------------
     // run over all influencing elements from different procs
     //----------------------------------------------------------------------
-    for(std::map<int, std::vector<POTENTIAL::PotentialElementContainer> >::iterator labelIter = nonlocalPecs_.begin(); 
+    for(std::map<int, std::vector<POTENTIAL::PotentialElementContainer> >::iterator labelIter = nonlocalPecs_.begin();
     labelIter != nonlocalPecs_.end(); labelIter++)
-      for(std::vector<POTENTIAL::PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); 
+      for(std::vector<POTENTIAL::PotentialElementContainer>::iterator pecIter = (labelIter->second).begin();
       pecIter != (labelIter->second).end(); pecIter++)
-      { 
-        
+      {
+
         // get atom density
         const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
@@ -692,17 +709,17 @@ void POTENTIAL::VolumePotential::ComputeFandK(
           Epetra_SerialDenseVector    funct_pot(numnode_pot);
           Epetra_SerialDenseMatrix    deriv_pot(3,numnode_pot);
           LINALG::Matrix<3,1>         x_pot_gp(true);
-          
+
           const double fac_pot = ComputeFactor(*pecIter, funct_pot, deriv_pot, intpoints_pot,
-                                              gp_pot, x_pot_gp, curvefac);          
-          
+                                              gp_pot, x_pot_gp, curvefac);
+
           // evaluate Lennard Jones potential and its derivatives
           LINALG::Matrix<3,1>  potderiv1;
           LINALG::Matrix<3,3>  potderiv2;
 
           EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
           //potderiv1.Print(cout);
-          //potderiv2.Print(cout);         
+          //potderiv2.Print(cout);
 
           const int numdof = 3;
           // computation of internal forces (possibly with non-local values)
@@ -754,13 +771,13 @@ void POTENTIAL::VolumePotential::ComputeFandK(
   // determine global row indices (lmrow) and global colum indices (lm)
   vector<int> lmrow = lm;
   CollectLmcol(discretRCP_, localEleIds_, nonlocalPecs_, lm);
-  
+
   // resize matrix and vector and zero out
   const int ndofrow    = lmrow.size();
   const int ndofcol    = lm.size();
   F_int.Size(ndofrow);
   K_stiff.Shape(ndofrow, ndofcol);
-  
+
   if(localEleIds_.empty() && nonlocalPecs_.empty())
    return;
 
@@ -851,7 +868,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     for(std::map<int, std::vector<PotentialElementContainer> >::iterator labelIter = nonlocalPecs_.begin(); labelIter != nonlocalPecs_.end(); labelIter++)
       for(std::vector<PotentialElementContainer>::iterator pecIter = (labelIter->second).begin(); pecIter != (labelIter->second).end(); pecIter++)
       {
-       
+
         const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
         vector<int> lmpot = (*pecIter).GetLm();
@@ -925,31 +942,31 @@ double POTENTIAL::VolumePotential::ComputeFactor(
 {
 
   const int numnode = element->NumNode();
-  const double e0 = intpoints.qxg[gp][0];	
+  const double e0 = intpoints.qxg[gp][0];
   const double e1 = intpoints.qxg[gp][1];
   const double e2 = intpoints.qxg[gp][2];
-  
+
   // get shape functions and derivatives of the element
   DRT::UTILS::shape_function_3D(funct,e0,e1,e2,element->Shape());
   DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,element->Shape());
 
   Epetra_SerialDenseMatrix Jacobi(3,3);
   Epetra_SerialDenseMatrix X(numnode,3);
-  ReferenceConfiguration(element,X,3);		
+  ReferenceConfiguration(element,X,3);
   Epetra_SerialDenseMatrix x(numnode,3);
-  SpatialConfiguration(currentpositions_,element,x,3);	
+  SpatialConfiguration(currentpositions_,element,x,3);
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
-  const double detA = Jacobi(0,0)*(   Jacobi(1,1)*Jacobi(2,2) 
+  const double detA = Jacobi(0,0)*(   Jacobi(1,1)*Jacobi(2,2)
                                     - Jacobi(2,1)*Jacobi(1,2)  ) -
-                      Jacobi(0,1)*(   Jacobi(1,0)*Jacobi(2,2) 
+                      Jacobi(0,1)*(   Jacobi(1,0)*Jacobi(2,2)
                                     - Jacobi(2,0)*Jacobi(1,2)  ) +
-                      Jacobi(0,2)*(   Jacobi(1,0)*Jacobi(2,1) 
-                                    - Jacobi(2,0)*Jacobi(1,1)  );                 		
-                            		
+                      Jacobi(0,2)*(   Jacobi(1,0)*Jacobi(2,1)
+                                    - Jacobi(2,0)*Jacobi(1,1)  );
+
   double factor = intpoints.qwgt[gp] * detA * curve_fac;
-  
+
   x_gp = 0.0;
   // compute gauss point in physical coordinates
   for (int inode = 0; inode < numnode; inode++)
@@ -975,10 +992,10 @@ double POTENTIAL::VolumePotential::ComputeFactor(
 {
 
   const int numnode = pec.NumNode();
-  const double e0 = intpoints.qxg[gp][0];	
+  const double e0 = intpoints.qxg[gp][0];
   const double e1 = intpoints.qxg[gp][1];
   const double e2 = intpoints.qxg[gp][2];
-  
+
   // get shape functions and derivatives of the element
   DRT::UTILS::shape_function_3D(funct,e0,e1,e2,pec.Shape());
   DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,pec.Shape());
@@ -986,19 +1003,19 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   Epetra_SerialDenseMatrix Jacobi(3,3);
   Epetra_SerialDenseMatrix X = pec.GetReferenceConfiguration();
   Epetra_SerialDenseMatrix x = pec.GetSpatialConfiguration();
-  
+
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
-  const double detA = Jacobi(0,0)*(   Jacobi(1,1)*Jacobi(2,2) 
+  const double detA = Jacobi(0,0)*(   Jacobi(1,1)*Jacobi(2,2)
                                     - Jacobi(2,1)*Jacobi(1,2)  ) -
-                      Jacobi(0,1)*(   Jacobi(1,0)*Jacobi(2,2) 
+                      Jacobi(0,1)*(   Jacobi(1,0)*Jacobi(2,2)
                                     - Jacobi(2,0)*Jacobi(1,2)  ) +
-                      Jacobi(0,2)*(   Jacobi(1,0)*Jacobi(2,1) 
-                                    - Jacobi(2,0)*Jacobi(1,1)  );                 		
-  
+                      Jacobi(0,2)*(   Jacobi(1,0)*Jacobi(2,1)
+                                    - Jacobi(2,0)*Jacobi(1,1)  );
+
   double factor = intpoints.qwgt[gp] * detA * curve_fac;
-  
+
   x_gp = 0.0;
   // compute gauss point in physical coordinates
   for (int inode = 0; inode < numnode; inode++)
@@ -1039,9 +1056,9 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
-  const double detA = Jacobi(0,0)*Jacobi(1,1) - Jacobi(1,0)*Jacobi(0,1);                    		
+  const double detA = Jacobi(0,0)*Jacobi(1,1) - Jacobi(1,0)*Jacobi(0,1);
   double factor = intpoints.qwgt[gp] * detA * curve_fac;
-  
+
   x_gp = 0.0;
   // compute gauss point in physical coordinates
   for (int inode = 0; inode < numnode; inode++)
@@ -1073,17 +1090,17 @@ double POTENTIAL::VolumePotential::ComputeFactor(
   // get shape functions and derivatives of the element
   DRT::UTILS::shape_function_2D(funct,e0,e1,pec.Shape());
   DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,pec.Shape());
-  
+
   Epetra_SerialDenseMatrix Jacobi(2,2);
   Epetra_SerialDenseMatrix X = pec.GetReferenceConfiguration();
   Epetra_SerialDenseMatrix x = pec.GetSpatialConfiguration();
-  
+
   Jacobi.Multiply('N','N',1.0,deriv,X,0.0);
 
   // detA maps the reference configuration to the parameter space domain
-  const double detA = Jacobi(0,0)*Jacobi(1,1) - Jacobi(1,0)*Jacobi(0,1);                                                                 
+  const double detA = Jacobi(0,0)*Jacobi(1,1) - Jacobi(1,0)*Jacobi(0,1);
   double factor = intpoints.qwgt[gp] * detA * curve_fac;
-  
+
   x_gp = 0.0;
   // compute gauss point in physical coordinates
   for (int inode = 0; inode < numnode; inode++)
@@ -1170,18 +1187,18 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
 
   discret_.ClearState();
   discret_.SetState("displacement",disp);
-  
+
   EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
- 
-  RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");  
-  // compute test results 
+
+  RefCountPtr<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
+  // compute test results
   std::map<int, std::set<int> > empty_set;
-  
-  if( p.get<string>("solution type") == "Sphere" ) 
-    computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
+
+  if( p.get<string>("solution type") == "Sphere" )
+    computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint,
                                 time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
-  else if( p.get<string>("solution type") == "Membrane" ) 
-    computeTestVanDerWaalsMembranes(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint, 
+  else if( p.get<string>("solution type") == "Membrane" )
+    computeTestVanDerWaalsMembranes(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint,
                                     time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0),
                                     p.get("thickness", 0.0));
   else

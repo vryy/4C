@@ -1019,20 +1019,21 @@ void IO::DiscretizationWriter::WriteKnotvector() const
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // put knotvector into block
-    Teuchos::RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
-
-    knots->Pack(*block);
+    DRT::PackBuffer block;
+    knots->Pack(block);
+    block.StartPacking();
+    knots->Pack(block);
 
     // write block to file
-    if(!block->empty())
+    if(!block().empty())
     {
-      hsize_t dim = static_cast<hsize_t>(block->size());
+      hsize_t dim = static_cast<hsize_t>(block().size());
       const herr_t status = H5LTmake_dataset_char(
         meshgroup_,
         "knotvector",
         1,
         &dim,
-        &((*block)[0]));
+        &(block()[0]));
       if (status < 0)
         dserror("Failed to create dataset in HDF-meshfile");
     }

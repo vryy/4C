@@ -159,6 +159,8 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   sblockofnodes.clear();
   rblockofnodes.clear();
 
+  DRT::PackBuffer data;
+
   for(int globn=0;globn<(int)slavenodeids.size();globn++)
   {
     // is this slavenode on this proc?
@@ -171,14 +173,31 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
       if (actnode->Owner() == myrank)
       {
         // Add node to list of nodes which will be sent to the next proc
-        vector<char> data;
         actnode->Pack(data);
-        DRT::ParObject::AddtoPack(sblockofnodes,data);
       }
     } // end if slavenode on proc
   } // end loop globn
 
+  data.StartPacking();
 
+  for(int globn=0;globn<(int)slavenodeids.size();globn++)
+  {
+    // is this slavenode on this proc?
+    if(discret_.HaveGlobalNode(slavenodeids[globn]))
+    {
+      // get the slavenode
+      DRT::Node* actnode = discret_.gNode(slavenodeids[globn]);
+
+      // take only nodes which are not ghosted
+      if (actnode->Owner() == myrank)
+      {
+        // Add node to list of nodes which will be sent to the next proc
+        actnode->Pack(data);
+      }
+    } // end if slavenode on proc
+  } // end loop globn
+
+  swap( sblockofnodes, data() );
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -419,6 +438,8 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
   vector<char> sblockofnodes;
   vector<char> rblockofnodes;
 
+  DRT::PackBuffer data;
+
   for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
   {
     // is this slavenode on this proc?
@@ -431,12 +452,31 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
       if (actnode->Owner() == slaverank)
       {
         // Add node to list of nodes which will be sent to the next proc
-        vector<char> data;
         actnode->Pack(data);
-        DRT::ParObject::AddtoPack(sblockofnodes,data);
       }
     }
   }
+
+  data.StartPacking();
+
+  for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
+  {
+    // is this slavenode on this proc?
+    if (slavedis.HaveGlobalNode(slavenodeids[globn]))
+    {
+      // get the slavenode
+      DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
+
+      // take only nodes which are not ghosted
+      if (actnode->Owner() == slaverank)
+      {
+        // Add node to list of nodes which will be sent to the next proc
+        actnode->Pack(data);
+      }
+    }
+  }
+
+  swap( sblockofnodes, data() );
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop

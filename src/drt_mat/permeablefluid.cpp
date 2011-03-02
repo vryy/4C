@@ -65,10 +65,8 @@ MAT::PermeableFluid::PermeableFluid(MAT::PAR::PermeableFluid* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PermeableFluid::Pack(vector<char>& data) const
+void MAT::PermeableFluid::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

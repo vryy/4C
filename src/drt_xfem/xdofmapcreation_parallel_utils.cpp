@@ -84,14 +84,12 @@ void XFEM::updateNodalDofMap(
  *----------------------------------------------------------------------*/
 void XFEM::packDofKeys(
     const set<XFEM::DofKey<XFEM::onNode> >&     dofkeyset,
-    vector<char>&                               dataSend )
+    DRT::PackBuffer&                            dataSend )
 {
   // pack data on all processors
   for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
   {
-    vector<char> data;
-    dofkey->Pack(data);
-    DRT::ParObject::AddtoPack(dataSend,data);
+    dofkey->Pack(dataSend);
   }
 }
 
@@ -147,8 +145,13 @@ void XFEM::syncNodalDofs(
   }
 
   // pack date for initial send
-  vector<char> dataSend;
-  XFEM::packDofKeys(original_dofkeyset, dataSend);
+  DRT::PackBuffer data;
+  XFEM::packDofKeys(original_dofkeyset, data);
+  data.StartPacking();
+  XFEM::packDofKeys(original_dofkeyset, data);
+
+  std::vector<char> dataSend;
+  swap( dataSend, data() );
 
 #ifdef DEBUG
   cout << "proc " << myrank << ": sending "<< original_dofkeyset.size() << " dofkeys to proc " << dest << endl;

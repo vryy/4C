@@ -74,10 +74,8 @@ MAT::AAAneohooke::AAAneohooke(MAT::PAR::AAAneohooke* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::Pack(vector<char>& data) const
+void MAT::AAAneohooke::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

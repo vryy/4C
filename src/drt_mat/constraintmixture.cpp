@@ -92,10 +92,8 @@ MAT::ConstraintMixture::ConstraintMixture(MAT::PAR::ConstraintMixture* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Pack(vector<char>& data) const
+void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

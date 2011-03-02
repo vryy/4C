@@ -124,7 +124,7 @@ private:
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
     virtual void Pack(
-      std::vector<char>& data  ///< (in/out): char vector to store class information
+      DRT::PackBuffer& data  ///< (in/out): char vector to store class information
       ) const;
 
     /// \brief Unpack data from a char vector into this class

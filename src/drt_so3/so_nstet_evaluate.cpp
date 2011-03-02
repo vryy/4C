@@ -197,12 +197,12 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<1,6> stress(true); 
+        LINALG::Matrix<1,6> stress(true);
         LINALG::Matrix<1,6> strain(true);
         LINALG::Matrix<1,6> elestress(true);
         LINALG::Matrix<1,6> elestrain(true);
         nstetnlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&elestress,&elestrain,iostress,iostrain);
-        
+
         //--------------------------------- interpolate nodal stress from every node
         Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
         Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
@@ -218,19 +218,19 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
             strain(0,j) += (*(*nodestrain)(j))[lid];
           }
         }
-        for (int j=0; j<6; ++j) 
+        for (int j=0; j<6; ++j)
         {
           stress(0,j) /= numnode;
           strain(0,j) /= numnode;
         }
-        
+
         //-------------------------------------------------------- add element stress
-        for (int j=0; j<6; ++j) 
+        for (int j=0; j<6; ++j)
         {
           stress(0,j) += elestress(0,j);
           strain(0,j) += elestrain(0,j);
         }
-        
+
         //------------------------------------------------- add stress from MIS nodes
 #ifndef PUSOSOLBERG
         Teuchos::RCP<Epetra_MultiVector> mis_stress = ElementType().pstab_nstress_;
@@ -261,10 +261,22 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
         //printf("Proc %d Ele %d TotWeight %15.10e\n",Owner(),Id(),totweight);
         //cout << stresstest;
 #endif
-        
+
         //----------------------------------------------- add final stress to storage
-        AddtoPack(*stressdata, stress);
-        AddtoPack(*straindata, strain);
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          swap( *stressdata, data() );
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          swap( *straindata, data() );
+        }
       } // if (discretization.Comm().MyPID()==Owner())
     }
     break;
@@ -525,7 +537,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       gl(2,0) = gl(0,2);
       gl(2,1) = gl(1,2);
       gl(2,2) = glstrainbar(2);
-      
+
 #ifndef PUSOSOLBERG
       LINALG::Matrix<3,3> Fbar(false);
       Fbar.SetCopy(defgrd.A());
@@ -536,13 +548,13 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
       LINALG::Matrix<3,3> invdefgrd;
       invdefgrd.Invert(defgrd);
 #endif
-      
+
       LINALG::Matrix<3,3> temp;
       LINALG::Matrix<3,3> euler_almansi;
       temp.Multiply(gl,invdefgrd);
       euler_almansi.MultiplyTN(invdefgrd,temp);
 
-      
+
       (*elestrain)(0,0) = ALPHA_NSTET * euler_almansi(0,0);
       (*elestrain)(0,1) = ALPHA_NSTET * euler_almansi(1,1);
       (*elestrain)(0,2) = ALPHA_NSTET * euler_almansi(2,2);

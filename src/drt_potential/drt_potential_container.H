@@ -94,7 +94,7 @@ public:
   virtual int UniqueParObjectId() const {return PecType::Instance().UniqueParObjectId(); }
 
   //! packs the potential element container in a vector<char>
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
 
   //! unpacks the potential element container from a vector<char>
   virtual void Unpack(const vector<char>& data);

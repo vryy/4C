@@ -149,27 +149,21 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet10::Shape() const
  |  Pack data                                                  (public) |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // kintype_
   AddtoPack(data,kintype_);
   //data
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  data_.Pack(data);
   // detJ_
   AddtoPack(data,detJ_);
   AddtoPack(data,detJ_mass_);
-  
+
   //invJ
   const int size = (int)invJ_.size();
   AddtoPack(data,size);
@@ -180,7 +174,7 @@ void DRT::ELEMENTS::So_tet10::Pack(vector<char>& data) const
     AddtoPack(data,size_mass);
     for (int i=0; i<size_mass; ++i)
       AddtoPack(data,invJ_mass_[i]);
-    
+
   return;
 }
 
@@ -206,7 +200,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  
+
   // detJ_
   ExtractfromPack(position,data,detJ_);
   ExtractfromPack(position,data,detJ_mass_);
@@ -400,7 +394,7 @@ void DRT::ELEMENTS::So_tet10::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  
+
   if ((Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
   {
     string fiber = "Fiber1";

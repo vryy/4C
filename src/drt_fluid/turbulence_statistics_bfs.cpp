@@ -127,15 +127,23 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     // first, communicate coordinates in x1-direction
     for (int np=0;np<numprocs;++np)
     {
-      // export set to sendbuffer
-      sblock.clear();
+      DRT::PackBuffer data;
 
       for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
            x1line!=x1avcoords.end();
            ++x1line)
       {
-        DRT::ParObject::AddtoPack(sblock,*x1line);
+        DRT::ParObject::AddtoPack(data,*x1line);
       }
+      data.StartPacking();
+      for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+           x1line!=x1avcoords.end();
+           ++x1line)
+      {
+        DRT::ParObject::AddtoPack(data,*x1line);
+      }
+      swap( sblock, data() );
+
 #ifdef PARALLEL
       MPI_Request request;
       int         tag    =myrank;
@@ -192,15 +200,23 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     // second, communicate coordinates in x2-direction
     for (int np=0;np<numprocs;++np)
     {
-      // export set to sendbuffer
-      sblock.clear();
+      DRT::PackBuffer data;
 
       for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
            x2line!=x2avcoords.end();
            ++x2line)
       {
-        DRT::ParObject::AddtoPack(sblock,*x2line);
+        DRT::ParObject::AddtoPack(data,*x2line);
       }
+      data.StartPacking();
+      for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+           x2line!=x2avcoords.end();
+           ++x2line)
+      {
+        DRT::ParObject::AddtoPack(data,*x2line);
+      }
+      swap( sblock, data() );
+
 #ifdef PARALLEL
       MPI_Request request;
       int         tag    =myrank;

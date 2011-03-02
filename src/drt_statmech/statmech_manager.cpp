@@ -1484,16 +1484,29 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	delcrosslinkerstrans.Export(delcrosslinkers, crosslinkexporter, Add);
 	delcrosslinkers.Import(delcrosslinkerstrans, crosslinkimporter, Insert);
 
+        unsigned startsize = deletedelements_.size();
+        std::vector<DRT::PackBuffer> vdata( startsize );
 
 	// DELETION OF ELEMENTS
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
 		{
-			//save the element by packing before elimination to make it restorable in case that needed
-			deletedelements_.resize(deletedelements_.size() + 1);
-			discret_.gElement((int)delcrosslinkers[i])->Pack(deletedelements_[deletedelements_.size()-1]);
-			discret_.DeleteElement( (int)delcrosslinkers[i]);
+                  //save the element by packing before elimination to make it restorable in case that needed
+                  vdata.push_back( DRT::PackBuffer() );
+                  discret_.gElement((int)delcrosslinkers[i])->Pack( vdata.back() );
 		}
+        for ( unsigned i=startsize; i<vdata.size(); ++i )
+          vdata[i].StartPacking();
+	for (int i=0; i<delcrosslinkers.MyLength(); i++)
+		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
+		{
+                  //save the element by packing before elimination to make it restorable in case that needed
+                  deletedelements_.push_back( std::vector<char>() );
+                  discret_.gElement((int)delcrosslinkers[i])->Pack( vdata[deletedelements_.size()-1] );
+                  discret_.DeleteElement( (int)delcrosslinkers[i] );
+		}
+        for ( unsigned i=startsize; i<vdata.size(); ++i )
+          swap( deletedelements_[i], vdata[i]() );
 	/*synchronize
 	 *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
 	 *new element maps and call FillComplete();*/
@@ -1699,16 +1712,32 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 		}
 	}
 
+        unsigned startsize = deletedelements_.size();
+        std::vector<DRT::PackBuffer> vdata( startsize );
+
 	// DELETION OF ELEMENTS
 	for (int i=0; i<deletecrosslinkerelements.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)deletecrosslinkerelements[i]))
 	{
-		//save the element by packing before elimination to make it restorable in case that needed
-                //cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<endl;
-		deletedelements_.resize(deletedelements_.size() + 1);
-		discret_.gElement((int)deletecrosslinkerelements[i])->Pack(deletedelements_[deletedelements_.size()-1]);
-		discret_.DeleteElement( (int)deletecrosslinkerelements[i]);
+          //save the element by packing before elimination to make it restorable in case that needed
+          //cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element
+          //"<<(int)deletecrosslinkerelements[i]<<endl;
+          vdata.push_back( DRT::PackBuffer() );
+          discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata.back() );
 	}
+        for ( unsigned i=startsize; i<vdata.size(); ++i )
+          vdata[i].StartPacking();
+	for (int i=0; i<deletecrosslinkerelements.MyLength(); i++)
+		if (discret_.HaveGlobalElement((int)deletecrosslinkerelements[i]))
+	{
+          //save the element by packing before elimination to make it restorable in case that needed
+          //cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<endl;
+          deletedelements_.push_back( std::vector<char>() );
+          discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata[deletedelements_.size()-1] );
+          discret_.DeleteElement( (int)deletecrosslinkerelements[i]);
+	}
+        for ( unsigned i=startsize; i<vdata.size(); ++i )
+          swap( deletedelements_[i], vdata[i]() );
 	/*synchronize
 	*the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
 	*new element maps and call FillComplete();*/

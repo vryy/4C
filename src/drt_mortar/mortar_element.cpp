@@ -89,7 +89,7 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
  |  Pack data                                                  (public) |
  |                                                            popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarEleDataContainer::Pack(vector<char>& data) const
+void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add area_
   DRT::ParObject::AddtoPack(data,area_);
@@ -181,17 +181,13 @@ void MORTAR::MortarElement::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Pack(vector<char>& data) const
+void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class DRT::Element
-  vector<char> basedata(0);
-  DRT::Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::Element::Pack(data);
   // add shape_
   AddtoPack(data,shape_);
   // add isslave_
@@ -638,7 +634,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
-    
+
     coord(0,i) = mymrtrnode->X()[0] + mymrtrnode->uold()[0];
     coord(1,i) = mymrtrnode->X()[1] + mymrtrnode->uold()[1];
     coord(2,i) = mymrtrnode->X()[2] + mymrtrnode->uold()[2];
@@ -662,7 +658,7 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
-    
+
     lagmult(0,i) = mymrtrnode->MoData().lm()[0];
     lagmult(1,i) = mymrtrnode->MoData().lm()[1];
     lagmult(2,i) = mymrtrnode->MoData().lm()[2];

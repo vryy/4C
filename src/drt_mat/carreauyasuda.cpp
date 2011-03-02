@@ -67,10 +67,8 @@ MAT::CarreauYasuda::CarreauYasuda(MAT::PAR::CarreauYasuda* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CarreauYasuda::Pack(vector<char>& data) const
+void MAT::CarreauYasuda::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

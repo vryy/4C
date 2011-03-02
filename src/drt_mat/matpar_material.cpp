@@ -133,17 +133,13 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Material::Pack(std::vector<char>& data) const
+void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class container
-  std::vector<char> basedata;
-  DRT::Container::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::Container::Pack(data);
   // id_
   AddtoPack(data,id_);
   // type_

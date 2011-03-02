@@ -84,10 +84,8 @@ MAT::HumphreyCardio::HumphreyCardio(MAT::PAR::HumphreyCardio* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         11/09|
  *----------------------------------------------------------------------*/
-void MAT::HumphreyCardio::Pack(vector<char>& data) const
+void MAT::HumphreyCardio::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

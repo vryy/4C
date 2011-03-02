@@ -85,17 +85,13 @@ DRT::NURBS::ControlPoint::~ControlPoint()
   Pack and Unpack are used to communicate this control point
 
 */
-void DRT::NURBS::ControlPoint::Pack(vector<char>& data) const
+void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   DRT::Node::AddtoPack(data,type);
   // add base class of control point
-  vector<char> basedata(0);
-  DRT::Node::Pack(basedata);
-  DRT::Node::AddtoPack(data,basedata);
+  DRT::Node::Pack(data);
   // add weight
   DRT::Node::AddtoPack(data,&w_,  sizeof(double));
 

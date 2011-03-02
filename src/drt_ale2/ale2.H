@@ -158,7 +158,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -431,7 +431,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual void Pack(vector<char>& data) const;
+  virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class

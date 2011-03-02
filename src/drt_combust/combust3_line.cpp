@@ -86,7 +86,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Combust3Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Line::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("this Combust3Line element does not support communication");
 
   return;

@@ -78,9 +78,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale2Line::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this Ale2Line element does not support communication");
 
   return;

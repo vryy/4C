@@ -80,10 +80,8 @@ MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 /*----------------------------------------------------------------------*
  |  Pack (public)                                            dano 02/10 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Pack(vector<char>& data) const
+void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

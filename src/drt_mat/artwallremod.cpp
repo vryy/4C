@@ -92,10 +92,8 @@ MAT::ArtWallRemod::ArtWallRemod(MAT::PAR::ArtWallRemod* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         06/08|
  *----------------------------------------------------------------------*/
-void MAT::ArtWallRemod::Pack(vector<char>& data) const
+void MAT::ArtWallRemod::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

@@ -86,7 +86,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XDiff3Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XDiff3Line::Pack(std::vector<char>& data) const
 {
-  data.resize(0);
   dserror("this XDiff3Line element does not support communication");
 
   return;

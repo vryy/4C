@@ -216,7 +216,11 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
         SetSourceDofsAvailableOnThisProc(gid_to_dofs);
 
         // Pack info into block to send
-        PackLocalSourceDofs(gid_to_dofs,sblock);
+        DRT::PackBuffer data;
+        PackLocalSourceDofs(gid_to_dofs,data);
+        data.StartPacking();
+        PackLocalSourceDofs(gid_to_dofs,data);
+        swap( sblock, data() );
 
 #ifdef PARALLEL
         SendBlock(numproc,myrank,sblock,exporter,request);
@@ -386,11 +390,9 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::PackLocalSourceDofs(
   map<int,vector<int> >   & gid_to_dofs  ,
-  vector<char>            & sblock
+  DRT::PackBuffer         & sblock
   )
 {
-  sblock.clear();
-
   int size=gid_to_dofs.size();
 
   // add size  to sendblock

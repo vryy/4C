@@ -81,9 +81,8 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Bele3Line::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
   dserror("this Bele3Line element does not support communication");
 
   return;

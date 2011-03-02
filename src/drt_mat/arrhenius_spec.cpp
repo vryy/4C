@@ -70,10 +70,8 @@ MAT::ArrheniusSpec::ArrheniusSpec(MAT::PAR::ArrheniusSpec* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ArrheniusSpec::Pack(vector<char>& data) const
+void MAT::ArrheniusSpec::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

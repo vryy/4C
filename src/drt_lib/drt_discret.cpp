@@ -701,15 +701,29 @@ void DRT::Discretization::GetConditionNames( std::vector<std::string> & names ) 
 RCP<vector<char> > DRT::Discretization::PackMyElements() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
-  RCP<vector<char> > block = rcp(new vector<char>);
+
+  DRT::PackBuffer buffer;
+
   for (vector<DRT::Element*>::const_iterator i=elerowptr_.begin();
        i!=elerowptr_.end();
        ++i)
   {
-    vector<char> data;
-    (*i)->Pack(data);
-    ParObject::AddtoPack(*block,data);
+    DRT::Element * e = *i;
+    e->Pack(buffer);
   }
+
+  buffer.StartPacking();
+
+  for (vector<DRT::Element*>::const_iterator i=elerowptr_.begin();
+       i!=elerowptr_.end();
+       ++i)
+  {
+    DRT::Element * e = *i;
+    e->Pack(buffer);
+  }
+
+  RCP<vector<char> > block = rcp(new vector<char>);
+  std::swap( *block, buffer() );
   return block;
 }
 
@@ -721,15 +735,29 @@ RCP<vector<char> > DRT::Discretization::PackMyElements() const
 RCP<vector<char> > DRT::Discretization::PackMyNodes() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
-  RCP<vector<char> > block = rcp(new vector<char>);
+
+  DRT::PackBuffer buffer;
+
   for (vector<DRT::Node*>::const_iterator i=noderowptr_.begin();
        i!=noderowptr_.end();
        ++i)
   {
-    vector<char> data;
-    (*i)->Pack(data);
-    ParObject::AddtoPack(*block,data);
+    DRT::Node * n = *i;
+    n->Pack(buffer);
   }
+
+  buffer.StartPacking();
+
+  for (vector<DRT::Node*>::const_iterator i=noderowptr_.begin();
+       i!=noderowptr_.end();
+       ++i)
+  {
+    DRT::Node * n = *i;
+    n->Pack(buffer);
+  }
+
+  RCP<vector<char> > block = rcp(new vector<char>);
+  std::swap( *block, buffer() );
   return block;
 }
 
@@ -746,15 +774,28 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
   vector<DRT::Condition*> cond;
   GetCondition(condname,cond);
 
-  RCP<vector<char> > block = rcp(new vector<char>);
+  DRT::PackBuffer buffer;
+
   for (vector<DRT::Condition*>::const_iterator i = cond.begin();
        i!=cond.end();
        ++i)
   {
-    vector<char> data;
-    (*i)->Pack(data);
-    DRT::ParObject::AddtoPack(*block,data);
+    DRT::Condition * c = *i;
+    c->Pack(buffer);
   }
+
+  buffer.StartPacking();
+
+  for (vector<DRT::Condition*>::const_iterator i = cond.begin();
+       i!=cond.end();
+       ++i)
+  {
+    DRT::Condition * c = *i;
+    c->Pack(buffer);
+  }
+
+  RCP<vector<char> > block = rcp(new vector<char>);
+  std::swap( *block, buffer() );
   return block;
 }
 

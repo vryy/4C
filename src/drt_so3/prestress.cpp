@@ -60,10 +60,8 @@ invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.JHistory())))
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PreStress::Pack(vector<char>& data) const
+void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

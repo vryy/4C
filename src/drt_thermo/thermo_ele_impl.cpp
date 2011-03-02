@@ -560,8 +560,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     eheatflux.Scale(-1);
 
     // store in
-    ParObject::AddtoPack(*heatfluxdata, eheatflux);
-    ParObject::AddtoPack(*tempgraddata, etempgrad);
+    DRT::PackBuffer hfdata;
+    ParObject::AddtoPack(hfdata, eheatflux);
+    hfdata.StartPacking();
+    ParObject::AddtoPack(hfdata, eheatflux);
+    swap( *heatfluxdata, hfdata() );
+
+    DRT::PackBuffer tgdata;
+    ParObject::AddtoPack(tgdata, etempgrad);
+    tgdata.StartPacking();
+    ParObject::AddtoPack(tgdata, etempgrad);
+    swap( *tempgraddata, tgdata() );
   }  // action == "proc_thermo_heatflux"
 
   //============================================================================

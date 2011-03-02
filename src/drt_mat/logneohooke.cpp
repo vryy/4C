@@ -77,10 +77,8 @@ MAT::LogNeoHooke::LogNeoHooke(MAT::PAR::LogNeoHooke* params)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void MAT::LogNeoHooke::Pack(std::vector<char>& data) const
+void MAT::LogNeoHooke::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

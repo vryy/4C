@@ -287,17 +287,13 @@ DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid3::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
+  Element::Pack(data);
   // is_ale_
   AddtoPack(data,is_ale_);
   // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model

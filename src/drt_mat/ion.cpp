@@ -63,10 +63,8 @@ MAT::Ion::Ion(MAT::PAR::Ion* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Ion::Pack(vector<char>& data) const
+void MAT::Ion::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

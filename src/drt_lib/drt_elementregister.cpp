@@ -130,10 +130,8 @@ void DRT::ElementRegister::Print(ostream& os) const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ElementRegister::Pack(vector<char>& data) const
+void DRT::ElementRegister::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

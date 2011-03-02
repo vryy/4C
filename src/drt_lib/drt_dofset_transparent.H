@@ -68,7 +68,7 @@ namespace DRT
 
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
-    /// for this version, newdis is allowed to be distributed completely different; the 
+    /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
     void ParallelTransferDegreesOfFreedom(
             const DRT::Discretization& sourcedis,    ///< source discret
@@ -80,14 +80,14 @@ namespace DRT
     /// generate the current map node gid -> its dofs
     void UnpackLocalSourceDofs(
       map<int,vector<int> >   & gid_to_dofs  ,
-      vector<char>            & rblock       
+      vector<char>            & rblock
       );
 
-    /// helper for ParallelTransferDegreesOfFreedom; pack the current map 
+    /// helper for ParallelTransferDegreesOfFreedom; pack the current map
     /// node gid -> its dofs into a send block
     void PackLocalSourceDofs(
       map<int,vector<int> >   & gid_to_dofs  ,
-      vector<char>            & sblock       
+      DRT::PackBuffer         & sblock
       );
 
     /// helper for ParallelTransferDegreesOfFreedom; add processor local information

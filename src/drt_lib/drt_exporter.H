@@ -487,7 +487,7 @@ private:
       Get the object by gid, pack it and append it to the sendblock. We only
       pack it if we know about it.
      */
-    virtual bool PackObject(int gid, vector<char>& sendblock) = 0;
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock) = 0;
 
     /// Unpack one object
     /*!
@@ -524,14 +524,12 @@ private:
       }
     }
 
-    virtual bool PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
       typename map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
-        vector<char> data;
-        curr->second->Pack(data);
-        ParObject::AddtoPack(sendblock,data);
+        curr->second->Pack(sendblock);
         return true;
       }
       return false;
@@ -587,7 +585,7 @@ private:
     {
     }
 
-    virtual bool PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
       typename map<int,RCP<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
@@ -638,14 +636,12 @@ private:
       // Nothing to do. We do not check for T to be POD.
     }
 
-    virtual bool PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
       typename map<int,T>::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
-        unsigned pos = sendblock.size();
-        sendblock.resize(pos+sizeof(T));
-        memcpy(&sendblock[pos],&curr->second,sizeof(T));
+        ParObject::AddtoPack(sendblock,curr->second);
         return true;
       }
       return false;
@@ -687,7 +683,7 @@ private:
       // Nothing to do. We do not check for T to be POD.
     }
 
-    virtual bool PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
       typename map<int,vector<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())

@@ -122,17 +122,13 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
 {
-  data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class So_weg6 Element
-  vector<char> basedata(0);
-  DRT::ELEMENTS::So_weg6::Pack(basedata);
-  AddtoPack(data,basedata);
+  DRT::ELEMENTS::So_weg6::Pack(data);
   // eastype_
   AddtoPack(data,eastype_);
   // neas_
