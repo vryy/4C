@@ -1816,7 +1816,7 @@ void XFEM::Startvalues::exportStartData()
   DRT::PackBuffer dataSend;
 
   // packing the data
-  DRT::ParObject::AddtoPack(dataSend,basic_->size());
+  DRT::ParObject::AddtoPack(dataSend,(int)basic_->size());
   for (size_t ipoint=0;ipoint<basic_->size();ipoint++)
   {
     StartpointData& basic = (*basic_)[ipoint];
@@ -1839,7 +1839,7 @@ void XFEM::Startvalues::exportStartData()
 
   dataSend.StartPacking();
 
-  DRT::ParObject::AddtoPack(dataSend,basic_->size());
+  DRT::ParObject::AddtoPack(dataSend,(int)basic_->size());
   for (size_t ipoint=0;ipoint<basic_->size();ipoint++)
   {
     StartpointData& basic = (*basic_)[ipoint];
@@ -1894,7 +1894,7 @@ void XFEM::Startvalues::exportStartData()
   size_t posinData = 0;
 
   // initialize temporary vectors that should be filled
-  size_t numberOfNodes = 0;
+  unsigned numberOfNodes = 0;
 
   // clear vector that should be filled
   basic_->clear();
@@ -1994,7 +1994,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
       source -=numproc_;
 
     // pack data to be sent
-    DRT::ParObject::AddtoPack(dataSend,failedVec[dest].size());
+    DRT::ParObject::AddtoPack(dataSend,(int)failedVec[dest].size());
     for (size_t inode=0;inode<failedVec[dest].size();inode++)
     {
       StartpointData failed = failedVec[dest][inode];
@@ -2012,7 +2012,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
 
     dataSend.StartPacking();
 
-    DRT::ParObject::AddtoPack(dataSend,failedVec[dest].size());
+    DRT::ParObject::AddtoPack(dataSend,(int)failedVec[dest].size());
     for (size_t inode=0;inode<failedVec[dest].size();inode++)
     {
       StartpointData failed = failedVec[dest][inode];
@@ -2063,7 +2063,7 @@ void XFEM::Startvalues::exportAlternativAlgoData()
     size_t posinData = 0;
 
     // unpack received data
-    size_t numberOfNodes;
+    unsigned numberOfNodes;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
     for (size_t inode=0;inode<numberOfNodes;inode++)
     {
@@ -2193,7 +2193,7 @@ void XFEM::Startvalues::exportIterData(
     DRT::PackBuffer dataSend;
 
     // packing the data
-    DRT::ParObject::AddtoPack(dataSend,next_->size());
+    DRT::ParObject::AddtoPack(dataSend,(int)next_->size());
     for (size_t ipoint=0;ipoint<next_->size();ipoint++)
     {
       StartpointData next = (*next_)[ipoint];
@@ -2215,7 +2215,7 @@ void XFEM::Startvalues::exportIterData(
 
     dataSend.StartPacking();
 
-    DRT::ParObject::AddtoPack(dataSend,next_->size());
+    DRT::ParObject::AddtoPack(dataSend,(int)next_->size());
     for (size_t ipoint=0;ipoint<next_->size();ipoint++)
     {
       StartpointData next = (*next_)[ipoint];
@@ -2268,7 +2268,7 @@ void XFEM::Startvalues::exportIterData(
     size_t posinData = 0;
 
     // number of points sent
-    size_t numberOfNodes = 0;
+    unsigned numberOfNodes = 0;
 
     // clear next_-vector so it can be filled with new values
     next_->clear();
@@ -2371,7 +2371,7 @@ void XFEM::Startvalues::exportFinalData()
     DRT::PackBuffer dataSend;
 
     // pack data to be sent
-    DRT::ParObject::AddtoPack(dataSend,doneVec[dest].size());
+    DRT::ParObject::AddtoPack(dataSend,(int)doneVec[dest].size());
     for (size_t inode=0;inode<doneVec[dest].size();inode++) // loop over number of nodes to be sent
     {
       StartpointData done = doneVec[dest][inode];
@@ -2387,7 +2387,7 @@ void XFEM::Startvalues::exportFinalData()
 
     dataSend.StartPacking();
 
-    DRT::ParObject::AddtoPack(dataSend,doneVec[dest].size());
+    DRT::ParObject::AddtoPack(dataSend,(int)doneVec[dest].size());
     for (size_t inode=0;inode<doneVec[dest].size();inode++) // loop over number of nodes to be sent
     {
       StartpointData done = doneVec[dest][inode];
@@ -2436,7 +2436,7 @@ void XFEM::Startvalues::exportFinalData()
     size_t posinData = 0;
 
     // unpack received data
-    size_t numberOfNodes;
+    unsigned numberOfNodes;
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,numberOfNodes);
 
     for (size_t inode=0;inode<numberOfNodes;inode++) // loop over number of nodes to get

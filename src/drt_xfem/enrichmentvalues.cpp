@@ -1658,7 +1658,7 @@ void XFEM::Enrichmentvalues::exportEnrichmentData()
   DRT::PackBuffer dataSend;
 
   // packing the data
-  DRT::ParObject::AddtoPack(dataSend,failed_.size());
+  DRT::ParObject::AddtoPack(dataSend,(int)failed_.size());
   for (map<int,failedData>::iterator newnode=failed_.begin();
       newnode!=failed_.end(); newnode++)
   {
@@ -1673,7 +1673,7 @@ void XFEM::Enrichmentvalues::exportEnrichmentData()
 
   dataSend.StartPacking();
 
-  DRT::ParObject::AddtoPack(dataSend,failed_.size());
+  DRT::ParObject::AddtoPack(dataSend,(int)failed_.size());
   for (map<int,failedData>::iterator newnode=failed_.begin();
       newnode!=failed_.end(); newnode++)
   {
@@ -1724,7 +1724,7 @@ void XFEM::Enrichmentvalues::exportEnrichmentData()
   size_t posinData = 0;
 
   // initialize temporary vectors that should be filled
-  size_t numberOfNodes = 0;
+  unsigned numberOfNodes = 0;
 
   // clear vector that should be filled
   failed_.clear();
