@@ -258,6 +258,11 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
   {
     mat_->Pack(data);
   }
+  else
+  {
+    int size = 0;
+    AddtoPack(data,size);
+  }
 
   return;
 }
