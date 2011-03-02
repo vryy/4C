@@ -167,6 +167,11 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // Additionally the initial physical fields are set there including enrichment values
   //FluidField().ImportInterface(interfacehandle_,interfacehandle_old_);
 
+  // TODO check if needed
+  // export interface information to the fluid time integration
+  // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
+  FluidField().ImportInterface(interfacehandle_,interfacehandle_old_);
+
   // delete fluid's memory of flame front; it should never have seen it in the first place!
   FluidField().ImportFlameFront(Teuchos::null);
 }
@@ -206,7 +211,7 @@ void COMBUST::Algorithm::TimeLoop()
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
-      DoGfuncField();
+      //DoGfuncField();
 
       // update interface geometry
       UpdateInterface();
@@ -1279,6 +1284,9 @@ void COMBUST::Algorithm::DoGfuncField()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateInterface()
 {
+  //overwrite old interfacehandle before updating flamefront
+  interfacehandle_old_->UpdateInterfaceHandle();
+
   // update flame front according to evolved G-function field
   // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
   // TODO @Martin Bitte checken wie das hier korrekt geht, so ist es bestimmt falsch!
