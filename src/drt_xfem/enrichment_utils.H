@@ -721,7 +721,7 @@ namespace XFEM
         const V& funct,
         const M1& egradphi,
 //#ifdef COLLAPSE_FLAME
-        const LINALG::Matrix<3,1>& normal,
+//        const LINALG::Matrix<3,1>& normal,
 //#endif
         XFEM::ApproxFuncNormalVector<0,numdof>& shp
     ) const
@@ -822,8 +822,8 @@ namespace XFEM
         const M2& derxy2,
         const M1& egradphi,
 //#ifdef COLLAPSE_FLAME
-        const LINALG::Matrix<3,1>& normal,
-        const LINALG::Matrix<3,1>& point,
+//        const LINALG::Matrix<3,1>& normal,
+//        const LINALG::Matrix<3,1>& point,
 //#endif
         XFEM::ApproxFuncNormalVector<2,numdof>& shp
     ) const
