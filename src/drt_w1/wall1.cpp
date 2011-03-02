@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
 //  //tsi
 //  AddtoPack(data,tsi_couptyp_);
   //data
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

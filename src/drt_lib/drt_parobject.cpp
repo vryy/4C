@@ -69,6 +69,20 @@ DRT::ParObject::~ParObject()
   return;
 }
 
+void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject& obj)
+{
+  AddtoPack( data, &obj );
+}
+
+void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj)
+{
+  std::size_t oldsize = data().size();
+  int size = 0;
+  data.AddtoPack( size );
+  obj->Pack( data );
+  data.SetObjectSize( oldsize );
+}
+
 /*----------------------------------------------------------------------*
  |      a vector<int> specialization                           (public) |
  |                                                            gee 02/07 |

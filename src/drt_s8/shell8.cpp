@@ -254,7 +254,7 @@ void DRT::ELEMENTS::Shell8::Pack(DRT::PackBuffer& data) const
   // material_
   AddtoPack(data,material_);
   // data_
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

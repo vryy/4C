@@ -143,7 +143,7 @@ void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
   // id_
   AddtoPack(data,id_);
   // type_
-  AddtoPack<INPAR::MAT::MaterialType>(data,type_);
+  AddtoPack(data,type_);
   // name_
   AddtoPack(data,name_);
 

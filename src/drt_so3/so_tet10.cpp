@@ -159,7 +159,7 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
   // kintype_
   AddtoPack(data,kintype_);
   //data
-  data_.Pack(data);
+  AddtoPack(data,data_);
   // detJ_
   AddtoPack(data,detJ_);
   AddtoPack(data,detJ_mass_);

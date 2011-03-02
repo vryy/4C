@@ -189,7 +189,7 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
   // kintype_
   AddtoPack(data,kintype_);
   // data_
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   // prestress_
   AddtoPack(data,pstype_);
@@ -197,13 +197,13 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    prestress_->Pack(data);
+    DRT::ParObject::AddtoPack(data,*prestress_);
   }
 
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
-    invdesign_->Pack(data);
+    DRT::ParObject::AddtoPack(data,*invdesign_);
   }
 
   // detJ_

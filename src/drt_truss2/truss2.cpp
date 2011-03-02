@@ -181,7 +181,7 @@ void DRT::ELEMENTS::Truss2::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   //kinematic type
   AddtoPack(data,kintype_);
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

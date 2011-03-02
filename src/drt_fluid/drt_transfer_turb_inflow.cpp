@@ -601,12 +601,12 @@ void TransferTurbulentInflowCondition::PackLocalMasterValues(
   }
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack<int>(sblock,size);
+  DRT::ParObject::AddtoPack(sblock,size);
 
   // add master ids
   for(int rr=0;rr<size;++rr)
   {
-    DRT::ParObject::AddtoPack<int>(sblock,mymasters[rr]);
+    DRT::ParObject::AddtoPack(sblock,mymasters[rr]);
   }
 
   // add slave ids
@@ -624,10 +624,10 @@ void TransferTurbulentInflowCondition::PackLocalMasterValues(
 
       int slavesize=(int)slaves.size();
 
-      DRT::ParObject::AddtoPack<int>(sblock,slavesize);
+      DRT::ParObject::AddtoPack(sblock,slavesize);
       for(int ll=0;ll<slavesize;++ll)
       {
-	DRT::ParObject::AddtoPack<int>(sblock,slaves[ll]);
+	DRT::ParObject::AddtoPack(sblock,slaves[ll]);
       }
     }
   }
@@ -637,7 +637,7 @@ void TransferTurbulentInflowCondition::PackLocalMasterValues(
   {
     for(int rr=0;rr<size;++rr)
     {
-      DRT::ParObject::AddtoPack<double>(sblock,(mymasters_vel[mm])[rr]);
+      DRT::ParObject::AddtoPack(sblock,(mymasters_vel[mm])[rr]);
     }
   }
 

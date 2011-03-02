@@ -235,10 +235,24 @@ public:
         works for. Do not use for classes or structs or stl containers!
 
   */
-  template<typename kind> static void AddtoPack(PackBuffer& data, const kind& stuff)
+  static void AddtoPack(PackBuffer& data, const int& stuff)
   {
     data.AddtoPack( stuff );
   }
+
+  static void AddtoPack(PackBuffer& data, const unsigned& stuff)
+  {
+    data.AddtoPack( stuff );
+  }
+
+  static void AddtoPack(PackBuffer& data, const double& stuff)
+  {
+    data.AddtoPack( stuff );
+  }
+
+  static void AddtoPack(PackBuffer& data, const ParObject& obj);
+
+  static void AddtoPack(PackBuffer& data, const ParObject* obj);
 
   /*!
   \brief Add stuff to the end of a char vector data

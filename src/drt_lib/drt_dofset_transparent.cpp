@@ -396,7 +396,7 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
   int size=gid_to_dofs.size();
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack<int>(sblock,size);
+  DRT::ParObject::AddtoPack(sblock,size);
 
   for(map<int,vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
@@ -405,11 +405,11 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
     vector<int> mydofs = curr->second;
     int numdofs = (int)mydofs.size();
 
-    DRT::ParObject::AddtoPack<int>(sblock,gid);
-    DRT::ParObject::AddtoPack<int>(sblock,numdofs);
+    DRT::ParObject::AddtoPack(sblock,gid);
+    DRT::ParObject::AddtoPack(sblock,numdofs);
     for(int ll=0;ll<numdofs;++ll)
     {
-      DRT::ParObject::AddtoPack<int>(sblock,mydofs[ll]);
+      DRT::ParObject::AddtoPack(sblock,mydofs[ll]);
     }
   }
 

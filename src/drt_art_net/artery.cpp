@@ -141,9 +141,7 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
 
 
   // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+  AddtoPack(data,data_);
 
   return;
 }

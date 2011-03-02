@@ -826,14 +826,15 @@ void XFEM::DofDistributionSwitcher::PackValuestoSend(
   int numentries = (int)unknownFieldEnr.size();
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack<int>(sblock,numentries);
+  DRT::ParObject::AddtoPack(sblock,numentries);
 
   int i=0;
   for (std::map<int, set<XFEM::FieldEnr> >::const_iterator unknowndofs = unknownFieldEnr.begin();
        unknowndofs != unknownFieldEnr.end(); unknowndofs++)
   {
     DRT::ParObject::AddtoPack(sblock,unknowndofs->first);
-    DRT::ParObject::AddtoPack(sblock,unknowndofs->second);
+    //DRT::ParObject::AddtoPack(sblock,unknowndofs->second);
+    dserror( "not working" );
     ++i;
   }
 
@@ -853,7 +854,7 @@ void XFEM::DofDistributionSwitcher::PackValuestoSend(
   }
 
   // add size  to sendblock
-  DRT::ParObject::AddtoPack<int>(sblock,numstatevectorentries);
+  DRT::ParObject::AddtoPack(sblock,numstatevectorentries);
 
   DRT::ParObject::AddtoPack(sblock,state_vector_cp,numstatevectorentries);
 }

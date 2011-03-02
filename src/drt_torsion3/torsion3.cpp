@@ -151,7 +151,7 @@ void DRT::ELEMENTS::Torsion3::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   AddtoPack(data,springconstant_);
   AddtoPack(data,bendingpotential_);
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

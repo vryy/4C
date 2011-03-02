@@ -193,13 +193,13 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    prestress_->Pack(data);
+    DRT::ParObject::AddtoPack(data,*prestress_);
   }
 
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
-    invdesign_->Pack(data);
+    DRT::ParObject::AddtoPack(data,*invdesign_);
   }
 
   return;

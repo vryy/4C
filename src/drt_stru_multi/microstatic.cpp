@@ -731,7 +731,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, emptyalpha);
+        DRT::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     data.StartPacking();
@@ -743,7 +743,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
       }
       else
       {
-        DRT::ParObject::AddtoPack(data, emptyalpha);
+        DRT::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());

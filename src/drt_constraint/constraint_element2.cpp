@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ConstraintElement2::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
   // data_
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

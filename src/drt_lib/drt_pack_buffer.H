@@ -8,6 +8,8 @@ namespace DRT
 
   class PackBuffer
   {
+    friend class ParObject;
+
   public:
 
     PackBuffer() : size_( 0 ), grow_( true ) {}
@@ -56,6 +58,17 @@ namespace DRT
     }
 
   private:
+
+    /// set size of a ParObject after it has been inserted
+    void SetObjectSize( std::size_t oldsize )
+    {
+      if ( not grow_ )
+      {
+        std::size_t osize = buf_.size() - oldsize;
+        memcpy( &buf_[oldsize], &osize, sizeof( std::size_t ) );
+      }
+    }
+
     std::vector<char> buf_;
     std::size_t size_;
     bool grow_;

@@ -49,10 +49,10 @@ void DRT::UTILS::PackLocalConnectivity(
   for(gidinlcon=lcon.begin();gidinlcon!=lcon.end();++gidinlcon)
   {
     // add node gid we store the connectivity for
-    DRT::ParObject::AddtoPack<int>(sblock,(int)(gidinlcon->first));
+    DRT::ParObject::AddtoPack(sblock,(int)(gidinlcon->first));
 
     // add number of nodes adjacent to this one
-    DRT::ParObject::AddtoPack<int>(sblock,(int)(gidinlcon->second).size());
+    DRT::ParObject::AddtoPack(sblock,(int)(gidinlcon->second).size());
 
     // add list of neighbours to this node
     for(adjacentgid =(gidinlcon->second).begin();

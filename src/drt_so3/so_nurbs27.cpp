@@ -142,7 +142,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
   // kintype_
   AddtoPack(data,kintype_);
   // data_
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   // detJ_
   AddtoPack(data,detJ_);

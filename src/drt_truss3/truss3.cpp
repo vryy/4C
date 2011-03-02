@@ -179,7 +179,7 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,crosssec_);
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,kintype_);
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }

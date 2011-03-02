@@ -452,7 +452,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
       if (actnode->Owner() == slaverank)
       {
         // Add node to list of nodes which will be sent to the next proc
-        actnode->Pack(data);
+        DRT::ParObject::AddtoPack(data,actnode);
       }
     }
   }
@@ -471,7 +471,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
       if (actnode->Owner() == slaverank)
       {
         // Add node to list of nodes which will be sent to the next proc
-        actnode->Pack(data);
+        DRT::ParObject::AddtoPack(data,actnode);
       }
     }
   }

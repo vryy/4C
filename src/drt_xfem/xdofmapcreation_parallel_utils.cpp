@@ -89,7 +89,7 @@ void XFEM::packDofKeys(
   // pack data on all processors
   for(std::set<XFEM::DofKey<XFEM::onNode> >::const_iterator dofkey=dofkeyset.begin(); dofkey != dofkeyset.end(); ++dofkey)
   {
-    dofkey->Pack(dataSend);
+    DRT::ParObject::AddtoPack(dataSend,*dofkey);
   }
 }
 

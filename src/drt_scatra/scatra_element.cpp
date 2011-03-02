@@ -273,7 +273,7 @@ void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,distype_);
 
   // data_
-  data_.Pack(data);
+  AddtoPack(data,data_);
 
   return;
 }
