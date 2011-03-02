@@ -76,10 +76,17 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject& obj)
 
 void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj)
 {
-  std::size_t oldsize = data().size();
+  // add dummy object size, will be filled later
   int size = 0;
   data.AddtoPack( size );
+
+  // remember current data size
+  std::size_t oldsize = data().size();
+
+  // pack object
   obj->Pack( data );
+
+  // set actual object size
   data.SetObjectSize( oldsize );
 }
 

@@ -529,7 +529,7 @@ private:
       typename map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
-        curr->second->Pack(sendblock);
+        ParObject::AddtoPack(sendblock,*curr->second);
         return true;
       }
       return false;

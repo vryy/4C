@@ -64,8 +64,8 @@ namespace DRT
     {
       if ( not grow_ )
       {
-        std::size_t osize = buf_.size() - oldsize;
-        memcpy( &buf_[oldsize], &osize, sizeof( std::size_t ) );
+        int osize = buf_.size() - oldsize;
+        memcpy( &buf_[oldsize - sizeof( int )], &osize, sizeof( int ) );
       }
     }
 
