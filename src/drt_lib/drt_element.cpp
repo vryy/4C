@@ -241,6 +241,9 @@ void DRT::Element::SetMaterial(int matnum)
  *----------------------------------------------------------------------*/
 void DRT::Element::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -266,7 +269,7 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::Element::Unpack(const vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

@@ -226,6 +226,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoDisp::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -259,8 +262,8 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position,data,stresstype_);
-  ExtractfromPack(position,data,kintype_);
+  stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
 
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

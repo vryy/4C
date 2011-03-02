@@ -73,6 +73,9 @@ MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params)
 /*----------------------------------------------------------------------*/
 void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

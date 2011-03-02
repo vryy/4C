@@ -199,6 +199,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Combust3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -230,10 +233,10 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position,data,output_mode_);
-  ExtractfromPack(position,data,bisected_);
-  ExtractfromPack(position,data,touched_plus_);
-  ExtractfromPack(position,data,touched_minus_);
+  output_mode_ = ExtractInt(position,data);
+  bisected_ = ExtractInt(position,data);
+  touched_plus_ = ExtractInt(position,data);
+  touched_minus_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

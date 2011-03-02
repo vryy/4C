@@ -79,6 +79,9 @@ kappa_(1.0)
  *----------------------------------------------------------------------*/
 void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // add txi_
   DRT::ParObject::AddtoPack(data,txi_,3*sizeof(double));
   // add teta_
@@ -178,6 +181,9 @@ void CONTACT::CoNode::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -218,13 +224,12 @@ void CONTACT::CoNode::Unpack(const vector<char>& data)
   MORTAR::MortarNode::Unpack(basedata);
 
   // active_
-  ExtractfromPack(position,data,active_);
+  active_ = ExtractInt(position,data);
   // isslave_
-  ExtractfromPack(position,data,initactive_);
+  initactive_ = ExtractInt(position,data);
 
   // data_
-  bool hasdata = false;
-  ExtractfromPack(position,data,hasdata);
+  bool hasdata = ExtractInt(position,data);
   if (hasdata)
   {
     codata_ = Teuchos::rcp(new CONTACT::CoNodeDataContainer());

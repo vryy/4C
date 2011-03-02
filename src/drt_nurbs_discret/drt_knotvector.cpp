@@ -786,6 +786,9 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
  *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -900,7 +903,7 @@ void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
   {
     for(int rr=0;rr<dim_;++rr)
     {
-      ExtractfromPack(position,data,((interpolation_[np])[rr]));
+      (interpolation_[np])[rr] = static_cast<DRT::NURBS::Knotvector::KnotvectorType>( ExtractInt(position,data) );
     }
   }
 

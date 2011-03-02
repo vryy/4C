@@ -498,14 +498,14 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 
   // extract size
   int size=0;
-  DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
+  DRT::ParObject::ExtractfromPack(position,rblock,size);
 
   // extract master ids
   for(int i=0;i<size;++i)
   {
     int id;
 
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,id);
+    DRT::ParObject::ExtractfromPack(position,rblock,id);
     mymasters.push_back(id);
 
     map<int,vector<int> >::iterator iter=midtosid_.find(id);
@@ -525,12 +525,12 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   {
     int slavesize;
 
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,slavesize);
+    DRT::ParObject::ExtractfromPack(position,rblock,slavesize);
 
     for(int ll=0;ll<slavesize;++ll)
     {
       int sid;
-      DRT::ParObject::ExtractfromPack<int>(position,rblock,sid);
+      DRT::ParObject::ExtractfromPack(position,rblock,sid);
 
       map<int,vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
 
@@ -557,7 +557,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
     {
       double value;
 
-      DRT::ParObject::ExtractfromPack<double>(position,rblock,value);
+      DRT::ParObject::ExtractfromPack(position,rblock,value);
 
       (mymasters_vel[mm]).push_back(value);
     }

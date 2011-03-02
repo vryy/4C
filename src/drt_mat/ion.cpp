@@ -65,6 +65,9 @@ MAT::Ion::Ion(MAT::PAR::Ion* params)
 /*----------------------------------------------------------------------*/
 void MAT::Ion::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

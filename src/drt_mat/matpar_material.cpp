@@ -135,6 +135,9 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*/
 void MAT::PAR::Material::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -167,7 +170,7 @@ void MAT::PAR::Material::Unpack(const std::vector<char>& data)
   // id_
   ExtractfromPack(position,data,id_);
   // type_
-  ExtractfromPack<INPAR::MAT::MaterialType>(position,data,type_);
+  type_ = static_cast<INPAR::MAT::MaterialType>( ExtractInt(position,data) );
   // name_
   ExtractfromPack(position,data,name_);
 

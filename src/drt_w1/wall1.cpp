@@ -230,6 +230,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -278,17 +281,17 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   // thickness_
   ExtractfromPack(position,data,thickness_);
   // plane strain or plane stress information_
-  ExtractfromPack(position,data,wtype_);
+  wtype_ = static_cast<DimensionalReduction>( ExtractInt(position,data) );
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
   // stresstype_
-  ExtractfromPack(position,data,stresstype_);
+  stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
   // iseas_
-  ExtractfromPack(position,data,iseas_);
+  iseas_ = ExtractInt(position,data);
   // eastype_
-  ExtractfromPack(position,data,eastype_);
+  eastype_ = static_cast<EasType>( ExtractInt(position,data) );
 //  // tsi_couptype
 //  ExtractfromPack(position,data,tsi_couptyp_);
   //data

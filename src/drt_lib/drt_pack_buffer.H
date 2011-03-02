@@ -8,9 +8,40 @@ namespace DRT
 
   class PackBuffer
   {
-    friend class ParObject;
+    friend class SizeMarker;
 
   public:
+
+    class SizeMarker
+    {
+    public:
+
+      SizeMarker( PackBuffer & data )
+        : data_( data ),
+          oldsize_( 0 )
+      {
+      }
+
+      ~SizeMarker()
+      {
+        // set actual object size
+        data_.SetObjectSize( oldsize_ );
+      }
+
+      void Insert()
+      {
+        // add dummy object size, will be filled later
+        int size = 0;
+        data_.AddtoPack( size );
+
+        // remember current data size
+        oldsize_ = data_().size();
+      }
+
+    private:
+      PackBuffer & data_;
+      std::size_t oldsize_;
+    };
 
     PackBuffer() : size_( 0 ), grow_( true ) {}
 

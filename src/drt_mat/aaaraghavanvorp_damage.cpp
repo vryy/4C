@@ -92,6 +92,9 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage(MAT::PAR::AAAraghavanvorp_da
  *----------------------------------------------------------------------*/
 void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

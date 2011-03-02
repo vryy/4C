@@ -112,6 +112,9 @@ DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8fbar::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

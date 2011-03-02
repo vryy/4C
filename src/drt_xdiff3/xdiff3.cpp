@@ -201,6 +201,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XDiff3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XDiff3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -229,7 +232,7 @@ void DRT::ELEMENTS::XDiff3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position,data,output_mode_);
+  output_mode_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -221,6 +221,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -251,7 +254,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // distype
-  ExtractfromPack(position,data,distype_);
+  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

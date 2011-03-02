@@ -72,6 +72,9 @@ MAT::ArrheniusSpec::ArrheniusSpec(MAT::PAR::ArrheniusSpec* params)
 /*----------------------------------------------------------------------*/
 void MAT::ArrheniusSpec::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

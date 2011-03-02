@@ -69,6 +69,9 @@ MAT::CarreauYasuda::CarreauYasuda(MAT::PAR::CarreauYasuda* params)
 /*----------------------------------------------------------------------*/
 void MAT::CarreauYasuda::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

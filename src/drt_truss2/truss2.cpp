@@ -162,6 +162,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Truss2::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss2::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -203,7 +206,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   //whether element has already been initialized
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
   //nodal reference coordinates
   ExtractfromPack(position,data,X_);
   //material type
@@ -217,7 +220,7 @@ void DRT::ELEMENTS::Truss2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // kinematic type
-  ExtractfromPack(position,data,kintype_);
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

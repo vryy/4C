@@ -64,6 +64,9 @@ detJ_(old.detJ_)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -109,7 +112,7 @@ void DRT::ELEMENTS::InvDesign::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,ngp_);
 
   // isinit_
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
 
   // Fhist_
   ExtractfromPack(position,data,*Fhist_);

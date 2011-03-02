@@ -147,6 +147,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion2::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion2::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -175,10 +178,10 @@ void DRT::ELEMENTS::Torsion2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  ExtractfromPack(position,data,isinit_);
-   ExtractfromPack(position,data,theta_);
+  isinit_ = ExtractInt(position,data);
+  ExtractfromPack(position,data,theta_);
   ExtractfromPack(position,data,springconstant_);
-  ExtractfromPack(position,data,bendingpotential_);
+  bendingpotential_ = static_cast<BendingPotential>( ExtractInt(position,data) );
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

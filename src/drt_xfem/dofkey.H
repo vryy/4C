@@ -139,6 +139,9 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
       //! pack all content to char array
       virtual void Pack(DRT::PackBuffer& data) const
       {
+        DRT::PackBuffer::SizeMarker sm( data );
+        sm.Insert();
+
         AddtoPack(data,UniqueParObjectId());
         AddtoPack(data,gid_);
         AddtoPack(data,fieldenr_.getField());
@@ -160,11 +163,11 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
         ExtractfromPack(position,data,gid_);
 
         // read field
-        PHYSICS::Field field;
+        int field;
         ExtractfromPack(position,data,field);
 
         // read enrichment type
-        XFEM::Enrichment::EnrType enrtype;
+        int enrtype;
         ExtractfromPack(position,data,enrtype);
 
         // read xfem condition label
@@ -176,7 +179,7 @@ DofKeyType<doftype> DofKeyType<doftype>::instance_;
           dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
         // create my enriched field
-        fieldenr_ = FieldEnr(field,Enrichment(enrtype,label));
+        fieldenr_ = FieldEnr(static_cast<PHYSICS::Field>( field ),Enrichment(static_cast<XFEM::Enrichment::EnrType>( enrtype ),label));
 
         return;
       }

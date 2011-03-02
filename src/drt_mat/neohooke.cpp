@@ -73,6 +73,9 @@ MAT::NeoHooke::NeoHooke(MAT::PAR::NeoHooke* params)
 /*---------------------------------------------------------------------*/
 void MAT::NeoHooke::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

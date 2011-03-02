@@ -77,6 +77,9 @@ MAT::ViscoNeoHooke::ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params)
  *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

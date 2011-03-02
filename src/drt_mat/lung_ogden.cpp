@@ -77,6 +77,9 @@ MAT::LungOgden::LungOgden(MAT::PAR::LungOgden* params)
  *----------------------------------------------------------------------*/
 void MAT::LungOgden::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

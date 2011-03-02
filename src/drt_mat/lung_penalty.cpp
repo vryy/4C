@@ -77,6 +77,9 @@ MAT::LungPenalty::LungPenalty(MAT::PAR::LungPenalty* params)
  *----------------------------------------------------------------------*/
 void MAT::LungPenalty::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

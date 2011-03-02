@@ -97,6 +97,9 @@ MAT::ContChainNetw::ContChainNetw(MAT::PAR::ContChainNetw* params)
  *----------------------------------------------------------------------*/
 void MAT::ContChainNetw::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

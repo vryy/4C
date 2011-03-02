@@ -82,6 +82,9 @@ deltawear_(0.0)
  *----------------------------------------------------------------------*/
 void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // add jump_
   DRT::ParObject::AddtoPack(data,jump_,3*sizeof(double));
   // add activeold_
@@ -133,9 +136,9 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   // jump_
   DRT::ParObject::ExtractfromPack(position,data,jump_,3*sizeof(double));
   // activeold_
-  DRT::ParObject::ExtractfromPack(position,data,activeold_);
+  activeold_ = DRT::ParObject::ExtractInt(position,data);
   // slip_
-  DRT::ParObject::ExtractfromPack(position,data,slip_);
+  slip_ = DRT::ParObject::ExtractInt(position,data);
   // traction_
   DRT::ParObject::ExtractfromPack(position,data,traction_,3*sizeof(double));
   // tractionold_
@@ -238,6 +241,9 @@ void CONTACT::FriNode::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -273,8 +279,7 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   CONTACT::CoNode::Unpack(basedata);
 
   // data_
-  bool hasdata = false;
-  ExtractfromPack(position,data,hasdata);
+  bool hasdata = ExtractInt(position,data);
   if (hasdata)
   {
     fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());

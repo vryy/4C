@@ -75,6 +75,9 @@ MAT::MatList::MatList(MAT::PAR::MatList* params)
 /*----------------------------------------------------------------------*/
 void MAT::MatList::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

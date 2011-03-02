@@ -120,6 +120,9 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -162,7 +165,11 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   {
     params_ = NULL;
   }
-  ExtractfromPack(position,data,anisotropic_);
+
+  int anisotropic;
+  ExtractfromPack(position,data,anisotropic);
+  anisotropic_ = anisotropic != 0;
+
   ExtractfromPack(position,data,a1_);
   ExtractfromPack(position,data,a2_);
   ExtractfromPack(position,data,A1_);

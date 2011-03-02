@@ -138,6 +138,9 @@ void CONTACT::CoElement::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

@@ -230,6 +230,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Shell8::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -276,7 +279,7 @@ void DRT::ELEMENTS::Shell8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // forcetype_
-  ExtractfromPack(position,data,forcetype_);
+  forcetype_ = static_cast<ForceType>( ExtractInt(position,data) );
   // thickness_
   ExtractfromPack(position,data,thickness_);
   // ngp_

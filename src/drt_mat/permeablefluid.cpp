@@ -67,6 +67,9 @@ MAT::PermeableFluid::PermeableFluid(MAT::PAR::PermeableFluid* params)
 /*----------------------------------------------------------------------*/
 void MAT::PermeableFluid::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

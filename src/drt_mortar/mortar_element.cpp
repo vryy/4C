@@ -91,6 +91,9 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // add area_
   DRT::ParObject::AddtoPack(data,area_);
   // add searchelements_
@@ -183,6 +186,9 @@ void MORTAR::MortarElement::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -218,13 +224,12 @@ void MORTAR::MortarElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::Element::Unpack(basedata);
   // shape_
-  ExtractfromPack(position,data,shape_);
+  shape_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
   // isslave_
-  ExtractfromPack(position,data,isslave_);
+  isslave_ = ExtractInt(position,data);
 
   // modata_
-  bool hasdata = false;
-  ExtractfromPack(position,data,hasdata);
+  bool hasdata = ExtractInt(position,data);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());

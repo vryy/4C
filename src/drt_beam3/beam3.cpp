@@ -265,6 +265,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -323,7 +326,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack<3,1>(position,data,curvnew_);
   ExtractfromPack<3,1>(position,data,curvconv_);
   ExtractfromPack<3,1>(position,data,curvold_);
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);

@@ -123,6 +123,9 @@ DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -153,10 +156,10 @@ void DRT::ELEMENTS::So_sh8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::ELEMENTS::So_hex8::Unpack(basedata);
   // thickdir
-  ExtractfromPack(position,data,thickdir_);
+  thickdir_ = static_cast<ThicknessDirection>( ExtractInt(position,data) );
   ExtractfromPack(position,data,thickvec_);
-  ExtractfromPack(position,data,anstype_);
-  ExtractfromPack(position,data,nodes_rearranged_);
+  anstype_ = static_cast<ANSType>( ExtractInt(position,data) );
+  nodes_rearranged_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

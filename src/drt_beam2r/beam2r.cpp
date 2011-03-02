@@ -234,6 +234,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam2r::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam2r::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -277,7 +280,7 @@ void DRT::ELEMENTS::Beam2r::Unpack(const vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,mominer_);
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);

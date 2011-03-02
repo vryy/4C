@@ -189,6 +189,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -247,9 +250,9 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  ExtractfromPack(position,data,kintype_);
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // eastype_
-  ExtractfromPack(position,data,eastype_);
+  eastype_ = static_cast<EASType>( ExtractInt(position,data) );
   // neas_
   ExtractfromPack(position,data,neas_);
   // data_
@@ -258,7 +261,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   data_.Unpack(tmp);
 
   // prestress_
-  ExtractfromPack(position,data,pstype_);
+  pstype_ = static_cast<INPAR::STR::PreStress>( ExtractInt(position,data) );
   ExtractfromPack(position,data,pstime_);
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)

@@ -127,6 +127,9 @@ ostream& operator << (ostream& os, const DRT::Container& cont)
  *----------------------------------------------------------------------*/
 void DRT::Container::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // no. of objects in maps
   const int indatasize = intdata_.size();
   const int doubledatasize = doubledata_.size();

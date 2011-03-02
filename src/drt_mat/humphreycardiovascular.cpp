@@ -86,6 +86,9 @@ MAT::HumphreyCardio::HumphreyCardio(MAT::PAR::HumphreyCardio* params)
  *----------------------------------------------------------------------*/
 void MAT::HumphreyCardio::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

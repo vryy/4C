@@ -440,7 +440,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 
   // extract size
   int size=0;
-  DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
+  DRT::ParObject::ExtractfromPack(position,rblock,size);
 
   for(int rr=0;rr<size;++rr)
   {
@@ -448,14 +448,14 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
     vector<int> mydofs ;
     int numdofs = 0;
 
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,gid);
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,numdofs);
+    DRT::ParObject::ExtractfromPack(position,rblock,gid);
+    DRT::ParObject::ExtractfromPack(position,rblock,numdofs);
 
     for(int ll=0;ll<numdofs;++ll)
     {
       int thisdof=0;
 
-      DRT::ParObject::ExtractfromPack<int>(position,rblock,thisdof);
+      DRT::ParObject::ExtractfromPack(position,rblock,thisdof);
       mydofs.push_back(thisdof);
     }
 

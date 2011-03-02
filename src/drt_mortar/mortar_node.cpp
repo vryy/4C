@@ -80,6 +80,9 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // add n_
   DRT::ParObject::AddtoPack(data,n_,3*sizeof(double));
   // add lm_
@@ -205,6 +208,9 @@ void MORTAR::MortarNode::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -254,13 +260,13 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::Node::Unpack(basedata);
   // isslave_
-  ExtractfromPack(position,data,isslave_);
+  isslave_ = ExtractInt(position,data);
   // istiedslave_
-  ExtractfromPack(position,data,istiedslave_);
+  istiedslave_ = ExtractInt(position,data);
   // isonbound_
-  ExtractfromPack(position,data,isonbound_);
+  isonbound_ = ExtractInt(position,data);
   // isdbc_
-  ExtractfromPack(position,data,isdbc_);
+  isdbc_ = ExtractInt(position,data);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_
@@ -270,11 +276,10 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   // uold_
   ExtractfromPack(position,data,uold_,3*sizeof(double));
   // hasproj_
-  ExtractfromPack(position,data,hasproj_);
+  hasproj_ = ExtractInt(position,data);
 
   // data_
-  bool hasdata = false;
-  ExtractfromPack(position,data,hasdata);
+  bool hasdata = ExtractInt(position,data);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());

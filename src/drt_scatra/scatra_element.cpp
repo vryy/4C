@@ -262,6 +262,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Transport::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -297,7 +300,7 @@ void DRT::ELEMENTS::Transport::Unpack(const vector<char>& data)
   // numdofpernode
   ExtractfromPack(position,data,numdofpernode_);
   // distype
-  ExtractfromPack(position,data,distype_);
+  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

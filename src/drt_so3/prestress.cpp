@@ -62,6 +62,9 @@ invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.JHistory())))
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::PreStress::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -95,7 +98,7 @@ void DRT::ELEMENTS::PreStress::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // extract isinit_
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
 
   // extract numnode_
   ExtractfromPack(position,data,numnode_);

@@ -289,6 +289,9 @@ DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -331,12 +334,12 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // is_ale_
-  ExtractfromPack(position,data,is_ale_);
+  is_ale_ = ExtractInt(position,data);
   // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
   // Smagorinsky model
   ExtractfromPack(position,data,Cs_delta_sq_);
   // distype
-  ExtractfromPack(position,data,distype_);
+  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
   // history variables (subscale velocities, accelerations and pressure)
   {

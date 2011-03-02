@@ -87,6 +87,9 @@ DRT::NURBS::ControlPoint::~ControlPoint()
 */
 void DRT::NURBS::ControlPoint::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   DRT::Node::AddtoPack(data,type);

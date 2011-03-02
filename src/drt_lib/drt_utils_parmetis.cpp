@@ -88,13 +88,13 @@ void DRT::UTILS::UnpackLocalConnectivity(
 
   // extract size (number of nodes we have a connectivity for)
   int size=0;
-  DRT::ParObject::ExtractfromPack<int>(position,rblock,size);
+  DRT::ParObject::ExtractfromPack(position,rblock,size);
 
   for(int i=0;i<size;++i)
   {
     // extract node gid we store the connectivity for
     int gid=-1;
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,gid);
+    DRT::ParObject::ExtractfromPack(position,rblock,gid);
 
     if(gid<0)
     {
@@ -103,7 +103,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
 
     // extract number of adjacent nodes
     int numnb=0;
-    DRT::ParObject::ExtractfromPack<int>(position,rblock,numnb);
+    DRT::ParObject::ExtractfromPack(position,rblock,numnb);
 
     if(numnb<1)
     {

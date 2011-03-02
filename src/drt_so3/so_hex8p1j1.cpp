@@ -141,6 +141,9 @@ DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8P1J1::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

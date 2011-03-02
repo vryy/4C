@@ -165,6 +165,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Truss3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -200,7 +203,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,X_);
   ExtractfromPack(position,data,material_);
   ExtractfromPack(position,data,lrefe_);
@@ -212,7 +215,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // kinematic type
-  ExtractfromPack(position,data,kintype_);
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

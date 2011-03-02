@@ -125,6 +125,9 @@ DRT::ELEMENTS::NStet::~NStet()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -159,7 +162,7 @@ void DRT::ELEMENTS::NStet::Unpack(const vector<char>& data)
   // material_
   ExtractfromPack(position,data,material_);
   // stresstype_
-  ExtractfromPack(position,data,stresstype_);
+  stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
   // V_
   ExtractfromPack(position,data,V_);
 

@@ -103,6 +103,9 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // global id gid_
   AddtoPack(data, gid_);
   // distype
@@ -145,7 +148,7 @@ void POTENTIAL::PotentialElementContainer::Unpack(
   // gid
   ExtractfromPack(position,data, gid_);
   // distype_
-  ExtractfromPack(position,data, distype_);
+  distype_ = static_cast<DRT::Element::DiscretizationType>( ExtractInt(position,data) );
   // body_label_
   ExtractfromPack(position,data, body_label_);
   // beta_

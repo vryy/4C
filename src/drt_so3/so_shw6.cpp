@@ -124,6 +124,9 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -157,12 +160,12 @@ void DRT::ELEMENTS::So_shw6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::ELEMENTS::So_weg6::Unpack(basedata);
   // eastype_
-  ExtractfromPack(position,data,eastype_);
+  eastype_ = static_cast<EASType>( ExtractInt(position,data) );
   // neas_
   ExtractfromPack(position,data,neas_);
   // reordering
-  ExtractfromPack(position,data,optimal_parameterspace_map_);
-  ExtractfromPack(position,data,nodes_rearranged_);
+  optimal_parameterspace_map_ = ExtractInt(position,data);
+  nodes_rearranged_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -409,12 +409,46 @@ public:
   \param stuff (out)       : basic data type (float int double char ...) to extract from data
 
   */
-  template<typename kind> static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, kind& stuff)
+  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, int& stuff)
   {
-    int size = sizeof(kind);
+    int size = sizeof(int);
     memcpy(&stuff,&data[position],size);
     position += size;
-    return;
+  }
+
+  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, unsigned& stuff)
+  {
+    int size = sizeof(unsigned);
+    memcpy(&stuff,&data[position],size);
+    position += size;
+  }
+
+  static void ExtractfromPack(std::vector<char>::size_type& position, const vector<char>& data, double& stuff)
+  {
+    int size = sizeof(double);
+    memcpy(&stuff,&data[position],size);
+    position += size;
+  }
+
+  static int ExtractInt(std::vector<char>::size_type& position, const vector<char>& data)
+  {
+    int i;
+    ExtractfromPack( position, data, i );
+    return i;
+  }
+
+  static unsigned ExtractUnsigned(std::vector<char>::size_type& position, const vector<char>& data)
+  {
+    unsigned i;
+    ExtractfromPack( position, data, i );
+    return i;
+  }
+
+  static double ExtractDouble(std::vector<char>::size_type& position, const vector<char>& data)
+  {
+    double f;
+    ExtractfromPack( position, data, f );
+    return f;
   }
 
   /*!

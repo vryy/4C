@@ -97,6 +97,9 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
  *----------------------------------------------------------------------*/
 void MAT::Growth::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

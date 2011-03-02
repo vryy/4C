@@ -76,6 +76,9 @@ MAT::ArrheniusTemp::ArrheniusTemp(MAT::PAR::ArrheniusTemp* params)
 /*----------------------------------------------------------------------*/
 void MAT::ArrheniusTemp::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

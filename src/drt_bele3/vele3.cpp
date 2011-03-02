@@ -124,6 +124,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

@@ -132,6 +132,9 @@ void DRT::ElementRegister::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ElementRegister::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -148,7 +151,7 @@ void DRT::ElementRegister::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ElementRegister::Unpack(const vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

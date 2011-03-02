@@ -74,6 +74,9 @@ MAT::AAA_mixedeffects::AAA_mixedeffects(MAT::PAR::AAA_mixedeffects* params)
  *----------------------------------------------------------------------*/
 void MAT::AAA_mixedeffects::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

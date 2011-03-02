@@ -217,6 +217,9 @@ void DRT::Condition::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::Condition::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -241,7 +244,7 @@ void DRT::Condition::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::Condition::Unpack(const vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -253,11 +256,11 @@ void DRT::Condition::Unpack(const vector<char>& data)
   // id_
   ExtractfromPack(position,data,id_);
   // buildgeometry_
-  ExtractfromPack(position,data,buildgeometry_);
+  buildgeometry_ = ExtractInt(position,data);
   // type_
-  ExtractfromPack(position,data,type_);
+  type_ = static_cast<ConditionType>( ExtractInt(position,data) );
   // gtype_
-  ExtractfromPack(position,data,gtype_);
+  gtype_ = static_cast<GeometryType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

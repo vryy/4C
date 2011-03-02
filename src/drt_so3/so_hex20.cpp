@@ -144,6 +144,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex20::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -182,7 +185,7 @@ void DRT::ELEMENTS::So_hex20::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  ExtractfromPack(position,data,kintype_);
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

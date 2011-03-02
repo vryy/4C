@@ -157,6 +157,9 @@ DRT::Element* DRT::ELEMENTS::So_sh8p8::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -187,10 +190,10 @@ void DRT::ELEMENTS::So_sh8p8::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   DRT::ELEMENTS::So_sh8::Unpack(basedata);
   // techniques
-  ExtractfromPack(position,data,stab_);
-  ExtractfromPack(position,data,ans_);
-  ExtractfromPack(position,data,lin_);
-  ExtractfromPack(position,data,iso_);
+  stab_ = static_cast<StabilisationType>( ExtractInt(position,data) );
+  ans_ = static_cast<AnsType>( ExtractInt(position,data) );
+  lin_ = static_cast<LinearizationType>( ExtractInt(position,data) );
+  iso_ = static_cast<IsochoricType>( ExtractInt(position,data) );
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

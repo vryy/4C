@@ -64,6 +64,9 @@ MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params)
 /*----------------------------------------------------------------------*/
 void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

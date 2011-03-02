@@ -79,6 +79,9 @@ MAT::LogNeoHooke::LogNeoHooke(MAT::PAR::LogNeoHooke* params)
  *----------------------------------------------------------------------*/
 void MAT::LogNeoHooke::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);

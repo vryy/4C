@@ -274,6 +274,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
 {
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -331,7 +334,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,nodeJ_);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
-  ExtractfromPack(position,data,isinit_);
+  isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
