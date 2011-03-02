@@ -1252,6 +1252,20 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           erhs[vi*numdofpernode_] -= fac_i0_funct_vi*expterm;
         }
       }
+      else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*(V_M - phi))
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double fac_i0_funct_vi = fac*i0*funct_(vi);
+          // ---------------------matrix
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            emat(vi*numdofpernode_,ui*numdofpernode_) += fac_i0_funct_vi*(-alphaa)*funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[vi*numdofpernode_] -= fac_i0_funct_vi*(alphaa*eta);
+        }
+      }
       else
         dserror("Kinetic model not implemented: %s",kinetics.c_str());
     } // if iselch
@@ -1446,6 +1460,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       // compute integrals
       overpotentialint += eta * fac;
       currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
+      boundaryint += fac;
+      //concentrationint += conint*fac_;
+    }
+    else if ((!iselch) && (kinetics=="linear"))
+    {
+      // secondary current distribution with linear kinetics
+
+      // compute integrals
+      overpotentialint += eta * fac;
+      currentintegral += (-i0) * (-alphaa)*eta * fac; // the negative(!) normal flux density
       boundaryint += fac;
       //concentrationint += conint*fac_;
     }

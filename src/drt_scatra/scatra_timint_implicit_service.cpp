@@ -259,6 +259,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("ElectrodeKinetics");
+  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 
