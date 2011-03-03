@@ -437,13 +437,12 @@ public:
   */
   void Clear()
   {
-    delete data_;
-    data_ = NULL;
+    intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
+    return;
   }
 
   //@}
 
-#if 0
   //! @name deep copy access methods
   /// to extract all data
 
@@ -473,7 +472,6 @@ public:
   { return std::make_pair( evecdata_.begin(), evecdata_.end() ); }
 
   //@
-#endif
 
 private:  // these methods are for PURE internal use
 
@@ -482,7 +480,20 @@ private:  // these methods are for PURE internal use
 
 protected:
 
-  Teuchos::ParameterList * data_;
+  //! a map to store integer data in
+  map<string,RCP<vector<int> > >             intdata_;
+
+  //! a map to store double data in
+  map<string,RCP<vector<double> > >          doubledata_;
+
+  //! a map to store string data in
+  map<string,string>                         stringdata_;
+
+  //! a map to store matrices in
+  map<string,RCP<Epetra_SerialDenseMatrix> > matdata_;
+
+  //! a map to store epetra vectors in
+  map<string,RCP<Epetra_MultiVector> >       evecdata_;
 
 }; // class Container
 } // namespace DRT
