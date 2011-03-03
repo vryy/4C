@@ -511,14 +511,10 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
   // this is expensive!
 
   std::vector<int> cpidlist(cgidlist.size());
-  std::vector<int> clidlist(cgidlist.size());
 
-  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(),&cgidlist[0],&cpidlist[0],&clidlist[0]);
+  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(),&cgidlist[0],&cpidlist[0],NULL);
   if (err!=0)
     dserror("RemoteIDList failed");
-
-  // never mind the lids
-  clidlist.clear();
 
   const Epetra_Comm& comm = mat_.FullRangeMap().Comm();
   const int numproc = comm.NumProc();

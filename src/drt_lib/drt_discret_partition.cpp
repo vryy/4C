@@ -265,8 +265,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   if (myrank) size = 0;
   vector<int> pidlist(size,-1);
   {
-    vector<int> lidlist(size);
-    int err = target.RemoteIDList(size,oldmap.MyGlobalElements(),&pidlist[0],&lidlist[0]);
+    int err = target.RemoteIDList(size,oldmap.MyGlobalElements(),&pidlist[0],NULL);
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
   }
 
@@ -547,11 +546,8 @@ void DRT::Discretization::BuildElementRowColumn(
   // find all owners for the overlapping node map
   const int ncnode = nodecolmap.NumMyElements();
   vector<int> cnodeowner(ncnode);
-  {
-    vector<int> lids(ncnode);
-    noderowmap.RemoteIDList(ncnode,nodecolmap.MyGlobalElements(),&cnodeowner[0],&lids[0]);
-    lids.clear();
-  }
+  int err = noderowmap.RemoteIDList(ncnode,nodecolmap.MyGlobalElements(),&cnodeowner[0],NULL);
+  if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
 
   // build connectivity of elements
   // storing :  element gid
