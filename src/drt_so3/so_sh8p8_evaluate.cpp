@@ -538,7 +538,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     break;
     case calc_stc_matrix:
     {
-      const INPAR::STR::STC_Scale stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const INPAR::STR::STC_Scale stc_scaling = params.get<INPAR::STR::STC_Scale>("stc_scaling");
       if (stc_scaling==INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
       else
