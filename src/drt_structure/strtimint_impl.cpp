@@ -264,7 +264,7 @@ void STR::TimIntImpl::Predict()
 void STR::TimIntImpl::PreparePartitionStep()
 {
 
-  // set iteration step to 0 
+  // set iteration step to 0
   iter_ = 0;
 
   // apply Dirichlet BCs
@@ -2043,7 +2043,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
-  p.set("stc_scaling", stcscale_);
+  p.set<int>("stc_scaling", stcscale_);
   p.set("stc_layer",1);
 
   discret_-> Evaluate(p, stcmat_, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
@@ -2065,7 +2065,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     Teuchos::ParameterList pe;
 
     pe.set("action", action);
-    pe.set("stc_scaling", stcscale_);
+    pe.set<int>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat=
