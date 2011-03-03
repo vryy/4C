@@ -8,10 +8,35 @@
 #include "cut_position.H"
 #include "cut_integrationcell.H"
 #include "cut_volumecell.H"
+#include "cut_boundarycell.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+
+template <DRT::Element::DiscretizationType distype>
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::BoundaryCell * bc )
+{
+  const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  LINALG::Matrix<3, nen> xyze( bc->Coordinates().A(), true );
+  LINALG::Matrix<3, nen> xie;
+
+  const std::vector<GEO::CUT::Point*> & cpoints = bc->Points();
+  if ( cpoints.size() != nen )
+    throw std::runtime_error( "non-matching number of points" );
+
+  for ( unsigned i=0; i<nen; ++i )
+  {
+    GEO::CUT::Point * p = cpoints[i];
+    const LINALG::Matrix<3,1> & xi = LocalCoordinates( p );
+    std::copy( xi.A(), xi.A()+3, &xie( 0, i ) );
+  }
+
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
+    DRT::UTILS::GaussIntegration::CreateProjected<distype>( xyze, xie, bc->CubatureDegree( Shape() ) );
+  return gp;
+}
 
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
@@ -37,9 +62,9 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
   return gp;
 }
 
-void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::vector<DRT::UTILS::GaussIntegration> & intpoints )
+void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCell*> & cells,
+                                                     std::vector<DRT::UTILS::GaussIntegration> & intpoints )
 {
-  std::set<GEO::CUT::VolumeCell*> cells;
   GetVolumeCells( cells );
 
   intpoints.clear();
@@ -126,6 +151,57 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::vector<DRT::UTILS::Gau
     }
   }
 #endif
+
+//   if ( not include_inner )
+//   {
+//     int count = 0;
+//     for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+//     {
+//       GEO::CUT::VolumeCell * vc = *i;
+//       if ( vc->Position()==Point::inside )
+//       {
+//         intpoints[count].Clear();
+//       }
+//       count += 1;
+//     }
+//   }
+}
+
+void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+{
+  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+  {
+    int sid = i->first;
+    const std::vector<GEO::CUT::BoundaryCell*> & cells = i->second;
+    std::vector<DRT::UTILS::GaussIntegration> & cell_points = intpoints[sid];
+
+    cell_points.clear();
+    cell_points.reserve( cells.size() );
+
+    for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::CUT::BoundaryCell * bc = *i;
+
+      switch ( bc->Shape() )
+      {
+      case DRT::Element::tri3:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tri3>( bc );
+        cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      case DRT::Element::quad4:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::quad4>( bc );
+        cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
+        break;
+      }
+      default:
+        throw std::runtime_error( "unsupported integration cell type" );
+      }
+    }
+  }
 }
 
 void GEO::CUT::LinearElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )

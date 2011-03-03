@@ -3583,7 +3583,7 @@ void COMBUST::FlameFront::buildPLC(
 
     intersection.AddElement( 1, nids, cellcoord, cell_distype );
 
-    intersection.Cut();
+    intersection.Cut( true );
 
     GEO::CUT::ElementHandle * e = intersection.GetElement( 1 );
 

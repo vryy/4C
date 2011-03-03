@@ -75,5 +75,5 @@ void test_hex8_quad4_double_cut()
   intersection.Status();
 
   //OutputGenerator generator;
-  intersection.Cut();
+  intersection.Cut( true );
 }

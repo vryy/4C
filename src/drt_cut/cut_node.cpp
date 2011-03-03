@@ -3,7 +3,7 @@
 #include "cut_volumecell.H"
 #include "cut_node.H"
 
-void GEO::CUT::Node::FindDOFSets()
+void GEO::CUT::Node::FindDOFSets( bool include_inner )
 {
   const std::set<Element*> & elements = Elements();
 
@@ -15,7 +15,21 @@ void GEO::CUT::Node::FindDOFSets()
     Element * e = *i;
     {
       const std::set<VolumeCell*> & element_cells = e->VolumeCells();
-      std::copy( element_cells.begin(), element_cells.end(), std::inserter( cells, cells.begin() ) );
+      if ( include_inner )
+      {
+        std::copy( element_cells.begin(), element_cells.end(), std::inserter( cells, cells.begin() ) );
+      }
+      else
+      {
+        for ( std::set<VolumeCell*>::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
+        {
+          VolumeCell * vc = *i;
+          if ( vc->Position()==Point::outside )
+          {
+            cells.insert( vc );
+          }
+        }
+      }
 
       const std::vector<Node*> & nodes = e->Nodes();
       for ( std::vector<Node*>::const_iterator i=nodes.begin();
@@ -26,6 +40,10 @@ void GEO::CUT::Node::FindDOFSets()
         for ( std::set<VolumeCell*>::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
         {
           VolumeCell * cell = *i;
+
+          if ( not include_inner and cell->Position()!=Point::outside )
+            continue;
+
           if ( cell->Contains( n->point() ) )
           {
             nodal_cells[n].insert( cell );
@@ -122,6 +140,7 @@ int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
   return dofset;
 }
 
+#if 0
 int GEO::CUT::Node::NumDofSets( bool include_inner )
 {
   if ( include_inner )
@@ -159,3 +178,4 @@ int GEO::CUT::Node::NumDofSets( bool include_inner )
     return numdofsets;
   }
 }
+#endif

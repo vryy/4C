@@ -43,7 +43,7 @@ public:
 
   void AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
-  void Cut();
+  void Cut( bool include_inner );
 
   Node * GetNode( int nid ) const;
 

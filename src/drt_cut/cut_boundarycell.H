@@ -23,11 +23,10 @@ class BoundaryCell
 {
 public:
 
-  static void CreateCells( Mesh & mesh, VolumeCell * cell, const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
-
-  BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
+  BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points )
     : xyz_( xyz ),
-      facet_( facet )
+      facet_( facet ),
+      points_( points )
   {
   }
 
@@ -35,9 +34,13 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
+
   virtual void DumpGmsh( std::ofstream & file ) = 0;
 
   virtual double Area() const = 0;
+
+  const std::vector<Point*> & Points() const { return points_; }
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
@@ -46,21 +49,26 @@ public:
 protected:
   Epetra_SerialDenseMatrix xyz_;
   Facet * facet_;
+  std::vector<Point*> points_;
 };
 
 class Tri3BoundaryCell : public BoundaryCell
 {
 public:
 
-  Tri3BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
-    : BoundaryCell( xyz, facet )
+  Tri3BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points )
+    : BoundaryCell( xyz, facet, points )
   {
   }
 
-  static void CollectCoordinates( const std::vector<Point*> & side,
-                                  std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
+
+//   static void CollectCoordinates( const std::vector<Point*> & side,
+//                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 7; }
 
   virtual void DumpGmsh( std::ofstream & file );
 
@@ -71,15 +79,19 @@ class Quad4BoundaryCell : public BoundaryCell
 {
 public:
 
-  Quad4BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet )
-    : BoundaryCell( xyz, facet )
+  Quad4BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points )
+    : BoundaryCell( xyz, facet, points )
   {
   }
 
-  static void CollectCoordinates( const std::vector<Point*> & side,
-                                  std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
+
+//   static void CollectCoordinates( const std::vector<Point*> & side,
+//                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 7; }
 
   virtual void DumpGmsh( std::ofstream & file );
 

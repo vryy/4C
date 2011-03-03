@@ -47,11 +47,13 @@ public:
 
   void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
+  void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
+
   const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
 
   const std::set<BoundaryCell*> BoundaryCells() const { return bcells_; }
 
-  void ConnectNodalDOFSets();
+  void ConnectNodalDOFSets( bool include_inner );
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
@@ -61,11 +63,11 @@ public:
 
   const std::set<Facet*> & Facets() const { return facets_; }
 
-  void NewTri3Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x );
+  void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
-  void NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz );
+//  void NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz );
 
-  void NewQuad4Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x );
+  void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   double Volume();
 

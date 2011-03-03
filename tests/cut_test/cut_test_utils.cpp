@@ -258,7 +258,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   mesh.MakeFacets();
   mesh.MakeVolumeCells();
   mesh.FindNodePositions();
-  mesh.FindNodalDOFSets();
+  mesh.FindNodalDOFSets( true );
   mesh.CreateIntegrationCells();
   mesh.DumpGmshIntegrationcells( "integrationcells.pos" );
 #ifdef DEBUGCUTLIBRARY
@@ -414,7 +414,7 @@ void SimpleWrapper::Status()
 
 void SimpleWrapper::Cut()
 {
-  mesh_->Cut();
+  mesh_->Cut( true );
 }
 
 void SimpleWrapper::CreateElement( DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix & xyze )

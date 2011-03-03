@@ -1467,7 +1467,7 @@ void GEO::CUT::TetMesh::ClearExternalTets()
 }
 
 /// Get tri coordinates at the cut facets in the proper order
-void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
+void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Point*> > & sides_xyz )
 {
   // rotate broken tris and find unique facet
 
@@ -1648,7 +1648,7 @@ void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_Seria
             Facet * f = i->first;
             std::vector<std::vector<int> > & sides = i->second;
 
-            std::vector<Epetra_SerialDenseMatrix> & side_coords = sides_xyz[f];
+            std::vector<Point*> & side_coords = sides_xyz[f];
             CollectCoordinates( sides, side_coords );
           }
           break;
@@ -1667,7 +1667,7 @@ void GEO::CUT::TetMesh::AddBrokenTris( std::map<Facet*, std::vector<Epetra_Seria
 }
 
 /// Get tri coordinates at the cut facets in the proper order
-void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
+void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Point*> > & sides_xyz )
 {
   for ( std::map<Facet*, FacetInfo>::iterator i=facet_info_.begin();
         i!=facet_info_.end();
@@ -1683,7 +1683,7 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Epetra_Serial
       fi.TestTraceLines();
 #endif
 
-      std::vector<Epetra_SerialDenseMatrix> & side_coords = sides_xyz[f];
+      std::vector<Point*> & side_coords = sides_xyz[f];
 
       if ( side_coords.size() > 0 )
       {
@@ -1752,16 +1752,14 @@ void GEO::CUT::TetMesh::FindProperSides( const std::set<Entity<3>*> & tris, std:
 }
 
 void GEO::CUT::TetMesh::CollectCoordinates( const std::vector<std::vector<int> > & sides,
-                                            std::vector<Epetra_SerialDenseMatrix> & side_coords )
+                                            std::vector<Point*> & side_coords )
 {
   for ( std::vector<std::vector<int> >::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     const std::vector<int> & side = *i;
-    Epetra_SerialDenseMatrix xyz( 3, 3 );
-    points_[side[0]]->Coordinates( &xyz( 0, 0 ) );
-    points_[side[1]]->Coordinates( &xyz( 0, 1 ) );
-    points_[side[2]]->Coordinates( &xyz( 0, 2 ) );
-    side_coords.push_back( xyz );
+    side_coords.push_back( points_[side[0]] );
+    side_coords.push_back( points_[side[1]] );
+    side_coords.push_back( points_[side[2]] );
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
     surface_tris_.push_back( side );

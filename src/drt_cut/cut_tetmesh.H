@@ -810,7 +810,7 @@ namespace GEO
       const std::vector<std::vector<int> > & Tets() const { return tets_; }
 
       /// Return the tris for each facet
-      const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & SidesXYZ() const { return sides_xyz_; }
+      const std::map<Facet*, std::vector<Point*> > & SidesXYZ() const { return sides_xyz_; }
 
     private:
 
@@ -853,14 +853,14 @@ namespace GEO
       void FixBrokenTets();
 
       /// Get tri coordinates at the cut facets in the proper order
-      void FillCutSides( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+      void FillCutSides( std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
-      void AddBrokenTris( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
+      void AddBrokenTris( std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
       void FindProperSides( const std::set<Entity<3>*> & tris, std::vector<std::vector<int> > & sides );
 
       void CollectCoordinates( const std::vector<std::vector<int> > & sides,
-                               std::vector<Epetra_SerialDenseMatrix> & side_coords );
+                               std::vector<Point*> & side_coords );
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
 
@@ -988,7 +988,7 @@ namespace GEO
       std::set<Entity<2>*> broken_tri_open_lines_;
 
       //std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
-      std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz_;
+      std::map<Facet*, std::vector<Point*> > sides_xyz_;
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
       std::vector<std::vector<int> > surface_tris_;

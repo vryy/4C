@@ -58,7 +58,7 @@ void GEO::CutManager::AddElement( DRT::Element * ele )
 void GEO::CutManager::Cut( std::map< int, DomainIntCells >& domainintcells,
                            std::map< int, BoundaryIntCells >& boundaryintcells )
 {
-  mesh_->Cut();
+  mesh_->Cut( true );
 
   for ( int k = 0; k < dis_.NumMyColElements(); ++k )
   {

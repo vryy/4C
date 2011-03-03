@@ -534,16 +534,26 @@ GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & fa
   return c;
 }
 
-GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet )
+GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points )
 {
-  Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, facet );
+  if ( points.size()!=3 )
+    throw std::runtime_error( "expect 3 points" );
+  Epetra_SerialDenseMatrix xyz( 3, 3 );
+  for ( int i=0; i<3; ++i )
+    points[i]->Coordinates( &xyz( 0, i ) );
+  Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, facet, points );
   boundarycells_.push_back( Teuchos::rcp( bc ) );
   return bc;
 }
 
-GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet )
+GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points )
 {
-  Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, facet );
+  if ( points.size()!=4 )
+    throw std::runtime_error( "expect 4 points" );
+  Epetra_SerialDenseMatrix xyz( 3, 4 );
+  for ( int i=0; i<4; ++i )
+    points[i]->Coordinates( &xyz( 0, i ) );
+  Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, facet, points );
   boundarycells_.push_back( Teuchos::rcp( bc ) );
   return bc;
 }
@@ -840,14 +850,14 @@ void GEO::CUT::Mesh::FindLSNodePositions()
   }
 }
 
-void GEO::CUT::Mesh::FindNodalDOFSets()
+void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
 {
   for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
         i!=nodes_.end();
         ++i )
   {
     Node * n = &*i->second;
-    n->FindDOFSets();
+    n->FindDOFSets( include_inner );
   }
 
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
@@ -855,7 +865,7 @@ void GEO::CUT::Mesh::FindNodalDOFSets()
         ++i )
   {
     VolumeCell * cell = &**i;
-    cell->ConnectNodalDOFSets();
+    cell->ConnectNodalDOFSets( include_inner );
   }
 }
 

@@ -113,11 +113,11 @@ public:
 
   const std::vector<Point*> & CornerPoints() const { return corner_points_; }
 
-  void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells );
+  void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
 
-  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );
+//  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );
 
-  void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells );
+  void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
 
   void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
@@ -193,6 +193,28 @@ private:
   /// exist two sets, one for each volume)
   std::set<BoundaryCell*> bcells_;
 };
+
+
+  inline Facet * FindFacet( const std::set<Facet*> & facets, const std::vector<Point*> & side )
+  {
+    Facet * found = NULL;
+    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( f->Equals( side ) )
+      {
+        if ( found==NULL )
+        {
+          found = f;
+        }
+        else
+        {
+          throw std::runtime_error( "not unique" );
+        }
+      }
+    }
+    return found;
+  }
 
 //inline int EntityId( const Facet & f ) { return f.InternalId(); }
 //inline int EntityId( const Facet & f ) { return reinterpret_cast<int>( &f ); }

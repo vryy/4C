@@ -55,9 +55,16 @@ public:
     return rst;
   }
 
-  void VolumeCellGaussPoints( std::vector<DRT::UTILS::GaussIntegration> & intpoints );
+  void VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCell*> & cells,
+                              std::vector<DRT::UTILS::GaussIntegration> & intpoints );
+
+  void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
 private:
+
+  template <DRT::Element::DiscretizationType distype>
+  Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::BoundaryCell * bc );
 
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );

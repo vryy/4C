@@ -123,7 +123,7 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
       TetMesh tetmesh( points, facets_ );
 
       const std::vector<std::vector<int> > & tets = tetmesh.Tets();
-      const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz = tetmesh.SidesXYZ();
+      const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
 
       Point::PointPosition position = Position();
 
@@ -144,7 +144,25 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
         }
       }
 
-      BoundaryCell::CreateCells( mesh, this, sides_xyz );
+      for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
+            i!=sides_xyz.end();
+            ++i )
+      {
+        Facet * f = i->first;
+        const std::vector<Point*> & points = i->second;
+
+        std::size_t length = points.size();
+        if ( length % 3 != 0 )
+          throw std::runtime_error( "expect list of triangles" );
+
+        length /= 3;
+        std::vector<Point*> p( 3 );
+        for ( std::size_t i=0; i<length; ++i )
+        {
+          std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
+          Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+        }
+      }
     }
   }
   else
@@ -189,8 +207,21 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> &
   std::copy( bcells_.begin(), bcells_.end(), std::inserter( bcells, bcells.begin() ) );
 }
 
-void GEO::CUT::VolumeCell::ConnectNodalDOFSets()
+void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells )
 {
+  for ( std::set<BoundaryCell*>::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  {
+    BoundaryCell * bc = *i;
+    Facet * f = bc->GetFacet();
+    bcells[f->SideId()].push_back( bc );
+  }
+}
+
+void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
+{
+  if ( not include_inner and Position()!=Point::outside )
+    return;
+
   const std::vector<Node*> & nodes = element_->Nodes();
   nodaldofset_.reserve( nodes.size() );
 
@@ -257,17 +288,17 @@ bool GEO::CUT::VolumeCell::Contains( Point * p )
   return false;
 }
 
-void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x )
+void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewTri3Cell( mesh, this, x, bcells_ );
 }
 
-void GEO::CUT::VolumeCell::NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz )
-{
-  f->NewTri3Cells( mesh, this, xyz, bcells_ );
-}
+// void GEO::CUT::VolumeCell::NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz )
+// {
+//   f->NewTri3Cells( mesh, this, xyz, bcells_ );
+// }
 
-void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const Epetra_SerialDenseMatrix & x )
+void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewQuad4Cell( mesh, this, x, bcells_ );
 }

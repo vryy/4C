@@ -4,42 +4,17 @@
 #include "cut_facet.H"
 
 
-void GEO::CUT::BoundaryCell::CreateCells( Mesh & mesh,
-                                          VolumeCell * cell,
-                                          const std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
+void GEO::CUT::Tri3BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
 {
-  for ( std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> >::const_iterator i=sides_xyz.begin();
-        i!=sides_xyz.end();
-        ++i )
-  {
-    Facet * f = i->first;
-    const std::vector<Epetra_SerialDenseMatrix> & xyz = i->second;
-    switch ( xyz.size() )
-    {
-    case 0:
-      throw std::runtime_error( "no surfaces" );
-    case 1:
-    {
-      const Epetra_SerialDenseMatrix & x = xyz[0];
-      if ( x.N()==3 )
-      {
-        cell->NewTri3Cell( mesh, f, x );
-      }
-      else if ( x.N()==4 )
-      {
-        cell->NewQuad4Cell( mesh, f, x );
-      }
-      else
-      {
-        throw std::runtime_error( "illegal number of point in boundary cell" );
-      }
-    }
-    default:
-      cell->NewTri3Cells( mesh, f, xyz );
-    }
-  }
+  cell->NewTri3Cell( mesh, facet, side );
 }
 
+void GEO::CUT::Quad4BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
+{
+  cell->NewQuad4Cell( mesh, facet, side );
+}
+
+#if 0
 void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> & side,
                                                      std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
 {
@@ -131,6 +106,7 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
     p->Coordinates( &xyz( 0, j ) );
   }
 }
+#endif
 
 double GEO::CUT::Tri3BoundaryCell::Area() const
 {

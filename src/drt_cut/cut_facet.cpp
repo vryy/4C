@@ -694,14 +694,14 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
   return i;
 }
 
-void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells )
+void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells )
 {
 //   if ( not Equals( DRT::Element::tri3 ) )
 //   {
 //     throw std::runtime_error( "cannot create tri3 boundary cell on facet" );
 //   }
 
-  BoundaryCell * bc = mesh.NewTri3Cell( x, volume, this );
+  BoundaryCell * bc = mesh.NewTri3Cell( volume, this, points );
   bcells.insert( bc );
   if ( bcells_.size()==0 )
   {
@@ -709,48 +709,48 @@ void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const Epetr
   }
 }
 
-void GEO::CUT::Facet::NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells )
-{
-  bool mine = bcells_.size()==0;
+// void GEO::CUT::Facet::NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells )
+// {
+//   bool mine = bcells_.size()==0;
 
-  //if ( bcells_.size()==0 )
-  {
-#if 0
-    if ( Equals( DRT::Element::tri3 ) )
-    {
-      NewTri3Cell( mesh, volume, bcells );
-    }
-    else if ( Equals( DRT::Element::quad4 ) )
-    {
-      NewQuad4Cell( mesh, volume, bcells );
-    }
-    else
-#endif
-    {
-      for ( std::vector<Epetra_SerialDenseMatrix>::const_iterator i=xyz.begin();
-            i!=xyz.end();
-            ++i )
-      {
-        const Epetra_SerialDenseMatrix & x = *i;
-        BoundaryCell * bc = mesh.NewTri3Cell( x, volume, this );
-        bcells.insert( bc );
-        if ( mine )
-        {
-          bcells_.insert( bc );
-        }
-      }
-    }
-  }
-}
+//   //if ( bcells_.size()==0 )
+//   {
+// #if 0
+//     if ( Equals( DRT::Element::tri3 ) )
+//     {
+//       NewTri3Cell( mesh, volume, bcells );
+//     }
+//     else if ( Equals( DRT::Element::quad4 ) )
+//     {
+//       NewQuad4Cell( mesh, volume, bcells );
+//     }
+//     else
+// #endif
+//     {
+//       for ( std::vector<Epetra_SerialDenseMatrix>::const_iterator i=xyz.begin();
+//             i!=xyz.end();
+//             ++i )
+//       {
+//         const Epetra_SerialDenseMatrix & x = *i;
+//         BoundaryCell * bc = mesh.NewTri3Cell( x, volume, this );
+//         bcells.insert( bc );
+//         if ( mine )
+//         {
+//           bcells_.insert( bc );
+//         }
+//       }
+//     }
+//   }
+// }
 
-void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const Epetra_SerialDenseMatrix & x, std::set<BoundaryCell*> & bcells )
+void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells )
 {
 //   if ( not Equals( DRT::Element::quad4 ) )
 //   {
 //     throw std::runtime_error( "cannot create quad4 boundary cell on facet" );
 //   }
 
-  BoundaryCell * bc = mesh.NewQuad4Cell( x, volume, this );
+  BoundaryCell * bc = mesh.NewQuad4Cell( volume, this, points );
   bcells.insert( bc );
   if ( bcells_.size()==0 )
   {

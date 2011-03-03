@@ -83,9 +83,9 @@ public:
                              const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
                              Element * element );
 
-  Tri3BoundaryCell* NewTri3Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet );
+  Tri3BoundaryCell* NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
-  Quad4BoundaryCell* NewQuad4Cell( const Epetra_SerialDenseMatrix & xyz, VolumeCell * volume, Facet * facet );
+  Quad4BoundaryCell* NewQuad4Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
 
   Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
@@ -113,7 +113,7 @@ public:
 
   void FindLSNodePositions();
 
-  void FindNodalDOFSets();
+  void FindNodalDOFSets( bool include_inner );
 
   void CreateIntegrationCells();
 

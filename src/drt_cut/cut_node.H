@@ -50,13 +50,13 @@ public:
 
   const std::set<Element*> & Elements() const { return point_->Elements(); }
 
-  void FindDOFSets();
+  void FindDOFSets( bool include_inner );
 
   int DofSetNumber( VolumeCell * cell );
 
   const std::vector<std::set<VolumeCell*> > & DofSets() const { return dofsets_; }
 
-  int NumDofSets( bool include_inner );
+  int NumDofSets() const { return DofSets().size(); }
 
 private:
 

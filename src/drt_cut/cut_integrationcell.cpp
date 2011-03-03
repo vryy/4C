@@ -166,8 +166,6 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
       }
     }
 
-    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
-
     if ( distance_counter==-4 )
     {
       std::vector<Point*> rpoints( 8 );
@@ -187,10 +185,8 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewHex8Cell( VolumePosition( facets ), rpoints, cell );
     }
@@ -203,10 +199,8 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewHex8Cell( VolumePosition( facets ), points, cell );
     }
@@ -280,8 +274,6 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
-    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
-
     if ( bot_distance.Distance() > 0 )
     {
       std::vector<Point*> points;
@@ -296,10 +288,8 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
     }
@@ -317,10 +307,8 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
     }
@@ -490,8 +478,6 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
 //       }
 //     }
 
-    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
-
     if ( distance_counter==-3 )
     {
       std::vector<Point*> rpoints( 6 );
@@ -509,7 +495,7 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
       for ( int i=0; i<3; ++i )
       {
@@ -518,10 +504,8 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewWedge6Cell( VolumePosition( facets ), rpoints, cell );
     }
@@ -534,7 +518,7 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
       for ( int i=0; i<3; ++i )
       {
@@ -543,10 +527,8 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewWedge6Cell( VolumePosition( facets ), points, cell );
     }
@@ -638,8 +620,6 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
-    std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > sides_xyz;
-
     if ( bot_distance.Distance() > 0 )
     {
       std::vector<Point*> points;
@@ -654,7 +634,7 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
       for ( int i=0; i<1; ++i )
       {
@@ -663,10 +643,8 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );
     }
@@ -684,7 +662,7 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
       for ( int i=0; i<1; ++i )
       {
@@ -693,10 +671,8 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CollectCoordinates( side, sides_xyz );
+        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
       }
-
-      BoundaryCell::CreateCells( mesh, cell, sides_xyz );
 
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );
     }

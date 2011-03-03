@@ -86,7 +86,7 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
   cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
-void GEO::CUT::MeshIntersection::Cut()
+void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 {
   Status();
 
@@ -116,7 +116,7 @@ void GEO::CUT::MeshIntersection::Cut()
   NormalMesh().FindNodePositions();
 
   // find number and connection of dofsets at nodes from cut volumes
-  NormalMesh().FindNodalDOFSets();
+  NormalMesh().FindNodalDOFSets( include_inner );
 
   //Status();
 
