@@ -1356,6 +1356,50 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
 # Define the libraries. The link order is important!
 
+# Compile element libraries first. There are files that take time to compile.
+
+add_library(ele_f3 ${OBJS_DRT_F3_LIB})
+add_library(ele_f3_impl ${OBJS_DRT_F3_IMPL_LIB})
+add_library(ele_ale ${OBJS_DRT_ALE_LIB})
+add_library(ele_b2 ${OBJS_DRT_B2_LIB})
+add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
+add_library(ele_b3 ${OBJS_DRT_B3_LIB})
+add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
+add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
+add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
+add_library(ele_sr ${OBJS_DRT_SR_LIB})
+add_library(ele_s8 ${OBJS_DRT_S8_LIB})
+add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
+add_library(ele_so ${OBJS_SOH8_LIB})
+add_library(ele_t2 ${OBJS_DRT_T2_LIB})
+add_library(ele_t3 ${OBJS_DRT_T3_LIB})
+add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
+add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
+add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
+add_library(ele_w1 ${OBJS_DRT_W1_LIB})
+
+set(ELEMENT_LIBRARIES 
+  ele_ale
+  ele_b2
+  ele_b2r
+  ele_b3
+  ele_b3ii
+  ele_bele3
+  ele_combust3
+  ele_f3
+  ele_f3_impl
+  ele_sr
+  ele_s8
+  ele_scatra
+  ele_so
+  ele_t2
+  ele_t3
+  ele_thermo
+  ele_to2
+  ele_to3
+  ele_w1
+  )
+
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_fsi ${OBJS_DRT_FSI})
@@ -1463,48 +1507,6 @@ set(SUPPORT_LIBRARIES
   drt_lib_inpar
   drt_lib_io
   drt_lib_nurbs 
-  )
-
-add_library(ele_ale ${OBJS_DRT_ALE_LIB})
-add_library(ele_b2 ${OBJS_DRT_B2_LIB})
-add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
-add_library(ele_b3 ${OBJS_DRT_B3_LIB})
-add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
-add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
-add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
-add_library(ele_f3 ${OBJS_DRT_F3_LIB})
-add_library(ele_f3_impl ${OBJS_DRT_F3_IMPL_LIB})
-add_library(ele_sr ${OBJS_DRT_SR_LIB})
-add_library(ele_s8 ${OBJS_DRT_S8_LIB})
-add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
-add_library(ele_so ${OBJS_SOH8_LIB})
-add_library(ele_t2 ${OBJS_DRT_T2_LIB})
-add_library(ele_t3 ${OBJS_DRT_T3_LIB})
-add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
-add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
-add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
-add_library(ele_w1 ${OBJS_DRT_W1_LIB})
-
-set(ELEMENT_LIBRARIES 
-  ele_ale
-  ele_b2
-  ele_b2r
-  ele_b3
-  ele_b3ii
-  ele_bele3
-  ele_combust3
-  ele_f3
-  ele_f3_impl
-  ele_sr
-  ele_s8
-  ele_scatra
-  ele_so
-  ele_t2
-  ele_t3
-  ele_thermo
-  ele_to2
-  ele_to3
-  ele_w1
   )
 
 # filter framework
