@@ -138,15 +138,13 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
                                                           vector<int>& gidlist)
 {
   const int myrank = Comm().MyPID();
-  
+
   // proc 0 looks for elements that are to be send to other procs
   int size = (int)gidlist.size();
   vector<int> pidlist(size); // gids on proc 0
-  vector<int> lidlist(size); // gids on proc 0
-  int err = target.RemoteIDList(size,&gidlist[0],&pidlist[0],&lidlist[0]);
+  int err = target.RemoteIDList(size,&gidlist[0],&pidlist[0],NULL);
   if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
-  lidlist.clear(); // not interested in this
-  
+
   map<int,vector<char> > sendmap; // proc to send a set of elements to
   if (!myrank)
   {
@@ -170,13 +168,13 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
     for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first],fool->second());
   }
-  
+
 
 #ifdef PARALLEL
   // tell everybody who is to receive something
   vector<int> receivers;
-  
-  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool) 
+
+  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool)
     receivers.push_back(fool->first);
   size = (int)receivers.size();
   Comm().Broadcast(&size,1,0);
@@ -185,7 +183,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
   int foundme = -1;
   if (myrank != 0)
     for (int i=0; i<size; ++i)
-      if (receivers[i]==myrank) 
+      if (receivers[i]==myrank)
       {
         foundme = i;
         break;
@@ -206,7 +204,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
     if (tag != size) dserror("Number of messages is mixed up");
     // do not delete sendmap until Wait has returned!
   }
-  
+
 
   // all other procs listen to message and put element into dis
   if (foundme != -1)
@@ -233,7 +231,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
       //printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
   }
-  
+
   // wait for all communication to finish
   if (!myrank)
   {
@@ -253,7 +251,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
 void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
-  
+
 #if 0
   Epetra_Time timer(Comm());
   double t1 = timer.ElapsedTime();
@@ -272,7 +270,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
   }
 
-#if 0  
+#if 0
   for (int proc=0; proc<Comm().NumProc(); ++proc)
   {
     if (proc==myrank)
@@ -285,20 +283,20 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     Comm().Barrier();
   }
 #endif
-  
+
 #if 0
   double t2 = timer.ElapsedTime();
   if (!myrank) printf("\nTime 1 %10.5e\n",t2-t1); fflush(stdout);
 #endif
-  
+
   map<int,vector<char> > sendmap;
   if (!myrank)
   {
     map<int,DRT::PackBuffer > sendpb;
     for (int i=0; i<size; ++i)
     {
-      // proc 0 does not send to itself      
-      if (pidlist[i]==myrank || pidlist[i]==-1) continue; 
+      // proc 0 does not send to itself
+      if (pidlist[i]==myrank || pidlist[i]==-1) continue;
       Node* node = gNode(oldmap.MyGlobalElements()[i]);
       if (!node) dserror("Proc 0 cannot find global node %d",oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
@@ -307,8 +305,8 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       fool->second.StartPacking();
     for (int i=0; i<size; ++i)
     {
-      // proc 0 does not send to itself      
-      if (pidlist[i]==myrank || pidlist[i]==-1) continue; 
+      // proc 0 does not send to itself
+      if (pidlist[i]==myrank || pidlist[i]==-1) continue;
       Node* node = gNode(oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
       node_.erase(node->Id());
@@ -316,7 +314,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
       swap(sendmap[fool->first],fool->second());
   }
-  
+
 #if 0
   double t3 = timer.ElapsedTime();
   if (!myrank) printf("Time 2 %10.5e\n",t3-t2); fflush(stdout);
@@ -325,7 +323,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 #ifdef PARALLEL
   // tell everybody who is to receive something
   vector<int> receivers;
-  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool) 
+  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool)
     receivers.push_back(fool->first);
   size = (int)receivers.size();
   Comm().Broadcast(&size,1,0);
@@ -334,12 +332,12 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   int foundme = -1;
   if (myrank != 0)
     for (int i=0; i<size; ++i)
-      if (receivers[i]==myrank) 
+      if (receivers[i]==myrank)
       {
         foundme = i;
         break;
       }
-  
+
   // proc 0 sends out messages
   int tag = 0;
   DRT::Exporter exporter(Comm());
@@ -397,7 +395,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 
 
 #endif
-  
+
   Comm().Barrier(); // feel better this way ;-)
   Reset();
   return;
