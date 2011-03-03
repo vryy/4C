@@ -789,7 +789,7 @@ public:
 
   \note Sets Filled()=false and calls Reset() upon discretization.
   */
-  virtual bool DeleteNode(RCP<DRT::Node> ele);
+  virtual bool DeleteNode(RCP<DRT::Node> node);
 
   /*!
   \brief Delete an node with global id gid from the discretization
@@ -1109,6 +1109,29 @@ public:
   virtual void ExportColumnNodes(const Epetra_Map& newmap);
 
   /*!
+  \brief Export the elements from proc 0 to a different parallel row layout
+        (Filled()==true NOT prerequisite)
+
+  This routine is mainly useful for input read on proc 0
+  
+  \param target (in): desired distirbution of elements
+  \param gidlist (in): list of element gids to be distributed
+
+  */
+  void ProcZeroDistributeElementsToAll(Epetra_Map& target, vector<int>& gidlist);
+
+  /*!
+  \brief Export the nodes from proc 0 to a different parallel row layout
+        (Filled()==true NOT prerequisite)
+
+  This routine is mainly useful for input read on proc 0
+  
+  \param target (in): desired distirbution of elements
+
+  */
+  void ProcZeroDistributeNodesToAll(Epetra_Map& target);
+
+  /*!
   \brief Export the elements to a different parallel row layout
         (Filled()==true NOT prerequisite)
 
@@ -1129,6 +1152,7 @@ public:
   \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
   virtual void ExportRowElements(const Epetra_Map& newmap);
+
 
   /*!
   \brief Export overlap of elements

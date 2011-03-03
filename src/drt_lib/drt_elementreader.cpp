@@ -275,8 +275,10 @@ void ElementReader::Partition()
   for (int block=0; block<nblock; ++block)
   {
     double t1 = timer.ElapsedTime();
+    vector<int> gidlist; 
     if (!endofsection && 0==myrank)
     {
+      gidlist.reserve(bsize);
       int bcount=0;
       for (;getline(file, line); ++filecount)
       {
@@ -299,6 +301,7 @@ void ElementReader::Partition()
           // read element id type and distype
           t >> elenumber >> eletype >> distype;
           elenumber -= 1;
+          gidlist.push_back(elenumber);
 
           // only read registered element types or all elements if nothing is
           // registered
@@ -364,19 +367,17 @@ void ElementReader::Partition()
 
     double t2 = timer.ElapsedTime();
     if (!myrank) 
-    {
-      printf("ele block %d reading time %10.5e secs\n",block,t2-t1);
-      fflush(stdout);
-    }
+      printf("ele block %d reading %10.5e secs / ",block,t2-t1);
 
     // export junk of elements to other processors as reflected in the linear
     // map roweles
-    dis_->ExportRowElements(*roweles_);
-
+    dis_->ProcZeroDistributeElementsToAll(*roweles_,gidlist);
+    // this also works but is slower
+    //dis_->ExportRowElements(*roweles_);
     double t3 = timer.ElapsedTime();
     if (!myrank) 
     {                  
-      printf("ele block %d distrib time %10.5e secs\n",block,t3-t2);
+      printf("distrib time %10.5e secs\n",t3-t2);
       fflush(stdout);
     }
 
@@ -388,42 +389,17 @@ void ElementReader::Partition()
   numnodes = (int)nodes_.size();
   comm_->Broadcast(&numnodes,1,0);
   
-#if 0
-  if (myrank==0)
-  {
-    numnodes = (int)nodes_.size();
-    // copy set content into nids vector
-    nids.reserve(numnodes);
-    copy(nodes_.begin(), nodes_.end(), back_inserter(nids));
-  }
-#endif
-
-#if 0
-  // create preliminary node row map
-  rownodes_ = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
-#endif
-
   // We want to be able to read empty fields. If we have such a beast
   // just skip the partitioning.
   if (numnodes)
   {
 #if defined(PARALLEL) && defined(PARMETIS)
 
-#if 0 // Peter version (has memory size issues due to redundant stuff)
-    // Simply allreduce the node ids --- the vector is ordered according
-    // to the < operator from the set which was used to construct it
-    comm_->Broadcast(&numnodes,1,0);
-    nids.resize(numnodes);
-    comm_->Broadcast(&nids[0],numnodes,0);
-    DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,nids,nblock,
-                                  numproc,comm_,time,!reader_.MyOutputFlag());
-#else // Michael version (no redundant stuff at all, also faster)
     rownodes_ = null;
     colnodes_ = null;
     nids.clear();
     DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,
                                   comm_,!reader_.MyOutputFlag());
-#endif                                  
 
 #else
     nids.clear();

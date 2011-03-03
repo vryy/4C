@@ -190,9 +190,10 @@ void NodeReader::Read()
     // changes ownership of nodes
     for (unsigned i=0; i<ereader_.size(); ++i)
     {
-      ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
+      ereader_[i]->dis_->ProcZeroDistributeNodesToAll(*ereader_[i]->rownodes_);
+      // this does the same job but slower
+      //ereader_[i]->dis_->ExportRowNodes(*ereader_[i]->rownodes_);
     }
-
     double t3 = time.ElapsedTime();
     if (!myrank && !reader_.MyOutputFlag())
     {
@@ -201,6 +202,7 @@ void NodeReader::Read()
     }
 
   } // for (int block=0; block<nblock; ++block)
+
 
   // last thing to do here is to produce nodal ghosting/overlap
   for (unsigned i=0; i<ereader_.size(); ++i)

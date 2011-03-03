@@ -769,9 +769,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 #endif
 
     nodereader.Read();
-#ifdef EXTENDEDPARALLELOVERLAP
-    structdis->CreateExtendedOverlap(false,false,false);
-#endif
     // read microscale fields from second, third, ... inputfile if necessary
     // (in case of multi-scale material models in structure field)
     ReadMicroFields(reader);
@@ -796,9 +793,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
-#ifdef EXTENDEDPARALLELOVERLAP
-    structdis->CreateExtendedOverlap(false,false,false);
-#endif
     break;
   }
   case prb_ale:
@@ -999,9 +993,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
-#ifdef EXTENDEDPARALLELOVERLAP
-    structdis->CreateExtendedOverlap(false,false,false);
-#endif
 
     // read microscale fields from second, third, ... inputfile if necessary
     // (in case of multi-scale material models)

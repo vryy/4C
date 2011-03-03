@@ -110,7 +110,7 @@ private:
 
   /// read elements, partition node graph
   void Partition();
-
+  
   /// tell whether the given node belongs to us
   /*!
     \note This is based on the redundant nodes_ set and only available

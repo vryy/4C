@@ -42,6 +42,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include <Epetra_FECrsGraph.h>
+#include <Epetra_Time.h>
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -57,17 +58,13 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
 
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<DRT::Node> >::iterator curr;
+  map<int,RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end();)
   {
     if (curr->second->Owner() != myrank)
-    {
       node_.erase(curr++);
-    }
     else
-    {
       ++curr;
-    }
   }
 
   // build rowmap of nodes noderowmap_ if it does not exist
@@ -135,13 +132,285 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
 
 
 /*----------------------------------------------------------------------*
+ |  Export elements (public)                                 mwgee 02/11|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
+                                                          vector<int>& gidlist)
+{
+  const int myrank = Comm().MyPID();
+  
+  // proc 0 looks for elements that are to be send to other procs
+  int size = (int)gidlist.size();
+  vector<int> pidlist(size); // gids on proc 0
+  vector<int> lidlist(size); // gids on proc 0
+  int err = target.RemoteIDList(size,&gidlist[0],&pidlist[0],&lidlist[0]);
+  if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
+  lidlist.clear(); // not interested in this
+  
+  map<int,vector<char> > sendmap; // proc to send a set of elements to
+  if (!myrank)
+  {
+    map<int,DRT::PackBuffer > sendpb; // proc to send a set of elements to
+    for (int i=0; i<size; ++i)
+    {
+      if (pidlist[i]==myrank) continue; // do not send to myself
+      Element* actele = gElement(gidlist[i]);
+      if (!actele) dserror("Cannot find global element %d",gidlist[i]);
+      actele->Pack(sendpb[pidlist[i]]);
+    }
+    for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
+      fool->second.StartPacking();
+    for (int i=0; i<size; ++i)
+    {
+      if (pidlist[i]==myrank) continue; // do not send to myself
+      Element* actele = gElement(gidlist[i]);
+      actele->Pack(sendpb[pidlist[i]]);
+      element_.erase(actele->Id());
+    }
+    for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
+      swap(sendmap[fool->first],fool->second());
+  }
+  
+
+#ifdef PARALLEL
+  // tell everybody who is to receive something
+  vector<int> receivers;
+  
+  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool) 
+    receivers.push_back(fool->first);
+  size = (int)receivers.size();
+  Comm().Broadcast(&size,1,0);
+  if (myrank != 0) receivers.resize(size);
+  Comm().Broadcast(&receivers[0],size,0);
+  int foundme = -1;
+  if (myrank != 0)
+    for (int i=0; i<size; ++i)
+      if (receivers[i]==myrank) 
+      {
+        foundme = i;
+        break;
+      }
+
+
+  // proc 0 sends out messages
+  int tag = 0;
+  DRT::Exporter exporter(Comm());
+  vector<MPI_Request> request(size);
+  if (!myrank)
+  {
+    for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool)
+    {
+      exporter.ISend(0,fool->first,&fool->second[0],(int)fool->second.size(),tag,request[tag]);
+      tag++;
+    }
+    if (tag != size) dserror("Number of messages is mixed up");
+    // do not delete sendmap until Wait has returned!
+  }
+  
+
+  // all other procs listen to message and put element into dis
+  if (foundme != -1)
+  {
+    vector<char> recvdata;
+    int length = 0;
+    int source = -1;
+    int tag = -1;
+    exporter.ReceiveAny(source,tag,recvdata,length);
+    if (source != 0 || tag != foundme)
+      dserror("Messages got mixed up");
+    // Put received elements into discretization
+    vector<char>::size_type index = 0;
+    while (index < recvdata.size())
+    {
+      vector<char> data;
+      ParObject::ExtractfromPack(index,recvdata,data);
+      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
+      if (!ele) dserror("Received object is not an element");
+      ele->SetOwner(myrank);
+      RCP<DRT::Element> rcpele = rcp(ele);
+      AddElement(rcpele);
+      //printf("proc %d index %d\n",myrank,index); fflush(stdout);
+    }
+  }
+  
+  // wait for all communication to finish
+  if (!myrank)
+  {
+    for (int i=0; i<size; ++i)
+      exporter.Wait(request[i]);
+  }
+#endif
+
+  Comm().Barrier(); // I feel better this way ;-)
+  Reset();
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Export elements (public)                                 mwgee 03/11|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
+{
+  const int myrank = Comm().MyPID();
+  
+#if 0
+  Epetra_Time timer(Comm());
+  double t1 = timer.ElapsedTime();
+#endif
+
+  // proc 0 looks for nodes that are to be distributed
+  Reset();
+  BuildNodeRowMap();
+  const Epetra_Map& oldmap = *noderowmap_;
+  int size = oldmap.NumMyElements();
+  if (myrank) size = 0;
+  vector<int> pidlist(size,-1);
+  {
+    vector<int> lidlist(size);
+    int err = target.RemoteIDList(size,oldmap.MyGlobalElements(),&pidlist[0],&lidlist[0]);
+    if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
+  }
+
+#if 0  
+  for (int proc=0; proc<Comm().NumProc(); ++proc)
+  {
+    if (proc==myrank)
+    {
+      printf("\nProc %d numnode %d\n",myrank,size);
+      for (int i=0; i<size; ++i)
+        printf("Proc %d gid %d pid %d\n",myrank,oldmap.MyGlobalElements()[i],pidlist[i]);
+    }
+    fflush(stdout);
+    Comm().Barrier();
+  }
+#endif
+  
+#if 0
+  double t2 = timer.ElapsedTime();
+  if (!myrank) printf("\nTime 1 %10.5e\n",t2-t1); fflush(stdout);
+#endif
+  
+  map<int,vector<char> > sendmap;
+  if (!myrank)
+  {
+    map<int,DRT::PackBuffer > sendpb;
+    for (int i=0; i<size; ++i)
+    {
+      // proc 0 does not send to itself      
+      if (pidlist[i]==myrank || pidlist[i]==-1) continue; 
+      Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      if (!node) dserror("Proc 0 cannot find global node %d",oldmap.MyGlobalElements()[i]);
+      node->Pack(sendpb[pidlist[i]]);
+    }
+    for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
+      fool->second.StartPacking();
+    for (int i=0; i<size; ++i)
+    {
+      // proc 0 does not send to itself      
+      if (pidlist[i]==myrank || pidlist[i]==-1) continue; 
+      Node* node = gNode(oldmap.MyGlobalElements()[i]);
+      node->Pack(sendpb[pidlist[i]]);
+      node_.erase(node->Id());
+    }
+    for (map<int,DRT::PackBuffer >::iterator fool = sendpb.begin(); fool != sendpb.end(); ++fool)
+      swap(sendmap[fool->first],fool->second());
+  }
+  
+#if 0
+  double t3 = timer.ElapsedTime();
+  if (!myrank) printf("Time 2 %10.5e\n",t3-t2); fflush(stdout);
+#endif
+
+#ifdef PARALLEL
+  // tell everybody who is to receive something
+  vector<int> receivers;
+  for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool) 
+    receivers.push_back(fool->first);
+  size = (int)receivers.size();
+  Comm().Broadcast(&size,1,0);
+  if (myrank != 0) receivers.resize(size);
+  Comm().Broadcast(&receivers[0],size,0);
+  int foundme = -1;
+  if (myrank != 0)
+    for (int i=0; i<size; ++i)
+      if (receivers[i]==myrank) 
+      {
+        foundme = i;
+        break;
+      }
+  
+  // proc 0 sends out messages
+  int tag = 0;
+  DRT::Exporter exporter(Comm());
+  vector<MPI_Request> request(size);
+  if (!myrank)
+  {
+    for (map<int,vector<char> >::iterator fool = sendmap.begin(); fool !=sendmap.end(); ++fool)
+    {
+      exporter.ISend(0,fool->first,&fool->second[0],(int)fool->second.size(),tag,request[tag]);
+      tag++;
+    }
+    if (tag != size) dserror("Number of messages is mixed up");
+    // do not delete sendmap until Wait has returned!
+  }
+
+  // all other procs listen to message and put node into dis
+  if (foundme != -1)
+  {
+    vector<char> recvdata;
+    int length = 0;
+    int source = -1;
+    int tag = -1;
+    exporter.ReceiveAny(source,tag,recvdata,length);
+    //printf("Proc %d received tag %d length %d\n",myrank,tag,length); fflush(stdout);
+    if (source != 0 || tag != foundme)
+      dserror("Messages got mixed up");
+    // Put received nodes into discretization
+    vector<char>::size_type index = 0;
+    while (index < recvdata.size())
+    {
+      vector<char> data;
+      ParObject::ExtractfromPack(index,recvdata,data);
+      DRT::ParObject* object = DRT::UTILS::Factory(data);
+      DRT::Node* node = dynamic_cast<DRT::Node*>(object);
+      if (!node) dserror("Received object is not a node");
+      node->SetOwner(myrank);
+      RCP<DRT::Node> rcpnode = rcp(node);
+      AddNode(rcpnode);
+    }
+  }
+
+
+  // wait for all communication to finish
+  if (!myrank)
+  {
+    for (int i=0; i<size; ++i)
+      exporter.Wait(request[i]);
+  }
+
+#if 0
+  Comm().Barrier(); // feel better this way ;-)
+  double t4 = timer.ElapsedTime();
+  if (!myrank) printf("Time 3 %10.5e\n",t4-t3); fflush(stdout);
+#endif
+
+
+#endif
+  
+  Comm().Barrier(); // feel better this way ;-)
+  Reset();
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<DRT::Element> >::iterator curr;
+  map<int,RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -158,25 +427,9 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   if (elerowmap_==null) BuildElementRowMap();
   const Epetra_Map& oldmap = *elerowmap_;
 
-
-  // don't do this test anymore to allow to use this function while
-  // the map of elements is still incomplete in the construction phase of
-  // the discretization. This is used when creating the discretization in
-  // jumbo mode
-#if 0
-  // test whether newmap is non-overlapping
-  int oldmy = oldmap.NumMyElements();
-  int newmy = newmap.NumMyElements();
-  int oldglobal=0;
-  int newglobal=0;
-  Comm().SumAll(&oldmy,&oldglobal,1);
-  Comm().SumAll(&newmy,&newglobal,1);
-
-  if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
-#endif
-
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
+
   exporter.Export(element_);
 
   // update ownerships and kick out everything that's not in newmap
@@ -188,7 +441,6 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
@@ -310,7 +562,7 @@ void DRT::Discretization::BuildElementRowColumn(
   int stoposize = 2000;
   int count     = 0;
   vector<int> stopo(stoposize);
-  map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
+  map<int,RCP<DRT::Element> >::const_iterator ecurr;
   for (ecurr=element_.begin(); ecurr!=element_.end(); ++ecurr)
   {
     const DRT::Element& actele = *(ecurr->second);
