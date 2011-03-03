@@ -1018,13 +1018,16 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     fflush(stdout);
   }
 
-  vector<int> part(graph->RowMap().NumMyElements()); // output
+  vector<int> part;              // output
+  // make sure there is memory allocated, even for empty processors
+  part.reserve(graph->RowMap().NumMyElements()+1);
+  part.resize(graph->RowMap().NumMyElements());
   {
     int wgtflag = 0;             // graph is not weighted
     int numflag = 0;             // numbering start from zero
     int ncon = 1;                // number of weights on each node
     int npart = numproc;         // number of partitions desired
-    int options[3] = { 0,0,15 }; // use default metis parameters
+    int options[4] = { 1,1,15,0 }; // use default metis parameters
     int edgecut = 0;             // output, number of edges cut in partitioning
     float ubvec = 1.05;
     vector<float> tpwgts(npart,1.0/(double)npart);
