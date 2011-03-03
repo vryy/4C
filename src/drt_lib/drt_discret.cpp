@@ -151,7 +151,7 @@ void DRT::Discretization::AddNode(RCP<DRT::Node> node)
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteNode(RCP<DRT::Node> node)
 {
-  map<int,RCP<DRT::Node> >::iterator fool = node_.find(ele->Id());
+  map<int,RCP<DRT::Node> >::iterator fool = node_.find(node->Id());
   if (fool==node_.end()) return false;
   node_.erase(fool);
   Reset();
