@@ -201,14 +201,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
-          swap( *stressdata, data() );
+          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
         }
         {
           DRT::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
-          swap( *straindata, data() );
+          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
       }
     }

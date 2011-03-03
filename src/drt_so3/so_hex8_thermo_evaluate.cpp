@@ -287,20 +287,21 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
 
       }
 
-      {
-        DRT::PackBuffer data;
-        AddtoPack(data, stress);
-        data.StartPacking();
-        AddtoPack(data, stress);
-        swap( *stressdata, data() );
-      }
-      {
-        DRT::PackBuffer data;
-        AddtoPack(data, strain);
-        data.StartPacking();
-        AddtoPack(data, strain);
-        swap( *straindata, data() );
-      }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+        }
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
     }
   }
   break;

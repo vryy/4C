@@ -274,7 +274,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
-          swap( *stressdata, data() );
+          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
         }
 
         {
@@ -282,7 +282,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
-          swap( *straindata, data() );
+          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
       }
     }
