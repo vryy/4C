@@ -390,6 +390,7 @@ public:
   \param request (in): mpi request handle
 
   */
+  void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
 
 
   /*!
@@ -403,7 +404,6 @@ public:
   void Allreduce(vector<int>& sendbuff, vector<int>& recvbuff, MPI_Op mpi_op);
 
 
-  void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
 
 
 #endif
