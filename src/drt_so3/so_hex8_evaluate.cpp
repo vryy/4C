@@ -80,6 +80,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")                  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
+  else if (action=="calc_struct_reset_discretization")            act = So_hex8::calc_struct_reset_discretization;
   else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
   else if (action=="calc_struct_errornorms")                      act = So_hex8::calc_struct_errornorms;
   else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
@@ -535,6 +536,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
+      }
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_reset_discretization:
+    {
+      // Reset of history for materials
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->SetupHistory(NUMGPT_SOH8);
       }
     }
     break;

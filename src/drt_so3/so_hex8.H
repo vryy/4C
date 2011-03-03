@@ -476,6 +476,8 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
+    calc_struct_reset_discretization,  //!< reset elementwise internal variables
+                                       //!< to state in the beginning of the computation
     calc_struct_energy,       //!< compute internal energy
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     calc_homog_dens,          //!< multi-scale: calculate homogenized density

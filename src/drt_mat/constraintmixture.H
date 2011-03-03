@@ -172,6 +172,9 @@ namespace MAT
       DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
+    /// SetupHistory
+    void SetupHistory(const int numgp);
+
     /// Update
     void Update();
 

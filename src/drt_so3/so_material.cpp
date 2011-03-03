@@ -1399,6 +1399,19 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_constraintmixture: /*------- integration point based growth */
+    {
+      MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+      double dt = params.get<double>("delta time",-1.0);
+      double t = params.get<double>("total time",-1.0);
+      string action = params.get<string>("action","none");
+      bool output = false;
+      if (action == "calc_struct_stress") output = true;
+      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      *density = comix->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown material to tet4 element");
     break;

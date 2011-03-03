@@ -238,46 +238,13 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  // history variables
-  collagenstretch1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  // visualization
   vismassstress_ = Teuchos::rcp(new vector<double> (numgp));
-
-  // I don't like this way of getting dt!!!
-  const Teuchos::ParameterList& timeintegr = DRT::Problem::Instance()->StructuralDynamicParams();
-  double dt = timeintegr.get<double>("TIMESTEP");
-  numpast_ = static_cast<int>(round(params_->lifetime_ / dt)) + params_->explicit_;
-  // basal mass production rate determined by DENS, PHIE and LIFETIME
-  massprodbasal_ = (1 - params_->phielastin_) * params_->density_ / 4.0 / params_->lifetime_;
   for (int gp = 0; gp < numgp; gp++)
-  {
-    collagenstretch1_->at(gp).resize(numpast_);
-    collagenstretch2_->at(gp).resize(numpast_);
-    collagenstretch3_->at(gp).resize(numpast_);
-    collagenstretch4_->at(gp).resize(numpast_);
-    massprod1_->at(gp).resize(numpast_);
-    massprod2_->at(gp).resize(numpast_);
-    massprod3_->at(gp).resize(numpast_);
-    massprod4_->at(gp).resize(numpast_);
-    for (int idpast = 0; idpast < numpast_; idpast++)
-    {
-      collagenstretch1_->at(gp)[idpast] = 1.0;
-      collagenstretch2_->at(gp)[idpast] = 1.0;
-      collagenstretch3_->at(gp)[idpast] = 1.0;
-      collagenstretch4_->at(gp)[idpast] = 1.0;
-      massprod1_->at(gp)[idpast] = massprodbasal_;
-      massprod2_->at(gp)[idpast] = massprodbasal_;
-      massprod3_->at(gp)[idpast] = massprodbasal_;
-      massprod4_->at(gp)[idpast] = massprodbasal_;
-    }
     vismassstress_->at(gp) = 0.0;
-  }
+
+  // history
+  SetupHistory(numgp);
 
   // fiber vectors
   a1_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
@@ -323,6 +290,51 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
   }
 
   isinit_ = true;
+}
+
+/*----------------------------------------------------------------------*
+ |  SetupHistory                                  (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixture::SetupHistory (const int numgp)
+{
+  // history variables
+  collagenstretch1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  collagenstretch2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  collagenstretch3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  collagenstretch4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  massprod1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  massprod2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  massprod3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  massprod4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+
+  // I don't like this way of getting dt!!!
+  const Teuchos::ParameterList& timeintegr = DRT::Problem::Instance()->StructuralDynamicParams();
+  double dt = timeintegr.get<double>("TIMESTEP");
+  numpast_ = static_cast<int>(round(params_->lifetime_ / dt)) + params_->explicit_;
+  // basal mass production rate determined by DENS, PHIE and LIFETIME
+  massprodbasal_ = (1 - params_->phielastin_) * params_->density_ / 4.0 / params_->lifetime_;
+  for (int gp = 0; gp < numgp; gp++)
+  {
+    collagenstretch1_->at(gp).resize(numpast_);
+    collagenstretch2_->at(gp).resize(numpast_);
+    collagenstretch3_->at(gp).resize(numpast_);
+    collagenstretch4_->at(gp).resize(numpast_);
+    massprod1_->at(gp).resize(numpast_);
+    massprod2_->at(gp).resize(numpast_);
+    massprod3_->at(gp).resize(numpast_);
+    massprod4_->at(gp).resize(numpast_);
+    for (int idpast = 0; idpast < numpast_; idpast++)
+    {
+      collagenstretch1_->at(gp)[idpast] = 1.0;
+      collagenstretch2_->at(gp)[idpast] = 1.0;
+      collagenstretch3_->at(gp)[idpast] = 1.0;
+      collagenstretch4_->at(gp)[idpast] = 1.0;
+      massprod1_->at(gp)[idpast] = massprodbasal_;
+      massprod2_->at(gp)[idpast] = massprodbasal_;
+      massprod3_->at(gp)[idpast] = massprodbasal_;
+      massprod4_->at(gp)[idpast] = massprodbasal_;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -991,12 +1003,13 @@ void MAT::ConstraintMixture::EvaluateStress
   (*stress) += Svol;
   (*cmat) += cmatvol;
 }
+
 /*----------------------------------------------------------------------*
  |  EvaluateFiber                                 (private)        12/10|
  *----------------------------------------------------------------------*
  strain energy function
 
- W    = k1/(2.0*k2)*(exp(k2*(I_4 - 1.0)^2-1.0))
+ W    = k1/(2.0*k2)*(exp(k2*(I_4 - 1.0)^2)-1.0)
 
  I_4 .. invariant accounting for the fiber direction
  */

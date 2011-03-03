@@ -39,6 +39,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/matpar_bundle.H"
 
 using namespace std;
@@ -253,6 +254,10 @@ void STR::GenInvAnalysis::Integrate()
       if (!myrank)
         for (int j=0; j<nmp_;j++)
           cmatrix(j,i) = cvector[j];
+
+      ParameterList p;
+      p.set("action","calc_struct_reset_discretization");
+      discret_->Evaluate(p,null,null,null,null,null);
     }
 
     discret_->Comm().Barrier();
@@ -635,6 +640,18 @@ void STR::GenInvAnalysis::ReadInParameters()
       break;
       case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
+      case INPAR::MAT::m_constraintmixture:
+      {
+        MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        const int j = p_.Length();
+        p_.Resize(j+1);
+        //p_(j)   = params->mue_;
+        //p_(j+1) = params->k1_;
+        //p_(j+2) = params->k2_;
+        p_(j) = params->prestretchcollagen_;
+      }
+      break;
       default:
         // ignore unknown materials ?
         dserror("Unknown type of material");
@@ -726,6 +743,19 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
       case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
+      case INPAR::MAT::m_constraintmixture:
+      {
+        MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+        if (!params) dserror("Cannot cast material parameters");
+        // This is a tiny little bit brutal!!!
+        //const_cast<double&>(params->mue_)  = p_cur[count];
+        //const_cast<double&>(params->k1_)  = p_cur[count+1];
+        //const_cast<double&>(params->k2_)  = p_cur[count+2];
+        const_cast<double&>(params->prestretchcollagen_) = p_cur[count];
+        if (myrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->prestretchcollagen_,params->k1_,params->k2_);
+        count += 1;
+      }
       break;
       default:
         // ignore unknown materials ?

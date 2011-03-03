@@ -27,6 +27,7 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -101,6 +102,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
+  else if (action=="calc_struct_reset_discretization") act = So_tet4::calc_struct_reset_discretization;
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
@@ -357,11 +359,17 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_istep:
     {
+      // Update of history for visco material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
+      }
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      RCP<MAT::Material> mat = Material();
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
@@ -378,11 +386,17 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_imrlike:
     {
+      // Update of history for visco material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
+      }
       // determine new fiber directions
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      RCP<MAT::Material> mat = Material();
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
            (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
@@ -400,6 +414,19 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_reset_discretization:
+    {
+      // Reset of history for materials
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->SetupHistory(NUMGPT_SOTET4);
+      }
     }
     break;
 

@@ -72,6 +72,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")         act = So_weg6::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")       act = So_weg6::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_weg6::calc_struct_reset_istep;
+  else if (action=="calc_struct_reset_discretization") act = So_weg6::calc_struct_reset_discretization;
   else if (action=="postprocess_stress")               act = So_weg6::postprocess_stress;
   else if (action=="calc_struct_prestress_update")     act = So_weg6::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
@@ -349,6 +350,19 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_reset_discretization:
+    {
+      // Reset of history for materials
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->SetupHistory(NUMGPT_WEG6);
+      }
     }
     break;
 
