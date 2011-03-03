@@ -91,9 +91,6 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
   // add area_
   DRT::ParObject::AddtoPack(data,area_);
   // add searchelements_

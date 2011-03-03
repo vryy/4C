@@ -82,9 +82,6 @@ deltawear_(0.0)
  *----------------------------------------------------------------------*/
 void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
   // add jump_
   DRT::ParObject::AddtoPack(data,jump_,3*sizeof(double));
   // add activeold_

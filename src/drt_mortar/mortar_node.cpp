@@ -80,9 +80,6 @@ MORTAR::MortarNodeDataContainer::MortarNodeDataContainer()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
   // add n_
   DRT::ParObject::AddtoPack(data,n_,3*sizeof(double));
   // add lm_

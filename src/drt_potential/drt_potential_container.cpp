@@ -103,9 +103,6 @@ POTENTIAL::PotentialElementContainer::PotentialElementContainer(
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
   // global id gid_
   AddtoPack(data, gid_);
   // distype

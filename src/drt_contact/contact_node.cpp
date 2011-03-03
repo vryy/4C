@@ -79,9 +79,6 @@ kappa_(1.0)
  *----------------------------------------------------------------------*/
 void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
   // add txi_
   DRT::ParObject::AddtoPack(data,txi_,3*sizeof(double));
   // add teta_
