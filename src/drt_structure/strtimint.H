@@ -261,6 +261,9 @@ namespace STR
     //! Energy output
     void OutputEnergy();
 
+    //! Active set, energy and momentum output for contact
+    void OutputContact();
+
     //! Error norm output
     void OutputErrorNorms();
 
