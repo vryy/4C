@@ -339,6 +339,41 @@ namespace UTILS {
   };
 
 
+  /// special implementation for (randomly) disturbed 3d turbulent
+  /// boundary-layer profile
+  /// (incompressible flow over backward-facing step,
+  ///  corresponding to geometry of DNS by Le, Moin and Kim)
+  class TurbBouLayerFunctionBFS : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w,p)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(4);
+      };
+
+  };
+
+
   /// special implementation for Womersley blood flow
   class WomersleyFunction : public Function
   {
@@ -554,6 +589,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("TURBBOULAYER")
     ;
 
+  DRT::INPUT::LineDefinition turbboulayerbfs;
+  turbboulayerbfs
+    .AddNamedInt("FUNCT")
+    .AddTag("TURBBOULAYER-BFS")
+    ;
+
   DRT::INPUT::LineDefinition jefferyhamel;
   jefferyhamel
     .AddNamedInt("FUNCT")
@@ -617,6 +658,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(bochevup);
   lines->Add(bochevrhs);
   lines->Add(turbboulayer);
+  lines->Add(turbboulayerbfs);
   lines->Add(jefferyhamel);
   lines->Add(womersley);
   lines->Add(localwomersley);
@@ -777,6 +819,10 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("TURBBOULAYER"))
       {
         functions_.push_back(rcp(new TurbBouLayerFunction()));
+      }
+      else if (function->HaveNamed("TURBBOULAYER-BFS"))
+      {
+        functions_.push_back(rcp(new TurbBouLayerFunctionBFS()));
       }
       else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
@@ -1112,6 +1158,73 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
       // generate noise via random number
       randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
       noise = 0.1778 * randomnumber;
+
+      // return velocity value in z-direction
+      return noise;
+    }
+    // nothing to be done for hydrodynamic pressure values
+    case 3:
+  default:
+    return 0.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  double randomnumber;
+  double noise;
+
+  // fluctuation 10% of bulk mean velocity
+  double fluc= 0.1675;
+
+  switch (index)
+  {
+    case 0:
+    {
+      // set u_tau und nu and compute l_tau
+      double utau = 0.084;
+      double nu   = 0.000015268;
+      double ltau = nu/utau;
+
+      // compute y+
+      double yplus = xp[1]/ltau;
+
+      // maximal velocity
+      double max = 1.880;
+
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = fluc * randomnumber;
+
+      // return velocity value in x-direction
+      if (yplus <= 5.0)
+        return utau * yplus + noise;
+      else if ((yplus > 5.0)   and (yplus <= 30.0))
+        return utau * ( 5.0 * log(yplus) - 3.05 ) + noise;
+      else if (yplus > 30.0)
+      {
+        double upre = utau * ( 2.5 * log(yplus) + 5.5 );
+        if (upre > max) return max + noise;
+        else             return upre + noise;
+      }
+    }
+    case 1:
+    {
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = fluc * randomnumber;
+
+      // return velocity value in y-direction
+      return noise;
+    }
+    case 2:
+    {
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = fluc * randomnumber;
 
       // return velocity value in z-direction
       return noise;

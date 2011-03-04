@@ -156,15 +156,12 @@ private:
   //! number of samples taken
   int                              numsamp_;
 
-  //ICH
   //! bounds for extension of cavity in x1-direction
   double                           x1min_;
   double                           x1max_;
   //! bounds for extension of cavity in x2-direction
   double                           x2min_;
   double                           x2max_;
-  //ENDE
-
   //! bounds for extension of cavity in x3-direction
   double                           x3min_;
   double                           x3max_;

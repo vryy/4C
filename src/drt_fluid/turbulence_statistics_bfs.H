@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics_sqc.H
+\file turbulence_statistics_bfs.H
 
 \brief Write (time and space) averaged values to file for
 turbulent flow over a backward-facing step
@@ -79,7 +79,8 @@ public:
 
   */
   TurbulenceStatisticsBfs(RCP<DRT::Discretization> actdis,
-                          ParameterList&                   params);
+                          ParameterList&           params,
+                          const string&            geotype);
 
   /*!
   \brief Destructor
@@ -149,6 +150,13 @@ protected:
 
 private:
 
+  //! geometry of DNS of incompressible flow over bfs by Le, Moin and Kim or geometry of Avancha and Pletcher of LES of flow over bfs with heating
+  enum GeoType{
+   none,
+   geometry_DNS_incomp_flow,
+   geometry_LES_flow_with_heating
+  };
+
   //! number of samples taken
   int  numsamp_;
 
@@ -169,6 +177,9 @@ private:
 
   //! parameter list
   ParameterList&                   params_;
+
+  //! geometry of DNS of incompressible flow over bfs by Le, Moin and Kim or geometry of Avancha and Pletcher of LES of flow over bfs with heating
+  FLD::TurbulenceStatisticsBfs::GeoType geotype_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RCP<Epetra_Vector>       squaredvelnp_;
@@ -221,10 +232,12 @@ private:
   RCP<Epetra_SerialDenseMatrix>     x2sumrhouT_;
   RCP<Epetra_SerialDenseMatrix>     x2sumrhov_;
   RCP<Epetra_SerialDenseMatrix>     x2sumrhovT_;
+
+  void convertStringToGeoType(const string& geotype);
 };
 
 }
 
-#endif  // not TURBULENCE_STATISTICS_SQC_H
+#endif  // not TURBULENCE_STATISTICS_BFS_H
 
 #endif /* CCADISCRET       */

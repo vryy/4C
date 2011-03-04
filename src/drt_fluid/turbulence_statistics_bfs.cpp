@@ -40,10 +40,12 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   RefCountPtr<DRT::Discretization> actdis,
-  ParameterList&                   params)
+  ParameterList&                   params,
+  const string&                    geotype)
   :
   discret_(actdis),
-  params_ (params)
+  params_ (params),
+  geotype_(TurbulenceStatisticsBfs::none)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -53,6 +55,9 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
   const INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+
+  // geometry of bfs
+  convertStringToGeoType(geotype);
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
@@ -89,10 +94,22 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   {
     DRT::Node* node = discret_->lRowNode(i);
 
-    if (node->X()[1]<0.0820002 && node->X()[1]>0.0819998)
-      x1avcoords.insert(node->X()[0]);
-    if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
-      x2avcoords.insert(node->X()[1]);
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    {
+      if (node->X()[1]<0.0820002 && node->X()[1]>0.0819998)
+        x1avcoords.insert(node->X()[0]);
+      if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
+        x2avcoords.insert(node->X()[1]);
+    }
+    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
+    {
+      if (node->X()[1]<0.2050002 && node->X()[1]>0.2049998)
+        x1avcoords.insert(node->X()[0]);
+      if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
+        x2avcoords.insert(node->X()[1]);
+    }
+    else
+      dserror("Unknown geometry of backward facing step!");
 
     if (x3min_>node->X()[2]) x3min_=node->X()[2];
     if (x3max_<node->X()[2]) x3max_=node->X()[2];
@@ -337,8 +354,18 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     // evaluation of velocity derivative at wall
     // (first nodes off lower and upper wall, respectively, coarse discret.)
     //----------------------------------------------------------------------
-    x2supplocations_(0) = -0.0389218666;
-    x2supplocations_(1) = 0.080080628;
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    {
+      x2supplocations_(0) = -0.0389218666;
+      x2supplocations_(1) = 0.080080628;
+    }
+    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
+    {
+      x2supplocations_(0) = -0.0389218666;
+      x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
+    }
+    else
+      dserror("Unknown geometry of backward facing step!");
   }
   else
   {
@@ -373,17 +400,38 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     // evaluation of velocity derivative at wall
     // (first nodes off lower and upper wall, respectively, fine discret.)
     //----------------------------------------------------------------------
-    x2supplocations_(0) = -0.040752954;
-    x2supplocations_(1) = 0.081752896;
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    {
+      x2supplocations_(0) = -0.040752954;
+      x2supplocations_(1) = 0.081752896;
+    }
+    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
+    {
+      x2supplocations_(0) = -0.040752954;
+      x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
+    }
+    else
+      dserror("Unknown geometry of backward facing step!");
   }
 
   //----------------------------------------------------------------------
   // define locations in x2-direction for statistical evaluation
   // (lower and upper wall)
   //----------------------------------------------------------------------
-  numx2statlocations_ = 2;
-  x2statlocations_(0) = -0.041;
-  x2statlocations_(1) = 0.082;
+  if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+  {
+    numx2statlocations_ = 2;
+    x2statlocations_(0) = -0.041;
+    x2statlocations_(1) = 0.082;
+  }
+  else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
+  {
+    numx2statlocations_ = 1;
+    x2statlocations_(0) = -0.041;
+    x2statlocations_(1) =  1.0e+9; //not needed here
+  }
+  else
+    dserror("Unknown geometry of backward facing step!");
 
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
@@ -969,24 +1017,27 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
       }
     }
 
-    (*log) << "\n";
-    (*log) << "# upper wall\n";
-    (*log) << "#     x1";
-    (*log) << "           duxdy         pmean\n";
-
-    // distance from wall to first node off wall
-    dist = x2statlocations_(1) - x2supplocations_(1);
-
-    for (unsigned i=0; i<x1coordinates_->size(); ++i)
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
     {
-      double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
-      double uwx1duxdy = uwx1u/dist;
-      double uwx1p     = (*x1sump_)(1,i)/numsamp_;
-
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
-      (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
       (*log) << "\n";
+      (*log) << "# upper wall\n";
+      (*log) << "#     x1";
+      (*log) << "           duxdy         pmean\n";
+
+      // distance from wall to first node off wall
+      dist = x2statlocations_(1) - x2supplocations_(1);
+
+      for (unsigned i=0; i<x1coordinates_->size(); ++i)
+      {
+        double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
+        double uwx1duxdy = uwx1u/dist;
+        double uwx1p     = (*x1sump_)(1,i)/numsamp_;
+
+        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
+        (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
+        (*log) << "\n";
+      }
     }
 
     for (int i=0; i<numx1statlocations_; ++i)
@@ -1085,29 +1136,32 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
       }
     }
 
-    (*log) << "\n";
-    (*log) << "# upper wall\n";
-    (*log) << "#        x1";
-    (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
-
-    // distance from wall to first node off wall
-    dist = x2statlocations_(1) - x2supplocations_(1);
-
-    for (unsigned i=0; i<x1coordinates_->size(); ++i)
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
     {
-      double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
-      double uwx1duxdy = uwx1u/dist;
-      double uwx1p     = (*x1sump_)(1,i)/numsamp_;
-
-      double uwx1rho  = (*x1sumrho_)(1,i)/numsamp_;
-      double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
-
-      (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
-      (*log) << "   " << setw(17) << setprecision(10) << uwx1duxdy;
-      (*log) << "   " << setw(17) << setprecision(10) << uwx1p;
-      (*log) << "   " << setw(17) << setprecision(10) << uwx1rho;
-      (*log) << "   " << setw(17) << setprecision(10) << uwx1T;
       (*log) << "\n";
+      (*log) << "# upper wall\n";
+      (*log) << "#        x1";
+      (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
+
+      // distance from wall to first node off wall
+      dist = x2statlocations_(1) - x2supplocations_(1);
+
+      for (unsigned i=0; i<x1coordinates_->size(); ++i)
+      {
+        double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
+        double uwx1duxdy = uwx1u/dist;
+        double uwx1p     = (*x1sump_)(1,i)/numsamp_;
+
+        double uwx1rho  = (*x1sumrho_)(1,i)/numsamp_;
+        double uwx1T    = (*x1sumT_)(1,i)/numsamp_;
+
+        (*log) <<  " "  << setw(17) << setprecision(10) << (*x1coordinates_)[i];
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1duxdy;
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1p;
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1rho;
+        (*log) << "   " << setw(17) << setprecision(10) << uwx1T;
+        (*log) << "\n";
+      }
     }
 
     for (int i=0; i<numx1statlocations_; ++i)
@@ -1179,6 +1233,25 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
   return;
 
 }// TurbulenceStatisticsBfs::DumpLomaStatistics
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(
+          const string& geotype)
+{
+  dsassert(geotype != "none", "No geometry supplied");
+
+  geotype_ = TurbulenceStatisticsBfs::none;
+  if (geotype == "geometry_DNS_incomp_flow")
+    geotype_ = TurbulenceStatisticsBfs::geometry_DNS_incomp_flow;
+  else if (geotype == "geometry_LES_flow_with_heating")
+    geotype_ = TurbulenceStatisticsBfs::geometry_LES_flow_with_heating;
+  else
+  dserror("(%s) geometry for backward facing step",geotype.c_str());
+  return;
+}
 
 
 #endif /* CCADISCRET       */

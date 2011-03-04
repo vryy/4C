@@ -124,7 +124,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
@@ -135,7 +135,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -334,7 +334,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
@@ -345,7 +345,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_));
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -672,7 +672,10 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
+        if (params_.get<INPAR::FLUID::PhysicalType>("Physical Type") == INPAR::FLUID::incompressible)
+            statistics_bfs_->DoTimeSample(myvelnp_);
+        else
+            statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
         break;
       }
       case square_cylinder:
@@ -925,8 +928,16 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        if(outputformat == write_single_record)
-          statistics_bfs_->DumpLomaStatistics(step,eosfac);
+        if (params_.get<INPAR::FLUID::PhysicalType>("Physical Type") == INPAR::FLUID::incompressible)
+        {
+          if(outputformat == write_single_record)
+            statistics_bfs_->DumpStatistics(step);
+        }
+        else
+        {
+          if(outputformat == write_single_record)
+            statistics_bfs_->DumpLomaStatistics(step,eosfac);
+        }
         break;
       }
       case square_cylinder:
