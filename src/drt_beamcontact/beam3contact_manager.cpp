@@ -350,7 +350,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
 	// 4) Check if new pair already exists. If not we've found a new entry!
 	//
 	// NOTE: This is a brute force search! The time to search across n nodes
-  // goes with n^2, which is not efficient at all....
+  // goes with O(n^2), which is not efficient at all....
 	//**********************************************************************
 	
   //**********************************************************************
@@ -442,11 +442,10 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    for (int j=0;j<firstnode->NumElement();++j)
    {
      //element pointer
-     DRT::Element* tempele1 = neighboureles[j];
+     DRT::Element* ele1 = neighboureles[j];
 
   	 // insert into element vector
-  	 FirstElesGIDs.push_back(tempele1->Id());
-
+  	 FirstElesGIDs.push_back(ele1->Id());
    }
    
    // loop over ALL nodes close to first node
@@ -462,10 +461,10 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
   	 for (int k=0;k<tempnode->NumElement();++k)
   	 {
   	   //element pointer
-  		 DRT::Element* tempele2 = TempEles[k];
+  		 DRT::Element* ele2 = TempEles[k];
   		 
   		 // insert into element vector
-  		 SecondElesGIDs.push_back(tempele2->Id());
+  		 SecondElesGIDs.push_back(ele2->Id());
   	 }
    }
    
@@ -503,25 +502,25 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
 	 for (int j=0;j<(int)FirstElesGIDs.size();++j)
 	 {
 		 // beam element pointer
-  	 DRT::Element* tempele1 = ContactDiscret().gElement(FirstElesGIDs[j]);
+  	 DRT::Element* ele1 = ContactDiscret().gElement(FirstElesGIDs[j]);
   	 
   	 // node ids adjacent to this element
-  	 const int* NodesEle1 = tempele1->NodeIds();
+  	 const int* NodesEle1 = ele1->NodeIds();
      
   	 // loop over all close elements
 		 for (int k=0;k<(int)SecondElesGIDsRej.size();++k)
    	 {
 			 // get and cast a pointer on an element
-   		 DRT::Element* tempele2 = ContactDiscret().gElement(SecondElesGIDsRej[k]);
+   		 DRT::Element* ele2 = ContactDiscret().gElement(SecondElesGIDsRej[k]);
      	 
      	 // close element id
-     	 const int* NodesEle2 = tempele2->NodeIds();
+     	 const int* NodesEle2 = ele2->NodeIds();
      	 
      	 // check if elements are neighbouring (share one common node)
      	 bool elements_neighbouring = false;
-     	 for (int m=0;m<tempele1->NumNode();++m)
+     	 for (int m=0;m<ele1->NumNode();++m)
      	 {
-     		 for (int n=0;n<tempele2->NumNode();++n)
+     		 for (int n=0;n<ele2->NumNode();++n)
      		 {
      			 // neighbouring if they share one common node
      			 if(NodesEle1[m] == NodesEle2[n])
@@ -548,21 +547,21 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    		 if (!foundbefore && !elements_neighbouring)
    		 {
    			 // matrices to store nodal coordinates
-   			 Epetra_SerialDenseMatrix ele1pos(3,tempele1->NumNode());
-   			 Epetra_SerialDenseMatrix ele2pos(3,tempele2->NumNode());
+   			 Epetra_SerialDenseMatrix ele1pos(3,ele1->NumNode());
+   			 Epetra_SerialDenseMatrix ele2pos(3,ele2->NumNode());
    			 
    			 // store nodal coordinates of element 1
-   			 for (int m=0;m<tempele1->NumNode();++m)
+   			 for (int m=0;m<ele1->NumNode();++m)
    			 {
-   				 int tempGID = (tempele1->NodeIds())[m];
+   				 int tempGID = (ele1->NodeIds())[m];
    				 LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
    				 for(int n=0;n<3;n++) ele1pos(n,m) = temppos(n);
    			 } 			 
 
    			 // store nodal coordinates of element 1
-   			 for (int m=0;m<tempele2->NumNode();++m)
+   			 for (int m=0;m<ele2->NumNode();++m)
    			 {
-   				 int tempGID = (tempele2->NodeIds())[m];
+   				 int tempGID = (ele2->NodeIds())[m];
    				 LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
    				 for(int n=0;n<3;n++) ele2pos(n,m) = temppos(n);
    			 }
@@ -570,7 +569,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    			 //***************************************************************
    			 // create a new contact pair object
    			 pairs_.push_back(rcp (new CONTACT::Beam3contact(ProblemDiscret(),
-   			 ContactDiscret(),DofOffset(),tempele1,tempele2,ele1pos,ele2pos)));
+   			 ContactDiscret(),DofOffset(),ele1,ele2,ele1pos,ele2pos)));
    			 //***************************************************************
      	  }
    	  }
