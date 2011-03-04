@@ -45,13 +45,11 @@ public:
 
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
-  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  const std::set<BoundaryCell*> & BoundaryCells() const { return bcells_; }
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
   const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
-
-  const std::set<BoundaryCell*> BoundaryCells() const { return bcells_; }
 
   void ConnectNodalDOFSets( bool include_inner );
 

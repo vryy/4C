@@ -202,11 +202,6 @@ void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCe
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
 }
 
-void GEO::CUT::VolumeCell::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
-{
-  std::copy( bcells_.begin(), bcells_.end(), std::inserter( bcells, bcells.begin() ) );
-}
-
 void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells )
 {
   for ( std::set<BoundaryCell*>::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
