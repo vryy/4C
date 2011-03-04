@@ -41,6 +41,7 @@ namespace FLD
     myvelnp_         (fluid.velnp_    ),
     myveln_          (fluid.veln_     ),
     myvelaf_         (fluid.velaf_    ),
+    myscanp_         (fluid.scaaf_    ),
     mydispnp_        (fluid.dispnp_   ),
     mydispn_         (fluid.dispn_    ),
     mygridveln_      (fluid.gridveln_ ),
