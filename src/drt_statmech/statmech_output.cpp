@@ -3371,7 +3371,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				structurenumber = i;
 				minimum = i;
 			}
-		if(structurenumber==0 && characlength[0]>=periodlength/2.0)
+		if(structurenumber==0 && characlength[0]>=periodlength)
 			structurenumber = 3;
 
 		cout<<"\nVolumes: "<<endl;
