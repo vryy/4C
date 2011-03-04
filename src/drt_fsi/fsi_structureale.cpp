@@ -90,6 +90,7 @@ void FSI::StructureALE::Timeloop()
 void FSI::StructureALE::Solve()
 {
   StructureField().Solve();
+  //Comment this line to skip ALE computation!
   MBFluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
 }
 
