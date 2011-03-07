@@ -94,7 +94,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
     const int numcolele = nurbsdis->NumMyColElements();
 
     int every=numcolele/58;
-    // prevent division when dividing by every later on
+    // prevent division by zero when dividing by every later on
     if (every<1) every=1;
 
     for (int i=0; i<numcolele; ++i)
