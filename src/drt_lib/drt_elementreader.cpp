@@ -333,7 +333,7 @@ void ElementReader::Partition()
             }
             else
             {
-              dserror("a matching line definition is needed");
+              dserror("a matching line definition is needed for %s %s", eletype.c_str(), distype.c_str());
             }
 
             // add element to discretization
