@@ -143,7 +143,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
   int size = (int)gidlist.size();
   vector<int> pidlist(size); // gids on proc 0
   int err = target.RemoteIDList(size,&gidlist[0],&pidlist[0],NULL);
-  if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d",err);
+  if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
 
   map<int,vector<char> > sendmap; // proc to send a set of elements to
   if (!myrank)
@@ -151,7 +151,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
     map<int,DRT::PackBuffer > sendpb; // proc to send a set of elements to
     for (int i=0; i<size; ++i)
     {
-      if (pidlist[i]==myrank) continue; // do not send to myself
+      if (pidlist[i]==myrank or pidlist[i]<0) continue; // do not send to myself
       Element* actele = gElement(gidlist[i]);
       if (!actele) dserror("Cannot find global element %d",gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
@@ -160,7 +160,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
       fool->second.StartPacking();
     for (int i=0; i<size; ++i)
     {
-      if (pidlist[i]==myrank) continue; // do not send to myself
+      if (pidlist[i]==myrank or pidlist[i]<0) continue; // do not send to myself
       Element* actele = gElement(gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
       element_.erase(actele->Id());
