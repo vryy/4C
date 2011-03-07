@@ -49,7 +49,7 @@ FILESTEPS              1000
 //
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -58,24 +58,27 @@ NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.2
 NUMSTEP      13
 MAXTIME      8
-
-BETA         0.5
-GAMMA        1.0
-ALPHA_M      0.0
-ALPHA_F      0.0
 DAMPING      No
 M_DAMP       0.5
 K_DAMP       0.5
 PREDICT      ConstDis
-CONV_CHECK   AbsRes_And_AbsDis
-TOLDISP      1.0E-07
-TOLRES       1.0E-07
-TOLCONSTR    1.0E-06
+CONV_CHECK   None
+TOLRES       1.0E-8
+TOLDISP      1.0E-8
+NORM_RESF    Abs
+NORM_DISP    Abs
+NORMCOMBI_RESFDISP And
 ADAPTCONV        No
 ADAPTCONV_BETTER 0.1
 MAXITER      50
 UZAWAPARAM   1.0
 UZAWAMAXITER 20
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG       ImrLike
+BETA         0.5
+GAMMA        1.0
+ALPHA_M      0.0
+ALPHA_F      0.0
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarContact
 STRATEGY             Lagrange

@@ -46,7 +46,7 @@ FILESTEPS         1000
 //
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Static
+DYNAMICTYP   Statics
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -55,16 +55,15 @@ NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.01
 NUMSTEP      12
 MAXTIME      2.0
-BETA         0.0
-GAMMA        0.0
-ALPHA_M      0.0
-ALPHA_F      0.0
 DAMPING      No
 M_DAMP       0.00001
 K_DAMP       0.00001
-CONV_CHECK   AbsRes_And_AbsDis
-TOLRES       1.0E-10
+CONV_CHECK   None
+TOLRES       1.0E-8
 TOLDISP      1.0E-8
+NORM_RESF    Abs
+NORM_DISP    Abs
+NORMCOMBI_RESFDISP And
 MAXITER      50
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarContact

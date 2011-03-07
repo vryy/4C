@@ -44,7 +44,7 @@ FILESTEPS         1000
 //
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP   Gen_Alfa
+DYNAMICTYP   GenAlpha
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
@@ -53,17 +53,22 @@ NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.02
 NUMSTEP      10
 MAXTIME      0.2
+DAMPING      Yes 
+M_DAMP       0.00001 
+K_DAMP       0.00001
+CONV_CHECK   None
+TOLRES       1.0E-8
+TOLDISP      1.0E-8
+NORM_RESF    Abs
+NORM_DISP    Abs
+NORMCOMBI_RESFDISP And
+MAXITER      50
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG       ImrLike
 BETA         0.25
 GAMMA        0.5
 ALPHA_M      0.5
 ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.00001 
-K_DAMP       0.00001
-CONV_CHECK   AbsRes_And_AbsDis
-TOLRES       1.0E-8
-TOLDISP      1.0E-8
-MAXITER      50
 ---------------------------------------------MESHTYING AND CONTACT
 APPLICATION          MortarContact
 STRATEGY             Penalty
@@ -5139,8 +5144,8 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 1.0 1.0
 // STRUCTURE 2 - 0 0 0 0 0 0
 // ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 642 POSITION dispx NAME ux VALUE  6.3848217387496176e-16 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 642 POSITION dispy NAME uy VALUE -1.1527525485893337e-15 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 642 POSITION dispz NAME uz VALUE -3.7170582978809730e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 642 POSITION dispx NAME ux VALUE  0.0000000000000000e+00 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 642 POSITION dispy NAME uy VALUE  0.0000000000000000e+00 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 642 POSITION dispz NAME uz VALUE -3.7170669978076187e-01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
