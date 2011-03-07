@@ -607,6 +607,9 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
           =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
 
+        if (nurbsdis==NULL)
+          dserror("Discretization %s is not a NurbsDiscretization! Panic.", actdis->Name().c_str());
+
         // define an empty knot vector object
         Teuchos::RCP<DRT::NURBS::Knotvector> disknots=Teuchos::null;
 
@@ -631,11 +634,14 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
         // pattern via the element offset
         int smallest_gid_in_dis=actdis->ElementRowMap()->MinAllGID();
 
+        cout<<"smallest_gid_in_dis ="<<smallest_gid_in_dis<<endl;
         // consistency checks
         disknots->FinishKnots(smallest_gid_in_dis);
+        cout<<"knots finished"<<endl;
 
         // add knots to discretisation
         nurbsdis->SetKnotVector(disknots);
+        cout<<"knots added to discretization"<<endl;
       }
     } //loop discretisations of field
   } //loop fields
@@ -1026,13 +1032,23 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   {
     // allocate and input general old stuff....
     // create empty discretizations
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+      aledis    = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
+    }
+    else
+    {
+      fluiddis  = rcp(new DRT::Discretization("fluid",reader.Comm()));
+      scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+      aledis    = rcp(new DRT::Discretization("ale",reader.Comm()));
+    }
+
     AddDis(genprob.numff, fluiddis);
-
-    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
-
-    aledis = rcp(new DRT::Discretization("ale",reader.Comm()));
     AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
