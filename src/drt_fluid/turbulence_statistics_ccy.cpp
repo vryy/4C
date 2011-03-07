@@ -1259,7 +1259,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
     for(unsigned i=0; i<shellcoordinates_->size(); ++i)
     {
       // y and y+
-      (*log) <<  " "  << setw(11) << setprecision(4) << (*shellcoordinates_)[i];
+      (*log) <<  " "  << setw(14) << setprecision(7) << (*shellcoordinates_)[i];
 
       // pointwise means
       (*log) << "    " << setw(11) << setprecision(4) << (*pointsumu_ )[i]/numsamp_;
