@@ -1347,11 +1347,7 @@ void STR::TimInt::Integrate()
 
     // print info about finished time step
     PrintStep();
-
   }
-
-  // print monitoring of time consumption
-  TimeMonitor::summarize();
 
   // that's it
   return;

@@ -146,6 +146,7 @@ void dyn_nlnstructural_drt()
   DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
   DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
+  // print monitoring of time consumption
   Teuchos::TimeMonitor::summarize();
 
   // time to go home...
