@@ -1611,7 +1611,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			case 0:
 			{
 				//cluster
-				if(characlength_<periodlength/2.0)
+				if(characlength_<periodlength)
 				{
 					cout<<"Cluster"<<endl;
 					// draw three octagons/hexadecagon lying in the base planes
@@ -1621,7 +1621,7 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 								for(int k=0; k<3; k++)//spatial comp k perp. to the others
 									if(k!=i && k!=j)
 									{
-										double radius = characlength_;
+										double radius = characlength_/2.0;
 										// some local variables
 										LINALG::SerialDenseMatrix edge(3,2,true);
 										LINALG::Matrix<3,1> radiusvec1;
@@ -1930,8 +1930,6 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			}
 			break;
 		}
-		// clear the vector
-		testvolumepos_.clear();
 	}
 }//GmshNetworkStructVolume()
 
@@ -3391,6 +3389,8 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 		fprintf(fp, structuretype.str().c_str());
 		fclose(fp);
 
+		// clear the vector first
+		testvolumepos_.clear();
   	switch(structurenumber)
   	{
   		// cluster
@@ -3398,7 +3398,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		{
   			cout<<"\nNetwork structure: Cluster"<<endl;
   			characlength_ = characlength[structurenumber];
-  			structuretype_ = 0;
+  			structuretype_ = structurenumber;
 
   			// calculate the trafo_ matrix (as if we had a layer)
 
@@ -3406,15 +3406,16 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			  LINALG::SerialDenseMatrix RotMat(3, 3);
 			  // build the matrix of rotation for rotation about layervectors[2] = plane normal.
 			  for (int i=0; i<3; i++)
-			    RotMat(i, i) = cos(M_PI/2.0) + clusterlayervecs[2](i) * clusterlayervecs[2](i) * (1 - cos(M_PI/2.0));
-			  RotMat(0, 1) = clusterlayervecs[2](0) * clusterlayervecs[2](1) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](2) * sin(M_PI/2.0);
-			  RotMat(0, 2) = clusterlayervecs[2](0) * clusterlayervecs[2](2) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](1) * sin(M_PI/2.0);
-			  RotMat(1, 0) = clusterlayervecs[2](1) * clusterlayervecs[2](0) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](2) * sin(M_PI/2.0);
-			  RotMat(1, 2) = clusterlayervecs[2](1) * clusterlayervecs[2](2) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](0) * sin(M_PI/2.0);
-			  RotMat(2, 0) = clusterlayervecs[2](2) * clusterlayervecs[2](0) * (1 - cos(M_PI/2.0)) - clusterlayervecs[2](1) * sin(M_PI/2.0);
-			  RotMat(2, 1) = clusterlayervecs[2](2) * clusterlayervecs[2](1) * (1 - cos(M_PI/2.0)) + clusterlayervecs[2](0) * sin(M_PI/2.0);
+			    RotMat(i, i) = clusterlayervecs[2](i) * clusterlayervecs[2](i);
+			  RotMat(0, 1) = clusterlayervecs[2](0) * clusterlayervecs[2](1) - clusterlayervecs[2](2);
+			  RotMat(0, 2) = clusterlayervecs[2](0) * clusterlayervecs[2](2) + clusterlayervecs[2](1);
+			  RotMat(1, 0) = clusterlayervecs[2](1) * clusterlayervecs[2](0) + clusterlayervecs[2](2);
+			  RotMat(1, 2) = clusterlayervecs[2](1) * clusterlayervecs[2](2) - clusterlayervecs[2](0);
+			  RotMat(2, 0) = clusterlayervecs[2](2) * clusterlayervecs[2](0) - clusterlayervecs[2](1);
+			  RotMat(2, 1) = clusterlayervecs[2](2) * clusterlayervecs[2](1) + clusterlayervecs[2](0);
 
 			  // rotate the first layer vector and overwrite the second layer vector
+			  clusterlayervecs[1].PutScalar(0.0);
 			  for (int i=0; i<3; i++)
 			    for (int j=0; j<3; j++)
 			    	clusterlayervecs[1](i) += RotMat(i, j) * clusterlayervecs[0](j);
@@ -3431,7 +3432,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		{
   			cout<<"\nNetwork structure: Bundle"<<endl;
   			cout<<"axis vector: "<<cylvec(0)<<" "<<cylvec(1)<<" "<<cylvec(2)<<endl;
-  			structuretype_ = 1;
+  			structuretype_ = structurenumber;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)intersections.size(); i++)
   				testvolumepos_.push_back(intersections[i]);
@@ -3463,7 +3464,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		case 2:
   		{
   			cout<<"\nNetwork structure: Layer ( ";
-  			switch(int(interseccoords.size()))
+  			switch((int)(interseccoords.size()))
   			{
   				case 3: cout<<"triangular shape )"; break;
   				case 4: cout<<"rectangular shape )"; break;
@@ -3472,7 +3473,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			cout<<endl;
   			for(int i=0; i<(int)layervectors.size(); i++)
   				cout<<"layer vector "<<i+1<<": "<<layervectors[i](0)<<" "<<layervectors[i](1)<<" "<<layervectors[i](2)<<endl;
-  			structuretype_ = 2;
+  			structuretype_ = structurenumber;
   			characlength_ = characlength[structurenumber];
   			for(int i=0; i<(int)interseccoords.size(); i++)
   				testvolumepos_.push_back(interseccoords[i]);
@@ -3489,15 +3490,16 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 				LINALG::SerialDenseMatrix RotMat(3, 3);
 				// build the matrix of rotation for rotation about layervectors[2] = plane normal.
 				for (int i=0; i<3; i++)
-					RotMat(i, i) = cos(M_PI/2.0) + layervectors[2](i) * layervectors[2](i) * (1 - cos(M_PI/2.0));
-				RotMat(0, 1) = layervectors[2](0) * layervectors[2](1) * (1 - cos(M_PI/2.0)) - layervectors[2](2) * sin(M_PI/2.0);
-				RotMat(0, 2) = layervectors[2](0) * layervectors[2](2) * (1 - cos(M_PI/2.0)) + layervectors[2](1) * sin(M_PI/2.0);
-				RotMat(1, 0) = layervectors[2](1) * layervectors[2](0) * (1 - cos(M_PI/2.0)) + layervectors[2](2) * sin(M_PI/2.0);
-				RotMat(1, 2) = layervectors[2](1) * layervectors[2](2) * (1 - cos(M_PI/2.0)) - layervectors[2](0) * sin(M_PI/2.0);
-				RotMat(2, 0) = layervectors[2](2) * layervectors[2](0) * (1 - cos(M_PI/2.0)) - layervectors[2](1) * sin(M_PI/2.0);
-				RotMat(2, 1) = layervectors[2](2) * layervectors[2](1) * (1 - cos(M_PI/2.0)) + layervectors[2](0) * sin(M_PI/2.0);
+					RotMat(i, i) = layervectors[2](i) * layervectors[2](i);
+				RotMat(0, 1) = layervectors[2](0) * layervectors[2](1) - layervectors[2](2);
+				RotMat(0, 2) = layervectors[2](0) * layervectors[2](2) + layervectors[2](1);
+				RotMat(1, 0) = layervectors[2](1) * layervectors[2](0) + layervectors[2](2);
+				RotMat(1, 2) = layervectors[2](1) * layervectors[2](2) - layervectors[2](0);
+				RotMat(2, 0) = layervectors[2](2) * layervectors[2](0) - layervectors[2](1);
+				RotMat(2, 1) = layervectors[2](2) * layervectors[2](1) + layervectors[2](0);
 
 				// rotate the first layer vector and overwrite the second layer vector
+				layervectors[1].PutScalar(0.0);
 				for (int i=0; i<3; i++)
 					for (int j=0; j<3; j++)
 						layervectors[1](i) += RotMat(i, j) * layervectors[0](j);
@@ -3513,7 +3515,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		case 3:
   		{
   			cout<<"\nNetwork structure: Homogeneous network"<<endl;
-  			structuretype_ = 3;
+  			structuretype_ = structurenumber;
   			characlength_ = characlength[0];
 
   			// save trafo matrix for later use in DDCorrFunction()
@@ -3660,6 +3662,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
+	// retrieve center of gravity for global and rotated system
 	Epetra_SerialDenseMatrix cog(3,1);
 	Epetra_SerialDenseMatrix cogrot(3,1);
 	for(int i=0; i<cog.M(); i++)
@@ -3733,14 +3736,10 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 					for(int m=0; m<cboxrot.M(); m++)
 					{
 						double distm = fabs(surrboxrot(m,0)-cboxrot(m,0));
-						int absbin = (int)floor(distm/periodlength*(double)numbins);
+						int thebin = (int)floor(distm/periodlength*(double)numbins);
 						// only distances [0;H[
-						if(absbin<numbins)
-						{
-							int thebin = absbin%numbins;
-							int thecol = m;
-							crosslinksperbinrotrow[thecol][thebin] += 1.0;
-						}
+						if(thebin<numbins)
+							crosslinksperbinrotrow[m][thebin] += 1.0;
 					}
 				}
 			}
