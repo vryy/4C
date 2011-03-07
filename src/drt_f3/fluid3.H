@@ -462,7 +462,7 @@ private:
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
-    calc_fluid_beltrami_error,
+    calc_fluid_error,
     calc_turbulence_statistics,
     calc_loma_statistics,
     calc_dissipation,
@@ -497,16 +497,6 @@ private:
 
   // don't want = operator
   Fluid3& operator = (const Fluid3& old);
-
-  /*!
-   * \brief evaluate error for beltrami test problem
-   */
-  void f3_int_beltrami_err(
-    vector<double>&       myvelnp,
-    vector<double>&       myprenp,
-    Teuchos::RCP<const MAT::Material> material,
-    ParameterList&    	  params
-    );
 
   /*!
     \brief calculate spatial mean values for channel flow
@@ -1021,7 +1011,7 @@ public:
     integ_pressure_calc,
     center_of_mass_calc
   };
-  
+
 private:
 
   // don't want = operator

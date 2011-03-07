@@ -148,6 +148,16 @@ namespace INPAR
       initfield_bochev_test
     };
 
+    /// initial field
+    enum CalcError
+    {
+      no_error_calculation,
+      beltrami_flow,
+      channel2D,
+      gravitation,
+      shear_flow
+    };
+
     //! physical turbulence models
     enum TurbModelAction
     {

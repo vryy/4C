@@ -722,6 +722,7 @@ protected:
 
 private:
 
+  void SplitMatrixAndVector(RCP<Epetra_Vector>    incvel_);
 
   //@}
 

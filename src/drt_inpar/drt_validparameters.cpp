@@ -40,7 +40,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
 
-
 #include "../headers/fluid.h"
 #include "../headers/dynamic.h"
 
@@ -1965,16 +1964,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("MESHTYING",
+  BoolParameter("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm", &fdyn);
+
+  setStringToIntegralParameter<int>("CALCERROR",
                                "no",
-                               "Flag to (de)activate mesh tying algorithm",
+                               "Flag to (de)activate error calculation",
                                tuple<std::string>(
                                  "no",
-                                 "yes"),
-                               tuple<std::string>(
-                                 "No mesh tying",
-                                 "mesh tying"),
-                               tuple<int>(0,1),
+                                 "beltrami_flow",
+                                 "channel2D",
+                                 "gravitation",
+                                 "shear_flow"),
+                               tuple<int>(
+                                   INPAR::FLUID::no_error_calculation,
+                                   INPAR::FLUID::beltrami_flow,
+                                   INPAR::FLUID::channel2D,
+                                   INPAR::FLUID::gravitation,
+                                   INPAR::FLUID::shear_flow),
                                &fdyn);
 
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",

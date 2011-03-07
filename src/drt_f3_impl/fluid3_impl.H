@@ -98,6 +98,19 @@ namespace ELEMENTS
         vector<int>&              lm            ,
         Epetra_SerialDenseVector& elevec1       );
 
+    /// Evaluate element ERROR
+    /*!
+        general function to compute the error (analytical solution) for particular problem type
+     */
+
+    virtual int ComputeError(
+        DRT::ELEMENTS::Fluid3*          ele,
+        ParameterList&                  params,
+        Teuchos::RCP<MAT::Material>&    mat,
+        DRT::Discretization&            discretization,
+        vector<int>&                    lm,
+        Epetra_SerialDenseVector&       elevec1);
+
     /// Evaluate the element
     /*!
       Generic virtual interface function. Called via base pointer.

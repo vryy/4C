@@ -148,7 +148,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     extrapolationpredictor_=false;
   }
 
-  if(params_.get<int>("Mesh Tying"))
+  if(params_.get<bool>("Mesh Tying"))
   {
     meshtying_.Setup( *discret_,
                       discret_->Comm(),
@@ -222,7 +222,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 #ifdef BLOCKMATRIX
-  if(params_.get<int>("Mesh Tying"))
+  if(params_.get<bool>("Mesh Tying"))
   {
     // slave dof rowmap
     gsdofrowmap_ = meshtying_.SlaveDofRowMap();
@@ -257,7 +257,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
   else
 #else
-  if(params_.get<int>("Mesh Tying"))
+  if(params_.get<bool>("Mesh Tying"))
   {
     // slave dof rowmap
     gsdofrowmap_ = meshtying_.SlaveDofRowMap();
@@ -808,8 +808,8 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
       switch (timealgo_)
       {
       case INPAR::FLUID::timeint_one_step_theta:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
-              time_,maxtime_,dta_,step_,stepmax_);
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta (%0.2f)   STEP = %4d/%4d \n",
+              time_,maxtime_,dta_,theta_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
@@ -1373,7 +1373,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 
     //double dtsysmatsplit_=0.0;
-    if(params_.get<int>("Mesh Tying"))
+    if(params_.get<bool>("Mesh Tying"))
     {
 #ifdef BLOCKMATRIX
       MeshTyingMatrixCondenstation_BlockMatrix();
@@ -1509,6 +1509,13 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
         LINALG::Export(*tmpkspc,*c_);
 
+        if(params_.get<bool>("Mesh Tying"))
+        {
+          // Take off slave nodes from
+          RCP<Epetra_Vector> fm_slave = rcp(new Epetra_Vector(*gsdofrowmap_,true));
+          // add fm subvector to feffnew
+          LINALG::Export(*fm_slave,*c_);
+        }
       }
       else
       {
@@ -1709,10 +1716,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
 
-    if(params_.get<int>("Mesh Tying"))
-    {
+    if(params_.get<bool>("Mesh Tying"))
       GetSlaveVelocity();
-    }
 
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
@@ -3074,20 +3079,20 @@ void FLD::FluidImplicitTimeInt::Output()
 
 // output ALE nodes and xspatial in current configuration - devaal 02.2011
 #ifdef PRINTALEDEFORMEDNODECOORDS
-    
+
     if (discret_->Comm().NumProc() != 1)
 	dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
-    
+
     cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
     // does discret_ exist here?
     //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
-    
+
     //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
     //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
     //dofrowmap_  = rcp(new discret_->DofRowMap());
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    
+
     for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
 	{
 	    int gid;
@@ -3099,9 +3104,9 @@ void FLD::FluidImplicitTimeInt::Output()
 	    const double * X = node->X();
 	    // get degrees of freedom of a node
 	    vector<int> gdofs = discret_->Dof(node);
-	    //cout << "for node:" << *node << endl; 
+	    //cout << "for node:" << *node << endl;
 	    //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
-	    
+
 	    // get displacements of a node
 	    vector<double> mydisp (3,0.0);
 	    for (int ldof = 0; ldof<3; ldof ++)
@@ -3122,7 +3127,7 @@ void FLD::FluidImplicitTimeInt::Output()
 	    //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
 	    cout << gid << " " << newX << " " << newY << " " << newZ << endl;
 	}
-#endif //PRINTALEDEFORMEDNODECOORDS 
+#endif //PRINTALEDEFORMEDNODECOORDS
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -3929,59 +3934,97 @@ void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
 
-  //------------------------------------------------------- beltrami flow
-  switch (calcerr)
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
+
+  switch(calcerr)
   {
-  case INPAR::FLUID::initfield_zero_field:
-  case INPAR::FLUID::initfield_field_by_function:
-  case INPAR::FLUID::initfield_disturbed_field_from_function:
-  case INPAR::FLUID::initfield_flame_vortex_interaction:
-  case INPAR::FLUID::initfield_bochev_test:
+  case INPAR::FLUID::no_error_calculation:
     // do nothing --- no analytical solution available
     break;
-  case INPAR::FLUID::initfield_beltrami_flow:
+  case INPAR::FLUID::beltrami_flow:
+  case INPAR::FLUID::channel2D:
+  case INPAR::FLUID::gravitation:
+  case INPAR::FLUID::shear_flow:
   {
     // create the parameters for the discretization
     ParameterList eleparams;
 
-    eleparams.set<double>("L2 integrated velocity error",0.0);
-    eleparams.set<double>("L2 integrated pressure error",0.0);
-
     // action for elements
-    eleparams.set("action","calc_fluid_beltrami_error");
-    // actual time for elements
-    eleparams.set("total time",time_);
-
-    eleparams.set<int>("Physical Type", physicaltype_);
+    eleparams.set("action","calc_fluid_error");
+    eleparams.set<int>("calculate error",calcerr);
 
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("u and p at time n+1 (converged)",velnp_);
 
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+    //= Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+1));
+
     // call loop over elements (assemble nothing)
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->EvaluateScalars(eleparams, errors);
     discret_->ClearState();
 
-    double locvelerr = eleparams.get<double>("L2 integrated velocity error");
-    double locpreerr = eleparams.get<double>("L2 integrated pressure error");
-
-    double velerr = 0;
-    double preerr = 0;
-
-    discret_->Comm().SumAll(&locvelerr,&velerr,1);
-    discret_->Comm().SumAll(&locpreerr,&preerr,1);
+    double velerr = 0.0;
+    //double velerrx = 0.0;
+    //double velerry = 0.0;
+    double preerr = 0.0;
 
     // for the L2 norm, we need the square root
-    velerr = sqrt(velerr);
-    preerr = sqrt(preerr);
-
+    velerr = sqrt((*errors)[0]);
+    //velerrx = sqrt((*errors)[0]);
+    //velerry = sqrt((*errors)[1]);
+    preerr = sqrt((*errors)[1]);
 
     if (myrank_ == 0)
     {
       printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
              velerr,preerr);
+
+#if 0
+      //Write error in a file
+      // following headers need to be included
+      // #include "../drt_io/io.H"
+      // #include "../drt_io/io_control.H"
+
+      if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+      {
+        ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = "error.txt";
+
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "#| " << simulation << "\n";
+        f << "#| Step | Time | L2-error velocity x | L2-error velocity y  | L2-error pressure|\n";
+        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f.flush();
+        f.close();
+      }
+
+      ostringstream temp;
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = "error_time_"+simulation+".txt";
+
+      if(step_==1)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f.flush();
+        f.close();
+      }
+#endif
     }
   }
   break;
@@ -4818,6 +4861,7 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   RCP<LINALG::SparseMatrix> kmn_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
   RCP<LINALG::SparseMatrix> kmm_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
   RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_,true));
+  RCP<Epetra_Vector> fs_mod = rcp(new Epetra_Vector(*gsdofrowmap_,true));
   RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap_));
   RCP<LINALG::SparseMatrix> onesdiag;
 
@@ -4897,6 +4941,9 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
   RCP<Epetra_Vector> fm_modexp = rcp(new Epetra_Vector(*dofrowmap));
   LINALG::Export(*fm_mod,*fm_modexp);
   feffnew->Update(1.0,*fm_modexp,1.0);
+
+  // add fs subvector to feffnew
+  LINALG::Export(*fs_mod,*feffnew);
 
 #if 0
     // we want to split k into 3 groups s,m,n = 9 blocks
@@ -5184,4 +5231,96 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation_BlockMatrix()
   return;
 };
 
+void FLD::FluidImplicitTimeInt::SplitMatrixAndVector(RCP<Epetra_Vector>    incvel_)
+{
+  RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  RCP<Epetra_Vector> residual = incvel_;
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  /**********************************************************************/
+  /* Split kteff into 3x3 block matrix                                  */
+  /**********************************************************************/
+
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*dofrowmap,500,true,false,sysmat->GetMatrixtype()));
+
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary RCPs
+  RCP<Epetra_Map> tempmap;
+  RCP<LINALG::SparseMatrix> tempmtx1;
+  RCP<LINALG::SparseMatrix> tempmtx2;
+  RCP<LINALG::SparseMatrix> tempmtx3;
+
+  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
+
+  // we want to split f into 3 groups s.m,n
+  RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  RCP<Epetra_Vector> fsm;
+
+/*{
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();*/
+
+  // split into interface and domain dof's
+  LINALG::SplitMatrix2x2(sysmat,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+
+  // further splits into slave part + master part
+  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
+
+  // tempmap and tempmtx1 are dummy matrixes
+  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+  // tempmap and tempmtx1 are dummy matrixes
+  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
+
+#ifdef Output_MeshTying
+  cout << "sysmat: " << endl << *sysmat << endl;
+
+  cout << "Teil nn " << endl << *knn << endl;
+  cout << "Teil nm: " << endl << *knm << endl;
+  cout << "Teil ns: " << endl << *kns << endl;
+
+  cout << "Teil mn: " << endl << *kmn << endl;
+  cout << "Teil mm: " << endl << *kmm << endl;
+  cout << "Teil ms: " << endl << *kms << endl;
+
+  cout << "Teil sn: " << endl << *ksn << endl;
+  cout << "Teil sm: " << endl << *ksm << endl;
+  cout << "Teil ss: " << endl << *kss << endl;
+#endif
+
+  /**********************************************************************/
+  /* Split feff into 3 subvectors                                       */
+  /**********************************************************************/
+
+  // do the vector splitting smn -> sm+n
+  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
+
+  // we want to split fsm into 2 groups s,m
+  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // do the vector splitting sm -> s+m
+  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
+
+/*  // end time measurement for element
+  cout << endl << "splitting = " << Teuchos::Time::wallTime()-tcpu << endl;
+}*/
+
+//#ifdef Output_MeshTying
+  cout << "residual " << endl << *residual << endl << endl;
+  cout << "Teil fn " << endl << *fn << endl << endl;
+  cout << "Teil fm: " << endl << *fm << endl << endl;
+  cout << "Teil fs: " << endl << *fs << endl;
+//#endif
+
+
+  return;
+}
 #endif /* CCADISCRET       */
