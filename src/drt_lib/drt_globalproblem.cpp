@@ -634,14 +634,11 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
         // pattern via the element offset
         int smallest_gid_in_dis=actdis->ElementRowMap()->MinAllGID();
 
-        cout<<"smallest_gid_in_dis ="<<smallest_gid_in_dis<<endl;
         // consistency checks
         disknots->FinishKnots(smallest_gid_in_dis);
-        cout<<"knots finished"<<endl;
 
         // add knots to discretisation
         nurbsdis->SetKnotVector(disknots);
-        cout<<"knots added to discretization"<<endl;
       }
     } //loop discretisations of field
   } //loop fields
