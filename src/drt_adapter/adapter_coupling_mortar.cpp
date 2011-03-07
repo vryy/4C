@@ -340,8 +340,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   // IMPORTANT: We assume that all nodes have 'dim' DoF, that have to be considered for coupling.
-  //            Possible pressure DoF are not transferred to MortarInterface.
-  const int dim = genprob.ndim;
+
+  int dim = genprob.ndim;
 
   // create an empty mortar interface
   // (To be on the safe side we still store all interface nodes and elements
@@ -349,6 +349,13 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // as SlidingALE much easier, whereas it would not be needed for others.)
   bool redundant = true;
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
+
+  //  Pressure DoF are also transferred to MortarInterface
+  dim += 1;
+
+  // TODO: At one point, cout should be changed to dserror
+  if (dim == genprob.ndim)
+    cout << endl << endl << "Warning: pressure dof's are not coupled!! " << endl << endl;
 
   // feeding master nodes to the interface including ghosted nodes
   map<int, DRT::Node*>::const_iterator nodeiter;
