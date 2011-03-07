@@ -89,6 +89,16 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
     .AddNamedInt("MAT")
     ;
 
+  defs["NURBS27"]
+    .AddIntVector("NURBS27",27)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS8"]
+    .AddIntVector("NURBS8",8)
+    .AddNamedInt("MAT")
+    ;
+
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
@@ -158,6 +168,17 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
     .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
     ;
+
+  defs["NURBS2"]
+    .AddIntVector("NURBS27",2)
+    .AddNamedInt("MAT")
+    ;
+
+  defs["NURBS3"]
+    .AddIntVector("NURBS8",3)
+    .AddNamedInt("MAT")
+    ;
+
 }
 
 
