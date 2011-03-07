@@ -170,12 +170,12 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
     ;
 
   defs["NURBS2"]
-    .AddIntVector("NURBS27",2)
+    .AddIntVector("NURBS2",2)
     .AddNamedInt("MAT")
     ;
 
   defs["NURBS3"]
-    .AddIntVector("NURBS8",3)
+    .AddIntVector("NURBS3",3)
     .AddNamedInt("MAT")
     ;
 
