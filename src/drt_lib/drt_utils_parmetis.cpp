@@ -787,7 +787,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   const int numproc = comm->NumProc();
   Epetra_Time timer(dis->Comm());
   double t1 = timer.ElapsedTime();
-  if (!myrank)
+  if (!myrank && outflag)
   {
     printf("parmetis:\n");
     fflush(stdout);
