@@ -540,7 +540,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     dserror("dummy element obtained potential elements");
 
   nonlocalPecs_.clear();
-  vector<char>::size_type position = 1;  // jump over dummy
+  vector<char>::size_type position = 0;
   for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
     RCP<PotentialElementContainer> pec = rcp( new PotentialElementContainer());
