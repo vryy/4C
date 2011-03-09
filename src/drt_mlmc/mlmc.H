@@ -66,6 +66,11 @@ private:
   ///  time integrator for structural dynamics
   Teuchos::RCP<STR::TimInt> sti_;
 
+  // prolongator which maps all nodal results to finest grid
+  // use serial dense matrixfor the moment
+  Epetra_SerialDenseMatrix  prolongator_;
+  Teuchos::RCP<Epetra_MultiVector> prolongator;
+
   ///  number of measurment points the
   double tstep_;                    // timestep
 
@@ -116,6 +121,10 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
     );
 
+  // Setup prolongator to transfer results to finest grid
+  void SetupProlongator();
+  // Map results from one Discretization to another using the prolongator
+  void ProlongateResults();
   /// Read in routine for the material parameters
   void ReadInParameters();
 
@@ -138,11 +147,29 @@ public:
   ///
   void Integrate();
 
+
+
   ///
   //void MapResultsToFinestGrid(Teuchos::RCP<DRT::Discretization> dis_in,
    //                                               Teuchos::RCP<DRT::Discretization> dis_out,
    //                                               int run_id);
+  // Prolongate results onto finest mesh
   void MapResultsToFinestGrid();
+
+  // Find backgroundelement of a node
+  void FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi);
+
+
+  // check if a node lies within an element
+  // returns double based on minimum value of local coordinates abscissa
+  double CheckIfNodeInElement(DRT::Node& node ,DRT::Element& ele, double* xsi);
+
+
+  bool EvaluateF(double* f, DRT::Node& node, DRT::Element& ele,const double* xsi);
+
+  bool EvaluateGradF(LINALG::Matrix<3,3>& fgrad,DRT::Node& node, DRT::Element& ele,const double* xsi);
+
+  void InterpolateResults(DRT::Node& node, DRT::Element& backgroundele,const double* xsi);
   ///
   void PrintStorage(Epetra_SerialDenseVector delta_p);
 
