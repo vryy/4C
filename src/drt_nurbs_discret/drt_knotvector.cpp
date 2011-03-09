@@ -786,8 +786,9 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
  *----------------------------------------------------------------------*/
 void DRT::NURBS::Knotvector::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
+  // we don't need the PackBuffer for the knotvector (at the moment)
+  //DRT::PackBuffer::SizeMarker sm( data );
+  //sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();

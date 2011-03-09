@@ -625,6 +625,9 @@ void PostProblem::read_meshes()
         =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
+        if(nurbsdis==NULL)
+          dserror("Discretization %s is not a NurbsDiscretization",currfield.discretization()->Name().c_str());
+
         RCP<vector<char> > packed_knots;
         if (comm_->MyPID()==0)
           packed_knots = reader.ReadKnotvector(step);
