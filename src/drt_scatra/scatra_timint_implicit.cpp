@@ -2024,10 +2024,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)
 
-  // compute values for intermediate time steps from the initial field set above.
-  // affects Gen.Alpha time integration only
-  ComputeIntermediateValues();
-
   return;
 } // ScaTraTimIntImpl::SetInitialField
 
