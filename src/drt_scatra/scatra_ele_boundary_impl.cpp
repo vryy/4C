@@ -1470,7 +1470,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
       // tangent and rhs (= negative residual) for galvanostatic equation
       currderiv += i0*linea*timefac*fac;
-      currentresidual += (-i0)*expterm*rhsfac*timefac*fac;
+      currentresidual += (-i0)*expterm*timefac*fac;
     }
     else if ((!iselch) && (kinetics=="Tafel"))
     {
