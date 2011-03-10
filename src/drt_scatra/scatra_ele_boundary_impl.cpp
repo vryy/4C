@@ -285,6 +285,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     const double time = params.get<double>("total time");
     double       timefac = 1.0;
     double       alphaF  = 1.0;
+    double       rhsfac  = 1.0;
     // find out whether we shell use a time curve and get the factor
     // this feature can be also used for stationary "pseudo time loops"
     if (curvenum>=0)
@@ -309,6 +310,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         // we multiply i0 with timefac. So we do not have to give down this paramater
         // and perform automatically the multiplication of matrix and rhs with timefac
         i0 *= timefac;
+        // for correct scaling of rhs contribution (see below)
+        rhsfac =  1.0/alphaF;
       }
 
 # if 0
@@ -316,7 +319,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       cout<<"kinetic model  = "<<*kinetics<<endl;
       cout<<"react. species = "<<speciesid<<endl;
       cout<<"pot0(mod.)     = "<<pot0<<endl;
-      cout<<"pot0n          = "<<pot0n<<endl;
       cout<<"curvenum       = "<<curvenum<<endl;
       cout<<"alpha_a        = "<<alphaa<<endl;
       cout<<"alpha_c        = "<<alphac<<endl;
@@ -345,6 +347,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           refcon,
           iselch
       );
+
+      // realize correct scaling of rhs contribution for gen.alpha case
+      // with dt*(gamma/alpha_M) = timefac/alpha_F
+      // matrix contributions are already scaled correctly with
+      // timefac=dt*(gamma*alpha_F/alpha_M)
+      elevec1_epetra.Scale(rhsfac);
+
     }
     else
     {
@@ -366,8 +375,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
           timefac = params.get<double>("time factor");
           alphaF = params.get<double>("alpha_F");
-          timefac *= alphaF;
+          // realize correct scaling of vector with timefac/alphaF = (gamma/alpha_M) * dt
+          //timefac *= alphaF;
           if (timefac < 0.0) dserror("time factor is negative.");
+          // for correct scaling of rhs
+          rhsfac = 1.0; //1.0/alphaF;
           // access history of electrode potential
           if (dlcapacitance > EPS12)
           {
@@ -1440,6 +1452,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac; // the negative(!) normal flux density
       boundaryint += fac;
       concentrationint += conint*fac;
+
+      // tangent and rhs (= negative residual) for galvanostatic equation
+      linea = alphaa*frt;
+      currderiv += i0*linea*timefac*fac;
+      currentresidual += (-i0)*(alphaa*frt*eta + 1.0)*timefac*fac;
     }
     else if (iselch && (kinetics=="Tafel")) // concentration-dependent Tafel kinetics
     {
@@ -1450,6 +1467,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
       currentintegral += (-i0) * expterm * fac; // the negative(!) normal flux density
       boundaryint += fac;
       concentrationint += conint*fac;
+
+      // tangent and rhs (= negative residual) for galvanostatic equation
+      currderiv += i0*linea*timefac*fac;
+      currentresidual += (-i0)*expterm*rhsfac*timefac*fac;
     }
     else if ((!iselch) && (kinetics=="Tafel"))
     {
