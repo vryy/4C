@@ -353,7 +353,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   //  Pressure DoF are also transferred to MortarInterface
   dim += 1;
 
-  // TODO: At one point, cout should be changed to dserror
+  // TODO: At one point, could should be changed to dserror
   if (dim == genprob.ndim)
     cout << endl << endl << "Warning: pressure dof's are not coupled!! " << endl << endl;
 
