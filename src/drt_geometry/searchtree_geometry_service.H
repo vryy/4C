@@ -349,10 +349,19 @@ namespace GEO
       LINALG::Matrix<3,1>&                        minDistCoords
       );
   
+  /// returns the nearest node to the querypoint
+  double nearestNodeInNode
+  (
+      const RCP<DRT::Discretization>              dis,
+      map<int, RCP<DRT::Element> >&         elements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  point,
+      DRT::Node&                                  minNode
+  );
   
   /*!
   \brief Searches for the nearest point to the query point in elementList
-  \param masternodes          list of all nodes
+  \param masternodes          list of all nodes (are looked through in brute force)
   \param masterelements	      list of all elements 
   \param currentpositions     current nodal positions in discretization
   \param closeeles            element list of close elements, is looped
@@ -360,7 +369,6 @@ namespace GEO
   \param minDistCoords        Coords of the nearest point
    */
   void nearestObjectInNode(
-  		map<int, DRT::Node*> 						masternodes,
   		map<int, RCP<DRT::Element> >& 				masterelements,
   		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
   		const std::map<int, std::set<int> >&        closeeles,
@@ -368,6 +376,21 @@ namespace GEO
   		LINALG::Matrix<3,1>&                        minDistCoords
   		);
 
+  /*!
+  \brief Searches for the nearest point to the query point in elementList
+  \param masternodes          list of all nodes (are looked through in brute force)
+  \param masterelements       list of all elements
+  \param currentpositions     current nodal positions in discretization
+  \param closeeles            element list of close elements, is looped
+  \param querypoint           point to be examined
+  \param minDistCoords        Coords of the nearest point
+   */
+  double nearestNodeInNode(
+      map<int, RCP<DRT::Element> >&         masterelements,
+      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+      const LINALG::Matrix<3,1>&                  querypoint,
+      DRT::Node&                                  nearnode
+      );
 
   /*!
   \brief Searches for the nearest surface element to a given point

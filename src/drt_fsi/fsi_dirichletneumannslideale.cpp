@@ -22,12 +22,19 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(Epetra_Comm& comm)
   
   displacementcoupling_ = 
       DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("COUPVARIABLE") == "Displacement";
+  INPAR::FSI::SlideALEProj aletype =
+      Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
+
   
   // get discretizations
-	RCP<DRT::Discretization> masterdis = (StructureField().Discretization());
-	RCP<DRT::Discretization> slavedis = MBFluidField().Discretization();
+//	RCP<DRT::Discretization> masterdis = StructureField().Discretization();
+//	RCP<DRT::Discretization> slavedis = MBFluidField().Discretization();
   
-	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(masterdis,slavedis,StructureFluidCouplingMortar(),true));
+	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
+	                                              MBFluidField().Discretization(),
+	                                              StructureFluidCouplingMortar(),
+	                                              true,
+	                                              aletype));
 
 	islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofRowMap(),true));
 	
@@ -94,8 +101,7 @@ void FSI::DirichletNeumannSlideale::Remeshing()
                         idisptotal,
                         islave_,
                         StructureFluidCouplingMortar(),
-                        Comm(),
-                        aletype);
+                        Comm());
 	
 	slideale_->EvaluateMortar(
 	    StructureField().ExtractInterfaceDispnp(),islave_,StructureFluidCouplingMortar());

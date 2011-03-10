@@ -635,21 +635,6 @@ public:
     std::set<int>&                              contactEleIds
     );
   
-  
-  /*!
-  \brief insert Ids of close elements into closeeles
-  \param masterelement			all given elements
-  \closeeles					filled at the end of iteration with close elements
-  \param currentpositions		current nodal positions in discretization
-  \param querypoint				point around which should be searched 
-   */
-  void searchElementsSlideALE(
-      map<int, RCP<DRT::Element> >&               masterelements,	 
-      std::map<int,std::set<int> >&               closeeles,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-      const LINALG::Matrix<3,1>&                  querypoint
-  );
-
 
   /*!
   \brief print tree node
@@ -921,20 +906,6 @@ public:
     );
   
   
-  /*!
-  \brief return map of elements close to the querypoint
-  \param masterelement			all given elements
-  \param currentpositions		current nodal positions in discretization
-  \param querypoint				point around which should be searched 
-  \return vector of close elements
-   */
-  std::map<int,std::set<int> > searchElementsSlideALE(
-      map<int, RCP<DRT::Element> >&               masterelements,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-      const LINALG::Matrix<3,1>&                  querypoint
-  );
-
-
   /*!
   \brief prints entire tree to gmsh file
   \param prefix               prefix

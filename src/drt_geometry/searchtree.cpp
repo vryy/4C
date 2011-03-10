@@ -389,31 +389,6 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
 
 
 /*----------------------------------------------------------------------*
- | return map of elements close to the querypoint, 			     u.may 09/09|
- *----------------------------------------------------------------------*/
-std::map<int,std::set<int> > GEO::SearchTree::searchElementsSlideALE(
-    map<int, RCP<DRT::Element> >&               masterelements,
-    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-    const LINALG::Matrix<3,1>&                  querypoint)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
-
-  std::map<int,std::set<int> >		closeeles;
-
-  if(treeRoot_ == Teuchos::null)
-    dserror("tree is not yet initialized !!!");
-
-  if(!treeRoot_->getElementList().empty())
-    treeRoot_->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
-  else
-    dserror("element list is empty");
-
-  return closeeles;
-}
-
-
-
-/*----------------------------------------------------------------------*
  | print tree to gmsh file                                 peder   07/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::printTree(
@@ -2313,64 +2288,6 @@ void GEO::SearchTree::TreeNode::searchMultibodyContactElements(
   }
   return;
 }
-
-
-
-/*----------------------------------------------------------------------*
- | search elements close to the query point		               u.may 09/09|
- | less than 10 close elements stop the iteration			                  |
- *----------------------------------------------------------------------*/
-void GEO::SearchTree::TreeNode::searchElementsSlideALE(
-    map<int, RCP<DRT::Element> >&			            masterelements,	
-    std::map<int,std::set<int> >&			            closeeles,
-    const std::map<int,LINALG::Matrix<3,1> >&	    currentpositions,
-    const LINALG::Matrix<3,1>&                    querypoint)
-{
-  switch (treeNodeType_)
-  {
-  case INNER_NODE:
-  {
-    const int childindex = classifyPoint(querypoint);
-    if(childindex < 0)
-      dserror("no child found\n");
-    else //child node found which encloses AABB so step down
-    {
-      children_[childindex]->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
-      return;
-    }
-    break;
-  }
-  case LEAF_NODE:
-  {
-    if(elementList_.empty())
-      return;
-
-    // max depth reached, counts reverse, current elementList includes all close elements
-    if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() < 20) )
-    {
-      closeeles = getElementList();
-      return;
-    }
-    // dynamically grow tree otherwise, create children and set label for empty children
-    // search in apropriate child node
-    const int childindex = classifyPoint(querypoint);
-    if(childindex < 0)
-      dserror("no child found\n");
-    else // child node found which encloses AABB so refine further
-    {
-      createChildren(masterelements, currentpositions); 
-      children_[childindex]->searchElementsSlideALE(masterelements, closeeles, currentpositions, querypoint);
-      return;
-    }
-    break;
-  }
-  default:
-    dserror("should not get here\n");
-  }
-  return;
-}
-
-
 
 /*----------------------------------------------------------------------*
  | print tree node to gmsh file                            peder   07/08|

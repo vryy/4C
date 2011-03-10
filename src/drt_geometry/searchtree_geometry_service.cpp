@@ -719,6 +719,48 @@ void GEO::nearestObjectInNode(
 	return;  
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double GEO::nearestNodeInNode(
+    const RCP<DRT::Discretization>              dis,
+    map<int, RCP<DRT::Element> >&               elements,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point,
+    DRT::Node&                                  nearnode)
+{
+
+  double min_distance = GEO::LARGENUMBER;
+  double distance = GEO::LARGENUMBER;
+  std::map< int, std::set<int> > nodeList;
+
+  // run over all surface elements
+  std::map<int,RCP<DRT::Element> >::const_iterator eleIter;
+  for(eleIter = elements.begin(); eleIter != elements.end(); eleIter++)
+  {
+    // not const because otherwise no lines can be obtained
+    DRT::Element* element = (eleIter->second).get();
+
+    // collect nodes
+    for(int i = 0; i < DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
+      nodeList[eleIter->first].insert(element->NodeIds()[i]);
+  }
+
+  // run over all nodes collected abvove
+  for (std::map<int, std::set<int> >::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+    for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin(); nodeIter != (labelIter->second).end(); nodeIter++)
+    {
+      DRT::Node* node = dis->gNode(*nodeIter);
+      GEO::getDistanceToPoint(node, currentpositions, point, distance);
+      if (distance < min_distance)
+      {
+        min_distance = distance;
+        nearnode =*node;
+      }
+    }
+
+
+  return min_distance;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -726,7 +768,6 @@ void GEO::nearestObjectInNode(
  | tree node; object is either a node or a line element   		         |
  *----------------------------------------------------------------------*/
 void GEO::nearestObjectInNode(
-		map<int, DRT::Node*> 						masternodes,
 		map<int, RCP<DRT::Element> >& 				masterelements,
 		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
 		const std::map<int, std::set<int> >&        closeeles,
@@ -734,9 +775,9 @@ void GEO::nearestObjectInNode(
 		LINALG::Matrix<3,1>&                        minDistCoords)
 {
 	double minlength = 1.0e12;
-
+  std::set< DRT::Node** > nodeList;
 	//first loop over all masterelements
-	for (std::set<int>::const_iterator eleIter = (closeeles.begin()->second).begin(); eleIter != (closeeles.begin()->second).end(); eleIter++)
+	for (std::set<int>::iterator eleIter = (closeeles.begin()->second).begin(); eleIter != (closeeles.begin()->second).end(); eleIter++)
 	{
 		RefCountPtr<DRT::Element> iele = masterelements[*eleIter];
 
@@ -783,7 +824,7 @@ void GEO::nearestObjectInNode(
 			( derivcoords(0,1) ) * ( mcurr(1,0) - mcurr(1,1) );
 
 			eta[0]+=(-f)/df; 
-			if (k==9) dserror("Newtoniteration needs 10 steps!!!");
+			if (k==9) dserror("Newton iteration needs 10 steps!!!");
 		}
 
 		if ( ( -1.01 < eta[0] ) && ( eta[0] < 1.01 ) )
@@ -801,16 +842,17 @@ void GEO::nearestObjectInNode(
 				minDistCoords(1,0) = coords(0,1);
 			}
 		}
+
+		//collect nodes
+		nodeList.insert(iele->Nodes());
+
 	}//end of masterele loop
 
-	//no proper element to project on was find
-	if (minlength == 1.0e12)	
-	{
-		//calculating node to node distance
-		map<int, DRT::Node*>::const_iterator masternodeiter;
-		for (masternodeiter = masternodes.begin(); masternodeiter != masternodes.end(); ++masternodeiter)
-		{
-			DRT::Node* mnode = masternodeiter->second; 
+	// run over all nodes collected above
+  for (std::set<DRT::Node**>::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+    for (int i = 0; i<2; i++)
+    {
+			DRT::Node* mnode = (*labelIter)[i];
 
 			const LINALG::Matrix<3,1>& x = currentpositions.find(mnode->Id())->second;
 
@@ -826,10 +868,60 @@ void GEO::nearestObjectInNode(
 				for(int p=0; p<2; p++)
 					minDistCoords(p,0) = mnodecurr[p];
 			}
-		}//end of masternode loop
 	}
 	
 	return;
+}
+
+/*----------------------------------------------------------------------*
+ | gives the coords of the nearest point on or in an object in tk 10/01|
+ | tree node; object is either a node or a line element                |
+ *----------------------------------------------------------------------*/
+double GEO::nearestNodeInNode(
+    map<int, RCP<DRT::Element> >&               masterelements,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  querypoint,
+    DRT::Node&                                  nearnode)
+{
+  double minlength = 1.0e12;
+  std::set< DRT::Node** > nodeList;
+
+  //first loop over all masterelements
+  std::map<int,RCP<DRT::Element> >::const_iterator eleIter;
+  for(eleIter = masterelements.begin(); eleIter != masterelements.end(); eleIter++)
+  {
+    // not const because otherwise no lines can be obtained
+    RefCountPtr<DRT::Element> element = (eleIter->second);
+
+    nodeList.insert(element->Nodes());
+
+  }//end of masterele loop
+
+  for (std::set<DRT::Node**>::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
+    for (int i = 0; i<2; i++)
+//
+//  //no proper element to project on was find
+//  if (minlength == 1.0e12)
+  {
+      DRT::Node* mnode = (*labelIter)[i];
+
+      const LINALG::Matrix<3,1>& x = currentpositions.find(mnode->Id())->second;
+
+      Epetra_SerialDenseVector mnodecurr(2);
+      mnodecurr[0] =  x(0);
+      mnodecurr[1] =  x(1);
+
+      double length = sqrt ( (mnodecurr[0] - querypoint(0,0))*(mnodecurr[0] - querypoint(0,0)) +
+          (mnodecurr[1] - querypoint(1,0))*(mnodecurr[1] - querypoint(1,0))  );
+      if (length < minlength)
+      {
+        minlength = length;
+        nearnode=*mnode;
+
+      }
+  }
+
+  return minlength;
 }
 
 /*----------------------------------------------------------------------*

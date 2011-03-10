@@ -113,7 +113,8 @@ namespace FSI
           RCP<DRT::Discretization> structdis,   ///< structure discretization
           RCP<DRT::Discretization> fluiddis,    ///< fluid discretization
           ADAPTER::CouplingMortar& coupsf,      ///< mortar adapter
-          bool structcoupmaster                 ///< is structure master of adapter coupling?
+          bool structcoupmaster,                ///< is structure master of adapter coupling?
+          INPAR::FSI::SlideALEProj aleproj      ///< projection enum
       );
 
       /// empty destructor
@@ -127,8 +128,7 @@ namespace FSI
           Teuchos::RCP<Epetra_Vector> idispale,   ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,     ///< projected ALE interface displacement
           ADAPTER::CouplingMortar& coupsf,        ///< mortar adapter
-          const Epetra_Comm& comm,                ///< communicator
-          INPAR::FSI::SlideALEProj aletype        ///< projection enum
+          const Epetra_Comm& comm                ///< communicator
       );
 
       /// Compute new coupling matrices D and M
@@ -166,27 +166,47 @@ namespace FSI
       std::map<int,LINALG::Matrix<3,1> >  CurrentStructPos
       (
           Teuchos::RCP<Epetra_Vector> reddisp,     ///< redundant version of structure displacements
-          DRT::Discretization& interfacedis,       ///< interface discretization
-          RCP<Epetra_Map> msfullelemap             ///< merged map
+          DRT::Discretization& interfacedis       ///< interface discretization
       );
       
+      /// calculate reference position of fluid interface nodes
+      std::map<int,LINALG::Matrix<3,1> > RefFluidPos
+      (
+          DRT::Discretization& interfacedis
+      );
+
       /// project ALE nodes onto the structure surface
       void SlideProjection
       (
           DRT::Discretization& interfacedis,
           vector<double> centerdisp,
-          std::map<int, RCP<DRT::Element> > structreduelements,
           std::map<int,LINALG::Matrix<3,1> > currentpositions,
           Teuchos::RCP<Epetra_Vector> iprojdispale,             ///< projected ALE interface displacement
           ADAPTER::CouplingMortar& coupsf,
-          RCP<DRT::Discretization> fluiddis,
-          INPAR::FSI::SlideALEProj aletype
+          RCP<DRT::Discretization> fluiddis
       );
       
+      /// Build full redundant structure and fluid elements.
+      /// Necessary for search-trees since MORTAR elements do not know about their facets and edges...
+      void RedundantElements
+      (
+          ADAPTER::CouplingMortar& coupsf
+      );
+
+
+      /// Compute pairs of projection nodes and sliding nodes
+      void BuildProjPairs
+      (
+          RCP<DRT::Discretization> fluiddis,
+          DRT::Discretization& interfacedis
+      );
+
     private:  
     
+      const INPAR::FSI::SlideALEProj aletype_;
       Teuchos::RCP<Epetra_Vector> idispms_;       ///< merged vector of displacements (struct and fluid interface)
       vector<double> centerdisptotal_;            ///< sum over all center displacement increments
+      double maxmindist_;                         ///<maximal distance between fluidpairs
       
       map<int, DRT::Node*> istructslidnodes_;        ///< sliding struct nodes in the interface
       map<int, RCP<DRT::Element> > istructslideles_;  ///< sliding struct elements in the interface
@@ -196,6 +216,19 @@ namespace FSI
       map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluid nodes in the interface
       map<int, DRT::Node*> ifluidconfnodes_;          ///< sticking fluid nodes in the interface
       
+      map<int, RCP<DRT::Element> > fluidreduelements_;
+      map<int, RCP<DRT::Element> > structreduelements_;
+
+      map<int,int> fluidpairs_;
+
+      RCP<Epetra_Map> structdofrowmap_;
+      RCP<Epetra_Map> fluiddofrowmap_;
+      RCP<Epetra_Map> structfullnodemap_;
+      RCP<Epetra_Map> structfullelemap_;
+      RCP<Epetra_Map> fluidfullnodemap_;
+      RCP<Epetra_Map> fluidfullelemap_;
+
+
       Teuchos::RCP<Epetra_Vector> iprojhist_;         ///< history of final displacements
       
       bool structcoupmaster_; ///< is structure master of coupling?

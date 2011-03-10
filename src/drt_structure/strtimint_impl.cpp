@@ -1987,7 +1987,7 @@ void STR::TimIntImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps
 void STR::TimIntImpl::STCPreconditioning()
 {
   // print first system matrix to file in matlab format (DEBUGGING)
-  #ifdef DEBUG
+  #if 0
   if (iter_==1&& step_==0)
   {
     const std::string fname = "unscaled.mtl";
@@ -2017,7 +2017,7 @@ void STR::TimIntImpl::STCPreconditioning()
     }
 
     // print first system matrix to file in matlab format (DEBUGGING)
-    #ifdef DEBUG
+    #if 0
     if (iter_==1&& step_==0)
     {
       const std::string fname = "scaled.mtl";

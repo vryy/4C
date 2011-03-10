@@ -221,7 +221,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
       slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
                                                     FluidField().Discretization(),
                                                     coupsfm_,
-                                                    false));
+                                                    false,
+                                                    aleproj_));
 
       iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
       iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.MasterDofRowMap(),true));
@@ -552,8 +553,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
                         idispale,
                         iprojdisp_,
                         coupsfm_,
-                        Comm(),
-                        aleproj_);
+                        Comm());
 
     iprojdispinc_->Update(1.0,*iprojdisp_,-1.0,*idispale,0.0);
 
