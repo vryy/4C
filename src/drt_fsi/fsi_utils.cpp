@@ -1189,7 +1189,7 @@ void FSI::UTILS::SlideAleUtils::BuildProjPairs
   //currentpositions of struct nodes for the search tree (always 3 coordinates)
   std::map<int,LINALG::Matrix<3,1> > currentpositions = RefFluidPos(*fluiddis);
 
-  maxmindist_ = 1.0e-3;
+  maxmindist_ = 1.0e-1;
   // translation + projection
   map<int, DRT::Node*>::const_iterator nodeiter;
   for (nodeiter = ifluidslidnodes_.begin(); nodeiter != ifluidslidnodes_.end(); ++nodeiter)
@@ -1220,6 +1220,7 @@ void FSI::UTILS::SlideAleUtils::BuildProjPairs
           projnodecoor, pairnode);
     }
     fluidpairs_[node->Id()]=pairnode.Id();
+
     if (dist > maxmindist_)
       maxmindist_=dist;
   }

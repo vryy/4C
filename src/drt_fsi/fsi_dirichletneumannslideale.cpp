@@ -23,13 +23,8 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(Epetra_Comm& comm)
   displacementcoupling_ = 
       DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("COUPVARIABLE") == "Displacement";
   INPAR::FSI::SlideALEProj aletype =
-      Teuchos::getIntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
+      DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 
-  
-  // get discretizations
-//	RCP<DRT::Discretization> masterdis = StructureField().Discretization();
-//	RCP<DRT::Discretization> slavedis = MBFluidField().Discretization();
-  
 	slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
 	                                              MBFluidField().Discretization(),
 	                                              StructureFluidCouplingMortar(),

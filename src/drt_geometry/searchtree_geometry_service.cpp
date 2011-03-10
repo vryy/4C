@@ -758,6 +758,9 @@ double GEO::nearestNodeInNode(
       }
     }
 
+  //in case no node element was given return -1.0 as distance
+  if (min_distance>1.0e12)
+    min_distance=-1.0;
 
   return min_distance;
 }
@@ -883,10 +886,10 @@ double GEO::nearestNodeInNode(
     const LINALG::Matrix<3,1>&                  querypoint,
     DRT::Node&                                  nearnode)
 {
-  double minlength = 1.0e12;
+  double minlength = GEO::LARGENUMBER;
   std::set< DRT::Node** > nodeList;
 
-  //first loop over all masterelements
+  //first loop over all masterelements and collect nodes
   std::map<int,RCP<DRT::Element> >::const_iterator eleIter;
   for(eleIter = masterelements.begin(); eleIter != masterelements.end(); eleIter++)
   {
@@ -899,9 +902,6 @@ double GEO::nearestNodeInNode(
 
   for (std::set<DRT::Node**>::const_iterator labelIter = nodeList.begin(); labelIter != nodeList.end(); labelIter++)
     for (int i = 0; i<2; i++)
-//
-//  //no proper element to project on was find
-//  if (minlength == 1.0e12)
   {
       DRT::Node* mnode = (*labelIter)[i];
 
@@ -920,6 +920,10 @@ double GEO::nearestNodeInNode(
 
       }
   }
+
+  //in case no node element was given return -1.0 as distance
+  if (minlength>1.0e11)
+    minlength=-1.0;
 
   return minlength;
 }
