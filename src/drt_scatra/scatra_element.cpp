@@ -453,7 +453,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
   }
   else
   {
-    dserror("Surfaces() for 1D-/2D-Transport element not implemented");
+    dserror("Volumes() for 1D-/2D-Transport element not implemented");
     return DRT::Element::Volumes();
   }
 }
