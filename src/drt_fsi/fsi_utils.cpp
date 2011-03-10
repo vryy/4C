@@ -1092,12 +1092,13 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
     //search for near elements next to the query point (ie within a radius of 2x maxmindist)
     std::map<int,std::set<int> >  closeeles =
-        searchTree->searchElementsInRadius(interfacedis,currentpositions,alenodecurr,2.0*maxmindist_,0);
+        searchTree->searchElementsInRadius(interfacedis,currentpositions,alenodecurr,maxmindist_,0);
     //if no close elements could be found, try with a much larger radius and print a warning
     if (closeeles.empty())
     {
       cout<<"WARNING: no elements found in radius. Will try once with a bigger radius!"<<endl;
-      closeeles = searchTree->searchElementsInRadius(interfacedis,currentpositions,alenodecurr,10.0*maxmindist_,0);
+      closeeles = searchTree->searchElementsInRadius(interfacedis,currentpositions,alenodecurr,100.0*maxmindist_,0);
+      maxmindist_ *= 10.0;
 
       // if still no element is found, complain about it!
       if (closeeles.empty())
@@ -1225,6 +1226,7 @@ void FSI::UTILS::SlideAleUtils::BuildProjPairs
       maxmindist_=dist;
   }
 
+  maxmindist_ *= 2.0;
   return;
 }
 

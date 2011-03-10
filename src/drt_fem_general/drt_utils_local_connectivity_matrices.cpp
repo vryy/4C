@@ -126,6 +126,11 @@ int DRT::UTILS::getNumberOfElementCornerNodes(
             numCornerNodes = 3;
             break;
         }
+        case DRT::Element::line2: case DRT::Element::line3:
+        {
+            numCornerNodes = 2;
+            break;
+        }
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
