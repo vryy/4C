@@ -617,7 +617,7 @@ FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
   case INPAR::FSI::PreconditionedKrylov:
     linSys =
       Teuchos::rcp(new //NOX::Epetra::LinearSystemAztecOO(
-                     FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+                     FSI::MonolithicLinearSystem(
                                                                printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
